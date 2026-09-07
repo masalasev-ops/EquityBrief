@@ -171,3 +171,12 @@ Was:
 Now:
 > | Phase 0's checks unseen by the harness | 0.1 | 0.7 | every check the suite carries is asserted by nothing the phase report reads. Phase 0 produces no pipeline output, so it has no fixture expectations to carry, only checks the report must enumerate by name |
 Why: an obligation that has to be re-edited to stay true is one that goes stale quietly. Naming the property rather than today's instances of it makes the row correct for every checkpoint in the phase.
+
+### 2026-09-07 - BUILD_PLAN.md - two carried obligations discharged at 0.4
+Corrects: nothing. Both rows came due at 0.4 and were met, and a table of carried obligations that keeps rows after they are discharged stops being a list of what is owed.
+Was:
+> | The suite unrun on macOS | 0.1 | 0.4 | 0.1 was verified on Windows only, because the matrix cannot run until `tools/ci.*` exists. No macOS runner has executed the suite |
+
+> | `tools/migrate.ps1` written without its proofs | 0.2 | 0.4 | 0.2 needed the wrapper to run migrate on Windows at all, so it exists. 0.4's done condition owes the proofs: that a wrapper returns both the script's output and its exit code, shown by a deliberately failing probe, and that a machine with no bash exits with a named message rather than zero |
+Now: both rows removed. The measurements that discharged them are in the 0.4 entry and its addendum in `PROGRESS.md`, which is where a dated figure belongs.
+Why: the table answers what is still owed. A discharged row makes it answer something else, and the record of the discharge belongs in the record rather than in the spec.

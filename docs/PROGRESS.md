@@ -223,3 +223,19 @@ Notes:      one run of the suite failed once, in `ci-parity`'s failing-step test
             failure message, so a second occurrence arrives with its own diagnosis instead of
             just a mismatch. This is recorded because an unreproducible failure that is written
             down is a different thing from one that is not.
+
+### Addendum to 0.4 - the matrix ran                                         2026-09-07
+Measured:   the first CI run in which the scripts existed. 3 jobs, windows-latest,
+            macos-latest and ubuntu-latest, all green. All 6 steps ran on each, and each
+            reported 49 tests passing, 0 failing, 0 skipped. `ci: green` on all three.
+What it     the macOS runner, carried from 0.1, is discharged: the suite has now run there.
+discharges: `two-platform` is a real claim rather than a contract for the first time. The Linux
+            job, which exists as an instrument for one class of fault, opened every file the
+            pipeline touches on a case-sensitive filesystem and found none miscased, so
+            `path-casing` has an instrument behind it even though the check itself is not yet
+            written.
+Notes:      the wrapper assertions are carried by the Windows runner. On a machine with no
+            PowerShell they assert only the split, that such a machine is not Windows, and the
+            two GitHub runners both carry pwsh so all three ran them for real. An operator's
+            Mac without pwsh would assert the split alone, which is the correct population to
+            state rather than claiming the wrapper is proved everywhere.
