@@ -239,3 +239,41 @@ Notes:      the wrapper assertions are carried by the Windows runner. On a machi
             two GitHub runners both carry pwsh so all three ran them for real. An operator's
             Mac without pwsh would assert the split alone, which is the correct population to
             state rather than claiming the wrapper is proved everywhere.
+
+### 0.5 - the harness reading the architecture                               2026-09-07
+Built:      `tools/verify-phase` with its wrapper, and the harness behind it: a reader for
+            `ARCHITECTURE.html`'s tables, a placement for every table in the document, a claim
+            per row of every claim-bearing table, and `artifacts/phase-report.html` for the
+            operator with `artifacts/phase-report.json` beside it. `architecture-conformance`
+            implemented.
+Measured:   23 tables in the document, all 23 placed. 11 are claim sources, which is the scope
+            the catalogue states for itself, sections 7, 15, 16 and 18. The other 12 are placed
+            with the reason they make no claims and, where one exists, the instrument that
+            covers them instead. 120 claims, of which 0 pass, 0 fail, 0 are out of scope and
+            120 are unexamined, which is the correct first result and the reason
+            `tools/verify-phase` exits 1 from both entry points.
+Tests:      55, up from 49, on Windows before the push.
+Carried:    the phase report named twice, carried from 0.1 and due here, is discharged: the
+            catalogue and the phase table in `ARCHITECTURE.html` now say
+            `artifacts/phase-report.html` and `.json`, which is what the other two specs said
+            all along. One new obligation replaces it, below.
+Notes:      the harness lives in `EquityBrief.Tests` and the suite carries its own entry point,
+            so `dotnet test` runs the checks and `dotnet run` writes the report from one
+            assembly. This keeps the project count at six. It also puts the harness where the
+            checks already are, which is what it has to read.
+
+            `tools/verify-phase` is not a CI step and is not called by `tools/ci.*`. It is green
+            only when nothing is unexamined, which is a gate on a phase rather than on a commit,
+            and making it a CI step would stop every checkpoint in a phase merging until the
+            phase was finished. `architecture-conformance` is the part that does run every CI
+            run: it asserts every table is placed and every claim carries a verdict, not that
+            the verdicts are good enough to sign anything off.
+
+            A claim that reads PASS has to name the check that reached it. Nothing passes yet,
+            so that assertion is vacuous today and the test says so rather than letting a zero
+            read as a result.
+
+            The finding this checkpoint produced: the catalogue names sections 7, 14, 15, 16 and
+            18 as the claim scope, and section 14 carries no table at all, so a harness that
+            reads tables can take no claims from the nightly run. Recorded as a carried
+            obligation due at 0.7.
