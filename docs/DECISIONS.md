@@ -180,6 +180,8 @@ A decision is changed only by another decision. Work that changes one writes a n
 
 **A written rule never blocks a real fix** If a rule in this document prevents correcting a genuine defect, the rule is the defect and is amended in the same pass, with the change stated plainly.
 
+**The solution file takes the SDK's current format** The .NET 10 SDK writes `.slnx` and no longer writes the older `.sln` by default, so the solution is `EquityBrief.slnx`. Pinning the older format means every session that regenerates the file has to remember a flag to get it, and a format the tool has stopped writing drifts out of support with nothing announcing it. The corpus names the file in the layout block and in the Commands table and the suite finds the checkout by looking for it, so a format change is a rename in three places and the third one fails loudly if the other two are missed.
+
 ---
 
 ## Previously decided

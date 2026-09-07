@@ -38,14 +38,14 @@ internal static class Repository
              directory is not null;
              directory = directory.Parent)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "EquityBrief.sln")))
+            if (File.Exists(Path.Combine(directory.FullName, "EquityBrief.slnx")))
             {
                 return directory.FullName;
             }
         }
 
         throw new InvalidOperationException(
-            $"No EquityBrief.sln above {AppContext.BaseDirectory}. The checks read the " +
+            $"No EquityBrief.slnx above {AppContext.BaseDirectory}. The checks read the " +
             "checkout, so not finding it is a failure of the check and never a pass.");
     }
 }
