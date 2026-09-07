@@ -139,6 +139,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `changelog-reconciles` | every CI run | Every commit that deleted a line from a spec also changed `CHANGELOG.md`, read from the history |
 | `pinned-constants` | every CI run | Numeric constants stated in docs match the code constant they describe |
 | `stated-counts` | every CI run | Every count a spec states about itself matches the derived count. Record entries are dated measurements and are exempt |
+| `banned-prose` | every CI run | No file in the corpus or the shipped source contains the banned string or any form of it, and no file contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
 | `coverage-reported` | every CI run | Every check the roster says runs is implemented, is invoked by `tools/ci.*`, states its own scope in numbers, and left a coverage record in the run the phase report reads |
 | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, and no schedule is expressed in local time |
 | `path-casing` | every CI run | Every file path appearing as a string literal in source matches the on-disk path exactly, byte for byte |
@@ -188,7 +189,7 @@ A decision is identified by its bold name in `DECISIONS.md`. Cite the exact name
 
 **Anything issued in conversation that will later be cited must land in the repo when it is issued,** not afterwards. A citation to something that lives only in a chat transcript is a hole in the record.
 
-**Prose.** Standard keyboard punctuation, no em dashes. State the mechanism rather than asserting a virtue: write "every number in the prose exists in the facts file", not "the reports are truthful". One word is banned outright across the corpus and in chat, and a grep enforces it: the operator does not want it, and a claim of candour is exactly the kind of virtue-assertion this rule already rejects. The banned string is `honest` and every form of it.
+**Prose.** Standard keyboard punctuation, no em dashes. State the mechanism rather than asserting a virtue: write "every number in the prose exists in the facts file", not "the reports are truthful". One word is banned outright across the corpus and in chat, and a grep enforces it, exempting only this sentence, which has to contain the string in order to name it: the banned string is `honest` and every form of it. The operator does not want it, and a claim of candour is exactly the kind of virtue-assertion this rule already rejects.
 
 ## Verification
 
