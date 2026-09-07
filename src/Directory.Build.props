@@ -1,10 +1,12 @@
 <Project>
 
   <!-- The framework and the warning policy for all six projects, stated once.
-       A project file that sets either of these has moved a fact out of here,
-       which is what 0.1's done condition checks. -->
+       A project file that sets any of these has moved a fact out of here, which
+       is what build-properties-central asserts and what 0.1's done condition
+       checks. -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>

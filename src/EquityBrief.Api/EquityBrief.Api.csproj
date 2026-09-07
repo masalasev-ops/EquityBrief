@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- The read surface, and the one web application: section 6.5 of the
+       architecture has it serve the read-only API and host the single page app.
+       It must never reference EquityBrief.Worker, which api-isolation asserts
+       against the compiled dependency file. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\EquityBrief.Core\EquityBrief.Core.csproj" />
+    <ProjectReference Include="..\EquityBrief.Data\EquityBrief.Data.csproj" />
+    <ProjectReference Include="..\EquityBrief.Web\EquityBrief.Web.csproj" />
+  </ItemGroup>
+
+</Project>

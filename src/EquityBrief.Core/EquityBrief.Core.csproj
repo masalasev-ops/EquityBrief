@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Domain, clock and config. Empty until 0.3 builds the clock. -->
+
+</Project>

@@ -150,6 +150,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `path-casing` | every CI run | Every file path appearing as a string literal in source matches the on-disk path exactly, byte for byte |
 | `store-portability` | every CI run | No row in a populated store carries an absolute path |
 | `price-storage-form` | every CI run | No migration declares a price or money column `REAL` |
+| `build-properties-central` | every CI run | No project file states a target framework or a warning setting of its own, and `src/Directory.Build.props` states both |
 | `api-isolation` | every CI run | `EquityBrief.Api` has no transitive reference to `EquityBrief.Worker`, read from the compiled dependency file |
 | `bar-append-only` | every CI run | Nothing in the shipped source deletes or updates a bar table, and no migration deletes, updates or drops one |
 | `ci-parity` | every CI run | `tools/ci.ps1` and `tools/ci.sh` run the same steps in the same order, and a step that fails fails the script it runs in |
@@ -219,7 +220,7 @@ All seven, or it is not done:
 2. `tools/ci.*` is green, with the test count recorded in PROGRESS. Until 0.4 builds those scripts, the checkpoint's own verification is run by hand and PROGRESS records the figures it produced and states that nothing guards them yet.
 3. Every new store write is declared in SCHEMA and passes `writer-ownership`.
 4. Any new numeric constant stated in a doc is pinned, and every decision name cited in new code or docs resolves.
-5. The suite passes on both runners.
+5. The suite passes on both runners. Until 0.4 makes the matrix able to run, the suite is run on the machine at hand, PROGRESS names which platform that was, and the other runner is carried to 0.4.
 6. A PROGRESS entry naming what was built, what was measured, and any carried obligation.
 7. The checkpoint's expectations are added to the fixture, so `tools/verify-phase` covers it from now on, and at least one of them is derived independently rather than frozen from a run. A checkpoint that adds behaviour and no expectation has widened the unexamined set; one that adds only frozen expectations has added regression detection and called it verification. Where the fixture does not exist yet, expectations are carried to the checkpoint that first can, and the carried obligation is recorded in `BUILD_PLAN.md` when it is created rather than remembered.
 

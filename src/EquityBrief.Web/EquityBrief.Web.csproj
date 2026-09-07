@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The single page app: the shell and the marks, both written server side.
+       Empty until 1.6 draws the chart. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\EquityBrief.Core\EquityBrief.Core.csproj" />
+  </ItemGroup>
+
+</Project>
