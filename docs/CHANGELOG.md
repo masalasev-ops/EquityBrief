@@ -117,3 +117,12 @@ Was:
 Now:
 > a second paragraph places `fixtures/README.md` outside them too, on the ground that it describes a folder's shape and carries no rule and no decision.
 Why: the cap only works if every document in the tree is either inside it or excluded by name. One unplaced file makes the count arguable, and an arguable count is one `stated-counts` cannot assert.
+
+### 2026-09-06 - CLAUDE.md - the layout block names fixtures/README.md
+Corrects: the block described `/fixtures` as one folder per fixture name and date, which `README.md` is not, so the one delivered file inside it had no home in the map even after the Document lifecycle placed it outside the eight. Found by the tree-against-block sweep run for this pass, which returned exactly one unnamed file.
+Was:
+> /fixtures         one folder per fixture name and date: the committed inputs, and
+Now:
+> /fixtures         README.md      the folder's shape, not a corpus document
+>                   one folder per fixture name and date: the committed inputs, and
+Why: the sweep is only worth running if it can return zero, and a known exception carried in a reviewer's head is the thing that stops a sweep being an instrument.
