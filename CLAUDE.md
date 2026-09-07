@@ -53,6 +53,8 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                   wrapper-probe  wrapper-probe.ps1   a script that prints on both streams
                                  and fails, so the suite can prove a wrapper returns both
 /fixtures         README.md      the folder's shape, not a corpus document
+                  manifest.schema.json   what a fixture manifest must carry; the suite
+                                 reads its required fields from here rather than restating them
                   one folder per fixture name and date: the committed inputs, and
                   expectations/ holding what the rules in ARCHITECTURE produce over them
 /artifacts        gitignored. the phase report, written by verify-phase
