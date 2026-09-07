@@ -13,6 +13,36 @@ internal static class Scope
     const string ByMigration = "schema-columns";
     const string ByHarness = "architecture-conformance";
 
+    internal const string MatrixTable = "Read and write matrix";
+    internal const string CatalogueTable = "7. Component catalogue";
+    internal const string StoresTable = "16. Data stores and the read and write matrix";
+    internal const string FailureTable = "18. Failure behaviour";
+    internal const string LimitsTable = "17. Limits, spend and the numbers the harness asserts";
+
+    // The ones a check has actually reached, keyed on the table and the subject
+    // together. Keyed on the subject alone until 0.7's review, which meant a
+    // catalogue verdict was reused verbatim for the row of the same name in the
+    // read and write matrix, where the claim is a different one.
+    static readonly Dictionary<string, Scoped> Reached = new(StringComparer.Ordinal)
+    {
+        [CheckReach.Key(CatalogueTable, "Migration runner")] = new Scoped(
+            Verdict.Pass,
+            "the schema it writes is asserted against SCHEMA.md, column by column and type by type",
+            ByMigration),
+        [CheckReach.Key(CatalogueTable, "Verification harness")] = new Scoped(
+            Verdict.Pass,
+            "every claim in sections 7, 14, 15, 16, 17 and 18 carries a verdict, and both artifacts are written and read back",
+            ByHarness),
+        [CheckReach.Key(StoresTable, "Run log")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(FailureTable, "The harness cannot parse this document")] = new Scoped(
+            Verdict.Pass,
+            "the parse guard fails rather than reporting zero claims",
+            ByHarness),
+    };
+
     // Components, shared by the catalogue and the read and write matrix.
     static readonly Dictionary<string, string> Components = new(StringComparer.Ordinal)
     {
@@ -94,6 +124,52 @@ internal static class Scope
         ["The candidate register and the correction disagree"] = "phase 6",
     };
 
+    // The two rows of the read and write matrix whose component already exists.
+    // Every other row resolves through Components, which the catalogue shares.
+    // A matrix row claims what its component touches across eleven stores, and
+    // eight of those stores are not built, so the row is not assertable until
+    // the last of them is.
+    static readonly Dictionary<string, string> MatrixRows = new(StringComparer.Ordinal)
+    {
+        ["Migration runner"] = "phase 6",
+        ["Verification harness"] = "phase 6",
+    };
+
+    // Section 17's limits. Each row is a claim about the code, and the code
+    // that would carry it arrives with the component the row constrains.
+    static readonly Dictionary<string, string> LimitDuePoints = new(StringComparer.Ordinal)
+    {
+        ["Model calls in the nightly run"] = "1.3",
+        ["Per-name network calls in the nightly run"] = "1.3",
+        ["Nightly wall clock, 500 names"] = "phase 4",
+        ["Bar history kept"] = "1.3",
+        ["Backfill"] = "1.2",
+        ["Level window"] = "phase 2",
+        ["Swing lookback"] = "phase 2",
+        ["Band merge distance"] = "phase 2",
+        ["Volume shelf threshold"] = "2.1",
+        ["Tranches, exits"] = "phase 3",
+        ["Tranche eligibility"] = "phase 3",
+        ["Earnings horizon"] = "phase 3",
+        ["List display"] = "phase 4",
+        ["Overnight queue"] = "phase 5",
+        ["Research passes per name per open"] = "phase 5",
+        ["Research staleness triggers"] = "phase 5",
+        ["Spend cap"] = "phase 5",
+        ["Scheduling of queued work"] = "phase 5",
+        ["Claim rejection"] = "5.1",
+        ["Theme search parameters"] = "phase 5",
+        ["Source lists"] = "5.1",
+        ["Source admissibility"] = "5.1",
+        ["Nightly row coverage"] = "4.1",
+        ["Reason record display"] = "phase 6",
+        ["Setup resolution"] = "phase 6",
+        ["Minimum resolved setups"] = "phase 6",
+        ["Family size and correction"] = "6.1",
+        ["Frozen measurement windows"] = "phase 6",
+        ["Base rate"] = "phase 6",
+    };
+
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
     {
         ["Load index membership"] = "1.1",
@@ -111,24 +187,9 @@ internal static class Scope
     {
         // The ones that have landed. Each names the check that reached it,
         // because a PASS naming none is a PASS by fiat.
-        if (subject == "Migration runner")
+        if (Reached.TryGetValue(CheckReach.Key(table, subject), out var reached))
         {
-            return new Scoped(Verdict.Pass, "the schema it writes is asserted against SCHEMA.md", ByMigration);
-        }
-
-        if (subject == "Verification harness")
-        {
-            return new Scoped(Verdict.Pass, "this report is the thing the claim describes", ByHarness);
-        }
-
-        if (subject == "Run log" && table.StartsWith("16.", StringComparison.Ordinal))
-        {
-            return new Scoped(Verdict.Pass, "the table's columns and types are asserted against SCHEMA.md", ByMigration);
-        }
-
-        if (subject == "The harness cannot parse this document")
-        {
-            return new Scoped(Verdict.Pass, "the parse guard fails rather than reporting zero claims", ByHarness);
+            return reached;
         }
 
         var due = Due(table, subject);
@@ -146,6 +207,16 @@ internal static class Scope
         if (Screens.TryGetValue(table, out var screen))
         {
             return screen;
+        }
+
+        if (table == LimitsTable)
+        {
+            return LimitDuePoints.GetValueOrDefault(subject);
+        }
+
+        if (table == MatrixTable && MatrixRows.TryGetValue(subject, out var row))
+        {
+            return row;
         }
 
         if (table == NightlyRunSteps.Heading)
