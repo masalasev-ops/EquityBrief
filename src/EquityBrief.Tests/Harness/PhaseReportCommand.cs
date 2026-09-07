@@ -18,7 +18,7 @@ internal static class PhaseReportCommand
         var tables = ArchitectureTables.In(
             File.ReadAllText(Path.Combine(root, "docs", "ARCHITECTURE.html")));
 
-        var report = PhaseReport.Build(tables);
+        var report = PhaseReport.Build(tables, Fixtures.Of(root));
 
         // The clock, because nothing else in the system may read the machine.
         PhaseReportWriter.Write(report, root, SystemClock.ForUnitedStatesSessions().UtcNow);
@@ -29,6 +29,7 @@ internal static class PhaseReportCommand
         Console.WriteLine($"fail         {report.Count(Verdict.Fail)}");
         Console.WriteLine($"out of scope {report.Count(Verdict.OutOfScope)}");
         Console.WriteLine($"unexamined   {report.Count(Verdict.Unexamined)}");
+        Console.WriteLine($"fixture      {report.Fixture.State}, {report.Fixture.Folders} captured");
         Console.WriteLine(PhaseReportWriter.HtmlPath(root));
         Console.WriteLine(PhaseReportWriter.JsonPath(root));
 

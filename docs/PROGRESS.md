@@ -277,3 +277,33 @@ Notes:      the harness lives in `EquityBrief.Tests` and the suite carries its o
             18 as the claim scope, and section 14 carries no table at all, so a harness that
             reads tables can take no claims from the nightly run. Recorded as a carried
             obligation due at 0.7.
+
+### 0.6 - the fixture folder                                                 2026-09-07
+Built:      `fixtures/manifest.schema.json`, which declares what a manifest carries, and a
+            checker that reads its required field names out of that file rather than restating
+            them. The harness now reports the fixture's state, and `fixtures/README.md` says
+            where the shape is declared. No inputs and no expectations, which is what 0.6 asks
+            for.
+Measured:   4 required fields at the top level and 4 on every captured input, read from the
+            schema and asserted against it. 8 rejections asserted, each a separate rule: a
+            missing required field, a date that is not a date, an instant that is not UTC, a
+            credential in a query, an absolute file path, a manifest asserting it carries
+            credentials, a fixture with no inputs, and a file that is not JSON. A valid manifest
+            has 0 faults, which is what stops those 8 passing over a checker that rejects
+            everything. The harness reports the fixture ABSENT with 0 captured.
+Tests:      67, up from 55, on Windows before the push.
+Carried:    nothing new. Section 14 having no table, carried from 0.5, is still due at 0.7.
+Notes:      the fixture is reported as absent and never as passing, and the note the report
+            carries says so in those words. Absent is out of scope until 1.8, which is where
+            `BUILD_PLAN.md` puts the first expectations, and out of scope is shown beside
+            unexamined rather than added to it.
+
+            One test walks every captured fixture and checks its manifest. It is vacuous today,
+            over zero fixtures, and the test above it states that by asserting the count is
+            zero. It is written now so the first fixture that lands is checked on the day it
+            lands rather than on the day somebody remembers to write the check.
+
+            A credential in a captured query would be published, because a fixture is committed.
+            The manifest asserts there is none and the checker scans for seven markers, which is
+            the pattern of asserting a thing and then testing the assertion rather than trusting
+            it.

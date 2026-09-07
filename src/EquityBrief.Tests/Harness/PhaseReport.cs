@@ -16,7 +16,8 @@ internal sealed record PlacedTable(string Heading, int Claims, string Placement)
 
 internal sealed record PhaseReportModel(
     IReadOnlyList<PlacedTable> Tables,
-    IReadOnlyList<Claim> Claims)
+    IReadOnlyList<Claim> Claims,
+    FixtureStatus Fixture)
 {
     internal int Count(Verdict verdict) => Claims.Count(claim => claim.Verdict == verdict);
 }
@@ -76,7 +77,9 @@ internal static class PhaseReport
             "a record, not a claim about code",
     };
 
-    internal static PhaseReportModel Build(IReadOnlyList<ArchitectureTable> tables)
+    internal static PhaseReportModel Build(
+        IReadOnlyList<ArchitectureTable> tables,
+        FixtureStatus? fixture = null)
     {
         var unplaced = tables
             .Where(table => !ClaimSources.Contains(table.Heading, StringComparer.Ordinal)
@@ -132,6 +135,9 @@ internal static class PhaseReport
             placed.Add(new PlacedTable(table.Heading, rows.Length, "claim source"));
         }
 
-        return new PhaseReportModel(placed, claims);
+        return new PhaseReportModel(
+            placed,
+            claims,
+            fixture ?? new FixtureStatus(0, "ABSENT", "not looked for"));
     }
 }

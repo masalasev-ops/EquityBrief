@@ -32,6 +32,12 @@ internal static class PhaseReportWriter
                     claimSources = report.Tables.Count(table => table.Claims > 0),
                     placedWithoutClaims = report.Tables.Count(table => table.Claims == 0),
                 },
+                fixture = new
+                {
+                    state = report.Fixture.State,
+                    folders = report.Fixture.Folders,
+                    note = report.Fixture.Note,
+                },
                 summary = new
                 {
                     pass = report.Count(Verdict.Pass),
@@ -91,6 +97,10 @@ internal static class PhaseReportWriter
         }
 
         page.Append("</table>");
+
+        page.Append("<h2>Fixture</h2>");
+        page.Append($"<p><b>{Escape(report.Fixture.State)}</b>, {report.Fixture.Folders} captured. ");
+        page.Append($"{Escape(report.Fixture.Note)}</p>");
 
         page.Append("<h2>Every table in the architecture</h2>");
         page.Append("<p>A table nobody placed is a table that can go unread, so all of them are here.</p>");

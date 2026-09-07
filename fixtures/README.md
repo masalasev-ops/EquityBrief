@@ -20,4 +20,4 @@ One folder per fixture name and date. Committed, never regenerated, and the expe
 
 **Every expectation records how it was produced.** An expectation derived independently from the rules verifies something. One frozen from a run detects regression and verifies nothing, and a checkpoint whose expectations are all frozen has added regression detection and called it verification.
 
-**No credential appears in a captured response.** The manifest asserts it and so does the check.
+**No credential appears in a captured response.** The manifest asserts it and so does the check. `manifest.schema.json` beside this file is where the manifest's shape is declared, and the suite reads its required fields from there rather than restating them, so a field added to the schema is one the check refuses a manifest for leaving out.
