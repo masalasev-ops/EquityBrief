@@ -124,6 +124,7 @@ Recorded when created, not remembered. A `PROGRESS.md` entry naming a carried ob
 
 | Obligation | Created at | Due at | What it holds |
 |---|---|---|---|
+| The citation placeholder in this table is not a citation | 0.0 | 0.4 | the row below writes the citation form out in full, so a `decision-resolves` built on the parenthesised pattern reads the placeholder inside it as a citation and fails on a name that does not exist. Either the checker exempts this table by name or the row is reworded |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.1 | the threshold is derived from one chart and nothing has tested it |
 | Source lists reviewed against measured coverage | 1.7 | 5.1 | the lists are a first draft from a two-week sample |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 | if it responds, one nightly call replaces the on-demand fundamentals fetcher |

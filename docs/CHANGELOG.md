@@ -126,3 +126,11 @@ Now:
 > /fixtures         README.md      the folder's shape, not a corpus document
 >                   one folder per fixture name and date: the committed inputs, and
 Why: the sweep is only worth running if it can return zero, and a known exception carried in a reviewer's head is the thing that stops a sweep being an instrument.
+
+### 2026-09-06 - BUILD_PLAN.md - the citation placeholder recorded as a carried obligation
+Corrects: the carried obligations table writes the citation form out in full, so the parenthesised placeholder inside it will be read as a citation by `decision-resolves` and fail on a name that does not exist. Found by running that check by hand over the corpus, which returned 13 real citations and this one placeholder.
+Was:
+> the table opened with the volume shelf threshold row.
+Now:
+> a row above it, created at 0.0 and due at 0.4, holding that either the checker exempts the table by name or the row is reworded.
+Why: the check is written at 0.4 and would fail on its first run against text nobody would think to look at. Recorded when created rather than remembered, which is what the table is for.
