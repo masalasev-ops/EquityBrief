@@ -22,7 +22,8 @@ internal static class Fixtures
                 0,
                 "ABSENT",
                 "no fixture is captured. 0.6 builds the folder and its manifest schema and " +
-                "nothing else; inputs and expectations arrive at 1.8. Out of scope until then, " +
+                "nothing else; the first captured inputs and the first manifest arrive with the " +
+                "gap fixture at 1.3, and phase 1's expectations at 1.8. Out of scope until then, " +
                 "and never a pass.")
             : new FixtureStatus(
                 captured,
