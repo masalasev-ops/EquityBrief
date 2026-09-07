@@ -194,3 +194,48 @@ Notes:      the clock is not added to the component catalogue. That table's cont
             and write matrix stands. The clock existing removes the reason it could not, which
             is a change of options rather than a change of behaviour, and the matrix says what
             the code does.
+
+### 0.4 - the CI scripts                                                     2026-09-07
+Built:      `tools/ci.ps1` and `tools/ci.sh`, two implementations rather than a script and a
+            wrapper, because Windows PowerShell cannot parse `&&` and the two differ in syntax
+            by necessity. `tools/run-bash.ps1`, the one place a PowerShell entry point finds a
+            bash and hands over, so `tools/migrate.ps1` is two lines and every later wrapper
+            will be. `tools/wrapper-probe` and its `.ps1`, permanent because a break and revert
+            done by hand once proves nothing after the day it was done. `ci-parity`
+            implemented.
+Measured:   6 steps in each CI script, the same names in the same order. Both scripts green end
+            to end on Windows, 41 tests passing inside them at the time, migrating an empty
+            directory and then a migrated one. Each script, copied somewhere with no solution
+            beside it, exits non-zero and names `restore` as the step that failed, which is the
+            behavioural half of `ci-parity` and needs nothing broken in the repository to show
+            it. The wrapper returns exit code 3 and both of the probe's streams. With a path
+            holding no bash, the wrapper exits non-zero and names bash, rather than the zero
+            that would make a gate that never ran look like one that passed. Over the 3 bash
+            entry points in `tools`, 0 lack a `.ps1` beside them.
+Tests:      49, up from 41, on Windows. The two runners are what this checkpoint makes possible
+            and the next push is the first time either has run the suite.
+Carried:    the wrapper proofs carried from 0.2 are discharged here. The macOS runner, carried
+            from 0.1 and due here, is discharged only when the matrix goes green.
+Notes:      one run of the suite failed once, in `ci-parity`'s failing-step test, and did not
+            fail again in eight further runs including two that rebuilt first. I could not
+            reproduce it and therefore could not diagnose it. Rather than call it nothing, both
+            assertions in that test now carry the whole transcript and the exit code in their
+            failure message, so a second occurrence arrives with its own diagnosis instead of
+            just a mismatch. This is recorded because an unreproducible failure that is written
+            down is a different thing from one that is not.
+
+### Addendum to 0.4 - the matrix ran                                         2026-09-07
+Measured:   the first CI run in which the scripts existed. 3 jobs, windows-latest,
+            macos-latest and ubuntu-latest, all green. All 6 steps ran on each, and each
+            reported 49 tests passing, 0 failing, 0 skipped. `ci: green` on all three.
+What it     the macOS runner, carried from 0.1, is discharged: the suite has now run there.
+discharges: `two-platform` is a real claim rather than a contract for the first time. The Linux
+            job, which exists as an instrument for one class of fault, opened every file the
+            pipeline touches on a case-sensitive filesystem and found none miscased, so
+            `path-casing` has an instrument behind it even though the check itself is not yet
+            written.
+Notes:      the wrapper assertions are carried by the Windows runner. On a machine with no
+            PowerShell they assert only the split, that such a machine is not Windows, and the
+            two GitHub runners both carry pwsh so all three ran them for real. An operator's
+            Mac without pwsh would assert the split alone, which is the correct population to
+            state rather than claiming the wrapper is proved everywhere.

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# A script that prints on both streams and fails, so the suite can prove a
+# wrapper returns the output and the exit code rather than one or neither.
+# Permanent on purpose: a break-and-revert done by hand once proves nothing
+# after the day it was done.
+echo "wrapper-probe: this line is written to stdout"
+echo "wrapper-probe: this line is written to stderr" >&2
+exit 3
