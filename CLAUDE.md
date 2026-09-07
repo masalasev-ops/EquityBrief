@@ -56,7 +56,7 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
 /prompts          gitignored. spent build prompts, kept locally
 /data             gitignored. the store lives here
 CLAUDE.md         these rules, read first every session
-EquityBrief.sln   the six projects, at the root
+EquityBrief.slnx  the six projects, at the root
 global.json       pins the SDK to the 10.0.3xx feature band
 .github/workflows/ci.yml   the two-platform matrix and the Linux case-sensitivity job.
                   Actions reads workflows from this path and no other
@@ -73,7 +73,7 @@ global.json       pins the SDK to the 10.0.3xx feature band
 
 | Purpose | Windows | macOS | Shell |
 |---|---|---|---|
-| Build | `dotnet build EquityBrief.sln` | same | either |
+| Build | `dotnet build EquityBrief.slnx` | same | either |
 | Run the suite | `dotnet test src/EquityBrief.Tests` | same | either |
 | Run one test | `dotnet test --filter FullyQualifiedName~<name>` | same | either |
 | **Verify a checkpoint** | `tools/ci.ps1` | `tools/ci.sh` | PowerShell on Windows, bash on macOS |

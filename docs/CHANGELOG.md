@@ -151,3 +151,15 @@ Was:
 Now:
 > 5. The suite passes on both runners. Until 0.4 makes the matrix able to run, the suite is run on the machine at hand, PROGRESS names which platform that was, and the other runner is carried to 0.4.
 Why: the 0.0 repair named the two passages a corpus read would find and missed the one only a build would reach. Three statements of one rule is why it was missed, and the three now agree.
+
+### 2026-09-06 - CLAUDE.md - the solution file is EquityBrief.slnx
+Authorised by: The solution file takes the SDK's current format
+Was:
+> EquityBrief.sln   the six projects, at the root
+
+> | Build | `dotnet build EquityBrief.sln` | same | either |
+Now:
+> EquityBrief.slnx  the six projects, at the root
+
+> | Build | `dotnet build EquityBrief.slnx` | same | either |
+Why: 0.1 created the solution with an explicit flag to get the older format, on the reasoning that the corpus named it and a spec should not bend to a tool default. The operator ruled the other way: the default is the format to carry, and the corpus is what moves. `EquityBrief.Tests` finds the checkout by looking for the file, so the code moved with it.

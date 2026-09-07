@@ -109,3 +109,19 @@ Notes:      the .NET 10 SDK writes `.slnx` by default and the corpus names `Equi
             `ARCHITECTURE.html` has the verification harness write `verify.html` and
             `verify.json` while `CLAUDE.md` and `BUILD_PLAN.md` say `artifacts/phase-report.*`;
             that is the third carried row and it is a corpus defect, not a 0.1 one.
+
+### Correction to the 0.1 entry above - the solution file format      2026-09-06
+Corrects:   the Notes line saying the solution was created with `--format sln` rather than the
+            corpus amended to suit a tool default. The operator ruled the other way. The
+            solution is `EquityBrief.slnx`, the corpus moved, and the reasoning is now a
+            decision rather than a note in a record.
+What:       `EquityBrief.sln` migrated to `EquityBrief.slnx` with `dotnet sln migrate`, the two
+            passages in `CLAUDE.md` that name it amended, and `EquityBrief.Tests` pointed at the
+            new name in the two places it reads it. `DECISIONS.md` carries the new entry, The
+            solution file takes the SDK's current format, in Process.
+Measured:   over the solution, `dotnet build` reports 0 warnings and 0 errors and the suite is
+            11 passing, unchanged from the 0.1 entry, on Windows only. The 2 references to the
+            old name that remain in this file and the 2 in `CHANGELOG.md` are prior text in
+            records and are left as they were written.
+Notes:      the earlier note is not struck through and the 0.1 entry is not edited. This is what
+            correcting a record looks like.
