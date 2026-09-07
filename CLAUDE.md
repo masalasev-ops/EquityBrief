@@ -49,6 +49,9 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                   verify-phase  verify-phase.ps1   the phase report
                   migrate  migrate.ps1   apply migrations
                   nightly  nightly.ps1   what the scheduler calls, not run by CI
+                  run-bash.ps1   the one place a .ps1 hands its work to a bash script
+                  wrapper-probe  wrapper-probe.ps1   a script that prints on both streams
+                                 and fails, so the suite can prove a wrapper returns both
 /fixtures         README.md      the folder's shape, not a corpus document
                   one folder per fixture name and date: the committed inputs, and
                   expectations/ holding what the rules in ARCHITECTURE produce over them
