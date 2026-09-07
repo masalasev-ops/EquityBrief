@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Stores and migrations. Empty until 0.2 builds the migration runner. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\EquityBrief.Core\EquityBrief.Core.csproj" />
+  </ItemGroup>
+
+</Project>

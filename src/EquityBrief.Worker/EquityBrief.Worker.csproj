@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The nightly run and the overnight queue, and the sole writer. A command an
+       external scheduler invokes, not a service that schedules itself.
+       see: Nothing is written against one operating system -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EquityBrief.Core\EquityBrief.Core.csproj" />
+    <ProjectReference Include="..\EquityBrief.Data\EquityBrief.Data.csproj" />
+  </ItemGroup>
+
+</Project>

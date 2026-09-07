@@ -124,6 +124,9 @@ Recorded when created, not remembered. A `PROGRESS.md` entry naming a carried ob
 
 | Obligation | Created at | Due at | What it holds |
 |---|---|---|---|
+| The suite unrun on macOS | 0.1 | 0.4 | 0.1 was verified on Windows only, because the matrix cannot run until `tools/ci.*` exists. No macOS runner has executed the suite |
+| 0.1's checks unseen by the harness | 0.1 | 0.7 | `api-isolation`, `build-properties-central` and `pinned-constants` are asserted by the suite and by nothing the phase report reads. 0.1 produces no pipeline output, so it has no fixture expectations to carry, only checks the report must enumerate |
+| The phase report is named twice | 0.1 | 0.5 | the component catalogue in `ARCHITECTURE.html` has the verification harness write `verify.html` and `verify.json`, while `CLAUDE.md` and this file say `artifacts/phase-report.html` and `.json`. One artefact, two names, and `architecture-conformance` reads the catalogue |
 | The citation placeholder in this table is not a citation | 0.0 | 0.4 | the row below writes the citation form out in full, so a `decision-resolves` built on the parenthesised pattern reads the placeholder inside it as a citation and fails on a name that does not exist. Either the checker exempts this table by name or the row is reworded |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.1 | the threshold is derived from one chart and nothing has tested it |
 | Source lists reviewed against measured coverage | 1.7 | 5.1 | the lists are a first draft from a two-week sample |

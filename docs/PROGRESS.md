@@ -67,3 +67,45 @@ Measured:   the first workflow run, over 3 jobs on 3 runners, windows-latest, ma
             on this machine.
 Notes:      this is the value of moving the workflow, arriving within the hour. Nothing about
             the merge rule was visible until a run existed to be red.
+
+### 0.1 - the solution                                                       2026-09-06
+Built:      `EquityBrief.sln` and the six projects the layout block names. `EquityBrief.Core`,
+            `EquityBrief.Data` and `EquityBrief.Web` are libraries with no code yet;
+            `EquityBrief.Api` is the one web application, mapping nothing, because the read
+            surface is 1.5 and its done condition is that the API computes and fetches nothing;
+            `EquityBrief.Worker` is a console command rather than a service, because scheduling
+            lives outside the application. Three checks: `api-isolation`,
+            `build-properties-central` and `pinned-constants`, the last covering the framework
+            version and the SDK feature band, which 0.0 introduced into the specs and nothing
+            guarded.
+Measured:   over the 6 project files, 0 declare a target framework or a warning setting of
+            their own, and `src/Directory.Build.props` declares the framework, nullable and
+            warnings as errors. `EquityBrief.Api`'s compiled dependency file lists 4 libraries
+            and `EquityBrief.Worker` is not among them; `EquityBrief.Tests`'s lists 6 and it is,
+            which is what proves the check can fail rather than a string written to be caught.
+            Over the 33 tracked files, 0 are unnamed by the layout block, the banned string
+            appears once and it is the exempt line, and there are 0 em dashes. Over the 14
+            decision citations in the 8 corpus documents and the 6 code and project files, 0
+            fail to resolve apart from the placeholder already carried to 0.4. `dotnet build`
+            over the solution reports 0 warnings and 0 errors.
+Tests:      11, all passing, on Windows only. `tools/ci.*` does not exist until 0.4, so this
+            was `dotnet test EquityBrief.sln` run by hand and nothing guards it yet. 5 of the 11
+            exist to prove the other checks can fail: 1 for `api-isolation`, 1 for
+            `build-properties-central`, and 3 for `pinned-constants` including one asserting
+            that a version which cannot be read throws rather than defaulting.
+Carried:    the suite unrun on macOS, due at 0.4. 0.1's checks unseen by the harness, due at
+            0.7. The phase report named twice, due at 0.5. All three are rows in
+            `BUILD_PLAN.md`'s carried obligations table.
+Amended:    this checkpoint amends its own done condition. Done condition 5, the suite passing
+            on both runners, is asserted by the matrix, the matrix calls `tools/ci.*`, and those
+            arrive at 0.4, so no checkpoint from 0.1 to 0.3 could satisfy it. It now names 0.4
+            as where it begins, which is the repair 0.0 made to the Merge section and to done
+            condition 2 and missed here. The amendment and the checkpoint it lets through are in
+            the same pull request, which is the thing this line exists to mark.
+Notes:      the .NET 10 SDK writes `.slnx` by default and the corpus names `EquityBrief.sln`, so
+            the solution was created with `--format sln` rather than the corpus amended to suit
+            a tool default. `EquityBrief.Api` answers 404 from a host with no endpoints mapped,
+            which is what was taken as evidence it runs. The component catalogue in
+            `ARCHITECTURE.html` has the verification harness write `verify.html` and
+            `verify.json` while `CLAUDE.md` and `BUILD_PLAN.md` say `artifacts/phase-report.*`;
+            that is the third carried row and it is a corpus defect, not a 0.1 one.
