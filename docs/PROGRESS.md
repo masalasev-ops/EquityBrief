@@ -125,3 +125,40 @@ Measured:   over the solution, `dotnet build` reports 0 warnings and 0 errors an
             records and are left as they were written.
 Notes:      the earlier note is not struck through and the 0.1 entry is not edited. This is what
             correcting a record looks like.
+
+### 0.2 - the store and the migration runner                                 2026-09-07
+Built:      the SQLite store under the configured data root, a migration runner, and the first
+            migration creating `run_log` and no other table. `tools/migrate` with its `.ps1`
+            wrapper, and a `migrate` verb on `EquityBrief.Worker`, which is the executable the
+            corpus already has rather than a seventh project. Three checks: `schema-columns`,
+            new on the roster, and `price-storage-form` and `store-portability`, both already on
+            it and neither implemented until now.
+Measured:   `tools/migrate` applied 1 migration against an empty directory and 0 against the
+            applied store, exit 0 each time, from both the PowerShell wrapper and the bash
+            script. Over the 10 columns `SCHEMA.md` declares for `run_log`, all 10 are present
+            in the created table, in that order, with the declared storage types. Over the 1
+            migration, 10 column declarations of which 1 is a money column, 0 declared `REAL`.
+            Over the migrated store, 1 table and 0 rows and 0 absolute paths, which is context
+            and not a pass; over a store the suite populates with 3 rows, 2 absolute paths are
+            found, and that is the assertion carrying the property.
+Tests:      27, up from 11, all passing, on Windows only. `tools/ci.*` does not exist until 0.4.
+Carried:    `tools/migrate.ps1` written without its proofs, due at 0.4 and a row in
+            `BUILD_PLAN.md`'s table. The three carried at 0.1 stand.
+Notes:      `STRICT` does not enforce the money rule. The first version of this checkpoint
+            claimed it did and a test written to prove it failed: SQLite renders a double as
+            text and stores it, because that conversion is lossless. The claim was wrong, not
+            the test. `SCHEMA.md` now states the limit and the suite pins the coercion, so the
+            money rule rests where it always did, on `price-storage-form` reading the migration
+            text and on prices being `decimal` in code.
+
+            The applied version is SQLite's `user_version` pragma rather than a table, because
+            0.2 is told to create `run_log` and no other, and a version a table holds is a table
+            `SCHEMA.md` would have to declare and own.
+
+            The migration runner is in the component catalogue, and its row in the read and
+            write matrix is blank in every store column. That is the claim, not an omission: it
+            writes schema and touches no store's rows. It cannot write `run_log` yet in any
+            case, because a run row needs UTC instants and the clock is 0.3.
+
+            `data/` is gitignored, so the store this session created exists on this machine
+            only, which is what the rule that nothing in the harness reaches `data/` requires.

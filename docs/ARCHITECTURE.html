@@ -339,6 +339,7 @@
   <tr><td><b>Read API</b></td><td><span class="layer L-serve">serve</span></td><td>on request</td><td>every store</td><td>run log</td><td>read-only access for the app; performs no computation and no fetching</td></tr>
   <tr><td><b>Single page app</b></td><td><span class="layer L-serve">serve</span></td><td>in the browser</td><td>read API</td><td>none</td><td>tonight's list, the universe, a name's report and history, the run page; renders every figure from stored data</td></tr>
   <tr><td><b>Report exporter</b></td><td><span class="layer L-serve">serve</span></td><td>on request</td><td>read API</td><td>a file the user chooses</td><td>one name's report as a self-contained file with the figures inline</td></tr>
+  <tr><td><b>Migration runner</b></td><td><span class="layer L-store">store</span></td><td>one command</td><td>the store's schema version</td><td>the store's schema</td><td>applies pending migrations in version order, each stamped with its version inside the same transaction, and refuses a store written by a newer checkout rather than migrating it backwards</td></tr>
   <tr><td><b>Run log</b></td><td><span class="layer L-store">store</span></td><td>always</td><td>every component appends</td><td>run log</td><td>durations, counts, spend, failures by component name</td></tr>
   <tr><td><b>Verification harness</b></td><td><span class="layer L-check">check</span></td><td>one command</td><td>this document, the code, the fixture, every store</td><td>verify.html, verify.json</td><td>PASS, FAIL or UNEXAMINED for every claim in sections 7, 14, 15, 16 and 18</td></tr>
 </table>
@@ -906,6 +907,7 @@
 <p class="note">R reads, W writes. A blank cell is a claim as much as a filled one: the harness asserts the component does not touch that store.</p>
 <table class="rw">
   <tr><th>Component</th><th>Member<br>ship</th><th>Bars</th><th>Computed<br>tables</th><th>Listings</th><th>Forward<br>returns</th><th>Facts</th><th>Funda<br>mentals</th><th>News<br>pulse</th><th>Research<br>and theme</th><th>Sources</th><th>Run log</th></tr>
+  <tr><td>Migration runner</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
   <tr><td>Membership loader</td><td><span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
   <tr><td>Bar fetcher</td><td><span class="r">R</span></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
   <tr><td>Corporate action checker</td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
