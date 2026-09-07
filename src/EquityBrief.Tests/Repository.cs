@@ -48,6 +48,34 @@ internal static class Repository
             .OrderBy(path => path, StringComparer.Ordinal)
             .ToArray();
 
+    // Every file the repository tracks, which is every file in it that is not
+    // gitignored. Read from git rather than walked, because the exclusions live
+    // in .gitignore and a walker would be a second statement of them that
+    // nothing keeps in step.
+    internal static IReadOnlyList<string> TrackedFiles()
+    {
+        var git = Shell.Locate("git")
+            ?? throw new InvalidOperationException(
+                "No git on PATH. The tracked set is whatever git says it is, so not finding one " +
+                "is a failure of the check and never a pass.");
+
+        var listed = Shell.Run(git, ["ls-files", "-z"]);
+
+        if (listed.ExitCode != 0)
+        {
+            throw new InvalidOperationException(
+                $"git ls-files exited {listed.ExitCode}. Scanning the files a failed listing " +
+                $"returned would report a scope it never had. {listed.StandardError}");
+        }
+
+        return listed.StandardOutput
+            .Split((char)0, StringSplitOptions.RemoveEmptyEntries)
+            .Select(relative => Path.Combine(Root, relative.Replace('/', Path.DirectorySeparatorChar)))
+            .Where(File.Exists)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+    }
+
     internal static IReadOnlyList<string> ProjectFiles() =>
         Directory.GetFiles(Path.Combine(Root, "src"), "*.csproj", SearchOption.AllDirectories)
             .OrderBy(path => path, StringComparer.Ordinal)

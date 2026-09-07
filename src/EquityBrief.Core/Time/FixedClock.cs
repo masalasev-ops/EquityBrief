@@ -12,7 +12,7 @@ public sealed class FixedClock : IClock
     }
 
     public static FixedClock At(DateTimeOffset instant, string sessionZoneIdentifier) =>
-        new(instant, SessionZones.Resolve(sessionZoneIdentifier));
+        new(instant, SessionZones.ResolveSessionZone(sessionZoneIdentifier));
 
     public DateTimeOffset UtcNow { get; }
 

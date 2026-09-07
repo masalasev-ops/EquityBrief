@@ -7,19 +7,43 @@ namespace EquityBrief.Tests.Checks;
 //
 // The string is assembled from parts so this file is not itself an occurrence,
 // which keeps the exemption to the one line that has to name it.
+//
+// The scan reads every text file the repository tracks. It read the eight
+// documents, the source and project files and the scripts in tools until 0.7's
+// review, and therefore not the workflow, src/Directory.Build.props,
+// EquityBrief.slnx or the two files in fixtures. Nothing in those carried
+// either pattern, so it was a check narrower than it read rather than a live
+// fault, and that is the survivorship shape the Checks section argues about: a
+// check that silently narrows its own scope keeps passing.
 public class BannedProse
 {
     static readonly string Banned = "hon" + "est";
+
+    static readonly string EmDash = ((char)0x2014).ToString();
 
     // The single exemption: the sentence in CLAUDE.md's Prose convention that
     // states the rule, matched on its opening rather than on the string itself.
     const string TheExemptSentence = "One word is banned outright across the corpus and in chat";
 
-    static IReadOnlyList<CorpusFinding> Occurrences(string pattern, bool exemptTheRule)
+    // Every text file git tracks, which is every file in the repository that is
+    // not gitignored. A file carrying a zero byte is not prose and is counted
+    // separately rather than read as though it were.
+    static IReadOnlyList<string> Scanned() =>
+        Repository.TrackedFiles()
+            .Where(file => !File.ReadAllBytes(file).Contains((byte)0))
+            .ToArray();
+
+    static IReadOnlyList<CorpusFinding> Occurrences(string pattern, bool exemptTheRule) =>
+        Occurrences(pattern, exemptTheRule, Scanned());
+
+    static IReadOnlyList<CorpusFinding> Occurrences(
+        string pattern,
+        bool exemptTheRule,
+        IReadOnlyList<string> files)
     {
         var found = new List<CorpusFinding>();
 
-        foreach (var file in Corpus.SourceAndDocuments().Concat(Repository.ToolScripts()))
+        foreach (var file in files)
         {
             var lines = File.ReadAllText(file).Split((char)10);
 
@@ -43,10 +67,16 @@ public class BannedProse
     [Fact]
     public void TheBannedStringAppearsOnlyWhereTheRuleNamesIt()
     {
-        var scanned = Corpus.SourceAndDocuments().Concat(Repository.ToolScripts()).Count();
+        var tracked = Repository.TrackedFiles();
+        var scanned = Scanned();
 
-        Assert.True(scanned >= 40, $"Scanned {scanned} files, expected at least 40.");
-        Assert.Empty(Occurrences(Banned, exemptTheRule: true));
+        // Two scopes, stated in advance. The tracked count is context; the
+        // scanned count is the population carrying the property, and its floor
+        // sits far enough below the count that ordinary growth never moves it.
+        Assert.True(tracked.Count >= 80, $"git tracks {tracked.Count} files, expected at least 80.");
+        Assert.True(scanned.Count >= 80, $"Scanned {scanned.Count} text files, expected at least 80.");
+
+        Assert.Empty(Occurrences(Banned, exemptTheRule: true, scanned));
     }
 
     [Fact]
@@ -66,14 +96,50 @@ public class BannedProse
     [Fact]
     public void NoFileCarriesAnEmDash()
     {
-        Assert.Empty(Occurrences(((char)0x2014).ToString(), exemptTheRule: false));
+        Assert.Empty(Occurrences(EmDash, exemptTheRule: false));
     }
 
     [Fact]
-    public void TheReaderWouldFindOneIfThereWere()
+    public void AFileCarryingEitherPatternIsFound()
     {
-        // The permanent proof that the scan can fail.
-        Assert.Matches(Banned, "this sentence is " + Banned);
-        Assert.Matches(((char)0x2014).ToString(), "a dash " + (char)0x2014 + " here");
+        // The permanent proof, over files rather than over a string in memory.
+        // The scan reads files, and a proof against a string never exercises
+        // the reader that opens them. Both planted files sit outside the
+        // repository, because a planted one inside it would be tracked.
+        using var elsewhere = new TemporaryDirectory();
+
+        var withTheString = Path.Combine(elsewhere.Path, "planted-string.txt");
+        var withTheDash = Path.Combine(elsewhere.Path, "planted-dash.txt");
+
+        File.WriteAllText(withTheString, "a clean line" + (char)10 + "this sentence is " + Banned + (char)10);
+        File.WriteAllText(withTheDash, "a clean line" + (char)10 + "a dash " + EmDash + " here" + (char)10);
+
+        var planted = new[] { withTheString, withTheDash };
+
+        var strings = Occurrences(Banned, exemptTheRule: false, planted);
+        var dashes = Occurrences(EmDash, exemptTheRule: false, planted);
+
+        Assert.Single(strings);
+        Assert.Equal(2, strings[0].Line);
+        Assert.Single(dashes);
+        Assert.Equal(2, dashes[0].Line);
+    }
+
+    [Fact]
+    public void TheExemptionAppliesToTheRulesSentenceAndNothingElse()
+    {
+        // A file whose text is the exempt sentence with the string on another
+        // line still fails, so the exemption cannot be borrowed by putting the
+        // sentence at the top of a document.
+        using var elsewhere = new TemporaryDirectory();
+
+        var borrowed = Path.Combine(elsewhere.Path, "borrowed.txt");
+
+        File.WriteAllText(
+            borrowed,
+            TheExemptSentence + " and the string is " + Banned + (char)10
+            + "and this line is " + Banned + (char)10);
+
+        Assert.Single(Occurrences(Banned, exemptTheRule: true, [borrowed]));
     }
 }
