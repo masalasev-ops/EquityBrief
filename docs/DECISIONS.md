@@ -1,0 +1,201 @@
+# DECISIONS.md
+
+A decision belongs here when a later session could reasonably choose differently **and** the wrong choice would be invisible. Mechanisms with one obvious implementation, and anything a test already enforces, do not.
+
+A decision is identified by its **bold name**, cited exactly. In code: `// see: Code owns every number`. In a document: `(see: Code owns every number)`. Same string either way, so `decision-resolves` covers both. Names carry no terminal punctuation, because a name ending in a period invites the paraphrase the check exists to reject.
+
+A decision is changed only by another decision. Work that changes one writes a new decision, names what it supersedes, and moves the old entry to **Previously decided** in the same commit with its reasoning intact. Nothing here is struck through.
+
+---
+
+## Scope
+
+**The universe is the S&P 500, and membership is fetched, not maintained** A published index is a fixed list rather than a filtered one, which keeps this a reporting tool rather than a screen. Membership is stored with join and leave dates so a name added last month is not shown as present in an older window.
+
+**One universe now, the seam for more built now** Every stored row belongs to a name, not to a universe, and every screen takes the selected universe as a filter. That is a table and a where clause today, and retrofitting it later would mean reconstructing membership for every stored night.
+
+**Long-only share plans** The operator does not short and does not trade options, so the ladder builder has no branch for either.
+
+**Section 4 of the architecture defines the report, and nothing outside the corpus does** The eleven sections, what produces each, and whether each costs money are stated there. Sections are added, removed or reordered by amending that table, and `architecture-conformance` checks the code against it. A hand-written example illustrates the rules and is never the thing to be reproduced: where an example and a rule disagree, the rule is right.
+
+## Cost and when work happens
+
+**The nightly run is arithmetic only** No model calls and no per-name network requests. Bars arrive in one bulk file and news in one feed request, so a night costs the same whether the universe is fifty names or five hundred.
+
+**Everything expensive happens when a name is opened** Reports are not generated for names nobody reads. A name never opened costs nothing beyond its share of the nightly arithmetic.
+
+**Research is a stored document with an as-of date, not a cache** It costs money and produces a different answer each time it runs, so discarding it would change the report for no reason and leave nobody able to tell whether the analysis moved or the wording did. Every version is kept.
+
+**Nothing expires on a timer** Research is rewritten when a filing appears, an earnings date passes, the name's news volume jumps above its own baseline, or the operator asks. A timer either refreshes work nobody needed or serves analysis written before a print.
+
+**Deciding not to spend must not cost anything** The four staleness questions are answered from data the nightly run already computed, which is why the news pulse counter runs nightly and for free.
+
+**Industry research is per theme, not per name** The passage about an industry's own pricing cycle is the same for every company in it, so one paid pass serves them all and refreshes when the first name needing it finds it stale.
+
+**The spend cap is a stop, not an allowance** At the cap, research pauses and the page says so. A cap that can be exceeded is not a cap, and one that fails silently is worse than none.
+
+## Numbers, claims and the models
+
+**Code owns every number** Every figure in a report is computed from stored data or copied from a provider payload with its filing date. No model is ever asked for a number, a date or an estimate.
+
+**Every number in written prose must exist in the facts file** Enforced by the claim checker. This is what lets a reader trust a paragraph a model wrote: any number in it traces to a computed value.
+
+**Every researched claim must name a stored source document** The claim checker drops any that does not, and the report's source list is generated from what was stored. Numbers are checkable against the facts file; claims are not, so the only available discipline is provenance, and the failure mode of automated research is a confident wrong sentence that nothing else would catch.
+
+**Transcripts are opportunistic, never a dependency** The earnings press release filed with the results announcement carries the guidance, the segment tables and management's prepared framing, and it is free. A verbatim transcript adds the analysts' questions, which is where management is pressed hardest, but only some companies file one. Where it exists it is read from the same free fetch; where it does not, the section is written without it. No provider is bought for it.
+
+**The local lane's scope is a setting, and the overnight queue writes whatever is in it** Section 13 assigns work per section rather than per pass, so which sections the local model owns is configuration. On a machine with 24GB of graphics memory that is the short-prompt work: naming what caused a move, pulling the segment figures out of a filing, writing the figure keys. Synthesis is not in it, because a model small enough to leave room for the whole evidence set on that card is the case already named as producing something fluent that says nothing. On a machine that can hold a large model with a long context, synthesis moves into the local lane by changing the setting and the overnight queue starts writing it too. The build does not change between those two machines, and the fixture comparison rather than the memory figure decides whether a section should move.
+
+**A research record is written and dated per section, not as a whole** On the current machine some sections are drafted locally overnight and others are written by the paid model days later when a name is opened, so a single as-of date and a single model name for the record would be false. Each section carries its own state, its own date and the model that wrote it, which is what lets the report state exactly what you are reading and stops the staleness judge treating a half-written record as complete.
+
+**The overnight queue writes a free first draft; the paid model is for names you get serious about** After the nightly arithmetic, the local model works through the names on tonight's list whose research is missing or stale, in order of how many reasons fired, and writes their narrative sections at no cost. In the morning those names open complete. Opening anything else, or pressing refresh on a name whose local draft is not good enough, runs a paid pass on demand. The record already stores which model wrote each section, so the report says which you are reading and offers the better one, and no new machinery is needed for either path.
+
+**The overnight queue is bounded by time, not by a count of names** One pass may take four minutes and another twelve, so a name count does not bound anything. The queue works in priority order until a stated number of hours has passed and then stops; whatever is left is first in line the next night or is written on demand when you open it. A busy night degrades by leaving names for later rather than by running into the morning.
+
+**The overnight run holds the machine awake and reports whether it ran** A laptop left alone will sleep, and a nightly job that silently did not happen is worse than no nightly job, because nothing announces it. The run asserts wakefulness while it works, and the run page states the previous night's outcome including how many queued passes completed and how many were left.
+
+**Two models for two jobs, and the research model is DeepSeek V4** A local model on the operator's GPU writes prose from numbers, which is small and free. DeepSeek V4 does research, which is a large-context job a local model does badly. Chosen on cost: a research pass is a few cents rather than a few tens of cents, which puts a year of normal use in the tens of dollars. The tier, Pro or Flash, is left to the fixture comparison rather than decided here, because the difference between them is a few dollars a year and the only thing worth choosing on is the quality of the two-cases section.
+
+**A research pass is split by section difficulty, not run wholesale on one model** The dividing test is whether the answer sits inside one document or has to be built across several that disagree. Classification and extraction stay on the local model at no cost, and each such call carries only the documents that section needs rather than the whole evidence set, which is what keeps it inside a consumer card's memory. Synthesis goes to the paid model, because a small model given contradictory evidence produces something fluent that says nothing. Figure 12.2 shows where the line falls. The line itself is provisional: the frozen fixture makes it measurable, so each section is run both ways against the fixture and the boundary is settled by that comparison at phase 5 rather than asserted here.
+
+**A stored source is not automatically an admissible one** Requiring that a claim name a stored document proves where a sentence came from, and proves nothing about whether that document is worth believing. A search for a company by name returns machine-generated price forecasts, broker marketing pages quoting contract-for-difference prices rather than the stock, year-old articles carrying a previous fiscal year's guidance with no visible date, and summaries written by other AI systems. Each of those would satisfy a bare provenance rule. So admissibility is a second test, applied before a document is stored: deny algorithmic price predictions, broker and platform marketing pages, AI-written summaries, and quote or hub pages carrying no article; require a publish date and reject anything outside the window the pass asked for; prefer the company's own filings and releases, then established financial press, and make the pass state why it used anything else. A document that fails is not stored, so a claim resting on it cannot be written.
+
+**Gated sources are out of scope, and access is ranked before reputation** Paywalled and login-walled sites cannot be read by an automated pass and no attempt is made to work around them. The order of preference follows access rather than prestige: filings and company releases first, which are free, complete and fetched by ticker rather than searched; then the licensed news feed, where the provider delivers article text under its own distribution agreement so the paywall question does not arise; then the open web, which is where gating actually bites. What is genuinely lost is the analyst-opinion layer and primary industry research. Where the substance of a gated report reaches free outlets as secondary coverage, that coverage is the source and is marked as second-hand rather than presented as the original.
+
+**Three source lists, not one, each with a review date** Filings and company releases need no list at all, since they are fetched by ticker. A company-news list governs reporting about a company. A separate industry list governs theme material, because the publishers who write about memory contract pricing are not the ones who write about quarterly earnings. Splitting them keeps a theme search from returning earnings coverage and the reverse. Every list carries a review date, because sites are acquired, paywalled and abandoned, and a list nobody revisits silently narrows what the system can see.
+
+**A list of publishers is a noise filter, never a correctness test** The list decides which sites a search may return; the per-document test decides whether a particular article may be believed. Both are needed and neither substitutes for the other, because a publisher that belongs on any reasonable list also runs promotional opinion pieces and syndicates other people's, and a trial search returned exactly that from a well-regarded name. A list also has to be of sites that are reputable and fetchable, which is a smaller set than reputable: the most authoritative names in this field are the gated ones, so a list assembled by prestige is substantially a list of pages that return nothing.
+
+**Admissibility is judged per document, after the fetch, and never per publisher** A publisher that runs ordinary financial journalism also runs machine-generated price forecasts, so denying the domain throws away the good with the bad and allowing it admits the forecasts. A search tool's domain filter cannot express this, since it operates on the site rather than the article, which means search parameters reduce noise and the admissibility test does the actual work, on the document, after it has been retrieved.
+
+**Theme material comes from a search tool, and per-name material never does** A per-name pass reads filings and news fetched by ticker, which is exhaustive over a date range and cannot return the wrong company. An industry's own pricing cycle is published by research firms and filed with nobody, so that one section needs open search. The tool is Tavily, called as one more fetching tool inside the research loop; its results are stored as documents exactly like a filing or an article, so the claim checker and the admissibility test apply unchanged. Volume is a few hundred searches a year against a free allowance of a thousand a month, so cost is not a factor and will not become one. A self-hosted meta-search is the fallback if that allowance changes, since nothing in the design depends on which tool answers.
+
+**A theme search is scoped by parameter, not by hope** Trial searches showed what an unscoped query returns: for a two-letter ticker, results about a football club; for a company name, a machine-generated price forecast, a broker marketing page, a year-old article carrying a previous fiscal year's guidance, and another AI system's summary. So a theme search names the industry rather than a ticker, is bounded by an explicit date range, restricts results to the industry source list, and requests full page text rather than snippets, because a snippet cannot be stored as the document a claim rests on.
+
+**The model never fetches; components fetch and hand it documents** The research model has no web search of its own, and this is the right shape regardless: every document entering a pass is stored as it is fetched, which is exactly what the claim checker needs to verify a claim's source. A model that searched for itself would produce claims backed by documents nothing kept.
+
+**Queued work runs off-peak, and every schedule is written in UTC** Research rates double during two fixed windows that fall late at night in Eastern time, so interactive reading after the close is never billed at peak. Non-interactive passes are scheduled into off-peak on purpose, in UTC, because a schedule written in local time moves into peak when daylight saving changes.
+
+## Data
+
+**One year of bars, and no more** Every level in the report comes from a sixty-session window, so a longer history was never needed to produce one. A year covers the 200-day average and gives the level window headroom, and costs about ten megabytes for the whole index.
+
+**Bars are never interpolated** A gap stops computation for that name and is reported as a gap.
+
+**Adjusted history is re-fetched after a corporate action** Splits and dividends change adjusted closes, so stored history silently diverges from the provider unless a nightly check catches it.
+
+**Fundamentals are stored with the filing date they came from** Providers restate. Keeping the filing date is what makes it possible to know later what you knew at the time.
+
+**Your own listing history is kept forever** Which names reached which levels on which nights, and what happened next, is a record no provider sells and the only evidence that will ever settle whether a reason is worth keeping.
+
+## Levels and the plan
+
+**Levels come from four sources: swings, moving averages, retracements of the last two swings, and heavy volume shelves** The first three are prices the chart has visited or arithmetic on them. The fourth is where the shares actually changed hands, which is the only one of the four that says how many people have a reason to act at a price. A support band holding a large share of the period's volume is defended by holders at their cost; a range above the price where almost nothing traded is one price moves through quickly. A level builder without a volume profile can state neither.
+
+**Touches strengthen a band and never create one** A session that reached a band is evidence for it, which is how the report cites dated lows that are not swings in their own right.
+
+**A tranche is a support band, and its stop is a daily close below the low edge of the next band beneath it** Close rather than touch, because a name moving six percent on a normal day dips through levels intraday every week, so a stop on a touch is taken out by noise and a stop on a close is taken out by a decision. The next band down rather than just below the tranche, because anything closer than a typical day's move is inside the noise.
+
+**A moving average is a level on the chart and never an anchor for a tranche** A short average follows the price by construction, so a band anchored only on one sits near the price regardless of what the price has done. Measured on the worked example's own bars, the close was within half a typical day's move of its 20-day average on seventeen of thirty-one sessions, so a tranche placed there would make the first condition fire about half the time on nothing having happened. Averages stay on the chart because a reader wants to see them; they simply do not decide where to buy.
+
+**A support band whose low edge is below the price carries a tranche, even when the band contains the price** A band the price is already trading in is exactly where the first step of a staged purchase belongs, so eligibility turns on the low edge rather than the whole band. In the worked example this is the band from 900 to 940 with the price at 933 inside it. The band keeps its full width, because a fill can land anywhere in it.
+
+**The stop rule depends on the trend state** In a range the stop is the range floor; in an uptrend it trails the last higher low; in a downtrend there are no tranches. Kaminski and Lo, Journal of Financial Markets, 2014, show a stop reduces expected return under a random walk and can add value where returns trend, so one stop rule for both cases is wrong in one of them.
+
+**An exit closer than two typical days' moves is listed but not traded** A move smaller than two ordinary days is inside the noise, so the level is worth naming on the chart and not worth paying a spread to act on.
+
+**The plan places a position and never sizes one** The sizing paragraph is worked arithmetic from a risk budget the reader chooses.
+
+**The earnings trade is a second book** It has its own setups, its own stops and a horizon of days, and it never merges with the position book, because holding a momentum entry through a print is the thing the separation exists to prevent.
+
+## How the picks improve
+
+**A condition is judged against the break-even its own plan demands** Every listing carries an entry, a stop and a target, so it states the hit rate it needs to be worth taking. The score for a condition is whether its setups reached the target before the stop more often than that. A forward return over a fixed window mostly measures whether the market rose, which is why the run page shows those against the universe base rate; this score needs no such correction because the bar moves with each setup.
+
+**A reason's record is displayed, beside the reason and never beside the name** Once a reason has enough resolved setups it shows the share that reached the target before the stop, the number resolved, and the break-even those setups demanded, always as the three together. That tells you which of tonight's reasons has a track record while you are reading. It is a property of the reason across every name it has ever fired for, so it is not placed next to a ticker, where it would be read as that stock's chance of going up.
+
+**The record column stays empty until it has earned a number** Below the minimum the display shows how many setups have resolved against how many are needed, and no rate. That will be the state for the first year, because a list of about fifteen names a night accumulates a few hundred setups a year per reason. Lowering the minimum so the column fills sooner would put a figure on the screen that looks like evidence and is not, and a figure on a screen gets acted on.
+
+**An unresolved setup is never a win** A setup that has reached neither its target nor its stop within the time cap is reported in its own column and excluded from the rate. This is the same rule as unexamined never counting as a pass in the harness, applied to trading outcomes.
+
+**Candidate conditions are registered before they are scored, and scored in shadow before they are shown** The register is an append-only table naming each candidate, its rule, its test and the date it was registered, with a stated maximum family size. Rows are never updated or deleted: a retirement is a new dated row naming what it retires, which is the same convention this document uses for superseded decisions. What pre-registration needs is that you cannot quietly change what you registered after seeing the result, and append-only with an insert timestamp gives that without keeping a fact outside the store. A candidate is evaluated and stored nightly like a live condition and appears nowhere until it has cleared the minimum evidence and the corrected threshold. Nothing is adopted on the strength of the idea, and nothing is chosen after seeing which way the data went.
+
+**The significance threshold is divided by the family size, and the divisor is shown** Running several candidates and keeping whichever looks best is the standard way a self-improving system makes itself worse while appearing to learn. Showing the divisor beside the verdict means a later reader can tell how hard the test actually was.
+
+**Adding a candidate later restarts the clock** Registering a new candidate after the family is set inflates the family, so the correction changes and affected verdicts are recomputed. Without this the register could be widened quietly until something passed.
+
+**Improving what surfaces a name is in scope; ranking names against each other is not** The test for any future change is whether it decides which chart is worth opening or which stock is better than another. A scoring loop makes that line easy to cross by increment, so it is stated here rather than left to judgement.
+
+## The list
+
+**Tonight's list is built from stated conditions, not a score** The length of the list is itself the reading, and a ranked cutoff is the same length every night so it cannot tell you whether anything happened. A condition is also a sentence you can check against the chart, where a score is a formula you would keep tuning.
+
+**The page shows twenty and states the true count** A hundred-name night says a hundred.
+
+**Condition thresholds are calibrated from your own nights, not from a backfill** The run page records what fired each night, so the distribution that sets the thresholds is the one you actually live with.
+
+**Every forward-return figure is shown against the universe base rate** Most names are higher after a month regardless, so a bare hit rate reports market drift as a finding.
+
+## Presentation
+
+**One application, not a file per report** The nightly run stores data and renders nothing. Reports are rendered from stored data when read, so a layout change costs nothing and no file on disk goes stale.
+
+**A single report can still be exported as a self-contained file** Handing one report to someone outside the tool is a stated use, and the exporter renders through the same code path.
+
+**A screen reads and renders, and computes nothing** No screen calls a model, makes a network request, or works out a level, a stop or a rate. Every number on every screen is already in the store. A rendering layer that computes is a second implementation of the same arithmetic, and two implementations of one rule disagree eventually. It also means a screen can be rebuilt or restyled without any chance of moving a number.
+
+**Marks are defined once and every screen draws from that list** Seven named marks, each a function from stored values to an SVG string, with no script needed to render one. Nothing on any screen is a one-off drawing. That is what lets the exported single report carry the same pictures as the application, from the same data through the same code, rather than two renderers drifting apart.
+
+**Support and resistance own two hues and nothing else uses them** Green is a level below the price and orange is one above it, on every screen and in every mark. A day's price change in particular does not get them, because a green day beside a green support band is one colour meaning two things. Direction is carried by the sign on the number and by which side of a zero rule a bar sits on, and every band carries its role in words as well, so hue is never the only channel.
+
+**Not yet measured is drawn as a dashed outline, never as a pale value** Anywhere a figure has not earned a number, the space carries its count against its minimum inside a dashed outline. A pale number reads as a small one, and the distinction between a small value and an absent one is the difference between a screen doing its job and a screen with no evidence.
+
+**Every figure carries a plain-language key** A short paragraph beneath each picture explaining how to read it is the reason someone outside the domain can follow it.
+
+**The plan figure is one vertical price column with the current price marked in it** Everything above the marker is a sale and everything below is a purchase, which is legible without reading a caption.
+
+**Distances are stated as typical days' moves** "Two typical days away" is understood immediately where an ATR multiple is not.
+
+**Every part of a page states where it came from and as of when** Computed tonight, fundamentals as of a filing date, research as of a date and a model.
+
+## Where it runs
+
+**The whole system is a checkout and one database file** Everything the system owns lives in a single database, including the text of every source document it has fetched and the candidate register. There is no directory of loose artefacts to keep in step with it, so moving an installation means copying the code and one file.
+
+**Nothing is written against one operating system** The runtime, the database and every provider call already behave the same on Windows and on macOS. Two things would break that if left implicit, so they are decided here: no path is hardcoded, the data directory being configuration; and the nightly run is a single command that an external scheduler invokes rather than a service that schedules itself, because scheduling is the one genuinely platform-specific piece. The model endpoint is a URL in configuration for the same reason.
+
+**The local and paid boundary is a property of the machine, not of the design** The split in section 13 is set by how much context the local model can hold, so different hardware moves it, and a machine with more memory available to the model can take more of the work locally. The comparison against the fixture is re-run after a hardware change rather than the earlier boundary being assumed to still hold.
+
+## Process
+
+**A frozen fixture per checkpoint, and the harness decides sign-off** Live data changes nightly and cannot be diffed; the committed fixture can. UNEXAMINED never counts as a pass.
+
+**The fixture is diffed on the facts file, not on a rendered page** Prose varies between runs and layout changes constantly, so diffing rendered output would fail for reasons that do not matter and pass over reasons that do.
+
+**Every phase opens with something to look at** The first checkpoint of each phase renders a page. A report about row counts is not visible output.
+
+**Facts are declared once and cited by descriptive name** Behaviour lives in this document, data shapes in section 16, and no component, decision, invariant or check carries a code number. Citations must match a name exactly, so a paraphrase fails loudly rather than resolving to the wrong thing.
+
+**Specifications are edited clean; the changelog records what they said before** No document carries struck-through text. A superseded decision moves to section 22 with its reasoning.
+
+**A written rule never blocks a real fix** If a rule in this document prevents correcting a genuine defect, the rule is the defect and is amended in the same pass, with the change stated plainly.
+
+---
+
+## Previously decided
+
+Superseded, kept with the reasoning that made them right at the time. `no-superseded-citation` fails any citation resolving to a name below this line.
+
+**Fundamentals hand-entered per quarter in a per-name file** Superseded 3 September 2026. The reasoning was that four updates a year per name, by an operator who reads every print anyway, beat a model extracting numbers from a press release on both cost and accuracy. It fell to the universe decision: at five hundred names that is two thousand edits a year. The provider carries reported quarters, balance sheets, ratings and the earnings calendar, and the filings archive carries segment tables and guidance, so the file is no longer needed. An optional overlay file for a name you follow closely remains available for anything a provider cannot supply.
+
+**One self-contained HTML file per report, written nightly** Superseded 3 September 2026. The reasoning was that such a file opens anywhere and diffs cleanly. It fell to the single-page application decision, which removed nightly rendering entirely. The property it protected is preserved by the exporter.
+
+**A 250-bar level window** Superseded 4 September 2026. It was written into v0.1 as a limit and then contradicted by v0.1's own reference report, which used fifty bars. The window is now sixty sessions, which is what the reference did, and the moving averages read the full stored year.
+
+**Five years of stored history** Superseded 3 September 2026. The reasoning was that several years of nights would let condition thresholds be calibrated across different market moods. It fell to two facts: the report needs one year, and a few weeks of nights across five hundred names already gives tens of thousands of name-nights, with the run page recording the distribution as it happens.
+
+**Nothing is pre-warmed** Superseded 5 September 2026. The reasoning was that researching names in anticipation would pay for nights you did not open them, which is the trade rejected everywhere else in the design. It fell to hardware: a machine with enough memory to run a large model locally makes anticipation free, so the objection was to spending money in advance rather than to doing work in advance. Paid research is still strictly on demand.
+
+**A quarterly research budget allocated across names** Superseded 4 September 2026, the same day it was proposed. The reasoning was that research refreshes slowly, so a fixed number of passes a year could be bought and allocated by a rule. It was a schedule wearing different clothes, and it was rejected because it would pay for names nobody opens. Research now runs only on demand.
+
+**A three-tier split, with researched sections only for watch-list names** Superseded 4 September 2026. The reasoning was that per-company research could not be automated at scale. That was wrong: the sources are reachable, and the constraint was cadence and spend rather than availability. Any name can be researched; the question is only whether you asked for it.

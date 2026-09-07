@@ -1,0 +1,23 @@
+# fixtures
+
+One folder per fixture name and date. Committed, never regenerated, and the expectations are derived once from the rules in `docs/ARCHITECTURE.html` and then frozen.
+
+```
+<name>-<YYYY-MM-DD>/
+  manifest.json        every captured input: the endpoint, the query and the UTC instant of the fetch
+  bars.csv             one year of daily bars ending on the fixture date
+  fundamentals.json    the provider payload and filing extracts as they stood on the fixture date
+  news.json            the articles a research pass may read, with publish dates, including ones that must be refused
+  expectations/
+    indicators.json    swings.json    volume_profile.json
+    levels.json        ladder.json    listings.json
+    facts.json         the artefact a run is diffed against
+    rejections/
+      poisoned.txt     prose citing a number absent from the facts file
+      unsourced.txt    prose naming no stored document
+      inadmissible/    one document per denied category
+```
+
+**Every expectation records how it was produced.** An expectation derived independently from the rules verifies something. One frozen from a run detects regression and verifies nothing, and a checkpoint whose expectations are all frozen has added regression detection and called it verification.
+
+**No credential appears in a captured response.** The manifest asserts it and so does the check.

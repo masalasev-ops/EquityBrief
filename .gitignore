@@ -1,0 +1,19 @@
+# the store
+/data/
+
+# local scratch archive of build prompts
+/prompts/
+
+# harness output, regenerated every run and never a reference
+/artifacts/
+
+# secrets, plaintext and never committed
+**/appsettings.Secrets.json
+
+# build
+bin/
+obj/
+*.user
+.vs/
+.idea/
+.DS_Store

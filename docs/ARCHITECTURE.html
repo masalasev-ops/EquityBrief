@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EquityBrief architecture v0.3 (5 September 2026)</title>
+<style>
+  :root{
+    --paper:#F3F4F1; --panel:#FBFBF8; --ink:#14202B; --muted:#4B5563; --faint:#9CA3AF; --rule:#D9DCD4;
+    --src:#B3541E; --store:#3B5A8A; --compute:#2A7F62; --research:#7A4E8C; --serve:#1F8A8A; --check:#A32D2D;
+    --boxbg:#FFFFFF; --chipink:#FFFFFF; --flagbg:#FFF6E5;
+  }
+  html[data-theme="dark"]{
+    --paper:#131920; --panel:#1B222A; --ink:#E3E7E4; --muted:#9AA4AE; --faint:#6C7681; --rule:#2E3740;
+    --src:#E08A4C; --store:#84A6DA; --compute:#5FC49B; --research:#BB92D2; --serve:#54C2C2; --check:#E4776F;
+    --boxbg:#222A33; --chipink:#131920; --flagbg:#2A2318;
+  }
+  @media (prefers-color-scheme: dark){
+    html:not([data-theme="light"]){
+      --paper:#131920; --panel:#1B222A; --ink:#E3E7E4; --muted:#9AA4AE; --faint:#6C7681; --rule:#2E3740;
+      --src:#E08A4C; --store:#84A6DA; --compute:#5FC49B; --research:#BB92D2; --serve:#54C2C2; --check:#E4776F;
+      --boxbg:#222A33; --chipink:#131920; --flagbg:#2A2318;
+    }
+  }
+  #themeToggle{
+    position:fixed; top:14px; right:16px; z-index:50;
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif; font-size:12.5px; line-height:1;
+    padding:7px 12px; border:1px solid var(--rule); border-radius:4px;
+    background:var(--panel); color:var(--muted); cursor:pointer;
+  }
+  #themeToggle:hover{ color:var(--ink); border-color:var(--faint) }
+  @media print{ #themeToggle{ display:none } }
+  *{box-sizing:border-box}
+  html{background:var(--paper)}
+  body{margin:0;color:var(--ink);font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.56}
+  main{max-width:1140px;margin:0 auto;padding:40px 28px 90px}
+  h1,h2,h3,h4{font-family:Cambria,Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-0.01em;margin:0}
+  h1{font-size:37px;line-height:1.08}
+  h2{font-size:25px;margin:54px 0 12px;padding-top:14px;border-top:1px solid var(--rule)}
+  h3{font-size:18.5px;margin:28px 0 8px}
+  h4{font-size:15.5px;margin:20px 0 6px;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif}
+  p{margin:0 0 12px;max-width:82ch}
+  ul,ol{margin:0 0 12px;padding-left:22px;max-width:84ch}
+  li{margin-bottom:6px}
+  .sub{color:var(--muted);font-size:14.5px;margin-top:10px}
+  table{border-collapse:collapse;width:100%;margin:10px 0 18px;font-size:13.6px}
+  th,td{text-align:left;vertical-align:top;padding:7px 9px;border-bottom:1px solid var(--rule)}
+  th{font-weight:600;color:var(--muted);font-size:12.8px;background:var(--panel)}
+  td.c,th.c{text-align:center}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .layer{display:inline-block;padding:1px 7px;border-radius:3px;font-size:11.5px;color:var(--chipink);vertical-align:middle;white-space:nowrap}
+  .L-src{background:var(--src)} .L-store{background:var(--store)} .L-compute{background:var(--compute)} .L-research{background:var(--research)} .L-serve{background:var(--serve)} .L-check{background:var(--check)}
+  .fig{background:var(--panel);border:1px solid var(--rule);padding:18px 18px 12px;margin:14px 0 10px;overflow-x:auto}
+  .fig .title{font-size:13px;color:var(--muted);margin-bottom:12px}
+  .svgfig{margin:14px 0 10px;padding:16px 10px 6px}
+  .svgfig figcaption{font-size:13px;color:var(--muted);padding-top:10px;text-align:center}
+  .row{display:flex;align-items:stretch;gap:9px;flex-wrap:nowrap;margin-bottom:9px}
+  .box{background:var(--boxbg);border:1px solid var(--rule);border-left:5px solid var(--faint);padding:8px 10px;min-width:135px;font-size:12.8px;line-height:1.36;flex:1}
+  .box b{display:block;font-size:13.2px;margin-bottom:2px}
+  .box.src{border-left-color:var(--src)} .box.compute{border-left-color:var(--compute)} .box.research{border-left-color:var(--research)} .box.serve{border-left-color:var(--serve)} .box.check{border-left-color:var(--check)}
+  .box.store{border-left-color:var(--store);border-top:3px solid var(--store)}
+  .arrow{align-self:center;font-size:21px;color:var(--muted);padding:0 1px;flex:0 0 auto}
+  .down{text-align:center;font-size:21px;color:var(--muted);line-height:1;margin:-2px 0 6px}
+  .band{border:1px dashed var(--rule);padding:10px;margin-bottom:10px}
+  .band .lbl{font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:none}
+  .key{font-size:13.5px;color:var(--muted);background:var(--panel);border-left:3px solid var(--rule);padding:11px 15px;margin:6px 0 18px;max-width:none}
+  .key p{max-width:none;margin-bottom:7px}
+  .key p:last-child{margin-bottom:0}
+  .decision{margin:0 0 14px;max-width:86ch}
+  .decision b{font-family:Cambria,Georgia,serif;font-size:15.5px}
+  .rw td{text-align:center;font-size:12.5px}
+  .rw td:first-child{text-align:left;font-weight:600}
+  .r{color:var(--store)} .w{color:var(--compute);font-weight:700}
+  code{font-family:Consolas,"Courier New",monospace;font-size:12.8px;background:var(--panel);padding:1px 4px;border:1px solid var(--rule);border-radius:2px}
+  pre{font-family:Consolas,"Courier New",monospace;font-size:12.6px;background:var(--panel);border:1px solid var(--rule);padding:12px 14px;overflow-x:auto;line-height:1.45}
+  .note{font-size:13.5px;color:var(--muted);max-width:86ch}
+  .toc{columns:2;column-gap:30px;font-size:14px;max-width:none}
+  .toc li{margin-bottom:3px}
+  .flag{background:var(--flagbg);border-left:4px solid var(--src);padding:12px 16px;margin:16px 0;max-width:none}
+  .flag b{font-family:Cambria,Georgia,serif;font-size:15.5px}
+  footer{margin-top:60px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+  footer p{max-width:none}
+</style>
+</head>
+<body>
+<button id="themeToggle" type="button" aria-label="Switch between light and dark">Dark</button>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('themeToggle');
+  function prefersDark(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function current(){ return root.getAttribute('data-theme') || (prefersDark() ? 'dark' : 'light'); }
+  function label(){ btn.textContent = current() === 'dark' ? 'Light' : 'Dark'; }
+  btn.addEventListener('click', function(){
+    root.setAttribute('data-theme', current() === 'dark' ? 'light' : 'dark');
+    label();
+  });
+  label();
+})();
+</script>
+<main>
+
+<header>
+  <div class="sub">Architecture document, version 0.3, 5 September 2026. Replaces v0.2 of 4 September.</div>
+  <h1 style="margin-top:8px">EquityBrief: a nightly level engine over the S&amp;P 500, with deep research produced only when you open a name</h1>
+  <p class="sub">Written to be read by someone who does not invest and has not seen the code. Every figure has a plain-language key, every term is defined in section 3, every rule sits next to the reason it exists, and no component, decision or check carries a code number. This document is the specification: the report it describes is defined in section 4, and nothing outside these pages is authoritative.</p>
+</header>
+
+<h2>Contents</h2>
+<ol class="toc">
+  <li>Purpose and boundaries</li>
+  <li>The shape in one paragraph</li>
+  <li>Vocabulary</li>
+  <li>The report, section by section, and where each part comes from</li>
+  <li>System overview</li>
+  <li>The layers, one at a time</li>
+  <li>Component catalogue</li>
+  <li>What the three builders each do, and why there are three</li>
+  <li>The level builder</li>
+  <li>The ladder builder</li>
+  <li>The shortlist and its six reasons</li>
+  <li>The research runner and its staleness rules</li>
+  <li>How the picks improve</li>
+  <li>The nightly run, in order</li>
+  <li>The screens</li>
+  <li>Data stores and the read and write matrix</li>
+  <li>Limits, spend and the numbers the harness asserts</li>
+  <li>Failure behaviour</li>
+  <li>Fixtures and the verification harness</li>
+  <li>Build phases, each with its visible output</li>
+  <li>Decisions</li>
+  <li>Open questions</li>
+  <li>Changelog</li>
+</ol>
+
+<h2>1. Purpose and boundaries</h2>
+<p><b>What it is for.</b> To answer one question every evening, which stocks have reached a price where the plan already says something, and then to produce a full research report on any name you choose to open. Four of the six conditions detect arrival at a price the plan has an instruction for, one detects a break on unusual volume, and one is a calendar fact. That plan is not authored in advance and is not carried over from a previous night: it is recomputed from the chart every evening, so a name arriving at a level and the plan naming that level are the same night's work. Whether those arrivals are worth acting on is measured rather than assumed, and section 13 is how. The universe is the S&amp;P 500. The report it produces, specified in section 4, carries a narrative verdict, how the stock got here with the causes of its biggest moves, what the company sells, the numbers over five quarters, the industry cycle it sits in, the bull and bear cases side by side, a chart with levels and a volume profile, a staged entry and exit plan in two books, a risk table where every risk names the number that would confirm it, and a dated calendar.</p>
+<p><b>The constraint that shapes everything.</b> Nightly work must be free and fast, and paid work must happen only when you ask for it. So the nightly run is arithmetic over price bars with no model calls and no per-name network calls, and everything expensive happens when you open a name and is then stored permanently with the date it was written.</p>
+<p><b>What it is not.</b> It is not a screen: the universe is a published index membership, not a filtered set, and the shortlist selects on chart state alone with no fundamentals and no model in the decision. It does not trade, does not size positions, and produces no short or options ideas.</p>
+<p><b>Who runs it.</b> Program  in .NET, with a local model on and an EODHD subscription.</p>
+
+<h2>2. The shape in one paragraph</h2>
+<p>After the US close, one bulk call fetches the day's bars for the whole exchange. For all 500 names the system computes indicators, swings, a volume profile, level bands, a trend label, an entry and exit ladder, and the reasons each name does or does not belong on tonight's list. That is seconds of arithmetic and it costs nothing. The result is stored. When you open the app you see tonight's list, built from those reasons. When you open a name, the computed sections of its report appear immediately from the store, its fundamentals fill from the provider, and if no research record exists for it a research pass runs once, reads filings and news, writes the narrative sections, and stores them with an as-of date and every source it read. Opening that name again shows the stored research with its date. A new pass runs only when a filing appears, an earnings date passes, the name's news feed moves materially, or you press refresh.</p>
+
+<h2>3. Vocabulary</h2>
+<p class="note">Every specialist word used later in this document. Market words first, then the project's own words.</p>
+<table>
+  <tr><th style="width:23%">Word</th><th>Meaning here</th></tr>
+  <tr><td>Ticker</td><td>The short code for a listed company. MU is Micron Technology.</td></tr>
+  <tr><td>Daily bar</td><td>One trading day as five numbers: opening price, highest price, lowest price, closing price, and shares traded. A candlestick chart draws one per day.</td></tr>
+  <tr><td>Moving average</td><td>The average closing price over the last n days, recalculated daily. It smooths noise. Price above a rising average is the simplest definition of an uptrend.</td></tr>
+  <tr><td>Support, resistance</td><td>Prices where the stock has repeatedly stopped falling, or stopped rising. They matter because many participants watch the same prices, so the behaviour repeats.</td></tr>
+  <tr><td>Swing high, swing low</td><td>A local peak or trough: a day whose high or low is more extreme than the days on either side of it.</td></tr>
+  <tr><td>Band</td><td>A level given as a range rather than one price, because several reasons for a level usually cluster within a few points. The report writes "900 to 940" rather than claiming a precision it does not have.</td></tr>
+  <tr><td>Fibonacci retracement</td><td>Fixed fractions (23.6%, 38.2%, 50%, 61.8%, 78.6%) of the distance between a swing high and a swing low. Widely watched, so bounces often stall there.</td></tr>
+  <tr><td>Volume profile, volume at price</td><td>How many shares changed hands in each price band over a period. Where a lot traded, many holders have that price as their cost, so they defend it on the way down and sell at breakeven on the way up. Where little traded, price moves through quickly.</td></tr>
+  <tr><td>ATR, average true range</td><td>How far the stock moves on a normal day, averaged over 14 days. The report calls it "a typical day's move". It sets how far a stop must sit so ordinary noise does not trigger it.</td></tr>
+  <tr><td>RSI</td><td>A momentum score from 0 to 100. Near 50 is balanced, above 70 stretched upward, below 30 stretched downward.</td></tr>
+  <tr><td>MACD</td><td>The gap between a fast and a slow average, with a signal line. A shrinking positive histogram means a rally is losing pace rather than reversing.</td></tr>
+  <tr><td>Trend state</td><td>A one-word label for the chart, uptrend, downtrend or range. It decides which ladder shape applies and how stops are placed.</td></tr>
+  <tr><td>Tranche</td><td>One step of a staged purchase. The plan buys at successively lower support bands rather than all at once.</td></tr>
+  <tr><td>Stop</td><td>The price at which an entry is admitted to be wrong. This system uses daily-close stops: the exit triggers only if the day ends beyond the line, because intraday dips through a level are routine.</td></tr>
+  <tr><td>Invalidation</td><td>The single price below which the whole position, not just one tranche, is wrong.</td></tr>
+  <tr><td>Reward to risk</td><td>Distance from entry to target divided by distance from entry to stop.</td></tr>
+  <tr><td>The print, guidance</td><td>The quarterly results announcement, and the company's own forecast for the next quarter given with it. Stocks move most on those days.</td></tr>
+  <tr><td>Base rate</td><td>What happens to an average name on an average night. Any claim that a signal predicts something must beat it, because most stocks rise over a month regardless.</td></tr>
+  <tr><td>Break-even</td><td>The share of the time a plan must reach its target before its stop simply to come out level. It is arithmetic on the plan's own numbers: risk divided by risk plus reward. A plan with a distant target and a tight stop needs to be right rarely; one with a near target and a wide stop needs to be right often.</td></tr>
+  <tr style="border-top:2px solid var(--rule)"><td><b>Computed section</b></td><td>A part of the report produced by arithmetic over stored bars and provider data. No model is involved and every number is reproducible.</td></tr>
+  <tr><td><b>Researched section</b></td><td>A part of the report produced by a model reading filings, news and theme material. Written once, stored with an as-of date, and never rewritten on a timer.</td></tr>
+  <tr><td><b>Facts file</b></td><td>The JSON for one name on one night holding every number the computed sections may use, each with its source. It is what the model is allowed to see and what the fixture is diffed against.</td></tr>
+  <tr><td><b>Research record</b></td><td>The stored output of one research pass for one name: the prose of each researched section, the as-of date, the model used, and every source document read.</td></tr>
+  <tr><td><b>Theme record</b></td><td>Research about an industry rather than a company, for example memory-chip contract pricing. One record serves every name in that industry.</td></tr>
+  <tr><td><b>Tonight's list</b></td><td>The names where a stated condition fired tonight. It is not a ranking and it has no fixed length.</td></tr>
+  <tr><td><b>Reason</b></td><td>One of the six stated conditions that can put a name on tonight's list.</td></tr>
+  <tr><td><b>Listing</b></td><td>The record that a named stock appeared on tonight's list, holding which reasons fired and the plan as it stood that night. One row per name per night it was listed, kept forever.</td></tr>
+  <tr><td><b>Setup</b></td><td>One listing considered as a prediction: an entry, a stop and a target that will eventually be right or wrong. A setup is resolved when the target is reached, the stop is closed through, or the time cap expires.</td></tr>
+  <tr><td><b>Shadow</b></td><td>Scored and stored exactly like a live thing, but shown nowhere and acting on nothing. A shadow condition accumulates a record of how it would have done, so a decision to adopt it later rests on evidence rather than on the idea.</td></tr>
+  <tr><td><b>Fixture</b></td><td>A frozen, committed set of inputs with expected outputs beside them, so a run is checked by diff rather than by opinion.</td></tr>
+  <tr><td><b>Harness</b></td><td>The one command that reads this document's tables, checks the code against them, runs the fixture, and reports every claim as PASS, FAIL or UNEXAMINED.</td></tr>
+</table>
+
+<h2>4. The report, section by section, and where each part comes from</h2>
+<p>The report has eleven sections. This table is the specification and the contract: it says what produces each one, whether it costs money, and how often it changes. Read the last two columns together, because they are the whole cost argument. Nine of the eleven parts are free and nightly.</p>
+<table>
+  <tr><th>Report section</th><th>What it contains</th><th>Produced by</th><th>Costs</th><th>Changes</th></tr>
+  <tr><td>Header and the fact strip</td><td>Close, market cap, the high and low of the move, next earnings date, the multiples, the averages, RSI and ATR</td><td>Computed from bars and provider fundamentals</td><td>free</td><td>nightly</td></tr>
+  <tr><td>1. The short version</td><td>Three or four paragraphs stating what is true, what the market is arguing about, and what the plan therefore is</td><td>Model, from the facts file and the research record</td><td>paid, on demand</td><td>with the research record</td></tr>
+  <tr><td>2. How it got here</td><td>A twelve-month price picture, and a table of the biggest moves with what caused each one</td><td>Dates, closes and percentage moves computed from bars; the cause column filled by the model from news of that date</td><td>the table is free, the cause column is paid</td><td>the moves nightly, the causes with the research record</td></tr>
+  <tr><td>3. What the company sells</td><td>Business explainer, the segment table, the vocabulary for this industry</td><td>Segment figures from filings; the explainer from the model</td><td>paid, on demand</td><td>roughly yearly</td></tr>
+  <tr><td>4. The numbers</td><td>Five reported quarters and one guided quarter, revenue, margin, earnings, guide against actual, balance sheet, valuation on each earnings basis</td><td>Computed from provider fundamentals and filings; the guided quarter from the earnings release exhibit</td><td>free after the fetch</td><td>quarterly</td></tr>
+  <tr><td>5. The industry cycle</td><td>Where the industry's own prices are in their cycle, and the three things capping or driving them</td><td>Model, from the theme record for this industry</td><td>paid once per theme, shared by every name in it</td><td>quarterly</td></tr>
+  <tr><td>6. The two cases</td><td>Bull and bear side by side, each ending in what it needs to see at the next print</td><td>Model, from the facts file, the research record and the theme record</td><td>paid, on demand</td><td>with the research record</td></tr>
+  <tr><td>7. The chart</td><td>Candles with level bands and averages, a momentum panel, a volume-at-price histogram, and the level summary table</td><td>Computed: indicator engine, swing finder, volume profile builder, level builder</td><td>free</td><td>nightly</td></tr>
+  <tr><td>8. Entries and exits</td><td>The plan figure, the tranche table with conditions and stops, the exit table with actions, the earnings-trade setups, the sizing arithmetic</td><td>Computed by the ladder builder; the non-price exit triggers come from the research record</td><td>free, except the non-price triggers</td><td>nightly</td></tr>
+  <tr><td>9. What would make this wrong</td><td>Each risk with the number that would show it and what it does to the plan</td><td>Model, from the research record and the theme record</td><td>paid, on demand</td><td>with the research record</td></tr>
+  <tr><td>10. Dates that matter</td><td>Earnings, industry publications, macro dates</td><td>Provider earnings calendar plus dated items from the research record</td><td>free, except the research items</td><td>nightly</td></tr>
+  <tr><td>11. Sources</td><td>Every document the research read, with its date and link</td><td>Written from the research record's source list</td><td>free</td><td>with the research record</td></tr>
+</table>
+<div class="key">
+  <p><b>Key.</b> A section is "free" when it needs no model call and no per-name network request at read time. Free sections are recomputed for all 500 names every night, so opening any name shows a current chart, a current level map and a current plan even if nobody has ever researched it. Paid sections exist only for names that have been opened at least once, and once written they are read from the store, not rewritten.</p>
+  <p>A name that has never been opened therefore has a complete short report. It shows sections 2 without its cause column, 4, 7, 8 and 10, and says plainly that the researched sections have not been written yet, with a button that writes them.</p>
+</div>
+
+<h2>5. System overview</h2>
+<div class="fig">
+  <div class="title">Figure 5.1. The whole system. The top half runs every night for every name and costs nothing. The bottom half runs when you open a name.</div>
+  <div class="band"><div class="lbl">Outside the system</div>
+    <div class="row">
+      <div class="box src"><b>Bulk price feed</b>one call returns the day's bars for the whole exchange</div>
+      <div class="box src"><b>Index membership feed</b>which tickers are in the S&amp;P 500, with the dates they joined and left</div>
+      <div class="box src"><b>Company financials feed</b>reported quarters, balance sheet, analyst ratings, earnings dates</div>
+      <div class="box src"><b>Regulatory filings archive</b>free, complete; segment tables and the earnings release that carries guidance</div>
+      <div class="box src"><b>News feed</b>articles tagged to a ticker with dates, used both for the cause column and to notice when a name's story has moved</div>
+      <div class="box src"><b>Language models</b>a local model on the operator's own GPU for prose; DeepSeek V4 for research. Neither can search the web on its own, so documents are fetched by the components below and handed to the model</div>
+    </div>
+  </div>
+  <div class="down">↓</div>
+  <div class="band"><div class="lbl">Every night, all 500 names, no model and no per-name network calls</div>
+    <div class="row">
+      <div class="box compute"><b>Membership loader</b>records who is in the index tonight and who left</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Bar fetcher</b>takes the day's bulk file and stores the bars for names in the index</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Corporate action checker</b>refetches a name's whole history when a split or dividend changes its adjusted prices</div>
+      <div class="arrow">→</div>
+      <div class="box store"><b>Bar store</b>one year of daily bars per name</div>
+    </div>
+    <div class="row">
+      <div class="box compute"><b>Indicator engine</b>the averages, momentum readings and the typical daily move</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Swing finder</b>marks the local peaks and troughs</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Volume profile builder</b>counts shares traded in each price band</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Level builder</b>merges swings, averages, retracements and heavy volume shelves into bands</div>
+    </div>
+    <div class="row">
+      <div class="box compute"><b>Trend classifier</b>labels the chart uptrend, downtrend or range</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Ladder builder</b>turns bands into tranches, stops, exits and the earnings trade</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Move annotator</b>picks the biggest moves of the last year for the how-it-got-here table</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Shortlist builder</b>records which of the six reasons fired for each name</div>
+    </div>
+    <div class="row">
+      <div class="box compute"><b>Facts assembler</b>writes tonight's facts file for each name, with its hash</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Forward return filler</b>fills what happened five and twenty-one sessions after every past listing, as those sessions mature</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>News pulse counter</b>counts today's articles per name so staleness can be judged without spending anything</div>
+      <div class="arrow">→</div>
+      <div class="box store"><b>Nightly store</b>facts, levels, ladders, list reasons, forward returns</div>
+    </div>
+  </div>
+  <div class="down">↓ &nbsp; you open the app, then you open a name &nbsp; ↓</div>
+  <div class="band"><div class="lbl">On demand only, and stored permanently once written</div>
+    <div class="row">
+      <div class="box serve"><b>Read API</b>serves the computed sections instantly from the nightly store</div>
+      <div class="arrow">→</div>
+      <div class="box compute"><b>Fundamentals fetcher</b>fetches this name's quarters and balance sheet if the stored copy predates its latest filing</div>
+      <div class="arrow">→</div>
+      <div class="box research"><b>Staleness judge</b>decides whether the stored research still stands, using facts the nightly run already has</div>
+    </div>
+    <div class="row">
+      <div class="box research"><b>Theme research runner</b>researches an industry once; every name in it reads the same record</div>
+      <div class="arrow">→</div>
+      <div class="box research"><b>Research runner</b>reads filings, news and the theme record and writes the narrative sections, keeping every source</div>
+      <div class="arrow">→</div>
+      <div class="box research"><b>Claim checker</b>rejects any number absent from the facts file and any claim whose source document was not stored</div>
+      <div class="arrow">→</div>
+      <div class="box store"><b>Research store</b>research records with as-of dates, previous versions kept, and the source documents themselves</div>
+    </div>
+    <div class="row">
+      <div class="box serve"><b>Single page app</b>tonight's list, the universe, a name's report, its list history, the run page</div>
+      <div class="arrow">→</div>
+      <div class="box serve"><b>Report exporter</b>writes one name's report as a self-contained file to hand to someone</div>
+      <div class="arrow">→</div>
+      <div class="box check"><b>Verification harness</b>checks the code against this document and the fixture, and reports PASS, FAIL or UNEXAMINED</div>
+      <div class="arrow">→</div>
+      <div class="box store"><b>Run log</b>what ran, how long, what was spent, what failed</div>
+    </div>
+  </div>
+</div>
+<div class="key">
+  <p><b>Key.</b> Orange boxes are things outside the system. Blue boxes with a top rule are stores the system owns. Green boxes compute, and every number in a report is born in one of them. Purple boxes are the only ones that spend money, and they sit below the line because nothing above it can trigger them. Teal boxes serve pages. The red box decides whether a phase is finished.</p>
+  <p>The important property of the picture is the line across the middle. Nothing in the top half calls a model or makes a per-name network request, so a night costs one bulk download and a few seconds of arithmetic no matter how large the index is. Nothing in the bottom half runs unless you open something.</p>
+  <p>The news pulse counter sits in the top half deliberately. Judging whether stored research has gone stale needs to be free, or the system would have to spend money to discover that it does not need to spend money.</p>
+</div>
+
+<h2>6. The layers, one at a time</h2>
+
+<h3>6.1 Sources <span class="layer L-src">outside</span></h3>
+<p>Prices, index membership, company financials, the earnings calendar and news all come from EODHD, which is already subscribed. Bars arrive through the bulk end-of-day endpoint, which returns the whole exchange in one request, so the nightly fetch does not grow with the size of the universe. Index membership comes from the index constituents endpoint, which carries join and leave dates, so membership is fetched rather than maintained by hand.</p>
+<p>Filings come from the regulatory archive, which is free, needs no key, and returns reported financials as structured data. Three things are taken from it. Segment revenue and margin by business unit, which the business explainer in section 4 needs. Management's own guidance, published as the earnings press release exhibit to a results announcement rather than as structured data. And, where a company chooses to file one, the verbatim call transcript as a second exhibit to the same filing.</p>
+<p>That third item is opportunistic and the design does not depend on it. Some companies file a transcript and most do not, so the two-cases section is written from the press release and the filings for most names and gains the analysts' questions for the few that file them. No transcript provider is required, and the report omits what it does not have rather than guessing.</p>
+<p>Two models are used for different jobs. A local model on the operator's GPU writes prose from numbers, which is a small job it does well and free. DeepSeek V4 does research, which is a large-context job a local model does badly. Its API accepts the OpenAI and Anthropic request formats, so the endpoint is configuration rather than a code path, and the report footer always says which model wrote what.</p>
+<p>One consequence shapes the research runner. DeepSeek offers no server-side web search, so the model cannot go and find things; it can only read what it is handed through tool calls. For a per-name pass that costs nothing, because the documents it needs are filings and news the system already fetches. For a theme record it matters, because an industry's own pricing cycle is published by research firms rather than filed with a regulator, and that is section 22's second question.</p>
+<p>Rates carry a peak and off-peak split, with peak at double. In Eastern time the peak windows fall late at night, so the market session and the hours just after the close are off-peak and interactive reading is never billed at the peak rate. Anything queued rather than interactive is scheduled into off-peak deliberately.</p>
+
+<h3>6.2 Store <span class="layer L-store">owned</span></h3>
+<p>One SQLite file. One year of bars for 500 names is about 10 MB, and the whole store including research is comfortably under a gigabyte, so it is copied into a fixture, diffed and backed up by hand. Section 16 lists the tables.</p>
+
+<h3>6.3 Compute <span class="layer L-compute">deterministic, nightly</span></h3>
+<p>Eleven components, all pure functions of stored data. Given the same bars they produce the same facts file byte for byte, which is what makes the fixture diff possible. The four carrying the most logic are opened up in sections 8 to 11.</p>
+
+<h3>6.4 Research <span class="layer L-research">on demand, paid</span></h3>
+<p>A pass runs for one name when it is opened and no valid record exists. It reads that name's filings and recent news, reads or triggers its theme record, and writes the narrative sections. Everything it read is stored with the record. The claim checker then rejects numbers not present in the facts file and claims whose source is not in the store. What survives is written once and read from then on.</p>
+
+<h3>6.5 Serve <span class="layer L-serve">pages</span></h3>
+<p>A local web application serves a read-only API over the store and hosts the single-page app. Reports are rendered in the browser from stored data rather than written to disk nightly, so a layout change costs nothing and nothing goes stale on disk. The exporter renders one name through the same code path into a self-contained file, because handing a single report to someone is a stated use.</p>
+
+<h3>6.6 Check <span class="layer L-check">sign-off</span></h3>
+<p>The harness is what makes a phase finished. It has no opinion of its own; it reads the claims this document makes and tests them. Section 19.</p>
+
+<h2>7. Component catalogue</h2>
+<p class="note">The name is the key. The harness looks for a class of this exact name with spaces removed, and asserts it reads and writes only what is listed here. A component touching a store not listed fails its row. There are no code numbers; cite a component by its name, spelled exactly.</p>
+<table>
+  <tr><th style="width:15%">Component</th><th>Layer</th><th>Runs</th><th>Reads</th><th>Writes</th><th>What it does</th></tr>
+  <tr><td><b>Membership loader</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, once</td><td>index membership feed</td><td>membership</td><td>records tonight's index constituents with join and leave dates, so a name added last month is not shown as present in an older window</td></tr>
+  <tr><td><b>Bar fetcher</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, once</td><td>bulk price feed, membership, bar store</td><td>bar store</td><td>stores the day's bars for current members, refuses to store a series with a gap, keeps one year and drops what is older</td></tr>
+  <tr><td><b>Corporate action checker</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, once</td><td>splits and dividends feed, bar store</td><td>bar store</td><td>refetches a name's full year when an action changes its adjusted prices, because stored history silently diverges otherwise</td></tr>
+  <tr><td><b>Indicator engine</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>bar store</td><td>indicators</td><td>20, 50 and 200-day averages, RSI, MACD with its histogram, average true range, volume against its 20 and 50-day averages</td></tr>
+  <tr><td><b>Swing finder</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>bar store</td><td>swings</td><td>marks days whose high or low is the most extreme within three bars either side</td></tr>
+  <tr><td><b>Volume profile builder</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>bar store</td><td>volume profile</td><td>spreads each day's volume across that day's range into fixed price bands, so the report can say which prices most holders paid</td></tr>
+  <tr><td><b>Level builder</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>swings, indicators, volume profile, bar store</td><td>levels</td><td>merges the four candidate sources into bands, assigns each a role and a strength, and records every member with its date</td></tr>
+  <tr><td><b>Trend classifier</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>indicators, swings</td><td>none, returns the label to the facts assembler</td><td>labels the chart uptrend, downtrend or range from the averages and the last two swings</td></tr>
+  <tr><td><b>Ladder builder</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>levels, indicators, calendar</td><td>ladders</td><td>places tranches, stops, the invalidation and the exits, computes reward to risk, and builds the earnings-trade setups</td></tr>
+  <tr><td><b>Move annotator</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>bar store</td><td>moves</td><td>selects the largest single-day and multi-day moves of the stored year, which become the rows of the how-it-got-here table</td></tr>
+  <tr><td><b>Shortlist builder</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>levels, indicators, ladders, calendar, facts</td><td>listings</td><td>evaluates the six reasons and records which fired, with the values that made each one true</td></tr>
+  <tr><td><b>Facts assembler</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td><td>bar store, indicators, swings, volume profile, levels, ladders, moves, listings, fundamentals, calendar</td><td>facts</td><td>writes tonight's facts file with every number and its source, and its hash</td></tr>
+  <tr><td><b>Forward return filler</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, once</td><td>listings, bar store</td><td>forward returns</td><td>fills the five and twenty-one session outcomes of past listings as those sessions mature, and computes the universe base rate for the same windows</td></tr>
+  <tr><td><b>News pulse counter</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, once</td><td>news feed</td><td>news pulse</td><td>counts today's articles per name from one feed request, so the staleness judge can work without a per-name call</td></tr>
+  <tr><td><b>Fundamentals fetcher</b></td><td><span class="layer L-compute">compute</span></td><td>on demand, per name</td><td>company financials feed, filings archive, fundamentals</td><td>fundamentals</td><td>fetches quarters, balance sheet, segment table and guidance when the stored copy predates the name's latest filing</td></tr>
+  <tr><td><b>Staleness judge</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>research store, facts, calendar, news pulse, fundamentals</td><td>run log</td><td>answers one question, does the stored research still stand, using only facts already computed; never calls a model to decide</td></tr>
+  <tr><td><b>Theme research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per theme</td><td>theme store, source documents, research model</td><td>theme store, source documents</td><td>researches an industry's own cycle once, so every name in that industry shares one paid pass</td></tr>
+  <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, theme store, research model</td><td>research store (pending), source documents</td><td>writes the narrative sections and keeps every document it read</td></tr>
+  <tr><td><b>Claim checker</b></td><td><span class="layer L-research">research</span></td><td>after every research pass and every prose call</td><td>research store (pending), facts, source documents</td><td>research store</td><td>rejects a number absent from the facts file and a claim whose source is not stored, and refuses to store a document that fails the admissibility test; one retry, then the section is left out rather than guessed</td></tr>
+  <tr><td><b>Prose writer</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, research store, local model</td><td>research store</td><td>writes the short version and the figure keys from numbers and stored research, on the local model, at no cost</td></tr>
+  <tr><td><b>Read API</b></td><td><span class="layer L-serve">serve</span></td><td>on request</td><td>every store</td><td>run log</td><td>read-only access for the app; performs no computation and no fetching</td></tr>
+  <tr><td><b>Single page app</b></td><td><span class="layer L-serve">serve</span></td><td>in the browser</td><td>read API</td><td>none</td><td>tonight's list, the universe, a name's report and history, the run page; renders every figure from stored data</td></tr>
+  <tr><td><b>Report exporter</b></td><td><span class="layer L-serve">serve</span></td><td>on request</td><td>read API</td><td>a file the user chooses</td><td>one name's report as a self-contained file with the figures inline</td></tr>
+  <tr><td><b>Run log</b></td><td><span class="layer L-store">store</span></td><td>always</td><td>every component appends</td><td>run log</td><td>durations, counts, spend, failures by component name</td></tr>
+  <tr><td><b>Verification harness</b></td><td><span class="layer L-check">check</span></td><td>one command</td><td>this document, the code, the fixture, every store</td><td>verify.html, verify.json</td><td>PASS, FAIL or UNEXAMINED for every claim in sections 7, 14, 15, 16 and 18</td></tr>
+</table>
+
+<h2>8. What the three builders each do, and why there are three</h2>
+<p>All three run for every name in the index, every night. None of them is watch-list only, and none is triggered by opening a name. They are three stages of one chain, each answering a different question about a single stock.</p>
+
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 480" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>The three builders run once per name across the whole index</title>
+<desc>Level builder, ladder builder and shortlist builder run in sequence for every name each night. The first two leave a plan stored for every name; the third decides which names reach tonight's list.</desc>
+<defs><marker id="ac" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<rect x="40" y="20" width="620" height="316" rx="12" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="5 4"/>
+<text x="62" y="46" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">Runs once for every name in the index, about 500 times a night</text>
+
+<rect x="190" y="62" width="320" height="64" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/>
+<rect x="190" y="62" width="5" height="64" fill="var(--compute)"/>
+<text x="350" y="86" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Level builder</text>
+<text x="350" y="106" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">where the prices that matter are</text>
+
+<line x1="350" y1="126" x2="350" y2="152" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ac)"/>
+
+<rect x="190" y="156" width="320" height="64" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/>
+<rect x="190" y="156" width="5" height="64" fill="var(--compute)"/>
+<text x="350" y="180" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Ladder builder</text>
+<text x="350" y="200" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">what the plan is at those prices</text>
+
+<line x1="350" y1="220" x2="350" y2="246" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ac)"/>
+
+<rect x="190" y="250" width="320" height="64" rx="6" fill="var(--panel)" stroke="var(--src)" stroke-width="1.2"/>
+<rect x="190" y="250" width="5" height="64" fill="var(--src)"/>
+<text x="350" y="274" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Shortlist builder</text>
+<text x="350" y="294" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">whether tonight needs a look</text>
+
+<path d="M270 336 L270 356 L190 356 L190 372" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ac)"/>
+<path d="M430 336 L430 356 L510 356 L510 372" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ac)"/>
+
+<rect x="60" y="374" width="260" height="64" rx="6" fill="var(--panel)" stroke="var(--store)" stroke-width="1.2"/>
+<rect x="60" y="374" width="260" height="4" fill="var(--store)"/>
+<text x="190" y="400" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">A plan for every name</text>
+<text x="190" y="420" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">whether or not you open it</text>
+
+<rect x="380" y="374" width="260" height="64" rx="6" fill="var(--panel)" stroke="var(--src)" stroke-width="1.2"/>
+<rect x="380" y="374" width="260" height="4" fill="var(--src)"/>
+<text x="510" y="400" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Tonight&#39;s list</text>
+<text x="510" y="420" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">only where a reason fired</text>
+</svg>
+<figcaption>Figure 8.1. The three builders, and what each leaves behind.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> The dashed box is the whole nightly chain for one stock, repeated for every name in the index. Green boxes compute something that stays true until the chart changes. The orange box is the only one that asks a question about today. At the bottom, the blue-topped box on the left is what every name gets regardless, and the orange-topped box on the right is the small set you actually read.</p>
+  <p>The arrows run one way only. The shortlist cannot be built without the ladder, and the ladder cannot be built without the bands, which is why they are three components rather than one.</p>
+</div>
+
+<h3>8.1 The worked example</h3>
+<p>One name's figures are used throughout this document to make rules concrete. They come from a year of that name's daily bars, a large-capitalisation semiconductor company trading around 933 at the time, and they are cited later wherever a rule needs a number to be legible. The worked example illustrates the rules; it never defines them. Where a rule and the worked example disagree, the rule is right and the example is restated.</p>
+<p>The <b>Level builder</b> reads sixty sessions of that stock's bars and finds the prices that matter. In the worked example those are support bands at 900 to 940, 855 to 870, 818 to 830 and 738 to 770, and resistance at 996, at 1057, at 1144 to 1214, and at the all-time high. Its output is a list of price bands, each with a role and the evidence that makes it a band. It knows nothing about buying or selling.</p>
+<p>The <b>Ladder builder</b> takes those bands and turns them into a plan. The first tranche sits on the 900 to 940 band and stops on a daily close below 855, which is the low edge of the band beneath it. The second sits on 855 to 870 and stops below 815. The third sits on 818 to 830 and stops below 737. Exits scale out from 1057 upward, and the band at 996 is listed but not traded because it is closer than two typical days' moves to the entry. None of this is about tonight; the plan holds for as long as the bands do.</p>
+<p>The <b>Shortlist builder</b> is the only one of the three that asks about today. It takes the plan and tonight's close and tests six conditions. With the close at 933, the price is inside the first tranche zone, so the reason named at entry zone fires. The next earnings date is inside the twenty-session horizon, so earnings soon fires as well. Two reasons, so the name appears on tonight's list, and the list row shows both.</p>
+<p>Now take a name whose close sits in the middle of its range, far from every band, with no earnings near and ordinary volume. Nothing fires and it does not appear on the list. Its bands and its plan were still computed and stored, so opening it deliberately still shows a complete chart, a level table and a ladder. That is the difference between the two boxes at the foot of the figure: the left one is produced for all five hundred names, the right one is the handful worth reading tonight.</p>
+
+<h3>8.2 Why three components rather than one</h3>
+<p>The dependency runs strictly one way, and each stage has a different failure mode. A wrong band produces a wrong plan for that name. A wrong plan produces a wrong list row. A wrong condition threshold produces a list of the wrong length while every band and plan underneath it stays correct, which is a completely different thing to diagnose.</p>
+<p>Keeping them apart is also what makes the read and write matrix in section 16 able to say anything. Each builder declares what it may touch, so a defect in the ladder cannot corrupt the bands the chart draws from, and the fixture can catch each stage on its own rather than only catching the end of the chain.</p>
+
+<h2>9. The level builder</h2>
+<div class="fig">
+  <div class="title">Figure 9.1. How four kinds of evidence become the level summary table in the report.</div>
+  <div class="row">
+    <div class="box compute"><b>Collect candidates</b>every swing high and low in the window; the 20, 50 and 200-day averages; the five retracements of the last two swings; and every price band holding an unusually large share of the period's volume</div>
+    <div class="arrow">→</div>
+    <div class="box compute"><b>Merge into bands</b>sort by price; two candidates closer than half a typical day's move join one band, whose edges are its lowest and highest member</div>
+    <div class="arrow">→</div>
+    <div class="box compute"><b>Add touches</b>any session high or low that reached a band joins it as evidence; a touch strengthens a band and can never create one</div>
+  </div>
+  <div class="row">
+    <div class="box compute"><b>Assign roles</b>bands above tonight's close are resistance, below are support, and the nearest on each side is marked immediate</div>
+    <div class="arrow">→</div>
+    <div class="box compute"><b>Score strength</b>one point per member, one more for a member from the last twenty sessions, one more where a retracement and a swing coincide, one more where the band holds a heavy volume shelf</div>
+    <div class="arrow">→</div>
+    <div class="box store"><b>Levels</b>edges, role, strength, and every member with its date and kind</div>
+  </div>
+</div>
+<div class="key">
+  <p><b>Key.</b> A candidate is a single price with a reason to matter. Merging is what turns three prices a few points apart into one band, and half a typical day's move is the merge distance because two prices closer than that cannot be told apart by anyone trading them. Touches are why a band can cite specific dated lows inside it without those days being swings in their own right.</p>
+  <p>The volume shelf is the addition this version makes, and it is load bearing rather than decorative. Where a large share of a period's volume changed hands in a narrow price range, many holders have that price as their cost, so they defend it on the way down and sell at breakeven on the way up. Where very little traded, there is nobody with a reason to act and price moves through quickly. A level builder without a volume profile can state neither, and both statements belong in the report.</p>
+  <p>The window for swings and retracements is the last sixty sessions, which is about a quarter of trading and is what the worked example uses. Moving averages are computed from the full stored year, so the 200-day average is a real computed number rather than one copied from a data page.</p>
+  <p>One candidate is marked differently from the others. A short moving average follows the price by construction, so a band anchored on it sits near the price whatever the price does. Measured on the worked example's own bars, the close was within half a typical day's move of its own 20-day average on seventeen of the last thirty-one sessions. Such a band is still a level and still appears on the chart, because a reader wants to see where the average sits, but each band records whether anything other than a moving average anchors it. Section 10 uses that mark.</p>
+</div>
+
+<h2>10. The ladder builder</h2>
+<div class="fig">
+  <div class="title">Figure 10.1. From the level table to the two books in the report's section 10.</div>
+  <div class="row">
+    <div class="box compute"><b>Read the trend state</b>range: tranches on the support bands, exits on the resistance bands. uptrend: tranches on pullback bands, the stop trails the last higher low. downtrend: no tranches, and the report says why rather than showing an empty table</div>
+    <div class="arrow">→</div>
+    <div class="box compute"><b>Place tranches</b>up to three, one per support band whose low edge is below the price, nearest first, skipping any band anchored only by a moving average; a band straddling the price keeps its full width, since a fill can happen anywhere in it</div>
+    <div class="arrow">→</div>
+    <div class="box compute"><b>Place stops</b>each tranche stops on a daily close below the low edge of the next support band beneath it; the whole position is invalidated on a close below the lowest band in the structure</div>
+  </div>
+  <div class="row">
+    <div class="box compute"><b>Attach conditions</b>each tranche carries the pattern that makes it actionable, drawn from a fixed list: available now, a failed breakdown back into the zone, the first close back above the zone after a dip, or the second day after a shock once the first day's low has held</div>
+    <div class="arrow">→</div>
+    <div class="box compute"><b>Place exits</b>one per resistance band above price; a band closer than two typical days' moves is listed but not traded, because the move is inside the noise; the top of the ladder becomes a trailing rule rather than a price</div>
+    <div class="arrow">→</div>
+    <div class="box compute"><b>Arithmetic</b>risk per tranche at the zone midpoint, reward to risk from the first tranche and from the blended first two, and the worked sizing example from a risk budget</div>
+  </div>
+  <div class="row">
+    <div class="box compute"><b>Build the earnings trade</b>three setups keyed to the print: a breakout before it, a flush after it, and a gap up after it, each with a trigger, an entry, a stop and a target</div>
+    <div class="arrow">→</div>
+    <div class="box compute"><b>Apply the earnings rule</b>state the last two prints' one-day moves and how much of the position that is, so the reader decides what to carry through the date</div>
+    <div class="arrow">→</div>
+    <div class="box store"><b>Ladders</b>both books, with every number and the band each came from</div>
+  </div>
+</div>
+<div class="key">
+  <p><b>Key.</b> The ladder places a position, it never sizes one. It says where to buy, where to stop, and where to sell part of what is held; how much is the reader's, and the sizing paragraph in the report is worked arithmetic from a risk budget the reader chooses.</p>
+  <p>Stops are daily-close stops for a stated reason: the worked example moves about six percent on a normal day, and intraday dips through a level happen weekly, so a stop on a touch is taken out by noise while a stop on a close is taken out by a decision. Placing the stop below the next band down rather than just below the tranche follows from the same fact, because a stop closer than a typical day's move is inside the noise.</p>
+  <p>The trend state decides the stop, and the reason is in the literature rather than in taste. Kaminski and Lo, in the Journal of Financial Markets in 2014, show that a stop reduces expected return under a random walk and can add value where returns trend, so a single stop rule applied to both a ranging name and a trending name is wrong in one of the two cases. In a range the stop is the range floor. In an uptrend it trails.</p>
+  <p>Two details in the tranche rule exist for reasons worth stating. A band is eligible when its low edge is below the price, not when the whole band is, because the worked example's first tranche runs from 900 to 940 with the price at 933 inside it; a band you are already trading in is exactly the one the first tranche belongs on, and it keeps its full width because a fill can land anywhere in it. And a band anchored only by a moving average carries no tranche, because a short average tracks the price, so such a band would sit at the price about half the time and the first condition would fire on nothing having happened. The average stays on the chart; it just does not decide where to buy.</p>
+<p>This rule set produces the worked example's plan exactly. Its three tranches are its three support bands, and its three stops are the low edges of the bands beneath them. Its skipped exit is the only resistance band within two typical days' moves of the entry.</p>
+</div>
+
+<h2>11. The shortlist and its six reasons</h2>
+<p>Six reasons. A name is on tonight's list if any is true. There is no score and no fixed length, because the length of the list is itself the reading: a three-name night means nothing reached a level, and a sixty-name night means the market moved through everyone's levels at once. A ranked cutoff cannot say either, since it is the same length every night.</p>
+<table>
+  <tr><th>Reason</th><th>True when</th><th>Why it is worth opening</th></tr>
+  <tr><td><b>At entry zone</b></td><td>tonight's close is inside a tranche zone</td><td>the plan's first step is available at tonight's price</td></tr>
+  <tr><td><b>Crossed a level</b></td><td>the close moved through a band edge that it was on the other side of yesterday</td><td>the level either held or failed today, and both are decisions</td></tr>
+  <tr><td><b>Breakout on volume</b></td><td>the close is above a resistance band on volume above the fifty-day average</td><td>the one condition that argues for buying strength rather than weakness</td></tr>
+  <tr><td><b>Trend state changed</b></td><td>tonight's label differs from last night's</td><td>the ladder changes shape, so the whole plan is different from yesterday's</td></tr>
+  <tr><td><b>Unusual volume</b></td><td>volume above twice the fifty-day average</td><td>something happened that the price may not have shown yet</td></tr>
+  <tr><td><b>Earnings soon</b></td><td>the next earnings date is within twenty sessions</td><td>a calendar fact rather than a setup, listed so a print is never a surprise</td></tr>
+</table>
+<div class="flag">
+  <p><b>The thresholds in this table are proposals and are known to be untested.</b> Two of them will produce too many names as written. Earnings soon fires for a large part of the index during reporting season and goes quiet between, and at entry zone fires often because the nearest support band is rarely far away. The calibration is not a backfill: the run page records how many names fired each night and which reason contributed, so after a few weeks the thresholds are set against your own distribution. Until then the app shows the strongest twenty and states the true fired count in the header, so a hundred-name night says a hundred.</p>
+</div>
+
+<h2>12. The research runner and its staleness rules</h2>
+<div class="fig">
+  <div class="title">Figure 12.1. What happens when you open a name. Most of the time, nothing is spent.</div>
+  <div class="row">
+    <div class="box serve"><b>Computed sections appear</b>chart, levels, plan, numbers, dates, straight from tonight's store with no waiting</div>
+    <div class="arrow">→</div>
+    <div class="box research"><b>Is there a research record?</b>no: offer to write one, and show the report complete without the narrative sections. yes: continue</div>
+    <div class="arrow">→</div>
+    <div class="box research"><b>Does it still stand?</b>four questions, all answered from data already stored: has a new filing appeared, has the earnings date passed, has the news pulse for this name jumped above its own baseline, did you press refresh</div>
+    <div class="arrow">→</div>
+    <div class="box serve"><b>All four no</b>show the stored research with its as-of date, spend nothing, done</div>
+  </div>
+  <div class="row">
+    <div class="box research"><b>A pass is warranted</b>read this name's filings since the last record, its news since then, and its theme record, refreshing the theme first if that is what went stale</div>
+    <div class="arrow">→</div>
+    <div class="box research"><b>Write the sections</b>the short version, what the company sells, the industry cycle, the two cases, the risks, the cause column of the moves table, and the dated calendar items</div>
+    <div class="arrow">→</div>
+    <div class="box research"><b>Check every claim</b>a number must be in the facts file; a claim must name a source document that is in the store; a section failing twice is left out rather than guessed</div>
+    <div class="arrow">→</div>
+    <div class="box store"><b>Store it</b>new record with today's as-of date, the previous record kept, every source document kept</div>
+  </div>
+</div>
+<div class="key">
+  <p><b>Key.</b> The four staleness questions are all free, because the nightly run already computed their inputs. That is the point of putting the news pulse counter in the nightly half of figure 5.1: deciding not to spend money must not cost money.</p>
+  <p>Nothing expires on a timer. A timer either refreshes work nobody needed or serves research written before a print. A filing, an earnings date, a jump in coverage or your own judgement are the only things that can make analysis out of date, and all four are observable.</p>
+  <p>The previous record is kept rather than overwritten, so the app can show that the two cases were rewritten after a print and what they said before. It also means a report you showed someone last month can be reproduced.</p>
+  <p>The claim checker is what makes model-written analysis usable. Numbers are checked against the facts file, which is the same rule the computed sections live by. Claims are checked differently, by requiring that the document supporting them was stored, which is why the source list in section 4 is a design requirement rather than a courtesy. An unsupported claim is dropped, because the failure mode of automated research is a confident wrong sentence and nothing else in the system would catch it.</p>
+</div>
+
+<h3>12.2 How one pass splits between the two models</h3>
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 500" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>How one research pass splits between the local model and the paid model</title>
+<desc>Components fetch every document, then classification and extraction work goes to the local model while synthesis goes to the paid model. Both outputs pass the claim checker into one stored research record.</desc>
+<defs><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<rect x="200" y="24" width="300" height="58" rx="6" fill="var(--panel)" stroke="var(--faint)" stroke-width="1.2"/>
+<text x="350" y="46" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Components fetch every document</text>
+<text x="350" y="65" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">news, filings, theme record, facts file</text>
+
+<path d="M350 82 L350 106 L190 106 L190 126" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ab)"/>
+<path d="M350 82 L350 106 L510 106 L510 126" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ab)"/>
+
+<rect x="60" y="128" width="260" height="58" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/>
+<rect x="60" y="128" width="5" height="58" fill="var(--compute)"/>
+<text x="192" y="150" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Local model, your own GPU</text>
+<text x="192" y="169" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">a few thousand tokens per call</text>
+
+<rect x="380" y="128" width="260" height="58" rx="6" fill="var(--panel)" stroke="var(--research)" stroke-width="1.2"/>
+<rect x="380" y="128" width="5" height="58" fill="var(--research)"/>
+<text x="512" y="150" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Paid model, whole evidence set</text>
+<text x="512" y="169" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the only part that costs money</text>
+
+<line x1="190" y1="186" x2="190" y2="212" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ab)"/>
+<line x1="510" y1="186" x2="510" y2="212" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ab)"/>
+
+<rect x="60" y="214" width="260" height="72" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/>
+<rect x="60" y="214" width="5" height="72" fill="var(--compute)"/>
+<text x="192" y="236" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Classify and extract</text>
+<text x="192" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">what caused each big move;</text>
+<text x="192" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the business explainer and segments</text>
+
+<rect x="380" y="214" width="260" height="72" rx="6" fill="var(--panel)" stroke="var(--research)" stroke-width="1.2"/>
+<rect x="380" y="214" width="5" height="72" fill="var(--research)"/>
+<text x="512" y="236" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Synthesise</text>
+<text x="512" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the two cases, the risks,</text>
+<text x="512" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the short version at the top</text>
+
+<path d="M190 286 L190 306 L350 306 L350 322" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ab)"/>
+<path d="M510 286 L510 306 L350 306 L350 322" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ab)"/>
+
+<rect x="200" y="324" width="300" height="58" rx="6" fill="var(--panel)" stroke="var(--check)" stroke-width="1.2"/>
+<rect x="200" y="324" width="5" height="58" fill="var(--check)"/>
+<text x="350" y="346" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Claim checker</text>
+<text x="350" y="365" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">numbers, stored sources, admissibility</text>
+
+<line x1="350" y1="382" x2="350" y2="408" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ab)"/>
+
+<rect x="200" y="410" width="300" height="58" rx="6" fill="var(--panel)" stroke="var(--store)" stroke-width="1.2"/>
+<rect x="200" y="410" width="300" height="4" fill="var(--store)"/>
+<text x="350" y="434" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">One research record</text>
+<text x="350" y="453" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">as-of date, and which model wrote each part</text>
+</svg>
+<figcaption>Figure 12.2. One research pass, from fetched documents to a stored record.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> The green boxes on the left run on the operator's own machine and cost nothing. The purple boxes on the right are the only part of the whole system that spends money. The red box is the check every section must pass before it can be stored, and the blue-topped box at the bottom is the record itself.</p>
+  <p>Where the line falls is decided by one test: is the answer inside a single document, or does it have to be built across several that disagree. Naming what caused a large move is a choice among that day's headlines. The business explainer and the segment commentary are extraction from a filing already fetched. Both are small jobs a local model does reliably, and each call carries a few thousand tokens rather than the whole evidence set, which is what makes a consumer graphics card sufficient for that lane at all. Only the right-hand lane needs every document in memory at once, which is why the paid model does it.</p>
+  <p>The consequence for cost is that a pass buys a fraction of the paid work rather than all of it, so the figures in section 17 are an upper bound rather than an estimate.</p>
+  <p>Which sections sit in which lane is a setting rather than a structure. On the machine this is first built for, the left lane holds classification and extraction and the right lane holds everything else. On a machine able to hold a large model with a long context, sections move left and the overnight queue begins writing them for nothing. The picture is the same either way; only the boundary moves.</p>
+</div>
+
+<h2>13. How the picks improve</h2>
+<p>Measuring something is not the same as improving it, and until this section the document only measured. This is the loop. It is deliberately small: one score per condition, one register of candidates, and one column in a table that already exists. No new component runs nightly, no new store is needed beyond what the listings already hold, and none of it is built before the evidence exists to run it.</p>
+
+<h3>13.1 The score, and why it is not a return</h3>
+<p>Every listing already carries a plan, and a plan states an entry, a stop and a target. That makes each listing a falsifiable prediction with a bar it must clear, computed from its own arithmetic and nothing else.</p>
+<p>Take the worked example's first tranche. Entry near 920, stop on a close below 855, first traded target at 1057. Risk is 65 points, reward is 137, so the setup breaks even if the target is reached before the stop about 32% of the time. That number is not a preference or a benchmark borrowed from elsewhere; it falls out of where the bands sit.</p>
+<p>So the question asked of every condition is: across all the setups it produced, did the target come before the stop more often than the setups' own break-even required. That is one number, it is a count of stored rows, and it is meaningful in a way a forward return is not. Twenty-one-day returns mostly measure whether the market went up, which is why the run page shows them against the universe base rate. This score has no such problem, because the bar moves with the setup.</p>
+
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 480" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>How one listing becomes a scored outcome</title>
+<desc>A listing is recorded with its plan, the plan states its own break-even, the setup resolves as a win, a loss or unresolved, and the results are scored against that break-even.</desc>
+<defs><marker id="ad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<rect x="190" y="24" width="320" height="58" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/><rect x="190" y="24" width="5" height="58" fill="var(--compute)"/>
+<text x="350" y="46" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">A listing is recorded</text>
+<text x="350" y="65" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">with its entry, stop and target</text>
+
+<line x1="350" y1="82" x2="350" y2="108" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+
+<rect x="190" y="110" width="320" height="58" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/><rect x="190" y="110" width="5" height="58" fill="var(--compute)"/>
+<text x="350" y="132" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">The plan states its own bar</text>
+<text x="350" y="151" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">risk 65, reward 137, so it needs 32%</text>
+
+<path d="M350 168 L350 186 L130 186 L130 194" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+<line x1="350" y1="168" x2="350" y2="194" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+<path d="M350 168 L350 186 L570 186 L570 194" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+
+<rect x="30" y="196" width="200" height="64" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/><rect x="30" y="196" width="5" height="64" fill="var(--compute)"/>
+<text x="130" y="220" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Target first</text>
+<text x="130" y="240" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">counts as a win</text>
+
+<rect x="250" y="196" width="200" height="64" rx="6" fill="var(--panel)" stroke="var(--check)" stroke-width="1.2"/><rect x="250" y="196" width="5" height="64" fill="var(--check)"/>
+<text x="350" y="220" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Stop first</text>
+<text x="350" y="240" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">counts as a loss</text>
+
+<rect x="470" y="196" width="200" height="64" rx="6" fill="var(--panel)" stroke="var(--faint)" stroke-width="1.2"/><rect x="470" y="196" width="5" height="64" fill="var(--faint)"/>
+<text x="570" y="220" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Neither, 63 sessions</text>
+<text x="570" y="240" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">never counts as a win</text>
+
+<path d="M130 260 L130 280 L350 280 L350 296" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+<line x1="350" y1="260" x2="350" y2="296" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+<path d="M570 260 L570 280 L350 280 L350 296" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+
+<rect x="190" y="298" width="320" height="58" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/><rect x="190" y="298" width="5" height="58" fill="var(--compute)"/>
+<text x="350" y="320" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Scored against that bar</text>
+<text x="350" y="339" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">did the wins beat what was required</text>
+
+<line x1="350" y1="356" x2="350" y2="382" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+
+<rect x="190" y="384" width="320" height="58" rx="6" fill="var(--panel)" stroke="var(--store)" stroke-width="1.2"/><rect x="190" y="384" width="320" height="4" fill="var(--store)"/>
+<text x="350" y="408" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">One number for that reason</text>
+<text x="350" y="427" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">shown on the run page beside the others</text>
+</svg>
+<figcaption>Figure 13.1. One listing, from the night it fires to the number it contributes.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> Green boxes are computed nightly from stored bars, and the grey box at the right of the row is the case that matters most: a setup that has done nothing yet is neither a win nor a loss. Counting it as either would flatter or punish a condition for a trade that has not happened. It is held open until the target hits, the stop hits, or the time cap expires, and a timed-out setup is reported separately and never as a win.</p>
+  <p>The bar in the second box is computed from the plan itself. A setup with a distant target and a tight stop needs to be right rarely; one with a near target and a wide stop needs to be right often. Comparing conditions on wins alone would reward the second kind for nothing, which is why the score is always relative to what each setup demanded.</p>
+</div>
+
+<h3>13.2 Four things that can improve, shallowest first</h3>
+<table>
+  <tr><th style="width:22%">What changes</th><th>How it is decided</th><th>Phase</th></tr>
+  <tr><td><b>Condition thresholds</b></td><td>how close to a band counts, what volume multiple counts. Adjusted against the recorded distribution of fired counts. Changes how long the list is more than how good it is</td><td>4, using its own nightly record</td></tr>
+  <tr><td><b>Which conditions exist</b></td><td>a condition whose setups fail to clear their own break-even over enough resolved cases is retired; a new one is registered and scored in shadow until it has earned promotion</td><td>6</td></tr>
+  <tr><td><b>The ladder rules</b></td><td>the merge distance, where the stop sits, the near-exit skip. Each is a named rule version, and because the bars are stored every night can be scored under every version at once</td><td>6</td></tr>
+  <tr><td><b>The model's own proposal</b></td><td>stored beside the computed plan and scored on the same break-even rule, never overriding it</td><td>6</td></tr>
+</table>
+<p>Only the first is cheap enough to do early, and it is the one that matters least. The other three need resolved setups, which take months to accumulate, which is why they sit in phase 6 and why phase 4 has an obligation described below.</p>
+
+<h3>13.3 The guardrails</h3>
+<p>The danger in a loop like this is not that it fails to find anything. It is that it finds something that is not there. Run five candidate conditions of no real value and the chance that at least one clears an ordinary significance test is about 23%; run twenty and it is 64%. Picking the best of twenty noise processes and shipping it is the standard way a self-improving system makes itself worse while appearing to learn.</p>
+<p>So the rules below are written before any data exists, which is the only time they can be written without knowing which way the answer would go.</p>
+<table>
+  <tr><th style="width:26%">Guardrail</th><th>Rule</th><th>What it prevents</th></tr>
+  <tr><td><b>Registered in advance</b></td><td>every candidate condition is written to the append-only register with its rule, its test and the date, before it is scored. The family has a stated maximum size</td><td>choosing what to test after seeing which way the data went</td></tr>
+  <tr><td><b>Corrected for the family</b></td><td>the significance threshold is divided by the number of registered candidates, and the divisor is recorded with the verdict</td><td>one of many candidates clearing a test by chance and being read as a finding</td></tr>
+  <tr><td><b>Minimum resolved setups</b></td><td>no verdict of any kind below the stated minimum; a higher minimum before a live condition may be retired</td><td>acting on a handful of cases, where almost any result is possible</td></tr>
+  <tr><td><b>Unresolved is never a win</b></td><td>a setup that has neither hit its target nor its stop within the time cap is reported in its own column and excluded from the rate</td><td>the same failure as counting an unexamined harness claim as a pass</td></tr>
+  <tr><td><b>Shadow before live</b></td><td>no condition appears on the list until it has a shadow record meeting the minimum. Shadow conditions are scored and stored nightly and shown nowhere</td><td>adopting an idea on the strength of the idea</td></tr>
+  <tr><td><b>Frozen windows</b></td><td>a rule or threshold is not changed during a window it is being measured over. A change starts a new window and the old one is kept</td><td>a measurement whose subject moved while it was being measured</td></tr>
+  <tr><td><b>Adding restarts the clock</b></td><td>registering a new candidate after the family is set inflates the family, so the correction changes and the affected verdicts are recomputed</td><td>quietly widening the search until something passes</td></tr>
+  <tr><td><b>Every change is recorded</b></td><td>a promotion, a retirement or a rule version change is written with the evidence that produced it and the version it replaced</td><td>a system that drifts without anyone able to say why</td></tr>
+</table>
+
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 460" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>The path a candidate condition must take before it reaches the list</title>
+<desc>A candidate is registered in advance, scored in shadow nightly, and must pass a minimum evidence gate and a corrected significance gate before it is promoted.</desc>
+<defs><marker id="ae" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<rect x="290" y="24" width="280" height="58" rx="6" fill="var(--panel)" stroke="var(--store)" stroke-width="1.2"/><rect x="290" y="24" width="280" height="4" fill="var(--store)"/>
+<text x="430" y="48" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Registered in advance</text>
+<text x="430" y="67" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">append-only, with its rule and date</text>
+
+<line x1="430" y1="82" x2="430" y2="108" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ae)"/>
+
+<rect x="290" y="110" width="280" height="58" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/><rect x="290" y="110" width="5" height="58" fill="var(--compute)"/>
+<text x="430" y="134" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Scored in shadow nightly</text>
+<text x="430" y="153" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">stored, and shown nowhere</text>
+
+<line x1="430" y1="168" x2="430" y2="194" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ae)"/>
+
+<rect x="290" y="196" width="280" height="58" rx="6" fill="var(--panel)" stroke="var(--src)" stroke-width="1.2"/><rect x="290" y="196" width="5" height="58" fill="var(--src)"/>
+<text x="430" y="220" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Enough resolved setups?</text>
+<text x="430" y="239" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">below the minimum, no verdict</text>
+
+<path d="M288 225 L262 225" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ae)"/>
+<text x="275" y="215" text-anchor="middle" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">no</text>
+
+<rect x="80" y="196" width="180" height="58" rx="6" fill="var(--panel)" stroke="var(--faint)" stroke-width="1.2"/><rect x="80" y="196" width="5" height="58" fill="var(--faint)"/>
+<text x="170" y="220" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Keep waiting</text>
+<text x="170" y="239" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">nothing is claimed</text>
+
+<line x1="430" y1="254" x2="430" y2="280" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ae)"/>
+
+<rect x="290" y="282" width="280" height="58" rx="6" fill="var(--panel)" stroke="var(--src)" stroke-width="1.2"/><rect x="290" y="282" width="5" height="58" fill="var(--src)"/>
+<text x="430" y="306" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Beats its bar, corrected?</text>
+<text x="430" y="325" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">threshold divided by the family</text>
+
+<path d="M288 311 L262 311" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ae)"/>
+<text x="275" y="301" text-anchor="middle" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">no</text>
+
+<rect x="80" y="282" width="180" height="58" rx="6" fill="var(--panel)" stroke="var(--check)" stroke-width="1.2"/><rect x="80" y="282" width="5" height="58" fill="var(--check)"/>
+<text x="170" y="306" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Left, or retired</text>
+<text x="170" y="325" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">with the evidence kept</text>
+
+<line x1="430" y1="340" x2="430" y2="366" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ae)"/>
+
+<rect x="290" y="368" width="280" height="58" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/><rect x="290" y="368" width="5" height="58" fill="var(--compute)"/>
+<text x="430" y="392" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Promoted to the list</text>
+<text x="430" y="411" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the change and its reason recorded</text>
+</svg>
+<figcaption>Figure 13.2. What a candidate condition must pass before you ever see it on the list.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> Read it downward. The blue-topped box at the top is the register, an append-only table that accepts new dated rows and never edits or deletes one. The green box below it is the only nightly work, and it is the same arithmetic the live conditions already do, just written to a shadow column instead of the list. The two orange boxes are gates rather than steps: a candidate stalls at them rather than failing, and stalling forever is a perfectly good outcome.</p>
+  <p>The left-hand exits are where most candidates end up, and that is the point. A grey exit means not enough has happened yet and nothing is claimed either way. A red exit means the evidence arrived and the idea did not survive it, so the candidate is retired with its record kept, which is what stops the same idea being proposed again in a year.</p>
+</div>
+
+<h3>13.4 What each phase owes</h3>
+<p>The loop is a phase 6 feature. But it cannot be added in phase 6 unless phase 4 stores the right things, because the evidence takes months to accumulate and cannot be recreated afterwards.</p>
+<div class="flag">
+  <p><b>Phase 4 must record, for every listing, the plan as it stood that night: the entry zone, the stop and the first traded target.</b> Storing only which reasons fired is not enough. Without the plan there is no break-even, and without the break-even none of the scoring in this section is possible. The bars can be replayed but the plan cannot, because by the time phase 6 arrives the rules may have changed and recomputing would score old listings under new rules. This is one JSON column written by a component that is already running, and it is the difference between phase 6 being a feature and phase 6 being a six-month wait.</p>
+</div>
+<p>Beyond that the phases carry what their table already says. Phase 4 also tunes the thresholds, because it is the phase that first records how many names fire each night. Phase 6 adds the scoring, the register, the shadow column and the run page's condition verdicts. Nothing else changes: no new nightly component, no new store, and no part of the reader's experience.</p>
+
+<h3>13.5 The boundary this must not cross</h3>
+<p>Improving which conditions surface a name for reading stays inside what section 1 says this tool is. Ranking names by expected return is a different tool with different obligations, and a scoring loop makes that line easy to cross one small step at a time. The test to apply to any future change: does it decide which chart is worth opening, or does it decide which stock is better than another. The first is this project. The second is not.</p>
+
+<h2>14. The nightly run, in order</h2>
+<h4>Before the first nightly run, once</h4>
+<p>A single day of bars computes nothing: no averages, no swings, no bands, no ladder and no list. So the first run backfills one year of daily bars for every current index member before any of the steps below, either one request per ticker or one bulk request per past session. It is a few hundred requests in one afternoon and it never repeats for a name that already has its year. The same backfill runs for a single name on the night it joins the index.</p>
+<h4>Every night after that</h4>
+<ol>
+  <li>Load index membership and record any joins and leaves.</li>
+  <li>Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner.</li>
+  <li>Fetch the day's bulk bar file, one request, and store the bars for current members.</li>
+  <li>Check splits and dividends, and refetch the full year for any name affected.</li>
+  <li>For every name: indicators, swings, volume profile, levels, trend state, ladder, moves, list reasons, facts file.</li>
+  <li>Fill forward returns for past listings that matured today, and recompute the universe base rate.</li>
+  <li>Count today's articles per name from one news feed request.</li>
+  <li>Close the arithmetic and record its counts: names computed, names on the list, reasons fired, stale names, duration.</li>
+  <li>Run the overnight queue on the local model, writing the sections in the local lane for listed names whose research is missing or stale, in priority order, until the configured time limit. This makes no paid call, and no part of the arithmetic above depends on it.</li>
+</ol>
+<p class="note">No model is called and no per-name network request is made. The run is idempotent, so running it twice on one night produces identical stored state. It is scheduled with Task Scheduler after the US close.</p>
+
+<h2>15. The screens</h2>
+<p>This section is the specification for what the operator looks at. It is here rather than in a document of its own because a mockup file and a built page are two answers to one question, and the day they disagree nothing says which is the specification.</p>
+
+<h3>15.1 What these screens are for</h3>
+<p>A full report for one name is a long document. It is read in the evening by one person deciding which of a handful of names is worth the next half hour, and the sections that answer that question sit among sections that answer different ones. Every screen below replaces reading with looking. None of them replaces the prose: the researched sections are kept in full, one disclosure down, because the screen answers <b>which name</b> and the prose answers <b>why</b>.</p>
+
+<h3>15.2 The rule that governs every screen</h3>
+<p><b>Reads and renders, nothing else.</b> No screen computes a level, calls a model, or makes a network request. Every number on every screen is already in the facts file, the ladder, the listings, the research store or the run log. A screen that wants a number the store does not carry is not a screen change; it is a change to a compute component, and it goes through a checkpoint like anything else.</p>
+<p>The reason is that a rendering layer which computes is a second implementation of the same arithmetic, and two implementations of one rule disagree eventually. It also means a screen can be rebuilt or restyled at any time without a chance of moving a number.</p>
+
+<h3>15.3 One document, no pages</h3>
+<p>One file, and the reader never loads a second one. Views are hash routes resolved in the browser: <code>#/</code>, <code>#/universe</code>, <code>#/name/&lt;ticker&gt;</code>, <code>#/run/&lt;date&gt;</code>. Back and forward work because the router listens for the hash changing and pushes no state the browser did not ask for. A route is a link, and the selected name is part of the route, so what is on screen can be sent to another machine and be the same thing.</p>
+<p>No framework, no build step, no package manager. The nightly run already writes one store and the read API already serves it; adding a front-end toolchain would put a second source of formatted numbers into a project whose whole argument is that there is one.</p>
+
+<h3>15.4 The two surfaces</h3>
+<table>
+  <tr><th style="width:22%">Surface</th><th>What it is</th><th>Built how</th></tr>
+  <tr><td><b>The app</b></td><td>the single page, with routing, filters and selection</td><td>the server writes the shell and the marks; the browser routes</td></tr>
+  <tr><td><b>The exported report</b></td><td>one name, as a flat file to hand to someone</td><td>the same marks, the same data, rendered without the router and with every disclosure open</td></tr>
+</table>
+<p>The export is the surface that constrains the marks. It has no scripting and no shared state, so every mark has to be a picture that renders from values alone. That is why marks are server-rendered SVG rather than drawn by a charting library in the browser: one source of numbers, two documents.</p>
+
+<h3>15.5 The mark vocabulary</h3>
+<p>Seven marks. They are defined once and every screen draws from this list. Nothing on any screen is a one-off drawing, for the same reason the palette is one set of variables: parity by construction rather than by remembering. Each mark takes stored values and returns an SVG string, so no script is needed to render any of them and the export carries the same pictures as the app.</p>
+<table>
+  <tr><th style="width:20%">Mark</th><th>What it is, and what it earns</th><th style="width:22%">Used by</th></tr>
+  <tr><td><b>Level chart</b></td><td>Daily candles with the level bands shaded behind them, the moving averages drawn, and a volume pane beneath on a shared time axis. The bands are the point: a table of levels is a list of numbers, and the same levels drawn behind the price show at a glance which ones the price has actually respected.</td><td>Name</td></tr>
+  <tr><td><b>Volume profile</b></td><td>Shares traded in each price band, drawn horizontally against the same price axis as the chart beside it. It is what lets the report say that a support band holds a fifth of the period's volume in a twentieth of its price range, and that almost nothing traded above the current price. Neither statement is available from a candle chart.</td><td>Name</td></tr>
+  <tr><td><b>Plan column</b></td><td>One vertical price axis with the current price marked in the middle of it. Everything above the marker is a sale, everything below is a purchase, stops are horizontal rules, and the invalidation is the lowest one. This is the mark the whole plan section rests on, and it is drawn as one column rather than two facing sides because a reader should not have to learn a convention before reading it.</td><td>Name, Tonight</td></tr>
+  <tr><td><b>Momentum panel</b></td><td>The momentum readings on their own small axes beneath the chart, each with its neutral rule drawn. A number like 53 means nothing without the band it sits in.</td><td>Name</td></tr>
+  <tr><td><b>Distance row</b></td><td>A name's close between its nearest support and its nearest resistance, sized for a table cell, with the distances in typical days. The mark that turns a column of numbers into a shape, so a scan down five hundred rows shows which names are near an edge without reading any of them.</td><td>Universe, Tonight</td></tr>
+  <tr><td><b>Reason track</b></td><td>Per reason, out of one denominator: setups resolved as a win, resolved as a loss, and unresolved. The third state is drawn as a dashed outline and never as a third colour, because unresolved is not a smaller amount of losing and must not read as one.</td><td>Run, Tonight</td></tr>
+  <tr><td><b>Listing strip</b></td><td>One column per session over the last sixty, marked on the evenings a name was on the list and by which side of the chart the reason came from. A name that keeps returning to its levels is visible without a number.</td><td>Name, Universe</td></tr>
+</table>
+<p class="note">Every mark degrades by saying what it has rather than by drawing through nothing. A chart over fewer than the bars a mark needs returns a sentence stating the bar count. A profile over a window with a gap says so on its axis. A sparse series is never allowed to look like a quiet one.</p>
+
+<h3>15.6 Colour</h3>
+<p>The document you are reading and the application share one palette, in light and dark, with both designed rather than one inverted from the other. The theme is a stamp on the root element, remembered between visits, with the machine's own preference as the default.</p>
+<h4>Support and resistance own two hues, and nothing else uses them</h4>
+<p>Green means a level below the price, orange means a level above it, on every screen and in every mark. Nothing else is allowed those two hues, and in particular a day's price change is not: a green day and a support band would then be the same colour meaning two things, and a reader cannot hold that. Direction of the day is carried by the sign on the number and by which side of a zero rule a bar sits on.</p>
+<h4>Hue is never the only channel</h4>
+<p>Every band carries its role in words as well as its colour. Every reason carries its name. A reader who cannot separate the two hues loses nothing, which is a property to hold rather than to test for once: the two hues in the palette measure far enough apart under the commonest form of colour blindness to be told apart, and the words are there whether they do or not.</p>
+<h4>Magnitude is one ramp, never a rainbow</h4>
+<p>Where a mark needs to show more or less, it uses four steps of a single hue, stepped for the surface it sits on and validated against it. More is darker in light and lighter in dark. A second hue is never introduced to tell two bars apart: if a chart needs two hues to be readable it is the wrong chart.</p>
+<h4>Not yet measured is a dashed outline</h4>
+<p>Anywhere a figure has not earned a number yet, the space is drawn as a dashed outline carrying its count against its minimum, and never as a pale version of a value. The record column in 15.11 is in that state for the first year, and a pale number would read as a small one.</p>
+
+<h3>15.7 Tonight</h3>
+<p><b>Answers:</b> which names reached a price where the plan says something, and how busy the evening was.</p>
+<p><b>Route:</b> <code>#/</code>, resolving to the newest night, and <code>#/night/&lt;date&gt;</code> for an earlier one.</p>
+<p><b>Reads:</b> the listings, ladders, levels and facts for that night, and the run log for the header.</p>
+<table>
+  <tr><th style="width:22%">Region</th><th>What is in it</th></tr>
+  <tr><td>Night header</td><td>names in the index, names that fired, reports carrying fresh prose against reused, spend, run duration, and the harness verdict. The fired count is the headline, because it is the market's mood and it is the one number the twenty drawn rows cannot tell you</td></tr>
+  <tr><td>Watch list</td><td>the two or three names shown every evening whether or not a reason fired, above the list rather than inside it</td></tr>
+  <tr><td>The list</td><td>one row per name that fired, ordered by how many fired then by band strength, at most twenty drawn. Each row: name, close, day change, trend state in a word, the distance row mark, and the reasons</td></tr>
+  <tr><td>Reasons, per row</td><td>each reason named, with its measured record beside it under 15.11, and the values that made it true on hover</td></tr>
+  <tr><td>Selected name</td><td>the plan column and the level summary for whichever row is selected, so the common case of checking a plan needs no navigation</td></tr>
+  <tr><td>Reason totals</td><td>the reason track mark across tonight's fired names, which says whether the evening is one thing happening to many names or many things happening to a few</td></tr>
+</table>
+
+<h3>15.8 Universe</h3>
+<p><b>Answers:</b> where does everything sit, including the names nothing happened to.</p>
+<p><b>Route:</b> <code>#/universe</code>, with filters in the hash so a filtered view is a link.</p>
+<p><b>Reads:</b> the listings, levels and indicators for the night, and membership.</p>
+<table>
+  <tr><th style="width:22%">Region</th><th>What is in it</th></tr>
+  <tr><td>Sector strip</td><td>one line per sector: names, how many are on tonight's list, how many are in an uptrend. Clicking one filters the table</td></tr>
+  <tr><td>The table</td><td>every name in the index, paged, sorted by distance to the nearest level ascending, so the top is what nearly fired. Columns: name, sector, close, trend state, the distance row mark, sessions until earnings, the evening last on the list, and the listing strip over sixty sessions</td></tr>
+  <tr><td>Filters</td><td>trend state and sector, as chips</td></tr>
+</table>
+<p class="note">The two right-hand columns count evenings a name appeared on the list. They say nothing about index membership, which every name in this table has by definition. That sentence is here because the columns were misread that way once.</p>
+
+<h3>15.9 Name</h3>
+<p><b>Answers:</b> what is this company's situation, and what is the plan at tonight's price.</p>
+<p><b>Route:</b> <code>#/name/&lt;ticker&gt;</code> for tonight, <code>#/name/&lt;ticker&gt;/&lt;date&gt;</code> for an earlier night.</p>
+<p><b>Reads:</b> the facts, ladder, levels, volume profile, moves and fundamentals for that name and date, and every stored research section with its own date and model.</p>
+<table>
+  <tr><th style="width:22%">Region</th><th>What is in it</th></tr>
+  <tr><td>Why it is here</td><td>present only when the name is on tonight's list: each reason in a full sentence rather than a label, with the values that made it true</td></tr>
+  <tr><td>Fact strip</td><td>close, market capitalisation, the high and low of the move, next earnings date, the multiples, the averages, momentum and the typical daily move</td></tr>
+  <tr><td>The short version</td><td>the narrative verdict, with its own date and the model that wrote it beneath it</td></tr>
+  <tr><td>How it got here</td><td>the twelve-month picture, and the table of the biggest moves with the cause of each where research has been written</td></tr>
+  <tr><td>The chart</td><td>the level chart, the volume profile beside it on the same price axis, the momentum panel beneath, and the level summary table with each band's members and dates</td></tr>
+  <tr><td>The plan</td><td>the plan column mark, the tranche table with conditions and stops, the exit table with actions, the earnings setups, and the sizing arithmetic</td></tr>
+  <tr><td>What it sells, the numbers, the cycle, the two cases, the risks</td><td>the researched and computed sections in the order section 4 specifies, each carrying its own date and model</td></tr>
+  <tr><td>Dates and sources</td><td>the calendar, and every document the research read with its date and link</td></tr>
+  <tr><td>Provenance footer</td><td>for every part of the page: computed tonight, fundamentals as of a filing date, research as of a date and the model that wrote it</td></tr>
+  <tr><td>Walk</td><td>previous and next on tonight's list, so an evening's reading is one pass through with no return to the list</td></tr>
+</table>
+<p>A tab on this screen carries the name's listing history: the listing strip over sixty sessions, then one row per evening it fired, with the close that night and what happened five and twenty-one sessions later. A row too recent to have matured says so rather than showing a blank or a zero.</p>
+
+<h3>15.10 Run</h3>
+<p><b>Answers:</b> did last night work, what did it cost, and is any reason worth anything.</p>
+<p><b>Route:</b> <code>#/run/&lt;date&gt;</code>.</p>
+<p><b>Reads:</b> the run log, the listings and the forward returns.</p>
+<table>
+  <tr><th style="width:22%">Region</th><th>What is in it</th></tr>
+  <tr><td>Operational header</td><td>what ran, how long each stage took, model calls, network requests, spend, names stale, and what failed in which component</td></tr>
+  <tr><td>Reason records</td><td>one row per reason with the reason track mark, the resolved count, the share that reached target before stop, and the break-even those setups demanded. A pinned first row gives the base rate over every name-night, so no figure stands on its own</td></tr>
+  <tr><td>Shadow candidates</td><td>the same columns for registered candidates that are not on the list, with the correction divisor stated beside the threshold</td></tr>
+  <tr><td>Stale and failed</td><td>names carrying yesterday's bars, sections that fell back, documents refused by admissibility with the category that refused each</td></tr>
+  <tr><td>Harness</td><td>the verdict counts from the last phase report: passed, failed, unexamined, each separately</td></tr>
+</table>
+<p>This is the evidence page, and it is deliberately not styled as a status dashboard. A page of green tiles invites a glance; this one is meant to be read.</p>
+
+<h3>15.11 How a reason's record is displayed</h3>
+<p>A reason's record is shown beside the reason wherever the reason appears, and it is a property of the reason rather than of the name beside it. The number says how this reason has done across every name it ever fired for, and it is not a statement about tonight's name.</p>
+<table>
+  <tr><th style="width:24%">State</th><th>What is shown</th><th>Why</th></tr>
+  <tr><td><b>Below the minimum</b></td><td>a dashed outline carrying the resolved count against the minimum, and no rate</td><td>a rate over a handful of resolved setups is consistent with almost any truth, and a pale number would read as a small one rather than as an absent one</td></tr>
+  <tr><td><b>At or above the minimum</b></td><td>the share that reached the target before the stop, the number resolved, and the break-even those setups demanded, always the three together</td><td>a share without its denominator hides how much was checked, and a share without the break-even hides whether it was any good, since a setup with a distant target needs to be right rarely</td></tr>
+  <tr><td><b>Unresolved setups</b></td><td>their own segment of the reason track, never folded into the rate</td><td>a setup that has done nothing is neither right nor wrong</td></tr>
+  <tr><td><b>Never shown</b></td><td>a single number beside the ticker with no denominator and no bar</td><td>it would be read as this name's chance of going up, and it is a historical frequency of a reason</td></tr>
+</table>
+<div class="flag">
+  <p><b>This column is a dashed outline for the first year, and that is the correct behaviour rather than a defect.</b> The list surfaces roughly fifteen names a night, so a reason accumulates a few hundred listings a year and rather fewer resolved setups. A verdict that can separate a reason clearing its break-even by ten points from one that does not needs a few hundred resolved setups at a threshold corrected for the family, and clustering by sector and by date means the effective count is lower than the row count. Setting the minimum low enough to fill the column sooner would produce a figure that looks like evidence and is not, and a figure on a screen gets acted on.</p>
+</div>
+
+<h3>15.12 Opening a name, in order</h3>
+<ol>
+  <li>The computed sections render immediately from the nightly store.</li>
+  <li>If the stored fundamentals predate the name's latest filing, they are fetched and the numbers section fills in.</li>
+  <li>The staleness judge answers its four questions from stored data.</li>
+  <li>Whatever sections are stored render with their own dates and the model that wrote each. A section drafted overnight by the local model says so, with the option to have the paid model rewrite it. Nothing is spent for any of this.</li>
+  <li>Sections the local lane does not own are absent until asked for, which on the current machine means the two cases, the risks and the short version. Asking runs a paid pass for those sections only, with progress shown, and the sections stream in as they are checked and stored.</li>
+</ol>
+
+<h3>15.13 Routing and state</h3>
+<ul>
+  <li>Hash routes only. No server-side routing, no history API, no build step.</li>
+  <li>A route is a link. The selected name and any filters live in the hash, so a filtered universe view and a selected candidate can both be sent to another machine.</li>
+  <li>Back and forward work, because the router listens for the hash changing and pushes nothing the browser did not ask for.</li>
+  <li>The theme is a stamp on the root element, remembered between visits, with the machine's preference as the default and both themes designed rather than one inverted.</li>
+  <li>An unknown route resolves to tonight with a line saying what was asked for, rather than to a blank page.</li>
+</ul>
+
+<h3>15.14 What no screen does</h3>
+<ul>
+  <li>No screen fetches from a provider or calls a model. The only thing a screen can trigger is a research pass, and that is an explicit action with a visible cost, not a side effect of navigation.</li>
+  <li>No screen computes a level, a stop or a rate. Every figure is read.</li>
+  <li>No screen shows a figure without its denominator where the figure is a share.</li>
+  <li>No screen shows a number beside a ticker that could be read as that name's probability of rising.</li>
+  <li>No screen ranks names by anything other than distance to a level, which is a fact about the chart rather than a judgement about the company.</li>
+</ul>
+
+<h2>16. Data stores and the read and write matrix</h2>
+<table>
+  <tr><th>Store</th><th>One row is</th><th>Kept</th></tr>
+  <tr><td><b>Membership</b></td><td>index, ticker, joined, left</td><td>forever; without it a name added last month would appear in a window it was never part of</td></tr>
+  <tr><td><b>Bar store</b></td><td>ticker, date, open, high, low, close, volume, source</td><td>one year; older bars are dropped nightly</td></tr>
+  <tr><td><b>Indicators, swings, volume profile, levels, ladders, moves</b></td><td>ticker, as-of date, the computed values</td><td>one year, recomputed nightly and kept for the harness</td></tr>
+  <tr><td><b>Listings</b></td><td>one row per name per night, for every name in the index and not only the listed ones: which reasons fired if any, the values that made each true or false, and the plan as it stood that night</td><td>forever; this is your own record and no provider can sell it back</td></tr>
+  <tr><td><b>Forward returns</b></td><td>ticker, listing date, five and twenty-one session outcomes, and the base rate for the same window</td><td>forever</td></tr>
+  <tr><td><b>Facts</b></td><td>ticker, as-of date, the facts file, its hash</td><td>kept for every night a name was on the list or was opened; other nights keep the hash only</td></tr>
+  <tr><td><b>Fundamentals</b></td><td>ticker, the quarters, balance sheet, segments, guidance, with the filing date each came from</td><td>forever, because providers restate and this is what you knew at the time</td></tr>
+  <tr><td><b>News pulse</b></td><td>ticker, date, article count</td><td>one year, enough to hold a baseline</td></tr>
+  <tr><td><b>Research store</b></td><td>ticker, and one row per section holding its prose, its own as-of date, the model that wrote it, its source list, and the version it replaced</td><td>forever, every version</td></tr>
+  <tr><td><b>Theme store</b></td><td>theme, as-of date, prose, sources, and which industries map to it</td><td>forever, every version</td></tr>
+  <tr><td><b>Source documents</b></td><td>url, fetched date, title, text</td><td>forever; a claim whose source is missing is not rendered</td></tr>
+  <tr><td><b>Candidate register</b></td><td>candidate, its rule, its test, the date registered, and for a retirement a new row naming what it retires</td><td>forever; append-only, no update and no delete</td></tr>
+  <tr><td><b>Run log</b></td><td>run, start, end, per-stage outcome, spend, failures by component</td><td>forever</td></tr>
+</table>
+
+<h4>Read and write matrix</h4>
+<p class="note">R reads, W writes. A blank cell is a claim as much as a filled one: the harness asserts the component does not touch that store.</p>
+<table class="rw">
+  <tr><th>Component</th><th>Member<br>ship</th><th>Bars</th><th>Computed<br>tables</th><th>Listings</th><th>Forward<br>returns</th><th>Facts</th><th>Funda<br>mentals</th><th>News<br>pulse</th><th>Research<br>and theme</th><th>Sources</th><th>Run log</th></tr>
+  <tr><td>Membership loader</td><td><span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Bar fetcher</td><td><span class="r">R</span></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Corporate action checker</td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Indicator engine</td><td></td><td><span class="r">R</span></td><td><span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Swing finder</td><td></td><td><span class="r">R</span></td><td><span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Volume profile builder</td><td></td><td><span class="r">R</span></td><td><span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Level builder</td><td></td><td><span class="r">R</span></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Trend classifier</td><td></td><td></td><td><span class="r">R</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Ladder builder</td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td><td><span class="r">R</span></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Move annotator</td><td></td><td><span class="r">R</span></td><td><span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Shortlist builder</td><td></td><td></td><td><span class="r">R</span></td><td><span class="w">W</span></td><td></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Facts assembler</td><td></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td><span class="w">W</span></td><td><span class="r">R</span></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Forward return filler</td><td></td><td><span class="r">R</span></td><td></td><td><span class="r">R</span></td><td><span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>News pulse counter</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Fundamentals fetcher</td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Staleness judge</td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Theme research runner</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td><td><span class="w">W</span></td><td><span class="w">W</span></td></tr>
+  <tr><td>Research runner</td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td><span class="w">W</span></td><td><span class="w">W</span></td></tr>
+  <tr><td>Claim checker</td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td><span class="r">R</span></td><td><span class="w">W</span></td></tr>
+  <tr><td>Prose writer</td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td><span class="w">W</span></td></tr>
+  <tr><td>Read API</td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span> <span class="w">W</span></td></tr>
+  <tr><td>Single page app</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td>Report exporter</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td>Verification harness</td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td><span class="r">R</span></td></tr>
+</table>
+<div class="key">
+  <p><b>Key.</b> The single page app and the report exporter have empty rows because they touch no store directly; everything they show arrives through the read API, which is the only component allowed to read across all of them. Three further facts carry the integrity argument. Only the bar fetcher and the corporate action checker write bars, so price history cannot be altered by anything downstream. Only the research components write research, and the claim checker sits between the runner and what is served. The read API and the app write nothing but the log, so no rendering bug can corrupt stored data. The run log is a store rather than a component and so has no row of its own.</p>
+</div>
+
+<h2>17. Limits, spend and the numbers the harness asserts</h2>
+<p class="note">Each row is a claim this document makes about the code. The harness parses this table and fails a build that exceeds any of them. Values marked as proposed are not yet confirmed and must be settled before the phase that depends on them.</p>
+<table>
+  <tr><th>Limit</th><th>Value</th><th>Reason</th><th>Asserted by</th></tr>
+  <tr><td>Model calls in the nightly run</td><td>0</td><td>the whole design rests on the nightly half being free</td><td>run log</td></tr>
+  <tr><td>Per-name network calls in the nightly run</td><td>0</td><td>bars arrive in one bulk file and news in one feed request, so the run does not grow with the universe</td><td>run log</td></tr>
+  <tr><td>Nightly wall clock, 500 names</td><td>under 5 minutes, proposed</td><td>a scheduled run that overruns the evening is one you stop trusting</td><td>run log duration</td></tr>
+  <tr><td>Bar history kept</td><td>1 year</td><td>every level comes from a sixty-session window; a year covers that and the 200-day average with headroom, and costs about 10 MB</td><td>bar store row counts</td></tr>
+  <tr><td>Backfill</td><td>one year per name, once, on the first run and on the night a name joins the index; never repeated for a name that already holds its year</td><td>a single day of bars computes nothing, so the store has to start full; repeating it would spend hundreds of requests to fetch bars already held</td><td>run log request count against names lacking history</td></tr>
+  <tr><td>Level window</td><td>the last 60 sessions</td><td>about a quarter of trading, long enough to hold several swings and short enough that stale ones do not clutter the map; the moving averages alone read the full year</td><td>level builder input count</td></tr>
+  <tr><td>Swing lookback</td><td>3 bars each side</td><td>the smallest lookback that does not mark every two-day wiggle as a swing; days that are not swings still reach the map as touches</td><td>fixture swing diff</td></tr>
+  <tr><td>Band merge distance</td><td>half a typical day's move</td><td>two prices closer than that cannot be told apart by anyone trading them</td><td>fixture level diff</td></tr>
+  <tr><td>Volume shelf threshold</td><td>a price band holding at least twice its even share of the period's volume</td><td>derived from the worked example, where the main support band held about a fifth of the period's volume in a twentieth of its price range. One chart is not enough to fix a threshold, so phase 2 widens the fixture to four names of different character and the number is whatever makes all four agree with where their volume visibly clusters</td><td>fixture level diff across all four fixture names</td></tr>
+  <tr><td>Tranches, exits</td><td>at most 3 tranches, at most 5 exits; an exit within two typical days' moves of the blended entry is listed but not traded</td><td>three steps is enough to stage a purchase across a range without the last one sitting below the level that invalidates the whole position, and five exits covers the distance from the nearest resistance band to a prior high; the worked example's plan has exactly these counts</td><td>fixture ladder diff</td></tr>
+  <tr><td>Tranche eligibility</td><td>a support band carries a tranche when its low edge is below the close and at least one of its members is something other than a moving average; a band straddling the close keeps its full width</td><td>a short moving average follows the price, so a band anchored only on one sits at the price roughly half the time and the at-entry-zone condition would fire on nothing having happened. The straddle rule follows from what a staged purchase is for: a band the price is already trading in is exactly where the first step belongs</td><td>fixture ladder diff, plus a constructed fixture whose only support band is a moving average and which must produce no tranche</td></tr>
+  <tr><td>Earnings horizon</td><td>20 sessions</td><td>about a month of trading, which is far enough ahead that a position can still be staged or trimmed before the date and near enough that the date is worth stating; the worked example sits 20 sessions before its print and applies the rule</td><td>ladder builder unit test</td></tr>
+  <tr><td>List display</td><td>the strongest 20 shown, the true fired count always stated</td><td>a page that shows twenty every night cannot tell you how busy the night was</td><td>app test against a fixture night of 40</td></tr>
+  <tr><td>Overnight queue</td><td>the local model writes the sections in the local lane, for listed names whose research is missing or stale, in order of reasons fired, stopping after a configured number of hours; no paid call is ever made by the queue</td><td>a name count cannot bound the time because pass durations vary widely, and the whole point of the queue is that it costs nothing, so a paid fallback inside it would defeat it</td><td>run log duration and spend, which must be zero for the queue</td></tr>
+  <tr><td>Research passes per name per open</td><td>at most 1</td><td>opening a name twice must never cost twice</td><td>run log</td></tr>
+  <tr><td>Research staleness triggers</td><td>a new filing, the earnings date passing, at least five articles in the last five sessions and at least three times the name's own trailing 90-day median for a five-session window, or a manual refresh</td><td>nothing expires on a timer, because a timer refreshes work nobody needed or serves research written before a print. The news trigger is relative to the name's own coverage so a quiet industrial and a mega-cap both work, the floor of five articles stops one story firing a pass, and the five-session window stops a story that breaks over several days from firing twice</td><td>staleness judge unit tests, one per trigger</td></tr>
+  <tr><td>Spend cap</td><td>a configured amount of money per day and per month; at the cap, research pauses and the page says so</td><td>a cap that can be exceeded is not a cap, and a silent one is worse. It is denominated in money rather than tokens because the same token count costs twice as much at peak, so a token budget would mean two different things depending on the hour</td><td>run log against config</td></tr>
+  <tr><td>Scheduling of queued work</td><td>theme refreshes and any other non-interactive pass run in the off-peak window; every schedule is expressed in UTC</td><td>peak rates are double and the windows are fixed in UTC, so a schedule written in Eastern time silently moves into peak when daylight saving changes and nothing would announce it</td><td>run log timestamps against the configured window</td></tr>
+  <tr><td>Claim rejection</td><td>a number absent from the facts file, or a claim naming no stored source document, is rejected; one retry, then the section is omitted</td><td>the failure mode of automated research is a confident wrong sentence, and nothing else would catch it</td><td>poisoned-narrative fixture</td></tr>
+  <tr><td>Theme search parameters</td><td>a theme search names the industry and not a ticker, carries an explicit date range, is restricted to the industry source list, and requests full page text rather than snippets</td><td>an unscoped query returns the wrong industry, undated articles, and pages whose text cannot be stored; a snippet cannot serve as the document a claim rests on</td><td>a fixture search whose returned documents must all carry publish dates inside the requested range and full text</td></tr>
+  <tr><td>Source lists</td><td>a company-news list and an industry list, each under the search tool's domain limit, each carrying a review date; a search may only return sites on the list that applies to it</td><td>the list keeps a search from returning football results, forum posts and aggregator hub pages. It does not decide whether an article is right, which is the per-document test's job</td><td>a fixture search whose results must all come from the applicable list</td></tr>
+  <tr><td>Source admissibility</td><td>a fetched document is stored only if it carries a publish date inside the window the pass asked for and is not on the denied-category list: algorithmic or AI-generated price forecasts, broker and platform marketing pages, AI-written summaries, and quote or hub pages with no article</td><td>a search by company name returns all four kinds, and each would satisfy the bare rule that a claim must name a stored source. Provenance shows where a sentence came from, not whether the document deserved belief</td><td>a fixture of denied documents, each of which must be refused and must therefore leave its claim unwritten</td></tr>
+  <tr><td>Nightly row coverage</td><td>a listings row is written for every name in the index every night, whether or not a reason fired</td><td>a shadow candidate has to be evaluated on the nights it would have fired, and most of those are nights no live reason surfaced that name. Writing rows only for listed names would make section 13's shadow mechanism impossible without anything announcing it. The cost is about twelve megabytes a year</td><td>row count per night equals the index size</td></tr>
+  <tr><td>Reason record display</td><td>a reason's measured record is shown beside the reason and never beside the ticker; below the minimum only the resolved count against the minimum is shown; at or above it, the share, the denominator and the break-even are shown together or not at all</td><td>a bare number next to a stock is read as that stock's chance of going up, when it is a historical frequency of the reason across every name it fired for</td><td>an app test at each of the three states</td></tr>
+  <tr><td>Setup resolution</td><td>a listed setup resolves when its target is reached, its stop is closed through, or 63 sessions pass; a timed-out setup is counted in its own column and never as a win</td><td>a setup that has done nothing is neither right nor wrong, and scoring it either way flatters or punishes a condition for a trade that never happened. Same principle as unexamined never counting as a pass</td><td>resolution unit tests, one per outcome</td></tr>
+  <tr><td>Minimum resolved setups</td><td>250 resolved setups before a verdict is reported at all; 400 before a live condition may be retired</td><td>separating a reason that clears its break-even by ten points from one that does not, at a threshold corrected for a family of eight, needs a few hundred independent resolved setups. Listings cluster by sector and by date, so the effective count is below the row count and these are floors rather than targets. The earlier figures of 50 and 100 were set without this arithmetic and would have licensed verdicts the data cannot support. The retirement bar is higher because removing a reason is harder to undo than leaving one alone</td><td>the run page must show the count beside every verdict and withhold the verdict below the minimum</td></tr>
+  <tr><td>Family size and correction</td><td>candidate conditions are registered in advance in an append-only table, with a stated maximum family size of 8, proposed; the significance threshold is divided by the family size and the divisor is shown with the verdict</td><td>with five worthless candidates the chance one clears an ordinary test is about 23%, and with twenty it is 64%. Correcting is what stops the best of several noise processes being read as a discovery</td><td>the harness asserts the register accepts no update or delete, and that the divisor used matches the number of rows registered before the window opened</td></tr>
+  <tr><td>Frozen measurement windows</td><td>a rule or threshold is not changed while a window measuring it is open; a change opens a new window and the previous one is kept</td><td>a measurement whose subject moved while it was being measured says nothing about either version</td><td>rule version stamps on every scored listing</td></tr>
+  <tr><td>Base rate</td><td>every forward-return figure on the run page is shown against the universe base rate for the same window</td><td>most names are higher after a month regardless, so a bare hit rate reports drift as a finding</td><td>run page test</td></tr>
+</table>
+
+<h2>18. Failure behaviour</h2>
+<p class="note">Every row is a claim the harness tests by inducing the failure against the fixture.</p>
+<table>
+  <tr><th>Failure</th><th>What the system does</th><th>What you see</th><th>Why this and not the alternative</th></tr>
+  <tr><td>Bulk price feed unavailable</td><td>keeps last night's bars, marks every name stale, still serves the app</td><td>a banner giving the data date, and tonight's list absent rather than wrong</td><td>a list computed from yesterday's bars would look current and be false</td></tr>
+  <tr><td>A gap in one name's series</td><td>refuses to store, and computes nothing across the gap for that name</td><td>that name's chart shows the gap and its level and plan sections say not computed</td><td>an interpolated bar produces averages and swings that never happened</td></tr>
+  <tr><td>A split or dividend not caught</td><td>the corporate action check refetches the year; if the check itself fails the name is marked suspect</td><td>a note that prices are being refetched</td><td>adjusted history silently diverges from the provider otherwise, and nothing downstream would notice</td></tr>
+  <tr><td>Cloud model unavailable</td><td>the research pass does not start; stored research still renders</td><td>the researched sections show their as-of date, or an offer to write them later</td><td>the computed report is complete and useful on its own</td></tr>
+  <tr><td>A source is returned but its text cannot be retrieved</td><td>the result is discarded rather than cited; the run log records the url and the reason</td><td>nothing, unless every source for a section fails, in which case the section is absent</td><td>some sites refuse automated access, so a search can return a promising result whose document never arrives. Citing it would leave a claim pointing at nothing, which is the failure the stored-source rule exists to prevent</td></tr>
+  <tr><td>A pass finds no admissible source for a section</td><td>the section is omitted and the run log records what was fetched and why each document was refused</td><td>the section is absent with one line saying no admissible source was found</td><td>writing the section from an inadmissible document would produce a confident sentence resting on a price forecast or a year-old article, which is worse than a gap</td></tr>
+  <tr><td>Claim checker rejects twice</td><td>that section is omitted and both attempts are logged with the offending text</td><td>the section is absent with one line saying why</td><td>a wrong sentence in a research report is worse than a missing one</td></tr>
+  <tr><td>Spend cap reached</td><td>research pauses for the period</td><td>the name says research is paused and when it resumes</td><td>quiet overspending is the failure this cap exists to prevent</td></tr>
+  <tr><td>Filing not yet parsed for a name</td><td>the numbers section shows what the provider has and marks the segment table absent</td><td>an explicit absence rather than a blank</td><td>a blank cell reads as zero</td></tr>
+  <tr><td>No band is eligible to carry a tranche</td><td>no ladder is produced for that name and the report says why; the at-entry-zone condition cannot fire for it</td><td>the plan section states that no support band below the price has an anchor other than a moving average</td><td>producing a tranche anyway would place a purchase on a level that exists only because the price is where it is</td></tr>
+  <tr><td>Earnings date missing</td><td>the earnings reason cannot fire and the calendar says the date is not on file</td><td>an explicit blank</td><td>a guessed date is a wrong date</td></tr>
+  <tr><td>Fewer than 200 bars for a new index member</td><td>the 200-day average is recorded as not available with the bar count</td><td>"not available, nn bars"</td><td>an average of sixty bars labelled 200-day is a lie</td></tr>
+  <tr><td>A name leaves the index</td><td>membership records the leave date; its stored history and research are kept</td><td>it disappears from the universe and its old reports still open</td><td>deleting it would falsify every past night it was part of</td></tr>
+  <tr><td>A condition has fired but nothing has resolved yet</td><td>the run page shows the fired count and the resolved count, and withholds the verdict</td><td>an explicit "not enough resolved yet, nn of nn" rather than a rate</td><td>a hit rate over four resolved setups looks like a measurement and is not one</td></tr>
+  <tr><td>A section is assigned to the local lane that the machine cannot hold</td><td>the pass is refused before it starts and the section is left for the paid path; the run log names the section and the reason</td><td>the section is absent as usual, with the option to have it written</td><td>attempting it anyway produces either an out-of-memory failure or, worse, a fluent answer from a model too small for the evidence, which nothing downstream would catch</td></tr>
+  <tr><td>The machine slept and the overnight queue did not run</td><td>nothing is written; the next run reports the gap</td><td>the run page states that the queue did not run and on which night, and listed names open without a draft as normal</td><td>a queue that silently fails looks identical to a quiet night, so the absence has to be stated rather than inferred from an empty result</td></tr>
+  <tr><td>Something tries to edit or delete a register row</td><td>the write is refused and the run log records the attempt</td><td>nothing changes; the register still reads as it did</td><td>a register that can be edited after results are in is not a pre-registration, and the guardrail resting on it quietly stops working</td></tr>
+  <tr><td>The candidate register and the correction disagree</td><td>the harness fails; no verdict is shown until they agree</td><td>the condition verdicts are absent with the reason stated</td><td>a divisor that does not match the number of things being tested silently removes the correction, which is the failure the correction exists to prevent</td></tr>
+  <tr><td>The harness cannot parse this document</td><td>every claim is reported UNEXAMINED and nothing is signed off</td><td>a verify page that is all UNEXAMINED</td><td>unexamined is never a pass</td></tr>
+</table>
+
+<h2>19. Fixtures and the verification harness</h2>
+<p>This document is the specification. The harness checks the code against the claims made here, and against a committed set of inputs whose expected outputs are whatever the rules in this document produce. No external document is authoritative, and no hand-written report is treated as a thing to be reproduced.</p>
+
+<h3>19.1 What a fixture holds</h3>
+<p>A fixture is one folder per name and date. It is committed, never regenerated, and its expected files are derived once from the rules in sections 9 to 13 and then frozen. The first fixture uses a year of daily bars for one liquid name; later fixtures add names of different character, as section 20 sets out.</p>
+<table>
+  <tr><th style="width:22%">File</th><th>What it holds</th><th>Why it is frozen</th></tr>
+  <tr><td colspan="3"><b>Inputs</b></td></tr>
+  <tr><td>bars</td><td>one year of daily open, high, low, close and volume for the fixture name, ending on the fixture date</td><td>live prices change nightly and cannot be diffed against anything</td></tr>
+  <tr><td>fundamentals</td><td>the provider payload and the filing extracts as they stood on the fixture date</td><td>providers restate, so a later fetch would silently change the expected numbers</td></tr>
+  <tr><td>news</td><td>the articles a research pass is allowed to read, with their publish dates</td><td>a research pass must be reproducible without a network, and the admissibility rules need documents that fail as well as pass</td></tr>
+  <tr><td colspan="3"><b>Expected outputs, each produced by the rule named beside it</b></td></tr>
+  <tr><td>indicators</td><td>the averages, momentum readings and typical daily move</td><td>section 7's indicator engine</td></tr>
+  <tr><td>swings</td><td>the swing highs and lows</td><td>the swing lookback in section 17</td></tr>
+  <tr><td>volume profile</td><td>shares traded in each price band</td><td>section 9's volume profile builder</td></tr>
+  <tr><td>levels</td><td>every band with its edges, role, strength and members</td><td>the four candidate sources and the merge distance in section 9</td></tr>
+  <tr><td>ladder</td><td>tranches, stops, the invalidation, exits and the earnings setups</td><td>the tranche eligibility, stop and near-exit rules in sections 10 and 17</td></tr>
+  <tr><td>listings</td><td>which of the six reasons fired on the fixture date, with the values that made each true</td><td>section 11</td></tr>
+  <tr><td>facts</td><td>the whole facts file, which is the artefact a run is diffed against</td><td>section 7's facts assembler</td></tr>
+  <tr><td colspan="3"><b>Expected rejections</b></td></tr>
+  <tr><td>a poisoned paragraph</td><td>prose citing a number that is not in the facts file</td><td>must be rejected by the claim checker</td></tr>
+  <tr><td>an unsourced claim</td><td>prose naming no stored document</td><td>must be rejected by the claim checker</td></tr>
+  <tr><td>an inadmissible document</td><td>a machine-generated price forecast, a page with no publish date, and a page whose text cannot be retrieved</td><td>each must be refused before storage, leaving its claim unwritten</td></tr>
+</table>
+
+<h3>19.2 What the harness checks</h3>
+<p>The harness has no opinion of its own. Every claim it reports comes from a table in this document, and a table it cannot parse makes every claim in that table UNEXAMINED rather than absent.</p>
+<table>
+  <tr><th style="width:24%">Claim source</th><th>What is checked</th><th>How it fails</th></tr>
+  <tr><td><b>Component catalogue</b></td><td>a class exists with each catalogue name, spaces removed, and declares exactly the reads and writes its row lists</td><td>a missing class, or a component touching a store its row leaves blank</td></tr>
+  <tr><td><b>Read and write matrix</b></td><td>the same declarations in both directions, so a blank cell is asserted as much as a filled one</td><td>a write nobody declared, or a declaration with no code behind it</td></tr>
+  <tr><td><b>Limits table</b></td><td>each configured value equals the documented one, and the runtime measurements stay inside the stated bounds</td><td>a value drifting in configuration without the document being amended</td></tr>
+  <tr><td><b>Failure table</b></td><td>each row with a fixture has its failure induced and the reader-visible outcome checked</td><td>a failure that produces something other than what the row promises</td></tr>
+  <tr><td><b>Phase table</b></td><td>every expectation the current phase's row names is PASS before that phase is signed off</td><td>any expectation reporting FAIL or UNEXAMINED</td></tr>
+  <tr><td><b>The fixture, first run</b></td><td>the facts file produced equals the expected one, byte for byte</td><td>any difference, shown inline as a diff</td></tr>
+  <tr><td><b>The fixture, second run</b></td><td>zero model calls and zero network requests, and identical stored state</td><td>a call made, or state that changed on a run with no new input</td></tr>
+  <tr><td><b>The research pass</b></td><td>run against the frozen news and filings with a recording model endpoint; the poisoned and unsourced paragraphs are rejected, the inadmissible documents are refused, and opening the name a second time spends nothing</td><td>anything rejected being written, or a second open spending</td></tr>
+  <tr><td><b>The candidate register</b></td><td>the register refuses updates and deletes, and the correction divisor matches the rows registered before the window opened</td><td>an accepted edit, or a divisor that does not match</td></tr>
+</table>
+
+<h3>19.3 What it produces</h3>
+<p>One row per claim, written twice: as a page for the operator with the diff inline for every failure, and as data for a build session to read back. Each row carries the claim, the table it came from, and one of three verdicts.</p>
+<table>
+  <tr><th style="width:16%">Verdict</th><th>Meaning</th></tr>
+  <tr><td><b>PASS</b></td><td>the claim was checked and held</td></tr>
+  <tr><td><b>FAIL</b></td><td>the claim was checked and did not hold; the diff is shown beside it</td></tr>
+  <tr><td><b>UNEXAMINED</b></td><td>the claim was not checked, because its table could not be parsed, its fixture does not exist, or the code path was never reached. This never counts as a pass, and a phase carrying one is not signed off</td></tr>
+</table>
+<p>The count of each verdict is reported alongside the rows, because a run that checked four claims and passed all four is not the same as one that checked forty, and a summary without the denominator hides the difference.</p>
+
+<h2>20. Build phases, each with its visible output</h2>
+<p class="note">The first checkpoint of every phase produces something to open and look at, and the harness is what turns looking into a verdict. Nothing here is built.</p>
+<div class="flag">
+  <p><b>Phase 1 carries a measurement that sets the ceiling on every later report, and it must not be replaced by an assumption.</b> The belief that a large-company index guarantees good coverage is plainly true for the largest names and much weaker at the other end, where a mid-cap industrial may draw two or three articles a quarter, mostly wire copy and aggregator summaries. So phase 1 pulls two weeks of news across a sample of thirty names deliberately spread across the market-capitalisation range rather than chosen from the watch list, counts distinct publishers by frequency, and checks each for whether its text can actually be fetched. Two things come out: the evidence-based first draft of the source lists, and a measurement of how sharply coverage thins going down the index. Tuning the lists on the largest names alone would starve the bottom of the index in a way that is invisible while testing on a mega-cap.</p>
+</div>
+<table>
+  <tr><th style="width:13%">Phase</th><th>What gets built</th><th>Visible first</th><th>Harness expectations added</th><th>Done when</th></tr>
+  <tr><td><b>0. A skeleton that can already fail</b></td><td>solution, store, the fixture folder, the harness reading this document and listing every claim</td><td><code>verify.html</code> with every row UNEXAMINED</td><td>the document parses; catalogue rows listed; no PASS by fiat</td><td>the command runs end to end and the page opens</td></tr>
+  <tr><td><b>1. A chart on the screen</b></td><td>membership loader, the one-year backfill, bar fetcher with gap refusal, corporate action checker, the read API, and the app showing one name's candles and volume</td><td>a candlestick chart for one name in the browser</td><td>stored bars equal the fixture; the gap fixture is refused; a split triggers a refetch; a second run backfills nothing; the coverage measurement below is recorded rather than assumed</td><td>all phase-1 rows PASS, every index member holds a full year of bars with no gaps, and the coverage measurement exists</td></tr>
+  <tr><td><b>2. Levels on the chart</b></td><td>indicator engine, swing finder, volume profile builder, level builder, the bands drawn, the level summary table and the volume histogram; the fixture widens from one name to four of different character, a mega-cap in a tight range, a mid-cap in a wide one, and a name that gapped</td><td>the same page with bands, the histogram and the summary table</td><td>indicators, swings, profile and levels match the fixture for all four names; the volume shelf threshold produces shelves that agree with each chart</td><td>all phase-2 rows PASS across four names</td></tr>
+  <tr><td><b>3. The plan</b></td><td>trend classifier, ladder builder, the plan figure, the tranche and exit tables, the earnings setups</td><td>the plan figure and tables, as specified in section 4</td><td>ladder matches the fixture; reward-to-risk arithmetic asserted; the near-exit skip rule fires</td><td>all phase-3 rows PASS</td></tr>
+  <tr><td><b>4. Tonight's list, over the whole index</b></td><td>the full universe, shortlist builder, facts assembler, forward return filler, news pulse counter, and the app's list, universe and run pages</td><td>tonight's list over 500 names, with the fired count in the header</td><td>zero model calls and zero per-name calls nightly; wall clock; the fired count matches the reasons; base rate computed; every listing stores the plan as it stood that night, so section 13 remains possible later</td><td>a week of unattended nights with the list current each morning, and every stored listing carrying its entry, stop and target</td></tr>
+  <tr><td><b>5. Research on demand</b></td><td>fundamentals fetcher, staleness judge, theme and name research runners, claim checker, prose writer, the research store with versions and sources</td><td>a name opening with computed sections instantly and research streaming in, then opening again instantly with per-section dates; and, the following morning, listed names already carrying the overnight draft sections</td><td>a second open spends nothing; each staleness trigger fires its own test; poisoned and unsourced text rejected; the spend cap stops a pass; every section run on both models against the fixture, so the local and paid boundary is recorded as a measurement</td><td>every section specified in section 4 is produced on the current hardware, with the synthesis sections written by the paid model on demand. Moving those sections into the local lane later is a setting and a fixture comparison, not a build</td></tr>
+  <tr><td><b>6. Later</b></td><td>the improvement loop of section 13: setup resolution, the break-even score, the candidate register, the shadow column and the condition verdicts on the run page; rule versions scored counterfactually; the model's own proposal stored beside the computed one and scored the same way; a directional score if section 22 settles it; a second universe; call transcripts</td><td>the run page showing each condition against the bar its own setups demanded, with the resolved count and the divisor beside it</td><td>each guardrail in section 13 has its own test; a verdict below the minimum is withheld; an unresolved setup never counts as a win; each item brings its own expectations before it starts</td><td>each judged on its own evidence</td></tr>
+</table>
+
+<h2>21. Decisions</h2>
+<p>The decisions and the superseded ones live in <code>docs/DECISIONS.md</code>, grouped by topic, and not here. A decision stated in this document and again in a register is two places holding one fact, and one of them always loses.</p>
+<p>Every rule in this document that a later session could reasonably choose differently, where the wrong choice would be invisible, is a named decision in that record. This document cites them by their exact name, in the form <b>(see: Code owns every number)</b>, and the check named <b>decision-resolves</b> asserts that every citation matches a bold name in the record and that no two decisions share a name. The check named <b>no-superseded-citation</b> asserts that no citation resolves to a name under Previously decided.</p>
+<p>Cite the name, never a number. A misremembered name fails to resolve; a misremembered number resolves to the wrong decision and nobody notices.</p>
+
+<h2>22. Open questions</h2>
+<p class="note">No question is open. Every fork that stood here has been settled, and each is recorded below with how it settled rather than deleted. The six that stood here on 4 September were not questions: three were values with a stated way of settling them, which now sit in the limits table and the phase table; two were things already decided elsewhere in this document; and one was a recommendation written as a question. They are recorded in section 22 and the changelog rather than left here, because an open list that holds settled things makes the one real fork harder to see.</p>
+<h4>Settled since the version above</h4>
+<table>
+  <tr><th style="width:22%">Was asked</th><th>How it settled</th></tr>
+  <tr><td>Which of two hand-written reports was right about a moving average</td><td>Not a question once the specification moved inside this document. Every number in a report is computed from stored bars under the decision named Code owns every number, and fixture expectations are derived from the rules rather than from any report, so there is nothing left to reconcile.</td></tr>
+  <tr><td>The project's name</td><td>EquityBrief, confirmed 4 September.</td></tr>
+  <tr><td>Where transcripts come from</td><td>Nowhere that is bought. See the decision named Transcripts are opportunistic, never a dependency. The question should not have been written, because the source map already showed the press release carrying what the report needs.</td></tr>
+  <tr><td>The news-jump multiple</td><td>Set in the limits table: at least five articles in five sessions and at least three times the name's own trailing median.</td></tr>
+  <tr><td>The volume shelf threshold</td><td>Set in the limits table at twice an even share, with phase 2 widening the fixture to four names so the number is checked before anything depends on it.</td></tr>
+  <tr><td>A directional score</td><td>Settled 5 September in a narrower form than asked. Bucket-shaped conditions are registered and scored like any other candidate, so the data improves which reasons fire rather than producing a separate ranking. A reason's measured record is displayed beside the reason under section 15.5, which is the visible half of what was wanted. What is not built is a number beside each ticker, because separating small edges needs years of setups this list cannot produce and such a number would be read as a probability of making money.</td></tr>
+  <tr><td>Where theme material comes from</td><td>A search tool called inside the research loop, with a key already in hand and two trial searches run against it. See the decision named Theme material comes from a search tool, whose results are stored like any other document. It should not have stayed on this list after the key was set up.</td></tr>
+  <tr><td>Whether the watch list is pre-warmed</td><td>Settled twice. On 4 September the answer was no, because anticipation meant spending money on names that might not be opened. On 5 September that reasoning stopped applying, because research can now be written locally at no cost, so the overnight queue writes free drafts for listed names and the paid model stays strictly on demand. The superseded decision and its original reasoning are in section 22.</td></tr>
+</table>
+
+<h2>23. Changelog</h2>
+<table>
+  <tr><th style="width:10%">Date</th><th style="width:8%">Version</th><th>Change, and what the previous text said</th></tr>
+  <tr><td>2026-09-02</td><td>0.1</td><td>First version, and a same-day reissue after the original was lost with its conversation. Reference output was the Micron report of 2 September; first fixture was fifty daily bars.</td></tr>
+  <tr><td>2026-09-05</td><td>0.3</td><td>Audited the vocabulary against actual use and repaired it. Six rows belonging to the limits table were found sitting in the vocabulary table, where they had four columns against vocabulary's two and rendered broken; they had landed there because both tables carry a row named Base rate and the inserts that added them were anchored on that text, which matched the vocabulary table first. They are now in the limits table. Take-or-pay was removed, since it appeared nowhere else in the document and described a fact about the reference report's company rather than anything this system does. Listing, setup, shadow and break-even were added, since between them they are used more than seventy times, almost all in section 13, and none was defined. Added section 15, which describes what the reader actually sees each evening, and replaced the previous section of the same number that described only the load order of one page. The document had specified components, stores, limits and phases without ever stating that the list draws at most twenty rows while naming the true count, or how the other four hundred and eighty names are reached; that had lived only in a superseded mockup file. Settled the directional score in a narrower form: bucket-shaped conditions go through the candidate register like anything else, so the data changes which reasons fire, and a reason's measured record is displayed beside the reason rather than a number being placed beside each ticker. Two corrections came with it. The listings store now holds a row for every name every night rather than only for listed names, without which a shadow candidate could never be evaluated on the nights it would have fired. And the minimum resolved setups were raised from 50 and 100 to 250 and 400: the earlier figures were set without doing the arithmetic and would have licensed verdicts on a tenth of the evidence such a verdict needs. Closed the last source question. Theme material comes from a search tool called inside the research loop, with the tool named and its query parameters stated as a limit; the question had stayed on the open list after the key was already in hand and two trial searches had been run against it, which is the second time an answer that existed in the conversation was left standing as a blocker. Repaired two things in the same section: a duplicated clause in its opening note, and a settled row still citing a ruling in section 19 that this pass had removed, which would have sent a reader to text that no longer exists. Moved the decisions and the previously-decided list out of this document into <code>docs/DECISIONS.md</code>, where they are the record and this document cites them by name. Keeping them here as well would be two documents holding one fact. A pass adding a citation at each rule that rests on a decision is carried in the build plan, because until it runs the check that asserts citations has one citation to assert. Rewrote section 15 as a screen specification rather than a load order, following the shape a sibling project settled on: a rule that governs every screen, a named mark vocabulary defined once, a colour section where a hue means one thing only, and then each screen stating what it answers, its route, what it reads and its regions in order. Five screens, seven marks, and a section stating what no screen does. Four decisions were added to the record with it, covering the reads-and-renders rule, marks shared between the application and the exported report, the two hues belonging to support and resistance alone, and a not-yet-measured figure drawn as a dashed outline rather than a pale value. The previous section named the views and their contents and said nothing about routes, marks, colour, the export surface, or what a screen may not do. Made the document self-contained. It had treated a hand-written report as the thing to be reproduced, which put the specification outside these pages and left the harness checking code against a document that broke two of the rules stated here. Section 4 is now the specification of the report itself. Section 19 was rewritten: the command-line invocation and its prose steps were replaced by three tables stating what a fixture holds, what the harness checks and which table each claim comes from, and what the three verdicts mean; fixture expectations are derived from the rules in sections 9 to 13 rather than copied from a report, so the two callouts recording that the report contradicted itself and broke the rules were removed as no longer describing anything. Every justification that rested on what a report happened to do was restated from first principles, and the figures that make rules legible are now cited as a worked example, defined in section 8.1, which illustrates rules and never defines them. Answered a question the document could not answer as written: where the plan comes from on the first night. It comes from the same night's arithmetic, since the ladder is recomputed from the chart every evening rather than authored in advance or carried forward, and section 1 now says so. Examining that exposed two defects in the ladder rule. A moving average was allowed to anchor a tranche, and a short average follows the price, so on the worked example's own bars the close sat within half a typical day's move of its 20-day average on seventeen of thirty-one sessions, meaning a tranche anchored there would make the at-entry-zone condition fire about half the time on nothing having happened; averages remain chart levels and no longer anchor tranches. And the rule said tranches sit on support bands below the price while the reference report's first tranche contains the price, so the rule now reads low edge below the price, with a straddling band keeping its full width. Two decisions, one limits row, one failure row and a fixture note were added. Renumbered the sections so that none carries a letter. The document had grown a section 7A and a section 11A, which existed only to avoid renumbering when they were inserted, and four consecutive sections whose titles all began with the same two words so that the contents list read as a column of "Opened up" with the subject pushed to the right; one of those four had no figure to open anything up with. Those four are now named for what they cover. Every cross-reference and figure number was moved with them. Added section 13, how the picks improve, after the observation that the document measured things without ever changing anything, and that every system built here is designed around a self-improvement loop. The score is the break-even each plan states for itself, since a forward return mostly measures market drift. Four levels of improvement are named with the phase that owns each, guardrails are written before any data exists, and figures 13.1 and 13.2 show the resolution path and the gates a candidate must pass. Section 1's opening sentence is corrected: it said the system answers which stocks are worth looking at tonight, which implies a claim about what they will do; it now says which stocks have reached a price where the plan already says something. Phase 4 gains an obligation to store each listing's plan, without which the whole of section 13 becomes impossible to add later. Six decisions and four limits rows added, plus two failure rows. Corrected the same day: the candidate register was described as a committed file, which put one fact outside the store for the sake of tamper-evidence that an append-only table provides just as well, and which matched neither the rest of the design nor this document's own convention that a record corrects itself with a new dated entry. It is now a table accepting no update and no delete. Two decisions were added so the design works on the machine it is being built on rather than only on a future one: the local lane's scope is a setting the overnight queue inherits, so on 24GB the queue writes classification and extraction while synthesis stays paid and on demand; and a research record is written and dated per section rather than as a whole, since some sections are now drafted overnight and others written days later, which a single record-level date and model name would misreport. The decision that nothing is pre-warmed was superseded and moved to section 22, after the operator specified a machine with enough memory to run a large model locally: the objection had been to spending money in anticipation, and local work in anticipation is free. In its place the local model writes a free overnight draft for listed names whose research is missing or stale, bounded by wall clock rather than by a count of names, with the paid model reserved for on-demand reading and for rewriting a draft that is not good enough. Three decisions on where the system runs were added at the same time, since the store being one database file is what makes an installation portable, and the two things that would break portability if left implicit are hardcoded paths and self-scheduling.</td></tr>
+  <tr><td>2026-09-04</td><td>0.2</td><td>Rebuilt against a different reference report and eight rulings. The reference is now the Micron report written from the 1 September close, which adds a volume-at-price histogram, a day-by-day table of the largest moves, a second book for the earnings trade, behavioural tranche conditions, fractional exits with a trailing rule, non-price exit triggers, and a plain-language key under every figure. The universe is the S&amp;P 500 where v0.1 had a hand-picked watch list. The provider is named where v0.1 left it open, and hand-entered fundamentals are superseded. Storage is one year where v0.1 proposed five. The level window is sixty sessions where v0.1 said two hundred and fifty. Rendering moved from a nightly file per report to a single-page application. Research moved from nightly narration to on demand with permanent dated records. The fixture is diffed on the facts file where v0.1 diffed a rendered page. The ladder's stop rule is now stated as the low edge of the next band down and is trend-dependent; v0.1's rule said the next band beneath the tranche with one stop for all tranches, and it did not reproduce its own reference. Components no longer carry code numbers. Amended the same day to name the one-year first-run backfill as a step, a limit and a phase-1 done condition; it had been mentioned only as something a newly joining name receives, which left the first run itself unspecified. Amended again the same day to settle six of the seven open questions. The name is EquityBrief. Transcripts are read from the filings archive where a company files one and no provider is bought for them, replacing the previous text which said they were unavailable from either source and needed a further provider. Nothing is pre-warmed. The news-jump and volume-shelf thresholds moved from proposals in the open list into the limits table with their checks named. The 200-day conflict returned to section 19, where it was already ruled. Six of those seven had answers that existed elsewhere in this document or in the conversation that produced it, and listing them as open made settled things look like blockers. Amended 5 September to name DeepSeek V4 as the research model, replacing the previous text which said only that a cloud model with web search does research. Three consequences followed. The model cannot search, so components fetch documents and hand them over, which is now a decision in its own right and which leaves theme material without a settled source. The spend cap is denominated in money rather than tokens, because peak rates are double. And queued work is scheduled off-peak in UTC. Amended again on 5 September after trial searches showed that a bare provenance rule is not enough: a stored source is now also tested for admissibility before it is stored, with denied categories, a publish-date requirement and a preference for primary sources. Corrected the same day to state that admissibility is judged per document after the fetch and never per publisher, since a search tool's domain filter cannot express a rule about article kinds, and to add the case of a source that refuses automated access. Extended the same day with three decisions covering gated sources, the split into a company-news list and an industry list each with a review date, and the rule that a publisher list is a noise filter rather than a correctness test; with a phase 1 coverage measurement across a market-capitalisation-spread sample, replacing the assumption that a large-company index guarantees coverage; and with a note in section 19 recording that the reference report itself breaks the computed-numbers rule and the stored-source rule, so the fixture takes what the rules produce rather than what the report says. Extended again with the decision that a research pass is split by section difficulty across the local and paid models, figure 12.2 showing that split, and a phase 5 expectation that the boundary is measured against the reference rather than asserted. Added section 8 with figure 8.1, after the three builders were read as possibly per-name-on-demand rather than nightly across the whole index; it states plainly that all three run for every name every night, walks one stock through all three stages with the reference report's own numbers, and says why the chain is three components rather than one.</td></tr>
+</table>
+
+<footer>
+  <p>EquityBrief architecture v0.3, 5 September 2026. Nothing in this document has been read by a build session and nothing is built. Written for the operator and for readers outside the domain; section 3 defines every specialist term used.</p>
+</footer>
+
+</main>
+</body>
+</html>

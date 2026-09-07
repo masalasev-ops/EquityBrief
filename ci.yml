@@ -1,0 +1,32 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: verify
+        shell: pwsh
+        run: |
+          if ($IsWindows) { ./tools/ci.ps1 } else { ./tools/ci.sh }
+
+  # Linux is not a platform this tool supports. This job exists as an instrument
+  # for one class of fault: a path written with the wrong case works on Windows
+  # and macOS, which are case-insensitive by default, and fails on a
+  # case-sensitive filesystem. two-platform still claims exactly what it says.
+  case-sensitivity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: ./tools/ci.sh
