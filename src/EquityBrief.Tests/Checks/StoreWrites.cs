@@ -88,6 +88,12 @@ public class StoreWrites
         // The other direction of writer-ownership, which cannot hold until the
         // components are built. Counted rather than asserted, and the count is
         // what the phase report carries as out of scope.
+        //
+        // What this asserted until 0.7's review could not fail: built is a
+        // filter of owners, so every element of built is contained in owners by
+        // construction. What can be false is the count itself, so that is what
+        // is asserted, and its failure message says what the checkpoint that
+        // trips it owes.
         var schema = Corpus.Read("docs/SCHEMA.md");
 
         var owners = Regex.Matches(schema, @"^\| `[a-z_]+` \| ([^|]*) \| ([^|]*) \| ([^|]*) \|", RegexOptions.Multiline)
@@ -104,8 +110,11 @@ public class StoreWrites
             .Where(owner => ShippedSource().Any(file => Path.GetFileNameWithoutExtension(file) == owner))
             .ToArray();
 
-        // Nothing is built yet. The assertion is that the two are consistent,
-        // not that either is a particular size.
-        Assert.All(built, owner => Assert.Contains(owner, owners, StringComparer.Ordinal));
+        Assert.True(
+            built.Length == 0,
+            $"{built.Length} of the {owners.Length} declared writers now exist in the shipped " +
+            $"source: {string.Join(", ", built)}. The other direction of writer-ownership is " +
+            "assertable for those, so assert each against the table it is declared to own " +
+            "rather than raising this floor.");
     }
 }

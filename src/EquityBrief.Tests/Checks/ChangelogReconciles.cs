@@ -34,6 +34,16 @@ public class ChangelogReconciles
         foreach (var commit in commits)
         {
             var stat = Shell.Run(git, ["show", "--numstat", "--format=", commit]);
+
+            // A failed invocation returns empty output, the commit reads as one
+            // that deleted nothing, and the run stays green. Same shape as the
+            // shallow clone that made git log return one commit where the
+            // working machine has twenty.
+            Assert.True(
+                stat.ExitCode == 0,
+                $"git show exited {stat.ExitCode} for {commit}. A commit whose diff could not be " +
+                $"read is not a commit that deleted nothing. {stat.StandardError}");
+
             var touched = new List<string>();
             var deletedFromSpec = false;
 
