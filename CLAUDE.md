@@ -16,7 +16,7 @@ The design source of truth is `docs/ARCHITECTURE.html`. It is the only place the
 
 ## Where the build is right now
 
-Nothing is built. `docs/ARCHITECTURE.html` is at v0.3 and has never been read by a build session.
+Nothing is built. What the build has reached is recorded below rather than stated here.
 
 **Which checkpoint the build is on is the furthest checkpoint `docs/PROGRESS.md` records,** and the one to build next is the checkpoint after it in `docs/BUILD_PLAN.md`. That is stated as a pointer rather than as a number, because a number here is a second place the same fact lives and it goes stale the moment a checkpoint lands.
 

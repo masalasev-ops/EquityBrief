@@ -83,3 +83,11 @@ Was:
 Now:
 > One word is banned outright across the corpus and in chat, and a grep enforces it, exempting only this sentence, which has to contain the string in order to name it: the banned string is <elided> and every form of it. The operator does not want it, and a claim of candour is exactly the kind of virtue-assertion this rule already rejects.
 Why: the clause and the naming now sit in one sentence, so the exemption a checker matches on is the sentence that actually carries the string. The prior text is quoted with the string elided, because `banned-prose` allows exactly one occurrence in the corpus and it is the exempt line.
+
+### 2026-09-06 - CLAUDE.md - the architecture's version removed from "Where the build is right now"
+Corrects: the sentence held two facts that live elsewhere. The version lives in `ARCHITECTURE.html`, and whether a build session has read it goes stale the moment 0.1 starts, with nothing owning its removal. This is the objection the paragraph immediately below it makes about checkpoint numbers, applied to the sentence above it. Found by reading the section against its own next paragraph.
+Was:
+> Nothing is built. `docs/ARCHITECTURE.html` is at v0.3 and has never been read by a build session.
+Now:
+> Nothing is built. What the build has reached is recorded below rather than stated here.
+Why: one place per fact. The section now points at the record instead of restating it, which is what the rest of the section already does.
