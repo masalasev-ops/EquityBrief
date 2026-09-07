@@ -50,3 +50,20 @@ Notes:      the workflow at the repository root was the sharpest of the eight. A
             workflow, so 0.1 is the first checkpoint that will see either runner go green.
             `.claude/` is gitignored and untracked. It is per-machine harness state, not a
             corpus document, and the layout block does not name it.
+
+### Correction to the 0.0 entry above - a ninth defect      2026-09-06
+Corrects:   the entry above says eight defects and names the first corpus check as what found
+            them. A ninth was found afterwards, by the first run of the workflow rather than by
+            that check, and it is not in the count.
+What:       the Merge section's "CI green before merge. That is the only condition." and done
+            condition 2 are both written against a CI that exists, while `tools/ci.*` is built
+            at 0.4. As stated, no checkpoint from 0.0 to 0.3 could merge or be declared done,
+            so the corpus forbade the four checkpoints that build its own verification
+            machinery. Both passages now name when they begin.
+Measured:   the first workflow run, over 3 jobs on 3 runners, windows-latest, macos-latest and
+            ubuntu-latest. All 3 ran, all 3 failed, and each failed on the missing `tools/ci.*`
+            and on nothing else. `setup-dotnet` passed on all 3 before the failing step, which
+            is what proves `global.json`'s 10.0.3xx band resolves on every runner and not only
+            on this machine.
+Notes:      this is the value of moving the workflow, arriving within the hour. Nothing about
+            the merge rule was visible until a run existed to be red.
