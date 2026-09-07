@@ -383,3 +383,131 @@ Notes:      the check was right and the workflow was wrong. This is the case the
             forever and reports a scope it never had. The floor stated in advance is what turned
             an invisible narrowing into a red run, and it is the reason this was found on the
             first push rather than at some later sign-off.
+
+### Review of phase 0 - fourteen findings                                    2026-09-07
+Not a checkpoint entry. It belongs to 0.7, which has landed. This is the independent read the
+            phase 0 entry says is owed, recorded at the time it was issued because seven of
+            the fourteen become carried obligations, and an obligation citing a conversation
+            rather than a document is a hole in the record. The reviewing session had
+            committed no code when it found these and has committed none since.
+Read:       the 8 corpus documents, the 9 shipped source files, the 9 scripts in `tools`, the
+            workflow, and the 43 files in `EquityBrief.Tests`. Over that population the suite
+            ran at 98 passing and `tools/verify-phase` at 129 claims, 6 pass, 0 fail, 123 out
+            of scope, 0 unexamined, which reproduces what the 0.7 entry records.
+Bearing on  three of the fourteen, being 1, 2 and 3 below. Each concerns the accuracy of the
+sign-off:   report a sign-off reads, and 2 and 3 both make green mean less than it claims.
+            The other eleven are ordinary defects that hold no phase open.
+
+            1. The phase report never names the check that reached a PASS.
+            `Claim.By` is populated at `Harness/Scope.cs:114-132` and asserted non-empty by
+            `NoClaimPassesByFiat`, and neither output renders it:
+            `Harness/PhaseReportWriter.cs:60-66` projects the JSON claim as table, subject,
+            verdict and note, and the HTML claims table at `PhaseReportWriter.cs:137` carries
+            the same four columns. Confirmed against the generated artifact. The roster says a
+            passing claim names the check that reached it, which is a claim about a surface,
+            and the corpus rule is that such a claim is checked on the surface a person reads.
+            Asserting the model is what let this hold in the model and be absent from both
+            surfaces.
+
+            2. Section 17's thirty rows are placed as covered by an instrument that never
+            opens the file. `Harness/PhaseReport.cs:67` places section 17, on limits, spend
+            and the numbers the harness asserts, as asserted by `pinned-constants`.
+            `Checks/PinnedConstants.cs` reads CLAUDE.md, BUILD_PLAN.md, global.json,
+            `src/Directory.Build.props` and the workflow, never `ARCHITECTURE.html`, and
+            covers two constants, the framework version and the SDK feature band. Section 17
+            says of itself that each row is a claim about the code and that the harness parses
+            the table. Thirty claims are removed from the count by a placement naming a check
+            that does not reach them, which understates the set green is defined against.
+
+            3. Two of the six passing claims are reached by a check that does not cover them.
+            `Scope.For` at `Harness/Scope.cs:110-142` keys on subject alone for all but one
+            case, so a catalogue verdict is reused verbatim in the read and write matrix. In
+            that matrix `Migration runner` at `docs/ARCHITECTURE.html:910` is twelve blank
+            cells, and the matrix's own contract is that a blank cell is asserted as much as a
+            filled one; `schema-columns` asserts the columns and types of `run_log` and says
+            nothing about whether the runner writes store rows. `Verification harness` at
+            `docs/ARCHITECTURE.html:934` claims R against all eleven stores, which contradicts
+            the rule in CLAUDE.md that nothing in the harness reaches `data/`, and it passes
+            on the note that this report is the thing the claim describes. Two documents in
+            the corpus disagree and the harness reports PASS on one side of the disagreement.
+
+            4. `tools/run-bash.ps1` loses both its exit code and the failing step's name when
+            called from `tools/ci.ps1`. `ci.ps1:7` sets the error action preference to Stop,
+            which propagates into the called script, so `Write-Error` at `run-bash.ps1:20`
+            becomes a terminating error and `exit 127` is never reached. Measured by running
+            it: the run dies at exit 1 with the message and with no failed-at-step line. The
+            safety property survives and the documented 127 does not.
+            `AWrapperOnAMachineWithNoBashExitsWithANamedMessage` cannot see this, because it
+            invokes `migrate.ps1` directly under the default preference.
+
+            5. `TheDeclaredWritersThatDoNotExistYetAreCounted` at
+            `Checks/StoreWrites.cs:103-109` cannot fail. `built` is a filter of `owners`, so
+            asserting that every element of `built` is contained in `owners` is true by
+            construction. Only the floor above it asserts anything. A permanently passing test
+            reports coverage it does not have.
+
+            6. `AbsolutePaths.LooksAbsolute` at `Checks/AbsolutePaths.cs:22-35` inspects only
+            the first two characters, so an absolute path anywhere but the start of a value is
+            not seen. `run_log.detail` is where exception text will land and exception text
+            carries absolute paths mid-string.
+
+            7. `FixtureManifest.IsUtcInstant` at `Harness/FixtureManifest.cs:129-135` resolves
+            a zoneless instant against the machine's own zone, so the same manifest passes on
+            a UTC runner and fails on the operator's machine. It is also an implicit read of
+            the machine zone that `clock-usage` does not match. The existing test uses an
+            explicit offset, so it does not cover the case.
+
+            8. The manifest checker scans `input.query` only, at
+            `Harness/FixtureManifest.cs:104-115`. It never opens the captured response and
+            never checks that the file named by `input.file` exists, while
+            `fixtures/manifest.schema.json` and `fixtures/README.md` both say no credential
+            appears in a captured response and that the check scans as well.
+
+            9. `ChangelogReconciles` at `Checks/ChangelogReconciles.cs:36` does not check the
+            exit code of `git show`. A failed invocation returns empty output, the commit
+            reads as one that deleted nothing, and the run stays green. Same shape as the
+            shallow clone fault the addendum above records, which the floor caught only
+            because it was total.
+
+            10. The money column list of `price-storage-form` at
+            `Checks/PriceStorageForm.cs:13-17` is hand maintained and nothing reconciles it
+            against `SCHEMA.md`, which `StoreSchema.Declared` already parses. A money column
+            added under a new name is unchecked and nothing says so.
+
+            11. `Shell.Run` at `Shell.cs:70-72` reads standard output to completion before
+            reading standard error, so a child that fills the error pipe's buffer deadlocks
+            both. Latent at the output sizes the suite's children produce today.
+
+            12. `banned-prose` enforces its rule over an unstated subset and has done so from
+            the day it was written at 0.0. `Checks/BannedProse.cs:22` scans the 8 corpus
+            documents, the source and project files and the scripts in `tools`, and therefore
+            not the workflow, `src/Directory.Build.props`, `EquityBrief.slnx` or the two files
+            in `fixtures`. Over those 9 unscanned files, 0 carry the banned string and 0 carry
+            an em dash today, so this is a check narrower than it reads rather than a live
+            fault. That is the survivorship shape the Checks section argues about: a check
+            that silently narrows its own scope keeps passing. It also carries no negative
+            proof over a file, only over a string in memory.
+
+            13. `SessionZones.Resolve` at `src/EquityBrief.Core/Time/SessionZones.cs:11-36`
+            refuses any identifier carrying no separator. That is right for an exchange
+            session zone, which is every zone this system resolves, and wrong for the general
+            case the method name and its message claim, because UTC and several other IANA
+            identifiers carry no separator. The repair is to narrow the claim to what the code
+            does rather than to widen the code for a case nothing asks for.
+
+            14. `Microsoft.Extensions.Configuration.Binder` is referenced by
+            `src/EquityBrief.Worker/EquityBrief.Worker.csproj` and nothing binds. An unused
+            reference is a dependency somebody later cites as one.
+On 0.4:     no supported explanation was found for the unreproducible `ci-parity` failure the
+            0.4 entry records. The hypothesis tested was that Windows PowerShell turns a
+            native command's error stream into a terminating error under Stop when the streams
+            are redirected. It was run twice on a machine carrying Windows PowerShell and no
+            `pwsh`, once through `ci.ps1` itself and once in isolation, and did not fire
+            either time. Finding 4 is a candidate mechanism rather than a diagnosis: it
+            produces the same visible signature, a run that dies at exit 1 before its step
+            name prints, by a different route. Whether that route was reachable in the failing
+            run is not established, and a fault that stops recurring after an unrelated fix is
+            not a diagnosed one.
+Notes:      this entry is the whole of what the reviewing session committed. The repairs are a
+            separate session's work, which is what keeps the fresh session rule satisfied at
+            sign-off.
