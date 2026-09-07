@@ -163,3 +163,11 @@ Now:
 
 > | Build | `dotnet build EquityBrief.slnx` | same | either |
 Why: 0.1 created the solution with an explicit flag to get the older format, on the reasoning that the corpus named it and a spec should not bend to a tool default. The operator ruled the other way: the default is the format to carry, and the corpus is what moves. `EquityBrief.Tests` finds the checkout by looking for the file, so the code moved with it.
+
+### 2026-09-07 - BUILD_PLAN.md - the harness obligation covers phase 0, not 0.1
+Corrects: the row named 0.1's three checks by name, so every checkpoint that adds a check has to remember to edit it, and the first one that forgets leaves the row understating what the phase report owes. Found at 0.3, the second checkpoint in a row that added checks the row did not mention.
+Was:
+> | 0.1's checks unseen by the harness | 0.1 | 0.7 | `api-isolation`, `build-properties-central` and `pinned-constants` are asserted by the suite and by nothing the phase report reads. 0.1 produces no pipeline output, so it has no fixture expectations to carry, only checks the report must enumerate |
+Now:
+> | Phase 0's checks unseen by the harness | 0.1 | 0.7 | every check the suite carries is asserted by nothing the phase report reads. Phase 0 produces no pipeline output, so it has no fixture expectations to carry, only checks the report must enumerate by name |
+Why: an obligation that has to be re-edited to stay true is one that goes stale quietly. Naming the property rather than today's instances of it makes the row correct for every checkpoint in the phase.

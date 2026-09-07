@@ -16,4 +16,10 @@ internal static class ProjectFile
             .OrderBy(name => name, StringComparer.Ordinal)
             .ToArray();
     }
+
+    internal static string? ValueOf(string xml, string property) =>
+        XDocument.Parse(xml).Descendants()
+            .Where(element => element.Name.LocalName == property)
+            .Select(element => element.Value.Trim())
+            .FirstOrDefault();
 }
