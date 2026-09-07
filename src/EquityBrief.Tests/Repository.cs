@@ -24,6 +24,8 @@ internal static class Repository
 
     internal static string Schema => Path.Combine(Root, "docs", "SCHEMA.md");
 
+    internal static string Architecture => Path.Combine(Root, "docs", "ARCHITECTURE.html");
+
     internal static string Tool(string name) => Path.Combine(Root, "tools", name);
 
     internal static string Workflow => Path.Combine(Root, ".github", "workflows", "ci.yml");

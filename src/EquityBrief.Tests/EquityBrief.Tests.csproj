@@ -6,6 +6,9 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <!-- The suite is also the harness. tools/verify-phase runs it as a command,
+         so it carries its own entry point rather than the generated one. -->
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>

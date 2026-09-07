@@ -180,3 +180,15 @@ Was:
 > | `tools/migrate.ps1` written without its proofs | 0.2 | 0.4 | 0.2 needed the wrapper to run migrate on Windows at all, so it exists. 0.4's done condition owes the proofs: that a wrapper returns both the script's output and its exit code, shown by a deliberately failing probe, and that a machine with no bash exits with a named message rather than zero |
 Now: both rows removed. The measurements that discharged them are in the 0.4 entry and its addendum in `PROGRESS.md`, which is where a dated figure belongs.
 Why: the table answers what is still owed. A discharged row makes it answer something else, and the record of the discharge belongs in the record rather than in the spec.
+
+### 2026-09-07 - ARCHITECTURE.html - the phase report is named once
+Corrects: the component catalogue had the verification harness write `verify.html` and `verify.json`, while `CLAUDE.md` and `BUILD_PLAN.md` both say `artifacts/phase-report.html` and `artifacts/phase-report.json`. One artefact, two names, and `architecture-conformance` reads the catalogue. Found at 0.1 by reading the catalogue against the two files that name the same output, and carried to 0.5, where the harness that writes it was built.
+Was:
+> <td>verify.html, verify.json</td>
+
+> <td><code>verify.html</code> with every row UNEXAMINED</td>
+Now:
+> <td>artifacts/phase-report.html, artifacts/phase-report.json</td>
+
+> <td><code>artifacts/phase-report.html</code> with every row UNEXAMINED</td>
+Why: two documents said one thing and one said another, and the two are the ones a build session reads first. The harness now writes the name they use.

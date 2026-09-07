@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# The phase report. Not a CI step: a phase signs off against this, and it is
+# green only when nothing is unexamined, which is a gate on a phase rather than
+# on a commit.
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$root"
+
+exec dotnet run --project src/EquityBrief.Tests -- "$root"
