@@ -631,3 +631,17 @@ Notes:      `banned-prose` enforced its rule over an unstated subset from the da
             recorded above put Git for Windows ahead of it on PATH. This is a fact about the
             machine and not about the repository, and it is written down because the next
             session to run `tools/ci.ps1` here will meet it.
+
+### Addendum to the repair pass above - two roster rows                      2026-09-07
+Adds:       the entry above does not name a corpus edit made after it was written. The roster
+            rows for `architecture-conformance` and `banned-prose` had both become narrower
+            than the check behind them, which reads as coverage nobody has when the phase
+            report enumerates checks against the roster. Both rows now say what their check
+            does, the Checks section gains a paragraph stating the declaration and
+            reconciliation rule, and the prior text of all three is in `CHANGELOG.md`.
+Measured:   113 tests unchanged, `tools/ci.ps1` green, and the phase report unchanged at 158
+            claims, 4 pass, 0 fail, 154 out of scope, 0 unexamined, 10 reconciled against a
+            floor of 8. Over the 24 roster rows, 2 were widened and 0 narrowed.
+Notes:      a row that says less than its check does is the same defect as one that says more,
+            read from the other end. The next session writing against the row would take the
+            reconciliation for something nobody had built.

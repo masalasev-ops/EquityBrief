@@ -251,3 +251,15 @@ Was:
 Now:
 > PASS, FAIL or UNEXAMINED for every claim in sections 7, 14, 15, 16, 17 and 18
 Why: the scope was widened to what the document already said of itself in two places rather than section 17's note narrowed to the catalogue's list, which is the same repair 0.5 made for section 14. Section 17 is now a claim source and its twenty-nine rows are out of scope, each naming the checkpoint or phase that ends it, instead of being counted as covered.
+
+### 2026-09-07 - CLAUDE.md - two roster rows widened to what their checks now do
+Corrects: nothing in the rows was wrong; both had become narrower than the check behind them, which is the direction that reads as coverage nobody has. `architecture-conformance` now reconciles every placement and every pass against what the check it names declares it reaches, and renders the reaching check on both surfaces the report writes. `banned-prose` now reads every text file git tracks rather than the eight documents, the source and project files and the scripts in `tools`. Found by the phase 0 review, findings 1, 2, 3 and 12, and repaired in the same pass.
+Was:
+> | `architecture-conformance` | every CI run | Every claim ARCHITECTURE.html makes, in a table or in the nightly run's ordered list, has a verdict: pass, fail, out of scope for this phase, or unexamined; every table in the document is placed so none can go unread; and a claim that passes names the check that reached it |
+
+> | `banned-prose` | every CI run | No file in the corpus or the shipped source contains the banned string or any form of it, and no file contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
+Now:
+> | `architecture-conformance` | every CI run | Every claim ARCHITECTURE.html makes, in a table or in the nightly run's ordered list, has a verdict: pass, fail, out of scope for this phase, or unexamined; every table in the document is placed so none can go unread; a claim that passes names the check that reached it, on both surfaces the report writes; and every placement and every pass is reconciled against what the check it names declares it reaches, in both directions |
+
+> | `banned-prose` | every CI run | No text file the repository tracks contains the banned string or any form of it, and none contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
+Why: the roster is where a reader learns what a check asserts, and the phase report enumerates checks by name against it. A row that says less than the check does is the same defect as one that says more, read from the other end: the next session writing against the row would take the reconciliation for something nobody had built. The Checks section gains a paragraph stating the declaration rule, because the rule is what makes a placement naming an instrument refutable rather than decorative.
