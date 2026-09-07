@@ -17,3 +17,6 @@ obj/
 .vs/
 .idea/
 .DS_Store
+
+# local harness settings, per machine and not a corpus document
+/.claude/

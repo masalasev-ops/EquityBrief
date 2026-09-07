@@ -56,3 +56,14 @@ Was:
 Now:
 > 0.0, The repository, precedes it, with the corpus committed unedited as the first commit.
 Why: three rules the corpus already states depend on a repository existing, and a dependency nothing owns is one every session assumes somebody else did.
+
+### 2026-09-06 - CLAUDE.md - the layout block names every file that is not gitignored
+Corrects: `ci.yml` sat at the repository root, where Actions never reads it, so the matrix job and the Linux case-sensitivity job never ran and done condition 5, `two-platform` and the instrument the Checks section claims for `path-casing` were all unsatisfied with nothing reporting it. The layout block named neither that file nor `CLAUDE.md`, `EquityBrief.sln`, `.gitignore` or `/artifacts`, so four delivered files and the harness output folder had no stated home. Found by listing the tree against the block.
+Was:
+> /fixtures         one folder per fixture name and date: the committed inputs, and
+>                   expectations/ holding what the rules in ARCHITECTURE produce over them
+> /prompts          gitignored. spent build prompts, kept locally
+> /data             gitignored. the store lives here
+> .gitattributes    line endings, normalised to LF in the repository
+Now: the same lines with `/artifacts` above `/prompts`, and `CLAUDE.md`, `EquityBrief.sln`, `.github/workflows/ci.yml` and `.gitignore` named beneath `/data`. `ci.yml` moved from the root to `.github/workflows/ci.yml` in the same commit.
+Why: a workflow at the wrong path is the failure this corpus argues against by name, a green run that ran nothing. The block is the map of the tree, so a file it does not name is a file no document places.

@@ -50,9 +50,16 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                   nightly  nightly.ps1   what the scheduler calls, not run by CI
 /fixtures         one folder per fixture name and date: the committed inputs, and
                   expectations/ holding what the rules in ARCHITECTURE produce over them
+/artifacts        gitignored. the phase report, written by verify-phase
 /prompts          gitignored. spent build prompts, kept locally
 /data             gitignored. the store lives here
+CLAUDE.md         these rules, read first every session
+EquityBrief.sln   the six projects, at the root
+.github/workflows/ci.yml   the two-platform matrix and the Linux case-sensitivity job.
+                  Actions reads workflows from this path and no other
 .gitattributes    line endings, normalised to LF in the repository
+.gitignore        the store, the prompts archive, the harness output, the secrets
+                  files and the local harness settings
 ```
 
 `EquityBrief.Tests` sits alongside the projects it tests rather than in a sibling tree. One consequence worth stating, because a check depends on it: `api-isolation` asserts that `EquityBrief.Api` has no transitive reference to `EquityBrief.Worker`, read from the compiled dependency file rather than the project file, and the test project is exempt because it references everything by design. That exemption is named here so a later session does not find it and assume the check is broken.
