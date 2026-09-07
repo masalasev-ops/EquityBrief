@@ -370,3 +370,16 @@ Notes:      the phase found nine defects in the corpus it was building from, and
             **Not a sign-off.** This session committed code, so under the fresh session rule it
             must not sign that code off. Phase 0's sign-off is owed on the phase as a whole,
             before phase 1's plan, by a session that has not written any of it.
+
+### Addendum to 0.7 - the check that could not see its population      2026-09-07
+What:       `changelog-reconciles` passed locally and failed on all three runners on its first
+            push. `actions/checkout` clones shallow by default, so `git log` returned 1 commit
+            where the working machine has 20, and the check reads the history.
+Measured:   1 commit visible on the runners against a floor of 5. The workflow now fetches the
+            full history and all 3 jobs are green.
+Notes:      the check was right and the workflow was wrong. This is the case the corpus argues
+            about at length: a check whose population is invisible must fail rather than assert
+            over what it can see, because the version that quietly asserts over 1 commit passes
+            forever and reports a scope it never had. The floor stated in advance is what turned
+            an invisible narrowing into a red run, and it is the reason this was found on the
+            first push rather than at some later sign-off.
