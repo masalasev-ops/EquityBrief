@@ -82,6 +82,68 @@ public class WrapperTests
     }
 
     [Fact]
+    public void AWrapperCalledUnderAStopPreferenceStillExits127AndNamesTheStep()
+    {
+        var host = Shell.PowerShellHost();
+
+        if (host is null)
+        {
+            Assert.False(OperatingSystem.IsWindows(), "Windows machines carry a PowerShell.");
+            return;
+        }
+
+        // Through a caller that sets the preference to Stop, which is what
+        // tools/ci.ps1 does before it runs any step. Invoking migrate.ps1
+        // directly under the default preference is what made this invisible:
+        // Write-Error became a terminating error, exit 127 never ran, and the
+        // run died at 1 before the failing step could print its name.
+        using var empty = new TemporaryDirectory();
+        using var caller = new TemporaryDirectory();
+
+        var script = Path.Combine(caller.Path, "caller.ps1");
+
+        File.WriteAllText(script, string.Join(
+            Environment.NewLine,
+            "$ErrorActionPreference = 'Stop'",
+            "$global:LASTEXITCODE = 0",
+            "& '" + Repository.Tool("migrate.ps1") + "'",
+            "if ($LASTEXITCODE -ne 0) {",
+            "    Write-Host 'ci: failed at step: migrate'",
+            "    exit $LASTEXITCODE",
+            "}",
+            "exit 0"));
+
+        var result = Shell.Run(
+            host,
+            ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script],
+            environment: new Dictionary<string, string> { ["PATH"] = empty.Path });
+
+        Assert.Equal(127, result.ExitCode);
+        Assert.Contains("No bash found on PATH", result.Output, StringComparison.Ordinal);
+        Assert.Contains("ci: failed at step: migrate", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheCallerAboveIsTheContractTheCiScriptRunsStepsUnder()
+    {
+        // The caller written above is only worth what it reproduces, so what it
+        // reproduces is read out of the script rather than remembered.
+        var ci = File.ReadAllText(Repository.Tool("ci.ps1"));
+
+        foreach (var line in new[]
+                 {
+                     "$ErrorActionPreference = 'Stop'",
+                     "$global:LASTEXITCODE = 0",
+                     "if ($LASTEXITCODE -ne 0)",
+                     "ci: failed at step:",
+                     "migrate.ps1",
+                 })
+        {
+            Assert.Contains(line, ci, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void EveryBashEntryPointHasAPowerShellOneBesideIt()
     {
         var scripts = Directory.GetFiles(Path.Combine(Repository.Root, "tools"))
