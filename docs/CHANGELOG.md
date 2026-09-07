@@ -231,3 +231,15 @@ Was:
 > | Architecture cites its decisions by name | 0.5 | 0.7 | ... A pass over the architecture adding a citation at each rule that rests on a decision is owed before the phase 0 report claims that check runs |
 Now: both rows removed, and the carried obligations table holds only the five the architecture and phase 1 created.
 Why: the second was the one gating the phase 0 report's claim that `decision-resolves` runs, and it is the reason the pass happened at 0.7 rather than being carried further. The first was due at 0.4 and was not discharged then, which the phase 0 entry records rather than passes over.
+
+### 2026-09-07 - ARCHITECTURE.html - the verification harness reads no live store
+Corrects: the read and write matrix gave the verification harness R against all eleven stores, and `CLAUDE.md` says nothing in the harness reaches `data/`. Two documents in the corpus disagreed and the harness reported PASS on one side of the disagreement. The component catalogue's own row carried the same words. Found by the phase 0 review, finding 3, as the third of three findings bearing on sign-off.
+Was:
+> `  <tr><td>Verification harness</td><td><span class="r">R</span></td>` and the same cell repeated for all eleven stores
+
+> `<td>this document, the code, the fixture, every store</td>` in the component catalogue's Verification harness row
+
+> The run log is a store rather than a component and so has no row of its own.
+Now:
+> the matrix row carries eleven blank cells, the catalogue row reads `this document, the code, and the fixture, including the fixture's own store; never a store under the data root`, and the Key paragraph gains: The verification harness reads none of the eleven stores: it reads this document, the code and the fixture, including the fixture's own store, and never a store under the data root. The distinction is written here because it is the one a later reader would otherwise widen back, and a check that reads the live store is a check whose result depends on last night.
+Why: the harness reads the fixture's store and the schema declarations and never the live store, so the matrix row was the wrong one of the two. A blank cell in that matrix is a claim as much as a filled one, which makes eleven blanks the correct statement rather than a deletion. The sentence in the Key is there because the row itself cannot carry a reason, and a bare set of blanks invites the next reader to fill them in again.
