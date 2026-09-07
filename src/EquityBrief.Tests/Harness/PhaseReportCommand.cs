@@ -1,4 +1,5 @@
 using EquityBrief.Core.Time;
+using EquityBrief.Tests.Checks;
 
 namespace EquityBrief.Tests.Harness;
 
@@ -15,10 +16,13 @@ internal static class PhaseReportCommand
         // separators its own shell uses and the report should not print two kinds.
         var root = Path.GetFullPath(args.Length > 0 ? args[0] : Repository.Root);
 
-        var tables = ArchitectureTables.In(
-            File.ReadAllText(Path.Combine(root, "docs", "ARCHITECTURE.html")));
+        var document = File.ReadAllText(Path.Combine(root, "docs", "ARCHITECTURE.html"));
 
-        var report = PhaseReport.Build(tables, Fixtures.Of(root));
+        var report = PhaseReport.Build(
+            ArchitectureTables.In(document),
+            NightlyRunSteps.In(document),
+            Fixtures.Of(root),
+            CoverageReported.Coverage());
 
         // The clock, because nothing else in the system may read the machine.
         PhaseReportWriter.Write(report, root, SystemClock.ForUnitedStatesSessions().UtcNow);
@@ -30,6 +34,7 @@ internal static class PhaseReportCommand
         Console.WriteLine($"out of scope {report.Count(Verdict.OutOfScope)}");
         Console.WriteLine($"unexamined   {report.Count(Verdict.Unexamined)}");
         Console.WriteLine($"fixture      {report.Fixture.State}, {report.Fixture.Folders} captured");
+        Console.WriteLine($"checks       {report.Coverage.Count} on the roster, {report.Coverage.Count(check => check.Carrier != "not due yet")} carried");
         Console.WriteLine(PhaseReportWriter.HtmlPath(root));
         Console.WriteLine(PhaseReportWriter.JsonPath(root));
 

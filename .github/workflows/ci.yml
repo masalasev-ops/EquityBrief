@@ -10,6 +10,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # changelog-reconciles reads the history. The default shallow clone
+          # gives it one commit, and a check that cannot see what it asserts
+          # over must fail rather than pass over nothing.
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
@@ -26,6 +31,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # changelog-reconciles reads the history. The default shallow clone
+          # gives it one commit, and a check that cannot see what it asserts
+          # over must fail rather than pass over nothing.
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'

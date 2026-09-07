@@ -28,6 +28,11 @@ internal static class Repository
 
     internal static string Tool(string name) => Path.Combine(Root, "tools", name);
 
+    internal static IReadOnlyList<string> ToolScripts() =>
+        Directory.GetFiles(Path.Combine(Root, "tools"))
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+
     internal static string Workflow => Path.Combine(Root, ".github", "workflows", "ci.yml");
 
     internal static string SystemClock =>

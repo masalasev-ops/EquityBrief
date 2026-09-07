@@ -45,6 +45,12 @@ internal static class PhaseReportWriter
                     outOfScope = report.Count(Verdict.OutOfScope),
                     unexamined = report.Count(Verdict.Unexamined),
                 },
+                coverage = report.Coverage.Select(check => new
+                {
+                    check = check.Check,
+                    runs = check.Runs,
+                    carrier = check.Carrier,
+                }),
                 placement = report.Tables.Select(table => new
                 {
                     heading = table.Heading,
@@ -101,6 +107,19 @@ internal static class PhaseReportWriter
         page.Append("<h2>Fixture</h2>");
         page.Append($"<p><b>{Escape(report.Fixture.State)}</b>, {report.Fixture.Folders} captured. ");
         page.Append($"{Escape(report.Fixture.Note)}</p>");
+
+        page.Append($"<h2>Check coverage ({report.Coverage.Count})</h2>");
+        page.Append("<p>Every check the roster says runs, and what carries it. A roster row with ");
+        page.Append("nothing behind it is a property nobody keeps.</p>");
+        page.Append("<table><tr><th>Check</th><th>Runs</th><th>Carried by</th></tr>");
+
+        foreach (var check in report.Coverage)
+        {
+            page.Append($"<tr><td>{Escape(check.Check)}</td><td>{Escape(check.Runs)}</td>");
+            page.Append($"<td>{Escape(check.Carrier)}</td></tr>");
+        }
+
+        page.Append("</table>");
 
         page.Append("<h2>Every table in the architecture</h2>");
         page.Append("<p>A table nobody placed is a table that can go unread, so all of them are here.</p>");

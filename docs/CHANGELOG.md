@@ -192,3 +192,42 @@ Now:
 
 > <td><code>artifacts/phase-report.html</code> with every row UNEXAMINED</td>
 Why: two documents said one thing and one said another, and the two are the ones a build session reads first. The harness now writes the name they use.
+
+### 2026-09-07 - CLAUDE.md - architecture-conformance covers the nightly run's list
+Corrects: the row said "every claim a table makes", and the component catalogue names sections 7, 14, 15, 16 and 18 as the claim scope. Section 14 carries an ordered list rather than a table, so a check written to the row's words would have taken no claims from the nightly run and said nothing about having skipped it. Found at 0.5 by counting the document's tables against the sections the catalogue names, and carried to 0.7.
+Was:
+> | `architecture-conformance` | every CI run | Every claim a table in ARCHITECTURE.html makes has a verdict: pass, fail, out of scope for this phase, or unexamined, and every table in the document is placed so none can go unread |
+Now:
+> | `architecture-conformance` | every CI run | Every claim ARCHITECTURE.html makes, in a table or in the nightly run's ordered list, has a verdict: pass, fail, out of scope for this phase, or unexamined; every table in the document is placed so none can go unread; and a claim that passes names the check that reached it |
+Why: the instrument was widened to cover what the architecture said it covered, rather than the architecture narrowed to what the instrument happened to read. The clause about naming the check is added because the harness now has claims that pass, and a pass by fiat is the thing the phase report exists to refuse.
+
+### 2026-09-07 - CLAUDE.md - a checkpoint row names a phase the plan has
+Corrects: `coverage-reported` was written to require that a checkpoint row name a checkpoint `BUILD_PLAN.md` has, and the plan states that later phases get checkpoint detail at the previous phase's sign-off. Four of the five checkpoint rows name 2.1, 4.1, 5.1 and 6.1, none of which the plan can carry yet, so the rule forbade the roster from naming anything past the phase in hand. Found at 0.7 while implementing the check.
+Was:
+> and a checkpoint row has to name one `BUILD_PLAN.md` has and `PROGRESS.md` does not yet record.
+Now:
+> and a checkpoint row has to name a checkpoint `PROGRESS.md` does not yet record, in a phase `BUILD_PLAN.md` has. The phase rather than the checkpoint, because later phases get checkpoint detail at the previous phase's sign-off, so requiring the checkpoint by name would forbid the roster from naming anything past the phase in hand.
+Why: the two rules were written against each other and one of them had to give. The one that gave is the one that could not be satisfied without abandoning the plan's own policy on when checkpoints are written.
+
+### 2026-09-07 - BUILD_PLAN.md - the section 14 obligation discharged at 0.7
+Corrects: nothing. The row came due at 0.7 and was met by widening the harness rather than the document: section 14's ordered list is now read as nine claims.
+Was:
+> | Section 14 is named as a claim source and carries no table | 0.5 | 0.7 | the component catalogue says the harness reports a verdict for every claim in sections 7, 14, 15, 16 and 18. Section 14 contains no table, so a harness that reads tables can take no claims from it. Either 14 gains a table or the stated scope drops it, and the report cannot be trusted to cover the nightly run until one of those happens |
+Now: the row is removed. The measurement that discharged it is in the phase 0 entry in `PROGRESS.md`.
+Why: the table answers what is still owed, and a discharged row makes it answer something else.
+
+### 2026-09-07 - BUILD_PLAN.md - the harness coverage obligation discharged at 0.7
+Corrects: nothing. The row came due at 0.7 and was met. The phase report now carries a coverage record naming every check the roster says runs and what carries it, so a roster row with nothing behind it is visible on the page a person reads rather than only inside a run that passed.
+Was:
+> | Phase 0's checks unseen by the harness | 0.1 | 0.7 | every check the suite carries is asserted by nothing the phase report reads. Phase 0 produces no pipeline output, so it has no fixture expectations to carry, only checks the report must enumerate by name |
+Now: the row is removed. The figures are in the phase 0 entry in `PROGRESS.md`.
+Why: the table answers what is still owed, and a discharged row makes it answer something else.
+
+### 2026-09-07 - BUILD_PLAN.md - two more obligations discharged at 0.7
+Corrects: nothing. Both are met. The citation placeholder, due at 0.4 and discharged late here, is exempted by `decision-resolves` on its exact text rather than by loosening the pattern, which would have exempted real mistakes too. The architecture now cites six of its rules by decision name, so `decision-resolves` has the design document to assert and not only `CLAUDE.md`.
+Was:
+> | The citation placeholder in this table is not a citation | 0.0 | 0.4 | ... Either the checker exempts this table by name or the row is reworded |
+
+> | Architecture cites its decisions by name | 0.5 | 0.7 | ... A pass over the architecture adding a citation at each rule that rests on a decision is owed before the phase 0 report claims that check runs |
+Now: both rows removed, and the carried obligations table holds only the five the architecture and phase 1 created.
+Why: the second was the one gating the phase 0 report's claim that `decision-resolves` runs, and it is the reason the pass happened at 0.7 rather than being carried further. The first was due at 0.4 and was not discharged then, which the phase 0 entry records rather than passes over.

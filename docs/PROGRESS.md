@@ -307,3 +307,79 @@ Notes:      the fixture is reported as absent and never as passing, and the note
             The manifest asserts there is none and the checker scans for seven markers, which is
             the pattern of asserting a thing and then testing the assertion rather than trusting
             it.
+
+### 0.7 - the phase 0 report                                                 2026-09-07
+Built:      the ten roster checks that had nothing behind them: `decision-resolves`,
+            `no-superseded-citation`, `changelog-reconciles`, `stated-counts`, `banned-prose`,
+            `path-casing`, `bar-append-only`, `writer-ownership`, `two-platform` and
+            `coverage-reported`. A scope for every claim in the architecture, a reader for
+            section 14's ordered list, and a coverage record in the phase report naming every
+            check the roster carries and what implements it.
+Measured:   129 claims. 6 pass, 0 fail, 123 out of scope, 0 unexamined, and
+            `tools/verify-phase` exits 0. Every one of the 6 that passes names the check that
+            reached it; every one of the 123 out of scope names the checkpoint or phase that
+            ends it. 24 placements, being the 23 tables and section 14's list. 24 roster rows,
+            19 carried by an implementation and 5 naming a checkpoint that has not landed.
+Tests:      98, up from 67. `tools/ci.sh` green end to end locally before the push.
+Carried:    all four obligations that were due in phase 0 are discharged. Four remain, created
+            by the architecture and by 1.7, none due before 1.3.
+Notes:      three findings, each fixed by widening an instrument rather than narrowing a
+            document. Section 14 is named as a claim source and carries an ordered list, so the
+            harness reads lists as well as tables. `coverage-reported` was written to require a
+            checkpoint row name a checkpoint the plan has, while the plan states that later
+            phases get checkpoint detail at the previous phase's sign-off, so four of the five
+            rows named checkpoints that cannot exist yet and the rule now asks for the phase.
+            `architecture-conformance` said "every claim a table makes" and now says what the
+            catalogue always said it covered.
+
+            The citation placeholder obligation was due at 0.4 and was discharged here, three
+            checkpoints late. Nothing was blocked by it, because the check it concerned was not
+            written until 0.7, but the due point was wrong rather than the work.
+
+            Two checks are narrower than their roster row reads and the difference is stated
+            here rather than left to be discovered. `writer-ownership` asserts that every write
+            in the shipped source is declared; the other direction, that every declared writer
+            exists, cannot hold until the components are built, so the declared writers are
+            counted and not asserted. `two-platform` asserts that the workflow still declares
+            both runners and hands each the CI script, because whether the suite passed on both
+            is CI's own result and cannot be asserted from inside one run.
+
+### Phase 0 - a skeleton that can already fail                               2026-09-07
+Built:      eight checkpoints, 0.0 to 0.7. A git repository and the corpus committed unedited.
+            Six projects building clean under warnings as errors. A SQLite store, a migration
+            runner and `run_log`. A clock resolving session dates through IANA identifiers. Two
+            CI implementations and one wrapper mechanism. A harness that reads the architecture
+            and writes the phase report. A fixture folder with its manifest schema. Nineteen
+            checks.
+Measured:   98 tests. CI green on windows-latest, macos-latest and ubuntu-latest. The phase
+            report green: 129 claims, 6 pass, 0 fail, 123 out of scope, 0 unexamined, and no
+            claim passing without naming the check that reached it. The fixture is reported
+            ABSENT with 0 captured, which is what 0.6 built and never a pass.
+Notes:      the phase found nine defects in the corpus it was building from, and every one was
+            repaired by a named edit with its prior text in `CHANGELOG.md`. Four of them were
+            rules that could not be satisfied as written: the merge condition, done condition 2,
+            done condition 5, and `coverage-reported`'s checkpoint clause. Each was written
+            against a system that already existed, and phase 0 is the phase that builds it.
+
+            Two claims a reader should not take from this entry. Green is a statement about the
+            build and never about a running system: nothing has fetched a bar, and the store
+            this repository can create is empty. And the phase report is green because 123 of
+            its 129 claims are out of scope, which is the correct answer for a phase that built
+            no pipeline, not evidence that the architecture has been verified.
+
+            **Not a sign-off.** This session committed code, so under the fresh session rule it
+            must not sign that code off. Phase 0's sign-off is owed on the phase as a whole,
+            before phase 1's plan, by a session that has not written any of it.
+
+### Addendum to 0.7 - the check that could not see its population      2026-09-07
+What:       `changelog-reconciles` passed locally and failed on all three runners on its first
+            push. `actions/checkout` clones shallow by default, so `git log` returned 1 commit
+            where the working machine has 20, and the check reads the history.
+Measured:   1 commit visible on the runners against a floor of 5. The workflow now fetches the
+            full history and all 3 jobs are green.
+Notes:      the check was right and the workflow was wrong. This is the case the corpus argues
+            about at length: a check whose population is invisible must fail rather than assert
+            over what it can see, because the version that quietly asserts over 1 commit passes
+            forever and reports a scope it never had. The floor stated in advance is what turned
+            an invisible narrowing into a red run, and it is the reason this was found on the
+            first push rather than at some later sign-off.

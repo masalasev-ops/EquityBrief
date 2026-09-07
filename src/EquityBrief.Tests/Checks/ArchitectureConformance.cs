@@ -10,8 +10,15 @@ namespace EquityBrief.Tests.Checks;
 // and it is a gate on a phase rather than on a commit.
 public class ArchitectureConformance
 {
-    static PhaseReportModel Report() =>
-        PhaseReport.Build(ArchitectureTables.In(File.ReadAllText(Repository.Architecture)));
+    static PhaseReportModel Report()
+    {
+        var document = File.ReadAllText(Repository.Architecture);
+
+        return PhaseReport.Build(
+            ArchitectureTables.In(document),
+            NightlyRunSteps.In(document),
+            Fixtures.Of(Repository.Root));
+    }
 
     [Fact]
     public void EveryTableInTheDocumentIsPlaced()
@@ -22,9 +29,13 @@ public class ArchitectureConformance
         // that ordinary growth never moves it.
         Assert.True(tables.Count >= 20, $"Read {tables.Count} tables, expected at least 20.");
 
-        // Build throws on a table that is neither a claim source nor placed,
-        // so reaching this line is the assertion.
-        Assert.Equal(tables.Count, Report().Tables.Count);
+        // Build throws on a table that is neither a claim source nor placed, so
+        // reaching this line is most of the assertion. What is left is that
+        // every table parsed actually appears in the placement the report
+        // carries, which is the surface a person reads it on.
+        var placed = Report().Tables.Select(entry => entry.Heading).ToArray();
+
+        Assert.DoesNotContain(tables, table => !placed.Contains(table.Heading, StringComparer.Ordinal));
     }
 
     [Fact]
@@ -47,14 +58,48 @@ public class ArchitectureConformance
     [Fact]
     public void NoClaimPassesByFiat()
     {
-        // A PASS has to name the check that reached it. Vacuous while nothing
-        // passes, which is the state 0.5 leaves the report in, and the scope
-        // below says so rather than letting a zero read as a result.
-        var report = Report();
-        var passing = report.Claims.Where(claim => claim.Verdict == Verdict.Pass).ToArray();
+        // A PASS names the check that reached it. The floor makes the assertion
+        // mean something: over zero passing claims it would hold trivially.
+        var passing = Report().Claims.Where(claim => claim.Verdict == Verdict.Pass).ToArray();
 
-        Assert.Equal(0, report.Count(Verdict.Pass));
+        Assert.True(passing.Length >= 4, $"{passing.Length} claims pass, expected at least 4.");
         Assert.DoesNotContain(passing, claim => claim.By.Length == 0);
+    }
+
+    [Fact]
+    public void NothingIsUnexamined()
+    {
+        // Green includes that nothing is listed as unexamined. Out of scope is
+        // shown beside it and never added to it, because only one of the two is
+        // a defect, and every out-of-scope claim names where it ends.
+        var report = Report();
+        var outOfScope = report.Claims.Where(claim => claim.Verdict == Verdict.OutOfScope).ToArray();
+
+        Assert.Equal(0, report.Count(Verdict.Unexamined));
+        Assert.Equal(0, report.Count(Verdict.Fail));
+        Assert.True(outOfScope.Length >= 100, $"{outOfScope.Length} claims are out of scope, expected at least 100.");
+        Assert.DoesNotContain(outOfScope, claim => !claim.Note.Contains("until", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SectionFourteenIsReadAsClaimsRatherThanSkipped()
+    {
+        // The catalogue names section 14 as a claim source and 14 carries an
+        // ordered list. A harness that read only tables would have taken no
+        // claims from the nightly run and said nothing about having skipped it.
+        var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
+
+        Assert.True(steps.Count >= 9, $"Read {steps.Count} nightly steps, expected at least 9.");
+        Assert.Contains(Report().Claims, claim => claim.Table == NightlyRunSteps.Heading);
+    }
+
+    [Fact]
+    public void ASectionFourteenWithNoListFailsRatherThanReturningNothing()
+    {
+        var refusal = Assert.Throws<InvalidOperationException>(
+            () => NightlyRunSteps.In("<h2>14. The nightly run, in order</h2><p>none</p><h2>15. The screens</h2>"));
+
+        Assert.Contains("parse failure", refusal.Message, StringComparison.Ordinal);
     }
 
     [Fact]
