@@ -216,7 +216,7 @@ Rules that exist before anything has gone wrong, taken from what has gone wrong 
 All seven, or it is not done:
 
 1. The checkpoint's stated deliverable exists and runs.
-2. `tools/ci.*` is green, with the test count recorded in PROGRESS.
+2. `tools/ci.*` is green, with the test count recorded in PROGRESS. Until 0.4 builds those scripts, the checkpoint's own verification is run by hand and PROGRESS records the figures it produced and states that nothing guards them yet.
 3. Every new store write is declared in SCHEMA and passes `writer-ownership`.
 4. Any new numeric constant stated in a doc is pinned, and every decision name cited in new code or docs resolves.
 5. The suite passes on both runners.
@@ -240,6 +240,8 @@ Done conditions are written against **what the file will say after the edit**, n
 ## Merge
 
 **CI green before merge. That is the only condition.** Sign-off is a separate activity with its own record, owed on the phase as a whole before the next phase's plan, and it does not gate the merge. A phase held open waiting on something that is not code keeps a branch open, and the nightly job runs from that checkout for the whole of it.
+
+**The condition binds from 0.4, which is where `tools/ci.*` first exists.** Before then the workflow fails on a missing script, which is phase 0 behaving as `BUILD_PLAN.md` describes it rather than a fault, and it does not block a merge. From 0.4 onward a red run blocks, with no exception and no override. This is written down because the rule above it was stated against a CI that exists, and the checkpoints that build the verification machinery come before it.
 
 **A checkpoint lands as its own commit** and satisfies all seven done conditions on its own, and a session that has committed code still may not sign it off.
 

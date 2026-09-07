@@ -134,3 +134,12 @@ Was:
 Now:
 > a row above it, created at 0.0 and due at 0.4, holding that either the checker exempts the table by name or the row is reworded.
 Why: the check is written at 0.4 and would fail on its first run against text nobody would think to look at. Recorded when created rather than remembered, which is what the table is for.
+
+### 2026-09-06 - CLAUDE.md - the merge condition and done condition 2 name when they start
+Corrects: both are written against a CI that exists, while `tools/ci.*` is built at 0.4. As stated, no checkpoint from 0.0 to 0.3 could merge or be declared done, so the corpus forbade the four checkpoints that build its own verification machinery. Found by pushing the workflow for the first time: all three jobs ran and all three failed on the missing script, which is the correct first result and which the Merge section had no way to say.
+Was:
+> **CI green before merge. That is the only condition.**
+
+> 2. `tools/ci.*` is green, with the test count recorded in PROGRESS.
+Now: the same two passages, each followed by a statement of when it begins. The merge condition binds from 0.4, before which a workflow failing on a missing script is not a block and after which a red run blocks with no override. Done condition 2 is met before 0.4 by a verification run by hand, with PROGRESS recording the figures and stating that nothing guards them yet.
+Why: the Checks roster already solves this with its Runs column, where every check names the checkpoint it starts at. A rule with no stated start is either broken on day one or quietly ignored, and quietly ignored is the worse of the two.
