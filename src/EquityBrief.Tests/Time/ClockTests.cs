@@ -10,7 +10,7 @@ public class ClockTests
     public void AnIdentifierThatDoesNotResolveFailsLoudly()
     {
         var refusal = Assert.Throws<TimeZoneNotFoundException>(
-            () => SessionZones.Resolve("Mars/Olympus_Mons"));
+            () => SessionZones.ResolveSessionZone("Mars/Olympus_Mons"));
 
         // The message names the setting that causes this in practice, because
         // when InvariantGlobalization is true every lookup fails at once and
@@ -24,9 +24,23 @@ public class ClockTests
         // It would resolve on Windows and fail on macOS, so accepting one here
         // would hide the fault on the machine that could see it.
         var refusal = Assert.Throws<ArgumentException>(
-            () => SessionZones.Resolve("Eastern Standard Time"));
+            () => SessionZones.ResolveSessionZone("Eastern Standard Time"));
 
         Assert.Contains("IANA", refusal.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ASlashlessIdentifierIsRefusedEvenWhenItIsAnIanaOne()
+    {
+        // UTC is a real IANA identifier and is refused with the Windows ones,
+        // deliberately. What this method resolves is an exchange session zone,
+        // and no exchange session sits in a zone without a location. The
+        // refusal is the claim being narrowed to what the code does rather than
+        // the code widened for a case nothing asks for.
+        var refusal = Assert.Throws<ArgumentException>(
+            () => SessionZones.ResolveSessionZone("UTC"));
+
+        Assert.Contains("not an exchange session zone", refusal.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -63,7 +77,7 @@ public class ClockTests
     {
         // The proof that a real timezone database is being read rather than a
         // fixed offset. This is the assertion InvariantGlobalization breaks.
-        var zone = SessionZones.Resolve(SessionZones.UnitedStates);
+        var zone = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
 
         IClock winter = new FixedClock(new DateTimeOffset(2026, 1, 15, 12, 0, 0, TimeSpan.Zero), zone);
         IClock summer = new FixedClock(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero), zone);
@@ -76,7 +90,7 @@ public class ClockTests
     public void TheClockKeepsTheInstantItWasGiven()
     {
         var instant = new DateTimeOffset(2026, 6, 1, 20, 15, 0, TimeSpan.FromHours(-4));
-        IClock clock = new FixedClock(instant, SessionZones.Resolve(SessionZones.UnitedStates));
+        IClock clock = new FixedClock(instant, SessionZones.ResolveSessionZone(SessionZones.UnitedStates));
 
         Assert.Equal(instant.ToUniversalTime(), clock.UtcNow);
         Assert.Equal(TimeSpan.Zero, clock.UtcNow.Offset);

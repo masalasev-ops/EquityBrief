@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Time;
 public sealed class SystemClock : IClock
 {
     public SystemClock(string sessionZoneIdentifier)
-        : this(SessionZones.Resolve(sessionZoneIdentifier))
+        : this(SessionZones.ResolveSessionZone(sessionZoneIdentifier))
     {
     }
 

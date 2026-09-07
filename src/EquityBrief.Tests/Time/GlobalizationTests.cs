@@ -15,7 +15,7 @@ public class GlobalizationTests
         var invariant = AppContext.TryGetSwitch("System.Globalization.Invariant", out var value) && value;
 
         Assert.False(invariant);
-        Assert.NotNull(SessionZones.Resolve(SessionZones.UnitedStates));
+        Assert.NotNull(SessionZones.ResolveSessionZone(SessionZones.UnitedStates));
     }
 
     [Fact]
