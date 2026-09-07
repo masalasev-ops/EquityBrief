@@ -124,11 +124,7 @@ Recorded when created, not remembered. A `PROGRESS.md` entry naming a carried ob
 
 | Obligation | Created at | Due at | What it holds |
 |---|---|---|---|
-| Phase 0's checks unseen by the harness | 0.1 | 0.7 | every check the suite carries is asserted by nothing the phase report reads. Phase 0 produces no pipeline output, so it has no fixture expectations to carry, only checks the report must enumerate by name |
-| Section 14 is named as a claim source and carries no table | 0.5 | 0.7 | the component catalogue says the harness reports a verdict for every claim in sections 7, 14, 15, 16 and 18. Section 14 contains no table, so a harness that reads tables can take no claims from it. Either 14 gains a table or the stated scope drops it, and the report cannot be trusted to cover the nightly run until one of those happens |
-| The citation placeholder in this table is not a citation | 0.0 | 0.4 | the row below writes the citation form out in full, so a `decision-resolves` built on the parenthesised pattern reads the placeholder inside it as a citation and fails on a name that does not exist. Either the checker exempts this table by name or the row is reworded |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.1 | the threshold is derived from one chart and nothing has tested it |
 | Source lists reviewed against measured coverage | 1.7 | 5.1 | the lists are a first draft from a two-week sample |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 | if it responds, one nightly call replaces the on-demand fundamentals fetcher |
 | News feed queryable by date without a ticker | authored with the architecture | 1.3 | if it is not, the nightly pulse costs a hundred times more, which is affordable but should be known |
-| Architecture cites its decisions by name | 0.5 | 0.7 | the decisions moved to `DECISIONS.md` and the architecture states its rules in prose without citing them, so `decision-resolves` has one citation to assert. A pass over the architecture adding `(see: <name>)` at each rule that rests on a decision is owed before the phase 0 report claims that check runs |

@@ -14,10 +14,13 @@ internal sealed record Claim(string Table, string Subject, Verdict Verdict, stri
 
 internal sealed record PlacedTable(string Heading, int Claims, string Placement);
 
+internal sealed record CheckCoverage(string Check, string Runs, string Carrier);
+
 internal sealed record PhaseReportModel(
     IReadOnlyList<PlacedTable> Tables,
     IReadOnlyList<Claim> Claims,
-    FixtureStatus Fixture)
+    FixtureStatus Fixture,
+    IReadOnlyList<CheckCoverage> Coverage)
 {
     internal int Count(Verdict verdict) => Claims.Count(claim => claim.Verdict == verdict);
 }
@@ -77,9 +80,18 @@ internal static class PhaseReport
             "a record, not a claim about code",
     };
 
+    static Claim Scoped(string table, string subject)
+    {
+        var scope = Scope.For(table, subject);
+
+        return new Claim(table, subject, scope.Verdict, scope.Note, scope.By);
+    }
+
     internal static PhaseReportModel Build(
         IReadOnlyList<ArchitectureTable> tables,
-        FixtureStatus? fixture = null)
+        IReadOnlyList<string>? nightlySteps = null,
+        FixtureStatus? fixture = null,
+        IReadOnlyList<CheckCoverage>? coverage = null)
     {
         var unplaced = tables
             .Where(table => !ClaimSources.Contains(table.Heading, StringComparer.Ordinal)
@@ -124,20 +136,29 @@ internal static class PhaseReport
 
             var rows = table.Body
                 .Where(row => row.Count > 0 && row[0].Length > 0)
-                .Select(row => new Claim(
-                    table.Heading,
-                    row[0],
-                    Verdict.Unexamined,
-                    "no check asserts this yet"))
+                .Select(row => Scoped(table.Heading, row[0]))
                 .ToArray();
 
             claims.AddRange(rows);
             placed.Add(new PlacedTable(table.Heading, rows.Length, "claim source"));
         }
 
+        // Section 14 is named as a claim source and carries an ordered list
+        // rather than a table, so its steps are read as claims too.
+        var steps = (nightlySteps ?? [])
+            .Select(step => Scoped(NightlyRunSteps.Heading, step))
+            .ToArray();
+
+        if (steps.Length > 0)
+        {
+            claims.AddRange(steps);
+            placed.Add(new PlacedTable(NightlyRunSteps.Heading, steps.Length, "claim source, read as a list"));
+        }
+
         return new PhaseReportModel(
             placed,
             claims,
-            fixture ?? new FixtureStatus(0, "ABSENT", "not looked for"));
+            fixture ?? new FixtureStatus(0, "ABSENT", "not looked for"),
+            coverage ?? []);
     }
 }
