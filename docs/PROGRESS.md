@@ -511,3 +511,123 @@ On 0.4:     no supported explanation was found for the unreproducible `ci-parity
 Notes:      this entry is the whole of what the reviewing session committed. The repairs are a
             separate session's work, which is what keeps the fresh session rule satisfied at
             sign-off.
+
+### Repairs to phase 0, from the fourteen findings                           2026-09-07
+Not a checkpoint entry. It belongs to 0.7, which has landed. This is the repair pass for the
+            entry above, and it is a separate session from the one that found them. This
+            session committed code and therefore may not sign any of it off.
+Built:      a reach declaration on every check a placement or a verdict names, carried in the
+            check itself rather than in a list beside it, and a reconciliation in the harness
+            that reads those declarations in both directions and stops on either failure. A
+            placement or a PASS naming a check whose declared reach does not include it stops
+            the report; so does a check declaring reach over a subject nothing sends it; so
+            does a placement whose table is claimed whole by a check that does not open
+            `ARCHITECTURE.html`. Section 17 became a claim source. `Scope.For` keys on the
+            table and the subject together. The fiat guard now refuses a PASS naming no roster
+            check and a PASS whose note offers the report as its own evidence. Both outputs
+            render the check behind every verdict, the instrument or due point behind every
+            placement, and the reconciled count against its floor. `banned-prose` reads every
+            text file git tracks. Six carried obligations recorded in `BUILD_PLAN.md`.
+Fixed:      all fourteen findings. 1, the report renders `Claim.By` in the JSON and in the
+            HTML and an assertion parses the written files rather than the model. 2 and 3, the
+            reconciliation above, with section 17 and the two reused verdicts repaired. 4,
+            `tools/run-bash.ps1` writes to `[Console]::Error` instead of `Write-Error`. 5, the
+            containment assertion in `StoreWrites` is replaced by one that can fail. 9,
+            `ChangelogReconciles` checks the exit code of `git show`. 12, `banned-prose`
+            widened with a negative proof over planted files. 13, `SessionZones.Resolve` is
+            renamed `ResolveSessionZone` and says it resolves an exchange session zone and
+            refuses a slashless identifier deliberately. 14, the unused configuration binder
+            reference is gone from `EquityBrief.Worker`. 6, 7, 8, 10 and 11 are carried, with
+            the runtime money-precision guard, and each is a row in `BUILD_PLAN.md`'s table.
+Section 17: the choice was to make it a claim source rather than to widen `pinned-constants`
+            to parse it. Widening was not available: twenty-four of its twenty-nine rows are
+            asserted by a component that does not exist, and the row's own "Asserted by"
+            column names things like a run log duration, a fixture ladder diff and an app test
+            against a fixture night of forty. A check written to claim those today would have
+            been the same defect in a wider instrument. As a claim source the twenty-nine rows
+            are counted, each naming the checkpoint or phase that ends it, which is what the
+            set green is defined against was missing.
+Expected:   stated before the run. 158 claims, 4 pass, 0 fail, 154 out of scope, 0 unexamined,
+            10 reconciled. The out-of-scope figure was expected to rise by 31 and not to fall:
+            29 from section 17, which was placed as covered and is not, and 2 from the read
+            and write matrix rows whose verdict was borrowed from the catalogue. Removing a
+            false placement moves claims into the count green is defined against, and at this
+            phase every one of them is out of scope, so out of scope was always going to grow.
+            Unexamined was expected to stay at 0, because every new claim has a due point.
+Measured:   before, over `docs/ARCHITECTURE.html` as it stood: 129 claims, 6 pass, 0 fail, 123
+            out of scope, 0 unexamined, 24 tables placed, 24 roster rows with 19 carried, 98
+            tests. After, over the same document with the two rows corrected: 158 claims, 4
+            pass, 0 fail, 154 out of scope, 0 unexamined, 24 tables placed of which 13 are
+            claim sources and 11 make no claims, 24 roster rows with 19 carried. Every
+            expected figure was met. Over the 24 placements and verdicts, 10 name an
+            instrument or a due point and all 10 reconcile: 1 placement names a check, 5 name
+            a due point, and 4 claims pass. The floor is 8, stated in advance, because a
+            reconciliation over zero placements passes silently. Over the 4 passing claims, 4
+            name a check on the roster whose declared reach includes them and 0 rest on a note
+            about the report. Over the 154 out of scope, 0 name a due point `BUILD_PLAN.md`
+            lacks and 0 name one `PROGRESS.md` records as landed. Over the 90 files git
+            tracks, 90 are text, 0 carry an em dash, and 1 carries the banned string and it is
+            the exempt line.
+Tests:      113, up from 98, on Windows. `tools/ci.ps1` green end to end, all 6 steps, with
+            113 passing inside it. `tools/verify-phase` green.
+Carried:    six new obligations, all rows in `BUILD_PLAN.md`'s carried obligations table:
+            `AbsolutePaths.LooksAbsolute` reading only the first two characters, due 1.3;
+            `FixtureManifest.IsUtcInstant` resolving a zoneless instant against the machine
+            zone, due 1.3; the manifest checker scanning `input.query` only, due 1.3; the hand
+            maintained money column list of `price-storage-form`, due 1.2; `Shell.Run` reading
+            standard output to completion before standard error, due 1.2; and the runtime
+            money-precision property having no guard, due 1.2. The four created by the
+            architecture and by 1.7 stand.
+Due points: the `IsUtcInstant` obligation was raised against "0.6's first real fixture", and
+            0.6 has landed, so that is not a due point. It is re-pointed to 1.3, and the
+            manifest checker obligation is re-pointed to 1.3 from the 2.1 it was given, on the
+            same reasoning. 1.3's own done condition is that the gap fixture is refused with
+            the gap's date named, which is the first committed fixture input and therefore the
+            first manifest. 1.8 is where `BUILD_PLAN.md` puts phase 1's expectations, which is
+            a later thing than an input, and `fixture-replay` runs from 2.1 over expectations
+            that exist. A manifest checker owed at 2.1 would have gone unfixed across every
+            manifest written from 1.3 onward. The placement of section 19.1 in the harness
+            names 1.3 for the same reason.
+On 0.4:     the reproduction was attempted again after finding 4 was fixed, and the failure
+            did not recur. Over 20 runs of `tools/ci.ps1` in a directory with no solution
+            beside it, 12 direct and 8 through `ci-parity`'s own failing-step test, 20 exited
+            non-zero and 20 printed "failed at step: restore". 0 produced the signature the
+            0.4 entry records. Finding 4 stays a candidate mechanism and is not a diagnosis:
+            it produces the same visible signature, a run that dies before its step name
+            prints, but by a route that runs at the migrate step and not at the restore step
+            where the original failed. Whether any route of that shape was reachable in the
+            failing run is still not established. A fault that stops recurring after an
+            unrelated fix is not a diagnosed one, so the 0.4 note is downgraded to a candidate
+            rather than closed.
+Notes:      `banned-prose` enforced its rule over an unstated subset from the day it was
+            written at 0.0. It read the 8 corpus documents, the source and project files and
+            the scripts in `tools`, and therefore not the workflow, `src/Directory.Build.props`,
+            `EquityBrief.slnx` or the two files in `fixtures`. Nothing in those 9 files carried
+            either pattern, so it was a check narrower than it read rather than a live fault,
+            which is exactly the survivorship shape the Checks section argues about: the
+            broken checks that survive are the ones that under-report. It now reads what git
+            tracks, so the exclusions live in `.gitignore` and not in a second list.
+
+            The reach declarations split into two scopes on purpose. Subjects carries the
+            property and is what the reconciliation counts. Reads is context, has no floor,
+            and is given force by one rule rather than by being counted: a check named as
+            covering a whole table has to read `ARCHITECTURE.html`, because the rows it would
+            be covering are rows nobody enumerated. A check may still reach a single row
+            without reading the document, which is how `schema-columns` reaches the migration
+            runner: what it asserts there is the store against `SCHEMA.md`.
+
+            Three placements were named by an instrument that could not reach them and only
+            one was in the findings. 19.1 was placed as asserted by the fixture manifest from
+            0.6, a checkpoint that has landed, and is now owed at 1.3. 19.2 was placed as
+            asserted by `coverage-reported`, which reads the roster and the CI scripts and
+            never the architecture, and is now owed at 6.1. 19.3 is placed against
+            `architecture-conformance`, which now genuinely reaches it: the three verdict
+            names in that table are asserted to be the three the writer emits, and both files
+            it describes are written and read back.
+
+            `Get-Command bash` on this machine resolves to `C:\Windows\System32\bash.exe`,
+            which is the Windows Subsystem for Linux stub, and there is no distribution
+            installed, so every `.ps1` wrapper exits 1 with a message about WSL. The runs
+            recorded above put Git for Windows ahead of it on PATH. This is a fact about the
+            machine and not about the repository, and it is written down because the next
+            session to run `tools/ci.ps1` here will meet it.
