@@ -262,3 +262,5 @@ Five specs and three records. A ninth document requires retiring one or writing 
 A corpus of the same shape grew past twenty documents on a previous project and the documentation tax stopped scaling with the size of the work. Eight is the cap, and the ninth costs a retirement.
 
 **A screens document is not one of the eight.** Section 15 of `ARCHITECTURE.html` specifies what the operator sees. A mockup file and a built page are two answers to one question, and the day the two disagree nothing says which is the specification.
+
+**`fixtures/README.md` is not one of the eight.** It describes a folder's shape, as `.gitignore` describes exclusions, and it carries no rule and no decision.
