@@ -48,3 +48,11 @@ Now:
 
 with the paragraph beneath the format block saying an entry names one or the other and never neither.
 Why: a field every entry fills with the same placeholder is a field nobody reads. Separating the two kinds keeps a decision citation meaning that a decision was made, which is what `decision-resolves` and `no-superseded-citation` are built to check.
+
+### 2026-09-06 - BUILD_PLAN.md - checkpoint 0.0, the repository, inserted before 0.1
+Corrects: the plan opened at 0.1 and no checkpoint owned creating the git repository. Found by the first corpus check, which looked for `.git` because `changelog-reconciles` reads the history and found no repository at all.
+Was:
+> the phase 0 checkpoint list began at 0.1, The solution.
+Now:
+> 0.0, The repository, precedes it, with the corpus committed unedited as the first commit.
+Why: three rules the corpus already states depend on a repository existing, and a dependency nothing owns is one every session assumes somebody else did.

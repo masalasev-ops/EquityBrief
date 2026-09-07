@@ -12,6 +12,10 @@ Checkpoints and their done conditions. The seven general done conditions in `CLA
 
 The point of this phase is that the verification machinery exists and reports accurately before there is anything to verify. Its visible output is a page that is entirely red or entirely unexamined, which is the correct first result.
 
+### 0.0 The repository
+A git repository with `main` as the default branch, the corpus committed unedited as its first commit, and a remote if one is wanted. Nothing owned this: the Merge section requires a branch and a pull request, `changelog-reconciles` reads the history, and `RUNBOOK.md` opens with "clone the repository", none of which is possible before it exists.
+**Done when** the corpus is committed, `git log` shows the initial commit, and the working tree is clean.
+
 ### 0.1 The solution
 Six projects as `CLAUDE.md` lays out, building clean under warnings-as-errors, with `EquityBrief.Api` carrying no reference to `EquityBrief.Worker`.
 **Done when** `dotnet build` is clean and `api-isolation` passes reading the compiled dependency file.
