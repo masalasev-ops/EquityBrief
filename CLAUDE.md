@@ -143,13 +143,13 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | Check | Runs | Asserts |
 |---|---|---|
 | `writer-ownership` | every CI run | Every store has exactly one declared writer per operation, verified in both directions against SCHEMA |
-| `architecture-conformance` | every CI run | Every claim ARCHITECTURE.html makes, in a table or in the nightly run's ordered list, has a verdict: pass, fail, out of scope for this phase, or unexamined; every table in the document is placed so none can go unread; and a claim that passes names the check that reached it |
+| `architecture-conformance` | every CI run | Every claim ARCHITECTURE.html makes, in a table or in the nightly run's ordered list, has a verdict: pass, fail, out of scope for this phase, or unexamined; every table in the document is placed so none can go unread; a claim that passes names the check that reached it, on both surfaces the report writes; and every placement and every pass is reconciled against what the check it names declares it reaches, in both directions |
 | `decision-resolves` | every CI run | Every decision name cited in code or docs matches a bold decision name in DECISIONS.md exactly, and no two decisions share a name |
 | `no-superseded-citation` | every CI run | No cited name resolves to a decision under "Previously decided" |
 | `changelog-reconciles` | every CI run | Every commit that deleted a line from a spec also changed `CHANGELOG.md`, read from the history |
 | `pinned-constants` | every CI run | Numeric constants stated in docs match the code constant they describe |
 | `stated-counts` | every CI run | Every count a spec states about itself matches the derived count. Record entries are dated measurements and are exempt |
-| `banned-prose` | every CI run | No file in the corpus or the shipped source contains the banned string or any form of it, and no file contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
+| `banned-prose` | every CI run | No text file the repository tracks contains the banned string or any form of it, and none contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
 | `coverage-reported` | every CI run | Every check the roster says runs is implemented, is invoked by `tools/ci.*`, states its own scope in numbers, and left a coverage record in the run the phase report reads |
 | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, and no schedule is expressed in local time |
 | `path-casing` | every CI run | Every file path appearing as a string literal in source matches the on-disk path exactly, byte for byte |
@@ -174,6 +174,8 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 **`coverage-reported` is the one that matters most and is easiest to lose.** Under-reporting is survivorship: a check that errors loudly gets fixed because it blocks, while a check that silently narrows its own scope keeps passing. So the only broken checks that survive in verification code are the ones that under-report. Green means "nothing I ran failed", never "nothing is wrong".
 
 **A check that stops running is the sharpest form of that.** `dotnet test --filter` exits zero when the filter matches no test, so a renamed check leaves a CI step that passes by running nothing at all. `coverage-reported` reconciles the roster against the implemented checks and the CI steps, and the phase report requires a coverage record from every check the roster says runs.
+
+**A check that a placement or a verdict names declares what it reaches, and the harness reconciles the two.** The declaration lives in the check itself, naming the corpus files it opens and the claim subjects or tables it can reach a verdict on. `architecture-conformance` refuses a placement or a pass naming a check whose declared reach does not include that claim, a check declaring reach over a subject no placement sends it, and a whole table claimed by a check that does not open the document carrying its rows. A declaration written beside a check rather than inside it is a second statement of one fact, and nothing keeps the two together.
 
 **A check states a floor under each scope it names, and a run is measured scope by scope.** A scope whose size is a fact about the corpus rather than about the property, files read or literals scanned, is either left without a floor and marked as context, or given one far enough below its value that ordinary growth never moves it. It is never summed with the scope that carries the property. Write the check so the scope carrying the property is the one with a floor on it, and say which that is.
 
