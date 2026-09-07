@@ -26,6 +26,19 @@ internal static class Repository
 
     internal static string Workflow => Path.Combine(Root, ".github", "workflows", "ci.yml");
 
+    internal static string SystemClock =>
+        Path.Combine(Root, "src", "EquityBrief.Core", "Time", "SystemClock.cs");
+
+    // Every C# file the repository ships, the suite included. bin and obj hold
+    // generated copies, and a check that counted those would report a scope it
+    // did not actually read.
+    internal static IReadOnlyList<string> SourceFiles() =>
+        Directory.GetFiles(Path.Combine(Root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")
+                && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"))
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+
     internal static IReadOnlyList<string> ProjectFiles() =>
         Directory.GetFiles(Path.Combine(Root, "src"), "*.csproj", SearchOption.AllDirectories)
             .OrderBy(path => path, StringComparer.Ordinal)

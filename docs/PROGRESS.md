@@ -162,3 +162,35 @@ Notes:      `STRICT` does not enforce the money rule. The first version of this 
 
             `data/` is gitignored, so the store this session created exists on this machine
             only, which is what the rule that nothing in the harness reaches `data/` requires.
+
+### 0.3 - the clock                                                          2026-09-07
+Built:      `IClock` with `SystemClock` and `FixedClock` behind it, resolving session zones from
+            IANA identifiers only and refusing a Windows one. The date derivations are written
+            once on the interface, so a fixed clock in a test exercises the same code a night
+            takes rather than a second implementation. `clock-usage` implemented, which was on
+            the roster from the start and had nothing behind it until now.
+Measured:   over the 29 source files in `src`, 1 read of the machine clock and it is in
+            `SystemClock.cs`, which is the file allowed to have it. The reader is shown finding
+            a read, finding a local-time expression, and passing over code that goes through the
+            clock, so it is not a reader that flags everything or nothing. Over the 7 build
+            files, 0 set `InvariantGlobalization` to true, and the running process reports the
+            invariant switch off. The session zone's offset is -5 hours in January and -4 in
+            July, read from the resolved zone, which is the assertion a missing timezone
+            database would fail.
+Tests:      41, up from 27, all passing, on Windows only. `tools/ci.*` does not exist until 0.4.
+Carried:    nothing new. The four carried at 0.1 and 0.2 stand, one of them reworded at this
+            checkpoint to name the property rather than 0.1's three checks.
+Notes:      the clock is not added to the component catalogue. That table's contract is what a
+            component reads and writes, store by store, and its rule is that a component
+            touching a store not listed fails its row. The clock touches no store, so it has no
+            row to fill and no claim the harness could assert there. This is a judgment 0.5 can
+            reverse when the harness reads the catalogue for real.
+
+            The session zone is a constant in `EquityBrief.Core` rather than configuration. It
+            is a fact about the S&P 500 and not about the machine, and no document states the
+            identifier, so there is no constant to pin and no dead configuration key to carry.
+
+            The migration runner still writes no `run_log` row, so its blank line in the read
+            and write matrix stands. The clock existing removes the reason it could not, which
+            is a change of options rather than a change of behaviour, and the matrix says what
+            the code does.
