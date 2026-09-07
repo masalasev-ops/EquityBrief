@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- The framework and the warning policy for all six projects, stated once.
+       A project file that sets either of these has moved a fact out of here,
+       which is what 0.1's done condition checks. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

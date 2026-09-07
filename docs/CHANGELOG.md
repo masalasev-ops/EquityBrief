@@ -91,3 +91,21 @@ Was:
 Now:
 > Nothing is built. What the build has reached is recorded below rather than stated here.
 Why: one place per fact. The section now points at the record instead of restating it, which is what the rest of the section already does.
+
+### 2026-09-06 - CLAUDE.md - the target framework stated, and two more files given a home
+Corrects: no document named the target framework. The workflow's `dotnet-version: '10.0.x'` was the only statement of it anywhere, so the two development machines could build against an SDK CI never installs and nothing would report the difference. Found by grepping the corpus for a framework, a `global.json` or a warnings setting and getting one hit, in the workflow.
+Was:
+> the Commands section ran from its table straight to the paragraph beginning "The Shell column is there because", and the layout block named neither `global.json` nor `src/Directory.Build.props`, neither of which existed.
+Now:
+> a paragraph beneath the table stating that the target framework is net10.0, that `global.json` holds the SDK to the 10.0.3xx feature band and rolls forward to the latest installed, and that `src/Directory.Build.props` carries the framework, nullable reference types and warnings as errors for all six projects. Both files are named in the layout block.
+Why: 0.1's done condition requires a clean build under warnings as errors, and a condition about a property needs somewhere the property is set.
+
+### 2026-09-06 - BUILD_PLAN.md - 0.1's done condition names the framework and the props file
+Corrects: the condition said "building clean under warnings-as-errors" without saying where that property lives, so six project files each setting it would have satisfied it, and the seventh project added later would not have been caught. Found while writing `src/Directory.Build.props`, which had no done condition to serve.
+Was:
+> Six projects as `CLAUDE.md` lays out, building clean under warnings-as-errors, with `EquityBrief.Api` carrying no reference to `EquityBrief.Worker`.
+> **Done when** `dotnet build` is clean and `api-isolation` passes reading the compiled dependency file.
+Now:
+> Six projects as `CLAUDE.md` lays out, all targeting `net10.0` and taking warnings as errors from `src/Directory.Build.props`, with `EquityBrief.Api` carrying no reference to `EquityBrief.Worker`.
+> **Done when** `dotnet build` is clean with nothing suppressed, no project file states a target framework or a warning setting of its own so both come from `src/Directory.Build.props`, and `api-isolation` passes reading the compiled dependency file.
+Why: a done condition written against a property with no stated home is satisfied by any arrangement that happens to build, including the one that drifts.

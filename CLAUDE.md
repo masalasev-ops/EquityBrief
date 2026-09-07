@@ -36,6 +36,7 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
 
 ```
 /src
+  Directory.Build.props   the target framework, nullable, and warnings as errors
   EquityBrief.Core        domain, clock, config
   EquityBrief.Data        stores, migrations
   EquityBrief.Worker      the nightly run and the overnight queue, sole writer
@@ -55,6 +56,7 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
 /data             gitignored. the store lives here
 CLAUDE.md         these rules, read first every session
 EquityBrief.sln   the six projects, at the root
+global.json       pins the SDK to the 10.0.3xx feature band
 .github/workflows/ci.yml   the two-platform matrix and the Linux case-sensitivity job.
                   Actions reads workflows from this path and no other
 .gitattributes    line endings, normalised to LF in the repository
@@ -77,6 +79,8 @@ EquityBrief.sln   the six projects, at the root
 | **Verify a phase** | `tools/verify-phase.ps1` | `tools/verify-phase` | PowerShell on Windows, bash on macOS |
 | Apply migrations | `tools/migrate.ps1` | `tools/migrate` | PowerShell on Windows, bash on macOS |
 | Run a night by hand | `tools/nightly.ps1` | `tools/nightly` | PowerShell on Windows, bash on macOS |
+
+**The target framework is `net10.0`, pinned in one place.** `global.json` at the root holds the SDK to the 10.0.3xx feature band and rolls forward to the latest installed, and `src/Directory.Build.props` carries the framework, nullable reference types and warnings as errors for all six projects. Before this the workflow was the only statement of the version anywhere, which left the two machines free to build against something CI never sees.
 
 **The Shell column is there because a cell naming a script does not say what can run it, and the wrong shell fails quietly in one direction.** Calling an extensionless bash script by name from PowerShell produces no output, leaves `$LASTEXITCODE` unset and leaves `$?` true, so a gate that never executed is indistinguishable from one that passed. Every bash entry point in this repository therefore ships with a `.ps1` wrapper that finds a bash, hands the work to the one script rather than reimplementing it, and exits with a named message where the machine has none. A wrapper must return both the script's output and its exit code; a PowerShell function's return value is its output stream, so returning `$LASTEXITCODE` from a function swallows everything the script printed.
 

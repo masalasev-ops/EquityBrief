@@ -17,8 +17,8 @@ A git repository with `main` as the default branch, the corpus committed unedite
 **Done when** the corpus is committed, `git log` shows the initial commit, and the working tree is clean.
 
 ### 0.1 The solution
-Six projects as `CLAUDE.md` lays out, building clean under warnings-as-errors, with `EquityBrief.Api` carrying no reference to `EquityBrief.Worker`.
-**Done when** `dotnet build` is clean and `api-isolation` passes reading the compiled dependency file.
+Six projects as `CLAUDE.md` lays out, all targeting `net10.0` and taking warnings as errors from `src/Directory.Build.props`, with `EquityBrief.Api` carrying no reference to `EquityBrief.Worker`.
+**Done when** `dotnet build` is clean with nothing suppressed, no project file states a target framework or a warning setting of its own so both come from `src/Directory.Build.props`, and `api-isolation` passes reading the compiled dependency file.
 
 ### 0.2 The store and the migration runner
 The SQLite store under the configured data root, a migration runner, and the first migration creating `run_log`. No other table yet.
