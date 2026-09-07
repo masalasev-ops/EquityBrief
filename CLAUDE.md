@@ -16,7 +16,7 @@ The design source of truth is `docs/ARCHITECTURE.html`. It is the only place the
 
 ## Where the build is right now
 
-Nothing is built. `docs/ARCHITECTURE.html` is at v0.3 and has never been read by a build session.
+Nothing is built. What the build has reached is recorded below rather than stated here.
 
 **Which checkpoint the build is on is the furthest checkpoint `docs/PROGRESS.md` records,** and the one to build next is the checkpoint after it in `docs/BUILD_PLAN.md`. That is stated as a pointer rather than as a number, because a number here is a second place the same fact lives and it goes stale the moment a checkpoint lands.
 
@@ -36,6 +36,7 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
 
 ```
 /src
+  Directory.Build.props   the target framework, nullable, and warnings as errors
   EquityBrief.Core        domain, clock, config
   EquityBrief.Data        stores, migrations
   EquityBrief.Worker      the nightly run and the overnight queue, sole writer
@@ -48,11 +49,20 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                   verify-phase  verify-phase.ps1   the phase report
                   migrate  migrate.ps1   apply migrations
                   nightly  nightly.ps1   what the scheduler calls, not run by CI
-/fixtures         one folder per fixture name and date: the committed inputs, and
+/fixtures         README.md      the folder's shape, not a corpus document
+                  one folder per fixture name and date: the committed inputs, and
                   expectations/ holding what the rules in ARCHITECTURE produce over them
+/artifacts        gitignored. the phase report, written by verify-phase
 /prompts          gitignored. spent build prompts, kept locally
 /data             gitignored. the store lives here
+CLAUDE.md         these rules, read first every session
+EquityBrief.sln   the six projects, at the root
+global.json       pins the SDK to the 10.0.3xx feature band
+.github/workflows/ci.yml   the two-platform matrix and the Linux case-sensitivity job.
+                  Actions reads workflows from this path and no other
 .gitattributes    line endings, normalised to LF in the repository
+.gitignore        the store, the prompts archive, the harness output, the secrets
+                  files and the local harness settings
 ```
 
 `EquityBrief.Tests` sits alongside the projects it tests rather than in a sibling tree. One consequence worth stating, because a check depends on it: `api-isolation` asserts that `EquityBrief.Api` has no transitive reference to `EquityBrief.Worker`, read from the compiled dependency file rather than the project file, and the test project is exempt because it references everything by design. That exemption is named here so a later session does not find it and assume the check is broken.
@@ -70,6 +80,8 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
 | **Verify a phase** | `tools/verify-phase.ps1` | `tools/verify-phase` | PowerShell on Windows, bash on macOS |
 | Apply migrations | `tools/migrate.ps1` | `tools/migrate` | PowerShell on Windows, bash on macOS |
 | Run a night by hand | `tools/nightly.ps1` | `tools/nightly` | PowerShell on Windows, bash on macOS |
+
+**The target framework is `net10.0`, pinned in one place.** `global.json` at the root holds the SDK to the 10.0.3xx feature band and rolls forward to the latest installed, and `src/Directory.Build.props` carries the framework, nullable reference types and warnings as errors for all six projects. Before this the workflow was the only statement of the version anywhere, which left the two machines free to build against something CI never sees.
 
 **The Shell column is there because a cell naming a script does not say what can run it, and the wrong shell fails quietly in one direction.** Calling an extensionless bash script by name from PowerShell produces no output, leaves `$LASTEXITCODE` unset and leaves `$?` true, so a gate that never executed is indistinguishable from one that passed. Every bash entry point in this repository therefore ships with a `.ps1` wrapper that finds a bash, hands the work to the one script rather than reimplementing it, and exits with a named message where the machine has none. A wrapper must return both the script's output and its exit code; a PowerShell function's return value is its output stream, so returning `$LASTEXITCODE` from a function swallows everything the script printed.
 
@@ -132,6 +144,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `changelog-reconciles` | every CI run | Every commit that deleted a line from a spec also changed `CHANGELOG.md`, read from the history |
 | `pinned-constants` | every CI run | Numeric constants stated in docs match the code constant they describe |
 | `stated-counts` | every CI run | Every count a spec states about itself matches the derived count. Record entries are dated measurements and are exempt |
+| `banned-prose` | every CI run | No file in the corpus or the shipped source contains the banned string or any form of it, and no file contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
 | `coverage-reported` | every CI run | Every check the roster says runs is implemented, is invoked by `tools/ci.*`, states its own scope in numbers, and left a coverage record in the run the phase report reads |
 | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, and no schedule is expressed in local time |
 | `path-casing` | every CI run | Every file path appearing as a string literal in source matches the on-disk path exactly, byte for byte |
@@ -181,7 +194,7 @@ A decision is identified by its bold name in `DECISIONS.md`. Cite the exact name
 
 **Anything issued in conversation that will later be cited must land in the repo when it is issued,** not afterwards. A citation to something that lives only in a chat transcript is a hole in the record.
 
-**Prose.** Standard keyboard punctuation, no em dashes. State the mechanism rather than asserting a virtue: write "every number in the prose exists in the facts file", not "the reports are truthful". One word is banned outright across the corpus and in chat, and a grep enforces it: the operator does not want it, and a claim of candour is exactly the kind of virtue-assertion this rule already rejects. The banned string is `honest` and every form of it.
+**Prose.** Standard keyboard punctuation, no em dashes. State the mechanism rather than asserting a virtue: write "every number in the prose exists in the facts file", not "the reports are truthful". One word is banned outright across the corpus and in chat, and a grep enforces it, exempting only this sentence, which has to contain the string in order to name it: the banned string is `honest` and every form of it. The operator does not want it, and a claim of candour is exactly the kind of virtue-assertion this rule already rejects.
 
 ## Verification
 
@@ -203,7 +216,7 @@ Rules that exist before anything has gone wrong, taken from what has gone wrong 
 All seven, or it is not done:
 
 1. The checkpoint's stated deliverable exists and runs.
-2. `tools/ci.*` is green, with the test count recorded in PROGRESS.
+2. `tools/ci.*` is green, with the test count recorded in PROGRESS. Until 0.4 builds those scripts, the checkpoint's own verification is run by hand and PROGRESS records the figures it produced and states that nothing guards them yet.
 3. Every new store write is declared in SCHEMA and passes `writer-ownership`.
 4. Any new numeric constant stated in a doc is pinned, and every decision name cited in new code or docs resolves.
 5. The suite passes on both runners.
@@ -228,6 +241,8 @@ Done conditions are written against **what the file will say after the edit**, n
 
 **CI green before merge. That is the only condition.** Sign-off is a separate activity with its own record, owed on the phase as a whole before the next phase's plan, and it does not gate the merge. A phase held open waiting on something that is not code keeps a branch open, and the nightly job runs from that checkout for the whole of it.
 
+**The condition binds from 0.4, which is where `tools/ci.*` first exists.** Before then the workflow fails on a missing script, which is phase 0 behaving as `BUILD_PLAN.md` describes it rather than a fault, and it does not block a merge. From 0.4 onward a red run blocks, with no exception and no override. This is written down because the rule above it was stated against a CI that exists, and the checkpoints that build the verification machinery come before it.
+
 **A checkpoint lands as its own commit** and satisfies all seven done conditions on its own, and a session that has committed code still may not sign it off.
 
 **Every change reaches `main` through a branch and a pull request, and none is committed to `main` directly.** That includes a document pass, a correction, a ruling and a sign-off. The branch is deleted after the merge and the working tree is returned to `main`, because the tree the nightly runs from is this repository's production checkout and a branch left checked out is a live hazard.
@@ -250,3 +265,5 @@ Five specs and three records. A ninth document requires retiring one or writing 
 A corpus of the same shape grew past twenty documents on a previous project and the documentation tax stopped scaling with the size of the work. Eight is the cap, and the ninth costs a retirement.
 
 **A screens document is not one of the eight.** Section 15 of `ARCHITECTURE.html` specifies what the operator sees. A mockup file and a built page are two answers to one question, and the day the two disagree nothing says which is the specification.
+
+**`fixtures/README.md` is not one of the eight.** It describes a folder's shape, as `.gitignore` describes exclusions, and it carries no rule and no decision.

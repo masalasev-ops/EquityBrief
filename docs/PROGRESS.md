@@ -25,4 +25,45 @@ Notes:      anything a later session would otherwise have to rediscover
 
 ## Entries
 
-Nothing has been built. The first entry will be 0.1.
+### 0.0 - the repository, and eight defects the first corpus check found      2026-09-06
+Built:      a git repository on `main`, the corpus committed unedited as its first commit, and
+            branch `phase-0-repair` carrying the repairs. `ci.yml` moved from the root to
+            `.github/workflows/ci.yml`, where Actions actually reads it. `global.json` and
+            `src/Directory.Build.props` created. Checkpoint 0.0 added to `BUILD_PLAN.md`,
+            `banned-prose` added to the Checks roster.
+Measured:   over the 8 corpus documents, 13 decision citations, 0 unresolved and 0 resolving
+            into "Previously decided". Over `DECISIONS.md`, 83 decision names, 7 of them
+            previously decided, 0 duplicated, 0 carrying terminal punctuation. Over the 14
+            tracked files, 0 unnamed by the layout block, 1 occurrence of the banned string
+            and it is the exempt line, and 0 em dashes. Over `CHANGELOG.md`, 11 entries, 10
+            naming a defect and 1 naming a decision, 0 naming neither. Over the 10 commits on
+            this branch, 4 deleted a line from a spec and all 4 changed `CHANGELOG.md`.
+Tests:      none. `tools/ci.*` does not exist until 0.4, so every figure above was swept by
+            hand and none of it is guarded yet. A repeat of this sweep is what 0.4 automates.
+Carried:    the citation placeholder in `BUILD_PLAN.md`'s carried obligations table, due at
+            0.4, recorded as a row in that table.
+Notes:      the workflow at the repository root was the sharpest of the eight. Actions reads
+            workflows from `.github/workflows` and nowhere else, so the matrix job and the
+            Linux case-sensitivity job had never run, which left done condition 5,
+            `two-platform` and the instrument the Checks section claims for `path-casing` all
+            unsatisfied with nothing reporting it. Neither is proved yet: no push has run the
+            workflow, so 0.1 is the first checkpoint that will see either runner go green.
+            `.claude/` is gitignored and untracked. It is per-machine harness state, not a
+            corpus document, and the layout block does not name it.
+
+### Correction to the 0.0 entry above - a ninth defect      2026-09-06
+Corrects:   the entry above says eight defects and names the first corpus check as what found
+            them. A ninth was found afterwards, by the first run of the workflow rather than by
+            that check, and it is not in the count.
+What:       the Merge section's "CI green before merge. That is the only condition." and done
+            condition 2 are both written against a CI that exists, while `tools/ci.*` is built
+            at 0.4. As stated, no checkpoint from 0.0 to 0.3 could merge or be declared done,
+            so the corpus forbade the four checkpoints that build its own verification
+            machinery. Both passages now name when they begin.
+Measured:   the first workflow run, over 3 jobs on 3 runners, windows-latest, macos-latest and
+            ubuntu-latest. All 3 ran, all 3 failed, and each failed on the missing `tools/ci.*`
+            and on nothing else. `setup-dotnet` passed on all 3 before the failing step, which
+            is what proves `global.json`'s 10.0.3xx band resolves on every runner and not only
+            on this machine.
+Notes:      this is the value of moving the workflow, arriving within the hour. Nothing about
+            the merge rule was visible until a run existed to be red.

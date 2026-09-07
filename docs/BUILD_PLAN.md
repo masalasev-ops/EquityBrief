@@ -12,9 +12,13 @@ Checkpoints and their done conditions. The seven general done conditions in `CLA
 
 The point of this phase is that the verification machinery exists and reports accurately before there is anything to verify. Its visible output is a page that is entirely red or entirely unexamined, which is the correct first result.
 
+### 0.0 The repository
+A git repository with `main` as the default branch, the corpus committed unedited as its first commit, and a remote if one is wanted. Nothing owned this: the Merge section requires a branch and a pull request, `changelog-reconciles` reads the history, and `RUNBOOK.md` opens with "clone the repository", none of which is possible before it exists.
+**Done when** the corpus is committed, `git log` shows the initial commit, and the working tree is clean.
+
 ### 0.1 The solution
-Six projects as `CLAUDE.md` lays out, building clean under warnings-as-errors, with `EquityBrief.Api` carrying no reference to `EquityBrief.Worker`.
-**Done when** `dotnet build` is clean and `api-isolation` passes reading the compiled dependency file.
+Six projects as `CLAUDE.md` lays out, all targeting `net10.0` and taking warnings as errors from `src/Directory.Build.props`, with `EquityBrief.Api` carrying no reference to `EquityBrief.Worker`.
+**Done when** `dotnet build` is clean with nothing suppressed, no project file states a target framework or a warning setting of its own so both come from `src/Directory.Build.props`, and `api-isolation` passes reading the compiled dependency file.
 
 ### 0.2 The store and the migration runner
 The SQLite store under the configured data root, a migration runner, and the first migration creating `run_log`. No other table yet.
@@ -120,6 +124,7 @@ Recorded when created, not remembered. A `PROGRESS.md` entry naming a carried ob
 
 | Obligation | Created at | Due at | What it holds |
 |---|---|---|---|
+| The citation placeholder in this table is not a citation | 0.0 | 0.4 | the row below writes the citation form out in full, so a `decision-resolves` built on the parenthesised pattern reads the placeholder inside it as a citation and fails on a name that does not exist. Either the checker exempts this table by name or the row is reworded |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.1 | the threshold is derived from one chart and nothing has tested it |
 | Source lists reviewed against measured coverage | 1.7 | 5.1 | the lists are a first draft from a two-week sample |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 | if it responds, one nightly call replaces the on-demand fundamentals fetcher |
