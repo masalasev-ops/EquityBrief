@@ -1,3 +1,5 @@
+using EquityBrief.Tests.Harness;
+
 namespace EquityBrief.Tests.Checks;
 
 // schema-columns. Every table a migration creates has the columns and storage
@@ -5,6 +7,19 @@ namespace EquityBrief.Tests.Checks;
 // The document is the source of truth and the store is asserted against it.
 public class SchemaColumns
 {
+    // What this check reaches, declared here rather than beside it, so a
+    // placement or a verdict naming schema-columns is reconciled against what
+    // schema-columns actually opens. Two catalogue and matrix rows rest on it:
+    // both are single rows and neither needs this check to read the
+    // architecture, because what it asserts is the store against SCHEMA.md.
+    internal static CheckReach Reach => new(
+        "schema-columns",
+        ["docs/SCHEMA.md"],
+        [
+            CheckReach.Key(Scope.CatalogueTable, "Migration runner"),
+            CheckReach.Key(Scope.StoresTable, "Run log"),
+        ]);
+
     const string Sample =
         "### sample\n" +
         "Grain: one row per thing.\n\n" +

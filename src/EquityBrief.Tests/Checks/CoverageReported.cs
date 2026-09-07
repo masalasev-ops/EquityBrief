@@ -68,7 +68,10 @@ public class CoverageReported
             .Select(row => new Harness.CheckCoverage(
                 row.Check,
                 row.Runs,
-                Implementations.TryGetValue(row.Check, out var carrier) ? carrier : "not due yet"))
+                Implementations.TryGetValue(row.Check, out var carrier) ? carrier : "not due yet",
+                Harness.CheckReaches.Of(row.Check) is { } reach
+                    ? string.Join(", ", reach.Reads)
+                    : "no reach declared"))
             .ToArray();
 
     [Fact]

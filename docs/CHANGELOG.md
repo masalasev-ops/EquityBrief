@@ -243,3 +243,11 @@ Was:
 Now:
 > the matrix row carries eleven blank cells, the catalogue row reads `this document, the code, and the fixture, including the fixture's own store; never a store under the data root`, and the Key paragraph gains: The verification harness reads none of the eleven stores: it reads this document, the code and the fixture, including the fixture's own store, and never a store under the data root. The distinction is written here because it is the one a later reader would otherwise widen back, and a check that reads the live store is a check whose result depends on last night.
 Why: the harness reads the fixture's store and the schema declarations and never the live store, so the matrix row was the wrong one of the two. A blank cell in that matrix is a claim as much as a filled one, which makes eleven blanks the correct statement rather than a deletion. The sentence in the Key is there because the row itself cannot carry a reason, and a bare set of blanks invites the next reader to fill them in again.
+
+### 2026-09-07 - ARCHITECTURE.html - the stated claim scope names section 17
+Corrects: the component catalogue gave the verification harness a claim scope of sections 7, 14, 15, 16 and 18, while section 17's own note says each of its rows is a claim about the code and that the harness parses the table. The two passages disagreed, and the harness followed the shorter list: section 17 was placed as asserted by `pinned-constants`, which reads `CLAUDE.md`, `BUILD_PLAN.md`, `global.json`, `src/Directory.Build.props` and the workflow and never this document, so twenty-nine claims were removed from the count by a placement naming an instrument that could not reach them. Found by the phase 0 review, finding 2.
+Was:
+> PASS, FAIL or UNEXAMINED for every claim in sections 7, 14, 15, 16 and 18
+Now:
+> PASS, FAIL or UNEXAMINED for every claim in sections 7, 14, 15, 16, 17 and 18
+Why: the scope was widened to what the document already said of itself in two places rather than section 17's note narrowed to the catalogue's list, which is the same repair 0.5 made for section 14. Section 17 is now a claim source and its twenty-nine rows are out of scope, each naming the checkpoint or phase that ends it, instead of being counted as covered.

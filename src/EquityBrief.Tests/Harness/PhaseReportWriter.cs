@@ -45,17 +45,25 @@ internal static class PhaseReportWriter
                     outOfScope = report.Count(Verdict.OutOfScope),
                     unexamined = report.Count(Verdict.Unexamined),
                 },
+                reconciliation = new
+                {
+                    placements = report.Reconciled,
+                    floor = Reconciliation.Floor,
+                },
                 coverage = report.Coverage.Select(check => new
                 {
                     check = check.Check,
                     runs = check.Runs,
                     carrier = check.Carrier,
+                    reads = check.Reads,
                 }),
                 placement = report.Tables.Select(table => new
                 {
                     heading = table.Heading,
                     claims = table.Claims,
                     placement = table.Placement,
+                    check = table.Check,
+                    due = table.Due,
                 }),
                 claims = report.Claims.Select(claim => new
                 {
@@ -63,6 +71,7 @@ internal static class PhaseReportWriter
                     subject = claim.Subject,
                     verdict = Name(claim.Verdict),
                     note = claim.Note,
+                    by = claim.By,
                 }),
             },
             new JsonSerializerOptions { WriteIndented = true });
@@ -108,40 +117,52 @@ internal static class PhaseReportWriter
         page.Append($"<p><b>{Escape(report.Fixture.State)}</b>, {report.Fixture.Folders} captured. ");
         page.Append($"{Escape(report.Fixture.Note)}</p>");
 
+        page.Append("<h2>Reconciliation</h2>");
+        page.Append($"<p><b>{report.Reconciled}</b> placements and verdicts were reconciled ");
+        page.Append($"against a declared reach, against a floor of {Reconciliation.Floor} stated ");
+        page.Append("in advance. A placement or a verdict naming a check whose declared reach ");
+        page.Append("does not include it stops the harness, and so does a check declaring reach ");
+        page.Append("over something nothing sends it.</p>");
+
         page.Append($"<h2>Check coverage ({report.Coverage.Count})</h2>");
-        page.Append("<p>Every check the roster says runs, and what carries it. A roster row with ");
-        page.Append("nothing behind it is a property nobody keeps.</p>");
-        page.Append("<table><tr><th>Check</th><th>Runs</th><th>Carried by</th></tr>");
+        page.Append("<p>Every check the roster says runs, what carries it, and what it opens. A ");
+        page.Append("roster row with nothing behind it is a property nobody keeps.</p>");
+        page.Append("<table><tr><th>Check</th><th>Runs</th><th>Carried by</th><th>Reads</th></tr>");
 
         foreach (var check in report.Coverage)
         {
             page.Append($"<tr><td>{Escape(check.Check)}</td><td>{Escape(check.Runs)}</td>");
-            page.Append($"<td>{Escape(check.Carrier)}</td></tr>");
+            page.Append($"<td>{Escape(check.Carrier)}</td><td>{Escape(check.Reads)}</td></tr>");
         }
 
         page.Append("</table>");
 
         page.Append("<h2>Every table in the architecture</h2>");
-        page.Append("<p>A table nobody placed is a table that can go unread, so all of them are here.</p>");
-        page.Append("<table><tr><th>Heading</th><th>Claims</th><th>Placement</th></tr>");
+        page.Append("<p>A table nobody placed is a table that can go unread, so all of them are ");
+        page.Append("here. A table that makes no claims names the instrument covering it instead, ");
+        page.Append("or the point at which one will.</p>");
+        page.Append("<table><tr><th>Heading</th><th>Claims</th><th>Placement</th>");
+        page.Append("<th>Instrument</th><th>Due</th></tr>");
 
         foreach (var table in report.Tables)
         {
             page.Append($"<tr><td>{Escape(table.Heading)}</td><td>{table.Claims}</td>");
-            page.Append($"<td>{Escape(table.Placement)}</td></tr>");
+            page.Append($"<td>{Escape(table.Placement)}</td><td>{Escape(table.Check)}</td>");
+            page.Append($"<td>{Escape(table.Due)}</td></tr>");
         }
 
         page.Append("</table>");
 
         page.Append($"<h2>Claims ({report.Claims.Count})</h2>");
-        page.Append("<table><tr><th>Table</th><th>Subject</th><th>Verdict</th><th>Note</th></tr>");
+        page.Append("<table><tr><th>Table</th><th>Subject</th><th>Verdict</th><th>Note</th>");
+        page.Append("<th>Reached by</th></tr>");
 
         foreach (var claim in report.Claims)
         {
             var name = Name(claim.Verdict);
             page.Append($"<tr><td>{Escape(claim.Table)}</td><td>{Escape(claim.Subject)}</td>");
             page.Append($"<td class=\"{name.Replace(" ", string.Empty)}\">{name}</td>");
-            page.Append($"<td>{Escape(claim.Note)}</td></tr>");
+            page.Append($"<td>{Escape(claim.Note)}</td><td>{Escape(claim.By)}</td></tr>");
         }
 
         page.Append("</table></body></html>");
