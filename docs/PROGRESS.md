@@ -700,3 +700,21 @@ Verdict:    phase 0 is signed off. The fourteen findings are repaired or carried
             point, the phase report is green on everything it can assert, no claim passes
             without naming an instrument whose declared reach includes it, and the fixture is
             reported absent and never as a pass.
+
+### Addendum to the phase 0 sign-off - the matrix saw the branch              2026-09-07
+Discharges: the one item the sign-off above lists as not proved. It says the two runners have
+            not seen this branch, that every figure was measured on Windows, and that the push
+            is what settles it. The push has happened and this records the result rather than
+            leaving the entry pointing at an answer nobody wrote down.
+Measured:   over the 3 jobs of run 34144912456, being windows-latest, macos-latest and
+            ubuntu-latest, all 3 green. All 6 steps ran on each and each reported 113 tests
+            passing, 0 failing and 0 skipped, and each printed `ci: green`. The counts were
+            read from the job logs rather than from the check status, because a step that
+            passes by running nothing reports the same green as one that ran.
+Notes:      the merge condition is now met and this is the only condition. What this discharges
+            is the platform claim and nothing else: the two claims the sign-off says not to
+            take from it still stand, and 154 of the 158 claims remain out of scope.
+
+            The three jobs also ran once on the push before the pull request existed, as run
+            34144883541, and were green there on the same commit. That is the same result
+            twice rather than a second piece of evidence.
