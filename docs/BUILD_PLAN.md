@@ -124,6 +124,7 @@ Recorded when created, not remembered. A `PROGRESS.md` entry naming a carried ob
 
 | Obligation | Created at | Due at | What it holds |
 |---|---|---|---|
+| `tools/migrate.ps1` written without its proofs | 0.2 | 0.4 | 0.2 needed the wrapper to run migrate on Windows at all, so it exists. 0.4's done condition owes the proofs: that a wrapper returns both the script's output and its exit code, shown by a deliberately failing probe, and that a machine with no bash exits with a named message rather than zero |
 | The suite unrun on macOS | 0.1 | 0.4 | 0.1 was verified on Windows only, because the matrix cannot run until `tools/ci.*` exists. No macOS runner has executed the suite |
 | 0.1's checks unseen by the harness | 0.1 | 0.7 | `api-isolation`, `build-properties-central` and `pinned-constants` are asserted by the suite and by nothing the phase report reads. 0.1 produces no pipeline output, so it has no fixture expectations to carry, only checks the report must enumerate |
 | The phase report is named twice | 0.1 | 0.5 | the component catalogue in `ARCHITECTURE.html` has the verification harness write `verify.html` and `verify.json`, while `CLAUDE.md` and this file say `artifacts/phase-report.html` and `.json`. One artefact, two names, and `architecture-conformance` reads the catalogue |

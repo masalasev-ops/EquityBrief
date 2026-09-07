@@ -22,6 +22,8 @@ internal static class Repository
 
     internal static string BuildPlan => Path.Combine(Root, "docs", "BUILD_PLAN.md");
 
+    internal static string Schema => Path.Combine(Root, "docs", "SCHEMA.md");
+
     internal static string Workflow => Path.Combine(Root, ".github", "workflows", "ci.yml");
 
     internal static IReadOnlyList<string> ProjectFiles() =>

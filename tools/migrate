@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Applies pending migrations to the store under the configured data root.
+#
+# Runs from the repository root, because a relative data root in appsettings.json
+# resolves against the working directory and the store must land in the same
+# place whoever calls this and from wherever.
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$root"
+
+exec dotnet run --project src/EquityBrief.Worker -- migrate "$@"
