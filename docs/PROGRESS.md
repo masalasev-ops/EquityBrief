@@ -645,3 +645,58 @@ Measured:   113 tests unchanged, `tools/ci.ps1` green, and the phase report unch
 Notes:      a row that says less than its check does is the same defect as one that says more,
             read from the other end. The next session writing against the row would take the
             reconciliation for something nobody had built.
+
+### Phase 0 sign-off                                                         2026-09-07
+Signed by the session that reviewed phase 0 and found the fourteen findings two entries above.
+            Its only commit to this repository is that findings entry, which is a document, so
+            the fresh session rule permits this. The repairs entry above was written by a
+            different session, which says in its own first line that it may not sign its work
+            off.
+Verified:   by re-running, not by reading the repair session's report. `dotnet build` clean at
+            0 warnings and 0 errors. `tools/ci.ps1` green end to end, all 6 steps, 113 tests
+            passing inside it, exit 0. `tools/verify-phase` green at 158 claims, 4 pass, 0
+            fail, 154 out of scope, 0 unexamined, 10 placements and verdicts reconciled
+            against a floor of 8. Every figure the repairs entry states was reproduced.
+Proved:     the reconciliation refuses the defect it was built for, on this corpus rather than
+            on a constructed input. Section 17 was put back as a placement naming
+            `pinned-constants`, and `tools/verify-phase` stopped with the placement named and
+            the reason given, rather than reporting the twenty-nine claims as covered. The
+            probe was reverted and the tree is clean. Separately, `tools/run-bash.ps1` was run
+            through a caller setting the error preference to Stop with no bash on PATH: it
+            exits 127 and the caller prints its step name, where before the fix it exited 1
+            and printed neither.
+Read back:  the phase report as written to disk rather than as modelled. Over the 4 passing
+            claims in `artifacts/phase-report.json`, 4 carry a non-empty `by` and each names a
+            check the roster carries; the HTML carries a "Reached by" column and every one of
+            those 4 check names appears in it. This is the surface finding 1 was about, and it
+            now carries what the roster claims for it.
+Measured:   over the 90 files git tracks, 0 carry an em dash and 1 carries the banned string
+            and it is the exempt line in `CLAUDE.md`. Over the 7 commits on this branch, 3
+            deleted a line from a spec and all 3 changed `CHANGELOG.md` in the same commit.
+            Over the 6 carried obligations added here, 6 name a due point `BUILD_PLAN.md` has
+            and `PROGRESS.md` does not record as landed.
+Not proved: the two runners have not seen this branch. Every figure above was measured on
+            Windows, and `two-platform` asserts the workflow still declares both runners
+            rather than that the suite passed on them, which is CI's own result. The merge
+            condition is CI green, so the push is what settles it and nothing here anticipates
+            that result.
+Residual:   two observations, neither a defect and neither reopening anything. The guard that
+            refuses a verdict resting on the report itself matches four phrases, so a
+            self-referential note worded differently would pass it; the reach reconciliation
+            is the stronger instrument standing behind it and would still refuse the claim.
+            And the reconciled count is 10 against a floor of 8, which is a tighter margin
+            than the other floors in the suite, though it is the scope carrying the property
+            and the count only grows.
+Two claims  a reader should not take from this entry. Green is a statement about the build and
+not to take: never about a running system: nothing has fetched a bar, and the store this
+            repository creates is empty. And the report is green because 154 of its 158 claims
+            are out of scope, which is the correct answer for a phase that built no pipeline
+            and is not evidence that the architecture has been verified. What changed at this
+            checkpoint is that 31 claims which had been counted as covered are now counted as
+            owed, each naming the point that ends it.
+Outstanding: ten carried obligations. The 4 created by the architecture and by 1.7, none due
+            before 1.3, and the 6 created by this review. None is due in phase 0.
+Verdict:    phase 0 is signed off. The fourteen findings are repaired or carried with a due
+            point, the phase report is green on everything it can assert, no claim passes
+            without naming an instrument whose declared reach includes it, and the fixture is
+            reported absent and never as a pass.
