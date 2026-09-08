@@ -30,8 +30,11 @@ Each is a place the architecture names something without saying what it is. They
 | Which bar provider, as a decision | Named in the architecture and the runbook, absent from `DECISIONS.md`, and the per-ticker against bulk cost arithmetic is a choice a later session could reasonably reverse | 1.1 |
 | The volume profile's window | SCHEMA gives the profile an as-of date and price bands and never says over how many sessions volume is accumulated. If it differs from the level window the two disagree about the same chart | 2.0 |
 | Which two swings the retracements are drawn between | "the retracements of the last two swings" is ambiguous between the last high and the last low, and the last two swings of any kind | 2.0 |
+| Does a volume shelf create a band or only rank one | Section 9.1 lists heavy volume shelves as one of four candidate sources that create bands. A price range holding heavy volume with no swing, average or retracement is a band under that reading and invisible under one where shelves only rank. The two produce different band sets, so the level builder at 2.4 is a different component depending which is meant, and the profile built at 2.3 feeds it either way | 2.0 |
+| The calendar holds events that are not earnings | The calendar being invented at 3.0 is keyed to the provider's earnings calendar. A report needs scheduled events that are not prints: a product event, an investor day, a leadership change. Those are news-derived rather than fetched, so either the table carries two origins with their provenance, or a researched event is a separate thing the ladder reads separately. Whichever is taken, a book keyed to one date cannot carry two, so the earnings trade is renamed the event trade in the same pass | 3.0 |
 | The trend classifier's rule | Stated as "from the averages and the last two swings", which is a description rather than a rule, and it selects which ladder shape applies | 3.0 |
 | The tranche condition, and which applies when | A fixed list of four patterns is named and nothing says which one a given tranche gets | 3.0 |
+| A tranche condition that depends on a researched fact | A tranche can reasonably be conditional on something no compute component can see, such as a guide not implying a revenue decline. The ladder builder's matrix row gives it levels, indicators and the calendar, and a researched fact reaches it through none of those. The shape that fits the design is that the ladder emits the tranche with its price condition and a research pass may attach a fundamental precondition carrying its own source, which the claim checker treats like any other claim. Decide it at 3.0 rather than inventing a fifth condition kind at 3.2 | 3.0 |
 | The share of size per tranche | The plan places a position and never sizes one, yet the tranches carry shares that fall with distance, and no rule produces them | 3.0 |
 | The earnings setups' triggers | Three setups are named, each said to carry a trigger, an entry, a stop and a target; none of the four is specified | 3.0 |
 | The base rate's population and window | Stated as the universe figure for the same window, without saying whether it is every name-night, every index member, or every listing | 4.0 |
@@ -153,7 +156,9 @@ The claim total is predicted before 1.1 and checked here: the expected total aft
 **Visible output at 2.1.** The moving averages are the cheapest thing that draws, so they come first.
 
 ### 2.0 Planning
-Settles the volume profile's window, and which two swings the retracements are drawn between. Confirms the checkpoint split below against the size the work turns out to be.
+Settles every hole this document's holes table assigns to 2.0, and takes a decision for each. Confirms the checkpoint split below against the size the work turns out to be.
+
+The holes are named there rather than repeated here. A checkpoint listing its own subset is a second statement of the table's contents, and it is the statement that goes stale: this one named two of the three it is now assigned, so a hole filed against 2.0 would have been settled at 2.0 only if somebody happened to read both.
 
 ### 2.1 The indicator engine and the averages on the chart
 Migration creating `indicator`. The averages, the momentum readings, the typical daily move and the volume ratios, each row carrying the bar count it was computed from.
@@ -199,11 +204,13 @@ A mega-cap in a tight range, a mid-cap in a wide one, and a name that gapped, be
 **Visible output at 3.1.** The trend state is one word on a page that already exists.
 
 ### 3.0 Planning
-The heaviest planning pass in the project, because four holes settle here and one of them is a missing component.
+The heaviest planning pass in the project, because more holes settle here than at any other point and one of them is a missing component.
 
 **Contradiction E and the calendar.** Four components read a store that nothing declares and nothing writes. The resolution needs a calendar fetcher on the nightly path, a `calendar` table in SCHEMA with its grain and owner, a column in the read and write matrix, and a catalogue row. The earnings date is needed nightly by the ladder builder and the shortlist builder, so it cannot wait for the on-demand fundamentals fetcher in phase 5.
 
-Also settles the trend classifier's rule, which tranche condition applies when, the share of size per tranche, and the earnings setups' four elements each. None of these is inferable from what is written, and all four decide what the plan section says.
+Settles every hole this document's holes table assigns to 3.0, and takes a decision for each. None of them is inferable from what is written, and each decides what the plan section says. Two of them arrive together: the second book is keyed to dated events rather than to prints alone, and a tranche can carry a precondition no compute component can see, so the pass that settles where non-earnings events come from is the pass that settles how a researched fact reaches a tranche.
+
+The holes are named in the table rather than counted or repeated here. This checkpoint said "four holes settle here" and then listed four, which was two statements of one fact and both went stale the day two more were filed against it.
 
 ### 3.1 The calendar fetcher and the trend state
 Migration creating `calendar`. The fetcher on the nightly path, one request for the calendar rather than one per name. The trend classifier to the rule settled at 3.0, with the state shown on the name page.

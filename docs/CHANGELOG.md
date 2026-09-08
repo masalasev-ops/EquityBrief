@@ -565,3 +565,33 @@ Now: the same row, with **Resolved at 1.3** and the shape of the resolution, the
 Why: splitting the row was the obvious repair and it is the wrong one. Section 15.5 opens by stating seven marks over a table of seven rows, so four rows would leave the document disagreeing with itself, and it would turn one mark into four in a vocabulary whose stated point is that a mark is defined once and every screen draws from the list. So the document keeps one row and the harness reads it as four claims, `Level chart, candles` and `Level chart, a volume pane` at 1.3, `Level chart, the moving averages` at 2.1 and `Level chart, the level bands` at 2.4.
 
 What keeps that from being a second statement of the row's content is that each element phrase is read back out of the row's own description cell, so an element renamed in the document or invented in the harness fails, with a permanent proof over a constructed table where one of four elements is absent. And `stated-counts` now reads the opening sentence's count against the table's rows, so the repair this entry rejects fails too rather than being available to a later session as the obvious thing to do. The claim total moves from 162 to 165, which is the figure Pass B predicted for this decomposition against the base it had then.
+
+### 2026-09-08 - BUILD_PLAN.md - three specification holes filed, and two checkpoints that were counting their own
+Corrects: three holes found by reading a hand-written report for another name against the corpus, and named only in conversation. A finding named only in conversation is one that dies with it. Filed at 1.3 against the passes that own them, and nothing here is built now.
+
+The three are added to the holes table, grouped by settling point: whether a heavy volume shelf creates a band or only ranks one, at 2.0; whether the calendar holds events that are not earnings, at 3.0; and how a tranche condition that depends on a researched fact reaches the tranche, at 3.0.
+
+The first matters because section 9.1 lists shelves as one of four candidate sources that create bands, and a price range holding heavy volume with no swing, average or retracement is a band under that reading and invisible under one where shelves only rank. The second because a book keyed to one date cannot carry two, and non-earnings events are news-derived rather than fetched. The third because the ladder builder's matrix row gives it levels, indicators and the calendar, and a researched fact reaches it through none of those.
+
+Was, at 2.0:
+> Settles the volume profile's window, and which two swings the retracements are drawn between. Confirms the checkpoint split below against the size the work turns out to be.
+
+Was, at 3.0:
+> The heaviest planning pass in the project, because four holes settle here and one of them is a missing component.
+>
+> Also settles the trend classifier's rule, which tranche condition applies when, the share of size per tranche, and the earnings setups' four elements each. None of these is inferable from what is written, and all four decide what the plan section says.
+
+Now: each points at the holes table rather than restating a subset of it, and 3.0 states no count at all.
+
+Why: a hole is only useful if the pass that owns it reads it, and both passes were listing their own. 2.0 named two of the three it is now assigned and 3.0 named four and stated "four holes settle here", so filing a hole against either would have left the checkpoint text describing the old set. This is the same defect the due points had before Pass B derived them from the plan: one fact written in two places, where the second copy is the one that goes stale and nothing reconciles them. The repair is the same move, pointing at the one statement rather than repeating it, and it removes a stated count that `stated-counts` would otherwise have to be taught to assert.
+
+### 2026-09-08 - ARCHITECTURE.html - two notes naming where an open question is settled
+Corrects: two places the document reads as settled and is not. Both are additions, so nothing is removed and no prior text is owed; they are recorded here because a note that names a settling point is a claim about the plan and belongs in the record with the rows it points at.
+
+Section 9.1's key gains, after the paragraph on the volume shelf:
+> Whether a heavy volume shelf creates a band or only strengthens one built by the other three is settled at 2.0 and is not decided here. The two readings produce different band sets, so the level builder differs depending which is taken.
+
+Section 10's key gains, at the end:
+> The second book is keyed to dated events, of which an earnings print is one. Whether it carries events that are not prints, and where those come from, is settled at 3.0.
+
+Why: 9.1's figure lists heavy volume shelves alongside swings, averages and retracements as the candidates that create bands, and its key then argues the shelf's importance without saying whether it creates or only strengthens. A reader building the level builder at 2.4 would take the figure literally, and that is a different component from the one a reader of the ranking reading would build. Section 10 names the second book the earnings trade throughout, which reads as a book keyed to prints rather than to dated events of which a print is one kind. Naming the settling point is the smallest edit that stops either being read as decided, and it leaves the decision where the plan already puts it.
