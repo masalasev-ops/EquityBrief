@@ -12,7 +12,7 @@ public class ShellStreamTests
     [Fact]
     public async Task AChildThatFillsBothPipesIsReadRatherThanDeadlocked()
     {
-        var bash = Shell.Locate("bash");
+        var bash = Shell.Bash();
 
         if (bash is null)
         {

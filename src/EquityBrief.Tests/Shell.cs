@@ -11,13 +11,78 @@ internal sealed record ShellResult(int ExitCode, string StandardOutput, string S
 // do rather than what their source looks like.
 internal static class Shell
 {
-    internal static string? Bash() => Locate("bash");
+    // The first bash on PATH that can read a file in this checkout.
+    //
+    // Not simply the first bash. On a Windows machine with the optional WSL
+    // feature enabled, C:\Windows\System32\bash.exe is the WSL launcher, comes
+    // first on PATH, and cannot open a Windows path: it answers with an
+    // advertisement for installing a distribution and exit 1. The suite then
+    // reports four red tests about the wrappers on a machine where the wrappers
+    // are fine, which is a red that says nothing about the build.
+    //
+    // Chosen by the property rather than by the path, matching tools/run-bash.ps1.
+    internal static string? Bash()
+    {
+        var probe = Path.Combine(Repository.Root, "tools", "run-bash.ps1").Replace('\\', '/');
+
+        foreach (var candidate in BashCandidates())
+        {
+            try
+            {
+                if (Run(candidate, ["-c", $"test -f '{probe}'"]).ExitCode == 0)
+                {
+                    return candidate;
+                }
+            }
+            catch (Exception)
+            {
+                // A candidate that cannot be started is a candidate that cannot
+                // run the script, which is the same answer.
+            }
+        }
+
+        return null;
+    }
 
     // pwsh on both runners; powershell.exe is what a Windows machine has by
     // default. Either can run a .ps1, and the wrapper has to work under both.
     internal static string? PowerShellHost() => Locate("pwsh") ?? Locate("powershell");
 
-    internal static string? Locate(string name)
+    // Every bash on PATH, then the ones beside git.
+    //
+    // A default Git for Windows install puts git.exe in cmd\ and bash.exe in
+    // bin\, and only cmd\ goes on PATH, so a working bash is present and
+    // unreachable by name while the WSL launcher is reachable by name and does
+    // not work. Mirrors tools/run-bash.ps1, which solves the same problem for
+    // the operator running the documented commands.
+    static IEnumerable<string> BashCandidates()
+    {
+        foreach (var onPath in LocateAll("bash"))
+        {
+            yield return onPath;
+        }
+
+        var root = Path.GetDirectoryName(Path.GetDirectoryName(Locate("git")));
+
+        if (root is null)
+        {
+            yield break;
+        }
+
+        foreach (var relative in new[] { Path.Combine("bin", "bash.exe"), Path.Combine("usr", "bin", "bash.exe") })
+        {
+            var beside = Path.Combine(root, relative);
+
+            if (File.Exists(beside))
+            {
+                yield return beside;
+            }
+        }
+    }
+
+    internal static string? Locate(string name) => LocateAll(name).FirstOrDefault();
+
+    internal static IEnumerable<string> LocateAll(string name)
     {
         var extensions = OperatingSystem.IsWindows()
             ? new[] { ".exe", ".cmd", string.Empty }
@@ -32,12 +97,10 @@ internal static class Shell
 
                 if (File.Exists(candidate))
                 {
-                    return candidate;
+                    yield return candidate;
                 }
             }
         }
-
-        return null;
     }
 
     internal static ShellResult Run(

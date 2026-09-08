@@ -1195,3 +1195,145 @@ Notes:      the backfill declares `Feed.HistoricalPrice` and the bar fetcher wil
             invariant culture the group separator is a comma, so "12,34" written by a
             comma-decimal machine parses cleanly as 1234. A hundredfold error on a price, read
             back with nothing refusing it.
+
+### 1.2 - the fixture is captured, and the parser it was hiding                2026-09-08
+Corrects:   the 1.2 entry above, whose measured figures were taken over generated bars. A
+            seeded random walk emits a bar for every weekday, so it tests the parser against
+            its own generator: a wrong field name, a different date format, an adjusted close
+            under another key, a null where a number is expected and a whole number rendered
+            with no decimal part all survive it. Two of those were present and one was fatal.
+Built:      nothing. Three captured bar files replacing the generated ones, a captured
+            constituents file replacing a hand-built one, one parser corrected, and every
+            expectation 1.2 wrote re-derived rather than translated.
+Spent:      3 requests at weight 1 on the per-ticker historical endpoint, stated before the
+            capture and equal to it, which is the backfill's own cost claim measured on a live
+            call rather than on a double. 1 further request at weight 10 on the index
+            fundamentals endpoint, which was outside the capture as asked for and is named here
+            because it was spent: the manifest was about to assert a fetch instant for a file
+            nobody had fetched, and the shape could not be checked without asking for it.
+Measured:   over the fixture's 4 constituents, of which 3 are current members and 1 has left:
+            3 owed, 3 requests, 756 rows written, 0 of each on the second run. Per name, 252
+            sessions from 2025-09-05 to 2026-09-04, against the 261 the generated fixture held.
+
+            252 is derived rather than counted off the run, which is what done condition 7 asks
+            of at least one expectation. 261 weekdays in the window less 9 days the exchange did
+            not trade, each named in the test: Thanksgiving, Christmas, New Year, Martin Luther
+            King, Washington's Birthday, Good Friday, Memorial, Juneteenth and the observed
+            Independence Day. The derivation is asserted against its own arithmetic before it is
+            used, and the stored session list is compared to it date by date rather than by
+            count, so a series holding the right number of the wrong days fails.
+
+            The generated fixture had no holidays in it at all. A gap rule reading "a weekday
+            with no bar" would have passed it and raised nine false gaps on the first real
+            night, which is 1.5's whole subject arriving as a fixture fact rather than as a
+            surprise (see: A gap is a session the exchange traded and the store does not hold).
+Found:      the membership parser could not read the provider's payload, and this is the
+            finding that justifies the pass on its own. The recorded feed's parse read StartDate
+            and EndDate out of the Components object. The provider does send Components, and it
+            carries Code, Exchange, Name, Sector, Industry and Weight, with no dates on any
+            entry and no row at all for a name that has left. The spans are in
+            HistoricalTickerComponents, a different object in the same payload. Against the real
+            response the parser threw on the first constituent.
+
+            It failed loudly rather than quietly, which is why this is a carried defect and not
+            an interrupt, but it was total: the loader could not have completed a single live
+            night. The hand-built fixture satisfied it because the fixture had been written with
+            the dates in the object the parser was reading, which is one sentence read twice.
+            Made permanent by `TheSnapshotObjectIsRefusedRatherThanReadAsTheIndex`, which feeds
+            a real snapshot payload and asserts the refusal names the object holding the spans,
+            and by an assertion that the captured fixture carries both objects, so the refusal
+            is about which one is read and not about which one is present.
+
+            XRAY's leave date is 2024-04-03, not the 2026-03-21 the hand-built fixture invented,
+            and the three dates the past-date query is asserted at were all chosen around the
+            invented one.
+
+            The adjusted close is now load-bearing in the fixture. The generator set
+            adjusted_close equal to close on every row, so a parser taking the wrong field
+            passed the fixture and failed only a payload written for the test. The capture
+            differs on 232 of AAPL's 252 window rows and 240 of MSFT's, and on none of KEYS,
+            which pays no dividend and did not split in the window. Both cases are in one
+            fixture, and the comparison reads the raw close straight from the file rather than
+            asking the parser for the field it is being tested for not taking.
+
+            Two number shapes reached storage that never had before. The provider sends JSON
+            numbers rather than strings, renders a whole number with no decimal part at all, and
+            carries four decimal places on an adjusted close where close carries two. AAPL's
+            first stored session is all three at once: an open of 240 stores as `240`, and an
+            adjusted close of 238.8078 stores with its fourth decimal held, which a route
+            through double would have rounded away.
+
+            `TemporaryStore.Dispose` called `SqliteConnection.ClearAllPools`, which is
+            process-wide, while xUnit runs test classes in parallel. A store disposing pulled
+            pooled connections out from under tests still reading in other classes. Measured at
+            1 failure in 15 runs before the change and 0 in 20 after, always in the test that
+            makes four sequential queries, which is the widest window rather than a second
+            fault. It now clears this store's pool alone. An intermittent red that goes green on
+            a re-run is worse than a reliable one, because it teaches a reader to press the
+            button rather than read the result, and on the matrix it would have arrived as one
+            runner in fifteen going red for no reason anyone could reproduce.
+
+            `tools/ci.ps1` and `tools/verify-phase.ps1` had never run from a PowerShell prompt
+            on this machine, and both are documented commands. `tools/run-bash.ps1` took the
+            first `bash` on PATH. On a Windows machine with the optional WSL feature enabled
+            that is the launcher in System32, which cannot open a Windows path and answers with
+            an advertisement for installing a distribution. Meanwhile a working bash was
+            present and unreachable: a default Git for Windows install puts `git.exe` in `cmd\`
+            and `bash.exe` in `bin\`, and only the first goes on PATH.
+
+            The wrapper now collects every bash on PATH plus the ones beside `git`, and picks
+            the first that can read the script it was asked to run. Chosen by the property
+            rather than by ruling out paths that look like WSL, because the property is what
+            matters and it does not go stale when a launcher moves. The suite's own lookup
+            matches it, and one test was reaching for `Shell.Locate("bash")` directly rather
+            than `Shell.Bash()`.
+
+            This was a loud failure and not a silent pass, which is why it is recorded as a
+            defect found rather than as an interrupt. But it is exactly what `run-bash.ps1`
+            exists to prevent: the file already turns "no bash" into a named message, and the
+            wrong bash is the commoner case on Windows and produced no message of its own.
+Verified:   `tools/ci.ps1` green end to end from a PowerShell prompt with no bash on PATH, six
+            steps, 175 tests passing, exit 0. `tools/verify-phase.ps1` green: 162 claims, 11
+            pass, 0 fail, 151 out of scope, 0 unexamined, 18 placements and verdicts reconciled
+            against a floor of 12, 25 tables, fixture PRESENT with 1 captured, 25 checks on the
+            roster with 20 carried. No floor was raised on this pass. The suite was run 15 times
+            before the pool change and 20 times after, which is the population the 1-in-15 and
+            0-in-20 figures above are over.
+Amended:    this checkpoint amends its own done condition, in those words, and the amendment is
+            the pass's second deliverable rather than an escape it authorises. The definition of
+            done goes from seven conditions to eight, the eighth being that the PROGRESS entry
+            is written before the run that verifies the checkpoint. `HasLanded` reads PROGRESS,
+            so a run against a tree whose entry is missing is a run against a corpus in which
+            the checkpoint has not landed, and it is green on a question it never asked. It had
+            hidden a failure three times: at 1.1, at 1.2, and on this pass. It was recorded in
+            the 1.2 entry above as advice to a future session, which is a record telling a
+            reader what to do rather than a rule the corpus holds.
+
+            This entry was written before the verification run, which is the first application
+            of the condition it adds.
+
+            `stated-counts` now reads the expected number of conditions out of the sentence that
+            states it rather than repeating it as a literal, and asserts the merge section
+            spells it the same way. Adding condition 8 meant editing the rules, an assertion and
+            an anchor string, and only the first of the three was the fact. That is the defect
+            the check exists to find, in the check itself.
+Also:       RUNBOOK's secrets section told the operator to write the secrets file by hand and
+            never said what to put in it. The key written by hand was consequently one name and
+            the code looks for another. The section now names the keys, the nested file shape
+            and the environment-variable spelling, and `ProviderCredentialsTests` asserts the
+            runbook against the code's own constant in both forms, because that is one fact in
+            two places. The local file was rewritten to the canonical path with its value kept.
+
+            The fixture manifest asserted a fetch instant for the constituents file that no
+            fetch had produced. All four inputs now carry real instants. The constituents file
+            is a trimmed capture, 4 names of the 503 in Components and the 822 in
+            HistoricalTickerComponents, and the manifest schema gains an optional `trimmedTo` so
+            a subset says it is one. Without it the file reads as the whole response and a later
+            session re-captures it to fix an absence that was deliberate. The provider's keys are
+            kept as sent, so the gaps in them show where the cut was made, and nothing about the
+            shape is trimmed.
+Carried:    the bar fixture and the constituents fixture are captured. No other feed in section
+            5 has been exercised against a real payload, and the same defect class is available
+            in each: the splits and dividends feed at 1.6 and the news feed at 1.7 both arrive
+            with a parser and a double, and neither has seen a provider response. Each captures
+            before it asserts.

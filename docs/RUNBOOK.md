@@ -45,6 +45,20 @@ Bulk end-of-day for an entire exchange costs 100. A single-ticker historical req
 
 Moving to a new machine: copy the checkout, copy the store file, write the secrets file by hand. The secrets file is the one part of the move that is a human act and cannot be scripted.
 
+**The key names, because a file written by hand needs them written down.** This section said to write the file and never said what to put in it, so the first one written by hand used a name of its own and the code did not find it. The name is the configuration path, colon separated, and it nests in the file:
+
+```json
+{
+  "EquityBrief": { "Providers": { "Eodhd": { "ApiKey": "..." } } }
+}
+```
+
+| Provider | Key | Which projects need it |
+|---|---|---|
+| EODHD | `EquityBrief:Providers:Eodhd:ApiKey` | `EquityBrief.Worker` |
+
+The same path works as an environment variable, with a double underscore for each colon, and an environment variable wins. A blank or missing key is refused by name at startup rather than reaching the provider as an anonymous request, because a rejection from the provider names nothing.
+
 ---
 
 ## Moving the installation
@@ -52,13 +66,14 @@ Moving to a new machine: copy the checkout, copy the store file, write the secre
 The whole system is a checkout and one database file.
 
 1. Clone the repository on the new machine.
-2. Install a .NET SDK in the `10.0.3xx` band, which is what `global.json` pins and what the six projects need to build against `net10.0`. Without one the run fails at step 5 with a restore error that names neither.
-3. Copy `data/equitybrief.db` into the configured data root.
-4. Write `appsettings.Secrets.json` in each project that needs one.
-5. Run `tools/migrate` and confirm it reports no pending migrations.
-6. Run `tools/ci` and confirm green.
-7. Register the schedule with the platform's scheduler, in UTC.
-8. Run `tools/nightly` by hand once and read the run page before trusting the schedule.
+2. Install a .NET SDK in the `10.0.3xx` band, which is what `global.json` pins and what the six projects need to build against `net10.0`. Without one the run fails at step 6 with a restore error that names neither.
+3. On Windows, install Git for Windows, which is where `bash` comes from. Every bash entry point in `/tools` ships with a `.ps1` beside it and that wrapper hands the work to the one script, so a machine with no usable bash cannot run `tools/ci` or `tools/verify-phase`. It does not need to be on `PATH`: the wrapper looks beside `git` as well, because a default install puts `git.exe` in `cmd\` and `bash.exe` in `bin\` and only the first goes on `PATH`. What it must not be is the WSL launcher, which is on `PATH` as `bash` on any machine with the feature enabled and cannot open a Windows path; the wrapper passes over it by asking each candidate whether it can read the script.
+4. Copy `data/equitybrief.db` into the configured data root.
+5. Write `appsettings.Secrets.json` in each project that needs one.
+6. Run `tools/migrate` and confirm it reports no pending migrations.
+7. Run `tools/ci` and confirm green.
+8. Register the schedule with the platform's scheduler, in UTC.
+9. Run `tools/nightly` by hand once and read the run page before trusting the schedule.
 
 **Re-measure the local and paid boundary after a hardware change** rather than carrying the previous setting over. How much of a research pass runs locally is set by how much context the local model can hold, which is a property of the machine.
 

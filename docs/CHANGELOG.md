@@ -450,3 +450,42 @@ Now:
 > **`bar` has three inserters and one deleter** ... Backfill inserts a name's first year, once, on the run that finds it holding none.
 
 Why: the alternative to a component row was folding the backfill into the bar fetcher, which arrives at 1.4 and does a different job on a different endpoint with the opposite cost shape. A row makes what it touches a claim the harness asserts. The limit is carved rather than deleted, because the property it protects is real and is about the steady-state night: what was wrong was stating it as a flat zero over a run whose second step is per name by design.
+
+### 2026-09-08 - CLAUDE.md - the record is written before the run that signs the checkpoint off
+Corrects: a suite run before the PROGRESS entry exists is a run against a corpus in which the checkpoint has not landed. `HasLanded` reads `PROGRESS.md` to decide what is out of scope, so every claim the entry is about to make due is still out of scope and cannot fail. It happened three times: at 1.1, where a claim placement whose due point had arrived reached CI unexamined; at 1.2, where `Run log` and `Backfill` derived the checkpoint that was landing in the same commit; and at 1.2 again on the capture pass. Each was green on the machine and red on all three runners, which is the signature of the fault rather than a coincidence.
+
+Was:
+> All seven, or it is not done:
+> ...
+> 7. The checkpoint's expectations are added to the fixture, so `tools/verify-phase` covers it from now on, and at least one of them is derived independently rather than frozen from a run.
+
+and, under Merge:
+
+> **A checkpoint lands as its own commit** and satisfies all seven done conditions on its own, and a session that has committed code still may not sign it off.
+
+Now: the list opens `All eight`, the merge sentence says `all eight done conditions`, and an eighth condition is added:
+
+> 8. The PROGRESS entry of condition 6 is written **before** the run that verifies the checkpoint, not after it, and the figures conditions 2 and 5 record are filled in from that run. The record is what the reconciliation reads ... That run is green on a question it never asked.
+
+Why: it was recorded in the 1.2 entry as a note to a future session, which is a record telling a reader what to do rather than a rule the corpus holds. The ordering is not a habit, it is a property of the harness: the last thing written is the one thing nothing after it re-reads. Numbered rather than added as a paragraph so it is ticked with the others, and `stated-counts` now reads the expected count out of the sentence rather than repeating it as a literal, so the next condition added needs only this file edited.
+
+### 2026-09-08 - RUNBOOK.md - the secrets section names the keys it tells the operator to write
+Corrects: the section said to write `appsettings.Secrets.json` by hand and never said what to put in it. The first file written by hand consequently used a name of its own, `Secrets:EodhdApiToken`, and the code looked for `EquityBrief:Providers:Eodhd:ApiKey` and found nothing. Found on the pass that captured the fixture, which was the first work in this repository to need a live credential.
+
+Was:
+> Moving to a new machine: copy the checkout, copy the store file, write the secrets file by hand. The secrets file is the one part of the move that is a human act and cannot be scripted.
+
+Now: that paragraph is unchanged and is followed by the key names, the nested file shape they take, a table naming the provider and the projects that need it, and the environment-variable spelling.
+
+Why: an instruction to write a file by hand that does not say what the file contains is an instruction that can only be followed by guessing. The name now lives in a document and in code, which is two places for one fact, so `ProviderCredentialsTests` asserts the runbook against `ProviderCredentials.ApiKeyName` in both the path form and the nested form.
+
+### 2026-09-08 - RUNBOOK.md - installing a bash is a step, because the tools need one
+Corrects: "Moving the installation" named the SDK and said what fails without it, and said nothing about bash, which every `.ps1` in `/tools` hands its work to. On the operator's own machine `tools/ci.ps1` and `tools/verify-phase.ps1` had never run from a PowerShell prompt: Git for Windows puts `git.exe` in `cmd\` and `bash.exe` in `bin\` and only the first is on `PATH`, so the only `bash` reachable by name was the WSL launcher, which cannot open a Windows path. Found on this pass by running the documented command.
+
+Was:
+> 2. Install a .NET SDK in the `10.0.3xx` band ... Without one the run fails at step 5 with a restore error that names neither.
+> 3. Copy `data/equitybrief.db` into the configured data root.
+
+Now: a new step 3 names Git for Windows, says the wrapper looks beside `git` as well as on `PATH`, and says the WSL launcher does not count and why. The steps after it are renumbered and step 2's cross-reference moves from step 5 to step 6.
+
+Why: the list is what an operator follows on a new machine, and it named the one dependency whose absence produces a legible error while omitting the one whose absence produces an advertisement for installing a Linux distribution. `tools/run-bash.ps1` now chooses a bash by asking each candidate whether it can read the script rather than taking the first on `PATH`, so the property is enforced as well as documented, and the suite's own lookup matches it.
