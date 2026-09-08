@@ -571,6 +571,27 @@
   <p>Which sections sit in which lane is a setting rather than a structure. On the machine this is first built for, the left lane holds classification and extraction and the right lane holds everything else. On a machine able to hold a large model with a long context, sections move left and the overnight queue begins writing them for nothing. The picture is the same either way; only the boundary moves.</p>
 </div>
 
+<h4>What each lane actually writes</h4>
+<p>The figure names these inside its boxes. They are set out here because the
+key above explains where the line falls without saying what sits on either side
+of it.</p>
+<table>
+  <tr><th style="width:20%">Section</th><th>Lane</th><th>What goes in</th><th>Why it sits there</th></tr>
+  <tr><td>The cause of each large move</td><td>local</td><td>one date's headlines, and that day's percentage move</td><td>the answer is one of the headlines, so this is a choice among a set rather than a construction</td></tr>
+  <tr><td>What the company sells</td><td>local</td><td>one section of one filing</td><td>extraction: the answer is in the document, close to verbatim</td></tr>
+  <tr><td>The segment commentary</td><td>local</td><td>the segment table from the same filing</td><td>extraction again, one sentence per business unit</td></tr>
+  <tr><td>The key under each figure</td><td>local</td><td>the numbers that figure was drawn from</td><td>a fixed explanation over known values, with nothing to weigh</td></tr>
+  <tr><td>The two cases</td><td>paid</td><td>the facts file, the filings, every stored news item, the theme record</td><td>the answer is in no single document; it is the shape of the disagreement between them, and a small model given contradictory evidence produces something fluent that says nothing</td></tr>
+  <tr><td>The risks, each with what would confirm it</td><td>paid</td><td>the same whole set</td><td>which risks are live now cannot be decided from one document</td></tr>
+  <tr><td>The short version</td><td>paid</td><td>the same whole set, written last</td><td>it summarises sections that do not agree with each other</td></tr>
+</table>
+<p>Every local call carries only the documents its own section needs, a few
+thousand tokens, which is what makes a consumer graphics card sufficient for
+that lane. Only the paid lane holds the whole evidence set at once. After the
+split the two are identical: both outputs pass the same claim checker, and both
+land in the same research record carrying their own date and the model that
+wrote them.</p>
+
 <h2>13. How the picks improve</h2>
 <p>Measuring something is not the same as improving it, and until this section the document only measured. This is the loop. It is deliberately small: one score per condition, one register of candidates, and one column in a table that already exists. No new component runs nightly, no new store is needed beyond what the listings already hold, and none of it is built before the evidence exists to run it.</p>
 
