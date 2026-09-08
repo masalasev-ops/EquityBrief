@@ -41,6 +41,20 @@
       "query": "eod/KEYS.US?from=2025-09-04&to=2026-09-04&period=d&fmt=json",
       "fetchedAt": "2026-09-08T12:37:09Z",
       "trimmedTo": "the same capture as bars-KEYS.json with one interior session removed, 2026-03-06, which AAPL and MSFT both hold. It is a subset rather than a second capture: every row it keeps is the provider's, byte for byte, and the file exists because a clean provider series will not produce the failure 1.5's done condition requires be induced. The session removed sits in the middle of the window with stored sessions on both sides of it, because a hole at either edge is a shorter history rather than a gap."
+    },
+    {
+      "file": "actions-dividends-2026-08-10.json",
+      "endpoint": "eod-bulk-last-day/US",
+      "query": "eod-bulk-last-day/US?type=dividends&date=2026-08-10&fmt=json",
+      "fetchedAt": "2026-09-08T23:41:10Z",
+      "trimmedTo": "four of the 124 rows the whole US exchange returned for that session. AAPL is one of them and its ex-dividend date is a real action inside the stored year, which is what makes the refetch fire on a captured action rather than a constructed one. The other three are names this index does not hold, so the membership filter has something to reject. The date was chosen by reading AAPL's own dividend history first, because a day picked at random holds no action for any fixture name. Every key, nesting and type is the provider's, including the four fields that arrive as null."
+    },
+    {
+      "file": "actions-splits-2026-08-10.json",
+      "endpoint": "eod-bulk-last-day/US",
+      "query": "eod-bulk-last-day/US?type=splits&date=2026-08-10&fmt=json",
+      "fetchedAt": "2026-09-08T23:41:10Z",
+      "trimmedTo": "three of the eight rows the whole US exchange returned for that session. None is a fixture name, which is deliberate: the split file is here for its shape rather than for its actions, and the shape is the thing a parser written first gets wrong. A split's value is a ratio in a string, and the exchange is under `exchange` where the price bulk file calls the same thing `exchange_short_name`."
     }
   ]
 }

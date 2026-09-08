@@ -127,7 +127,10 @@ internal static class Reconciliation
     // the tenth being the bulk-feed failure row whose due point moved to 4.4
     // because its "What you see" cell promises a banner and tonight's list.
     // Measured 29.
-    internal const int Floor = 28;
+    // Raised from 28 to 34 at 1.6, which reconciles 42. Predicted before the
+    // run: 35 passing claims, being 1.5's 30 plus the five owed at 1.6, one of
+    // which is a store row this checkpoint adds. Measured 35.
+    internal const int Floor = 34;
 
     // A note offering the report itself as its own evidence. The report is the
     // surface a verdict is printed on and is never the instrument that reached

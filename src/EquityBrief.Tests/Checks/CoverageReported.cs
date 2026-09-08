@@ -43,6 +43,7 @@ public class CoverageReported
         ["nightly-cost"] = "NightlyCost",
         ["nightly-run"] = "NightlyRun",
         ["gap-refusal"] = "GapRefusal",
+        ["corporate-actions"] = "CorporateActions",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };

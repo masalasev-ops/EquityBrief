@@ -81,10 +81,12 @@ public class NightlyRun
         var membership = output.IndexOf("  membership:", StringComparison.Ordinal);
         var backfill = output.IndexOf("  backfill:", StringComparison.Ordinal);
         var fetch = output.IndexOf("  fetch:", StringComparison.Ordinal);
+        var actions = output.IndexOf("  actions:", StringComparison.Ordinal);
 
         Assert.True(membership >= 0 && backfill >= 0 && fetch >= 0, $"A step did not run: {output}");
         Assert.True(membership < backfill, "The backfill ran before membership, so it asked an empty index which names are members.");
         Assert.True(backfill < fetch, "The fetch ran before the backfill, so a new name would hold one session rather than a year.");
+        Assert.True(fetch < actions, "The action check ran before the fetch, so it would refetch a year the night was about to add a session to.");
 
         // And the order the document states is the order asserted, read from
         // section 14 rather than repeated here.
@@ -94,6 +96,7 @@ public class NightlyRun
         Assert.StartsWith("Load index membership", steps[0], StringComparison.Ordinal);
         Assert.StartsWith("Backfill one year", steps[1], StringComparison.Ordinal);
         Assert.StartsWith("Fetch the day", steps[2], StringComparison.Ordinal);
+        Assert.StartsWith("Check splits and dividends", steps[3], StringComparison.Ordinal);
     }
 
     [Fact]

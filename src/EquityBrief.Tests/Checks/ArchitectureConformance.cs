@@ -331,7 +331,7 @@ public class ArchitectureConformance
             .Select(claim => claim.GetProperty("by").GetString() ?? string.Empty)
             .ToArray();
 
-        Assert.True(passing.Length >= 22, $"{passing.Length} claims pass in the file, expected at least 22.");
+        Assert.True(passing.Length >= 28, $"{passing.Length} claims pass in the file, expected at least 28.");
         Assert.DoesNotContain(passing, by => by.Length == 0);
 
         Assert.Contains("<th>Reached by</th>", html, StringComparison.Ordinal);

@@ -20,6 +20,7 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Run log"),
             CheckReach.Key(Scope.StoresTable, "Membership"),
             CheckReach.Key(Scope.StoresTable, "Bar store"),
+            CheckReach.Key(Scope.StoresTable, "Series state"),
         ]);
 
     const string Sample =

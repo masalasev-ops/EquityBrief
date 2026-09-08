@@ -40,6 +40,7 @@ public enum Store
     ThemeSection,
     SourceDocument,
     CandidateRegister,
+    SeriesState,
     RunLog,
 }
 

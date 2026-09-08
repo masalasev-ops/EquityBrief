@@ -44,6 +44,7 @@ internal static class Scope
     // about a surface and a declaration says nothing about one.
     const string ByReadSurface = "read-surface";
     const string ByGap = "gap-refusal";
+    const string ByActions = "corporate-actions";
     const string ByCost = "nightly-cost";
     const string ByNight = "nightly-run";
 
@@ -135,6 +136,26 @@ internal static class Scope
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Corporate action checker")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the two feeds it reads and the stores it touches, including the refetch delete and the series state SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByActions),
+        [CheckReach.Key(MatrixTable, "Corporate action checker")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByActions),
+        [CheckReach.Key(StoresTable, "Series state")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and a name whose check failed is marked in it rather than passing",
+            ByMigration),
+        [CheckReach.Key(FailureTable, "A split or dividend not caught")] = new Scoped(
+            Verdict.Pass,
+            "a real captured action on a current member triggers a full-year refetch, the replacement is atomic, and a failure of the check itself marks the name suspect with its reason rather than passing",
+            ByActions),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Check splits and dividends, and refetch the full year for any name affected.")] = new Scoped(
+            Verdict.Pass,
+            "the action feed is read once per kind and only current members with an action are refetched",
+            ByActions),
         [CheckReach.Key(FailureTable, "A gap in one name's series, chart")] = new Scoped(
             Verdict.Pass,
             "the holed series is refused with its date named, the clean one is unaffected, and the chart draws one candle per stored session with none for the missing one, so the gap is visible as an absence rather than closed over",

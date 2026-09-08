@@ -1788,3 +1788,67 @@ Predicted:  30 passing claims, being 1.4's 29 plus the chart half of the gap row
             rather than three, four on the level chart and one added here.
 
 Carried:    the fixture's expectations, to 1.8. The macOS runner. The live feeds, as filed at 1.4.
+
+### 1.6 - the corporate action checker                                       2026-09-08
+Built:      `ICorporateActionFeed` and `RecordedCorporateActionFeed`. `CorporateActionChecker`,
+            one bulk request per kind a night and a full-year refetch of any current member whose
+            adjusted prices an action moved, each name in its own transaction. Migration 5
+            creating `series_state`. `corporate-actions` on the roster. The action step added to
+            the night, which now runs five of section 14's nine.
+
+Captured:   three probe requests before the parser was written, then two captures. Stated and
+            then made. Two of the three shapes would have been written wrong from the endpoint's
+            name alone: a split's value is a ratio in a string, `4.000000/1.000000`, not a
+            number, and the exchange is under `exchange` where the price bulk file calls the same
+            thing `exchange_short_name`, so one reader for both would have silently dropped every
+            row of one of them. Four of the dividend row's ten fields arrive as JSON null rather
+            than being absent.
+
+            The action is a real one. AAPL's own dividend history was read first to find an
+            ex-dividend date inside the stored year, and the bulk file for that session was
+            captured whole and trimmed. A day picked at random holds no action for any fixture
+            name, which is why the done condition's "captured rather than constructed" needed
+            two requests rather than one.
+
+Measured:   over the fixture, 4 dividend rows and 3 split rows, of which 1 is a current member.
+            One name refetched, 0 suspect, 2 requests. The refetched year is the window the
+            action night defines rather than the stored year, and it is smaller, so a store that
+            had added rather than replaced would hold more than either: that is asserted as the
+            difference rather than as a count.
+
+            The report: 167 claims, 35 pass, 0 fail, 132 out of scope, 0 unexamined, 42
+            placements and verdicts reconciled against a floor of 34. 238 tests. A night by hand
+            runs five steps: migrate, membership, backfill 753 over 3 requests, fetch 3 over 1,
+            actions 0 over 2. 0 model calls, 6 network requests.
+
+Resolved:   contradiction C, with a table rather than a column. The plan had said a column with
+            its grain declared, and that cannot be satisfied as written because grain is a
+            property of a table. `series_state` is one row per ticker, which is the grain the
+            statement is actually about: whether this name's stored series can be trusted is not
+            a fact about a session and not a fact about index membership. One row per ticker
+            rather than one per check, because when it happened is in the run log and a second
+            history here would be one fact in two places.
+
+            Contradiction I, the source box added. And the per-name limit gained its second
+            carve-out, found the same way contradiction B was: the refetch makes one request per
+            affected name, which the rule as written forbade. Carved rather than loosened,
+            because a night that refetched every name would satisfy a loosened rule and defeat
+            the whole design.
+
+Found:      the catalogue row was incomplete, and `component-access` refused the declaration on
+            the day the component was written. The row named the actions feed and the bar store
+            and named neither the historical feed the refetch fetches from, nor the membership it
+            asks which names are members, nor the state contradiction C's own resolution requires
+            it to write. That is three omissions in one row, and the refetch cannot happen
+            without the first, the filter without the second, or C's resolution without the
+            third. Amended with prior text recorded, which is a finding rather than a document
+            edited to suit code.
+
+Discharged: the splits and dividends parser obligation 1.2 filed here, by capturing before
+            writing. The two shape surprises above are what that obligation was for.
+
+Predicted:  35 passing claims, being 1.5's 30 plus the five owed at 1.6, one of which is the
+            store row this checkpoint adds. Measured 35. The claim total moves 166 to 167 for
+            that row.
+
+Carried:    the fixture's expectations, to 1.8. The macOS runner. The live feeds, as filed at 1.4.
