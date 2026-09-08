@@ -718,3 +718,87 @@ Notes:      the merge condition is now met and this is the only condition. What 
             The three jobs also ran once on the push before the pull request existed, as run
             34144883541, and were green there on the same commit. That is the same result
             twice rather than a second piece of evidence.
+
+### Repairs to 0.7 - a replacement document, and what it took with it      2026-09-07
+Not a checkpoint entry. It belongs to 0.7, which has landed. Phase 0 was signed off and is
+            reopened here under the stopping rule, which reopens a phase when a finding breaks
+            a check: `main` was red on two tests and phase 0's done condition 2 is that
+            `tools/ci.*` is green. This session committed code and therefore may not sign it
+            off.
+Cause:      one commit, `8ac2442`, and the cause is not the two red tests. It replaced
+            `docs/BUILD_PLAN.md` and `docs/CHANGELOG.md` wholesale rather than editing them,
+            against a tree that had moved on, so everything the working copy did not carry was
+            dropped without anything naming it. It also went straight to `main` as a linear
+            commit with no merge, which is why no CI run saw it before it landed. The two
+            failing tests and the twenty-three lost entries are both downstream of that one
+            fact. A document change arrives as an edit to the file in the tree, never as a
+            regenerated file pasted over it.
+Built:      the twenty-three entries restored to `docs/CHANGELOG.md` from `8ac2442^`, verbatim
+            and in date order, with the three the commit left standing kept where their dates
+            put them. Two new entries, one recording the prior text of phase 0's deleted
+            checkpoint detail and one for the RUNBOOK edit below. `changelog-reconciles` given
+            the property that would have caught this. `docs/RUNBOOK.md`'s "Moving the
+            installation" list given the SDK to install, on its own merits: it told an operator
+            to clone and then run `tools/migrate` with nothing between them naming what has to
+            be installed first.
+Repaired:   `pinned-constants` and `stated-counts`, both by moving an assertion onto the thing
+            that carries its property rather than by restoring a sentence to a document to feed
+            a count. `pinned-constants` floored the mentions it found, which is a number an
+            added sentence moves; it now floors the comparisons made against
+            `src/Directory.Build.props` and `global.json`, which only a mention agreeing with
+            the build can move, and it refuses a scan that compared nothing rather than passing
+            over an empty result. `stated-counts` asserted the string `Six projects` against
+            `BUILD_PLAN.md`; the count is stated in `CLAUDE.md`'s own layout block, which is the
+            document that carries the block, and that is where it now reads it.
+Floors:     stated with the count expected before the run and the count found.
+            `pinned-constants`, framework: floor 2 comparisons, expected 2, found 2, being
+            `CLAUDE.md` and the new RUNBOOK line, over 5 specs read as context with no floor.
+            `pinned-constants`, band: floor 2 comparisons, expected 3, found 3, being 2 in
+            `CLAUDE.md` and 1 in RUNBOOK. `changelog-reconciles`, high-water mark: floor 20,
+            expected 26, found 26 at `99fc654`, against 30 entries now. Commits touching the
+            changelog: floor 5, found 12, and that count is context rather than the property.
+Missed:     one figure was predicted and wrong, and it is recorded rather than quietly
+            corrected. The plan for this pass said the changelog held 27 entries before the
+            deletion and would return to 27, having counted `grep -c '^### '` hits rather than
+            entries. The template heading inside the fenced format block is one of those hits
+            and is not an entry. The true figures are 26 entries before, 3 after, 25 deleted
+            and 2 written for a net loss of 23, restored to 28 and standing at 30 with this
+            pass's own two. The check counts a dated heading for exactly this reason and
+            asserts the template is not one.
+Measured:   over the 12 commits that have touched `docs/CHANGELOG.md`, the record's high-water
+            mark is 26 entries, set at `99fc654`, and it holds 30 now. Over the 5 specs, 2
+            framework mentions and 3 band mentions, and 0 disagree with the build files. Over
+            the 30 tracked text files this pass touched, 0 carry an em dash and 0 carry the
+            banned string. `tools/ci.ps1` green end to end, all 6 steps.
+Tests:      117, up from 113, of which 111 were passing and 2 failing before this pass. 4 are
+            new and every one is a proof a check can fail: a document stating a version the
+            build does not, a scan that read two documents and compared nothing, a constructed
+            record that lost an entry, and the assertion that the format block's template
+            heading is not counted as an entry.
+Proved:     the new property refuses the defect on the live record rather than only on
+            constructed input. The restored changelog was cut back to 4 entries and
+            `TheChangelogOnlyEverGrows` failed naming `99fc654` and the 26 entries to restore
+            from; the cut was reverted and the tree is clean.
+Carried:    nothing new. `Scope.cs` is deliberately untouched: its due points still describe
+            phase 1's pre-revision order, which is 1.1's planning pass to repair, and leaving it
+            here gives that pass a tree to verify against that this one did not edit.
+Notes:      the two checks were right and the document revision was wrong, which is the same
+            shape as the shallow-clone finding the 0.7 addendum records. Both had been reading
+            a population that a document edit removed, and neither could see that its scope had
+            narrowed, because a floor on how many mentions were found is satisfied by the
+            mentions that remain. The repair moves each floor onto the comparison rather than
+            onto the population, so the number cannot be moved by writing a sentence.
+
+            `changelog-reconciles` asserts against the high-water mark rather than against each
+            revision's predecessor. Both would have gone red at `8ac2442`, but a per-revision
+            comparison stays red forever, because that commit is on `main` and history is not
+            rewritten, so the only route to green would be to exempt the very commit the check
+            exists to catch. Against the high-water mark it goes red when entries are lost and
+            green again when they are put back, which is a check on the record as it stands.
+            The first version of this check was written the per-revision way and failed on its
+            first run, which is what surfaced the problem.
+
+            Two entries in the restored file are dated 2026-09-05 and describe changes that
+            landed on 2026-09-07 in `8ac2442`. They are left as written. A record is corrected
+            by a new dated entry and never by editing an old one, and this note is that
+            correction.

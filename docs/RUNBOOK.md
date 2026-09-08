@@ -52,12 +52,13 @@ Moving to a new machine: copy the checkout, copy the store file, write the secre
 The whole system is a checkout and one database file.
 
 1. Clone the repository on the new machine.
-2. Copy `data/equitybrief.db` into the configured data root.
-3. Write `appsettings.Secrets.json` in each project that needs one.
-4. Run `tools/migrate` and confirm it reports no pending migrations.
-5. Run `tools/ci` and confirm green.
-6. Register the schedule with the platform's scheduler, in UTC.
-7. Run `tools/nightly` by hand once and read the run page before trusting the schedule.
+2. Install a .NET SDK in the `10.0.3xx` band, which is what `global.json` pins and what the six projects need to build against `net10.0`. Without one the run fails at step 5 with a restore error that names neither.
+3. Copy `data/equitybrief.db` into the configured data root.
+4. Write `appsettings.Secrets.json` in each project that needs one.
+5. Run `tools/migrate` and confirm it reports no pending migrations.
+6. Run `tools/ci` and confirm green.
+7. Register the schedule with the platform's scheduler, in UTC.
+8. Run `tools/nightly` by hand once and read the run page before trusting the schedule.
 
 **Re-measure the local and paid boundary after a hardware change** rather than carrying the previous setting over. How much of a research pass runs locally is set by how much context the local model can hold, which is a property of the machine.
 

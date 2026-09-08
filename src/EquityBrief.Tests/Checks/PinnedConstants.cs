@@ -9,27 +9,51 @@ namespace EquityBrief.Tests.Checks;
 // scanned. This is the same exemption stated-counts already makes.
 public class PinnedConstants
 {
+    const string Framework = @"net[0-9]+\.[0-9]+";
+    const string Band = @"[0-9]+\.[0-9]+\.[0-9]xx";
+
+    // The specs, which is where a version may be stated. Records are exempt for
+    // the reason given above. Read once so both checks scan the same population
+    // and neither can quietly narrow to the file that happens to state it.
+    static IReadOnlyDictionary<string, string> Specs() =>
+        Corpus.Specs.ToDictionary(spec => spec, Corpus.Read, StringComparer.Ordinal);
+
     [Fact]
     public void TheFrameworkTheSpecsStateIsTheOneTheBuildUses()
     {
         var built = Versions.FrameworkIn(File.ReadAllText(Repository.DirectoryBuildProps));
+        var specs = Specs();
+        var stated = Versions.MentionsIn(specs, Framework);
 
-        var stated = Versions.Occurrences(File.ReadAllText(Repository.Rules), @"net[0-9]+\.[0-9]+")
-            .Concat(Versions.Occurrences(File.ReadAllText(Repository.BuildPlan), @"net[0-9]+\.[0-9]+"))
-            .ToArray();
+        // Two scopes, and only the second carries the property. The documents
+        // opened is a fact about the corpus, so it is context and carries no
+        // floor: a floor on it is satisfied by opening a document, and a run
+        // finding no mention in any of them would pass having compared nothing.
+        //
+        // The comparisons are what this check is about. That number cannot be
+        // moved by adding a document or by adding a sentence, only by a mention
+        // that agrees with the build file, which is the thing being pinned.
+        Assert.True(
+            stated.Count >= 2,
+            $"Compared {stated.Count} framework mentions against {Repository.DirectoryBuildProps}, " +
+            $"expected at least 2, over {specs.Count} specs read.");
 
-        Assert.True(stated.Length >= 2, $"Found {stated.Length} framework mentions, expected at least 2.");
-        Assert.All(stated, mention => Assert.Equal(built, mention));
+        Assert.Empty(Versions.Disagreeing(stated, built, "framework mention"));
     }
 
     [Fact]
-    public void TheFeatureBandTheRulesStateIsTheOneGlobalJsonPins()
+    public void TheFeatureBandTheSpecsStateIsTheOneGlobalJsonPins()
     {
         var pinned = Versions.FeatureBand(Versions.SdkVersionIn(File.ReadAllText(Repository.SdkPin)));
-        var stated = Versions.Occurrences(File.ReadAllText(Repository.Rules), @"[0-9]+\.[0-9]+\.[0-9]xx");
+        var specs = Specs();
+        var stated = Versions.MentionsIn(specs, Band);
 
-        Assert.True(stated.Count >= 2, $"Found {stated.Count} band mentions, expected at least 2.");
-        Assert.All(stated, mention => Assert.Equal(pinned, mention));
+        Assert.True(
+            stated.Count >= 2,
+            $"Compared {stated.Count} band mentions against {Repository.SdkPin}, " +
+            $"expected at least 2, over {specs.Count} specs read.");
+
+        Assert.Empty(Versions.Disagreeing(stated, pinned, "band mention"));
     }
 
     [Fact]
@@ -59,5 +83,46 @@ public class PinnedConstants
     {
         Assert.Throws<FormatException>(() => Versions.MajorMinor("no version here"));
         Assert.Throws<FormatException>(() => Versions.FeatureBand("10.0"));
+    }
+
+    [Fact]
+    public void ADocumentStatingAVersionTheBuildDoesNotIsReported()
+    {
+        // The permanent proof over a constructed corpus, naming the document
+        // rather than only the value, which is what a person needs to open.
+        var documents = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["agrees.md"] = "the projects target `net10.0`",
+            ["disagrees.md"] = "the projects target `net9.0`",
+        };
+
+        var disagreeing = Versions.Disagreeing(
+            Versions.MentionsIn(documents, Framework), "net10.0", "framework mention");
+
+        Assert.Equal("disagrees.md", Assert.Single(disagreeing).Document);
+    }
+
+    [Fact]
+    public void AScanThatComparedNothingFailsRatherThanPassingOverAnEmptyResult()
+    {
+        // The other half, and the one a floor on documents opened would miss.
+        // Both documents are read and neither states a framework, so there is
+        // nothing to disagree and "none of them disagreed" is vacuously true.
+        // Assert.Empty over an empty list passes, so the refusal has to happen
+        // before the assertion is reached rather than inside it.
+        var documents = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["silent.md"] = "this document states no framework at all",
+            ["also-silent.md"] = "and neither does this one",
+        };
+
+        var mentions = Versions.MentionsIn(documents, Framework);
+
+        Assert.Empty(mentions);
+
+        var refusal = Assert.Throws<InvalidOperationException>(
+            () => Versions.Disagreeing(mentions, "net10.0", "framework mention"));
+
+        Assert.Contains("must fail rather than pass over an empty scan", refusal.Message, StringComparison.Ordinal);
     }
 }
