@@ -48,10 +48,12 @@ public sealed class MembershipLoader(
             observed_at = excluded.observed_at;
     ";
 
-    // Members on a date, which is a different question from members now. A name
-    // is a member on that date when it had joined by then and had not left, and
-    // a leave date is the day it stopped being one, so the comparison is strict
-    // on the left edge and not on the right.
+    // Members on a date, which is a different question from members now.
+    //
+    // A name is a member on a date when it joined on or before that date and
+    // either has not left or left after it. So `joined` compares with <= and
+    // `left` with >, the leave date being the day the name stopped being a
+    // member rather than the last day it was one.
     const string MembersOn = @"
         SELECT ticker
         FROM membership
@@ -88,7 +90,9 @@ public sealed class MembershipLoader(
         CancellationToken cancellationToken = default)
     {
         var startedAt = clock.UtcNow;
+        var before = feed.Requests;
         var constituents = await feed.ConstituentsAsync(indexCode, cancellationToken);
+        var requests = feed.Requests - before;
         var observedAt = startedAt.ToString("O");
 
         await using var connection = new SqliteConnection(ConnectionString);
@@ -124,9 +128,12 @@ public sealed class MembershipLoader(
         log.Parameters.AddWithValue("$outcome", "ok");
         log.Parameters.AddWithValue("$rows_written", written);
 
-        // One feed call for the whole index, which is the figure the zero-per-name
-        // limit is asserted against.
-        log.Parameters.AddWithValue("$network_requests", 1);
+        // Read off the feed rather than stated, for the same reason rows_written
+        // is measured from the store: a stage's own count of what it did is the
+        // stage's opinion, and this is the number the zero-per-name limit is
+        // asserted against. A literal here cannot go wrong today and cannot go
+        // right on the night a feed starts paging.
+        log.Parameters.AddWithValue("$network_requests", requests);
         log.Parameters.AddWithValue("$detail", DBNull.Value);
 
         await log.ExecuteNonQueryAsync(cancellationToken);

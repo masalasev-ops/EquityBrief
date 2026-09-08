@@ -759,7 +759,7 @@ wrote them.</p>
   <li>Close the arithmetic and record its counts: names computed, names on the list, reasons fired, stale names, duration.</li>
   <li>Run the overnight queue on the local model, writing the sections in the local lane for listed names whose research is missing or stale, in priority order, until the configured time limit. This makes no paid call, and no part of the arithmetic above depends on it.</li>
 </ol>
-<p class="note">No model is called and no per-name network request is made. The run is idempotent, so running it twice on one night produces identical stored state. It is scheduled with Task Scheduler after the US close.</p>
+<p class="note">No model is called and no per-name network request is made. The run is idempotent in what it records about the market: running it twice on one night produces the same bars, the same membership spans and the same computed values. It does not produce a byte-identical store, and is not meant to. Each row carries the instant it was observed, and the run log gains a row per stage per run, so the store also records that the night ran twice. That is the evidence the run page reads, and a run that left no trace of having repeated would be the thing to fix rather than the thing to claim. It is scheduled with Task Scheduler after the US close.</p>
 
 <h2>15. The screens</h2>
 <p>This section is the specification for what the operator looks at. It is here rather than in a document of its own because a mockup file and a built page are two answers to one question, and the day they disagree nothing says which is the specification.</p>

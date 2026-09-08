@@ -109,7 +109,18 @@ public class MembershipLoaderTests
         // One feed call per run for the whole index, not one per name. This is
         // the figure the zero-per-name limit is asserted against, and it is a
         // count rather than a source scan.
-        Assert.Equal(2, feed.Calls);
+        Assert.Equal(2, feed.Requests);
+
+        // observed_at is deliberately excluded from the comparison above, and
+        // the exclusion is asserted rather than left as an omission. It is the
+        // instant of the fetch, so it is expected to differ between runs, and a
+        // test that simply left it out of the select would read as a claim about
+        // the whole row while quietly making one about four fifths of it.
+        var instants = Rows(store, "SELECT ticker, observed_at FROM membership ORDER BY ticker;");
+
+        Assert.Equal(4, instants.Count);
+        Assert.All(instants, row => Assert.NotEqual(string.Empty, row.Item2));
+        Assert.Single(instants.Select(row => row.Item2).Distinct());
     }
 
     [Fact]
@@ -126,8 +137,8 @@ public class MembershipLoaderTests
 
         var measured = Rows(store, "SELECT CAST(rows_written AS TEXT), CAST(network_requests AS TEXT) FROM run_log WHERE run_id = 'run-1';");
 
-        // Four rows written and one request, and the count is read back from the
-        // store rather than taken from what the stage said it did.
+        // Four rows written and one request. Both are measured rather than
+        // stated: the rows from the store, and the requests off the feed.
         Assert.Equal(("4", "1"), Assert.Single(measured));
 
         var free = Rows(store, "SELECT CAST(model_calls AS TEXT), spend FROM run_log WHERE run_id = 'run-1';");
@@ -149,6 +160,68 @@ public class MembershipLoaderTests
         Assert.Contains(parsed, constituent => constituent.Ticker == "XRAY" && constituent.Left is not null);
         Assert.Contains(parsed, constituent => constituent.Ticker == "AAPL" && constituent.Left is null);
     }
+
+    [Theory]
+    [InlineData(@"""EndDate"": null", null)]
+    [InlineData(@"""Other"": 1", null)]
+    public void AnAbsentEndDateMeansACurrentMember(string tail, string? expected)
+    {
+        // The first of the three outcomes. Absent and JSON null both mean the
+        // name is still in the index, which is what the null in the membership
+        // row's left column records.
+        var parsed = RecordedIndexMembershipFeed.Parse(Payload(tail), Index);
+
+        Assert.Equal(expected, Assert.Single(parsed).Left?.ToString("yyyy-MM-dd"));
+    }
+
+    [Theory]
+    [InlineData(@"""EndDate"": ""not a date""")]
+    [InlineData(@"""EndDate"": ""21/03/2026""")]
+    [InlineData(@"""EndDate"": ""2026-13-45""")]
+    public void AnEndDateThatCannotBeReadThrowsRatherThanReadingAsAbsent(string tail)
+    {
+        // The second outcome, and the one that mattered. A name that left the
+        // index carrying an end date the parser could not read would have been
+        // stored with no leave date and read as a current member, which is the
+        // one thing membership exists to prevent, with nothing failing anywhere.
+        var refusal = Assert.Throws<FormatException>(() => RecordedIndexMembershipFeed.Parse(Payload(tail), Index));
+
+        // The ticker is named, because a format failure over five hundred
+        // constituents that does not say which one is useless.
+        Assert.Contains("ZZZZ", refusal.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(@"""EndDate"": 20260321")]
+    [InlineData(@"""EndDate"": true")]
+    [InlineData(@"""EndDate"": []")]
+    public void AnEndDateThatIsNotAStringThrows(string tail)
+    {
+        // The third outcome. A value of the wrong kind is present and unreadable
+        // rather than absent, and is refused for the same reason.
+        var refusal = Assert.Throws<FormatException>(() => RecordedIndexMembershipFeed.Parse(Payload(tail), Index));
+
+        Assert.Contains("ZZZZ", refusal.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheDateParseDoesNotDependOnTheMachinesLocale()
+    {
+        // A day-first string is refused rather than read as a different date,
+        // which is what a culture-sensitive parse would do on a machine set to a
+        // day-first locale. Same class as an instant resolving against the
+        // machine zone, and in shipped code rather than in the suite.
+        Assert.Throws<FormatException>(() => RecordedIndexMembershipFeed.Parse(Payload(@"""EndDate"": ""21/03/2026"""), Index));
+
+        var parsed = RecordedIndexMembershipFeed.Parse(Payload(@"""EndDate"": ""2026-03-21"""), Index);
+
+        Assert.Equal(new DateOnly(2026, 3, 21), Assert.Single(parsed).Left);
+    }
+
+    static string Payload(string tail) =>
+        $$"""
+        { "Components": { "0": { "Code": "ZZZZ", "StartDate": "2020-01-02", {{tail}} } } }
+        """;
 
     static IReadOnlyList<(string, string)> Rows(TemporaryStore store, string sql)
     {

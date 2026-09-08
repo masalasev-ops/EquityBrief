@@ -17,6 +17,15 @@ public sealed record IndexConstituent(string Ticker, DateOnly Joined, DateOnly? 
 // (see: The nightly run is arithmetic only).
 public interface IIndexMembershipFeed
 {
+    // How many network requests this feed has made.
+    //
+    // On the interface rather than on the recorded double, so the live feed has
+    // to answer the same question and the cost limit is asserted against
+    // something measured on both paths. A caller that wrote the figure as a
+    // literal would be recording its own intention: correct today, and still
+    // reading one on the night a feed starts paging.
+    int Requests { get; }
+
     Task<IReadOnlyList<IndexConstituent>> ConstituentsAsync(
         string indexCode,
         CancellationToken cancellationToken = default);

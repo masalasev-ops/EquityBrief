@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 namespace EquityBrief.Core.Providers;
@@ -15,7 +16,7 @@ namespace EquityBrief.Core.Providers;
 // parsing the live feed will do (see: A frozen fixture per checkpoint, and the harness decides sign-off).
 public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IIndexMembershipFeed
 {
-    public int Calls { get; private set; }
+    public int Requests { get; private set; }
 
     public static RecordedIndexMembershipFeed FromFile(string path) =>
         new(File.ReadAllText(path));
@@ -24,9 +25,10 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
         string indexCode,
         CancellationToken cancellationToken = default)
     {
-        // Counted so a caller can assert the whole index arrived in one request
-        // rather than one per name, which is the limit the nightly path carries.
-        Calls++;
+        // Counted so a caller can read the figure off the feed rather than
+        // stating it, which is the limit the nightly path carries: the whole
+        // index in one request and not one per name.
+        Requests++;
 
         return Task.FromResult(Parse(capturedResponse, indexCode));
     }
@@ -57,18 +59,55 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
                 "leave date onto every name in the store.");
     }
 
-    static IndexConstituent Read(JsonElement entry) => new(
-        entry.GetProperty("Code").GetString()
-            ?? throw new FormatException("A constituent carries no Code."),
-        Date(entry, "StartDate") ?? throw new FormatException("A constituent carries no StartDate."),
-        Date(entry, "EndDate"));
+    static IndexConstituent Read(JsonElement entry)
+    {
+        var ticker = entry.TryGetProperty("Code", out var code) ? code.GetString() : null;
 
-    // A missing or null end date means a current member, which is what the null
-    // in the membership row's left column records.
-    static DateOnly? Date(JsonElement entry, string name) =>
-        entry.TryGetProperty(name, out var value)
-        && value.ValueKind is JsonValueKind.String
-        && DateOnly.TryParse(value.GetString(), out var parsed)
+        if (string.IsNullOrWhiteSpace(ticker))
+        {
+            throw new FormatException("A constituent carries no Code.");
+        }
+
+        return new IndexConstituent(
+            ticker,
+            Date(entry, "StartDate", ticker)
+                ?? throw new FormatException($"{ticker} carries no StartDate."),
+            Date(entry, "EndDate", ticker));
+    }
+
+    // Three outcomes, kept apart on purpose.
+    //
+    // Absent or JSON null is null, and for EndDate that means a current member.
+    // Present and unreadable throws. Folding those two together is a falsy value
+    // standing in for an absent one, and here it has teeth: a name that left the
+    // index, carrying an end date the parser could not read, would be stored
+    // with no leave date and read as present. That is the one thing membership
+    // exists to prevent, and nothing downstream would have noticed.
+    //
+    // The parse is exact and invariant. The provider's format is known, so this
+    // is the parse that was meant rather than a tightening, and a culture-
+    // sensitive parse resolves against the machine's locale, which is the same
+    // class of fault as an instant resolving against the machine's zone.
+    static DateOnly? Date(JsonElement entry, string name, string ticker)
+    {
+        if (!entry.TryGetProperty(name, out var value) || value.ValueKind is JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (value.ValueKind is not JsonValueKind.String)
+        {
+            throw new FormatException(
+                $"{ticker} carries a {name} that is {value.ValueKind} rather than a string. A value " +
+                "that is present and unreadable is not an absent one.");
+        }
+
+        var text = value.GetString();
+
+        return DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
             ? parsed
-            : null;
+            : throw new FormatException(
+                $"{ticker} carries a {name} of '{text}', which is not a date in yyyy-MM-dd. Reading " +
+                "it as absent would record a name that left the index as a current member.");
+    }
 }

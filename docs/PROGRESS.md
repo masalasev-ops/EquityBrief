@@ -1035,3 +1035,64 @@ Notes:      the run log is the one store every component may append to, and SCHE
             Eight files were converted from LF to CRLF by a scripted edit and converted back.
             `.gitattributes` normalises to LF in the repository, so nothing reached a commit,
             but two checks failed in the meantime by reading a line ending rather than a defect.
+
+### Addendum to 1.1 - four defects the checkpoint shipped, and a claim it falsified   2026-09-08
+Not a checkpoint entry. It belongs to 1.1, which is what authorises it: these are defects in the
+            code `b67ba67` shipped and a document claim that commit made false. They land in the
+            same pull request so 1.1 closes correct rather than closing with three known defects
+            and a repair trailing it.
+Fixed:      `network_requests` was written as the literal 1, one line below `rows_written` being
+            measured from the store with a comment quoting SCHEMA's reason that a stage's own
+            count is the stage's opinion. It was the same defect on the number that carries more
+            weight, and the measurement already existed on the recorded feed. The count is now
+            read off the feed, and `Requests` sits on `IIndexMembershipFeed` rather than on the
+            double, so the live feed has to answer the same question and the cost limit is
+            asserted against something measured on both paths. A literal there could not go
+            wrong today and could not go right on the night a feed starts paging.
+
+            A garbled leave date read as a current member. The parser returned null when a
+            property was absent, when it was not a string, and when the parse failed, and for
+            `EndDate` null means the name is still in the index. So a name that had left,
+            carrying an end date the parser could not read, would be stored with no leave date
+            and read as present, with nothing failing anywhere. That is the one thing membership
+            exists to prevent. The three outcomes are now separate: absent is null and means a
+            current member, present and unparseable throws, present and not a string throws, and
+            both throws name the ticker, because a format failure over five hundred constituents
+            that does not say which one is useless.
+
+            The date parse was machine-dependent. `DateOnly.TryParse` with no culture resolves
+            against the machine's locale, so the same payload is a March date on one machine and
+            a refusal on another. This is the checkpoint that refused a zoneless instant for
+            resolving against the machine zone and then left a date string resolving against the
+            machine locale, in shipped code rather than in the suite. It is now an exact
+            invariant parse, which is the parse that was meant rather than a tightening.
+
+            The idempotency test asserted over four of the row's five columns and its name
+            claimed the whole state. `observed_at` moves on every run by design, and the test
+            left it out of the select. It now asserts that the instant is present and that the
+            rows within one run share it, so the exclusion is a claim rather than an omission.
+
+            And one comment read backwards: it said the comparison is strict on the left edge
+            and not on the right, where `joined` uses `<=` and `left` uses `>`, and the column is
+            named `left`, so the sentence read two ways at once. It now names the columns.
+Widened:    `clock-usage` covers the machine's locale as well as its clock, since a date parsed
+            without a culture is the same property: nothing may depend on how this machine
+            happens to be configured for time. The roster row was widened in the same commit
+            rather than a phase later, which is the defect two rows carried out of 0.7.
+Narrowed:   section 14 claimed a night run twice produces identical stored state. 1.1's own code
+            made that false: every membership row carries the instant of its fetch and the run
+            log gains a row per stage per run. The claim now says the run is idempotent in what
+            it records about the market, and that the observation instant and the run log are
+            what record that the night ran twice. A run leaving no trace of having repeated
+            would be the defect rather than the property.
+Measured:   153 tests, up from 142. 11 are new and 9 of those are the three parse outcomes and
+            the locale case, each a separate refusal rather than one test asserting four things.
+Notes:      the culture check's own permanent proof is what caught its first version. The
+            pattern was written through a scripted edit, its escapes did not survive, and the
+            reader matched nothing at all: the assertion over the corpus passed, and the proof
+            that the check can fail is what went red. A check with no negative proof would have
+            been committed green and covering nothing.
+
+            Four defects in one checkpoint's code, found by reading it rather than by running
+            it, and three of the four are a falsy value or a stated number standing where a
+            measurement or an absence belongs.

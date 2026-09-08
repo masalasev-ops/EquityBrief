@@ -411,3 +411,25 @@ Now:
 > the three rows removed, with a paragraph beneath the table naming what discharged each and why the first was forced rather than merely due
 
 Why: a check that runs as a CI step and is not declared on the roster is a property nobody wrote down, and the phase report enumerates checks by name against that table. The three obligations were discharged by the first component landing rather than by anyone remembering them, which is what an obligation with a due point is for.
+
+### 2026-09-08 - ARCHITECTURE.html - the night is idempotent in what it records, not byte for byte
+Corrects: section 14 claimed that running a night twice produces identical stored state, and 1.1's own code is what made that false. Every membership row carries `observed_at`, the instant of the fetch, and the run log gains a row per stage per run. Found by reading the loader against the claim while correcting a test that had asserted over four of the row's five columns and called it the state.
+
+Was:
+> No model is called and no per-name network request is made. The run is idempotent, so running it twice on one night produces identical stored state. It is scheduled with Task Scheduler after the US close.
+
+Now:
+> the same note, with the claim narrowed to say the run is idempotent in what it records about the market, that it does not produce a byte-identical store and is not meant to, and that the observation instant and the run log are what record that the night ran twice
+
+Why: the original reads as a claim about the bytes and is a claim about the market data. Left as written, the first person to diff two runs finds it false and has to guess which half was meant. The observation instant is stored data and it is supposed to move; a run that left no trace of having repeated would be the defect, not the property.
+
+### 2026-09-08 - CLAUDE.md - clock-usage covers the machine's locale as well as its clock
+Corrects: the roster row named the machine clock and local schedules, and the check now also refuses a date parsed without a culture. A row narrower than its check reads as coverage nobody has, which is the same defect two rows carried at 0.7 and is being repaired here in the same commit that widens the check rather than a phase later.
+
+Was:
+> | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, and no schedule is expressed in local time |
+
+Now:
+> | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, no schedule is expressed in local time, and no date is parsed against the machine's locale. Comments are stripped first, because a sentence naming a pattern is not a use of it |
+
+Why: a date parsed with no culture resolves against the machine's locale, so the same payload is a March date on one machine and a refusal on another. That is the same property the check already owns, being that nothing depends on how this machine happens to be configured for time, and it was found in shipped code rather than in the suite.
