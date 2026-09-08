@@ -33,6 +33,11 @@ internal sealed record PhaseReportModel(
     IReadOnlyList<CheckCoverage> Coverage,
     int Reconciled)
 {
+    // The declared exceptions whose derived due point is earlier than the truth.
+    // They are on the report because an unsafe derivation visible only in a
+    // source comment is one nobody sees again.
+    internal IReadOnlyList<DuePointException> UnsafeExceptions { get; init; } = [];
+
     internal int Count(Verdict verdict) => Claims.Count(claim => claim.Verdict == verdict);
 }
 
@@ -212,6 +217,9 @@ internal static class PhaseReport
             claims,
             fixture ?? new FixtureStatus(0, "ABSENT", "not looked for"),
             coverage ?? [],
-            reconciled);
+            reconciled)
+        {
+            UnsafeExceptions = [.. Scope.Exceptions().Where(exception => !exception.Later)],
+        };
     }
 }

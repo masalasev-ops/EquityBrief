@@ -891,3 +891,54 @@ Notes:      two exceptions to the derivation are declared with their reasons, an
             The screens tables still resolve by table heading alone, which is contradiction D
             and is 1.3's to fix rather than this pass's. It is named here so the 31 subjects it
             covers are not read as an oversight in the derivation.
+
+### Addendum to the 1.1 planning pass - three corrections carried into the build   2026-09-08
+Not a checkpoint entry. It belongs to 1.1, which has not landed. It corrects the entry above
+            rather than editing it.
+Split:      the two derivation exceptions were in one list and are not the same kind of thing.
+            `Forward returns` derives 6.1 where the table is created at 4.5, which is later than
+            the truth and can only delay a claim. `Source lists` derives 1.7 where the limit is
+            about a phase 5 fixture search, which is earlier than the truth and fails the day
+            1.7 lands. They are now two lists, each stating its direction. A later-than-truth
+            exception is declared and passes quietly; an earlier-than-truth one is declared,
+            passes, and reports itself on the phase report every run, because a known unsafe
+            derivation visible only in a source comment is one nobody sees again.
+
+            The direction is asserted rather than trusted. For every declared exception the
+            derived point is compared against the declared one, and a late exception that is
+            actually early fails. That is the one failure the split cannot otherwise catch: an
+            unsafe derivation filed under the safe heading passes every other assertion and then
+            fails the day its checkpoint lands. Proved by moving `Source lists` into the late
+            list and watching it fail, then reverting.
+Floors:     stated with what each produced and what was expected before the run. The derived
+            count: floor 40, expected 49, found 49. Declared exceptions: floor 2, expected 2,
+            found 2. Both new floors sit below their measured value rather than at it.
+
+            **Why 40 and not 49.** This floor sits on a population that moves in both
+            directions, which is the case the corpus has been bitten by twice from the other
+            side. Contradiction D is resolved at 1.3 and re-keys the screens tables on table and
+            subject, which moves 31 subjects out of resolving by table heading and into being
+            subjects like any other. Some will derive and some will become residual, so both
+            counts change at 1.3 for a correct change, and a floor anchored at today's 49 would
+            go red for it. Written down now so 1.3 re-anchors against a number stated in advance
+            rather than against whatever that run produces: after 1.3 the expectation is 132
+            subjects becoming about 163 keyed subjects, with derived rising above 49 and the
+            residue rising above 52, and the floor moving to 60 if those hold.
+Message:    `changelog-reconciles` names what a deletion is, in the failure itself. git counts a
+            rewritten line as one deletion and one addition, so adding a sentence to the middle
+            of an existing paragraph deletes the line it replaced. That is not visible from the
+            check's name, and the commits that trip it are usually not the ones that removed
+            anything, so the next person to hit it reads the name, sees a commit that only added
+            prose, and looks for the bug in the check.
+Happened:   it tripped this pass. A sentence added to 1.3 naming the mark renderer rewrote a
+            line, and the entry recording that edit had gone into the commit before it. The
+            check was right, the commit was amended, and the message now says why.
+Tests:      125, up from 122. Four are new: the direction assertion, the surface assertion over
+            the written report rather than the model, the ordering proof beneath both, and the
+            floor on declared exceptions.
+Notes:      the surface assertion reads the generated files rather than the model, which is
+            finding 1 of the phase 0 review applied before it could repeat. Its first version
+            searched the whole page for the safe exception's absence and failed, because
+            `Forward returns` is also a claim subject in the read and write matrix and appears
+            in the claims table. The assertion was wrong and the code was right; it now reads
+            the unsafe section alone.

@@ -50,27 +50,41 @@ internal static class Scope
     // reconciliation asserts that in both directions, so an entry that becomes
     // derivable later fails rather than silently shadowing the plan.
 
-    // Two the plan names and the derivation must not take.
+    // The plan names these and the derivation must not take them. They are kept
+    // in two lists rather than one, because the two directions are not the same
+    // kind of thing and treating them alike hides the dangerous one.
     //
-    // A subject here is one where the plan's wording and the claim's subject
-    // are about different things, so reading one from the other is wrong rather
-    // than merely imprecise. Each says why, because an exception with no reason
-    // is the mechanism by which a derivation gets quietly switched off.
-    static readonly Dictionary<string, string> DerivedIsWrong = new(StringComparer.Ordinal)
+    // Each entry says why. An exception with no reason is the mechanism by which
+    // a derivation gets quietly switched off, and the direction each list
+    // declares is asserted against the plan rather than trusted, because a
+    // mislabelled exception is the one failure the split cannot otherwise catch.
+
+    // Derived later than the truth. A late due point can only delay a claim: it
+    // says nothing asserts something that already does, which is a smaller
+    // statement than the truth and never a failing one. Declared, and quiet.
+    static readonly Dictionary<string, string> DerivedIsLate = new(StringComparer.Ordinal)
     {
         // 4.5 creates the table and the plan writes `forward_return` there in
         // the snake case the schema uses, so the plural store name matches
-        // nothing until 6.1 mentions forward returns in prose. 6.1 is later
-        // than the truth rather than earlier, so the derived value is safe and
-        // still wrong, and a store is owed where its migration lands.
+        // nothing until 6.1 mentions forward returns in prose.
         ["Forward returns"] = "4.5",
+    };
 
+    // Derived earlier than the truth. An early due point fails the day the
+    // checkpoint it names lands, because out of scope means a point that has
+    // not been reached and the reconciliation refuses one that has.
+    //
+    // These report themselves on the phase report every run. A known unsafe
+    // derivation sitting in the tree and visible only in a source comment is an
+    // exception nobody sees again, and an exception nobody sees again becomes
+    // one nobody remembers.
+    static readonly Dictionary<string, string> DerivedIsEarly = new(StringComparer.Ordinal)
+    {
         // 1.7 produces the first draft of the source lists, which is why it
         // names them. The limits row is not about the lists existing: it is
         // about a search returning only sites on the list that applies to it,
         // and the row's own Asserted by column names a fixture search. That
-        // arrives with the research pass. Deriving 1.7 would fail this claim
-        // the moment 1.7 lands, which is the one direction that is never safe.
+        // arrives with the research pass at 5.1.
         ["Source lists"] = "5.1",
     };
 
@@ -214,18 +228,32 @@ internal static class Scope
     // read the two halves apart: what the plan supplied, and what is written
     // here because the plan could not.
     internal static IReadOnlyList<string> ResidualSubjects() =>
-        [.. DerivedIsWrong.Keys, .. Components.Keys, .. Stores.Keys, .. Failures.Keys,
-            .. MatrixRows.Keys, .. LimitDuePoints.Keys, .. NightlySteps.Keys];
+        [.. DerivedIsLate.Keys, .. DerivedIsEarly.Keys, .. Components.Keys, .. Stores.Keys,
+            .. Failures.Keys, .. MatrixRows.Keys, .. LimitDuePoints.Keys, .. NightlySteps.Keys];
 
-    internal static IReadOnlyList<string> DeclaredExceptions() => [.. DerivedIsWrong.Keys];
+    internal static IReadOnlyList<string> DeclaredExceptions() =>
+        [.. DerivedIsLate.Keys, .. DerivedIsEarly.Keys];
+
+    // Late first, then early, each with the direction it claims, so the
+    // reconciliation can assert the claim rather than take the label.
+    internal static IReadOnlyList<DuePointException> Exceptions() =>
+    [
+        .. DerivedIsLate.Select(pair => new DuePointException(pair.Key, pair.Value, Later: true)),
+        .. DerivedIsEarly.Select(pair => new DuePointException(pair.Key, pair.Value, Later: false)),
+    ];
 
     static string? Due(string table, string subject)
     {
-        // The two the plan names in a way that cannot be read, each carrying
+        // The ones the plan names in a way that cannot be read, each carrying
         // the reason beside it above.
-        if (DerivedIsWrong.TryGetValue(subject, out var exception))
+        if (DerivedIsLate.TryGetValue(subject, out var late))
         {
-            return exception;
+            return late;
+        }
+
+        if (DerivedIsEarly.TryGetValue(subject, out var early))
+        {
+            return early;
         }
 
         if (Screens.TryGetValue(table, out var screen))
