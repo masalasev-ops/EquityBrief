@@ -24,6 +24,8 @@ A decision is changed only by another decision. Work that changes one writes a n
 
 **Everything expensive happens when a name is opened** Reports are not generated for names nobody reads. A name never opened costs nothing beyond its share of the nightly arithmetic.
 
+**Bars come from EODHD, bulk nightly and per ticker for the backfill** The provider is named in the architecture and the runbook and was never a decision, which left the route through it open to being reversed by a later session reading only the zero-per-name-call rule. The arithmetic is what settles it and belongs here rather than in a runbook table: bulk end-of-day for a whole exchange costs 100 weighted calls and a single-ticker historical request costs 1, so the nightly fetch takes the bulk endpoint at 100 against 500, and the one-year backfill takes the per-ticker endpoint at 500 against the 25,000 that replaying a year of past sessions through the bulk endpoint would cost. The two run opposite ways round for the same reason, which is that the bulk call is priced per request and the historical call is priced per name.
+
 **Research is a stored document with an as-of date, not a cache** It costs money and produces a different answer each time it runs, so discarding it would change the report for no reason and leave nobody able to tell whether the analysis moved or the wording did. Every version is kept.
 
 **Nothing expires on a timer** Research is rewritten when a filing appears, an earnings date passes, the name's news volume jumps above its own baseline, or the operator asks. A timer either refreshes work nobody needed or serves analysis written before a print.
@@ -81,6 +83,10 @@ A decision is changed only by another decision. Work that changes one writes a n
 **One year of bars, and no more** Every level in the report comes from a sixty-session window, so a longer history was never needed to produce one. A year covers the 200-day average and gives the level window headroom, and costs about ten megabytes for the whole index.
 
 **Bars are never interpolated** A gap stops computation for that name and is reported as a gap.
+
+**A gap is a session the exchange traded and the store does not hold** Detection is against the exchange's trading calendar rather than against the rows themselves, because a run of stored dates is self-consistent whatever is missing from it and a store holding four days of a five-day week looks exactly like a store holding four days of a four-day week. Two behaviours follow and they are different things: the fetcher refuses to store a series arriving with an interior session missing, and every computation over a name whose stored series has a gap stops and reports the gap's date. The state is derived on read from the stored sessions against the calendar rather than kept in a column, so nothing has to be brought back into step with the bars after a refetch fills the hole.
+
+**The stored series is adjusted** One price set per bar and it is the provider's adjusted one, which is why `bar` carries four price columns and no adjusted variant. An unadjusted series never diverges from itself, so storing one would make the corporate action checker pointless and leave the levels drifting away from every chart the operator compares them against. The cost is that stored history is restated by the provider whenever an action lands, which is the thing the nightly check exists to catch (see: Adjusted history is re-fetched after a corporate action).
 
 **Adjusted history is re-fetched after a corporate action** Splits and dividends change adjusted closes, so stored history silently diverges from the provider unless a nightly check catches it.
 
@@ -170,7 +176,7 @@ A decision is changed only by another decision. Work that changes one writes a n
 
 **A frozen fixture per checkpoint, and the harness decides sign-off** Live data changes nightly and cannot be diffed; the committed fixture can. UNEXAMINED never counts as a pass.
 
-**The fixture is diffed on the facts file, not on a rendered page** Prose varies between runs and layout changes constantly, so diffing rendered output would fail for reasons that do not matter and pass over reasons that do.
+**The fixture is diffed on each stage's serialised output, of which the facts file is one** Prose varies between runs and layout changes constantly, so diffing rendered output would fail for reasons that do not matter and pass over reasons that do. That argument is about the rendered page and holds; naming the facts file as the thing diffed narrowed it to one stage that does not exist until 4.3, leaving every expectation from 1.2 onward with nothing the record said to diff against. Each stage serialises what it produced, the membership set, the stored bars, the refusal record, the indicator rows, and the fixture diffs that. Not the store itself: diffing rows couples every expectation to schema shape, so a migration adding a column breaks expectations about values that did not change, and the fixture stops being a check on behaviour. Supersedes The fixture is diffed on the facts file, not on a rendered page.
 
 **Every phase opens with something to look at** The first checkpoint of each phase renders a page. A report about row counts is not visible output.
 
@@ -187,6 +193,8 @@ A decision is changed only by another decision. Work that changes one writes a n
 ## Previously decided
 
 Superseded, kept with the reasoning that made them right at the time. `no-superseded-citation` fails any citation resolving to a name below this line.
+
+**The fixture is diffed on the facts file, not on a rendered page** Superseded 8 September 2026. The reasoning was that prose varies between runs and layout changes constantly, so diffing rendered output would fail for reasons that do not matter and pass over reasons that do. That reasoning is intact and carries into the decision that replaced it. What fell was the scope: the facts file is written by the facts assembler at 4.3, and phases 1 through 3 produce expectations with no facts file in existence, so as written the rule was false for three phases and a session reading it would have taken a decision that does not apply yet for one that does. It fell to The fixture is diffed on each stage's serialised output, of which the facts file is one.
 
 **Fundamentals hand-entered per quarter in a per-name file** Superseded 3 September 2026. The reasoning was that four updates a year per name, by an operator who reads every print anyway, beat a model extracting numbers from a press release on both cost and accuracy. It fell to the universe decision: at five hundred names that is two thousand edits a year. The provider carries reported quarters, balance sheets, ratings and the earnings calendar, and the filings archive carries segment tables and guidance, so the file is no longer needed. An optional overlay file for a name you follow closely remains available for anything a provider cannot supply.
 
