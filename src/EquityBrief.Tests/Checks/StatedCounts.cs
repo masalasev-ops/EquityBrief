@@ -37,10 +37,17 @@ public class StatedCounts
     [Fact]
     public void TheLayoutBlockCountsTheProjects()
     {
-        var block = Corpus.Read("CLAUDE.md").Split("```" + (char)10)[1];
+        // The count is stated in the layout block's own line for the solution
+        // file and derived from the block beneath it and from the disk. It was
+        // asserted against BUILD_PLAN.md until that document's phase 0 detail
+        // was removed, which is a third statement of one fact and the one that
+        // drifted: the stated count belongs in the document that carries the
+        // block, not in the one that used to describe the checkpoint building it.
+        var rules = Corpus.Read("CLAUDE.md");
+        var block = rules.Split("```" + (char)10)[1];
         var listed = Regex.Matches(block, @"^\s+(EquityBrief\.[A-Za-z]+)\s", RegexOptions.Multiline).Count;
 
-        Assert.Contains("Six projects", Corpus.Read("docs/BUILD_PLAN.md"), StringComparison.Ordinal);
+        Assert.Contains("the six projects", rules, StringComparison.Ordinal);
         Assert.Equal(6, listed);
         Assert.Equal(6, Repository.ProjectFiles().Count);
     }
