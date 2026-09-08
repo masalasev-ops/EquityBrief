@@ -153,6 +153,33 @@ public class StatedCounts
     }
 
     [Fact]
+    public void TheMarkVocabularyCountsItsOwnMarks()
+    {
+        // Section 15.5 opens by stating how many marks there are, and the count
+        // is read out of that sentence rather than repeated here.
+        //
+        // This is also what holds contradiction F's resolution in place. The
+        // Level chart row names four elements drawn at three different points,
+        // and the harness reads that one row as four claims rather than the
+        // document carrying four rows. The obvious wrong repair is to split the
+        // row, which would turn one mark into four in a vocabulary whose point
+        // is that a mark is defined once, and would leave the opening sentence
+        // saying seven over a table of ten. Now it fails instead.
+        var architecture = File.ReadAllText(Repository.Architecture);
+        var stated = Regex.Match(architecture, @"<p>(\w+) marks\.");
+
+        Assert.True(stated.Success, "Section 15.5 no longer states how many marks there are.");
+        Assert.True(
+            Numbers.ContainsKey(stated.Groups[1].Value),
+            $"Section 15.5 states '{stated.Groups[1].Value} marks', which is not a number word this check reads.");
+
+        var table = ArchitectureTables.In(architecture)
+            .Single(candidate => candidate.Heading == "15.5 The mark vocabulary");
+
+        Assert.Equal(Numbers[stated.Groups[1].Value], table.Body.Count);
+    }
+
+    [Fact]
     public void TheCheckWouldNoticeADisagreement()
     {
         // The permanent proof: the derivation is a real count of real rows, so

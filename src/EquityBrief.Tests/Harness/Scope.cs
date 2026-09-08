@@ -203,7 +203,15 @@ internal static class Scope
         // this row is the surface it writes.
         [CheckReach.Key("15.4 The two surfaces", "The exported report")] = "phase 5",
 
-        [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] = "phase 2",
+        // Contradiction F. This row names four elements and they are drawn at
+        // three different points, so the row is read as four claims. See
+        // Elements below for why the decomposition is here and not in the
+        // document.
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles")] = "1.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane")] = "1.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the moving averages")] = "2.1",
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands")] = "2.4",
+
         [CheckReach.Key("15.5 The mark vocabulary", "Volume profile")] = "phase 2",
         // 3.4 is "The plan column mark and the tables", so this mark is owed a
         // phase later than the section it sits in.
@@ -250,6 +258,41 @@ internal static class Scope
         [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = "phase 6",
         [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = "phase 6",
     };
+
+    // Contradiction F. Section 15.5's Level chart names four elements, candles,
+    // the level bands, the moving averages and a volume pane, and the phase
+    // table puts a chart in phase 1 while two of the four cannot exist until
+    // phase 2. Resolved per element rather than per mark, so what exists is
+    // asserted where it exists and only what does not stays out of scope.
+    //
+    // The decomposition lives here rather than in the document, and that is
+    // deliberate. Section 15.5 opens by stating seven marks and the table has
+    // seven rows; splitting the row into four would make the document disagree
+    // with itself and would turn one mark into four in a vocabulary whose whole
+    // point is that a mark is defined once. So the row stays one row and the
+    // harness reads it as four claims.
+    //
+    // What keeps that from being a second statement of the row's content is
+    // that each element phrase is asserted to appear in the row's own
+    // description cell. An element renamed in the document, or one invented
+    // here, fails. The count in the opening sentence is asserted against the
+    // table's rows by stated-counts, so the other repair, adding rows to the
+    // table, fails too.
+    static readonly Dictionary<string, string[]> Elements = new(StringComparer.Ordinal)
+    {
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
+            ["candles", "the level bands", "the moving averages", "a volume pane"],
+    };
+
+    // The claim subjects a row yields. One, itself, unless the row decomposes.
+    internal static IReadOnlyList<string> SubjectsOf(string table, string row) =>
+        Elements.TryGetValue(CheckReach.Key(table, row), out var elements)
+            ? [.. elements.Select(element => $"{row}, {element}")]
+            : [row];
+
+    internal static IReadOnlyCollection<string> DecomposedRows() => Elements.Keys;
+
+    internal static IReadOnlyList<string> ElementsOf(string key) => Elements[key];
 
     // The screens tables, named so the reconciliation can read the document's
     // rows against the map above in both directions. Written here rather than

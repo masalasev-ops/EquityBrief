@@ -531,19 +531,24 @@ public class ArchitectureConformance
         // the thing it is read against.
         var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
 
-        var inDocument = tables
+        var screensTables = tables
             .Where(table => Scope.ScreensTables.Contains(table.Heading, StringComparer.Ordinal))
-            .SelectMany(table => table.Body
-                .Where(row => row.Count > 0)
-                .Select(row => CheckReach.Key(table.Heading, row[0])))
             .ToArray();
 
-        Assert.Equal(Scope.ScreensTables.Length, tables.Count(
-            table => Scope.ScreensTables.Contains(table.Heading, StringComparer.Ordinal)));
+        var inDocument = screensTables
+            .SelectMany(table => table.Body
+                .Where(row => row.Count > 0)
+                .SelectMany(row => Scope.SubjectsOf(table.Heading, row[0])
+                    .Select(subject => CheckReach.Key(table.Heading, subject))))
+            .ToArray();
 
-        // Stated in advance: seven tables, 37 rows. A run finding none would
-        // otherwise pass both directions over an empty set.
-        Assert.Equal(37, inDocument.Length);
+        Assert.Equal(Scope.ScreensTables.Length, screensTables.Length);
+
+        // Stated in advance: seven tables, 37 rows, 40 claim subjects, because
+        // the Level chart row decomposes into its four elements. A run finding
+        // none would otherwise pass both directions over an empty set.
+        Assert.Equal(37, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        Assert.Equal(40, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -560,6 +565,92 @@ public class ArchitectureConformance
             stale.Length == 0,
             "These due points name a section 15 row the document no longer has: " +
             string.Join("; ", stale) + ".");
+    }
+
+    [Fact]
+    public void EveryDecomposedElementIsNamedByTheRowItDecomposes()
+    {
+        // Contradiction F. A row read as four claims is a decomposition the
+        // document does not carry, so the one thing that keeps it from being a
+        // second statement of the row's content is that each element is read
+        // back out of the row's own description. Rename an element in the
+        // document, or invent one here, and this fails.
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+        var rows = Scope.DecomposedRows();
+
+        Assert.NotEmpty(rows);
+
+        var unnamed = ElementsNotInTheirRow(tables, rows.ToDictionary(
+            key => key, Scope.ElementsOf, StringComparer.Ordinal), out var checkedElements);
+
+        Assert.True(
+            unnamed.Count == 0,
+            "These elements are read as claims and the row they decompose does not name them: " +
+            string.Join("; ", unnamed) +
+            ". A decomposition the document does not carry is a second statement of the row's content.");
+
+        // Stated in advance, and it is the scope carrying the property: four
+        // elements over one row. Zero would pass every assertion above.
+        Assert.Equal(4, checkedElements);
+    }
+
+    [Fact]
+    public void TheCheckReportsAnElementTheRowDoesNotName()
+    {
+        // The permanent proof, over a constructed table rather than the real
+        // one. Three elements are named in the description and one is not, and
+        // the one that is not is the only one reported.
+        var tables = ArchitectureTables.In("""
+            <html><body><h3>15.5 The mark vocabulary</h3><table>
+            <tr><th>Mark</th><th>What it is</th></tr>
+            <tr><td>Level chart</td><td>Daily candles with the level bands shaded behind them and a volume pane beneath.</td></tr>
+            </table></body></html>
+            """);
+
+        var declared = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal)
+        {
+            [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
+                ["candles", "the level bands", "the moving averages", "a volume pane"],
+        };
+
+        var unnamed = ElementsNotInTheirRow(tables, declared, out var checkedElements);
+
+        Assert.Equal(4, checkedElements);
+        Assert.Contains("the moving averages", Assert.Single(unnamed), StringComparison.Ordinal);
+    }
+
+    // Shared by the check and its proof, so the proof exercises the same reader
+    // rather than a copy of it that can drift.
+    static IReadOnlyList<string> ElementsNotInTheirRow(
+        IReadOnlyList<ArchitectureTable> tables,
+        IReadOnlyDictionary<string, IReadOnlyList<string>> declared,
+        out int checkedElements)
+    {
+        var unnamed = new List<string>();
+        checkedElements = 0;
+
+        foreach (var (key, elements) in declared)
+        {
+            var parts = key.Split(CheckReach.Joiner);
+            var table = Assert.Single(tables, candidate => candidate.Heading == parts[0]);
+
+            // The description cell, not the whole table. A phrase found in a
+            // neighbouring row would prove nothing about this one.
+            var row = Assert.Single(
+                table.Body, candidate => candidate.Count > 1 && candidate[0] == parts[1]);
+
+            foreach (var element in elements)
+            {
+                checkedElements++;
+
+                if (!row[1].Contains(element, StringComparison.OrdinalIgnoreCase))
+                {
+                    unnamed.Add($"{key}, {element}");
+                }
+            }
+        }
+
+        return unnamed;
     }
 
     [Fact]
