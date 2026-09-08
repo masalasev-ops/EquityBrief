@@ -42,6 +42,58 @@ public class ClockUsage
         Assert.NotEmpty(uses);
     }
 
+    // A date parsed without a culture resolves against the machine's locale, so
+    // "21/03/2026" is a March date on one machine and a refusal on another. That
+    // is the same class of fault as an instant resolving against the machine's
+    // zone, and it belongs to this check for the same reason: nothing may depend
+    // on how this machine happens to be configured for time.
+    internal static IReadOnlyList<string> CultureFreeDateParsing(string source, string file)
+    {
+        var code = SourceStatements.WithoutComments(source);
+
+        // Matched on the literal call rather than by regex. The pattern this
+        // replaced was written through a scripted edit and its escapes did not
+        // survive it, so it matched nothing and the permanent proof beneath is
+        // what caught that.
+        string[] types = ["DateOnly", "DateTime", "DateTimeOffset", "TimeOnly"];
+        string[] calls = [".Parse(", ".TryParse(", ".ParseExact(", ".TryParseExact("];
+
+        return code
+            .Split(';')
+            .Where(statement => types.Any(type => calls.Any(call =>
+                statement.Contains(type + call, StringComparison.Ordinal))))
+            .Where(statement => !statement.Contains("CultureInfo", StringComparison.Ordinal))
+            .Select(statement => $"{Path.GetFileName(file)}: {System.Text.RegularExpressions.Regex.Replace(statement, @"\s+", " ").Trim()}")
+            .ToArray();
+    }
+
+    [Fact]
+    public void NothingParsesADateAgainstTheMachinesLocale()
+    {
+        var files = Repository.SourceFiles();
+
+        Assert.True(files.Count >= 15, $"Read {files.Count} source files, expected at least 15.");
+
+        var loose = files
+            .SelectMany(file => CultureFreeDateParsing(File.ReadAllText(file), file))
+            .ToArray();
+
+        Assert.Empty(loose);
+    }
+
+    [Fact]
+    public void TheCheckReportsADateParsedAgainstTheMachinesLocale()
+    {
+        // Permanent proof, and a counter-case so this is not a reader that flags
+        // every parse. The invariant one is what the shipped code does.
+        var loose = "var d = " + "DateOnly" + ".TryParse(text, out var parsed);";
+        var pinned = "var d = " + "DateOnly" + ".TryParseExact(text, \"yyyy-MM-dd\", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed);";
+
+        Assert.Single(CultureFreeDateParsing(loose, "loose.cs"));
+        Assert.Empty(CultureFreeDateParsing(pinned, "pinned.cs"));
+        Assert.Empty(CultureFreeDateParsing("// " + loose, "comment.cs"));
+    }
+
     [Fact]
     public void AReadInACommentIsNotARead()
     {

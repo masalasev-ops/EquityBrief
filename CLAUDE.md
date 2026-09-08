@@ -152,7 +152,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `stated-counts` | every CI run | Every count a spec states about itself matches the derived count. Record entries are dated measurements and are exempt |
 | `banned-prose` | every CI run | No text file the repository tracks contains the banned string or any form of it, and none contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
 | `coverage-reported` | every CI run | Every check the roster says runs is implemented, is invoked by `tools/ci.*`, states its own scope in numbers, and left a coverage record in the run the phase report reads |
-| `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, and no schedule is expressed in local time |
+| `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, no schedule is expressed in local time, and no date is parsed against the machine's locale. Comments are stripped first, because a sentence naming a pattern is not a use of it |
 | `path-casing` | every CI run | Every file path appearing as a string literal in source matches the on-disk path exactly, byte for byte |
 | `store-portability` | every CI run | No row in a populated store carries an absolute path |
 | `schema-columns` | every CI run | Every table in a migrated store has the columns and storage types `SCHEMA.md` declares for it, in that order, and every table in the store is one the file describes |
