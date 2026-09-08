@@ -67,6 +67,7 @@ internal static class Scope
         ["Claim checker"] = "phase 5",
         ["Prose writer"] = "phase 5",
         ["Read API"] = "1.5",
+        ["Mark renderer"] = "1.3",
         ["Single page app"] = "1.6",
         ["Report exporter"] = "phase 5",
         ["Run log"] = "1.3",

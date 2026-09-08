@@ -349,3 +349,20 @@ Now:
 > the same paragraph, followed by one stating that a commit belongs to the checkpoint that authorises the work and never to the phase whose subject matter the edited text describes, with the reason: a checkpoint from an unbuilt phase reaching `PROGRESS.md` makes the reconciliation refuse every claim still owed at it
 
 Why: the existing clause is about an obligation arriving early, and it reads as being about topic if nothing says otherwise. The cost is not an untidy log. `DuePoints.HasLanded` reads `PROGRESS.md`, and out of scope means a point that has not been reached, so a phase 5 checkpoint recorded while phases 2 to 4 are unbuilt would fail every claim owed at it.
+
+### 2026-09-08 - ARCHITECTURE.html - the mark renderer, and two rows that disagreed with themselves
+Corrects: three defects in sections 7 and 16, all found while planning 1.1 against them. Section 15.4 says the server writes the shell and the marks, and the only server-side serve component was the read API, whose row says it performs no computation and no fetching, so the component that turns stored values into SVG had no row and 1.3's done condition could not be stated against anything. The theme research runner's catalogue row declares it reads the theme store and source documents while its matrix row carries W in both columns and no R, which `component-access` fails on the day it is written. The membership loader's matrix row carries W and no R while 1.1's done condition requires a membership query for a past date, which is a read.
+
+Was:
+> section 7 carried nine components and no renderer, with the read API, the single page app and the report exporter as the whole serve layer
+> the matrix row: Theme research runner, W in Research and theme, W in Sources
+> the matrix row: Membership loader, W in Membership
+> the catalogue row: Membership loader reads "index membership feed"
+
+Now:
+> section 7 carries a tenth, Mark renderer, in the serve layer, reading the read API and writing none, described as turning stored values into the seven marks as SVG strings server side so the app and the exported report carry the same pictures from the same numbers
+> the matrix row: Theme research runner, R W in Research and theme, R W in Sources
+> the matrix row: Membership loader, R W in Membership
+> the catalogue row: Membership loader reads "index membership feed, membership" and answers which names were members on a past date
+
+Why: the alternative to a renderer row was a decision redefining "computes nothing" so that geometry is not computation, plus a check able to tell arithmetic on figures from arithmetic on coordinates by inspecting expressions. A check that has to make that distinction gets it wrong quietly, and the read API's done condition is that it is proved to compute nothing. A row makes the seam a claim the harness asserts rather than a definition it trusts, keeps the read API's row literally true, and gives the marks decision a component enforcing one renderer for both surfaces. Its access declaration is empty across all eleven stores, which is a claim and not an omission. The two disagreeing rows are the same defect read from opposite ends: a component that reads what it writes, with only the write declared.
