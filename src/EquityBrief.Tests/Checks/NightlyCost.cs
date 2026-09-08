@@ -171,7 +171,13 @@ public class NightlyCost
 
         var limits = Corpus.Read("docs/ARCHITECTURE.html");
 
-        Assert.Contains("the backfill is carved out of it", limits, StringComparison.Ordinal);
+        // Two carve-outs now, and both are asserted. The refetch is the second
+        // and was found at 1.6: it makes one request per name whose adjusted
+        // prices an action moved, bounded by the day's actions rather than by
+        // the universe. It is carved rather than the rule loosened, because a
+        // night that refetched every name would satisfy a loosened rule.
+        Assert.Contains("the backfill and the corporate action refetch carved out of it", limits, StringComparison.Ordinal);
+        Assert.Contains("bounded by the day's actions rather than by the universe", limits, StringComparison.Ordinal);
     }
 
     sealed record NightCost(int Requests, int ModelCalls);

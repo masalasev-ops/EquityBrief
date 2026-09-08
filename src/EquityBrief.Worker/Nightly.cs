@@ -54,6 +54,7 @@ public static class Nightly
             Path.Combine(fixtureFolder, "index-constituents.json"));
         var historical = RecordedHistoricalBarFeed.FromFolder(fixtureFolder);
         var bulk = RecordedBulkPriceFeed.FromFolder(fixtureFolder);
+        var corporate = RecordedCorporateActionFeed.FromFolder(fixtureFolder);
 
         // The order is section 14's, for the steps that exist. Migrate is not
         // one of its steps: it is what makes the store able to hold the night,
@@ -92,6 +93,14 @@ public static class Nightly
                     $"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, " +
                     $"{outcome.Requests} request(s)";
             }),
+            new("actions", async () =>
+            {
+                var outcome = await new CorporateActionChecker(corporate, historical, clock, store.DatabaseFile)
+                    .RunAsync(indexCode, runId);
+
+                return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
+                    $"{outcome.Suspect.Count} suspect, {outcome.Requests} request(s)";
+            }),
         ];
 
         output.WriteLine($"nightly: {runId}, store {store.DatabaseFile}");
@@ -115,7 +124,7 @@ public static class Nightly
         // The nightly claim, printed where the operator reads it rather than
         // only stored. Zero model calls because nothing on this path calls one,
         // and the request count is what the two feeds counted.
-        var requests = historical.Requests + bulk.Requests;
+        var requests = historical.Requests + bulk.Requests + corporate.Requests;
 
         output.WriteLine($"nightly: green, 0 model calls, {requests} network request(s)");
 

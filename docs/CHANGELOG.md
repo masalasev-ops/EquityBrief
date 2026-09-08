@@ -652,3 +652,29 @@ Was:
 Now: the same row reads `1.5, discharged`.
 
 Why: it was owed here because 1.7 cannot be planned without the answer, and the answer is yes. Recorded as a decision rather than only as a discharged row, because a later session could reasonably choose a request per ticker and the cost of that choice would be invisible until a night got slow.
+
+### 2026-09-08 - SCHEMA.md and ARCHITECTURE.html - contradictions C and I, and the catalogue row the checker outgrew
+Corrects: three things, all found by building the component the row describes.
+
+**C.** The failure table said a name whose corporate action check failed is marked suspect and nothing held that, so a failed check passed silently. Resolved with a table rather than a column, because grain is a property of a table and not of a column: `series_state`, one row per ticker, holding the state, the reason when it is not ok, and the instant the check that said so ran. Not a column on `bar`, whose grain is a session, and not on `membership`, which records whether a name is in the index and not whether its bars are believable. Section 16 gains the store row and the read and write matrix gains a twelfth column.
+
+**I.** The splits and dividends feed was a read in the checker's catalogue row and was not one of section 5's source boxes, so the nightly path read a feed the system overview did not carry. The box is added.
+
+**The catalogue row was incomplete, which is a third finding rather than part of either.**
+
+Was:
+> <td>splits and dividends feed, bar store</td><td>bar store</td><td>refetches a name's full year when an action changes its adjusted prices, because stored history silently diverges otherwise</td>
+
+Now: Reads gains the historical price feed and membership, Writes gains series state, and the description says the refetch replaces the year inside one transaction and that a name whose own check failed is marked suspect rather than passing.
+
+Why: the row named neither the feed the refetch fetches from, nor the store it asks which names are members, nor the state contradiction C's own resolution requires it to write. The refetch cannot happen without the first, the filter cannot happen without the second, and C cannot be resolved without the third. This was found by `component-access` refusing the declaration on the day the component was written, which is the check working rather than a document being edited to suit code.
+
+### 2026-09-08 - ARCHITECTURE.html - the per-name limit gains its second carve-out
+Corrects: the corporate action refetch makes one request per affected name, which the steady-state limit as written forbids.
+
+Was:
+> 0 in the steady state, and the backfill is carved out of it
+
+Now: the same row carves out the backfill and the corporate action refetch, and states that the refetch is bounded by the day's actions rather than by the universe.
+
+Why: the same shape as contradiction B and found the same way, by building the step the rule forbade. It is carved rather than the rule loosened, because a night that refetched every name would satisfy a loosened rule and defeat the whole design. On the fixture's captured day the actions affect one name.

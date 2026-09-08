@@ -161,6 +161,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `api-isolation` | every CI run | `EquityBrief.Api` has no transitive reference to `EquityBrief.Worker`, read from the compiled dependency file |
 | `bar-append-only` | every CI run | Nothing in the shipped source deletes or updates a bar table, and no migration deletes, updates or drops one |
 | `bar-bounds` | every CI run | Every stored bar has its low at or below its open and its close and its high at or above both, and carries the raw close its adjustment factor came from |
+| `corporate-actions` | every CI run | A captured action on a current member triggers a full-year refetch, the replacement is atomic, a name the index does not hold is not refetched, and a failure of the check itself marks the name suspect with its reason rather than passing |
 | `gap-refusal` | every CI run | A series arriving with an interior session missing is refused, that name's stored series is left as it was, and the gap's date is named on the run log; a hole at either edge is a shorter history rather than a gap, and one series alone reports that it cannot be checked rather than that it is clean |
 | `nightly-run` | every CI run | The night runs the steps that exist in the order section 14 states, each step doing what its own text says, and a failure names the step and exits non-zero |
 | `read-surface` | every CI run | The read API hands back every stored value unchanged, and the page draws one candle and one volume bar per stored session, matched session by session against the store |

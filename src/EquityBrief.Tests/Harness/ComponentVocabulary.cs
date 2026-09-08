@@ -23,7 +23,7 @@ internal static class ComponentVocabulary
     internal static string TableName(DataStore store) =>
         Regex.Replace(store.ToString(), "(?<!^)([A-Z])", "_$1").ToLowerInvariant();
 
-    // The eleven columns of the read and write matrix, and what each holds. Three
+    // The twelve columns of the read and write matrix, and what each holds. Three
     // aggregate, which section 16 states of itself: computed tables is the row
     // naming six stores, research and theme is the two research rows, and
     // sources is source documents.
@@ -39,6 +39,7 @@ internal static class ComponentVocabulary
         ("News pulse", [DataStore.NewsPulse]),
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
         ("Sources", [DataStore.SourceDocument]),
+        ("Series state", [DataStore.SeriesState]),
         ("Run log", [DataStore.RunLog]),
     ];
 
@@ -118,6 +119,7 @@ internal static class ComponentVocabulary
         ["research store"] = DataStore.ResearchSection,
         ["theme store"] = DataStore.ThemeSection,
         ["source documents"] = DataStore.SourceDocument,
+        ["series state"] = DataStore.SeriesState,
         ["listings"] = DataStore.Listing,
         ["indicators"] = DataStore.Indicator,
         ["swings"] = DataStore.Swing,

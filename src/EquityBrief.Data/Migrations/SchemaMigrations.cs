@@ -90,12 +90,31 @@ public static class SchemaMigrations
         ALTER TABLE bar ADD COLUMN raw_close TEXT;
     ";
 
+    // Whether a name's stored series can be trusted, at the grain the statement
+    // is about, which is the name. Contradiction C: the failure table said a
+    // name whose corporate action check failed is marked suspect and nothing
+    // held that, so a failed check passed silently.
+    //
+    // Not a column on `bar`, whose grain is a session, and not on `membership`,
+    // which records whether a name is in the index and not whether its bars are
+    // believable.
+    const string CreateSeriesState = @"
+        CREATE TABLE series_state (
+            ticker     TEXT NOT NULL,
+            state      TEXT NOT NULL,
+            reason     TEXT,
+            checked_at TEXT NOT NULL,
+            PRIMARY KEY (ticker)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
         new Migration(2, "create membership", CreateMembership),
         new Migration(3, "create bar", CreateBar),
         new Migration(4, "add bar.raw_close", AddRawClose),
+        new Migration(5, "create series_state", CreateSeriesState),
     ];
 
     public static int LatestVersion => All.Max(migration => migration.Version);

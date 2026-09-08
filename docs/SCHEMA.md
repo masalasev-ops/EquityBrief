@@ -49,6 +49,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `theme_section` | ThemeResearchRunner | ClaimChecker | none |
 | `source_document` | ResearchRunner, ThemeResearchRunner | none | none |
 | `candidate_register` | CandidateRegistrar | none | none |
+| `series_state` | CorporateActionChecker | CorporateActionChecker | none |
 | `run_log` | every component appends | RunLog | none |
 
 **`bar` has three inserters and two deleters, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars and drops the sessions that fall out of the retention window on the night they fall out of it. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices.
@@ -328,6 +329,24 @@ Grain: one row per registration event. Append only.
 Primary key: `id`.
 
 No update, no delete. A correction is a new row.
+
+### series_state
+Grain: one row per ticker.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `state` | TEXT | `ok` or `suspect` |
+| `reason` | TEXT | why, in words, when the state is not ok |
+| `checked_at` | TEXT | UTC instant of the check that set this |
+
+Primary key: `ticker`.
+
+**Contradiction C, resolved at 1.6 with a table rather than a column.** The failure table says that when the corporate action check itself fails the name is marked suspect, and nothing held that. It could not be a column on `bar`, whose grain is a session, and it is not what `membership` records: whether a name's stored series can be trusted is not a fact about whether the name is in the index. So it is a table of its own, at the grain the statement is actually about, which is the name.
+
+One row per ticker rather than one per check, because the question asked of it is whether this name's series can be trusted now. When it happened is in the run log, which is the record of what each night did, and a second history here would be the same fact in two places.
+
+No deleter. A name that becomes trustworthy again is set back to `ok` by the check that established it, which is an update on the row that already exists.
 
 ### run_log
 Grain: one row per run per stage.
