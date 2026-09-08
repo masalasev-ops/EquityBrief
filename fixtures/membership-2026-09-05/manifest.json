@@ -34,6 +34,13 @@
       "query": "eod-bulk-last-day/US?fmt=json",
       "fetchedAt": "2026-09-08T20:49:02Z",
       "trimmedTo": "seven of the 10,670 rows the whole US exchange returned, chosen so the membership filter has each thing it must reject. Three are current members and are stored: AAPL, MSFT and KEYS. Two are constituents that have left, AAL and XRAY, which the provider still returns because they still trade, and which prove the filter reads membership rather than the file. Two, A and AA, were never in this fixture's index at all. The session is 2026-09-08, which is the next trading session after the stored year ends on 2026-09-04, the Monday between them being a holiday, so appending it leaves a contiguous series and a fetcher that dropped it would be visible as a gap rather than as a shorter year. Rows keep the order the provider sent them in, and every key, nesting and type is the provider's."
+    },
+    {
+      "file": "gap-KEYS.json",
+      "endpoint": "eod/KEYS.US",
+      "query": "eod/KEYS.US?from=2025-09-04&to=2026-09-04&period=d&fmt=json",
+      "fetchedAt": "2026-09-08T12:37:09Z",
+      "trimmedTo": "the same capture as bars-KEYS.json with one interior session removed, 2026-03-06, which AAPL and MSFT both hold. It is a subset rather than a second capture: every row it keeps is the provider's, byte for byte, and the file exists because a clean provider series will not produce the failure 1.5's done condition requires be induced. The session removed sits in the middle of the window with stored sessions on both sides of it, because a hole at either edge is a shorter history rather than a gap."
     }
   ]
 }

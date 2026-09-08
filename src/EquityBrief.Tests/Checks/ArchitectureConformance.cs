@@ -687,9 +687,10 @@ public class ArchitectureConformance
             string.Join("; ", unnamed) +
             ". A decomposition the document does not carry is a second statement of the row's content.");
 
-        // Stated in advance, and it is the scope carrying the property: four
-        // elements over one row. Zero would pass every assertion above.
-        Assert.Equal(4, checkedElements);
+        // Stated in advance, and it is the scope carrying the property: six
+        // elements over two rows, four on the level chart and two on the gap
+        // failure. Zero would pass every assertion above.
+        Assert.Equal(6, checkedElements);
     }
 
     [Fact]
@@ -732,16 +733,24 @@ public class ArchitectureConformance
             var parts = key.Split(CheckReach.Joiner);
             var table = Assert.Single(tables, candidate => candidate.Heading == parts[0]);
 
-            // The description cell, not the whole table. A phrase found in a
-            // neighbouring row would prove nothing about this one.
+            // This row, not the whole table. A phrase found in a neighbouring
+            // row would prove nothing about this one.
+            //
+            // Every cell of it rather than the description alone, because the
+            // two tables that decompose put their elements in different
+            // columns: the mark vocabulary names them where it says what the
+            // mark is, and the failure table names them in "What you see".
+            // Reading one index would have been a rule about column order.
             var row = Assert.Single(
                 table.Body, candidate => candidate.Count > 1 && candidate[0] == parts[1]);
+
+            var text = string.Join(" | ", row);
 
             foreach (var element in elements)
             {
                 checkedElements++;
 
-                if (!row[1].Contains(element, StringComparison.OrdinalIgnoreCase))
+                if (!text.Contains(element, StringComparison.OrdinalIgnoreCase))
                 {
                     unnamed.Add($"{key}, {element}");
                 }
