@@ -39,6 +39,7 @@ public class CoverageReported
         ["api-isolation"] = "ApiIsolation",
         ["bar-append-only"] = "StoreWrites",
         ["bar-bounds"] = "BarBounds",
+        ["read-surface"] = "ReadSurface",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };

@@ -30,6 +30,12 @@ public class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Migration runner"),
             CheckReach.Key(Scope.CatalogueTable, "Backfill"),
             CheckReach.Key(Scope.MatrixTable, "Backfill"),
+            CheckReach.Key(Scope.CatalogueTable, "Read API"),
+            CheckReach.Key(Scope.MatrixTable, "Read API"),
+            CheckReach.Key(Scope.CatalogueTable, "Mark renderer"),
+            CheckReach.Key(Scope.MatrixTable, "Mark renderer"),
+            CheckReach.Key(Scope.CatalogueTable, "Single page app"),
+            CheckReach.Key(Scope.MatrixTable, "Single page app"),
         ]);
 
     static IReadOnlyList<ArchitectureTable> Tables() =>

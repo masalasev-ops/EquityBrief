@@ -603,3 +603,11 @@ Now, added at the end of that list:
 > A matcher keyed on a prefix answers about everything sharing that prefix. Where a key is the opening of a value rather than the whole of it, the property is that exactly one key matches, asserted in both directions rather than left to the order a dictionary happens to yield. This is a shape to sweep for rather than a defect to fix one instance at a time: it has arrived four times, as the nightly step keys, as a subject matched without its table, as a phase read as landed from any heading beginning with its number, and as a roster row retired by a heading whose entry said it was not a checkpoint.
 
 Why: the four are one defect wearing four faces, and each was found by tripping over it rather than by looking. The third was a live defect with no symptom, which is the state that carries one past the point where it bites: `HasLanded("phase 2")` matched the bare string `### 2.`, so the pass that plans phase 2 would have read as phase 2 having landed and failed every claim still owed at it, and the existing `### 1.1 planning` entry already answered that question true for phase 1 with nothing noticing, because nothing is due at bare "phase 1". Written as a rule, the next instance is found by the sweep it names rather than by the failure it causes.
+
+### 2026-09-08 - CLAUDE.md - read-surface added to the roster
+Corrects: nothing removed. A row is added to the checks table for the check 1.3 built.
+
+Now, added above `ci-parity`:
+> | `read-surface` | every CI run | The read API hands back every stored value unchanged, and the page draws one candle and one volume bar per stored session, matched session by session against the store |
+
+Why: three claims in section 15 are claims about a surface, and a surface is not something a declaration can assert. `component-access` reaches the read API, the mark renderer and the app as components, which says what each may touch and nothing about what the page draws. So the drawn claims are reached by a check that renders the surface and reads it back, and the reconciliation refused that check's name until it was on the roster with a declared reach, which is the fiat guard working on the session that wrote it.

@@ -114,11 +114,14 @@ internal static class Reconciliation
     // silently and would report a scope it never had. The population carrying
     // the property is the placements and passing claims that name an
     // instrument or a due point; there are ten of those today.
-    // Raised from 8 to 12 at 1.1, which reconciles 14: three new passing claims
-    // from component-access and the placement of section 19.1. Below the
-    // measured value rather than at it, because contradiction D re-keys the
-    // screens tables at 1.3 and both counts move for a correct change.
-    internal const int Floor = 12;
+    // Raised from 8 to 12 at 1.1, and from 12 to 20 at 1.3, which reconciles
+    // 27: nine new passing claims, six from component-access over the read API,
+    // the mark renderer and the app, and three from read-surface over the
+    // screens rows. Below the measured value rather than at it, and stated
+    // before the run: 18 passing claims were predicted and 20 measured, the two
+    // extra being the app's catalogue and matrix rows, whose due point was a
+    // stale 1.6 left over from the ordering 8ac2442 replaced.
+    internal const int Floor = 20;
 
     // A note offering the report itself as its own evidence. The report is the
     // surface a verdict is printed on and is never the instrument that reached

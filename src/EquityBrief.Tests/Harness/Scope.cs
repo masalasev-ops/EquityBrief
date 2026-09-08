@@ -39,6 +39,11 @@ internal static class Scope
     const string ByAccess = "component-access";
     const string ByHarness = "architecture-conformance";
 
+    // The screens claims are reached by a behavioural check rather than by
+    // component-access, because a claim that something is drawn is a claim
+    // about a surface and a declaration says nothing about one.
+    const string ByReadSurface = "read-surface";
+
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
     internal const string StoresTable = "16. Data stores and the read and write matrix";
@@ -95,6 +100,42 @@ internal static class Scope
             Verdict.Pass,
             "the parse guard fails rather than reporting zero claims",
             ByHarness),
+        [CheckReach.Key(CatalogueTable, "Read API")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and the run log it appends to, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Read API")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the eleven reads and the one write",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Mark renderer")] = new Scoped(
+            Verdict.Pass,
+            "the class declares an empty access, which is a claim rather than an omission, and it matches a row reading the API and writing none",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Mark renderer")] = new Scoped(
+            Verdict.Pass,
+            "all eleven cells are blank and the declaration is empty, asserted cell by cell",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Single page app")] = new Scoped(
+            Verdict.Pass,
+            "the class declares an empty access and it matches a row reading the API and writing none",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Single page app")] = new Scoped(
+            Verdict.Pass,
+            "all eleven cells are blank and the declaration is empty, asserted cell by cell",
+            ByAccess),
+        [CheckReach.Key("15.4 The two surfaces", "The app")] = new Scoped(
+            Verdict.Pass,
+            "the shell routes on the hash and carries no drawing element of its own, so the marks it shows are the server's",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles")] = new Scoped(
+            Verdict.Pass,
+            "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane")] = new Scoped(
+            Verdict.Pass,
+            "one volume bar is drawn per candle on the same time axis, counted off the rendered markup",
+            ByReadSurface),
     };
 
     // Where the plan names a subject, the due point is read from the plan and
@@ -159,7 +200,6 @@ internal static class Scope
     {
         // 3.2 builds the ladder and never uses the component's name.
         ["Ladder builder"] = "3.2",
-        ["Single page app"] = "1.6",
         ["Report exporter"] = "phase 5",
     };
 

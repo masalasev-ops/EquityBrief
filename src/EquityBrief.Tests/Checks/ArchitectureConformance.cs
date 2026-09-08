@@ -76,7 +76,7 @@ public class ArchitectureConformance
         // mean something: over zero passing claims it would hold trivially.
         var passing = Report().Claims.Where(claim => claim.Verdict == Verdict.Pass).ToArray();
 
-        Assert.True(passing.Length >= 6, $"{passing.Length} claims pass, expected at least 6. 7 do at 1.1, and this only grows.");
+        Assert.True(passing.Length >= 14, $"{passing.Length} claims pass, expected at least 14. 20 do at 1.3, and this only grows.");
         Assert.DoesNotContain(passing, claim => claim.By.Length == 0);
     }
 
@@ -302,10 +302,14 @@ public class ArchitectureConformance
         Assert.Contains("1.1", built);
         Assert.Contains("1.2", built);
 
-        // 1.3 is what this session is building and its entry is not written
-        // yet, which is what makes every claim owed at 1.3 out of scope rather
-        // than failing. The day that entry lands, they are due.
-        Assert.DoesNotContain("1.3", built);
+        // The other direction, against a checkpoint far enough out that this
+        // does not have to be edited as the build advances. The first version
+        // of it named 1.3, which was true when it was written and false an hour
+        // later when 1.3's entry landed: a negative direction keyed on the
+        // checkpoint in hand is one that has to be rewritten to stay true, and
+        // one rewritten that often stops being read.
+        Assert.DoesNotContain("6.8", built);
+        Assert.DoesNotContain("9.9", built);
     }
 
     [Fact]
@@ -327,7 +331,7 @@ public class ArchitectureConformance
             .Select(claim => claim.GetProperty("by").GetString() ?? string.Empty)
             .ToArray();
 
-        Assert.True(passing.Length >= 6, $"{passing.Length} claims pass in the file, expected at least 6.");
+        Assert.True(passing.Length >= 14, $"{passing.Length} claims pass in the file, expected at least 14.");
         Assert.DoesNotContain(passing, by => by.Length == 0);
 
         Assert.Contains("<th>Reached by</th>", html, StringComparison.Ordinal);
