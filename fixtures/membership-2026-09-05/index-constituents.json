@@ -39,6 +39,14 @@
   }
  },
  "HistoricalTickerComponents": {
+  "1": {
+   "Code": "AAL",
+   "Name": "American Airlines Group",
+   "StartDate": "2015-03-23",
+   "EndDate": "2024-09-23",
+   "IsActiveNow": 0,
+   "IsDelisted": 0
+  },
   "3": {
    "Code": "AAPL",
    "Name": "Apple Inc.",

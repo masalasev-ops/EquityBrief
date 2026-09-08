@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
@@ -34,16 +35,17 @@ public class MembershipLoaderTests
 
         await loader.LoadAsync(Index, "run-1");
 
-        var left = Rows(store, @"SELECT ticker, ""left"" FROM membership WHERE ""left"" IS NOT NULL;");
+        var left = Rows(store, @"SELECT ticker, ""left"" FROM membership WHERE ""left"" IS NOT NULL ORDER BY ticker;");
 
-        // The fixture carries one name that left, and the date is the provider's
-        // rather than the night's, so a name that went in 2024 is not recorded
-        // as having gone on the night the fixture was captured.
+        // Two names that left, on different dates, and both dates are the
+        // provider's rather than the night's, so a name that went in 2024 is not
+        // recorded as having gone on the night the fixture was captured.
         //
-        // 2024-04-03 is what the provider reports for XRAY. The hand-built
-        // fixture said 2026-03-21, which was invented, and every date below was
-        // chosen around it.
-        Assert.Equal(("XRAY", "2024-04-03"), Assert.Single(left));
+        // Two rather than one, and asserted as a set rather than through
+        // Assert.Single. A fixture with a single departed name makes every
+        // statement about departure a statement about one row, and anything that
+        // mishandles the second is invisible in it.
+        Assert.Equal([("AAL", "2024-09-23"), ("XRAY", "2024-04-03")], left);
 
         var current = Rows(store, @"SELECT ticker, ""left"" FROM membership WHERE ""left"" IS NULL;");
 
@@ -58,30 +60,98 @@ public class MembershipLoaderTests
 
         await loader.LoadAsync(Index, "run-1");
 
+        // The spans the fixture carries, which are the provider's:
+        //
+        //   AAPL  1982-11-30 ..            MSFT  1994-06-01 ..
+        //   XRAY  2008-11-14 .. 2024-04-03  AAL   2015-03-23 .. 2024-09-23
+        //   KEYS  2018-11-06 ..
+        //
+        // and the query is joined <= on AND (left IS NULL OR left > on). Each
+        // date is named for the distinction it draws rather than for where it
+        // sits, because a date chosen to sit beside a boundary stops drawing its
+        // distinction the moment the boundary moves. These were chosen around a
+        // leave date of 2026-03-21 that the hand-built fixture had invented, and
+        // the real one is two years earlier.
+        //
+        // How many dates and how many distinct answers is derived at the end
+        // rather than stated here. Stating it is how this comment came to say
+        // six over a test that asks seven questions.
+
+        // Before any name joined: nothing, rather than everything. A query that
+        // ignored the date would answer with the whole table here, and every
+        // other assertion below would still pass.
+        var beforeAnyJoin = await loader.MembersOnAsync(Index, new DateOnly(1982, 11, 29));
+
+        Assert.Empty(beforeAnyJoin);
+
+        // A date where two of the five had not joined yet. This is the join half
+        // of the span, and the one a query keyed on the leave date alone misses:
+        // it would answer with KEYS and AAL here, years before either was in the
+        // index.
+        var beforeTwoJoined = await loader.MembersOnAsync(Index, new DateOnly(2010, 1, 4));
+
+        Assert.Equal(["AAPL", "MSFT", "XRAY"], beforeTwoJoined);
+
+        // The join edge, strict, asserted either side of one day. The leave edge
+        // below was asserted this way and the join edge was not, which left
+        // joined < on and joined <= on indistinguishable.
+        var dayBeforeKeysJoined = await loader.MembersOnAsync(Index, new DateOnly(2018, 11, 5));
+        var theDayKeysJoined = await loader.MembersOnAsync(Index, new DateOnly(2018, 11, 6));
+
+        Assert.DoesNotContain("KEYS", dayBeforeKeysJoined);
+        Assert.Contains("KEYS", theDayKeysJoined);
+
+        // Between a join and a leave: all five, including both names that have
+        // since gone. This is the whole reason membership carries spans, and a
+        // query returning tonight's set for a past date would show a name as
+        // absent from a window it was part of.
+        var betweenJoinAndLeave = await loader.MembersOnAsync(Index, new DateOnly(2024, 4, 2));
+
+        Assert.Equal(["AAL", "AAPL", "KEYS", "MSFT", "XRAY"], betweenJoinAndLeave);
+
+        // After a leave and before tonight. Two things at once, and both matter.
+        //
+        // The leave edge is strict: the date is the day the name stopped being a
+        // member rather than the last day it was one, so XRAY is already out on
+        // its own leave date.
+        //
+        // And the answer here differs from tonight's, which is what makes this a
+        // third distinction rather than a restatement of the first. With XRAY as
+        // the only departed name it did not: every date from 2024-04-03 to the
+        // fixture instant returned tonight's set, because no membership event
+        // fell between them, so this assertion collapsed into the one below it
+        // and a query answering "tonight" for any recent past date would have
+        // passed. AAL left five months later and splits that stretch in two.
+        var afterALeave = await loader.MembersOnAsync(Index, new DateOnly(2024, 4, 3));
+
+        Assert.Equal(["AAL", "AAPL", "KEYS", "MSFT"], afterALeave);
+
         // Tonight: the three still in the index.
         var tonight = await loader.MembersOnAsync(Index, new DateOnly(2026, 9, 5));
 
         Assert.Equal(["AAPL", "KEYS", "MSFT"], tonight);
 
-        // Before the leave date: four, including the one that has since gone.
-        // This is the whole reason membership carries spans, and a query that
-        // returned tonight's set for a past date would show a name as absent
-        // from a window it was part of.
-        var before = await loader.MembersOnAsync(Index, new DateOnly(2024, 4, 2));
+        // The distinctions, derived rather than stated and asserted as
+        // distinctions rather than left to be read off the expectations above.
+        // A set of dates that all happened to answer alike would satisfy every
+        // Assert.Equal above and none of this.
+        var answers = new[]
+        {
+            beforeAnyJoin, beforeTwoJoined, dayBeforeKeysJoined, theDayKeysJoined,
+            betweenJoinAndLeave, afterALeave, tonight,
+        };
 
-        Assert.Equal(["AAPL", "KEYS", "MSFT", "XRAY"], before);
+        // One pair agrees, and deliberately: the day KEYS joined and the day
+        // before XRAY left are the same region, because the first is there as an
+        // edge against the day before it rather than as a region of its own. So
+        // seven dates draw six answers, and the sixth is what this test is for.
+        Assert.Equal(6, answers.Select(answer => string.Join(",", answer)).Distinct().Count());
+        Assert.Equal(theDayKeysJoined, betweenJoinAndLeave);
 
-        // On the leave date itself the name is already out: the date is the day
-        // it stopped being a member, so the comparison is strict on that edge.
-        var onTheDay = await loader.MembersOnAsync(Index, new DateOnly(2024, 4, 3));
-
-        Assert.DoesNotContain("XRAY", onTheDay);
-
-        // And before a name joined, it is not a member either, which is the
-        // other edge and the one a query keyed on the leave date alone misses.
-        var longBefore = await loader.MembersOnAsync(Index, new DateOnly(2010, 1, 4));
-
-        Assert.Equal(["AAPL", "MSFT", "XRAY"], longBefore);
+        // Named separately because it is the one that had collapsed: with a
+        // single departed name this equalled tonight, and the whole test read as
+        // a claim it was not making.
+        Assert.NotEqual(afterALeave, tonight);
     }
 
     [Fact]
@@ -104,7 +174,7 @@ public class MembershipLoaderTests
 
         Assert.Equal(first, second);
         Assert.Equal(after, again);
-        Assert.Equal(4, after.Count);
+        Assert.Equal(5, after.Count);
 
         var logged = Rows(store, "SELECT run_id, stage FROM run_log ORDER BY run_id;");
 
@@ -122,7 +192,7 @@ public class MembershipLoaderTests
         // the whole row while quietly making one about four fifths of it.
         var instants = Rows(store, "SELECT ticker, observed_at FROM membership ORDER BY ticker;");
 
-        Assert.Equal(4, instants.Count);
+        Assert.Equal(5, instants.Count);
         Assert.All(instants, row => Assert.NotEqual(string.Empty, row.Item2));
         Assert.Single(instants.Select(row => row.Item2).Distinct());
     }
@@ -141,9 +211,9 @@ public class MembershipLoaderTests
 
         var measured = Rows(store, "SELECT CAST(rows_written AS TEXT), CAST(network_requests AS TEXT) FROM run_log WHERE run_id = 'run-1';");
 
-        // Four rows written and one request. Both are measured rather than
+        // Five rows written and one request. Both are measured rather than
         // stated: the rows from the store, and the requests off the feed.
-        Assert.Equal(("4", "1"), Assert.Single(measured));
+        Assert.Equal(("5", "1"), Assert.Single(measured));
 
         var free = Rows(store, "SELECT CAST(model_calls AS TEXT), spend FROM run_log WHERE run_id = 'run-1';");
 
@@ -160,9 +230,22 @@ public class MembershipLoaderTests
 
         var parsed = RecordedIndexMembershipFeed.Parse(File.ReadAllText(CapturedResponse()), Index);
 
-        Assert.Equal(4, parsed.Count);
-        Assert.Contains(parsed, constituent => constituent.Ticker == "XRAY" && constituent.Left is not null);
-        Assert.Contains(parsed, constituent => constituent.Ticker == "AAPL" && constituent.Left is null);
+        // The whole projection rather than a count and two Contains clauses.
+        //
+        // Two clauses named one of the two departed names and one of the three
+        // current ones, which is two rows of five: a parser regression dropping
+        // AAL's end date leaves the count at five and both clauses true. The
+        // count is the weakest half of that, since it survives every error that
+        // does not add or remove a row.
+        Assert.Equal(
+            [
+                ("AAL", "2024-09-23"),
+                ("AAPL", null),
+                ("KEYS", null),
+                ("MSFT", null),
+                ("XRAY", "2024-04-03"),
+            ],
+            parsed.Select(constituent => (constituent.Ticker, constituent.Left?.ToString("yyyy-MM-dd"))));
     }
 
     [Theory]
@@ -180,8 +263,8 @@ public class MembershipLoaderTests
 
     [Theory]
     [InlineData(@"""EndDate"": ""not a date""")]
-    [InlineData(@"""EndDate"": ""21/03/2026""")]
-    [InlineData(@"""EndDate"": ""2026-13-45""")]
+    [InlineData(@"""EndDate"": ""04/07/2021""")]
+    [InlineData(@"""EndDate"": ""2021-13-45""")]
     public void AnEndDateThatCannotBeReadThrowsRatherThanReadingAsAbsent(string tail)
     {
         // The second outcome, and the one that mattered. A name that left the
@@ -196,7 +279,7 @@ public class MembershipLoaderTests
     }
 
     [Theory]
-    [InlineData(@"""EndDate"": 20260321")]
+    [InlineData(@"""EndDate"": 20210704")]
     [InlineData(@"""EndDate"": true")]
     [InlineData(@"""EndDate"": []")]
     public void AnEndDateThatIsNotAStringThrows(string tail)
@@ -211,15 +294,57 @@ public class MembershipLoaderTests
     [Fact]
     public void TheDateParseDoesNotDependOnTheMachinesLocale()
     {
-        // A day-first string is refused rather than read as a different date,
-        // which is what a culture-sensitive parse would do on a machine set to a
+        // A slashed date is refused rather than read as a different date, which
+        // is what a culture-sensitive parse would do on a machine set to a
         // day-first locale. Same class as an instant resolving against the
         // machine zone, and in shipped code rather than in the suite.
-        Assert.Throws<FormatException>(() => RecordedIndexMembershipFeed.Parse(Payload(@"""EndDate"": ""21/03/2026"""), Index));
+        //
+        // 04/07/2021 is ambiguous rather than merely slashed: it is the fourth
+        // of July read day-first and the seventh of April read month-first, so a
+        // lenient parse succeeds under both cultures and returns a different
+        // date under each. A day-first string with a day above twelve would be
+        // refused by an invariant parse anyway, which tests the culture far less.
+        //
+        // The date is arbitrary and belongs to no fixture. It reads 2026-03-21
+        // until 1.2, which was the leave date the hand-built fixture had
+        // invented, and a synthetic payload carrying a real name's date invites
+        // a reader to think the two are connected.
+        // Run under a day-first culture and a month-first one, because a test
+        // named for a property of the machine that sets no culture asserts
+        // nothing about the machine. It set none until 1.2: it asserted an exact
+        // parse, which implies locale independence without demonstrating it, and
+        // would have passed just as well with the CultureInfo.InvariantCulture
+        // argument removed from the parse it is about.
+        var original = CultureInfo.CurrentCulture;
 
-        var parsed = RecordedIndexMembershipFeed.Parse(Payload(@"""EndDate"": ""2026-03-21"""), Index);
+        try
+        {
+            foreach (var culture in new[] { "en-GB", "en-US", "de-DE" })
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
 
-        Assert.Equal(new DateOnly(2026, 3, 21), Assert.Single(parsed).Left);
+                var parsed = RecordedIndexMembershipFeed.Parse(Payload(@"""EndDate"": ""2021-07-04"""), Index);
+
+                Assert.Equal(new DateOnly(2021, 7, 4), Assert.Single(parsed).Left);
+                Assert.Throws<FormatException>(
+                    () => RecordedIndexMembershipFeed.Parse(Payload(@"""EndDate"": ""04/07/2021"""), Index));
+            }
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+
+        // And the ambiguity the refusal is about, demonstrated rather than
+        // asserted in a comment. Without this the refused string could be one
+        // nothing would have misread, and the test would prove only that a
+        // slash is not a hyphen.
+        Assert.True(DateOnly.TryParse("04/07/2021", CultureInfo.GetCultureInfo("en-GB"), DateTimeStyles.None, out var dayFirst));
+        Assert.True(DateOnly.TryParse("04/07/2021", CultureInfo.GetCultureInfo("en-US"), DateTimeStyles.None, out var monthFirst));
+
+        Assert.Equal(new DateOnly(2021, 7, 4), dayFirst);
+        Assert.Equal(new DateOnly(2021, 4, 7), monthFirst);
+        Assert.NotEqual(dayFirst, monthFirst);
     }
 
     [Fact]

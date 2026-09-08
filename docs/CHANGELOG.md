@@ -489,3 +489,21 @@ Was:
 Now: a new step 3 names Git for Windows, says the wrapper looks beside `git` as well as on `PATH`, and says the WSL launcher does not count and why. The steps after it are renumbered and step 2's cross-reference moves from step 5 to step 6.
 
 Why: the list is what an operator follows on a new machine, and it named the one dependency whose absence produces a legible error while omitting the one whose absence produces an advertisement for installing a Linux distribution. `tools/run-bash.ps1` now chooses a bash by asking each candidate whether it can read the script rather than taking the first on `PATH`, so the property is enforced as well as documented, and the suite's own lookup matches it.
+
+### 2026-09-08 - BUILD_PLAN.md - two parsers checked against themselves, named as a defect and given due points
+Corrects: the splits and dividends feed and the news feed each ship a parser and a recorded double, and neither has seen a provider response. That is the state the membership parser was in until 1.2, when the first captured constituents payload showed it had been reading dates out of an object the provider does not put them in. It had been green for two checkpoints because the same session wrote the parser and the fixture it was checked against. The carried obligations table had no row for either feed, and the 1.6 and 1.7 done conditions asked for a fixture without saying where it comes from.
+
+Was: the obligations table ran from "Architecture cites its decisions by name at each rule" straight to "`two-platform` widened to what its roster row claims", and the two done conditions read:
+
+> **Done when** an action in the fixture triggers a refetch, the replacement is atomic, and a failure of the check itself marks the name rather than passing.
+
+> **Done when** the measurement is recorded with its sample named, and the first draft of the company-news and industry source lists exists with a review date.
+
+Now: two rows are added to the table, due at 1.6 and 1.7, which are the checkpoints that build each parser. Both name the defect rather than the work:
+
+> | Splits and dividends parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.6 |
+> | News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7 |
+
+Each done condition gains the clause that its fixture is a captured provider response rather than a constructed one, and each section gains a paragraph saying the feed is captured when the checkpoint opens rather than after the parser is written.
+
+Why: the row has to name the defect because the task is the easy half. "Capture the news feed" reads as a chore and gets done late or partly; "the parser is checked against itself" says what is wrong now, so a session that writes the parser first has broken something rather than deferred something. The ordering matters for the same reason: a fixture written after the parser is a transcript of what the parser already expects, whichever session writes it. Ten weighted calls found a defect that two checkpoints of green had not.

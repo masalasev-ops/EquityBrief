@@ -1337,3 +1337,136 @@ Carried:    the bar fixture and the constituents fixture are captured. No other 
             in each: the splits and dividends feed at 1.6 and the news feed at 1.7 both arrive
             with a parser and a double, and neither has seen a provider response. Each captures
             before it asserts.
+
+### 1.2 - what the past-date assertions were testing, and the class behind it       2026-09-08
+Corrects:   the entry above, which recorded XRAY's leave date moving from an invented
+            2026-03-21 to the provider's 2024-04-03 and did not say what that did to the three
+            past-date assertions chosen around the invented value. Re-pointing them was not
+            enough. They were positioned either side of a boundary, and the boundary moved two
+            years, so what each one distinguished had to be worked out again rather than
+            assumed to have travelled with it.
+Found:      one of the three had collapsed. With XRAY as the only departed name, every date
+            from its leave to the fixture instant returns the same set, because no membership
+            event falls between them. So "after a leave and before tonight" was "tonight", and
+            a query that answered with tonight's set for any recent past date would have passed
+            it. The assertion had been made against a date two years from the leave rather than
+            one day after it, which hid this: the old date sat five months before the invented
+            leave and the new one sits on the real leave, and only the second makes the
+            question visible.
+
+            That was true before this pass as well. The invented leave was 2026-03-21 and the
+            fixture instant is 2026-09-05, so the same stretch existed and was five months long
+            instead of two years. The collapse is not something the real date introduced; it is
+            something the real date made possible to notice.
+Built:      a fifth constituent, AAL, joined 2015-03-23 and left 2024-09-23, re-trimmed from
+            the `fundamentals/GSPC.INDX` response already captured on this pass. No new
+            request. It splits the stretch between XRAY's leave and the fixture instant in two,
+            which is what makes the third distinction a distinction.
+
+            The fixture is now 5 constituents, 3 current members and 2 departed, and the
+            backfill is unaffected: a departed name is not owed history, so 3 owed, 3 requests
+            and 756 rows all stand. The membership figures move: 5 rows written for the
+            membership stage rather than 4, and the departed names are asserted as a set rather
+            than through Assert.Single. A fixture with one departed name makes every statement
+            about departure a statement about one row.
+Measured:   seven dates, each named for the distinction it draws. Over the fixture's 5
+            constituents:
+
+            1982-11-29, before any name joined, answers with nothing. A query ignoring the date
+            would answer with the whole table here and pass every other assertion below.
+
+            2010-01-04, where two of the five had not joined, answers AAPL, MSFT, XRAY. This is
+            the join half of the span and the one a query keyed on the leave date alone misses.
+
+            2018-11-05 and 2018-11-06, either side of one day, are the join edge. The leave
+            edge was asserted this way and the join edge was not, which left `joined <` and
+            `joined <=` indistinguishable. Added on this pass.
+
+            2024-04-02, between a join and a leave, answers with all five including both names
+            that have since gone.
+
+            2024-04-03, XRAY's leave date, answers AAL, AAPL, KEYS, MSFT. Two properties at
+            once: the leave edge is strict, and the answer differs from tonight's, which is the
+            third distinction and the one that had collapsed.
+
+            2026-09-05, the fixture instant, answers AAPL, KEYS, MSFT.
+
+            Seven dates and six distinct answers, derived in the test from the seven results
+            rather than stated in a comment. The first draft of this entry and of the comment
+            beside it both said six dates over a test that asks seven questions, which is why
+            the figure is now counted rather than written down. One pair agrees deliberately
+            and is asserted to agree: 2018-11-06 and 2024-04-02 are the same region, because
+            the first is there as an edge against 2018-11-05 and not as a region of its own.
+
+            Proved by removing AAL from the fixture and watching the test go red, then
+            restoring it. The permanent proof is the assertion rather than that exercise: a
+            fixture that loses its second departed name fails on the inequality.
+Also:       three synthetic payloads in the parser tests carried 2026-03-21 and its day-first
+            and integer spellings. They belong to no fixture and never did, but a synthetic
+            payload carrying a real name's date invites a reader to connect the two. They now
+            read 2021-07-04, and the day-first case is 04/07/2021, which is ambiguous rather
+            than merely slashed: the fourth of July read one way and the seventh of April read
+            the other, so a lenient parse succeeds under both cultures and returns a different
+            date under each. A day-first string with a day above twelve is refused by an
+            invariant parse anyway and tests the culture far less.
+Checked:    the pass was swept by four independent readers and each reading was then given to a
+            second reader told to refute it. Three defects in this pass's own work came back,
+            and all three are the kind that pass a green suite.
+
+            The comment introducing the past-date dates said six over a test that asks seven
+            questions, and the entry above said the same. Both are now derived: the test
+            collects its seven answers and asserts six distinct ones, so the figure is counted
+            rather than written down. This is the defect `stated-counts` exists for, committed
+            in the same pass that argues for deriving counts.
+
+            `TheDateParseDoesNotDependOnTheMachinesLocale` set no locale. It asserted an exact
+            parse, which implies locale independence without demonstrating it, and would have
+            passed with the `CultureInfo.InvariantCulture` argument removed from the parse it is
+            named for. It now runs the parse under en-GB, en-US and de-DE and asserts the same
+            answer under each, and it demonstrates the ambiguity the refusal rests on rather
+            than asserting it in a comment: 04/07/2021 parses to the fourth of July under en-GB
+            and the seventh of April under en-US, both succeeding, which is what an exact parse
+            is refusing. A refused string nothing would have misread proves only that a slash is
+            not a hyphen.
+
+            The parse test asserted a count of five and two Contains clauses, covering two rows
+            of five. A regression dropping AAL's end date leaves the count at five and both
+            clauses true. It asserts the whole ticker and leave-date projection now.
+Class:      the general form, stated because the instance is the third of its kind and naming
+            the instance again would not stop the fourth.
+
+            A fixture written by the session writing the parser proves that the parser agrees
+            with the fixture. It proves nothing about the provider. The two artefacts have one
+            author and one set of assumptions, so the agreement between them is a restatement,
+            and every check reading it reports green over a population of one opinion held
+            twice.
+
+            This is the same shape as a constant pinned document against document, which Pass A
+            repaired at 0.7. `pinned-constants` floored the mentions it found across two specs,
+            and a mention is a number an added sentence moves, so the check could be satisfied
+            by writing prose. The repair was to move the floor onto the comparisons made against
+            `src/Directory.Build.props` and `global.json`, which only a mention agreeing with
+            the build can move. The assertion stopped resting on what the corpus says about
+            itself and started resting on the artefact the corpus describes.
+
+            The repair here is the same move and the artefact is the provider's own response. A
+            parser is checked against a captured payload or it is checked against itself, and
+            there is no third option that a fixture written alongside it can provide. Two
+            parsers are in that state now, the splits and dividends feed and the news feed, and
+            both are carried with the defect named rather than the task: a row reading "capture
+            the news feed" is a chore that gets done late, and one reading "the parser is
+            checked against itself" says something is wrong now.
+            `fixtures/README.md` now says that a fixture counts two different things. Phase 2
+            widens the fixture "to four names" in `BUILD_PLAN.md` and in three places in the
+            architecture, and this fixture now holds five constituents, which reads as already
+            past four. Names are the tickers with a captured price series and constituents are
+            the membership rows; a departed name has a row and no bars, so this fixture holds
+            5 constituents and 3 names. The distinction goes in the file whose subject is the
+            folder's shape rather than in the four documents that say four, because it is one
+            fact and those would be four statements of it.
+Carried:    unchanged from the entry above, with the two parser rows now in `BUILD_PLAN.md`'s
+            obligations table at 1.6 and 1.7 rather than only in that entry's prose. Each
+            checkpoint's done condition states that its fixture is a captured response, and
+            each section says the request is spent when the checkpoint opens rather than after
+            the parser is written. A fixture written after the parser is a transcript of what
+            the parser already expects, whichever session writes it.

@@ -9,8 +9,8 @@ namespace EquityBrief.Tests.Bars;
 
 // 1.2's done condition, run through the backfill's own surface.
 //
-// The population is stated wherever a figure is: the fixture carries four
-// constituents of which three are current members and one has left, and every
+// The population is stated wherever a figure is: the fixture carries five
+// constituents of which three are current members and two have left, and every
 // count below is over those. A claim about roughly five hundred live names is
 // not something this suite can assert, and saying so is the point.
 //
@@ -138,16 +138,17 @@ public class BackfillTests
     }
 
     [Fact]
-    public async Task EveryCurrentMemberHoldsAFullYearAndTheNameThatLeftIsNotFetched()
+    public async Task EveryCurrentMemberHoldsAFullYearAndTheNamesThatLeftAreNotFetched()
     {
         using var store = await WithMembership();
         var backfill = Loader(store, out var feed);
 
         var outcome = await backfill.RunAsync(Index, "run-1");
 
-        // Three current members, one departed name. The departed one keeps the
-        // history it has, which here is none, and is not fetched: a backfill is
-        // owed for names in the index, not for every name ever in it.
+        // Three current members and two departed names. The departed ones keep
+        // the history they have, which here is none, and are not fetched: a
+        // backfill is owed for names in the index, not for every name ever in
+        // it.
         Assert.Equal(CurrentMembers, outcome.Members);
         Assert.Equal(CurrentMembers, outcome.Owed);
         Assert.Equal(CurrentMembers, outcome.Requests);
@@ -156,7 +157,13 @@ public class BackfillTests
         var tickers = Column(store, "SELECT DISTINCT ticker FROM bar ORDER BY ticker;");
 
         Assert.Equal(["AAPL", "KEYS", "MSFT"], tickers);
+
+        // Both departed names, named rather than covered by the equality above.
+        // The equality already fails if either appears, but naming them says
+        // which absence is the property: a backfill is owed for names in the
+        // index, and neither of these is in it.
         Assert.DoesNotContain("XRAY", tickers);
+        Assert.DoesNotContain("AAL", tickers);
 
         // Per name rather than in total, so a name short of its year is visible
         // instead of being covered by another name's surplus, and against the
