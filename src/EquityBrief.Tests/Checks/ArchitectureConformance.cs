@@ -415,8 +415,18 @@ public class ArchitectureConformance
         // The lesson of finding 1 of the phase 0 review, applied before it can
         // repeat: a claim that something is visible is a claim about a surface,
         // so this reads the written files rather than the model behind them.
-        var json = File.ReadAllText(Path.Combine(Repository.Root, "artifacts", "phase-report.json"));
-        var html = File.ReadAllText(Path.Combine(Repository.Root, "artifacts", "phase-report.html"));
+        // Generated into a temporary directory rather than read out of
+        // artifacts/, which is gitignored and only exists once verify-phase has
+        // been run. verify-phase is deliberately not a CI step, so the first
+        // version of this test passed on this machine from a leftover file and
+        // failed on all three runners. A test that depends on another command
+        // having been run is a test that reports the state of a working copy.
+        using var elsewhere = new TemporaryDirectory();
+
+        PhaseReportWriter.Write(Report(), elsewhere.Path, DateTimeOffset.UnixEpoch);
+
+        var json = File.ReadAllText(PhaseReportWriter.JsonPath(elsewhere.Path));
+        var html = File.ReadAllText(PhaseReportWriter.HtmlPath(elsewhere.Path));
 
         var unsafeOnes = Scope.Exceptions().Where(exception => !exception.Later).ToArray();
 
