@@ -334,6 +334,105 @@ public class ArchitectureConformance
         Assert.Contains("Reporting zero claims", refusal.Message, StringComparison.Ordinal);
     }
 
+    // A due point written into Scope is a second statement of which checkpoint
+    // does the work, and BUILD_PLAN's checkpoint text is the first. These three
+    // keep the two from drifting, which is what nobody had when 8ac2442
+    // reordered phase 1 and left fifteen due points describing the old order.
+
+    [Fact]
+    public void EveryDuePointThePlanSuppliesIsReadFromThePlan()
+    {
+        var checkpoints = PlanCheckpoints.All();
+        var exceptions = Scope.DeclaredExceptions();
+
+        var shadowing = Scope.ResidualSubjects()
+            .Where(subject => !exceptions.Contains(subject, StringComparer.Ordinal))
+            .Where(subject => PlanCheckpoints.DueFor(subject, checkpoints) is not null)
+            .Select(subject => $"{subject} (plan says {PlanCheckpoints.DueFor(subject, checkpoints)})")
+            .ToArray();
+
+        Assert.True(
+            shadowing.Length == 0,
+            "These subjects are written into Scope and BUILD_PLAN names them, so the written " +
+            "value shadows the plan and will not move when the plan is reordered: " +
+            string.Join("; ", shadowing) +
+            ". Delete the entry and let it derive, or declare it an exception with the reason.");
+    }
+
+    [Fact]
+    public void MostDuePointsAreDerivedRatherThanWritten()
+    {
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+        var report = PhaseReport.Build(tables, NightlyRunSteps.In(File.ReadAllText(Repository.Architecture)));
+
+        var residual = Scope.ResidualSubjects();
+        var checkpoints = PlanCheckpoints.All();
+
+        // Not simply "absent from the residual list": the screens tables resolve
+        // by table heading rather than by subject, so their rows are neither
+        // residual nor derived and counting them as derived would inflate this.
+        var derived = report.Claims
+            .Where(claim => claim.Verdict == Verdict.OutOfScope)
+            .Select(claim => claim.Subject)
+            .Distinct(StringComparer.Ordinal)
+            .Count(subject => !residual.Contains(subject, StringComparer.Ordinal)
+                && PlanCheckpoints.DueFor(subject, checkpoints) is not null);
+
+        // Two scopes. The claims out of scope is a fact about how much of the
+        // system is unbuilt and is context. The property is how many of their
+        // due points the plan supplies, because that is the half a reorder
+        // moves on its own, and a run where it fell to zero would mean the
+        // derivation had quietly stopped resolving anything.
+        Assert.True(
+            derived >= 40,
+            $"{derived} subjects take their due point from BUILD_PLAN, expected at least 40. " +
+            $"49 did when this floor was set, over {report.Count(Verdict.OutOfScope)} claims out of scope.");
+    }
+
+    [Fact]
+    public void TheCheckReportsADuePointThatDidNotMoveWithThePlan()
+    {
+        // The permanent proof, over a constructed plan rather than the real one.
+        // A subject named at 1.3 derives 1.3; move the text to 1.4 and the
+        // derived value follows it, which is the whole property. A written due
+        // point would still say 1.3 and nothing would notice.
+        const string before = """
+            ### 1.3 The read surface and the chart
+            The read API serving bars, and the bar fetcher.
+
+            ### 1.4 The bar fetcher and the nightly script
+            One bulk request per night.
+            """;
+
+        const string after = """
+            ### 1.3 The read surface and the chart
+            The read API serving bars.
+
+            ### 1.4 The bar fetcher and the nightly script
+            One bulk request per night.
+            """;
+
+        Assert.Equal("1.3", PlanCheckpoints.DueFor("Bar fetcher", PlanCheckpoints.In(before, floor: 2)));
+        Assert.Equal("1.4", PlanCheckpoints.DueFor("Bar fetcher", PlanCheckpoints.In(after, floor: 2)));
+
+        // A planning checkpoint names what it settles and builds none of it, so
+        // it can never be the answer. 3.0 named four components this way and
+        // reading a due point from it put every one of them before its code.
+        const string planning = """
+            ### 3.0 Planning
+            Settles the trend classifier's rule.
+
+            ### 3.1 The calendar fetcher and the trend state
+            The trend classifier to the rule settled at 3.0.
+            """;
+
+        Assert.Equal("3.1", PlanCheckpoints.DueFor("Trend classifier", PlanCheckpoints.In(planning, floor: 2)));
+
+        // And a subject the plan does not name derives nothing, which is what
+        // sends it to the residual map rather than to a wrong answer.
+        Assert.Null(PlanCheckpoints.DueFor("Report exporter", PlanCheckpoints.In(before, floor: 2)));
+    }
+
     // The reconciliation as the harness runs it, over whatever a test hands it.
     // The floor is lifted for these, because each one is proving a refusal
     // rather than measuring a population.
