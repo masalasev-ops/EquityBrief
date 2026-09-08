@@ -2,6 +2,31 @@ namespace EquityBrief.Tests.Harness;
 
 internal sealed record Scoped(Verdict Verdict, string Note, string By);
 
+// Which half of Scope supplied a due point. Reported per claim so the
+// population can be partitioned by what actually answered rather than by what
+// could have, and so the four counts can be asserted to sum to the whole.
+internal enum DueOrigin
+{
+    // Nothing answered. The claim has no due point and the caller refuses,
+    // which is what keeps a subject from being left unexamined by omission.
+    Nothing,
+
+    // A declared exception, because the plan names the subject in a way that
+    // cannot be read. Four of these, each with its reason written beside it.
+    Exception,
+
+    // Section 15, keyed on the table and the row together.
+    Screens,
+
+    // One of the written residual maps: components, stores, failures, matrix
+    // rows, limits, nightly steps.
+    Residual,
+
+    // Read from BUILD_PLAN's checkpoint text, which is the half that moves when
+    // the plan is reordered.
+    Plan,
+}
+
 // Where every claim in the architecture is answered.
 //
 // A claim is PASS only when a named check reaches it. Everything else names the
@@ -13,6 +38,11 @@ internal static class Scope
     const string ByMigration = "schema-columns";
     const string ByAccess = "component-access";
     const string ByHarness = "architecture-conformance";
+
+    // The screens claims are reached by a behavioural check rather than by
+    // component-access, because a claim that something is drawn is a claim
+    // about a surface and a declaration says nothing about one.
+    const string ByReadSurface = "read-surface";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -70,6 +100,42 @@ internal static class Scope
             Verdict.Pass,
             "the parse guard fails rather than reporting zero claims",
             ByHarness),
+        [CheckReach.Key(CatalogueTable, "Read API")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and the run log it appends to, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Read API")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the eleven reads and the one write",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Mark renderer")] = new Scoped(
+            Verdict.Pass,
+            "the class declares an empty access, which is a claim rather than an omission, and it matches a row reading the API and writing none",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Mark renderer")] = new Scoped(
+            Verdict.Pass,
+            "all eleven cells are blank and the declaration is empty, asserted cell by cell",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Single page app")] = new Scoped(
+            Verdict.Pass,
+            "the class declares an empty access and it matches a row reading the API and writing none",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Single page app")] = new Scoped(
+            Verdict.Pass,
+            "all eleven cells are blank and the declaration is empty, asserted cell by cell",
+            ByAccess),
+        [CheckReach.Key("15.4 The two surfaces", "The app")] = new Scoped(
+            Verdict.Pass,
+            "the shell routes on the hash and carries no drawing element of its own, so the marks it shows are the server's",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles")] = new Scoped(
+            Verdict.Pass,
+            "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane")] = new Scoped(
+            Verdict.Pass,
+            "one volume bar is drawn per candle on the same time axis, counted off the rendered markup",
+            ByReadSurface),
     };
 
     // Where the plan names a subject, the due point is read from the plan and
@@ -134,7 +200,6 @@ internal static class Scope
     {
         // 3.2 builds the ladder and never uses the component's name.
         ["Ladder builder"] = "3.2",
-        ["Single page app"] = "1.6",
         ["Report exporter"] = "phase 5",
     };
 
@@ -146,19 +211,154 @@ internal static class Scope
         ["Source documents"] = "phase 5",
     };
 
-    // Where a screen is complete, not where its first pixel appears. Naming a
-    // later point than strictly needed says only that nothing asserts it yet,
+    // Where a screen row is complete, not where its first pixel appears. Naming
+    // a later point than strictly needed says only that nothing asserts it yet,
     // which is true; naming an earlier one would be a claim that something does.
+    //
+    // Keyed on the table and the row together, which is contradiction D. Keyed
+    // on the table heading alone, every row of a section shared one due point,
+    // so "The exported report" was owed at the chart checkpoint because it sits
+    // in the same two-row table as "The app". A phase 5 surface asserted at 1.3
+    // is a claim that fails the day 1.3 lands, and the row it fails on is not
+    // the row anybody was working on.
+    //
+    // The rows that do not simply inherit their table's point are the six the
+    // plan names at a checkpoint of their own, and every one of them moves the
+    // point later rather than earlier. That direction is the whole safety
+    // argument: a late due point can only delay a claim.
+    //
+    // This map stays written rather than derived, and the reason is one reason
+    // rather than thirty-seven. Section 15's rows are screen elements headed in
+    // ordinary English, "The table", "The chart", "Filters", "Walk", so a
+    // whole-word search of the plan's prose finds fifteen of them by coincidence
+    // and none of them by naming. A due point derived from a prose coincidence
+    // is worse than one written down, because it looks derived. What the harness
+    // asserts instead is that this map and section 15 hold the same rows in both
+    // directions, so a row added to the document with no entry here fails, and
+    // an entry naming a row the document no longer has fails too.
     static readonly Dictionary<string, string> Screens = new(StringComparer.Ordinal)
     {
-        ["15.4 The two surfaces"] = "1.3",
-        ["15.5 The mark vocabulary"] = "phase 2",
-        ["15.7 Tonight"] = "phase 4",
-        ["15.8 Universe"] = "phase 4",
-        ["15.9 Name"] = "phase 5",
-        ["15.10 Run"] = "phase 4",
-        ["15.11 How a reason's record is displayed"] = "phase 6",
+        [CheckReach.Key("15.4 The two surfaces", "The app")] = "1.3",
+        // Contradiction D's own case. The exporter is a phase 5 component and
+        // this row is the surface it writes.
+        [CheckReach.Key("15.4 The two surfaces", "The exported report")] = "phase 5",
+
+        // Contradiction F. This row names four elements and they are drawn at
+        // three different points, so the row is read as four claims. See
+        // Elements below for why the decomposition is here and not in the
+        // document.
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles")] = "1.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane")] = "1.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the moving averages")] = "2.1",
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands")] = "2.4",
+
+        [CheckReach.Key("15.5 The mark vocabulary", "Volume profile")] = "phase 2",
+        // 3.4 is "The plan column mark and the tables", so this mark is owed a
+        // phase later than the section it sits in.
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] = "3.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Momentum panel")] = "phase 2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row")] = "phase 2",
+        // Both need a listing and a reason behind them, which phase 4 is the
+        // first to write.
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] = "phase 4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Listing strip")] = "phase 4",
+
+        [CheckReach.Key("15.7 Tonight", "Night header")] = "phase 4",
+        [CheckReach.Key("15.7 Tonight", "Watch list")] = "phase 4",
+        [CheckReach.Key("15.7 Tonight", "The list")] = "phase 4",
+        [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = "phase 4",
+        [CheckReach.Key("15.7 Tonight", "Selected name")] = "phase 4",
+        [CheckReach.Key("15.7 Tonight", "Reason totals")] = "phase 4",
+
+        [CheckReach.Key("15.8 Universe", "Sector strip")] = "phase 4",
+        [CheckReach.Key("15.8 Universe", "The table")] = "phase 4",
+        [CheckReach.Key("15.8 Universe", "Filters")] = "phase 4",
+
+        [CheckReach.Key("15.9 Name", "Why it is here")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "Fact strip")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "The short version")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "How it got here")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "The chart")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "The plan")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "Dates and sources")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "Provenance footer")] = "phase 5",
+        [CheckReach.Key("15.9 Name", "Walk")] = "phase 5",
+
+        [CheckReach.Key("15.10 Run", "Operational header")] = "phase 4",
+        // 6.5 is "Reason verdicts on the run page" and 6.4 is "The shadow
+        // column", so two rows of this section are owed two phases after it.
+        [CheckReach.Key("15.10 Run", "Reason records")] = "6.5",
+        [CheckReach.Key("15.10 Run", "Shadow candidates")] = "6.4",
+        [CheckReach.Key("15.10 Run", "Stale and failed")] = "phase 4",
+        [CheckReach.Key("15.10 Run", "Harness")] = "phase 4",
+
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "phase 6",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "phase 6",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = "phase 6",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = "phase 6",
     };
+
+    // Contradiction F. Section 15.5's Level chart names four elements, candles,
+    // the level bands, the moving averages and a volume pane, and the phase
+    // table puts a chart in phase 1 while two of the four cannot exist until
+    // phase 2. Resolved per element rather than per mark, so what exists is
+    // asserted where it exists and only what does not stays out of scope.
+    //
+    // The decomposition lives here rather than in the document, and that is
+    // deliberate. Section 15.5 opens by stating seven marks and the table has
+    // seven rows; splitting the row into four would make the document disagree
+    // with itself and would turn one mark into four in a vocabulary whose whole
+    // point is that a mark is defined once. So the row stays one row and the
+    // harness reads it as four claims.
+    //
+    // What keeps that from being a second statement of the row's content is
+    // that each element phrase is asserted to appear in the row's own
+    // description cell. An element renamed in the document, or one invented
+    // here, fails. The count in the opening sentence is asserted against the
+    // table's rows by stated-counts, so the other repair, adding rows to the
+    // table, fails too.
+    static readonly Dictionary<string, string[]> Elements = new(StringComparer.Ordinal)
+    {
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
+            ["candles", "the level bands", "the moving averages", "a volume pane"],
+    };
+
+    // The claim subjects a row yields. One, itself, unless the row decomposes.
+    internal static IReadOnlyList<string> SubjectsOf(string table, string row) =>
+        Elements.TryGetValue(CheckReach.Key(table, row), out var elements)
+            ? [.. elements.Select(element => $"{row}, {element}")]
+            : [row];
+
+    internal static IReadOnlyCollection<string> DecomposedRows() => Elements.Keys;
+
+    internal static IReadOnlyList<string> ElementsOf(string key) => Elements[key];
+
+    // The screens tables, named so the reconciliation can read the document's
+    // rows against the map above in both directions. Written here rather than
+    // derived from the keys, because deriving the table list from the same
+    // dictionary the check compares against would make the comparison circular.
+    internal static readonly string[] ScreensTables =
+    [
+        "15.4 The two surfaces",
+        "15.5 The mark vocabulary",
+        "15.7 Tonight",
+        "15.8 Universe",
+        "15.9 Name",
+        "15.10 Run",
+        "15.11 How a reason's record is displayed",
+    ];
+
+    internal static IReadOnlyCollection<string> ScreensKeys() => Screens.Keys;
+
+    internal static IReadOnlyCollection<string> NightlyStepKeys() => NightlySteps.Keys;
+
+    // How many keys match a nightly step's full text. Exactly one is the
+    // property: the steps are sentences and the keys are their openings, so a
+    // key that is the opening of another key answers for both and whichever
+    // the dictionary yields first wins silently.
+    internal static int NightlyStepKeysMatching(string subject) =>
+        NightlySteps.Keys.Count(key => subject.StartsWith(key, StringComparison.Ordinal));
 
     static readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal)
     {
@@ -252,7 +452,7 @@ internal static class Scope
             return reached;
         }
 
-        var due = Due(table, subject);
+        var due = Resolve(table, subject).Due;
 
         return string.IsNullOrEmpty(due)
             ? throw new InvalidOperationException(
@@ -280,61 +480,78 @@ internal static class Scope
         .. DerivedIsEarly.Select(pair => new DuePointException(pair.Key, pair.Value, Later: false)),
     ];
 
-    static string? Due(string table, string subject)
+    // Which half of this file answered, alongside the answer itself.
+    //
+    // The origin is returned rather than inferred, and that is the repair. The
+    // old metric asked whether a subject was absent from the residual list and
+    // whether the plan could name it, which is a question about capability and
+    // not about what happened. Fifteen screens rows answered here by their table
+    // heading were counted as derived from the plan, because the plan's prose
+    // contains the words "The table" and "The chart" and the count never asked
+    // which branch had run. A third of a floored population was measuring the
+    // wrong thing, and the floor sat under it saying nothing.
+    internal static (string? Due, DueOrigin Origin) Resolve(string table, string subject)
     {
         // The ones the plan names in a way that cannot be read, each carrying
         // the reason beside it above.
         if (DerivedIsLate.TryGetValue(subject, out var late))
         {
-            return late;
+            return (late, DueOrigin.Exception);
         }
 
         if (DerivedIsEarly.TryGetValue(subject, out var early))
         {
-            return early;
+            return (early, DueOrigin.Exception);
         }
 
-        if (Screens.TryGetValue(table, out var screen))
+        if (Screens.TryGetValue(CheckReach.Key(table, subject), out var screen))
         {
-            return screen;
+            return (screen, DueOrigin.Screens);
         }
 
         if (table == LimitsTable && LimitDuePoints.TryGetValue(subject, out var limit))
         {
-            return limit;
+            return (limit, DueOrigin.Residual);
         }
 
         if (table == MatrixTable && MatrixRows.TryGetValue(subject, out var row))
         {
-            return row;
+            return (row, DueOrigin.Residual);
         }
 
         if (table == NightlyRunSteps.Heading)
         {
-            return NightlySteps
-                .FirstOrDefault(step => subject.StartsWith(step.Key, StringComparison.Ordinal))
+            var step = NightlySteps
+                .FirstOrDefault(entry => subject.StartsWith(entry.Key, StringComparison.Ordinal))
                 .Value;
+
+            if (step is not null)
+            {
+                return (step, DueOrigin.Residual);
+            }
         }
 
         if (Components.TryGetValue(subject, out var component))
         {
-            return component;
+            return (component, DueOrigin.Residual);
         }
 
         if (Stores.TryGetValue(subject, out var store))
         {
-            return store;
+            return (store, DueOrigin.Residual);
         }
 
         if (Failures.TryGetValue(subject, out var failure))
         {
-            return failure;
+            return (failure, DueOrigin.Residual);
         }
 
         // Nothing above it carried this subject, so the plan is asked. This is
         // the half that cannot go stale: BUILD_PLAN's checkpoint text is the
         // first statement of which checkpoint does the work, and a due point
         // read from it moves when the plan is reordered.
-        return PlanCheckpoints.DueFor(subject);
+        var derived = PlanCheckpoints.DueFor(subject);
+
+        return derived is null ? (null, DueOrigin.Nothing) : (derived, DueOrigin.Plan);
     }
 }

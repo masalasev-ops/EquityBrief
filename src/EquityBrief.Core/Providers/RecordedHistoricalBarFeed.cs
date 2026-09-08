@@ -63,18 +63,64 @@ public sealed class RecordedHistoricalBarFeed(IReadOnlyDictionary<string, string
         return document.RootElement.EnumerateArray().Select(entry => Read(entry, ticker)).ToArray();
     }
 
-    static ProviderBar Read(JsonElement entry, string ticker) => new(
-        Date(entry, "date", ticker),
-        Price(entry, "open", ticker),
-        Price(entry, "high", ticker),
-        Price(entry, "low", ticker),
+    // The scale the adjustment is carried to. Four places, which is what the
+    // provider carries on an adjusted close, so a scaled open is stated no more
+    // precisely than the number the factor came from.
+    const int Places = 4;
 
-        // The adjusted close, which is what the store holds
-        // (see: The stored series is adjusted). The provider sends both, and
-        // taking the wrong one would leave the series drifting from every chart
-        // the operator compares it against, with nothing failing.
-        Price(entry, "adjusted_close", ticker),
-        Volume(entry, ticker));
+    static ProviderBar Read(JsonElement entry, string ticker)
+    {
+        // Both closes. The adjusted one is what the store holds
+        // (see: The stored series is adjusted); the raw one is the input to the
+        // factor and is stored beside it.
+        var raw = Price(entry, "close", ticker);
+        var adjusted = Price(entry, "adjusted_close", ticker);
+
+        if (raw <= 0)
+        {
+            throw new FormatException(
+                $"{ticker} carries a close of {raw}, and the adjustment factor divides by it. A " +
+                "session with no positive close is not a session.");
+        }
+
+        // One price set per bar. The provider adjusts the close alone, so the
+        // other three are scaled by the same factor. Passing them through
+        // unadjusted stores three raw prices beside one adjusted one, which is
+        // a bar that could not have traded: 1.2 stored 96 of 756 fixture bars
+        // whose close fell outside their own low and high.
+        var bar = new ProviderBar(
+            Date(entry, "date", ticker),
+            Adjust(Price(entry, "open", ticker), adjusted, raw),
+            Adjust(Price(entry, "high", ticker), adjusted, raw),
+            Adjust(Price(entry, "low", ticker), adjusted, raw),
+            adjusted,
+            raw,
+            Volume(entry, ticker));
+
+        // The guard the code carries, beside the check that reads the store. A
+        // bar that could not have traded refuses here rather than being drawn.
+        if (bar.Low > bar.Open || bar.Low > bar.Close || bar.High < bar.Open || bar.High < bar.Close)
+        {
+            throw new FormatException(
+                $"{ticker} on {bar.SessionDate:yyyy-MM-dd} adjusts to low {bar.Low}, open {bar.Open}, " +
+                $"high {bar.High}, close {bar.Close}, which is a session that could not have traded.");
+        }
+
+        return bar;
+    }
+
+    // value * adjusted / raw, in that order, so the division happens once at the
+    // end rather than on a factor rounded before it is used. Decimal throughout:
+    // a price never passes through double, and a ratio of two prices is not a
+    // statistic, it is the same price expressed after a corporate action.
+    static decimal Adjust(decimal value, decimal adjusted, decimal raw) =>
+        adjusted == raw ? value : Trim(Math.Round(value * adjusted / raw, Places, MidpointRounding.ToEven));
+
+    // Trailing zeros removed, because decimal carries its scale and the storage
+    // form is text: rounding 165.28 to four places would otherwise be written
+    // "165.2800" and read back as a different string for the same number.
+    static decimal Trim(decimal value) =>
+        decimal.Parse(value.ToString("0.####", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
 
     static DateOnly Date(JsonElement entry, string name, string ticker)
     {

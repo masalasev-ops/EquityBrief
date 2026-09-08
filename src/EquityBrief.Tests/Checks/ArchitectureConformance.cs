@@ -76,7 +76,7 @@ public class ArchitectureConformance
         // mean something: over zero passing claims it would hold trivially.
         var passing = Report().Claims.Where(claim => claim.Verdict == Verdict.Pass).ToArray();
 
-        Assert.True(passing.Length >= 6, $"{passing.Length} claims pass, expected at least 6. 7 do at 1.1, and this only grows.");
+        Assert.True(passing.Length >= 14, $"{passing.Length} claims pass, expected at least 14. 20 do at 1.3, and this only grows.");
         Assert.DoesNotContain(passing, claim => claim.By.Length == 0);
     }
 
@@ -215,6 +215,104 @@ public class ArchitectureConformance
     }
 
     [Fact]
+    public void APlanningPassDoesNotLandItsPhaseAndACheckpointDoes()
+    {
+        // The permanent proof, over a constructed record rather than the real
+        // one, because the property has to hold for a phase this repository has
+        // not reached and cannot be shown on a file that has reached none.
+        //
+        // Both directions, and the second is the one that matters most. A
+        // tightening that made this answer no forever would be green today and
+        // wrong at every sign-off from here on, which is the shape of a check
+        // that narrows its own scope and keeps passing.
+        const string planningOnly = """
+            ### 2.0 planning - the pass that settles what phase 2 builds against
+            Not a checkpoint entry. It belongs to 2.0, which has not landed.
+
+            ### 1.2 - the one-year backfill
+            Built:      the backfill.
+            """;
+
+        Assert.False(DuePoints.HasLanded("phase 2", planningOnly));
+        Assert.False(DuePoints.HasLanded("2.0", planningOnly));
+        Assert.True(DuePoints.HasLanded("phase 1", planningOnly));
+
+        const string built = """
+            ### 2.1 - the indicator engine and the averages on the chart
+            Built:      the indicator engine.
+            """;
+
+        Assert.True(DuePoints.HasLanded("phase 2", built));
+        Assert.True(DuePoints.HasLanded("2.1", built));
+
+        // The number is not what tells them apart. An entry headed with a
+        // building checkpoint whose body opens the planning way is a planning
+        // pass, and the old matcher had no way to see that at all.
+        const string numberedLikeACheckpoint = """
+            ### 2.1 - the pass that settles what phase 2 builds against
+            Not a checkpoint entry. It belongs to 2.1, which has not landed.
+            """;
+
+        Assert.False(DuePoints.HasLanded("phase 2", numberedLikeACheckpoint));
+        Assert.False(DuePoints.HasLanded("2.1", numberedLikeACheckpoint));
+    }
+
+    [Fact]
+    public void EveryNightlyStepIsAnsweredByExactlyOneKey()
+    {
+        // The first instance of the prefix class, and the one that had no
+        // guard. Section 14's steps are sentences and the keys are their
+        // openings, matched with StartsWith, so a key that is the opening of
+        // another answers for both and the dictionary's first match wins with
+        // nothing reporting the collision.
+        //
+        // Both directions. Zero matches leaves a step with no due point, which
+        // the caller already refuses; two leaves one answered by the wrong
+        // entry, which nothing saw.
+        var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
+
+        Assert.True(steps.Count >= 8, $"Read {steps.Count} nightly steps, expected at least 8.");
+
+        var ambiguous = steps.Where(step => Scope.NightlyStepKeysMatching(step) != 1).ToArray();
+
+        Assert.True(
+            ambiguous.Length == 0,
+            "These nightly steps are matched by other than exactly one key: " +
+            string.Join("; ", ambiguous.Select(step => $"{step} ({Scope.NightlyStepKeysMatching(step)})")) + ".");
+
+        var unused = Scope.NightlyStepKeys()
+            .Where(key => !steps.Any(step => step.StartsWith(key, StringComparison.Ordinal)))
+            .ToArray();
+
+        Assert.True(
+            unused.Length == 0,
+            "These nightly step keys match no step in the document: " + string.Join("; ", unused) + ".");
+    }
+
+    [Fact]
+    public void TheRecordsOwnEntriesAreReadAsBuiltOrAsPlanning()
+    {
+        // Over the real record, so the reader is exercised against the shapes
+        // the file actually carries rather than only against constructed ones.
+        // A parse returning nothing would pass every assertion above.
+        var built = DuePoints.Built(Corpus.Read("docs/PROGRESS.md"));
+
+        Assert.True(built.Count >= 8, $"Read {built.Count} built checkpoints from PROGRESS, expected at least 8.");
+
+        Assert.Contains("1.1", built);
+        Assert.Contains("1.2", built);
+
+        // The other direction, against a checkpoint far enough out that this
+        // does not have to be edited as the build advances. The first version
+        // of it named 1.3, which was true when it was written and false an hour
+        // later when 1.3's entry landed: a negative direction keyed on the
+        // checkpoint in hand is one that has to be rewritten to stay true, and
+        // one rewritten that often stops being read.
+        Assert.DoesNotContain("6.8", built);
+        Assert.DoesNotContain("9.9", built);
+    }
+
+    [Fact]
     public void TheGeneratedReportNamesTheCheckBehindEveryPass()
     {
         // Over the generated artifact and not over the model. By was populated
@@ -233,7 +331,7 @@ public class ArchitectureConformance
             .Select(claim => claim.GetProperty("by").GetString() ?? string.Empty)
             .ToArray();
 
-        Assert.True(passing.Length >= 6, $"{passing.Length} claims pass in the file, expected at least 6.");
+        Assert.True(passing.Length >= 14, $"{passing.Length} claims pass in the file, expected at least 14.");
         Assert.DoesNotContain(passing, by => by.Length == 0);
 
         Assert.Contains("<th>Reached by</th>", html, StringComparison.Ordinal);
@@ -472,33 +570,185 @@ public class ArchitectureConformance
     }
 
     [Fact]
-    public void MostDuePointsAreDerivedRatherThanWritten()
+    public void EveryOutOfScopeClaimHasExactlyOneOrigin()
     {
         var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
         var report = PhaseReport.Build(tables, NightlyRunSteps.In(File.ReadAllText(Repository.Architecture)));
 
-        var residual = Scope.ResidualSubjects();
-        var checkpoints = PlanCheckpoints.All();
+        var outOfScope = report.Claims.Where(claim => claim.Verdict == Verdict.OutOfScope).ToArray();
 
-        // Not simply "absent from the residual list": the screens tables resolve
-        // by table heading rather than by subject, so their rows are neither
-        // residual nor derived and counting them as derived would inflate this.
-        var derived = report.Claims
-            .Where(claim => claim.Verdict == Verdict.OutOfScope)
-            .Select(claim => claim.Subject)
-            .Distinct(StringComparer.Ordinal)
-            .Count(subject => !residual.Contains(subject, StringComparer.Ordinal)
-                && PlanCheckpoints.DueFor(subject, checkpoints) is not null);
+        var byOrigin = outOfScope
+            .GroupBy(claim => Scope.Resolve(claim.Table, claim.Subject).Origin)
+            .ToDictionary(group => group.Key, group => group.Count());
 
-        // Two scopes. The claims out of scope is a fact about how much of the
-        // system is unbuilt and is context. The property is how many of their
-        // due points the plan supplies, because that is the half a reorder
-        // moves on its own, and a run where it fell to zero would mean the
-        // derivation had quietly stopped resolving anything.
+        int Count(DueOrigin origin) => byOrigin.TryGetValue(origin, out var found) ? found : 0;
+
+        var plan = Count(DueOrigin.Plan);
+        var screens = Count(DueOrigin.Screens);
+        var written = Count(DueOrigin.Residual);
+        var excepted = Count(DueOrigin.Exception);
+
+        // The property, and the reason this replaced a single count. Every claim
+        // out of scope was answered by exactly one of the four, so a claim
+        // answered by none cannot be counted as answered by all of them, and a
+        // sum that does not reach the total means a branch has appeared that
+        // nothing here is measuring.
+        Assert.Equal(0, Count(DueOrigin.Nothing));
+        Assert.Equal(outOfScope.Length, plan + screens + written + excepted);
+
+        // Three scopes, and only one of them is floored.
+        //
+        // The claims out of scope is a fact about how much of the system is
+        // unbuilt. So is the count answered by the plan: every checkpoint that
+        // lands moves claims out of this population, and at phase 6 it is zero
+        // by construction. Neither size is a fact about the property, so the
+        // floor sits far enough below the value that ordinary building never
+        // reaches it, and catches the one thing worth catching: a derivation
+        // that has stopped resolving anything at all.
+        //
+        // The floor that stood here was 40 against a count of 45, and it was
+        // anchored against a population this check no longer has. Fifteen of
+        // those 45 were section 15 rows answered by their table heading, which
+        // the old count read as derived from the plan because the plan's prose
+        // contains their words. Measured by origin the same tree gives 30, so
+        // the old floor did not survive the correction and could not be carried.
         Assert.True(
-            derived >= 40,
-            $"{derived} subjects take their due point from BUILD_PLAN, expected at least 40. " +
-            $"49 did when this floor was set, over {report.Count(Verdict.OutOfScope)} claims out of scope.");
+            plan >= 20,
+            $"{plan} out-of-scope claims take their due point from BUILD_PLAN, expected at least 20. " +
+            $"59 did when this floor was set, over {outOfScope.Length} claims out of scope, " +
+            $"beside {screens} from section 15, {written} written into Scope and {excepted} declared exceptions.");
+    }
+
+    [Fact]
+    public void EveryScreenRowHasItsOwnDuePointAndNoneIsWrittenForARowThatIsGone()
+    {
+        // Contradiction D, in both directions. Keyed on the table heading alone,
+        // a section's rows shared one due point and a row could be added to the
+        // document without anybody deciding when it is owed. Keyed on the row,
+        // omission has to be caught, because a written map is only as current as
+        // the thing it is read against.
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+
+        var screensTables = tables
+            .Where(table => Scope.ScreensTables.Contains(table.Heading, StringComparer.Ordinal))
+            .ToArray();
+
+        var inDocument = screensTables
+            .SelectMany(table => table.Body
+                .Where(row => row.Count > 0)
+                .SelectMany(row => Scope.SubjectsOf(table.Heading, row[0])
+                    .Select(subject => CheckReach.Key(table.Heading, subject))))
+            .ToArray();
+
+        Assert.Equal(Scope.ScreensTables.Length, screensTables.Length);
+
+        // Stated in advance: seven tables, 37 rows, 40 claim subjects, because
+        // the Level chart row decomposes into its four elements. A run finding
+        // none would otherwise pass both directions over an empty set.
+        Assert.Equal(37, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        Assert.Equal(40, inDocument.Length);
+
+        var written = Scope.ScreensKeys();
+
+        var undecided = inDocument.Where(key => !written.Contains(key, StringComparer.Ordinal)).ToArray();
+        var stale = written.Where(key => !inDocument.Contains(key, StringComparer.Ordinal)).ToArray();
+
+        Assert.True(
+            undecided.Length == 0,
+            "These section 15 rows have no due point of their own: " + string.Join("; ", undecided) +
+            ". A row added to the document without one would inherit nothing, and inheriting a " +
+            "table's point is what contradiction D was.");
+
+        Assert.True(
+            stale.Length == 0,
+            "These due points name a section 15 row the document no longer has: " +
+            string.Join("; ", stale) + ".");
+    }
+
+    [Fact]
+    public void EveryDecomposedElementIsNamedByTheRowItDecomposes()
+    {
+        // Contradiction F. A row read as four claims is a decomposition the
+        // document does not carry, so the one thing that keeps it from being a
+        // second statement of the row's content is that each element is read
+        // back out of the row's own description. Rename an element in the
+        // document, or invent one here, and this fails.
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+        var rows = Scope.DecomposedRows();
+
+        Assert.NotEmpty(rows);
+
+        var unnamed = ElementsNotInTheirRow(tables, rows.ToDictionary(
+            key => key, Scope.ElementsOf, StringComparer.Ordinal), out var checkedElements);
+
+        Assert.True(
+            unnamed.Count == 0,
+            "These elements are read as claims and the row they decompose does not name them: " +
+            string.Join("; ", unnamed) +
+            ". A decomposition the document does not carry is a second statement of the row's content.");
+
+        // Stated in advance, and it is the scope carrying the property: four
+        // elements over one row. Zero would pass every assertion above.
+        Assert.Equal(4, checkedElements);
+    }
+
+    [Fact]
+    public void TheCheckReportsAnElementTheRowDoesNotName()
+    {
+        // The permanent proof, over a constructed table rather than the real
+        // one. Three elements are named in the description and one is not, and
+        // the one that is not is the only one reported.
+        var tables = ArchitectureTables.In("""
+            <html><body><h3>15.5 The mark vocabulary</h3><table>
+            <tr><th>Mark</th><th>What it is</th></tr>
+            <tr><td>Level chart</td><td>Daily candles with the level bands shaded behind them and a volume pane beneath.</td></tr>
+            </table></body></html>
+            """);
+
+        var declared = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal)
+        {
+            [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
+                ["candles", "the level bands", "the moving averages", "a volume pane"],
+        };
+
+        var unnamed = ElementsNotInTheirRow(tables, declared, out var checkedElements);
+
+        Assert.Equal(4, checkedElements);
+        Assert.Contains("the moving averages", Assert.Single(unnamed), StringComparison.Ordinal);
+    }
+
+    // Shared by the check and its proof, so the proof exercises the same reader
+    // rather than a copy of it that can drift.
+    static IReadOnlyList<string> ElementsNotInTheirRow(
+        IReadOnlyList<ArchitectureTable> tables,
+        IReadOnlyDictionary<string, IReadOnlyList<string>> declared,
+        out int checkedElements)
+    {
+        var unnamed = new List<string>();
+        checkedElements = 0;
+
+        foreach (var (key, elements) in declared)
+        {
+            var parts = key.Split(CheckReach.Joiner);
+            var table = Assert.Single(tables, candidate => candidate.Heading == parts[0]);
+
+            // The description cell, not the whole table. A phrase found in a
+            // neighbouring row would prove nothing about this one.
+            var row = Assert.Single(
+                table.Body, candidate => candidate.Count > 1 && candidate[0] == parts[1]);
+
+            foreach (var element in elements)
+            {
+                checkedElements++;
+
+                if (!row[1].Contains(element, StringComparison.OrdinalIgnoreCase))
+                {
+                    unnamed.Add($"{key}, {element}");
+                }
+            }
+        }
+
+        return unnamed;
     }
 
     [Fact]

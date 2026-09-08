@@ -1,0 +1,276 @@
+using System.Text.RegularExpressions;
+using EquityBrief.Api.Reading;
+using EquityBrief.Core.Providers;
+using EquityBrief.Core.Time;
+using EquityBrief.Tests.Checks;
+using EquityBrief.Tests.Harness;
+using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
+using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Membership;
+using Microsoft.Data.Sqlite;
+
+namespace EquityBrief.Tests.Reading;
+
+// The read surface, the mark renderer and the page, asserted together because
+// the claim the checkpoint owes runs through all three: the page draws the
+// fixture's sessions, the drawn candle count matches the stored row count, and
+// the API computes nothing.
+public class ReadSurface
+{
+    // What this reaches, declared in the check itself. The three screens claims
+    // are claims about a surface, so they are reached by a check that renders
+    // the surface and reads it back, and never by a declaration.
+    internal static CheckReach Reach => new(
+        "read-surface",
+        ["fixtures/membership-2026-09-05"],
+        [
+            CheckReach.Key("15.4 The two surfaces", "The app"),
+            CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles"),
+            CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane"),
+        ]);
+
+    const string Fixture = "membership-2026-09-05";
+    const string Index = "GSPC";
+    const string Name = "AAPL";
+
+    static readonly DateTimeOffset Instant = new(2026, 9, 5, 21, 10, 0, TimeSpan.Zero);
+
+    static string FixtureFolder() => Path.Combine(Repository.Root, "fixtures", Fixture);
+
+    // The fixture's year in a temporary store. Nothing here reaches data/.
+    static async Task<TemporaryStore> Populated()
+    {
+        var store = new TemporaryStore().Migrated();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new MembershipLoader(
+            RecordedIndexMembershipFeed.FromFile(Path.Combine(FixtureFolder(), "index-constituents.json")),
+            clock,
+            store.DatabaseFile).LoadAsync(Index, "run-0");
+
+        await new Backfill(
+            RecordedHistoricalBarFeed.FromFolder(FixtureFolder()),
+            clock,
+            store.DatabaseFile).RunAsync(Index, "run-1");
+
+        return store;
+    }
+
+    static ReadApi Api(TemporaryStore store) =>
+        new(store.DatabaseFile, FixedClock.At(Instant, SessionZones.UnitedStates));
+
+    // The stored rows for one name, read by a path that is not the API, so the
+    // comparison below is against the store and not against itself.
+    static IReadOnlyList<string> StoredRows(TemporaryStore store, string ticker)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT session_date, open, high, low, close, volume FROM bar " +
+            "WHERE ticker = $ticker ORDER BY session_date;";
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var rows = new List<string>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            rows.Add(string.Join(
+                "|",
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetInt64(5)));
+        }
+
+        return rows;
+    }
+
+    [Fact]
+    public async Task TheApiHandsBackEveryStoredValueUnchanged()
+    {
+        // The done condition's third clause, carried by behaviour rather than
+        // by a source scan. If the API derived any value, adjusted any price or
+        // filled any gap, one of these strings would differ. A scan for
+        // arithmetic would report a pattern; this reports the values.
+        using var store = await Populated();
+
+        var stored = StoredRows(store, Name);
+        var served = await Api(store).BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+
+        Assert.True(stored.Count >= 250, $"The fixture holds {stored.Count} sessions for {Name}, expected at least 250.");
+        Assert.Equal(stored.Count, served.Count);
+
+        // Rendered back into the storage form, so the comparison is against
+        // what the store holds rather than against a parse of it.
+        var round = served.Select(bar => string.Join(
+            "|",
+            bar.SessionDate.ToString("yyyy-MM-dd"),
+            EquityBrief.Data.Money.ToStorage(bar.Open),
+            EquityBrief.Data.Money.ToStorage(bar.High),
+            EquityBrief.Data.Money.ToStorage(bar.Low),
+            EquityBrief.Data.Money.ToStorage(bar.Close),
+            bar.Volume));
+
+        Assert.Equal(stored, round);
+    }
+
+    [Fact]
+    public async Task TheApiServesOnlyTheNameAndRangeItIsAsked()
+    {
+        using var store = await Populated();
+        var api = Api(store);
+
+        var all = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        var first = all[0].SessionDate;
+        var window = await api.BarsAsync(Name, first, first.AddDays(30));
+
+        Assert.NotEmpty(window);
+        Assert.True(window.Count < all.Count, "A thirty-day window returned the whole year.");
+        Assert.All(window, bar => Assert.Equal(Name, bar.Ticker));
+        Assert.All(window, bar => Assert.True(bar.SessionDate <= first.AddDays(30)));
+
+        // A name with no stored series is an empty answer and never an
+        // invention, which is the failure a read surface that computes would
+        // produce here.
+        Assert.Empty(await api.BarsAsync("XRAY", DateOnly.MinValue, DateOnly.MaxValue));
+    }
+
+    [Fact]
+    public async Task TheApiAppendsOneRunLogRowWhenTheSurfaceStarts()
+    {
+        // The W in its matrix row, exercised rather than only declared. The
+        // grain is one row per run per stage, so the same run id twice is a
+        // primary key violation and not a second row.
+        using var store = await Populated();
+
+        await Api(store).RecordStartAsync("read-api-1", "the read surface started");
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM run_log WHERE stage = $stage;";
+        command.Parameters.AddWithValue("$stage", ReadApi.Stage);
+
+        Assert.Equal(1L, (long)command.ExecuteScalar()!);
+
+        await Assert.ThrowsAsync<SqliteException>(
+            () => Api(store).RecordStartAsync("read-api-1", "the same run again"));
+    }
+
+    [Fact]
+    public async Task TheDrawnCandleCountIsTheStoredRowCount()
+    {
+        // The done condition's second clause. Counted off the rendered markup
+        // rather than off the list handed to the renderer, because the claim is
+        // about what the page draws and a renderer that dropped every third bar
+        // would pass a count of its input.
+        using var store = await Populated();
+
+        var served = await Api(store).BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        var svg = new MarkRenderer().LevelChart(Name, Bars(served));
+
+        var candles = Regex.Matches(svg, "class=\"candle\"").Count;
+        var volumes = Regex.Matches(svg, "class=\"volume\"").Count;
+
+        Assert.Equal(StoredRows(store, Name).Count, candles);
+        Assert.Equal(candles, volumes);
+        Assert.True(candles >= 250, $"Drew {candles} candles, expected at least 250.");
+    }
+
+    [Fact]
+    public async Task EverySessionIsDrawnAndNoneIsInvented()
+    {
+        // Stronger than the count, and it is the assertion that survives a
+        // renderer drawing the right number of the wrong days.
+        using var store = await Populated();
+
+        var served = await Api(store).BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        var svg = new MarkRenderer().LevelChart(Name, Bars(served));
+
+        var drawn = Regex.Matches(svg, "<g class=\"candle\" data-session=\"([0-9-]+)\"")
+            .Select(match => match.Groups[1].Value)
+            .ToArray();
+
+        Assert.Equal(served.Select(bar => bar.SessionDate.ToString("yyyy-MM-dd")), drawn);
+    }
+
+    [Fact]
+    public void ACandleIsHollowWhenItRoseAndFilledWhenItFell()
+    {
+        // Neutral ink either way. Section 15.6 forbids the two hues here by
+        // name, so the assertion is that neither appears rather than only that
+        // the fill differs.
+        var svg = new MarkRenderer().LevelChart("TEST",
+        [
+            new ChartBar(new DateOnly(2026, 9, 1), 10m, 12m, 9m, 11m, 100),
+            new ChartBar(new DateOnly(2026, 9, 2), 11m, 12m, 8m, 9m, 120),
+        ]);
+
+        var bodies = Regex.Matches(svg, "<rect x=\"[^\"]+\" y=\"[^\"]+\" width=\"[^\"]+\" height=\"[^\"]+\" fill=\"([^\"]+)\"")
+            .Select(match => match.Groups[1].Value)
+            .ToArray();
+
+        Assert.Equal(2, bodies.Length);
+        Assert.Equal("none", bodies[0]);
+        Assert.Equal("var(--ink, #1c1c1c)", bodies[1]);
+
+        Assert.DoesNotContain("green", svg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("orange", svg, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AChartOverTooFewBarsStatesItsBarCountRatherThanDrawing()
+    {
+        // Section 15.5's degradation rule. A sparse series must never look like
+        // a quiet one, so the mark says what it has.
+        var renderer = new MarkRenderer();
+
+        var none = renderer.LevelChart("TEST", []);
+        var one = renderer.LevelChart("TEST", [new ChartBar(new DateOnly(2026, 9, 1), 10m, 12m, 9m, 11m, 100)]);
+
+        Assert.DoesNotContain("<svg", none, StringComparison.Ordinal);
+        Assert.Contains("0 stored sessions", none, StringComparison.Ordinal);
+        Assert.Contains("1 stored session,", one, StringComparison.Ordinal);
+        Assert.Contains($"at least {MarkRenderer.FewestBars}", one, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AFlatSeriesDrawsRatherThanDividingByZero()
+    {
+        // A name that traded at one price for every session in the window is a
+        // real series and the obvious scaling divides by its range.
+        var svg = new MarkRenderer().LevelChart("TEST",
+        [
+            new ChartBar(new DateOnly(2026, 9, 1), 10m, 10m, 10m, 10m, 0),
+            new ChartBar(new DateOnly(2026, 9, 2), 10m, 10m, 10m, 10m, 0),
+        ]);
+
+        Assert.Equal(2, Regex.Matches(svg, "class=\"candle\"").Count);
+        Assert.DoesNotContain("NaN", svg, StringComparison.Ordinal);
+        Assert.DoesNotContain("Infinity", svg, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheShellRoutesOnTheHashAndDrawsNothingItself()
+    {
+        // Section 15.4 puts the shell and the marks on the server. What the
+        // page may do is ask for a mark; what it may not do is build one, so
+        // the assertion is that no drawing element appears in the shell.
+        var shell = new SinglePageApp().Shell("EquityBrief");
+
+        Assert.Contains(SinglePageApp.NameRoute, shell, StringComparison.Ordinal);
+        Assert.Contains("/marks/level-chart/", shell, StringComparison.Ordinal);
+        Assert.DoesNotContain("<svg", shell, StringComparison.Ordinal);
+        Assert.DoesNotContain("<rect", shell, StringComparison.Ordinal);
+    }
+
+    static ChartBar[] Bars(IReadOnlyList<BarRow> served) =>
+        [.. served.Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))];
+}

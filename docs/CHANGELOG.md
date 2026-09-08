@@ -507,3 +507,107 @@ Now: two rows are added to the table, due at 1.6 and 1.7, which are the checkpoi
 Each done condition gains the clause that its fixture is a captured provider response rather than a constructed one, and each section gains a paragraph saying the feed is captured when the checkpoint opens rather than after the parser is written.
 
 Why: the row has to name the defect because the task is the easy half. "Capture the news feed" reads as a chore and gets done late or partly; "the parser is checked against itself" says what is wrong now, so a session that writes the parser first has broken something rather than deferred something. The ordering matters for the same reason: a fixture written after the parser is a transcript of what the parser already expects, whichever session writes it. Ten weighted calls found a defect that two checkpoints of green had not.
+
+### 2026-09-08 - SCHEMA.md - the four prices are one adjusted set, and the raw close is kept
+Corrects: 1.2 stored the provider's adjusted close beside its unadjusted open, high and low. The decision named **The stored series is adjusted** says one price set per bar and it is the adjusted one; a bar holding three raw prices and one adjusted price is a mixed set. 96 of the 756 stored fixture bars carried a close outside their own low and high, and nothing looked. Found at 1.3, by needing to draw a candle from one.
+
+Was:
+> | `open`, `high`, `low`, `close` | TEXT | decimal in code |
+> | `volume` | INTEGER | |
+> | `source` | TEXT | which endpoint delivered it |
+> | `observed_at` | TEXT | UTC instant |
+
+Now: the price row reads "decimal in code, and one adjusted price set", a `raw_close` column is added after `observed_at`, and two paragraphs state that the other three prices are scaled by the same factor and that the raw close is kept because it is the input to that factor.
+
+Why: the provider adjusts the close alone, so passing the other three through stores a bar that could not have traded. The raw close is kept rather than discarded because the factor is the adjusted close over the raw one, and a store holding only the output cannot recompute or audit it after a later restatement moves it; the corporate action checker's refetch is what moves it. The column sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
+
+### 2026-09-08 - CLAUDE.md - bar-bounds added to the roster, and nightly-cost re-pointed to 1.4
+Corrects: two defects. The roster had no check asserting that a stored bar could have traded, which is why 96 impossible bars survived a checkpoint. And `nightly-cost` was rostered "from 1.3" while `BUILD_PLAN.md` implements it at 1.4, so `coverage-reported` would have refused the 1.3 record: its rule is that a "from" row names a checkpoint `PROGRESS.md` does not yet record. Found by reading the roster against the plan before writing the 1.3 entry.
+
+Was:
+> | `nightly-cost` | from 1.3 | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run |
+
+Now: the same row reads `from 1.4`, and a new row is added beneath `bar-append-only`:
+
+> | `bar-bounds` | every CI run | Every stored bar has its low at or below its open and its close and its high at or above both, and carries the raw close its adjustment factor came from |
+
+Why: 1.4 is the checkpoint that builds the nightly path, so it is the first point at which the nightly cost can be asserted over a recorded run; 1.3 was the old ordering. And the finding at 1.3 was not the mixed price set, which is one arithmetic error in one component. The finding was that a bar could be internally impossible and no instrument asked, so the repair is a property asserted over the store on every run rather than a test beside the arithmetic that happens to produce it.
+
+### 2026-09-08 - BUILD_PLAN.md - contradiction F names the checkpoint that draws each element
+Corrects: 1.3's resolution said the bands and the moving averages both stay out of scope until 2.4, and 2.1 says "The chart from 1.3 extended in place with the average lines drawn" with a done condition requiring it. The averages are drawn at 2.1 and only the bands at 2.4, so the resolution deferred one element by three checkpoints past the one that builds it. Found while reading 1.3 against phase 2.
+
+Was:
+> Contradiction F resolved per element rather than per mark: candles and the volume pane are asserted at 1.3, and the bands and the moving averages stay out of scope until 2.4.
+
+Now:
+> Contradiction F resolved per element rather than per mark, and each element named at the checkpoint that draws it: candles and the volume pane are asserted at 1.3, the moving averages at 2.1 and the bands at 2.4.
+
+Why: the whole point of resolving F per element is that an element is asserted where it exists. Naming 2.4 for both defeats that for the averages, which draw a checkpoint into phase 2 and would have sat out of scope for three checkpoints after the code was there.
+
+### 2026-09-08 - BUILD_PLAN.md - contradiction D resolved, and the floor it stood on replaced
+Corrects: `Scope.Screens` answered on the table heading, so every row of a section shared one due point and "The exported report" was owed at the chart checkpoint because it sits in the same two-row table as "The app". Resolved at 1.3.
+
+Was:
+> | D | `Scope.Screens` keys on the table heading, so a phase 5 export claim is forced to be asserted at the chart checkpoint. This is the 0.7 repair of `Scope.For` failing to sweep, not a new contradiction | 1.3 |
+
+Now: the same row, with **Resolved at 1.3** and the shape of the resolution, keyed on the table and the row together with all 37 rows of section 15 reconciled against the document in both directions.
+
+Why: the sweep the 1.3 text promised found one more instance of the same defect and it was in the measurement rather than in the map. `MostDuePointsAreDerivedRatherThanWritten` counted a subject as derived from the plan when the subject was absent from the residual list and the plan could name it, which is a question about capability rather than about which branch ran. Fifteen section 15 rows are headed in ordinary English, "The table", "The chart", "Filters", "Walk", so a whole-word search of the plan's prose finds them by coincidence; all fifteen were counted as derived while a table heading supplied their due point. The floor of 40 sat under a count of 45 of which a third was miscounted, so it could not be carried across the re-key: a floor carried across a redefinition of what it counts is a floor that means something else. The count is now taken by origin, per claim rather than per distinct subject, because a subject appearing in two tables is two claims with two verdicts and counting subjects under-counted the population the partition is about. The property moved with it: the four origins are asserted to sum to the claims out of scope, so a claim answered by none cannot pass as answered, and the floor is 20 on the plan's share, far below the 50 measured, because that share falls to zero by construction as the system is built and its size is a fact about how much is built rather than about the derivation.
+
+### 2026-09-08 - BUILD_PLAN.md - contradiction F resolved in the harness's reading, not in the table
+Corrects: section 15.5's Level chart row names four elements drawn at three different points, and one verdict over the row held what exists hostage to what does not until phase 2. Resolved at 1.3.
+
+Was:
+> | F | Section 15.5's Level chart mark names four elements, candles, bands, moving averages and a volume pane, and two of them cannot exist until phase 2, while the phase table puts a chart in phase 1 | 1.3 |
+
+Now: the same row, with **Resolved at 1.3** and the shape of the resolution, the row read as four claims in the harness rather than split into four rows in the document, with each element asserted to appear in the row's own description.
+
+Why: splitting the row was the obvious repair and it is the wrong one. Section 15.5 opens by stating seven marks over a table of seven rows, so four rows would leave the document disagreeing with itself, and it would turn one mark into four in a vocabulary whose stated point is that a mark is defined once and every screen draws from the list. So the document keeps one row and the harness reads it as four claims, `Level chart, candles` and `Level chart, a volume pane` at 1.3, `Level chart, the moving averages` at 2.1 and `Level chart, the level bands` at 2.4.
+
+What keeps that from being a second statement of the row's content is that each element phrase is read back out of the row's own description cell, so an element renamed in the document or invented in the harness fails, with a permanent proof over a constructed table where one of four elements is absent. And `stated-counts` now reads the opening sentence's count against the table's rows, so the repair this entry rejects fails too rather than being available to a later session as the obvious thing to do. The claim total moves from 162 to 165, which is the figure Pass B predicted for this decomposition against the base it had then.
+
+### 2026-09-08 - BUILD_PLAN.md - three specification holes filed, and two checkpoints that were counting their own
+Corrects: three holes found by reading a hand-written report for another name against the corpus, and named only in conversation. A finding named only in conversation is one that dies with it. Filed at 1.3 against the passes that own them, and nothing here is built now.
+
+The three are added to the holes table, grouped by settling point: whether a heavy volume shelf creates a band or only ranks one, at 2.0; whether the calendar holds events that are not earnings, at 3.0; and how a tranche condition that depends on a researched fact reaches the tranche, at 3.0.
+
+The first matters because section 9.1 lists shelves as one of four candidate sources that create bands, and a price range holding heavy volume with no swing, average or retracement is a band under that reading and invisible under one where shelves only rank. The second because a book keyed to one date cannot carry two, and non-earnings events are news-derived rather than fetched. The third because the ladder builder's matrix row gives it levels, indicators and the calendar, and a researched fact reaches it through none of those.
+
+Was, at 2.0:
+> Settles the volume profile's window, and which two swings the retracements are drawn between. Confirms the checkpoint split below against the size the work turns out to be.
+
+Was, at 3.0:
+> The heaviest planning pass in the project, because four holes settle here and one of them is a missing component.
+>
+> Also settles the trend classifier's rule, which tranche condition applies when, the share of size per tranche, and the earnings setups' four elements each. None of these is inferable from what is written, and all four decide what the plan section says.
+
+Now: each points at the holes table rather than restating a subset of it, and 3.0 states no count at all.
+
+Why: a hole is only useful if the pass that owns it reads it, and both passes were listing their own. 2.0 named two of the three it is now assigned and 3.0 named four and stated "four holes settle here", so filing a hole against either would have left the checkpoint text describing the old set. This is the same defect the due points had before Pass B derived them from the plan: one fact written in two places, where the second copy is the one that goes stale and nothing reconciles them. The repair is the same move, pointing at the one statement rather than repeating it, and it removes a stated count that `stated-counts` would otherwise have to be taught to assert.
+
+### 2026-09-08 - ARCHITECTURE.html - two notes naming where an open question is settled
+Corrects: two places the document reads as settled and is not. Both are additions, so nothing is removed and no prior text is owed; they are recorded here because a note that names a settling point is a claim about the plan and belongs in the record with the rows it points at.
+
+Section 9.1's key gains, after the paragraph on the volume shelf:
+> Whether a heavy volume shelf creates a band or only strengthens one built by the other three is settled at 2.0 and is not decided here. The two readings produce different band sets, so the level builder differs depending which is taken.
+
+Section 10's key gains, at the end:
+> The second book is keyed to dated events, of which an earnings print is one. Whether it carries events that are not prints, and where those come from, is settled at 3.0.
+
+Why: 9.1's figure lists heavy volume shelves alongside swings, averages and retracements as the candidates that create bands, and its key then argues the shelf's importance without saying whether it creates or only strengthens. A reader building the level builder at 2.4 would take the figure literally, and that is a different component from the one a reader of the ranking reading would build. Section 10 names the second book the earnings trade throughout, which reads as a book keyed to prints rather than to dated events of which a print is one kind. Naming the settling point is the smallest edit that stops either being read as decided, and it leaves the decision where the plan already puts it.
+
+### 2026-09-08 - CLAUDE.md - prefix matching named as a shape to sweep for
+Corrects: nothing removed. A rule is added to the Verification list, which is where rules taken from what has gone wrong elsewhere live, and this one is taken from what has gone wrong here four times.
+
+Now, added at the end of that list:
+> A matcher keyed on a prefix answers about everything sharing that prefix. Where a key is the opening of a value rather than the whole of it, the property is that exactly one key matches, asserted in both directions rather than left to the order a dictionary happens to yield. This is a shape to sweep for rather than a defect to fix one instance at a time: it has arrived four times, as the nightly step keys, as a subject matched without its table, as a phase read as landed from any heading beginning with its number, and as a roster row retired by a heading whose entry said it was not a checkpoint.
+
+Why: the four are one defect wearing four faces, and each was found by tripping over it rather than by looking. The third was a live defect with no symptom, which is the state that carries one past the point where it bites: `HasLanded("phase 2")` matched the bare string `### 2.`, so the pass that plans phase 2 would have read as phase 2 having landed and failed every claim still owed at it, and the existing `### 1.1 planning` entry already answered that question true for phase 1 with nothing noticing, because nothing is due at bare "phase 1". Written as a rule, the next instance is found by the sweep it names rather than by the failure it causes.
+
+### 2026-09-08 - CLAUDE.md - read-surface added to the roster
+Corrects: nothing removed. A row is added to the checks table for the check 1.3 built.
+
+Now, added above `ci-parity`:
+> | `read-surface` | every CI run | The read API hands back every stored value unchanged, and the page draws one candle and one volume bar per stored session, matched session by session against the store |
+
+Why: three claims in section 15 are claims about a surface, and a surface is not something a declaration can assert. `component-access` reaches the read API, the mark renderer and the app as components, which says what each may touch and nothing about what the page draws. So the drawn claims are reached by a check that renders the surface and reads it back, and the reconciliation refused that check's name until it was on the roster with a declared reach, which is the fiat guard working on the session that wrote it.

@@ -1529,3 +1529,111 @@ Found:      why the collapse in the entry above matters beyond the assertion tha
 Verified:   `tools/ci.ps1` green, 178 tests, up from 175. `tools/verify-phase.ps1` green: 162
             claims, 11 pass, 0 fail, 151 out of scope, 0 unexamined, 18 reconciled against a
             floor of 12. No floor was raised. This entry was written before that run.
+
+### 1.3 - the read surface, the mark renderer and the chart                  2026-09-08
+Built:      `ReadApi` in `EquityBrief.Api`, serving a name's bars over a date range, ordered by
+            session and otherwise untouched. `MarkRenderer` in `EquityBrief.Web`, the level
+            chart mark as a server-rendered SVG string. `SinglePageApp`, the shell that routes
+            on the hash and draws nothing itself. Three routes: the shell at `/`, the mark at
+            `/marks/level-chart/{ticker}`, and one run log row when the surface starts.
+
+            Migration 4 adding `bar.raw_close`, and the bar adjustment that made it necessary:
+            open, high and low are scaled by `adjusted_close / close` so all four prices are one
+            adjusted set. `bar-bounds` on the roster, and `read-surface` with it.
+
+Elements:   this is the level chart mark with two of its four elements absent, which the
+            checkpoint requires be stated. Present: the candles and the volume pane, on a shared
+            time axis. Absent: the moving averages, which arrive at 2.1 with the indicator
+            engine, and the level bands, which arrive at 2.4 with the level builder. Both are
+            drawn into this same file rather than into a second one, which is the whole reason
+            this is not a temporary chart.
+
+Measured:   over the fixture's 3 names holding a series, 756 stored bars. For AAPL, 253 stored
+            sessions, 253 candles drawn and 253 volume bars drawn, matched session by session
+            against the store rather than counted. Every value the API returns rendered back
+            into the storage form and compared string for string against the rows a second
+            query read: 253 of 253 identical.
+
+            The report: 165 claims, 20 pass, 0 fail, 145 out of scope, 0 unexamined, 25 tables,
+            27 placements and verdicts reconciled against a floor of 20. 202 tests. `tools/ci`
+            green on Windows PowerShell and on bash on this machine; the macOS runner is the
+            matrix and is carried as it has been since 0.4.
+
+Predicted:  stated before the run. 18 passing claims expected and 20 measured. The two extra are
+            the single page app's catalogue and matrix rows, whose due point in `Scope` still
+            said 1.6, left over from the ordering `8ac2442` replaced: 1.6 is the corporate action
+            checker and has nothing to do with a page. It is one of the fifteen stale due points
+            Pass B set out to correct and the one that was not corrected, and it survived because
+            it is a written residual rather than a derived one, so nothing compares it to
+            anything. Corrected here and the claims reached rather than re-dated.
+
+Floors:     two raised, each with the count expected before the run and the count produced.
+            `Reconciliation.Floor` from 12, expected to reconcile about 25 and measured 27, set
+            to 20. The passing-claims floor from 6, expected 18 and measured 20, set to 14. Both
+            sit below the measured value rather than at it, because a floor set to what the run
+            produced is a floor that can never fail.
+
+Derived:    the third derivation of the same figures, and only this one is a defect in stored
+            values. The first changed what the fixture was, replacing a seeded walk with captured
+            bars. The second changed it again, trimming the captured constituents. This one
+            changed what the code did to the fixture: 1.2 stored the provider's adjusted close
+            beside its unadjusted open, high and low, so 96 of 756 stored bars carried a close
+            outside their own low and high. The first two moved a number because the input moved,
+            which is a fixture being corrected. This one moved a number because the arithmetic was
+            wrong, which is a defect in what the store held, and it was found by needing to draw a
+            candle from a bar rather than by any check asking.
+
+            That is the finding rather than the mixed price set. A bar could be internally
+            impossible and no instrument looked, so the repair is `bar-bounds` over every stored
+            bar on every CI run, with a planted violating bar as its permanent proof, rather than
+            a test beside the arithmetic that happens to produce it.
+
+Resolved:   contradiction D, `Scope.Screens` keyed on the table and the row together, with all 37
+            rows of section 15 reconciled against the document in both directions. The sweep it
+            promised found the same defect in the measurement: the derived count asked whether a
+            subject was absent from the residual list and whether the plan could name it, which is
+            a question about capability rather than about which branch ran, and 15 of its 45 were
+            section 15 rows answered by a table heading while the plan's prose happened to contain
+            their words. Measured by origin the same tree gives 30, so the floor of 40 could not be
+            carried and was replaced by a partition: the four origins sum to the claims out of
+            scope, and the plan's share is floored at 20 against 50 measured.
+
+            Contradiction F, per element rather than per mark. The row is read as four claims in
+            the harness rather than split into four rows in the document, because 15.5 opens by
+            stating seven marks over seven rows and a split would leave the document disagreeing
+            with itself. Each element is read back out of the row's own description, so an element
+            renamed there or invented here fails, and `stated-counts` now reads the opening
+            sentence against the table so the split fails too.
+
+Class:      prefix matching, named as a shape to sweep for rather than a defect to fix one
+            instance at a time. A matcher keyed on a prefix answers about everything sharing that
+            prefix, and it has now arrived four times: the nightly step keys, a subject matched
+            without its table, a phase read as landed from any heading beginning with its number,
+            and a roster row retired by a heading whose entry said it was not a checkpoint. The
+            third was live with no symptom, which is the state that carries a defect past the
+            point where it bites: a PROGRESS entry headed `### 2.0 planning` would have read as
+            phase 2 having landed and failed every claim still owed at it, and `### 1.1 planning`
+            already answered it true for phase 1 with nothing noticing, because nothing is due at
+            bare "phase 1". The rule is now in `CLAUDE.md`'s Verification list rather than here.
+
+Proved:     four checks caught defects in this checkpoint's own code before any of it was
+            committed. `clock-usage` found a `DateOnly.ParseExact` with a null format provider,
+            which parses against the machine's locale. `decision-resolves` found three cited
+            decision names that do not exist, all three of them plausible paraphrases of names
+            that do. And the reconciliation refused `read-surface` as a verdict's instrument
+            until it was a rostered check with a declared reach, which is the fiat guard working
+            on the session that wrote it.
+
+Carried:    the fixture's expectations for this checkpoint, to 1.8, where the corpus already
+            places phase 1's expectations and where `19.1 What a fixture holds` is owed. What 1.3
+            contributes to that obligation is the derived half rather than a frozen figure: the
+            drawn candle count is derived from the stored rows on every run rather than compared
+            against a number written down once, so the expectation moves when the fixture moves.
+            It lives in the suite until 1.8 gives the fixture a place to hold it.
+
+            The macOS runner, as before. And the run log grain question, which this checkpoint
+            answered narrowly: the read surface appends one row per process start, stage
+            `read-api`, because SCHEMA's grain is one row per run per stage and a row per served
+            request would break the key and would grow the operational record by something that is
+            not an operation. A later checkpoint that wants a per-request record needs a different
+            table, not a looser grain.

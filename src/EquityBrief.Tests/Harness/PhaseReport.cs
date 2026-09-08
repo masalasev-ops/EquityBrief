@@ -187,9 +187,14 @@ internal static class PhaseReport
                 continue;
             }
 
+            // A row is one claim unless it decomposes. Contradiction F: section
+            // 15.5's Level chart names four elements drawn at three different
+            // points, and one verdict over the row would hold what exists
+            // hostage to what does not until phase 2.
             var rows = table.Body
                 .Where(row => row.Count > 0 && row[0].Length > 0)
-                .Select(row => Scoped(table.Heading, row[0]))
+                .SelectMany(row => Scope.SubjectsOf(table.Heading, row[0]))
+                .Select(subject => Scoped(table.Heading, subject))
                 .ToArray();
 
             claims.AddRange(rows);

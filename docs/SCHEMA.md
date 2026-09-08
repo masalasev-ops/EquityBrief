@@ -85,12 +85,19 @@ Grain: one row per ticker per session.
 |---|---|---|
 | `ticker` | TEXT | |
 | `session_date` | TEXT | date |
-| `open`, `high`, `low`, `close` | TEXT | decimal in code |
+| `open`, `high`, `low`, `close` | TEXT | decimal in code, and one adjusted price set |
 | `volume` | INTEGER | |
 | `source` | TEXT | which endpoint delivered it |
 | `observed_at` | TEXT | UTC instant |
+| `raw_close` | TEXT | decimal in code, the provider's unadjusted close |
 
 Primary key: `ticker`, `session_date`.
+
+**The four prices are one set and it is the adjusted one** (see: The stored series is adjusted). The provider adjusts the close alone, so the other three are scaled by the same factor before they are stored. A bar holding three raw prices beside one adjusted price is a bar that could not have traded, and 1.2 stored 96 of 756 fixture bars whose close fell outside their own low and high.
+
+**`raw_close` is the input to that factor, which is why it is kept.** The factor is the adjusted close over the raw one, and a store holding only the adjusted set cannot recompute or audit it after a later restatement moves it. The corporate action checker's refetch is what moves it, so the component that rewrites a year needs the input to the arithmetic and not only its output. It is written by whichever component writes the bar and is never read by the arithmetic that draws or computes: those read the adjusted set.
+
+It sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
 
 One year retained. The fetcher drops sessions older than the retention window on the night they fall out of it.
 

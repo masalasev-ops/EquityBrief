@@ -52,8 +52,8 @@ public sealed class Backfill(
     // Insert only. Bars are append-only, so a name already holding a session
     // keeps what it has rather than having it rewritten.
     const string InsertBar = @"
-        INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at)
-        VALUES ($ticker, $session_date, $open, $high, $low, $close, $volume, $source, $observed_at)
+        INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close)
+        VALUES ($ticker, $session_date, $open, $high, $low, $close, $volume, $source, $observed_at, $raw_close)
         ON CONFLICT (ticker, session_date) DO NOTHING;
     ";
 
@@ -114,6 +114,11 @@ public sealed class Backfill(
                 Money.Bind(insert, "$high", bar.High);
                 Money.Bind(insert, "$low", bar.Low);
                 Money.Bind(insert, "$close", bar.Close);
+
+                // The unadjusted close, which is the input to the factor the
+                // other four came through. Stored so a later restatement can be
+                // audited against what the provider said at the time.
+                Money.Bind(insert, "$raw_close", bar.RawClose);
 
                 insert.Parameters.AddWithValue("$volume", bar.Volume);
                 insert.Parameters.AddWithValue("$source", Source);

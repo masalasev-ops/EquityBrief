@@ -160,9 +160,11 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `build-properties-central` | every CI run | No project file states a target framework or a warning setting of its own, and `src/Directory.Build.props` states both |
 | `api-isolation` | every CI run | `EquityBrief.Api` has no transitive reference to `EquityBrief.Worker`, read from the compiled dependency file |
 | `bar-append-only` | every CI run | Nothing in the shipped source deletes or updates a bar table, and no migration deletes, updates or drops one |
+| `bar-bounds` | every CI run | Every stored bar has its low at or below its open and its close and its high at or above both, and carries the raw close its adjustment factor came from |
+| `read-surface` | every CI run | The read API hands back every stored value unchanged, and the page draws one candle and one volume bar per stored session, matched session by session against the store |
 | `ci-parity` | every CI run | `tools/ci.ps1` and `tools/ci.sh` run the same steps in the same order, and a step that fails fails the script it runs in |
 | `two-platform` | the matrix | The suite passes on both windows and macos runners |
-| `nightly-cost` | from 1.3 | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run |
+| `nightly-cost` | from 1.4 | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run |
 | `fixture-replay` | from 2.1 | The pipeline over the committed fixture matches every expectation, with every figure it produces named by one |
 | `listings-coverage` | from 4.1 | A listings row exists for every index member on every night the run completed |
 | `claim-admissibility` | from 5.1 | A poisoned paragraph, an unsourced claim, and each inadmissible document class are refused, and nothing resting on them is written |
@@ -220,6 +222,7 @@ Rules that exist before anything has gone wrong, taken from what has gone wrong 
 - A claim that something is visible is a claim about a surface. Where a property is asserted to be stated, recorded on every row, or shown, the assertion names the surface a person reads it on and checks that surface.
 - A green report is a statement about the build and never about the running system. Where a property is about the running system, being what the store holds or what the night produced, it is asserted by a guard the code carries so the fault refuses instead of passing, and by a figure a person reads on the morning it happens.
 - A guard over a population states which population, and where a check has two paths, they are one loop or the split is the thing asserted.
+- A matcher keyed on a prefix answers about everything sharing that prefix. Where a key is the opening of a value rather than the whole of it, the property is that exactly one key matches, asserted in both directions rather than left to the order a dictionary happens to yield. This is a shape to sweep for rather than a defect to fix one instance at a time: it has arrived four times, as the nightly step keys, as a subject matched without its table, as a phase read as landed from any heading beginning with its number, and as a roster row retired by a heading whose entry said it was not a checkpoint.
 
 **Two of these are specific to this tool and worth naming separately.** A verification figure computed over listed names only is a figure over the wrong population, because a listings row exists for every name. And a check that reads the live store is a check whose result depends on last night, which is a different instrument from the one this corpus builds; nothing in the harness reaches `data/`.
 
