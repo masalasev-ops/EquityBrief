@@ -1,3 +1,4 @@
+using EquityBrief.Core.Providers;
 using EquityBrief.Tests.Harness;
 
 namespace EquityBrief.Tests.Checks;
@@ -142,6 +143,155 @@ public class FixtureManifestTests
         Assert.Equal("ABSENT", absent.State);
         Assert.Equal(0, absent.Folders);
         Assert.Contains("never a pass", absent.Note, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ConstituentsAndNamesAreCountedSeparatelyAndAreNotTheSamePopulation()
+    {
+        // The distinction, asserted rather than described.
+        //
+        // fixtures/README.md says a fixture counts two things and that phase 2's
+        // "widens to four names" means the second. A distinction that lives only
+        // in prose is one a later session reads past, and this one is positioned
+        // to be misread: the phase 2 sentence says four and this fixture holds
+        // five constituents, so a reader who has not been told they are
+        // different populations sees an obligation already met.
+        var status = Fixtures.Of(Repository.Root);
+        var membership = status.Populations.Single(one => one.Constituents > 0);
+
+        // Different populations, and different in the direction the rule
+        // predicts. Not merely two numbers that happen to differ: names is a
+        // proper subset of constituents, so the counts cannot be made equal by
+        // adding a series for a name that is not in the index.
+        Assert.True(
+            membership.Distinguishable,
+            $"{membership.Fixture} holds {membership.Constituents} constituents and " +
+            $"{membership.Names} names. Equal counts make the two indistinguishable on the " +
+            "phase report, which is where the difference has to be legible.");
+
+        Assert.True(membership.Names < membership.Constituents);
+        Assert.NotEmpty(membership.WithoutSeries);
+
+        // And the rule that makes them differ, which is the one that matters:
+        // a constituent with no captured series is a name the backfill would not
+        // fetch, meaning one that has left. A current member with no series is a
+        // fixture fault rather than a smaller population, because the backfill
+        // refuses a current member it has no capture for, so this would fail as
+        // a refusal at 1.2 rather than as a count here.
+        Assert.Equal(membership.Departed, membership.WithoutSeries);
+
+        // No orphan series either, in the other direction: a bars file naming a
+        // ticker that is not a constituent is a name the pipeline never asks
+        // for, and it would inflate the names count against nothing.
+        var constituents = RecordedIndexMembershipFeed
+            .Parse(File.ReadAllText(Path.Combine(
+                Repository.Root, "fixtures", membership.Fixture, "index-constituents.json")), "GSPC")
+            .Select(one => one.Ticker)
+            .ToHashSet(StringComparer.Ordinal);
+
+        foreach (var file in Directory.GetFiles(
+            Path.Combine(Repository.Root, "fixtures", membership.Fixture), "bars-*.json"))
+        {
+            var ticker = Path.GetFileNameWithoutExtension(file)["bars-".Length..];
+
+            Assert.True(constituents.Contains(ticker), $"bars-{ticker}.json names no constituent.");
+        }
+    }
+
+    [Fact]
+    public void TheTwoCountsAreCountedFromTheFolderAndNotFromEachOther()
+    {
+        // The counting proved against planted folders rather than only against
+        // the committed fixture, which has one shape and would let a counter
+        // that returned the same number twice pass.
+        using var root = new TemporaryDirectory();
+
+        // Three constituents, one of them departed, and a series for two.
+        var folder = Planted(root.Path, "three-2026-01-01", ["ONE", "TWO"], Departed: "OUT");
+        var populations = Fixtures.Populations(folder);
+
+        Assert.Equal(3, populations.Constituents);
+        Assert.Equal(2, populations.Names);
+        Assert.Equal(["OUT"], populations.Departed);
+        Assert.Equal(["OUT"], populations.WithoutSeries);
+        Assert.True(populations.Distinguishable);
+
+        // The counter-test, which is what stops the assertion above from being
+        // satisfied by a check that always reports a difference: give the
+        // departed name a series too and the two counts agree.
+        File.WriteAllText(Path.Combine(folder, "bars-OUT.json"), "[]");
+        var equal = Fixtures.Populations(folder);
+
+        Assert.Equal(3, equal.Constituents);
+        Assert.Equal(3, equal.Names);
+        Assert.False(equal.Distinguishable);
+        Assert.Empty(equal.WithoutSeries);
+
+        // And an orphan series counts as a name while naming no constituent,
+        // which is the case the committed fixture cannot produce and the one
+        // that would inflate the smaller population against nothing.
+        File.WriteAllText(Path.Combine(folder, "bars-GHOST.json"), "[]");
+        var orphaned = Fixtures.Populations(folder);
+
+        Assert.Equal(3, orphaned.Constituents);
+        Assert.Equal(4, orphaned.Names);
+        Assert.Equal(["OUT"], orphaned.Departed);
+
+        // A folder with no membership payload counts zero constituents and its
+        // names still count, which is the gap fixture's shape at 1.5.
+        var series = Path.Combine(root.Path, "fixtures", "gap-2026-01-01");
+        Directory.CreateDirectory(series);
+        File.WriteAllText(Path.Combine(series, "bars-ONE.json"), "[]");
+
+        var only = Fixtures.Populations(series);
+
+        Assert.Equal(0, only.Constituents);
+        Assert.Equal(1, only.Names);
+    }
+
+    // A fixture folder with a membership payload in the provider's shape and a
+    // series file per named ticker. Written outside the repository, so nothing
+    // here can pass by reading the committed fixture.
+    static string Planted(string root, string name, string[] withSeries, string Departed)
+    {
+        var folder = Path.Combine(root, "fixtures", name);
+        Directory.CreateDirectory(folder);
+
+        var rows = withSeries
+            .Select((ticker, index) =>
+                $$"""
+                  "{{index}}": { "Code": "{{ticker}}", "StartDate": "2010-01-04", "EndDate": null }
+                  """)
+            .Append($$"""
+                      "{{withSeries.Length}}": { "Code": "{{Departed}}", "StartDate": "2010-01-04", "EndDate": "2024-04-03" }
+                      """);
+
+        File.WriteAllText(
+            Path.Combine(folder, "index-constituents.json"),
+            $$"""{ "HistoricalTickerComponents": { {{string.Join(",", rows)}} } }""");
+
+        foreach (var ticker in withSeries)
+        {
+            File.WriteAllText(Path.Combine(folder, $"bars-{ticker}.json"), "[]");
+        }
+
+        return folder;
+    }
+
+    [Fact]
+    public void TheFolderDescriptionStatesTheTwoCountsAndBothAreDerived()
+    {
+        // fixtures/README.md states both numbers in the sentence that draws the
+        // distinction. A number written into a document and checked by nothing
+        // is the drift this corpus polices everywhere else, and writing the
+        // sentence created a fresh instance of it.
+        var readme = File.ReadAllText(Path.Combine(Repository.Root, "fixtures", "README.md"));
+        var membership = Fixtures.Of(Repository.Root).Populations.Single(one => one.Constituents > 0);
+
+        Assert.Contains(
+            $"`{membership.Fixture}` holds {membership.Constituents} constituents and {membership.Names} names.",
+            readme,
+            StringComparison.Ordinal);
     }
 
     [Fact]

@@ -28,6 +28,8 @@ public class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Membership loader"),
             CheckReach.Key(Scope.MatrixTable, "Membership loader"),
             CheckReach.Key(Scope.MatrixTable, "Migration runner"),
+            CheckReach.Key(Scope.CatalogueTable, "Backfill"),
+            CheckReach.Key(Scope.MatrixTable, "Backfill"),
         ]);
 
     static IReadOnlyList<ArchitectureTable> Tables() =>

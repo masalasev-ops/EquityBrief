@@ -21,7 +21,52 @@ internal static class StoreSchema
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-    internal static IReadOnlyList<StoreColumn> Declared(string schemaMarkdown, string table)
+    // Every money column SCHEMA declares, read from the Notes cell that marks
+    // one rather than from a list kept beside the check.
+    //
+    // The obligation carried out of 0.7: price-storage-form's set of money
+    // column names was hand maintained, so a money column added under a new name
+    // was unchecked and nothing said so. SCHEMA marks one by saying "decimal" in
+    // its Notes, which `bar` writes as "decimal in code" and the other four
+    // tables write bare, so the marker is matched on the word.
+    internal static IReadOnlyList<(string Table, StoreColumn Column)> DeclaredMoney(string schemaMarkdown) =>
+        DeclaredTables(schemaMarkdown)
+            .Except(DescribedByDelta(schemaMarkdown), StringComparer.Ordinal)
+            .SelectMany(table => Money(schemaMarkdown, table).Select(column => (Table: table, Column: column)))
+            .ToArray();
+
+    // Tables SCHEMA describes as a difference from another rather than with a
+    // column table of their own. There is one, `theme_section`, which says it
+    // has research_section's columns with theme in place of ticker.
+    //
+    // Named rather than skipped quietly. A sweep over every table has to do
+    // something about this one, and swallowing it would mean a second such table
+    // was excluded from the money check with nothing saying so.
+    internal static IReadOnlyList<string> DescribedByDelta(string schemaMarkdown) =>
+        DeclaredTables(schemaMarkdown)
+            .Where(table => !HasAColumnTable(schemaMarkdown, table))
+            .ToArray();
+
+    static bool HasAColumnTable(string schemaMarkdown, string table)
+    {
+        var heading = $"### {table}";
+        var start = schemaMarkdown.IndexOf(heading, StringComparison.Ordinal);
+        var next = schemaMarkdown.IndexOf("\n### ", start + heading.Length, StringComparison.Ordinal);
+        var section = next < 0 ? schemaMarkdown[start..] : schemaMarkdown[start..next];
+
+        return section.Contains("| Column |", StringComparison.Ordinal);
+    }
+
+    static IReadOnlyList<StoreColumn> Money(string schemaMarkdown, string table) =>
+        Columns(schemaMarkdown, table)
+            .Where(entry => entry.Notes.Contains("decimal", StringComparison.OrdinalIgnoreCase))
+            .Select(entry => entry.Column)
+            .ToArray();
+
+    internal static IReadOnlyList<StoreColumn> Declared(string schemaMarkdown, string table) =>
+        Columns(schemaMarkdown, table).Select(entry => entry.Column).ToArray();
+
+    static IReadOnlyList<(StoreColumn Column, string Notes)> Columns(string schemaMarkdown, string table)
     {
         var heading = $"### {table}";
         var start = schemaMarkdown.IndexOf(heading, StringComparison.Ordinal);
@@ -36,7 +81,7 @@ internal static class StoreSchema
         var next = schemaMarkdown.IndexOf("\n### ", start + heading.Length, StringComparison.Ordinal);
         var section = next < 0 ? schemaMarkdown[start..] : schemaMarkdown[start..next];
 
-        var columns = new List<StoreColumn>();
+        var columns = new List<(StoreColumn Column, string Notes)>();
 
         foreach (var line in section.Split('\n'))
         {
@@ -49,11 +94,16 @@ internal static class StoreSchema
 
             var type = cells[2].Trim();
 
+            // The Notes cell is carried because it is where SCHEMA marks a
+            // column as money, and price-storage-form reads that rather than
+            // keeping its own list of names.
+            var notes = cells[3].Trim();
+
             // One cell may name several columns of the same type, as
             // started_at and ended_at do.
             foreach (Match name in Regex.Matches(cells[1], "`([a-z_]+)`"))
             {
-                columns.Add(new StoreColumn(name.Groups[1].Value, type));
+                columns.Add((new StoreColumn(name.Groups[1].Value, type), notes));
             }
         }
 

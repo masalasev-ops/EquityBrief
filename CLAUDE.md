@@ -225,7 +225,7 @@ Rules that exist before anything has gone wrong, taken from what has gone wrong 
 
 ## Definition of done for a checkpoint
 
-All seven, or it is not done:
+All eight, or it is not done:
 
 1. The checkpoint's stated deliverable exists and runs.
 2. `tools/ci.*` is green, with the test count recorded in PROGRESS. Until 0.4 builds those scripts, the checkpoint's own verification is run by hand and PROGRESS records the figures it produced and states that nothing guards them yet.
@@ -234,6 +234,7 @@ All seven, or it is not done:
 5. The suite passes on both runners. Until 0.4 makes the matrix able to run, the suite is run on the machine at hand, PROGRESS names which platform that was, and the other runner is carried to 0.4.
 6. A PROGRESS entry naming what was built, what was measured, and any carried obligation.
 7. The checkpoint's expectations are added to the fixture, so `tools/verify-phase` covers it from now on, and at least one of them is derived independently rather than frozen from a run. A checkpoint that adds behaviour and no expectation has widened the unexamined set; one that adds only frozen expectations has added regression detection and called it verification. Where the fixture does not exist yet, expectations are carried to the checkpoint that first can, and the carried obligation is recorded in `BUILD_PLAN.md` when it is created rather than remembered.
+8. The PROGRESS entry of condition 6 is written **before** the run that verifies the checkpoint, not after it, and the figures conditions 2 and 5 record are filled in from that run. The record is what the reconciliation reads: `HasLanded` decides out of scope by asking `PROGRESS.md` which checkpoints have landed, so a suite run against a tree whose entry is missing is a run against a corpus where this checkpoint has not landed, and every claim the entry is about to make due is still out of scope and cannot fail. That run is green on a question it never asked. Written the other way round it is the same run in the same order, and the only difference is whether the last thing changed is the one thing nothing after it re-reads.
 
 Done conditions are written against **what the file will say after the edit**, not as statements of intent. A done condition narrower than its clause is the most common defect in this class of corpus.
 
@@ -255,7 +256,7 @@ Done conditions are written against **what the file will say after the edit**, n
 
 **The condition binds from 0.4, which is where `tools/ci.*` first exists.** Before then the workflow fails on a missing script, which is phase 0 behaving as `BUILD_PLAN.md` describes it rather than a fault, and it does not block a merge. From 0.4 onward a red run blocks, with no exception and no override. This is written down because the rule above it was stated against a CI that exists, and the checkpoints that build the verification machinery come before it.
 
-**A checkpoint lands as its own commit** and satisfies all seven done conditions on its own, and a session that has committed code still may not sign it off.
+**A checkpoint lands as its own commit** and satisfies all eight done conditions on its own, and a session that has committed code still may not sign it off.
 
 **Every change reaches `main` through a branch and a pull request, and none is committed to `main` directly.** That includes a document pass, a correction, a ruling and a sign-off. The branch is deleted after the merge and the working tree is returned to `main`, because the tree the nightly runs from is this repository's production checkout and a branch left checked out is a live hazard.
 

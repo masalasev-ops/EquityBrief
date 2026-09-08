@@ -23,15 +23,33 @@ public class StatedCounts
     [Fact]
     public void TheDefinitionOfDoneCountsItsOwnConditions()
     {
+        // The stated count is read out of the sentence rather than repeated
+        // here. It was written as a literal 7 beside a literal "All seven",
+        // which is the defect this check exists to find, in the check itself: a
+        // condition added to the list meant editing the rules, this assertion
+        // and its anchor string, and only the first of the three is the fact.
         var rules = Corpus.Read("CLAUDE.md");
-        var section = rules[rules.IndexOf("All seven, or it is not done", StringComparison.Ordinal)..];
+        var stated = Regex.Match(rules, @"All (\w+), or it is not done");
+
+        Assert.True(stated.Success, "CLAUDE.md no longer states how many done conditions there are.");
+        Assert.True(
+            Numbers.ContainsKey(stated.Groups[1].Value),
+            $"CLAUDE.md states 'All {stated.Groups[1].Value}' done conditions, which is not a number word this check reads.");
+
+        var expected = Numbers[stated.Groups[1].Value];
+        var section = rules[stated.Index..];
 
         var conditions = section.Split((char)10)
             .SkipWhile(line => !line.StartsWith("1. ", StringComparison.Ordinal))
             .TakeWhile(line => Regex.IsMatch(line, @"^\d+\. ") || line.StartsWith("   ", StringComparison.Ordinal))
             .Count(line => Regex.IsMatch(line, @"^\d+\. "));
 
-        Assert.Equal(7, conditions);
+        Assert.Equal(expected, conditions);
+
+        // And the count is stated the same way wherever else the rules give it,
+        // because the merge section states it a second time and a list that grew
+        // would otherwise leave one of the two behind.
+        Assert.Contains($"all {stated.Groups[1].Value} done conditions", rules, StringComparison.Ordinal);
     }
 
     [Fact]

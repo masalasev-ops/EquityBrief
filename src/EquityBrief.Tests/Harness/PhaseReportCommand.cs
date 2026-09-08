@@ -34,7 +34,9 @@ internal static class PhaseReportCommand
         Console.WriteLine($"out of scope {report.Count(Verdict.OutOfScope)}");
         Console.WriteLine($"unexamined   {report.Count(Verdict.Unexamined)}");
         Console.WriteLine($"reconciled   {report.Reconciled} placements and verdicts, floor {Reconciliation.Floor}");
-        Console.WriteLine($"fixture      {report.Fixture.State}, {report.Fixture.Folders} captured");
+        Console.WriteLine(
+            $"fixture      {report.Fixture.State}, {report.Fixture.Folders} captured, " +
+            $"{report.Fixture.Constituents} constituents and {report.Fixture.Names} names");
         Console.WriteLine($"checks       {report.Coverage.Count} on the roster, {report.Coverage.Count(check => check.Carrier != "not due yet")} carried");
         Console.WriteLine(PhaseReportWriter.HtmlPath(root));
         Console.WriteLine(PhaseReportWriter.JsonPath(root));

@@ -98,6 +98,7 @@ internal static class ComponentVocabulary
     {
         ["index membership feed"] = Feed.IndexMembership,
         ["bulk price feed"] = Feed.BulkPrice,
+        ["historical price feed"] = Feed.HistoricalPrice,
         ["splits and dividends feed"] = Feed.SplitsAndDividends,
         ["news feed"] = Feed.News,
         ["company financials"] = Feed.CompanyFinancials,

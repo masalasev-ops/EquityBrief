@@ -433,3 +433,77 @@ Now:
 > | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, no schedule is expressed in local time, and no date is parsed against the machine's locale. Comments are stripped first, because a sentence naming a pattern is not a use of it |
 
 Why: a date parsed with no culture resolves against the machine's locale, so the same payload is a March date on one machine and a refusal on another. That is the same property the check already owns, being that nothing depends on how this machine happens to be configured for time, and it was found in shipped code rather than in the suite.
+
+### 2026-09-08 - ARCHITECTURE.html, SCHEMA.md - the backfill is a component, and the limit that forbade it
+Corrects: two defects, both found by building the backfill against the documents. Section 14's run order carries the backfill at position two, section 17 gives it a limits row, and section 7 had no component for it, so the class that does the work had no catalogue row and the matrix asserted nothing about what it touches. And the per-name limit read as a flat zero, which forbids the step the run order carries: a check reading it would have failed on a rule nobody meant.
+
+Was:
+> section 7 carried no row between Membership loader and Bar fetcher, and the matrix likewise
+> | Per-name network calls in the nightly run | 0 | bars arrive in one bulk file and news in one feed request, so the run does not grow with the universe | run log |
+> | `bar` | BarFetcher, CorporateActionChecker | none | CorporateActionChecker |
+> **`bar` has two inserters and one deleter, and that is the one exception this file argues for.** BarFetcher inserts the day's bars.
+
+Now:
+> section 7 and the matrix carry **Backfill**, in the compute layer, reading the historical price feed, membership and the bar store, writing the bar store and the run log
+> | Per-name network calls in the nightly run | 0 in the steady state, and the backfill is carved out of it | ... it makes one request per name holding no history, which is every name on the first run and a new joiner afterwards, and never again for a name that already holds its year ... | run log, on the steady-state stages |
+> | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | CorporateActionChecker |
+> **`bar` has three inserters and one deleter** ... Backfill inserts a name's first year, once, on the run that finds it holding none.
+
+Why: the alternative to a component row was folding the backfill into the bar fetcher, which arrives at 1.4 and does a different job on a different endpoint with the opposite cost shape. A row makes what it touches a claim the harness asserts. The limit is carved rather than deleted, because the property it protects is real and is about the steady-state night: what was wrong was stating it as a flat zero over a run whose second step is per name by design.
+
+### 2026-09-08 - CLAUDE.md - the record is written before the run that signs the checkpoint off
+Corrects: a suite run before the PROGRESS entry exists is a run against a corpus in which the checkpoint has not landed. `HasLanded` reads `PROGRESS.md` to decide what is out of scope, so every claim the entry is about to make due is still out of scope and cannot fail. It happened three times: at 1.1, where a claim placement whose due point had arrived reached CI unexamined; at 1.2, where `Run log` and `Backfill` derived the checkpoint that was landing in the same commit; and at 1.2 again on the capture pass. Each was green on the machine and red on all three runners, which is the signature of the fault rather than a coincidence.
+
+Was:
+> All seven, or it is not done:
+> ...
+> 7. The checkpoint's expectations are added to the fixture, so `tools/verify-phase` covers it from now on, and at least one of them is derived independently rather than frozen from a run.
+
+and, under Merge:
+
+> **A checkpoint lands as its own commit** and satisfies all seven done conditions on its own, and a session that has committed code still may not sign it off.
+
+Now: the list opens `All eight`, the merge sentence says `all eight done conditions`, and an eighth condition is added:
+
+> 8. The PROGRESS entry of condition 6 is written **before** the run that verifies the checkpoint, not after it, and the figures conditions 2 and 5 record are filled in from that run. The record is what the reconciliation reads ... That run is green on a question it never asked.
+
+Why: it was recorded in the 1.2 entry as a note to a future session, which is a record telling a reader what to do rather than a rule the corpus holds. The ordering is not a habit, it is a property of the harness: the last thing written is the one thing nothing after it re-reads. Numbered rather than added as a paragraph so it is ticked with the others, and `stated-counts` now reads the expected count out of the sentence rather than repeating it as a literal, so the next condition added needs only this file edited.
+
+### 2026-09-08 - RUNBOOK.md - the secrets section names the keys it tells the operator to write
+Corrects: the section said to write `appsettings.Secrets.json` by hand and never said what to put in it. The first file written by hand consequently used a name of its own, `Secrets:EodhdApiToken`, and the code looked for `EquityBrief:Providers:Eodhd:ApiKey` and found nothing. Found on the pass that captured the fixture, which was the first work in this repository to need a live credential.
+
+Was:
+> Moving to a new machine: copy the checkout, copy the store file, write the secrets file by hand. The secrets file is the one part of the move that is a human act and cannot be scripted.
+
+Now: that paragraph is unchanged and is followed by the key names, the nested file shape they take, a table naming the provider and the projects that need it, and the environment-variable spelling.
+
+Why: an instruction to write a file by hand that does not say what the file contains is an instruction that can only be followed by guessing. The name now lives in a document and in code, which is two places for one fact, so `ProviderCredentialsTests` asserts the runbook against `ProviderCredentials.ApiKeyName` in both the path form and the nested form.
+
+### 2026-09-08 - RUNBOOK.md - installing a bash is a step, because the tools need one
+Corrects: "Moving the installation" named the SDK and said what fails without it, and said nothing about bash, which every `.ps1` in `/tools` hands its work to. On the operator's own machine `tools/ci.ps1` and `tools/verify-phase.ps1` had never run from a PowerShell prompt: Git for Windows puts `git.exe` in `cmd\` and `bash.exe` in `bin\` and only the first is on `PATH`, so the only `bash` reachable by name was the WSL launcher, which cannot open a Windows path. Found on this pass by running the documented command.
+
+Was:
+> 2. Install a .NET SDK in the `10.0.3xx` band ... Without one the run fails at step 5 with a restore error that names neither.
+> 3. Copy `data/equitybrief.db` into the configured data root.
+
+Now: a new step 3 names Git for Windows, says the wrapper looks beside `git` as well as on `PATH`, and says the WSL launcher does not count and why. The steps after it are renumbered and step 2's cross-reference moves from step 5 to step 6.
+
+Why: the list is what an operator follows on a new machine, and it named the one dependency whose absence produces a legible error while omitting the one whose absence produces an advertisement for installing a Linux distribution. `tools/run-bash.ps1` now chooses a bash by asking each candidate whether it can read the script rather than taking the first on `PATH`, so the property is enforced as well as documented, and the suite's own lookup matches it.
+
+### 2026-09-08 - BUILD_PLAN.md - two parsers checked against themselves, named as a defect and given due points
+Corrects: the splits and dividends feed and the news feed each ship a parser and a recorded double, and neither has seen a provider response. That is the state the membership parser was in until 1.2, when the first captured constituents payload showed it had been reading dates out of an object the provider does not put them in. It had been green for two checkpoints because the same session wrote the parser and the fixture it was checked against. The carried obligations table had no row for either feed, and the 1.6 and 1.7 done conditions asked for a fixture without saying where it comes from.
+
+Was: the obligations table ran from "Architecture cites its decisions by name at each rule" straight to "`two-platform` widened to what its roster row claims", and the two done conditions read:
+
+> **Done when** an action in the fixture triggers a refetch, the replacement is atomic, and a failure of the check itself marks the name rather than passing.
+
+> **Done when** the measurement is recorded with its sample named, and the first draft of the company-news and industry source lists exists with a review date.
+
+Now: two rows are added to the table, due at 1.6 and 1.7, which are the checkpoints that build each parser. Both name the defect rather than the work:
+
+> | Splits and dividends parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.6 |
+> | News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7 |
+
+Each done condition gains the clause that its fixture is a captured provider response rather than a constructed one, and each section gains a paragraph saying the feed is captured when the checkpoint opens rather than after the parser is written.
+
+Why: the row has to name the defect because the task is the easy half. "Capture the news feed" reads as a chore and gets done late or partly; "the parser is checked against itself" says what is wrong now, so a session that writes the parser first has broken something rather than deferred something. The ordering matters for the same reason: a fixture written after the parser is a transcript of what the parser already expects, whichever session writes it. Ten weighted calls found a defect that two checkpoints of green had not.

@@ -37,6 +37,20 @@ internal static class PhaseReportWriter
                     state = report.Fixture.State,
                     folders = report.Fixture.Folders,
                     note = report.Fixture.Note,
+
+                    // Two counts and never their sum. They are different
+                    // populations over the same folder, and a total would read
+                    // as one population of eight.
+                    constituents = report.Fixture.Constituents,
+                    names = report.Fixture.Names,
+                    populations = report.Fixture.Populations.Select(population => new
+                    {
+                        fixture = population.Fixture,
+                        constituents = population.Constituents,
+                        names = population.Names,
+                        departed = population.Departed,
+                        withoutSeries = population.WithoutSeries,
+                    }),
                 },
                 summary = new
                 {
@@ -120,8 +134,26 @@ internal static class PhaseReportWriter
         page.Append("</table>");
 
         page.Append("<h2>Fixture</h2>");
-        page.Append($"<p><b>{Escape(report.Fixture.State)}</b>, {report.Fixture.Folders} captured. ");
+        page.Append($"<p><b>{Escape(report.Fixture.State)}</b>, {report.Fixture.Folders} captured, ");
+        page.Append($"holding <b>{report.Fixture.Constituents}</b> constituents and ");
+        page.Append($"<b>{report.Fixture.Names}</b> names. ");
         page.Append($"{Escape(report.Fixture.Note)}</p>");
+
+        if (report.Fixture.Populations.Count > 0)
+        {
+            page.Append("<table><tr><th>Fixture</th><th>Constituents</th><th>Names</th>");
+            page.Append("<th>Departed</th><th>Constituents with no series</th></tr>");
+
+            foreach (var population in report.Fixture.Populations)
+            {
+                page.Append($"<tr><td>{Escape(population.Fixture)}</td>");
+                page.Append($"<td>{population.Constituents}</td><td>{population.Names}</td>");
+                page.Append($"<td>{Escape(string.Join(", ", population.Departed))}</td>");
+                page.Append($"<td>{Escape(string.Join(", ", population.WithoutSeries))}</td></tr>");
+            }
+
+            page.Append("</table>");
+        }
 
         page.Append("<h2>Reconciliation</h2>");
         page.Append($"<p><b>{report.Reconciled}</b> placements and verdicts were reconciled ");

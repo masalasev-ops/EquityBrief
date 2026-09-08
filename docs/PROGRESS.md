@@ -1107,3 +1107,425 @@ Notes:      the culture check's own permanent proof is what caught its first ver
             written surface rather than the model; what changed is that it no longer reports the
             state of a working copy. Reproduced locally by deleting `artifacts/` before running
             the suite.
+
+### 1.2 - the one-year backfill                                          2026-09-08
+Built:      migration 3 creating `bar`, prices TEXT and decimal in code. `IHistoricalBarFeed`
+            and `RecordedHistoricalBarFeed`, one captured file per ticker. `Backfill`, which
+            fetches one year for any member holding no history, one request per name, and never
+            again for a name that already holds its year. `Money` in `EquityBrief.Data`, the one
+            way a price reaches a store. Three fixture files, a year of daily bars each.
+Measured:   over the fixture's 4 constituents, of which 3 are current members and 1 has left:
+            3 names owed a backfill, 3 requests, 783 rows written, and 0 of each on the second
+            run. Per name, 261 sessions from 2025-09-05 to 2026-09-04. The population is stated
+            because it is 3 names and not 500: a claim about the live index is not something
+            this suite can assert, and the done condition's "every index member" is 4.1's to
+            carry.
+
+            261 rather than the 262 the captured file holds, and the difference is the window
+            rather than a defect. The backfill asks for the year ending on the session date,
+            which at the fixture instant is 2026-09-05, so it starts on 2025-09-05 and the
+            capture's first bar falls outside it. The test asserts both edges rather than only
+            the count, so that reads as a window rather than as a missing bar.
+Discharged: three obligations, all created by the 0.7 review.
+
+            The money column list is read from SCHEMA's Notes cell, where a money column is
+            marked by the word "decimal", rather than kept as an array beside the check. One
+            table, `theme_section`, is described as a difference from another and has no column
+            table of its own; it is named and asserted to be the only one, so a second such
+            table is a failure rather than a silent exclusion from the money check.
+
+            `Shell.Run` reads both streams at once. Reading one to completion first blocks until
+            the child closes it while the child blocks writing to a full error pipe, and neither
+            moves again. `tools/flood-probe` writes about 400 kB to each stream and the test is
+            bounded by a timeout, because the failure is a hang and a deadlocked test reports
+            nothing. Proved by reverting the fix and watching it time out.
+
+            The runtime money guard refuses anything that is not a decimal at the point a price
+            is bound. `STRICT` does not do this: SQLite renders a double as text and stores it,
+            which 0.2 recorded after a test written to prove otherwise failed. The test asserts
+            both halves, that the guard refuses the double and that the store would have taken
+            it.
+Resolved:   contradiction B. The per-name limit read as a flat zero, which forbids the step the
+            run order carries at position two, so a check reading it would have failed on a rule
+            nobody meant. The limit is carved rather than deleted: the property it protects is
+            about the steady-state night, and the backfill is bounded rather than nightly.
+Found:      the backfill had no component row. Section 14 carries it at position two, section 17
+            gives it a limits row, and section 7 had nothing, so the class doing the work had no
+            catalogue name and the matrix asserted nothing about what it touches. **Backfill**
+            is now a component, and SCHEMA gives `bar` a third inserter with the exception
+            paragraph saying which. The alternative was folding it into the bar fetcher, which
+            arrives at 1.4 and does a different job on a different endpoint with the opposite
+            cost shape.
+
+            And `rows_written` was measured by counting rows carrying this run's observation
+            instant, which two runs sharing an instant would each attribute to the other. A
+            fixed clock produces that in a test and a fast machine can produce it for real. It
+            is a delta over the table now, which is still measured from the store and does not
+            rest on the instant being unique.
+Floors:     stated with what each produced and what was expected. Money columns SCHEMA declares:
+            floor 8, expected 11, found 11. Money columns in migrations: floor 5, expected 5,
+            found 5, being `bar`'s four prices and `run_log`'s spend. Passing claims: 11 against
+            a floor of 6. Reconciled: 18 against a floor of 12, both left where 1.1 set them
+            because contradiction D still moves them at 1.3.
+Tests:      166, up from 159 at the start of this checkpoint and 153 at the end of 1.1.
+Notes:      the backfill declares `Feed.HistoricalPrice` and the bar fetcher will declare
+            `Feed.BulkPrice`. They are two endpoints with opposite pricing, which is the whole
+            argument for the backfill running per ticker, and giving them one enum member would
+            have hidden that in the one place a reader checks it.
+
+            Two claims derived 1.2 and had to be excepted once this entry was written, which is
+            the third time the reconciliation has refused a due point on the checkpoint that
+            landed. The catalogue's Run log row derives 1.2 because that is where the backfill's
+            request count first reaches the log, and the row is not about one stage: its Reads
+            cell says "every component appends", so it is a claim about every component and the
+            last of them lands in phase 6. The limits table's Backfill row derives 1.2 because
+            1.2 builds it, and the row is the limit rather than the component: its own Asserted
+            by column names the run log's request count against the names lacking history, which
+            is `nightly-cost` reading a recorded run at 1.4. Both are declared as derived earlier
+            than the truth, so both report themselves on the phase report every run.
+
+            The process error that surfaced them is worth naming. The suite was run after the
+            spec edits and before the PROGRESS entry, and `HasLanded` reads PROGRESS, so the
+            failure could not appear locally and CI found it. A checkpoint's own record is the
+            last thing written and the first thing that changes what the reconciliation
+            refuses, so the suite belongs after it.
+
+            `Money.FromStorage` refuses a group separator, and the test that found this is the
+            reason. `NumberStyles.Number`, the convenient default, allows one, and under the
+            invariant culture the group separator is a comma, so "12,34" written by a
+            comma-decimal machine parses cleanly as 1234. A hundredfold error on a price, read
+            back with nothing refusing it.
+
+### 1.2 - the fixture is captured, and the parser it was hiding                2026-09-08
+Corrects:   the 1.2 entry above, whose measured figures were taken over generated bars. A
+            seeded random walk emits a bar for every weekday, so it tests the parser against
+            its own generator: a wrong field name, a different date format, an adjusted close
+            under another key, a null where a number is expected and a whole number rendered
+            with no decimal part all survive it. Two of those were present and one was fatal.
+Built:      nothing. Three captured bar files replacing the generated ones, a captured
+            constituents file replacing a hand-built one, one parser corrected, and every
+            expectation 1.2 wrote re-derived rather than translated.
+Spent:      3 requests at weight 1 on the per-ticker historical endpoint, stated before the
+            capture and equal to it, which is the backfill's own cost claim measured on a live
+            call rather than on a double. 1 further request at weight 10 on the index
+            fundamentals endpoint, which was outside the capture as asked for and is named here
+            because it was spent: the manifest was about to assert a fetch instant for a file
+            nobody had fetched, and the shape could not be checked without asking for it.
+Measured:   over the fixture's 4 constituents, of which 3 are current members and 1 has left:
+            3 owed, 3 requests, 756 rows written, 0 of each on the second run. Per name, 252
+            sessions from 2025-09-05 to 2026-09-04, against the 261 the generated fixture held.
+
+            252 is derived rather than counted off the run, which is what done condition 7 asks
+            of at least one expectation. 261 weekdays in the window less 9 days the exchange did
+            not trade, each named in the test: Thanksgiving, Christmas, New Year, Martin Luther
+            King, Washington's Birthday, Good Friday, Memorial, Juneteenth and the observed
+            Independence Day. The derivation is asserted against its own arithmetic before it is
+            used, and the stored session list is compared to it date by date rather than by
+            count, so a series holding the right number of the wrong days fails.
+
+            The generated fixture had no holidays in it at all. A gap rule reading "a weekday
+            with no bar" would have passed it and raised nine false gaps on the first real
+            night, which is 1.5's whole subject arriving as a fixture fact rather than as a
+            surprise (see: A gap is a session the exchange traded and the store does not hold).
+Found:      the membership parser could not read the provider's payload, and this is the
+            finding that justifies the pass on its own. The recorded feed's parse read StartDate
+            and EndDate out of the Components object. The provider does send Components, and it
+            carries Code, Exchange, Name, Sector, Industry and Weight, with no dates on any
+            entry and no row at all for a name that has left. The spans are in
+            HistoricalTickerComponents, a different object in the same payload. Against the real
+            response the parser threw on the first constituent.
+
+            It failed loudly rather than quietly, which is why this is a carried defect and not
+            an interrupt, but it was total: the loader could not have completed a single live
+            night. The hand-built fixture satisfied it because the fixture had been written with
+            the dates in the object the parser was reading, which is one sentence read twice.
+            Made permanent by `TheSnapshotObjectIsRefusedRatherThanReadAsTheIndex`, which feeds
+            a real snapshot payload and asserts the refusal names the object holding the spans,
+            and by an assertion that the captured fixture carries both objects, so the refusal
+            is about which one is read and not about which one is present.
+
+            XRAY's leave date is 2024-04-03, not the 2026-03-21 the hand-built fixture invented,
+            and the three dates the past-date query is asserted at were all chosen around the
+            invented one.
+
+            The adjusted close is now load-bearing in the fixture. The generator set
+            adjusted_close equal to close on every row, so a parser taking the wrong field
+            passed the fixture and failed only a payload written for the test. The capture
+            differs on 232 of AAPL's 252 window rows and 240 of MSFT's, and on none of KEYS,
+            which pays no dividend and did not split in the window. Both cases are in one
+            fixture, and the comparison reads the raw close straight from the file rather than
+            asking the parser for the field it is being tested for not taking.
+
+            Two number shapes reached storage that never had before. The provider sends JSON
+            numbers rather than strings, renders a whole number with no decimal part at all, and
+            carries four decimal places on an adjusted close where close carries two. AAPL's
+            first stored session is all three at once: an open of 240 stores as `240`, and an
+            adjusted close of 238.8078 stores with its fourth decimal held, which a route
+            through double would have rounded away.
+
+            `TemporaryStore.Dispose` called `SqliteConnection.ClearAllPools`, which is
+            process-wide, while xUnit runs test classes in parallel. A store disposing pulled
+            pooled connections out from under tests still reading in other classes. Measured at
+            1 failure in 15 runs before the change and 0 in 20 after, always in the test that
+            makes four sequential queries, which is the widest window rather than a second
+            fault. It now clears this store's pool alone. An intermittent red that goes green on
+            a re-run is worse than a reliable one, because it teaches a reader to press the
+            button rather than read the result, and on the matrix it would have arrived as one
+            runner in fifteen going red for no reason anyone could reproduce.
+
+            `tools/ci.ps1` and `tools/verify-phase.ps1` had never run from a PowerShell prompt
+            on this machine, and both are documented commands. `tools/run-bash.ps1` took the
+            first `bash` on PATH. On a Windows machine with the optional WSL feature enabled
+            that is the launcher in System32, which cannot open a Windows path and answers with
+            an advertisement for installing a distribution. Meanwhile a working bash was
+            present and unreachable: a default Git for Windows install puts `git.exe` in `cmd\`
+            and `bash.exe` in `bin\`, and only the first goes on PATH.
+
+            The wrapper now collects every bash on PATH plus the ones beside `git`, and picks
+            the first that can read the script it was asked to run. Chosen by the property
+            rather than by ruling out paths that look like WSL, because the property is what
+            matters and it does not go stale when a launcher moves. The suite's own lookup
+            matches it, and one test was reaching for `Shell.Locate("bash")` directly rather
+            than `Shell.Bash()`.
+
+            This was a loud failure and not a silent pass, which is why it is recorded as a
+            defect found rather than as an interrupt. But it is exactly what `run-bash.ps1`
+            exists to prevent: the file already turns "no bash" into a named message, and the
+            wrong bash is the commoner case on Windows and produced no message of its own.
+Verified:   `tools/ci.ps1` green end to end from a PowerShell prompt with no bash on PATH, six
+            steps, 175 tests passing, exit 0. `tools/verify-phase.ps1` green: 162 claims, 11
+            pass, 0 fail, 151 out of scope, 0 unexamined, 18 placements and verdicts reconciled
+            against a floor of 12, 25 tables, fixture PRESENT with 1 captured, 25 checks on the
+            roster with 20 carried. No floor was raised on this pass. The suite was run 15 times
+            before the pool change and 20 times after, which is the population the 1-in-15 and
+            0-in-20 figures above are over.
+Amended:    this checkpoint amends its own done condition, in those words, and the amendment is
+            the pass's second deliverable rather than an escape it authorises. The definition of
+            done goes from seven conditions to eight, the eighth being that the PROGRESS entry
+            is written before the run that verifies the checkpoint. `HasLanded` reads PROGRESS,
+            so a run against a tree whose entry is missing is a run against a corpus in which
+            the checkpoint has not landed, and it is green on a question it never asked. It had
+            hidden a failure three times: at 1.1, at 1.2, and on this pass. It was recorded in
+            the 1.2 entry above as advice to a future session, which is a record telling a
+            reader what to do rather than a rule the corpus holds.
+
+            This entry was written before the verification run, which is the first application
+            of the condition it adds.
+
+            `stated-counts` now reads the expected number of conditions out of the sentence that
+            states it rather than repeating it as a literal, and asserts the merge section
+            spells it the same way. Adding condition 8 meant editing the rules, an assertion and
+            an anchor string, and only the first of the three was the fact. That is the defect
+            the check exists to find, in the check itself.
+Also:       RUNBOOK's secrets section told the operator to write the secrets file by hand and
+            never said what to put in it. The key written by hand was consequently one name and
+            the code looks for another. The section now names the keys, the nested file shape
+            and the environment-variable spelling, and `ProviderCredentialsTests` asserts the
+            runbook against the code's own constant in both forms, because that is one fact in
+            two places. The local file was rewritten to the canonical path with its value kept.
+
+            The fixture manifest asserted a fetch instant for the constituents file that no
+            fetch had produced. All four inputs now carry real instants. The constituents file
+            is a trimmed capture, 4 names of the 503 in Components and the 822 in
+            HistoricalTickerComponents, and the manifest schema gains an optional `trimmedTo` so
+            a subset says it is one. Without it the file reads as the whole response and a later
+            session re-captures it to fix an absence that was deliberate. The provider's keys are
+            kept as sent, so the gaps in them show where the cut was made, and nothing about the
+            shape is trimmed.
+Carried:    the bar fixture and the constituents fixture are captured. No other feed in section
+            5 has been exercised against a real payload, and the same defect class is available
+            in each: the splits and dividends feed at 1.6 and the news feed at 1.7 both arrive
+            with a parser and a double, and neither has seen a provider response. Each captures
+            before it asserts.
+
+### 1.2 - what the past-date assertions were testing, and the class behind it       2026-09-08
+Corrects:   the entry above, which recorded XRAY's leave date moving from an invented
+            2026-03-21 to the provider's 2024-04-03 and did not say what that did to the three
+            past-date assertions chosen around the invented value. Re-pointing them was not
+            enough. They were positioned either side of a boundary, and the boundary moved two
+            years, so what each one distinguished had to be worked out again rather than
+            assumed to have travelled with it.
+Found:      one of the three had collapsed. With XRAY as the only departed name, every date
+            from its leave to the fixture instant returns the same set, because no membership
+            event falls between them. So "after a leave and before tonight" was "tonight", and
+            a query that answered with tonight's set for any recent past date would have passed
+            it. The assertion had been made against a date two years from the leave rather than
+            one day after it, which hid this: the old date sat five months before the invented
+            leave and the new one sits on the real leave, and only the second makes the
+            question visible.
+
+            That was true before this pass as well. The invented leave was 2026-03-21 and the
+            fixture instant is 2026-09-05, so the same stretch existed and was five months long
+            instead of two years. The collapse is not something the real date introduced; it is
+            something the real date made possible to notice.
+Built:      a fifth constituent, AAL, joined 2015-03-23 and left 2024-09-23, re-trimmed from
+            the `fundamentals/GSPC.INDX` response already captured on this pass. No new
+            request. It splits the stretch between XRAY's leave and the fixture instant in two,
+            which is what makes the third distinction a distinction.
+
+            The fixture is now 5 constituents, 3 current members and 2 departed, and the
+            backfill is unaffected: a departed name is not owed history, so 3 owed, 3 requests
+            and 756 rows all stand. The membership figures move: 5 rows written for the
+            membership stage rather than 4, and the departed names are asserted as a set rather
+            than through Assert.Single. A fixture with one departed name makes every statement
+            about departure a statement about one row.
+Measured:   seven dates, each named for the distinction it draws. Over the fixture's 5
+            constituents:
+
+            1982-11-29, before any name joined, answers with nothing. A query ignoring the date
+            would answer with the whole table here and pass every other assertion below.
+
+            2010-01-04, where two of the five had not joined, answers AAPL, MSFT, XRAY. This is
+            the join half of the span and the one a query keyed on the leave date alone misses.
+
+            2018-11-05 and 2018-11-06, either side of one day, are the join edge. The leave
+            edge was asserted this way and the join edge was not, which left `joined <` and
+            `joined <=` indistinguishable. Added on this pass.
+
+            2024-04-02, between a join and a leave, answers with all five including both names
+            that have since gone.
+
+            2024-04-03, XRAY's leave date, answers AAL, AAPL, KEYS, MSFT. Two properties at
+            once: the leave edge is strict, and the answer differs from tonight's, which is the
+            third distinction and the one that had collapsed.
+
+            2026-09-05, the fixture instant, answers AAPL, KEYS, MSFT.
+
+            Seven dates and six distinct answers, derived in the test from the seven results
+            rather than stated in a comment. The first draft of this entry and of the comment
+            beside it both said six dates over a test that asks seven questions, which is why
+            the figure is now counted rather than written down. One pair agrees deliberately
+            and is asserted to agree: 2018-11-06 and 2024-04-02 are the same region, because
+            the first is there as an edge against 2018-11-05 and not as a region of its own.
+
+            Proved by removing AAL from the fixture and watching the test go red, then
+            restoring it. The permanent proof is the assertion rather than that exercise: a
+            fixture that loses its second departed name fails on the inequality.
+Also:       three synthetic payloads in the parser tests carried 2026-03-21 and its day-first
+            and integer spellings. They belong to no fixture and never did, but a synthetic
+            payload carrying a real name's date invites a reader to connect the two. They now
+            read 2021-07-04, and the day-first case is 04/07/2021, which is ambiguous rather
+            than merely slashed: the fourth of July read one way and the seventh of April read
+            the other, so a lenient parse succeeds under both cultures and returns a different
+            date under each. A day-first string with a day above twelve is refused by an
+            invariant parse anyway and tests the culture far less.
+Checked:    the pass was swept by four independent readers and each reading was then given to a
+            second reader told to refute it. Three defects in this pass's own work came back,
+            and all three are the kind that pass a green suite.
+
+            The comment introducing the past-date dates said six over a test that asks seven
+            questions, and the entry above said the same. Both are now derived: the test
+            collects its seven answers and asserts six distinct ones, so the figure is counted
+            rather than written down. This is the defect `stated-counts` exists for, committed
+            in the same pass that argues for deriving counts.
+
+            `TheDateParseDoesNotDependOnTheMachinesLocale` set no locale. It asserted an exact
+            parse, which implies locale independence without demonstrating it, and would have
+            passed with the `CultureInfo.InvariantCulture` argument removed from the parse it is
+            named for. It now runs the parse under en-GB, en-US and de-DE and asserts the same
+            answer under each, and it demonstrates the ambiguity the refusal rests on rather
+            than asserting it in a comment: 04/07/2021 parses to the fourth of July under en-GB
+            and the seventh of April under en-US, both succeeding, which is what an exact parse
+            is refusing. A refused string nothing would have misread proves only that a slash is
+            not a hyphen.
+
+            The parse test asserted a count of five and two Contains clauses, covering two rows
+            of five. A regression dropping AAL's end date leaves the count at five and both
+            clauses true. It asserts the whole ticker and leave-date projection now.
+Class:      the general form, stated because the instance is the third of its kind and naming
+            the instance again would not stop the fourth.
+
+            A fixture written by the session writing the parser proves that the parser agrees
+            with the fixture. It proves nothing about the provider. The two artefacts have one
+            author and one set of assumptions, so the agreement between them is a restatement,
+            and every check reading it reports green over a population of one opinion held
+            twice.
+
+            This is the same shape as a constant pinned document against document, which Pass A
+            repaired at 0.7. `pinned-constants` floored the mentions it found across two specs,
+            and a mention is a number an added sentence moves, so the check could be satisfied
+            by writing prose. The repair was to move the floor onto the comparisons made against
+            `src/Directory.Build.props` and `global.json`, which only a mention agreeing with
+            the build can move. The assertion stopped resting on what the corpus says about
+            itself and started resting on the artefact the corpus describes.
+
+            The repair here is the same move and the artefact is the provider's own response. A
+            parser is checked against a captured payload or it is checked against itself, and
+            there is no third option that a fixture written alongside it can provide. Two
+            parsers are in that state now, the splits and dividends feed and the news feed, and
+            both are carried with the defect named rather than the task: a row reading "capture
+            the news feed" is a chore that gets done late, and one reading "the parser is
+            checked against itself" says something is wrong now.
+            `fixtures/README.md` now says that a fixture counts two different things. Phase 2
+            widens the fixture "to four names" in `BUILD_PLAN.md` and in three places in the
+            architecture, and this fixture now holds five constituents, which reads as already
+            past four. Names are the tickers with a captured price series and constituents are
+            the membership rows; a departed name has a row and no bars, so this fixture holds
+            5 constituents and 3 names. The distinction goes in the file whose subject is the
+            folder's shape rather than in the four documents that say four, because it is one
+            fact and those would be four statements of it.
+Carried:    unchanged from the entry above, with the two parser rows now in `BUILD_PLAN.md`'s
+            obligations table at 1.6 and 1.7 rather than only in that entry's prose. Each
+            checkpoint's done condition states that its fixture is a captured response, and
+            each section says the request is spent when the checkpoint opens rather than after
+            the parser is written. A fixture written after the parser is a transcript of what
+            the parser already expects, whichever session writes it.
+
+### 1.2 - the two populations counted rather than described                        2026-09-08
+Corrects:   the entry above, which settled the distinction between constituents and names in
+            `fixtures/README.md` and left it there. One fact in one place was the right call
+            and half the work. A distinction that lives only in prose is not asserted, and this
+            one is positioned to be read past: phase 2's sentence says the fixture widens to
+            four names and this fixture holds five constituents, so a reader who has not been
+            told they are different populations sees an obligation already met. The sentence
+            also carried two numbers that nothing checked, which is the drift this corpus
+            polices everywhere else, created by the act of writing it.
+Built:      `Fixtures.Populations`, which counts both from the folder. Names are the tickers
+            with a captured series, read from the `bars-` files. Constituents are the rows the
+            membership payload holds, read through the shipped parser rather than by a second
+            reading of the same JSON, so a parser that stopped reading a constituent moves this
+            figure rather than leaving it agreeing with itself.
+
+            The phase report carries both, on all three surfaces and never as a sum: the
+            console line reads "5 constituents and 3 names", the JSON carries them as separate
+            fields with a per-folder breakdown, and the HTML gains a table naming the departed
+            constituents and the ones with no series. A total would read as one population of
+            eight, which is the reading the whole distinction exists to prevent.
+Measured:   over the one committed fixture: 5 constituents, 3 names, 2 departed, and the
+            constituents with no series are exactly the departed ones.
+
+            That last equality is the property rather than the count. A constituent with no
+            captured series is a name the backfill would not fetch, meaning one that has left;
+            a current member with no series is a fixture fault rather than a smaller
+            population, because the backfill refuses a current member it holds no capture for.
+            So the two populations differ in the direction the rule predicts, and the counts
+            cannot be made equal by adding a series for a name that is not in the index. The
+            other direction is asserted too: a `bars-` file naming no constituent is an orphan
+            that would inflate the smaller population against nothing.
+
+            Proved against planted folders outside the repository, not only against the
+            committed fixture, which has one shape and would let a counter that returned the
+            same number twice pass. Three constituents with a series for two counts 3 and 2;
+            giving the departed name a series as well makes the counts agree, which is the
+            counter-test that stops the difference assertion from being satisfied by a check
+            that always reports one; an orphan series counts 3 and 4; and a folder with no
+            membership payload counts 0 constituents with its names still counting, which is
+            the gap fixture's shape at 1.5.
+
+            The README's two numbers are asserted against the derived ones. Proved by changing
+            the 5 to a 4 and watching the test go red, then restoring it. The permanent proof
+            is the assertion: the sentence cannot drift from the folder without failing.
+Found:      why the collapse in the entry above matters beyond the assertion that now covers
+            it. It was dead from the day it was written. The invented leave date did not create
+            the dead stretch, it shortened it, and that is the worse of the two failures.
+
+            A wrong value that widens a dead range makes the assertion visibly vacuous, because
+            the date ends up an absurd distance from the boundary it claims to test. One that
+            narrows it leaves the assertion looking like it is testing an edge. The invented
+            leave put the dead stretch at five months and the assertion one day inside it,
+            which reads exactly like a date chosen to fall just after a boundary. The real date
+            puts the same stretch at two years and five months. Neither was testing anything,
+            and it took moving the date onto the boundary to show it.
+Verified:   `tools/ci.ps1` green, 178 tests, up from 175. `tools/verify-phase.ps1` green: 162
+            claims, 11 pass, 0 fail, 151 out of scope, 0 unexamined, 18 reconciled against a
+            floor of 12. No floor was raised. This entry was written before that run.

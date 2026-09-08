@@ -48,7 +48,7 @@ Each is two documents disagreeing, which `CLAUDE.md` calls a finding rather than
 | # | Contradiction | Resolve at |
 |---|---|---|
 | A | SCHEMA's bar note says the fetcher drops sessions older than the retention window; its ownership table gives Delete to the corporate action checker alone and says nothing else may delete a bar | 1.4 |
-| B | The limits table says the nightly run makes zero per-name network calls; the run order backfills a new joiner per ticker | 1.2 |
+| B | The limits table says the nightly run makes zero per-name network calls; the run order backfills a new joiner per ticker. **Resolved at 1.2**, the limit carved rather than deleted | 1.2 |
 | C | The failure table names a suspect state for a name whose corporate action check failed; no store column holds it | 1.6 |
 | D | `Scope.Screens` keys on the table heading, so a phase 5 export claim is forced to be asserted at the chart checkpoint. This is the 0.7 repair of `Scope.For` failing to sweep, not a new contradiction | 1.3 |
 | E | The catalogue gives four components a `calendar` read that SCHEMA does not declare and no component writes | 3.0 |
@@ -130,12 +130,16 @@ One carried obligation discharged: the news feed probed for whether it is querya
 ### 1.6 The corporate action checker
 Splits and dividends feed, full-year refetch replacing the old series in one transaction. Contradiction C resolved: a column for the suspect state with its grain and owner declared in SCHEMA, so a failed check marks the name rather than passing silently.
 
-**Done when** an action in the fixture triggers a refetch, the replacement is atomic, and a failure of the check itself marks the name rather than passing.
+**The feed is captured before the parser is written, not after.** One request settles the payload's shape, and the checkpoint opens by spending it. 1.2 found a membership parser reading a field the provider does not send, which the fixture had agreed with for two checkpoints because the same session wrote both. A parser written first and given a fixture afterwards is a parser whose fixture is a transcript of what it already expects.
+
+**Done when** an action in the fixture triggers a refetch, the replacement is atomic, a failure of the check itself marks the name rather than passing, and the action is read from a captured provider response rather than a constructed one.
 
 ### 1.7 The coverage measurement
 Two weeks of news across thirty names spread deliberately across the market-capitalisation range and not chosen from a watch list. Distinct publishers counted by frequency, each checked for whether its text can be retrieved.
 
-**Done when** the measurement is recorded with its sample named, and the first draft of the company-news and industry source lists exists with a review date. This is a measurement rather than an assumption: a large-company index guarantees coverage at the top and much less further down, and tuning the lists on the largest names alone starves the rest of the index invisibly.
+**The feed is captured before the parser is written, for the reason 1.6 states.** The measurement itself needs live responses, so this checkpoint spends the request first in any case; what it must not do is write the parser against a payload composed to suit it and keep the captured responses only as measurement input.
+
+**Done when** the measurement is recorded with its sample named, the first draft of the company-news and industry source lists exists with a review date, and the news parser's fixture is a captured provider response rather than a constructed one. This is a measurement rather than an assumption: a large-company index guarantees coverage at the top and much less further down, and tuning the lists on the largest names alone starves the rest of the index invisibly.
 
 ### 1.8 Phase 1 report
 **Done when** every claim the phase owes is PASS naming an instrument whose declared reach includes it, unexamined is zero, and the fixture holds phase 1 expectations with at least one derived independently from the rules rather than frozen from a run.
@@ -388,14 +392,15 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Obligation | Created at | Due at |
 |---|---|---|
 | Architecture cites its decisions by name at each rule | 0.5 | 1.8 |
-| Money column list reconciled against SCHEMA | 0.7 review | 1.2 |
-| Stream ordering that can deadlock | 0.7 review | 1.2 |
-| Runtime money-precision guard, since the storage-form claim was disproved | 0.7 review | 1.2 |
+| Splits and dividends parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.6 |
+| News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7 |
 | `two-platform` widened to what its roster row claims | 0.7 review | 1.4 |
 | Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.3 |
 | News feed queryable by date without a ticker | authored with the architecture | 1.5 |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.6 |
 | Source lists reviewed against measured coverage | 1.7 | 5.0 |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 |
+
+**Discharged at 1.2.** The money column list, now read from SCHEMA's own Notes cell rather than kept beside the check. The stream ordering that can deadlock, with a probe that fills both pipes and a test bounded by a timeout, since the failure is a hang rather than a wrong answer. And the runtime money guard, which refuses anything that is not a decimal at the point a price is bound.
 
 **Discharged at 1.1.** `writer-ownership` widened to both directions its roster row claims, which building the first component forced rather than allowed: two of its tests asserted over a population of zero and turned red the moment `MembershipLoader` landed. The zoneless instant refused, with `clock-usage` widened to read code rather than prose. The manifest checker opening every captured response and checking the file it names exists, which the first committed fixture made assertable.
