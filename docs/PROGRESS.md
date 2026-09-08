@@ -1096,3 +1096,14 @@ Notes:      the culture check's own permanent proof is what caught its first ver
             Four defects in one checkpoint's code, found by reading it rather than by running
             it, and three of the four are a falsy value or a stated number standing where a
             measurement or an absence belongs.
+
+            A fifth was found by the runners rather than by reading.
+            `TheUnsafeExceptionsAreOnTheSurfaceAPersonReads` read `artifacts/phase-report.json`
+            and `.html` from the repository root. Those are gitignored and exist only once
+            `tools/verify-phase` has been run, and verify-phase is deliberately not a CI step,
+            so the test passed here on a leftover file and failed on all three runners. It now
+            generates the report into a temporary directory and reads that, which is the pattern
+            the test beside it already used. The property is unchanged and still asserts the
+            written surface rather than the model; what changed is that it no longer reports the
+            state of a working copy. Reproduced locally by deleting `artifacts/` before running
+            the suite.
