@@ -40,7 +40,7 @@ public class SchemaColumns
         var schema = Corpus.Read("docs/SCHEMA.md");
         var declared = StoreSchema.Declared(schema, "bar");
 
-        Assert.Equal(9, declared.Count);
+        Assert.Equal(10, declared.Count);
 
         using var store = new TemporaryStore().Migrated();
         var built = StoreSchema.Built(store, "bar");

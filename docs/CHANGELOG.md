@@ -507,3 +507,49 @@ Now: two rows are added to the table, due at 1.6 and 1.7, which are the checkpoi
 Each done condition gains the clause that its fixture is a captured provider response rather than a constructed one, and each section gains a paragraph saying the feed is captured when the checkpoint opens rather than after the parser is written.
 
 Why: the row has to name the defect because the task is the easy half. "Capture the news feed" reads as a chore and gets done late or partly; "the parser is checked against itself" says what is wrong now, so a session that writes the parser first has broken something rather than deferred something. The ordering matters for the same reason: a fixture written after the parser is a transcript of what the parser already expects, whichever session writes it. Ten weighted calls found a defect that two checkpoints of green had not.
+
+### 2026-09-08 - SCHEMA.md - the four prices are one adjusted set, and the raw close is kept
+Corrects: 1.2 stored the provider's adjusted close beside its unadjusted open, high and low. The decision named **The stored series is adjusted** says one price set per bar and it is the adjusted one; a bar holding three raw prices and one adjusted price is a mixed set. 96 of the 756 stored fixture bars carried a close outside their own low and high, and nothing looked. Found at 1.3, by needing to draw a candle from one.
+
+Was:
+> | `open`, `high`, `low`, `close` | TEXT | decimal in code |
+> | `volume` | INTEGER | |
+> | `source` | TEXT | which endpoint delivered it |
+> | `observed_at` | TEXT | UTC instant |
+
+Now: the price row reads "decimal in code, and one adjusted price set", a `raw_close` column is added after `observed_at`, and two paragraphs state that the other three prices are scaled by the same factor and that the raw close is kept because it is the input to that factor.
+
+Why: the provider adjusts the close alone, so passing the other three through stores a bar that could not have traded. The raw close is kept rather than discarded because the factor is the adjusted close over the raw one, and a store holding only the output cannot recompute or audit it after a later restatement moves it; the corporate action checker's refetch is what moves it. The column sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
+
+### 2026-09-08 - CLAUDE.md - bar-bounds added to the roster, and nightly-cost re-pointed to 1.4
+Corrects: two defects. The roster had no check asserting that a stored bar could have traded, which is why 96 impossible bars survived a checkpoint. And `nightly-cost` was rostered "from 1.3" while `BUILD_PLAN.md` implements it at 1.4, so `coverage-reported` would have refused the 1.3 record: its rule is that a "from" row names a checkpoint `PROGRESS.md` does not yet record. Found by reading the roster against the plan before writing the 1.3 entry.
+
+Was:
+> | `nightly-cost` | from 1.3 | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run |
+
+Now: the same row reads `from 1.4`, and a new row is added beneath `bar-append-only`:
+
+> | `bar-bounds` | every CI run | Every stored bar has its low at or below its open and its close and its high at or above both, and carries the raw close its adjustment factor came from |
+
+Why: 1.4 is the checkpoint that builds the nightly path, so it is the first point at which the nightly cost can be asserted over a recorded run; 1.3 was the old ordering. And the finding at 1.3 was not the mixed price set, which is one arithmetic error in one component. The finding was that a bar could be internally impossible and no instrument asked, so the repair is a property asserted over the store on every run rather than a test beside the arithmetic that happens to produce it.
+
+### 2026-09-08 - BUILD_PLAN.md - contradiction F names the checkpoint that draws each element
+Corrects: 1.3's resolution said the bands and the moving averages both stay out of scope until 2.4, and 2.1 says "The chart from 1.3 extended in place with the average lines drawn" with a done condition requiring it. The averages are drawn at 2.1 and only the bands at 2.4, so the resolution deferred one element by three checkpoints past the one that builds it. Found while reading 1.3 against phase 2.
+
+Was:
+> Contradiction F resolved per element rather than per mark: candles and the volume pane are asserted at 1.3, and the bands and the moving averages stay out of scope until 2.4.
+
+Now:
+> Contradiction F resolved per element rather than per mark, and each element named at the checkpoint that draws it: candles and the volume pane are asserted at 1.3, the moving averages at 2.1 and the bands at 2.4.
+
+Why: the whole point of resolving F per element is that an element is asserted where it exists. Naming 2.4 for both defeats that for the averages, which draw a checkpoint into phase 2 and would have sat out of scope for three checkpoints after the code was there.
+
+### 2026-09-08 - BUILD_PLAN.md - contradiction D resolved, and the floor it stood on replaced
+Corrects: `Scope.Screens` answered on the table heading, so every row of a section shared one due point and "The exported report" was owed at the chart checkpoint because it sits in the same two-row table as "The app". Resolved at 1.3.
+
+Was:
+> | D | `Scope.Screens` keys on the table heading, so a phase 5 export claim is forced to be asserted at the chart checkpoint. This is the 0.7 repair of `Scope.For` failing to sweep, not a new contradiction | 1.3 |
+
+Now: the same row, with **Resolved at 1.3** and the shape of the resolution, keyed on the table and the row together with all 37 rows of section 15 reconciled against the document in both directions.
+
+Why: the sweep the 1.3 text promised found one more instance of the same defect and it was in the measurement rather than in the map. `MostDuePointsAreDerivedRatherThanWritten` counted a subject as derived from the plan when the subject was absent from the residual list and the plan could name it, which is a question about capability rather than about which branch ran. Fifteen section 15 rows are headed in ordinary English, "The table", "The chart", "Filters", "Walk", so a whole-word search of the plan's prose finds them by coincidence; all fifteen were counted as derived while a table heading supplied their due point. The floor of 40 sat under a count of 45 of which a third was miscounted, so it could not be carried across the re-key: a floor carried across a redefinition of what it counts is a floor that means something else. The count is now taken by origin, per claim rather than per distinct subject, because a subject appearing in two tables is two claims with two verdicts and counting subjects under-counted the population the partition is about. The property moved with it: the four origins are asserted to sum to the claims out of scope, so a claim answered by none cannot pass as answered, and the floor is 20 on the plan's share, far below the 50 measured, because that share falls to zero by construction as the system is built and its size is a fact about how much is built rather than about the derivation.

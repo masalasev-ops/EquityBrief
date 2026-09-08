@@ -472,33 +472,94 @@ public class ArchitectureConformance
     }
 
     [Fact]
-    public void MostDuePointsAreDerivedRatherThanWritten()
+    public void EveryOutOfScopeClaimHasExactlyOneOrigin()
     {
         var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
         var report = PhaseReport.Build(tables, NightlyRunSteps.In(File.ReadAllText(Repository.Architecture)));
 
-        var residual = Scope.ResidualSubjects();
-        var checkpoints = PlanCheckpoints.All();
+        var outOfScope = report.Claims.Where(claim => claim.Verdict == Verdict.OutOfScope).ToArray();
 
-        // Not simply "absent from the residual list": the screens tables resolve
-        // by table heading rather than by subject, so their rows are neither
-        // residual nor derived and counting them as derived would inflate this.
-        var derived = report.Claims
-            .Where(claim => claim.Verdict == Verdict.OutOfScope)
-            .Select(claim => claim.Subject)
-            .Distinct(StringComparer.Ordinal)
-            .Count(subject => !residual.Contains(subject, StringComparer.Ordinal)
-                && PlanCheckpoints.DueFor(subject, checkpoints) is not null);
+        var byOrigin = outOfScope
+            .GroupBy(claim => Scope.Resolve(claim.Table, claim.Subject).Origin)
+            .ToDictionary(group => group.Key, group => group.Count());
 
-        // Two scopes. The claims out of scope is a fact about how much of the
-        // system is unbuilt and is context. The property is how many of their
-        // due points the plan supplies, because that is the half a reorder
-        // moves on its own, and a run where it fell to zero would mean the
-        // derivation had quietly stopped resolving anything.
+        int Count(DueOrigin origin) => byOrigin.TryGetValue(origin, out var found) ? found : 0;
+
+        var plan = Count(DueOrigin.Plan);
+        var screens = Count(DueOrigin.Screens);
+        var written = Count(DueOrigin.Residual);
+        var excepted = Count(DueOrigin.Exception);
+
+        // The property, and the reason this replaced a single count. Every claim
+        // out of scope was answered by exactly one of the four, so a claim
+        // answered by none cannot be counted as answered by all of them, and a
+        // sum that does not reach the total means a branch has appeared that
+        // nothing here is measuring.
+        Assert.Equal(0, Count(DueOrigin.Nothing));
+        Assert.Equal(outOfScope.Length, plan + screens + written + excepted);
+
+        // Three scopes, and only one of them is floored.
+        //
+        // The claims out of scope is a fact about how much of the system is
+        // unbuilt. So is the count answered by the plan: every checkpoint that
+        // lands moves claims out of this population, and at phase 6 it is zero
+        // by construction. Neither size is a fact about the property, so the
+        // floor sits far enough below the value that ordinary building never
+        // reaches it, and catches the one thing worth catching: a derivation
+        // that has stopped resolving anything at all.
+        //
+        // The floor that stood here was 40 against a count of 45, and it was
+        // anchored against a population this check no longer has. Fifteen of
+        // those 45 were section 15 rows answered by their table heading, which
+        // the old count read as derived from the plan because the plan's prose
+        // contains their words. Measured by origin the same tree gives 30, so
+        // the old floor did not survive the correction and could not be carried.
         Assert.True(
-            derived >= 40,
-            $"{derived} subjects take their due point from BUILD_PLAN, expected at least 40. " +
-            $"49 did when this floor was set, over {report.Count(Verdict.OutOfScope)} claims out of scope.");
+            plan >= 20,
+            $"{plan} out-of-scope claims take their due point from BUILD_PLAN, expected at least 20. " +
+            $"59 did when this floor was set, over {outOfScope.Length} claims out of scope, " +
+            $"beside {screens} from section 15, {written} written into Scope and {excepted} declared exceptions.");
+    }
+
+    [Fact]
+    public void EveryScreenRowHasItsOwnDuePointAndNoneIsWrittenForARowThatIsGone()
+    {
+        // Contradiction D, in both directions. Keyed on the table heading alone,
+        // a section's rows shared one due point and a row could be added to the
+        // document without anybody deciding when it is owed. Keyed on the row,
+        // omission has to be caught, because a written map is only as current as
+        // the thing it is read against.
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+
+        var inDocument = tables
+            .Where(table => Scope.ScreensTables.Contains(table.Heading, StringComparer.Ordinal))
+            .SelectMany(table => table.Body
+                .Where(row => row.Count > 0)
+                .Select(row => CheckReach.Key(table.Heading, row[0])))
+            .ToArray();
+
+        Assert.Equal(Scope.ScreensTables.Length, tables.Count(
+            table => Scope.ScreensTables.Contains(table.Heading, StringComparer.Ordinal)));
+
+        // Stated in advance: seven tables, 37 rows. A run finding none would
+        // otherwise pass both directions over an empty set.
+        Assert.Equal(37, inDocument.Length);
+
+        var written = Scope.ScreensKeys();
+
+        var undecided = inDocument.Where(key => !written.Contains(key, StringComparer.Ordinal)).ToArray();
+        var stale = written.Where(key => !inDocument.Contains(key, StringComparer.Ordinal)).ToArray();
+
+        Assert.True(
+            undecided.Length == 0,
+            "These section 15 rows have no due point of their own: " + string.Join("; ", undecided) +
+            ". A row added to the document without one would inherit nothing, and inheriting a " +
+            "table's point is what contradiction D was.");
+
+        Assert.True(
+            stale.Length == 0,
+            "These due points name a section 15 row the document no longer has: " +
+            string.Join("; ", stale) + ".");
     }
 
     [Fact]

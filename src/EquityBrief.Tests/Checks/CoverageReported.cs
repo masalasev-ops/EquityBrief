@@ -37,6 +37,7 @@ public class CoverageReported
         ["build-properties-central"] = "BuildPropertiesCentral",
         ["api-isolation"] = "ApiIsolation",
         ["bar-append-only"] = "StoreWrites",
+        ["bar-bounds"] = "BarBounds",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };

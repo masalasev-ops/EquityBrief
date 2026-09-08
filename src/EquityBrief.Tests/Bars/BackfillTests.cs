@@ -329,12 +329,12 @@ public class BackfillTests
 
         await backfill.RunAsync(Index, "run-1");
 
-        var types = Column(store, "SELECT DISTINCT typeof(open) || ' ' || typeof(close) || ' ' || typeof(volume) FROM bar;");
+        var types = Column(store, "SELECT DISTINCT typeof(open) || ' ' || typeof(close) || ' ' || typeof(volume) || ' ' || typeof(raw_close) FROM bar;");
 
         // TEXT for the money columns and INTEGER for the count, which is the
         // storage half of the money rule holding in a populated store rather
         // than only in the migration text price-storage-form reads.
-        Assert.Equal("text text integer", Assert.Single(types));
+        Assert.Equal("text text integer text", Assert.Single(types));
 
         // Two shapes the generated fixture never produced, because it wrote
         // every price as a two-decimal string. The provider sends JSON numbers,
@@ -345,14 +345,24 @@ public class BackfillTests
         var row = Rows(store, "SELECT open, close FROM bar WHERE ticker = 'AAPL' AND session_date = '2025-09-05';");
         var (open, close) = Assert.Single(row);
 
-        Assert.Equal("240", open);
+        // The capture reads open 240, close 239.69, adjusted_close 238.8078.
+        // All four prices are adjusted by the same factor, so the stored open is
+        // 240 * 238.8078 / 239.69 and not the 240 the payload carries: three raw
+        // prices beside one adjusted one is a bar that could not have traded.
+        Assert.Equal("239.1167", open);
         Assert.Equal("238.8078", close);
-        Assert.Equal(240m, EquityBrief.Data.Money.FromStorage(open));
+        Assert.Equal(239.1167m, EquityBrief.Data.Money.FromStorage(open));
         Assert.Equal(238.8078m, EquityBrief.Data.Money.FromStorage(close));
 
         // And the fourth decimal is genuinely held rather than rendered back by
         // chance: truncating to two would give a different value here.
         Assert.NotEqual(238.81m, EquityBrief.Data.Money.FromStorage(close));
+
+        // The raw close is kept beside the adjusted set, because it is the input
+        // to the factor and a store holding only the output cannot audit it.
+        var raw = Column(store, "SELECT raw_close FROM bar WHERE ticker = 'AAPL' AND session_date = '2025-09-05';");
+
+        Assert.Equal("239.69", Assert.Single(raw));
     }
 
     [Fact]

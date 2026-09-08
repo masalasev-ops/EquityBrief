@@ -75,11 +75,27 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The provider's unadjusted close, kept beside the adjusted set.
+    //
+    // Added rather than folded into migration 3, because a store already at
+    // version 3 does not re-run it and would carry the table without the column.
+    // Added rather than recreated, because bar-append-only forbids a migration
+    // dropping a bar table, and that rule is worth more than a tidy column
+    // order: SQLite appends, so SCHEMA declares this one last.
+    //
+    // Nullable because SQLite cannot add a NOT NULL column, and a default would
+    // be a value nobody wrote. Every bar written from here carries it, and the
+    // check asserts that over the store rather than trusting the type.
+    const string AddRawClose = @"
+        ALTER TABLE bar ADD COLUMN raw_close TEXT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
         new Migration(2, "create membership", CreateMembership),
         new Migration(3, "create bar", CreateBar),
+        new Migration(4, "add bar.raw_close", AddRawClose),
     ];
 
     public static int LatestVersion => All.Max(migration => migration.Version);

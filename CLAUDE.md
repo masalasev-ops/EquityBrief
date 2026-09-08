@@ -160,9 +160,10 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `build-properties-central` | every CI run | No project file states a target framework or a warning setting of its own, and `src/Directory.Build.props` states both |
 | `api-isolation` | every CI run | `EquityBrief.Api` has no transitive reference to `EquityBrief.Worker`, read from the compiled dependency file |
 | `bar-append-only` | every CI run | Nothing in the shipped source deletes or updates a bar table, and no migration deletes, updates or drops one |
+| `bar-bounds` | every CI run | Every stored bar has its low at or below its open and its close and its high at or above both, and carries the raw close its adjustment factor came from |
 | `ci-parity` | every CI run | `tools/ci.ps1` and `tools/ci.sh` run the same steps in the same order, and a step that fails fails the script it runs in |
 | `two-platform` | the matrix | The suite passes on both windows and macos runners |
-| `nightly-cost` | from 1.3 | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run |
+| `nightly-cost` | from 1.4 | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run |
 | `fixture-replay` | from 2.1 | The pipeline over the committed fixture matches every expectation, with every figure it produces named by one |
 | `listings-coverage` | from 4.1 | A listings row exists for every index member on every night the run completed |
 | `claim-admissibility` | from 5.1 | A poisoned paragraph, an unsourced claim, and each inadmissible document class are refused, and nothing resting on them is written |

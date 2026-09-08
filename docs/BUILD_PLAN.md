@@ -50,7 +50,7 @@ Each is two documents disagreeing, which `CLAUDE.md` calls a finding rather than
 | A | SCHEMA's bar note says the fetcher drops sessions older than the retention window; its ownership table gives Delete to the corporate action checker alone and says nothing else may delete a bar | 1.4 |
 | B | The limits table says the nightly run makes zero per-name network calls; the run order backfills a new joiner per ticker. **Resolved at 1.2**, the limit carved rather than deleted | 1.2 |
 | C | The failure table names a suspect state for a name whose corporate action check failed; no store column holds it | 1.6 |
-| D | `Scope.Screens` keys on the table heading, so a phase 5 export claim is forced to be asserted at the chart checkpoint. This is the 0.7 repair of `Scope.For` failing to sweep, not a new contradiction | 1.3 |
+| D | `Scope.Screens` keys on the table heading, so a phase 5 export claim is forced to be asserted at the chart checkpoint. This is the 0.7 repair of `Scope.For` failing to sweep, not a new contradiction. **Resolved at 1.3**, keyed on the table and the row together, with all 37 rows of section 15 reconciled against the document in both directions | 1.3 |
 | E | The catalogue gives four components a `calendar` read that SCHEMA does not declare and no component writes | 3.0 |
 | F | Section 15.5's Level chart mark names four elements, candles, bands, moving averages and a volume pane, and two of them cannot exist until phase 2, while the phase table puts a chart in phase 1 | 1.3 |
 | G | The theme research runner's catalogue row declares it reads the theme store and source documents; its matrix row carries W in both columns and no R. **Resolved at 1.1**, both cells now R W | 1.1 |
@@ -101,7 +101,7 @@ Candles are neutral ink, hollow for a close above the open and filled for below.
 
 Contradiction D resolved: `Scope.Screens` keyed on table and subject as `Scope.For` now is, and the harness swept for any other place a verdict, placement or reach is keyed on a heading alone, with the count found stated in advance.
 
-Contradiction F resolved per element rather than per mark: candles and the volume pane are asserted at 1.3, and the bands and the moving averages stay out of scope until 2.4. The whole mark waiting for phase 2 would leave what exists unasserted for a phase and a half.
+Contradiction F resolved per element rather than per mark, and each element named at the checkpoint that draws it: candles and the volume pane are asserted at 1.3, the moving averages at 2.1 and the bands at 2.4. The whole mark waiting for phase 2 would leave what exists unasserted for a phase and a half.
 
 One carried obligation re-pointed here from 1.5 and discharged: absolute path matching anywhere in a value rather than at position zero, which matters because `run_log.detail` is where exception text lands and exception text carries absolute paths mid-string.
 
