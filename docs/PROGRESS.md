@@ -1470,3 +1470,62 @@ Carried:    unchanged from the entry above, with the two parser rows now in `BUI
             each section says the request is spent when the checkpoint opens rather than after
             the parser is written. A fixture written after the parser is a transcript of what
             the parser already expects, whichever session writes it.
+
+### 1.2 - the two populations counted rather than described                        2026-09-08
+Corrects:   the entry above, which settled the distinction between constituents and names in
+            `fixtures/README.md` and left it there. One fact in one place was the right call
+            and half the work. A distinction that lives only in prose is not asserted, and this
+            one is positioned to be read past: phase 2's sentence says the fixture widens to
+            four names and this fixture holds five constituents, so a reader who has not been
+            told they are different populations sees an obligation already met. The sentence
+            also carried two numbers that nothing checked, which is the drift this corpus
+            polices everywhere else, created by the act of writing it.
+Built:      `Fixtures.Populations`, which counts both from the folder. Names are the tickers
+            with a captured series, read from the `bars-` files. Constituents are the rows the
+            membership payload holds, read through the shipped parser rather than by a second
+            reading of the same JSON, so a parser that stopped reading a constituent moves this
+            figure rather than leaving it agreeing with itself.
+
+            The phase report carries both, on all three surfaces and never as a sum: the
+            console line reads "5 constituents and 3 names", the JSON carries them as separate
+            fields with a per-folder breakdown, and the HTML gains a table naming the departed
+            constituents and the ones with no series. A total would read as one population of
+            eight, which is the reading the whole distinction exists to prevent.
+Measured:   over the one committed fixture: 5 constituents, 3 names, 2 departed, and the
+            constituents with no series are exactly the departed ones.
+
+            That last equality is the property rather than the count. A constituent with no
+            captured series is a name the backfill would not fetch, meaning one that has left;
+            a current member with no series is a fixture fault rather than a smaller
+            population, because the backfill refuses a current member it holds no capture for.
+            So the two populations differ in the direction the rule predicts, and the counts
+            cannot be made equal by adding a series for a name that is not in the index. The
+            other direction is asserted too: a `bars-` file naming no constituent is an orphan
+            that would inflate the smaller population against nothing.
+
+            Proved against planted folders outside the repository, not only against the
+            committed fixture, which has one shape and would let a counter that returned the
+            same number twice pass. Three constituents with a series for two counts 3 and 2;
+            giving the departed name a series as well makes the counts agree, which is the
+            counter-test that stops the difference assertion from being satisfied by a check
+            that always reports one; an orphan series counts 3 and 4; and a folder with no
+            membership payload counts 0 constituents with its names still counting, which is
+            the gap fixture's shape at 1.5.
+
+            The README's two numbers are asserted against the derived ones. Proved by changing
+            the 5 to a 4 and watching the test go red, then restoring it. The permanent proof
+            is the assertion: the sentence cannot drift from the folder without failing.
+Found:      why the collapse in the entry above matters beyond the assertion that now covers
+            it. It was dead from the day it was written. The invented leave date did not create
+            the dead stretch, it shortened it, and that is the worse of the two failures.
+
+            A wrong value that widens a dead range makes the assertion visibly vacuous, because
+            the date ends up an absurd distance from the boundary it claims to test. One that
+            narrows it leaves the assertion looking like it is testing an edge. The invented
+            leave put the dead stretch at five months and the assertion one day inside it,
+            which reads exactly like a date chosen to fall just after a boundary. The real date
+            puts the same stretch at two years and five months. Neither was testing anything,
+            and it took moving the date onto the boundary to show it.
+Verified:   `tools/ci.ps1` green, 178 tests, up from 175. `tools/verify-phase.ps1` green: 162
+            claims, 11 pass, 0 fail, 151 out of scope, 0 unexamined, 18 reconciled against a
+            floor of 12. No floor was raised. This entry was written before that run.

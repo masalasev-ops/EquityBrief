@@ -222,7 +222,7 @@ internal static class PhaseReport
         return new PhaseReportModel(
             placed,
             claims,
-            fixture ?? new FixtureStatus(0, "ABSENT", "not looked for"),
+            fixture ?? new FixtureStatus(0, "ABSENT", "not looked for", []),
             coverage ?? [],
             reconciled)
         {
