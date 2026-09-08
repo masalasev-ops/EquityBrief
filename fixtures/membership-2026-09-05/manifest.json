@@ -7,25 +7,26 @@
       "file": "index-constituents.json",
       "endpoint": "fundamentals/GSPC.INDX",
       "query": "fundamentals/GSPC.INDX?fmt=json",
-      "fetchedAt": "2026-09-05T21:10:00Z"
+      "fetchedAt": "2026-09-08T12:44:31Z",
+      "trimmedTo": "the four names this fixture is built around, from the 503 in Components and the 822 in HistoricalTickerComponents. The provider's keys are kept as sent, so the gaps in them show where the cut was made. General is whole and every field, nesting and type is the provider's."
     },
     {
       "file": "bars-AAPL.json",
       "endpoint": "eod/AAPL.US",
       "query": "eod/AAPL.US?from=2025-09-04&to=2026-09-04&period=d&fmt=json",
-      "fetchedAt": "2026-09-05T21:12:00Z"
+      "fetchedAt": "2026-09-08T12:37:08Z"
     },
     {
       "file": "bars-MSFT.json",
       "endpoint": "eod/MSFT.US",
       "query": "eod/MSFT.US?from=2025-09-04&to=2026-09-04&period=d&fmt=json",
-      "fetchedAt": "2026-09-05T21:12:00Z"
+      "fetchedAt": "2026-09-08T12:37:09Z"
     },
     {
       "file": "bars-KEYS.json",
       "endpoint": "eod/KEYS.US",
       "query": "eod/KEYS.US?from=2025-09-04&to=2026-09-04&period=d&fmt=json",
-      "fetchedAt": "2026-09-05T21:12:00Z"
+      "fetchedAt": "2026-09-08T12:37:09Z"
     }
   ]
 }

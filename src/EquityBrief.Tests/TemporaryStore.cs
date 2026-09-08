@@ -44,7 +44,24 @@ internal sealed class TemporaryStore : IDisposable
 
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
+        // This store's pool, not every pool in the process.
+        //
+        // ClearAllPools is process-wide and xUnit runs test classes in parallel,
+        // so a store disposing here pulled pooled connections out from under
+        // tests in other classes that were part-way through reading. Measured at
+        // one failure in fifteen runs before the change and always in the test
+        // that makes four sequential queries, which is the widest window rather
+        // than a different fault.
+        //
+        // An intermittent red that goes green on a re-run is worse than a
+        // reliable one. It is the failure that teaches a person to press the
+        // button again instead of reading the result, and on a two-platform
+        // matrix it would have arrived as one runner in fifteen going red for no
+        // reason anyone could reproduce.
+        using (var connection = new SqliteConnection(MigrationRunner.ConnectionStringFor(DatabaseFile)))
+        {
+            SqliteConnection.ClearPool(connection);
+        }
 
         try
         {

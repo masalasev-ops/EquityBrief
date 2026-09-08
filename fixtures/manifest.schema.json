@@ -40,6 +40,10 @@
           "fetchedAt": {
             "type": "string",
             "description": "the UTC instant of the fetch, so what was known at the time is legible later"
+          },
+          "trimmedTo": {
+            "type": "string",
+            "description": "present when the file holds a subset of what the query returned, saying which subset and why. A fixture may cut a response down to keep its population small, and without this the file reads as the whole response and a later session re-captures it to fix an absence that was deliberate. What may never be trimmed is the shape: the keys, the nesting and the types are the provider's or the file is not a capture."
           }
         }
       }

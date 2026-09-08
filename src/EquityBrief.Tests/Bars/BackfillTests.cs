@@ -13,6 +13,13 @@ namespace EquityBrief.Tests.Bars;
 // constituents of which three are current members and one has left, and every
 // count below is over those. A claim about roughly five hundred live names is
 // not something this suite can assert, and saying so is the point.
+//
+// Every expectation here is derived from the captured series or from the
+// exchange calendar. The fixture held a seeded random walk until 1.2 replaced
+// it, and each of these figures was different against that walk: a generator
+// that emits a bar for every weekday produces a year the market never trades.
+// An expectation carried across from generated data is an expectation about the
+// generator.
 public class BackfillTests
 {
     const string Index = "GSPC";
@@ -23,6 +30,66 @@ public class BackfillTests
     // The fixture date, so the year the backfill asks for ends where the
     // captured series ends rather than wherever this machine is today.
     static readonly DateTimeOffset Instant = new(2026, 9, 5, 21, 10, 0, TimeSpan.Zero);
+
+    // The window the backfill asks for at that instant: the year ending on the
+    // session date. The capture reaches one session further back, so the window
+    // filter has something to exclude and is exercised rather than assumed.
+    static readonly DateOnly WindowFrom = new(2025, 9, 5);
+    static readonly DateOnly WindowTo = new(2026, 9, 4);
+
+    // The days the exchange did not trade inside that window.
+    //
+    // This is the independently derived expectation 1.2 owes. Counting the rows
+    // the capture happens to hold and asserting that number back is regression
+    // detection wearing verification's clothes; naming the closures and deriving
+    // the session count from them is a statement about the market that the
+    // capture is then checked against. If the provider silently drops a session,
+    // a frozen count of 252 still passes and this does not.
+    //
+    // It is also the fact 1.5 turns on. A gap is a session the exchange traded
+    // and the store does not hold, so the detection rule cannot be "a weekday
+    // with no bar": these nine weekdays are missing from every clean series
+    // there is, and a rule that counted weekdays would have raised nine false
+    // gaps on the first real night while passing over the generated fixture,
+    // which had no holidays in it at all
+    // (see: A gap is a session the exchange traded and the store does not hold).
+    static readonly DateOnly[] Closures =
+    [
+        new(2025, 11, 27), // Thanksgiving
+        new(2025, 12, 25), // Christmas Day
+        new(2026, 1, 1),   // New Year's Day
+        new(2026, 1, 19),  // Martin Luther King Jr Day
+        new(2026, 2, 16),  // Washington's Birthday
+        new(2026, 4, 3),   // Good Friday
+        new(2026, 5, 25),  // Memorial Day
+        new(2026, 6, 19),  // Juneteenth
+        new(2026, 7, 3),   // Independence Day, observed on the Friday
+    ];
+
+    // Weekdays in the window, less the closures. Derived here rather than
+    // written down, so the two halves of the arithmetic cannot drift apart.
+    static IReadOnlyList<string> TradingSessions()
+    {
+        var sessions = new List<string>();
+
+        for (var day = WindowFrom; day <= WindowTo; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday || Closures.Contains(day))
+            {
+                continue;
+            }
+
+            sessions.Add(day.ToString("yyyy-MM-dd"));
+        }
+
+        return sessions;
+    }
+
+    // 261 weekdays less 9 closures. Stated so the derivation above is legible
+    // as a number and a reader can check it without running anything.
+    const int SessionsInTheYear = 252;
+    const int CurrentMembers = 3;
+    const int RowsPerRun = SessionsInTheYear * CurrentMembers;
 
     static IClock Clock() => FixedClock.At(Instant, SessionZones.UnitedStates);
 
@@ -44,6 +111,33 @@ public class BackfillTests
     }
 
     [Fact]
+    public void TheDerivedYearIsTheOneTheArithmeticSaysItIs()
+    {
+        // The derivation checked against its own stated total before any of it
+        // is used as an expectation, so a mistyped closure fails here with the
+        // arithmetic in view rather than downstream as a row count nobody can
+        // trace back.
+        var weekdays = 0;
+
+        for (var day = WindowFrom; day <= WindowTo; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
+            {
+                weekdays++;
+            }
+        }
+
+        Assert.Equal(261, weekdays);
+        Assert.Equal(9, Closures.Length);
+        Assert.All(Closures, closure => Assert.True(
+            closure.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday),
+            $"{closure:yyyy-MM-dd} is a weekend, so naming it as a closure removes nothing."));
+
+        Assert.Equal(SessionsInTheYear, weekdays - Closures.Length);
+        Assert.Equal(SessionsInTheYear, TradingSessions().Count);
+    }
+
+    [Fact]
     public async Task EveryCurrentMemberHoldsAFullYearAndTheNameThatLeftIsNotFetched()
     {
         using var store = await WithMembership();
@@ -54,10 +148,10 @@ public class BackfillTests
         // Three current members, one departed name. The departed one keeps the
         // history it has, which here is none, and is not fetched: a backfill is
         // owed for names in the index, not for every name ever in it.
-        Assert.Equal(3, outcome.Members);
-        Assert.Equal(3, outcome.Owed);
-        Assert.Equal(3, outcome.Requests);
-        Assert.Equal(3, feed.Requests);
+        Assert.Equal(CurrentMembers, outcome.Members);
+        Assert.Equal(CurrentMembers, outcome.Owed);
+        Assert.Equal(CurrentMembers, outcome.Requests);
+        Assert.Equal(CurrentMembers, feed.Requests);
 
         var tickers = Column(store, "SELECT DISTINCT ticker FROM bar ORDER BY ticker;");
 
@@ -65,22 +159,59 @@ public class BackfillTests
         Assert.DoesNotContain("XRAY", tickers);
 
         // Per name rather than in total, so a name short of its year is visible
-        // instead of being covered by another name's surplus.
-        //
-        // 261 weekday sessions, not the 262 the captured file holds. The window
-        // the backfill asks for is the year ending on the session date, which at
-        // the fixture instant is 2026-09-05, so it starts on 2025-09-05 and the
-        // capture's first bar of 2025-09-04 falls outside it. The window is
-        // right and the capture simply reaches one day further back; asserting
-        // the edges rather than only the count is what makes that legible.
+        // instead of being covered by another name's surplus, and against the
+        // derived session list rather than against a count, so a series holding
+        // the right number of the wrong days fails.
+        var expected = TradingSessions();
+
         foreach (var ticker in tickers)
         {
             var sessions = Column(store, $"SELECT session_date FROM bar WHERE ticker = '{ticker}' ORDER BY session_date;");
 
-            Assert.Equal(261, sessions.Count);
-            Assert.Equal("2025-09-05", sessions[0]);
-            Assert.Equal("2026-09-04", sessions[^1]);
+            Assert.Equal(expected, sessions);
         }
+    }
+
+    [Fact]
+    public async Task TheCaptureReachesFurtherBackThanTheWindowAndTheSurplusIsNotStored()
+    {
+        // The window filter, exercised rather than assumed. The capture starts
+        // one session before the window opens, so a backfill that stored what
+        // the provider sent rather than what it asked for would hold that row.
+        var captured = RecordedHistoricalBarFeed.Parse(
+            await File.ReadAllTextAsync(Path.Combine(FixtureFolder(), "bars-AAPL.json")), "AAPL");
+
+        Assert.Equal(SessionsInTheYear + 1, captured.Count);
+        Assert.Equal(new DateOnly(2025, 9, 4), captured[0].SessionDate);
+
+        using var store = await WithMembership();
+        var backfill = Loader(store, out _);
+
+        await backfill.RunAsync(Index, "run-1");
+
+        var held = Column(store, "SELECT session_date FROM bar WHERE ticker = 'AAPL' ORDER BY session_date;");
+
+        Assert.DoesNotContain("2025-09-04", held);
+        Assert.Equal(WindowFrom.ToString("yyyy-MM-dd"), held[0]);
+        Assert.Equal(WindowTo.ToString("yyyy-MM-dd"), held[^1]);
+    }
+
+    [Fact]
+    public void TheThreeNamesShareOneSessionSet()
+    {
+        // A provider-side property the store cannot show. Three names on one
+        // exchange trade on the same days, so a name whose captured series is
+        // thin is a fixture fault rather than a market fact, and a fixture meant
+        // to be clean is the wrong place to discover one.
+        var sets = new[] { "AAPL", "MSFT", "KEYS" }
+            .Select(ticker => RecordedHistoricalBarFeed
+                .Parse(File.ReadAllText(Path.Combine(FixtureFolder(), $"bars-{ticker}.json")), ticker)
+                .Select(bar => bar.SessionDate.ToString("yyyy-MM-dd"))
+                .ToArray())
+            .ToArray();
+
+        Assert.Equal(sets[0], sets[1]);
+        Assert.Equal(sets[0], sets[2]);
     }
 
     [Fact]
@@ -98,14 +229,14 @@ public class BackfillTests
         // Never repeated for a name that already holds its year. Not merely
         // harmless when repeated: no request is made at all, which is the whole
         // reason the rule exists rather than relying on the insert conflicting.
-        Assert.Equal(3, first.Requests);
+        Assert.Equal(CurrentMembers, first.Requests);
         Assert.Equal(0, second.Owed);
         Assert.Equal(0, second.Requests);
         Assert.Equal(0, second.RowsWritten);
-        Assert.Equal(3, feed.Requests);
+        Assert.Equal(CurrentMembers, feed.Requests);
 
         Assert.Equal(before, after);
-        Assert.Equal(783, before.Count);
+        Assert.Equal(RowsPerRun, before.Count);
     }
 
     [Fact]
@@ -121,17 +252,66 @@ public class BackfillTests
         // value, because the run log is the surface the operator reads it on.
         var logged = Rows(store, "SELECT run_id, CAST(network_requests AS TEXT) FROM run_log WHERE stage = 'backfill' ORDER BY run_id;");
 
-        Assert.Equal([("run-1", "3"), ("run-2", "0")], logged);
+        Assert.Equal([("run-1", $"{CurrentMembers}"), ("run-2", "0")], logged);
 
         var written = Rows(store, "SELECT run_id, CAST(rows_written AS TEXT) FROM run_log WHERE stage = 'backfill' ORDER BY run_id;");
 
-        Assert.Equal([("run-1", "783"), ("run-2", "0")], written);
+        Assert.Equal([("run-1", $"{RowsPerRun}"), ("run-2", "0")], written);
 
         // And the backfill costs no model call, like everything on the nightly
         // path.
         var free = Column(store, "SELECT DISTINCT CAST(model_calls AS TEXT) FROM run_log;");
 
         Assert.Equal("0", Assert.Single(free));
+    }
+
+    [Fact]
+    public async Task TheStoredCloseIsTheAdjustedOneAndTheCapturedSeriesShowsTheDifference()
+    {
+        // Until 1.2 this could only be asserted over a payload written for the
+        // test, because the generated fixture set adjusted_close equal to close
+        // on every row. A parser reading the wrong field passed the fixture and
+        // failed only the one synthetic case.
+        //
+        // The captured series carries the difference on most rows of two names
+        // and on none of the third, so the claim is now load-bearing where it
+        // matters and the fixture also holds the case where the two agree.
+        using var store = await WithMembership();
+        var backfill = Loader(store, out _);
+
+        await backfill.RunAsync(Index, "run-1");
+
+        // AAPL's first stored session. The capture reads
+        //   "open":240, "close":239.69, "adjusted_close":238.8078
+        // so a parser taking close would store 239.69 here.
+        var first = Column(store, "SELECT close FROM bar WHERE ticker = 'AAPL' AND session_date = '2025-09-05';");
+
+        Assert.Equal("238.8078", Assert.Single(first));
+
+        // Counted over the window, per name, because the population differs by
+        // name and a total would hide the one that is zero. KEYS pays no
+        // dividend and split in the window, so its adjusted series is its close
+        // series, which is the case a fixture of only adjusted names would miss.
+        var divergent = new Dictionary<string, int>
+        {
+            ["AAPL"] = 232,
+            ["MSFT"] = 240,
+            ["KEYS"] = 0,
+        };
+
+        foreach (var (ticker, expected) in divergent)
+        {
+            var bars = RecordedHistoricalBarFeed
+                .Parse(File.ReadAllText(Path.Combine(FixtureFolder(), $"bars-{ticker}.json")), ticker)
+                .Where(bar => bar.SessionDate >= WindowFrom && bar.SessionDate <= WindowTo)
+                .ToArray();
+
+            var raw = RawCloses(ticker);
+            var differs = bars.Count(bar => raw[bar.SessionDate] != bar.Close);
+
+            Assert.Equal(SessionsInTheYear, bars.Length);
+            Assert.Equal(expected, differs);
+        }
     }
 
     [Fact]
@@ -149,10 +329,23 @@ public class BackfillTests
         // than only in the migration text price-storage-form reads.
         Assert.Equal("text text integer", Assert.Single(types));
 
-        var close = Column(store, "SELECT close FROM bar WHERE ticker = 'AAPL' ORDER BY session_date LIMIT 1;");
+        // Two shapes the generated fixture never produced, because it wrote
+        // every price as a two-decimal string. The provider sends JSON numbers,
+        // renders a whole number with no decimal part at all, and carries four
+        // decimal places on an adjusted close. All three reach storage through
+        // the money helper, and a route through double would round the last of
+        // them away.
+        var row = Rows(store, "SELECT open, close FROM bar WHERE ticker = 'AAPL' AND session_date = '2025-09-05';");
+        var (open, close) = Assert.Single(row);
 
-        // Round-trips through the money helper, in the invariant form.
-        Assert.Equal(EquityBrief.Data.Money.FromStorage(close[0]), decimal.Parse(close[0], System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal("240", open);
+        Assert.Equal("238.8078", close);
+        Assert.Equal(240m, EquityBrief.Data.Money.FromStorage(open));
+        Assert.Equal(238.8078m, EquityBrief.Data.Money.FromStorage(close));
+
+        // And the fourth decimal is genuinely held rather than rendered back by
+        // chance: truncating to two would give a different value here.
+        Assert.NotEqual(238.81m, EquityBrief.Data.Money.FromStorage(close));
     }
 
     [Fact]
@@ -183,22 +376,48 @@ public class BackfillTests
     [Fact]
     public void TheRecordedFeedTakesTheAdjustedCloseAndRefusesWhatItCannotRead()
     {
-        // The stored series is adjusted, so the parser reads adjusted_close and
-        // not close. Taking the wrong one would leave the series drifting from
-        // every chart it is compared against, with nothing failing.
-        var bars = RecordedHistoricalBarFeed.Parse(
-            """[{"date":"2026-09-04","open":"10.00","high":"11.00","low":"9.00","close":"10.50","adjusted_close":"5.25","volume":1000}]""",
-            "TEST");
+        // Written with JSON numbers, which is the shape the provider sends. It
+        // read strings until 1.2, matching a fixture the generator had written
+        // as strings, so the number path was never exercised anywhere.
+        Assert.Equal(5.25m, Assert.Single(RecordedHistoricalBarFeed.Parse(
+            """[{"date":"2026-09-04","open":10,"high":11.00,"low":9,"close":10.50,"adjusted_close":5.25,"volume":1000}]""",
+            "TEST")).Close);
 
-        Assert.Equal(5.25m, Assert.Single(bars).Close);
+        // A string is still accepted, because a provider that quotes its numbers
+        // is sending a price and not a fault.
+        Assert.Equal(5.25m, Assert.Single(RecordedHistoricalBarFeed.Parse(
+            """[{"date":"2026-09-04","open":"10.00","high":"11.00","low":"9.00","close":"10.50","adjusted_close":"5.25","volume":1000}]""",
+            "TEST")).Close);
 
         Assert.Throws<FormatException>(() => RecordedHistoricalBarFeed.Parse("{}", "TEST"));
         Assert.Throws<FormatException>(() => RecordedHistoricalBarFeed.Parse(
-            """[{"date":"04/09/2026","open":"1","high":"1","low":"1","close":"1","adjusted_close":"1","volume":1}]""",
+            """[{"date":"04/09/2026","open":1,"high":1,"low":1,"close":1,"adjusted_close":1,"volume":1}]""",
             "TEST"));
         Assert.Throws<FormatException>(() => RecordedHistoricalBarFeed.Parse(
-            """[{"date":"2026-09-04","open":"1","high":"1","low":"1","close":"1","volume":1}]""",
+            """[{"date":"2026-09-04","open":1,"high":1,"low":1,"close":1,"volume":1}]""",
             "TEST"));
+
+        // A null where a number is expected, which a live payload produces for a
+        // session the provider holds no price for and a generator never emits.
+        Assert.Throws<FormatException>(() => RecordedHistoricalBarFeed.Parse(
+            """[{"date":"2026-09-04","open":1,"high":1,"low":1,"close":1,"adjusted_close":null,"volume":1}]""",
+            "TEST"));
+    }
+
+    // The unadjusted closes, read straight from the captured file. The feed
+    // deliberately does not expose them, so the comparison above reads the
+    // payload rather than asking the parser for the field it is being tested
+    // for not taking.
+    static Dictionary<DateOnly, decimal> RawCloses(string ticker)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(
+            File.ReadAllText(Path.Combine(FixtureFolder(), $"bars-{ticker}.json")));
+
+        return document.RootElement.EnumerateArray().ToDictionary(
+            entry => DateOnly.ParseExact(
+                entry.GetProperty("date").GetString()!, "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture),
+            entry => entry.GetProperty("close").GetDecimal());
     }
 
     static IReadOnlyList<string> Column(TemporaryStore store, string sql)

@@ -37,9 +37,13 @@ public class MembershipLoaderTests
         var left = Rows(store, @"SELECT ticker, ""left"" FROM membership WHERE ""left"" IS NOT NULL;");
 
         // The fixture carries one name that left, and the date is the provider's
-        // rather than the night's, so a name that went in March is not recorded
-        // as having gone in September.
-        Assert.Equal(("XRAY", "2026-03-21"), Assert.Single(left));
+        // rather than the night's, so a name that went in 2024 is not recorded
+        // as having gone on the night the fixture was captured.
+        //
+        // 2024-04-03 is what the provider reports for XRAY. The hand-built
+        // fixture said 2026-03-21, which was invented, and every date below was
+        // chosen around it.
+        Assert.Equal(("XRAY", "2024-04-03"), Assert.Single(left));
 
         var current = Rows(store, @"SELECT ticker, ""left"" FROM membership WHERE ""left"" IS NULL;");
 
@@ -63,13 +67,13 @@ public class MembershipLoaderTests
         // This is the whole reason membership carries spans, and a query that
         // returned tonight's set for a past date would show a name as absent
         // from a window it was part of.
-        var before = await loader.MembersOnAsync(Index, new DateOnly(2026, 3, 20));
+        var before = await loader.MembersOnAsync(Index, new DateOnly(2024, 4, 2));
 
         Assert.Equal(["AAPL", "KEYS", "MSFT", "XRAY"], before);
 
         // On the leave date itself the name is already out: the date is the day
         // it stopped being a member, so the comparison is strict on that edge.
-        var onTheDay = await loader.MembersOnAsync(Index, new DateOnly(2026, 3, 21));
+        var onTheDay = await loader.MembersOnAsync(Index, new DateOnly(2024, 4, 3));
 
         Assert.DoesNotContain("XRAY", onTheDay);
 
@@ -152,7 +156,7 @@ public class MembershipLoaderTests
         // A feed that answered with an empty index would write a leave date onto
         // every name in the store, so an unreadable payload fails instead.
         Assert.Throws<FormatException>(() => RecordedIndexMembershipFeed.Parse("{}", Index));
-        Assert.Throws<FormatException>(() => RecordedIndexMembershipFeed.Parse(@"{""Components"":{}}", Index));
+        Assert.Throws<FormatException>(() => RecordedIndexMembershipFeed.Parse(@"{""HistoricalTickerComponents"":{}}", Index));
 
         var parsed = RecordedIndexMembershipFeed.Parse(File.ReadAllText(CapturedResponse()), Index);
 
@@ -218,9 +222,40 @@ public class MembershipLoaderTests
         Assert.Equal(new DateOnly(2026, 3, 21), Assert.Single(parsed).Left);
     }
 
+    [Fact]
+    public void TheSnapshotObjectIsRefusedRatherThanReadAsTheIndex()
+    {
+        // The defect 1.2's capture exposed, made permanent.
+        //
+        // The provider sends both objects. Components is tonight's snapshot and
+        // carries Sector, Industry and Weight with no dates and no departed
+        // name; HistoricalTickerComponents carries the spans. This read
+        // Components until 1.2, which the hand-built fixture satisfied because
+        // it had been written with dates in the wrong object.
+        //
+        // A real snapshot payload is refused, and the refusal says which object
+        // holds the spans rather than only that a field is missing.
+        var snapshot = """
+        { "Components": { "158": {
+            "Code": "AAPL", "Exchange": "US", "Name": "Apple Inc.",
+            "Sector": "Technology", "Industry": "Consumer Electronics", "Weight": 0.0708 } } }
+        """;
+
+        var refusal = Assert.Throws<FormatException>(() => RecordedIndexMembershipFeed.Parse(snapshot, Index));
+
+        Assert.Contains("HistoricalTickerComponents", refusal.Message, StringComparison.Ordinal);
+
+        // And the captured fixture carries both objects, so the refusal above is
+        // about which one is read and not about which one is present.
+        using var captured = System.Text.Json.JsonDocument.Parse(File.ReadAllText(CapturedResponse()));
+
+        Assert.True(captured.RootElement.TryGetProperty("Components", out _));
+        Assert.True(captured.RootElement.TryGetProperty("HistoricalTickerComponents", out _));
+    }
+
     static string Payload(string tail) =>
         $$"""
-        { "Components": { "0": { "Code": "ZZZZ", "StartDate": "2020-01-02", {{tail}} } } }
+        { "HistoricalTickerComponents": { "0": { "Code": "ZZZZ", "StartDate": "2020-01-02", {{tail}} } } }
         """;
 
     static IReadOnlyList<(string, string)> Rows(TemporaryStore store, string sql)
