@@ -97,8 +97,13 @@ internal static class PhaseReport
             "a plan for phase 6, with nothing built to assert it against", Due: "6.1"),
         ["13.3 The guardrails"] = new Placement(
             "rules for phase 6, asserted by register-append-only", Due: "6.1"),
+        // 1.1, not 1.3. The first captured input arrives with that checkpoint's
+        // recorded-response double, and the manifest checker obligation was
+        // re-pointed there in the same pass for the same reason: an obligation
+        // about manifests owed later goes unfixed across every manifest written
+        // from the first one onward.
         ["19.1 What a fixture holds"] = new Placement(
-            "the fixture's shape, asserted by the manifest checker over the first fixture that lands", Due: "1.3"),
+            "the fixture's shape, asserted by the manifest checker over the first fixture that lands", Due: "1.1"),
         ["19.2 What the harness checks"] = new Placement(
             "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register", Due: "6.1"),
         ["19.3 What it produces"] = new Placement(

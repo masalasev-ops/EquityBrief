@@ -43,50 +43,54 @@ internal static class Scope
             ByHarness),
     };
 
-    // Components, shared by the catalogue and the read and write matrix.
+    // Where the plan names a subject, the due point is read from the plan and
+    // is not written here. What follows is the residue: subjects BUILD_PLAN's
+    // checkpoint text does not name, and two it names in a way that cannot be
+    // read. Every entry below is one the derivation could not supply, and the
+    // reconciliation asserts that in both directions, so an entry that becomes
+    // derivable later fails rather than silently shadowing the plan.
+
+    // Two the plan names and the derivation must not take.
+    //
+    // A subject here is one where the plan's wording and the claim's subject
+    // are about different things, so reading one from the other is wrong rather
+    // than merely imprecise. Each says why, because an exception with no reason
+    // is the mechanism by which a derivation gets quietly switched off.
+    static readonly Dictionary<string, string> DerivedIsWrong = new(StringComparer.Ordinal)
+    {
+        // 4.5 creates the table and the plan writes `forward_return` there in
+        // the snake case the schema uses, so the plural store name matches
+        // nothing until 6.1 mentions forward returns in prose. 6.1 is later
+        // than the truth rather than earlier, so the derived value is safe and
+        // still wrong, and a store is owed where its migration lands.
+        ["Forward returns"] = "4.5",
+
+        // 1.7 produces the first draft of the source lists, which is why it
+        // names them. The limits row is not about the lists existing: it is
+        // about a search returning only sites on the list that applies to it,
+        // and the row's own Asserted by column names a fixture search. That
+        // arrives with the research pass. Deriving 1.7 would fail this claim
+        // the moment 1.7 lands, which is the one direction that is never safe.
+        ["Source lists"] = "5.1",
+    };
+
+    // Components the plan does not name. The catalogue and the matrix share it.
     static readonly Dictionary<string, string> Components = new(StringComparer.Ordinal)
     {
-        ["Membership loader"] = "1.1",
-        ["Bar fetcher"] = "1.3",
-        ["Corporate action checker"] = "1.4",
-        ["Indicator engine"] = "phase 2",
-        ["Swing finder"] = "phase 2",
-        ["Volume profile builder"] = "phase 2",
-        ["Level builder"] = "phase 2",
-        ["Trend classifier"] = "phase 3",
-        ["Ladder builder"] = "phase 3",
-        ["Move annotator"] = "phase 3",
-        ["Shortlist builder"] = "phase 4",
-        ["Facts assembler"] = "phase 4",
-        ["Forward return filler"] = "phase 4",
-        ["News pulse counter"] = "phase 4",
-        ["Fundamentals fetcher"] = "phase 5",
-        ["Staleness judge"] = "phase 5",
-        ["Theme research runner"] = "phase 5",
-        ["Research runner"] = "phase 5",
-        ["Claim checker"] = "phase 5",
-        ["Prose writer"] = "phase 5",
-        ["Read API"] = "1.5",
-        ["Mark renderer"] = "1.3",
+        // 3.2 builds the ladder and never uses the component's name.
+        ["Ladder builder"] = "3.2",
         ["Single page app"] = "1.6",
         ["Report exporter"] = "phase 5",
-        ["Run log"] = "1.3",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
     {
-        ["Membership"] = "1.1",
-        ["Bar store"] = "1.3",
+        // 1.2 creates `bar`, and the plan names the table rather than the store.
+        ["Bar store"] = "1.2",
         ["Indicators, swings, volume profile, levels, ladders, moves"] = "phase 2",
-        ["Listings"] = "phase 4",
-        ["Forward returns"] = "phase 4",
-        ["Facts"] = "phase 4",
-        ["Fundamentals"] = "phase 5",
-        ["News pulse"] = "phase 4",
         ["Research store"] = "phase 5",
         ["Theme store"] = "phase 5",
         ["Source documents"] = "phase 5",
-        ["Candidate register"] = "phase 6",
     };
 
     // Where a screen is complete, not where its first pixel appears. Naming a
@@ -94,7 +98,7 @@ internal static class Scope
     // which is true; naming an earlier one would be a claim that something does.
     static readonly Dictionary<string, string> Screens = new(StringComparer.Ordinal)
     {
-        ["15.4 The two surfaces"] = "1.6",
+        ["15.4 The two surfaces"] = "1.3",
         ["15.5 The mark vocabulary"] = "phase 2",
         ["15.7 Tonight"] = "phase 4",
         ["15.8 Universe"] = "phase 4",
@@ -105,9 +109,9 @@ internal static class Scope
 
     static readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal)
     {
-        ["Bulk price feed unavailable"] = "1.3",
-        ["A gap in one name's series"] = "1.3",
-        ["A split or dividend not caught"] = "1.4",
+        ["Bulk price feed unavailable"] = "1.4",
+        ["A gap in one name's series"] = "1.5",
+        ["A split or dividend not caught"] = "1.6",
         ["Cloud model unavailable"] = "phase 5",
         ["A source is returned but its text cannot be retrieved"] = "phase 5",
         ["A pass finds no admissible source for a section"] = "phase 5",
@@ -117,7 +121,10 @@ internal static class Scope
         ["No band is eligible to carry a tranche"] = "phase 3",
         ["Earnings date missing"] = "phase 3",
         ["Fewer than 200 bars for a new index member"] = "phase 2",
-        ["A name leaves the index"] = "1.1",
+        // The row's "What you see" cell claims the name disappears from the
+        // universe screen, which is 4.1. 1.1 records the leave date and asserts
+        // nothing a reader looks at.
+        ["A name leaves the index"] = "4.1",
         ["A condition has fired but nothing has resolved yet"] = "phase 6",
         ["A section is assigned to the local lane that the machine cannot hold"] = "phase 5",
         ["The machine slept and the overnight queue did not run"] = "phase 5",
@@ -140,43 +147,43 @@ internal static class Scope
     // that would carry it arrives with the component the row constrains.
     static readonly Dictionary<string, string> LimitDuePoints = new(StringComparer.Ordinal)
     {
-        ["Model calls in the nightly run"] = "1.3",
-        ["Per-name network calls in the nightly run"] = "1.3",
+        // nightly-cost is implemented at 1.4, over the shipped source and a
+        // recorded run, which is the first point either limit is asserted.
+        ["Model calls in the nightly run"] = "1.4",
+        ["Per-name network calls in the nightly run"] = "1.4",
         ["Nightly wall clock, 500 names"] = "phase 4",
-        ["Bar history kept"] = "1.3",
-        ["Backfill"] = "1.2",
+        // Retention is what makes the year a limit rather than a description,
+        // and it lands with the fetcher at 1.4.
+        ["Bar history kept"] = "1.4",
         ["Level window"] = "phase 2",
         ["Swing lookback"] = "phase 2",
         ["Band merge distance"] = "phase 2",
-        ["Volume shelf threshold"] = "2.1",
         ["Tranches, exits"] = "phase 3",
         ["Tranche eligibility"] = "phase 3",
         ["Earnings horizon"] = "phase 3",
         ["List display"] = "phase 4",
-        ["Overnight queue"] = "phase 5",
         ["Research passes per name per open"] = "phase 5",
         ["Research staleness triggers"] = "phase 5",
-        ["Spend cap"] = "phase 5",
         ["Scheduling of queued work"] = "phase 5",
         ["Claim rejection"] = "5.1",
         ["Theme search parameters"] = "phase 5",
-        ["Source lists"] = "5.1",
         ["Source admissibility"] = "5.1",
         ["Nightly row coverage"] = "4.1",
         ["Reason record display"] = "phase 6",
-        ["Setup resolution"] = "phase 6",
         ["Minimum resolved setups"] = "phase 6",
         ["Family size and correction"] = "6.1",
         ["Frozen measurement windows"] = "phase 6",
-        ["Base rate"] = "phase 6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
     {
-        ["Load index membership"] = "1.1",
-        ["Backfill one year"] = "1.2",
-        ["Fetch the day"] = "1.3",
-        ["Check splits and dividends"] = "1.4",
+        // The step is a claim about the nightly script running it in order, and
+        // the script is built at 1.4. A step whose component lands earlier is
+        // still not run by a night until then.
+        ["Load index membership"] = "1.4",
+        ["Backfill one year"] = "1.4",
+        ["Fetch the day"] = "1.4",
+        ["Check splits and dividends"] = "1.6",
         ["For every name"] = "phase 4",
         ["Fill forward returns"] = "phase 4",
         ["Count today"] = "phase 4",
@@ -203,16 +210,32 @@ internal static class Scope
             : new Scoped(Verdict.OutOfScope, $"nothing asserts this until {due}", string.Empty);
     }
 
+    // Every subject and the due point it resolves to, so the reconciliation can
+    // read the two halves apart: what the plan supplied, and what is written
+    // here because the plan could not.
+    internal static IReadOnlyList<string> ResidualSubjects() =>
+        [.. DerivedIsWrong.Keys, .. Components.Keys, .. Stores.Keys, .. Failures.Keys,
+            .. MatrixRows.Keys, .. LimitDuePoints.Keys, .. NightlySteps.Keys];
+
+    internal static IReadOnlyList<string> DeclaredExceptions() => [.. DerivedIsWrong.Keys];
+
     static string? Due(string table, string subject)
     {
+        // The two the plan names in a way that cannot be read, each carrying
+        // the reason beside it above.
+        if (DerivedIsWrong.TryGetValue(subject, out var exception))
+        {
+            return exception;
+        }
+
         if (Screens.TryGetValue(table, out var screen))
         {
             return screen;
         }
 
-        if (table == LimitsTable)
+        if (table == LimitsTable && LimitDuePoints.TryGetValue(subject, out var limit))
         {
-            return LimitDuePoints.GetValueOrDefault(subject);
+            return limit;
         }
 
         if (table == MatrixTable && MatrixRows.TryGetValue(subject, out var row))
@@ -232,6 +255,20 @@ internal static class Scope
             return component;
         }
 
-        return Stores.TryGetValue(subject, out var store) ? store : Failures.GetValueOrDefault(subject);
+        if (Stores.TryGetValue(subject, out var store))
+        {
+            return store;
+        }
+
+        if (Failures.TryGetValue(subject, out var failure))
+        {
+            return failure;
+        }
+
+        // Nothing above it carried this subject, so the plan is asked. This is
+        // the half that cannot go stale: BUILD_PLAN's checkpoint text is the
+        // first statement of which checkpoint does the work, and a due point
+        // read from it moves when the plan is reordered.
+        return PlanCheckpoints.DueFor(subject);
     }
 }

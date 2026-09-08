@@ -387,3 +387,14 @@ Now:
 > the three obligations re-pointed to 1.1 and 1.3, with 1.5 keeping only the news feed probe
 
 Why: F named a component that does not exist, so nothing could have resolved it as written and a session reading the table would have gone looking for a row. Resolving the real defect per element rather than per mark keeps what exists asserted at 1.3 instead of leaving the whole mark unexamined for a phase and a half. The obligations were re-pointed on the reasoning the 0.7 repair session used when it moved them from 2.1: an obligation about manifests owed at 1.5 goes unfixed across every manifest written from 1.1 onward.
+
+### 2026-09-08 - BUILD_PLAN.md - 1.3 names the mark renderer it builds
+Corrects: 1.3's text named the read API and the chart and not the component between them, so the mark renderer added to section 7 in the same pass had no checkpoint naming it. That is a gap in the plan on its own, and it also left the component's due point unavailable to the derivation, which reads due points from the checkpoint whose text names the subject.
+
+Was:
+> The read API serving bars for a name and a date range, computing nothing and fetching nothing, asserted over the shipped source. The chart drawn as server-rendered SVG: candles and a volume pane on a shared time axis, at the hash route for a name.
+
+Now:
+> the same sentence with "The mark renderer as its own component, declaring an empty access across all eleven stores, so the seam section 15.4 describes is a claim the harness asserts rather than a definition it trusts." between the two clauses
+
+Why: a checkpoint that builds a component and does not name it cannot be found by anything reading the plan, by a person or by the harness. The other half of this pass makes that concrete: due points are now read from the checkpoint whose text names the subject, so a component the plan does not name falls to a hand-written entry that nothing keeps current.

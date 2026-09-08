@@ -93,7 +93,7 @@ Three carried obligations discharged: reconcile the money column list against SC
 **Done when** the fixture name holds a full year with no gaps, a second run backfills nothing, and the request count matches the number of names lacking history. The population is stated explicitly, because a claim about roughly five hundred live names is not something the harness can assert.
 
 ### 1.3 The read surface and the chart
-The read API serving bars for a name and a date range, computing nothing and fetching nothing, asserted over the shipped source. The chart drawn as server-rendered SVG: candles and a volume pane on a shared time axis, at the hash route for a name.
+The read API serving bars for a name and a date range, computing nothing and fetching nothing, asserted over the shipped source. The mark renderer as its own component, declaring an empty access across all eleven stores, so the seam section 15.4 describes is a claim the harness asserts rather than a definition it trusts. The chart drawn as server-rendered SVG: candles and a volume pane on a shared time axis, at the hash route for a name.
 
 **This is the level chart mark with two of its four elements absent**, written in the file that mark will live in for the life of the project and extended in place at 2.4. It is not a temporary chart, because a temporary chart becomes the second renderer the marks decision exists to prevent. The checkpoint entry states which elements are present and which are absent.
 
