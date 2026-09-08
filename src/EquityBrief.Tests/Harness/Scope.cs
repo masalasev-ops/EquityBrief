@@ -34,6 +34,18 @@ internal static class Scope
             Verdict.Pass,
             "every claim in sections 7, 14, 15, 16, 17 and 18 carries a verdict, and both artifacts are written and read back",
             ByHarness),
+        [CheckReach.Key(CatalogueTable, "Backfill")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the feed it reads and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Backfill")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Bar store")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(StoresTable, "Membership")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
@@ -116,8 +128,6 @@ internal static class Scope
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
     {
-        // 1.2 creates `bar`, and the plan names the table rather than the store.
-        ["Bar store"] = "1.2",
         ["Indicators, swings, volume profile, levels, ladders, moves"] = "phase 2",
         ["Research store"] = "phase 5",
         ["Theme store"] = "phase 5",

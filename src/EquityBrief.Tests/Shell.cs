@@ -67,10 +67,22 @@ internal static class Shell
         using var process = Process.Start(start)
             ?? throw new InvalidOperationException($"Could not start {executable}.");
 
-        var standardOutput = process.StandardOutput.ReadToEnd();
-        var standardError = process.StandardError.ReadToEnd();
+        // Both streams are read at once, not one to completion and then the
+        // other.
+        //
+        // The obligation carried out of 0.7. Reading standard output to the end
+        // first blocks until the child closes it, while the child blocks writing
+        // to an error pipe whose buffer is full, and neither moves again. It is
+        // latent at the output sizes the suite's children produce today and it
+        // is not latent in what this repository is for: `tools/nightly` will run
+        // a child whose diagnostics can fill a pipe, and the deadlock would look
+        // like a night that hung rather than a night that failed.
+        var standardOutput = process.StandardOutput.ReadToEndAsync();
+        var standardError = process.StandardError.ReadToEndAsync();
+
+        Task.WaitAll(standardOutput, standardError);
         process.WaitForExit();
 
-        return new ShellResult(process.ExitCode, standardOutput, standardError);
+        return new ShellResult(process.ExitCode, standardOutput.Result, standardError.Result);
     }
 }

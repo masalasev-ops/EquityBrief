@@ -52,6 +52,7 @@ public enum Feed
 {
     IndexMembership,
     BulkPrice,
+    HistoricalPrice,
     SplitsAndDividends,
     News,
     CompanyFinancials,

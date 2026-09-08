@@ -48,7 +48,7 @@ Each is two documents disagreeing, which `CLAUDE.md` calls a finding rather than
 | # | Contradiction | Resolve at |
 |---|---|---|
 | A | SCHEMA's bar note says the fetcher drops sessions older than the retention window; its ownership table gives Delete to the corporate action checker alone and says nothing else may delete a bar | 1.4 |
-| B | The limits table says the nightly run makes zero per-name network calls; the run order backfills a new joiner per ticker | 1.2 |
+| B | The limits table says the nightly run makes zero per-name network calls; the run order backfills a new joiner per ticker. **Resolved at 1.2**, the limit carved rather than deleted | 1.2 |
 | C | The failure table names a suspect state for a name whose corporate action check failed; no store column holds it | 1.6 |
 | D | `Scope.Screens` keys on the table heading, so a phase 5 export claim is forced to be asserted at the chart checkpoint. This is the 0.7 repair of `Scope.For` failing to sweep, not a new contradiction | 1.3 |
 | E | The catalogue gives four components a `calendar` read that SCHEMA does not declare and no component writes | 3.0 |
@@ -388,14 +388,13 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Obligation | Created at | Due at |
 |---|---|---|
 | Architecture cites its decisions by name at each rule | 0.5 | 1.8 |
-| Money column list reconciled against SCHEMA | 0.7 review | 1.2 |
-| Stream ordering that can deadlock | 0.7 review | 1.2 |
-| Runtime money-precision guard, since the storage-form claim was disproved | 0.7 review | 1.2 |
 | `two-platform` widened to what its roster row claims | 0.7 review | 1.4 |
 | Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.3 |
 | News feed queryable by date without a ticker | authored with the architecture | 1.5 |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.6 |
 | Source lists reviewed against measured coverage | 1.7 | 5.0 |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 |
+
+**Discharged at 1.2.** The money column list, now read from SCHEMA's own Notes cell rather than kept beside the check. The stream ordering that can deadlock, with a probe that fills both pipes and a test bounded by a timeout, since the failure is a hang rather than a wrong answer. And the runtime money guard, which refuses anything that is not a decimal at the point a price is bound.
 
 **Discharged at 1.1.** `writer-ownership` widened to both directions its roster row claims, which building the first component forced rather than allowed: two of its tests asserted over a population of zero and turned red the moment `MembershipLoader` landed. The zoneless instant refused, with `clock-usage` widened to read code rather than prose. The manifest checker opening every captured response and checking the file it names exists, which the first committed fixture made assertable.

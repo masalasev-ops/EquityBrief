@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# A script that writes far more than a pipe buffer holds on both streams at
+# once, so the suite can prove Shell.Run does not deadlock reading them.
+#
+# Permanent on purpose. Reading one stream to completion and then the other
+# blocks forever against a child like this: the reader waits for stdout to
+# close while the child waits for room in stderr. The suite's other children
+# produce a few lines each and would never show it.
+#
+# 4000 lines of 100 characters on each stream is about 400 kB per stream,
+# comfortably past the 64 kB a pipe buffer typically holds on both platforms.
+line=$(printf 'x%.0s' {1..100})
+for i in $(seq 1 4000); do
+  echo "$line"
+  echo "$line" >&2
+done
+exit 7

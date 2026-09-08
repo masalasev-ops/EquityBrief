@@ -50,10 +50,36 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The four price columns are TEXT and decimal in code
+    // (see: Bars are never interpolated). STRICT does not enforce that, since
+    // SQLite renders a double as text and stores it, so the storage half rests
+    // on price-storage-form reading this declaration and the code half on the
+    // runtime guard the store carries.
+    //
+    // volume is INTEGER because it is a count rather than a price, and
+    // session_date is a date rather than an instant, which is why both it and
+    // observed_at exist: the date carries the as-of meaning and the instant
+    // carries distinctness.
+    const string CreateBar = @"
+        CREATE TABLE bar (
+            ticker        TEXT    NOT NULL,
+            session_date  TEXT    NOT NULL,
+            open          TEXT    NOT NULL,
+            high          TEXT    NOT NULL,
+            low           TEXT    NOT NULL,
+            close         TEXT    NOT NULL,
+            volume        INTEGER NOT NULL,
+            source        TEXT    NOT NULL,
+            observed_at   TEXT    NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
         new Migration(2, "create membership", CreateMembership),
+        new Migration(3, "create bar", CreateBar),
     ];
 
     public static int LatestVersion => All.Max(migration => migration.Version);

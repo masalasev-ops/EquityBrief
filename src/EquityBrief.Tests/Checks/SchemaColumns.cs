@@ -19,6 +19,7 @@ public class SchemaColumns
             CheckReach.Key(Scope.CatalogueTable, "Migration runner"),
             CheckReach.Key(Scope.StoresTable, "Run log"),
             CheckReach.Key(Scope.StoresTable, "Membership"),
+            CheckReach.Key(Scope.StoresTable, "Bar store"),
         ]);
 
     const string Sample =
@@ -29,6 +30,33 @@ public class SchemaColumns
         "| `a` | TEXT | |\n" +
         "| `b`, `c` | INTEGER | two names, one type |\n\n" +
         "Primary key: `a`.\n";
+
+    [Fact]
+    public void BarMatchesWhatSchemaDeclares()
+    {
+        // The third table, and the first carrying money columns, so this is also
+        // where the declared storage type of a price is compared against what
+        // the store actually built.
+        var schema = Corpus.Read("docs/SCHEMA.md");
+        var declared = StoreSchema.Declared(schema, "bar");
+
+        Assert.Equal(9, declared.Count);
+
+        using var store = new TemporaryStore().Migrated();
+        var built = StoreSchema.Built(store, "bar");
+
+        Assert.Equal(
+            declared.Select(column => (column.Name, column.Type)),
+            built.Select(column => (column.Name, column.Type)));
+
+        // Every money column is TEXT in the built store, not only in the
+        // migration text price-storage-form reads.
+        var money = PriceStorageForm.MoneyColumns();
+
+        Assert.All(
+            built.Where(column => money.Contains(column.Name, StringComparer.Ordinal)),
+            column => Assert.Equal("TEXT", column.Type));
+    }
 
     [Fact]
     public void MembershipMatchesWhatSchemaDeclares()

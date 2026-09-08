@@ -33,7 +33,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | Table | Insert | Update | Delete |
 |---|---|---|---|
 | `membership` | MembershipLoader | MembershipLoader | none |
-| `bar` | BarFetcher, CorporateActionChecker | none | CorporateActionChecker |
+| `bar` | Backfill, BarFetcher, CorporateActionChecker | none | CorporateActionChecker |
 | `indicator` | IndicatorEngine | IndicatorEngine | none |
 | `swing` | SwingFinder | SwingFinder | none |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | none |
@@ -51,7 +51,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `candidate_register` | CandidateRegistrar | none | none |
 | `run_log` | every component appends | RunLog | none |
 
-**`bar` has two inserters and one deleter, and that is the one exception this file argues for.** BarFetcher inserts the day's bars. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices, which is the only sanctioned removal of a bar in the system. The hard rule that bars are append-only governs ordinary operation; a corporate action is a restatement of the series by the provider, and a refetch is the only correct response. Nothing else may delete or update a bar, and `bar-append-only` asserts that over the shipped source and over every migration.
+**`bar` has three inserters and one deleter, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices, which is the only sanctioned removal of a bar in the system. The hard rule that bars are append-only governs ordinary operation; a corporate action is a restatement of the series by the provider, and a refetch is the only correct response. Nothing else may delete or update a bar, and `bar-append-only` asserts that over the shipped source and over every migration.
 
 **`facts` is inserted by one component and updated by another, on disjoint columns.** FactsAssembler writes the facts file and its hash. ChangeDetector writes only the material-change list, on a row that already exists. A split is permitted where two components own disjoint declared column sets on the same grain, and the declared sets are below.
 

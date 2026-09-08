@@ -1107,3 +1107,74 @@ Notes:      the culture check's own permanent proof is what caught its first ver
             written surface rather than the model; what changed is that it no longer reports the
             state of a working copy. Reproduced locally by deleting `artifacts/` before running
             the suite.
+
+### 1.2 - the one-year backfill                                          2026-09-08
+Built:      migration 3 creating `bar`, prices TEXT and decimal in code. `IHistoricalBarFeed`
+            and `RecordedHistoricalBarFeed`, one captured file per ticker. `Backfill`, which
+            fetches one year for any member holding no history, one request per name, and never
+            again for a name that already holds its year. `Money` in `EquityBrief.Data`, the one
+            way a price reaches a store. Three fixture files, a year of daily bars each.
+Measured:   over the fixture's 4 constituents, of which 3 are current members and 1 has left:
+            3 names owed a backfill, 3 requests, 783 rows written, and 0 of each on the second
+            run. Per name, 261 sessions from 2025-09-05 to 2026-09-04. The population is stated
+            because it is 3 names and not 500: a claim about the live index is not something
+            this suite can assert, and the done condition's "every index member" is 4.1's to
+            carry.
+
+            261 rather than the 262 the captured file holds, and the difference is the window
+            rather than a defect. The backfill asks for the year ending on the session date,
+            which at the fixture instant is 2026-09-05, so it starts on 2025-09-05 and the
+            capture's first bar falls outside it. The test asserts both edges rather than only
+            the count, so that reads as a window rather than as a missing bar.
+Discharged: three obligations, all created by the 0.7 review.
+
+            The money column list is read from SCHEMA's Notes cell, where a money column is
+            marked by the word "decimal", rather than kept as an array beside the check. One
+            table, `theme_section`, is described as a difference from another and has no column
+            table of its own; it is named and asserted to be the only one, so a second such
+            table is a failure rather than a silent exclusion from the money check.
+
+            `Shell.Run` reads both streams at once. Reading one to completion first blocks until
+            the child closes it while the child blocks writing to a full error pipe, and neither
+            moves again. `tools/flood-probe` writes about 400 kB to each stream and the test is
+            bounded by a timeout, because the failure is a hang and a deadlocked test reports
+            nothing. Proved by reverting the fix and watching it time out.
+
+            The runtime money guard refuses anything that is not a decimal at the point a price
+            is bound. `STRICT` does not do this: SQLite renders a double as text and stores it,
+            which 0.2 recorded after a test written to prove otherwise failed. The test asserts
+            both halves, that the guard refuses the double and that the store would have taken
+            it.
+Resolved:   contradiction B. The per-name limit read as a flat zero, which forbids the step the
+            run order carries at position two, so a check reading it would have failed on a rule
+            nobody meant. The limit is carved rather than deleted: the property it protects is
+            about the steady-state night, and the backfill is bounded rather than nightly.
+Found:      the backfill had no component row. Section 14 carries it at position two, section 17
+            gives it a limits row, and section 7 had nothing, so the class doing the work had no
+            catalogue name and the matrix asserted nothing about what it touches. **Backfill**
+            is now a component, and SCHEMA gives `bar` a third inserter with the exception
+            paragraph saying which. The alternative was folding it into the bar fetcher, which
+            arrives at 1.4 and does a different job on a different endpoint with the opposite
+            cost shape.
+
+            And `rows_written` was measured by counting rows carrying this run's observation
+            instant, which two runs sharing an instant would each attribute to the other. A
+            fixed clock produces that in a test and a fast machine can produce it for real. It
+            is a delta over the table now, which is still measured from the store and does not
+            rest on the instant being unique.
+Floors:     stated with what each produced and what was expected. Money columns SCHEMA declares:
+            floor 8, expected 11, found 11. Money columns in migrations: floor 5, expected 5,
+            found 5, being `bar`'s four prices and `run_log`'s spend. Passing claims: 11 against
+            a floor of 6. Reconciled: 18 against a floor of 12, both left where 1.1 set them
+            because contradiction D still moves them at 1.3.
+Tests:      166, up from 159 at the start of this checkpoint and 153 at the end of 1.1.
+Notes:      the backfill declares `Feed.HistoricalPrice` and the bar fetcher will declare
+            `Feed.BulkPrice`. They are two endpoints with opposite pricing, which is the whole
+            argument for the backfill running per ticker, and giving them one enum member would
+            have hidden that in the one place a reader checks it.
+
+            `Money.FromStorage` refuses a group separator, and the test that found this is the
+            reason. `NumberStyles.Number`, the convenient default, allows one, and under the
+            invariant culture the group separator is a comma, so "12,34" written by a
+            comma-decimal machine parses cleanly as 1234. A hundredfold error on a price, read
+            back with nothing refusing it.

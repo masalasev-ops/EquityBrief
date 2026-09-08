@@ -433,3 +433,20 @@ Now:
 > | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, no schedule is expressed in local time, and no date is parsed against the machine's locale. Comments are stripped first, because a sentence naming a pattern is not a use of it |
 
 Why: a date parsed with no culture resolves against the machine's locale, so the same payload is a March date on one machine and a refusal on another. That is the same property the check already owns, being that nothing depends on how this machine happens to be configured for time, and it was found in shipped code rather than in the suite.
+
+### 2026-09-08 - ARCHITECTURE.html, SCHEMA.md - the backfill is a component, and the limit that forbade it
+Corrects: two defects, both found by building the backfill against the documents. Section 14's run order carries the backfill at position two, section 17 gives it a limits row, and section 7 had no component for it, so the class that does the work had no catalogue row and the matrix asserted nothing about what it touches. And the per-name limit read as a flat zero, which forbids the step the run order carries: a check reading it would have failed on a rule nobody meant.
+
+Was:
+> section 7 carried no row between Membership loader and Bar fetcher, and the matrix likewise
+> | Per-name network calls in the nightly run | 0 | bars arrive in one bulk file and news in one feed request, so the run does not grow with the universe | run log |
+> | `bar` | BarFetcher, CorporateActionChecker | none | CorporateActionChecker |
+> **`bar` has two inserters and one deleter, and that is the one exception this file argues for.** BarFetcher inserts the day's bars.
+
+Now:
+> section 7 and the matrix carry **Backfill**, in the compute layer, reading the historical price feed, membership and the bar store, writing the bar store and the run log
+> | Per-name network calls in the nightly run | 0 in the steady state, and the backfill is carved out of it | ... it makes one request per name holding no history, which is every name on the first run and a new joiner afterwards, and never again for a name that already holds its year ... | run log, on the steady-state stages |
+> | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | CorporateActionChecker |
+> **`bar` has three inserters and one deleter** ... Backfill inserts a name's first year, once, on the run that finds it holding none.
+
+Why: the alternative to a component row was folding the backfill into the bar fetcher, which arrives at 1.4 and does a different job on a different endpoint with the opposite cost shape. A row makes what it touches a claim the harness asserts. The limit is carved rather than deleted, because the property it protects is real and is about the steady-state night: what was wrong was stating it as a flat zero over a run whose second step is per name by design.
