@@ -93,4 +93,4 @@ Read the run page first. It states what ran, how long, what was spent, how many 
 
 ## What this system does not do
 
-It does not trade, hold a position, or size one. It does not rank names against each other. It does not tell you a stock will go up. The list says a name reached a price where the plan says something, and the plan is arithmetic over levels the chart has visited.
+It does not trade, hold a position, or size one. It does not rank names against each other. It does not tell you a stock will go up. The list says a name is sitting at a price its own chart has made significant, and the levels and the plan are both arithmetic recomputed from that chart the same evening.

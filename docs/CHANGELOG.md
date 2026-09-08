@@ -321,3 +321,31 @@ Now:
 > the same four paragraphs, then a subsection "What each lane actually writes" carrying a seven-row table of section, lane, what goes in and why it sits there, then the paragraph on what each lane holds in memory, then section 13
 
 Why: nothing is removed. The figure already names these inside its boxes, which is a picture's worth of information a reader cannot cite, search or check a claim against. The table is placed in the harness as a table that makes no claims yet, owed at 5.0, which is where `BUILD_PLAN.md` settles the section-to-lane assignment.
+
+### 2026-09-08 - ARCHITECTURE.html, CLAUDE.md, RUNBOOK.md - the plan no longer predates the price
+Corrects: the clause was repaired once for provenance and left implying the plan predated the price. Section 1 said the system answers which stocks have reached a price where the plan already says something. That was corrected at 1.1's precursor to add that the plan is recomputed nightly rather than authored in advance, and the correction added a clause in front of which the original phrase was left standing, so the sentence still says a plan existed before the price arrived. It did not: the levels and the ladder are both computed tonight from data that includes tonight's bar. The operator read the sentence twice and read it as wrong both times. Swept for after the three known occurrences were repaired, over the whole tracked tree on "the plan says", "the plan already says", "where the plan" and four adjacent shapes; the sweep found the same three and nothing else.
+
+Was:
+> ARCHITECTURE.html section 1: "which stocks have reached a price where the plan already says something" and "Four of the six conditions detect arrival at a price the plan has an instruction for, one detects a break on unusual volume, and one is a calendar fact. That plan is not authored in advance and is not carried over from a previous night: it is recomputed from the chart every evening"
+> ARCHITECTURE.html 15.7: "which names reached a price where the plan says something, and how busy the evening was"
+> CLAUDE.md: "decides which names reached a price where the plan says something"
+> RUNBOOK.md: "The list says a name reached a price where the plan says something, and the plan is arithmetic over levels the chart has visited"
+
+Now:
+> ARCHITECTURE.html section 1: "which stocks are sitting at a price their own chart has made significant" and "Four of the six conditions detect arrival at a price the evening's arithmetic has an instruction for, one detects a break on unusual volume, and one is a calendar fact. That arithmetic is not authored in advance and is not carried over from a previous night: the levels and the plan are recomputed from the chart every evening"
+> ARCHITECTURE.html 15.7: "which names are sitting at a price their own chart has made significant, and how busy the evening was"
+> CLAUDE.md: "decides which names are sitting at a price their own chart has made significant"
+> RUNBOOK.md: "The list says a name is sitting at a price its own chart has made significant, and the levels and the plan are both arithmetic recomputed from that chart the same evening"
+
+Why: three documents said the same wrong thing, and repairing one would have left two saying it, which is the drift a single place per fact exists to prevent. RUNBOOK's sentence corrected itself in its next clause, which is a better argument for rewriting it than for leaving it: a reader who stops at the first half has been told the wrong thing. The occurrence in section 23's own changelog table is prior text in a record and is left as written. The stated count survives the change and is now asserted, so section 1's breakdown cannot drift from section 11's table.
+
+### 2026-09-08 - CLAUDE.md - a commit belongs to the checkpoint that authorises it
+Corrects: the commit convention said work done ahead of the checkpoint that owes it names that checkpoint, and said nothing about work whose subject matter belongs to a later phase. Found by writing a document repair to section 12.2 under the subject `Phase 5 / 5.0`, on the reasoning that 12.2 describes the research lanes and the lane assignment is settled at 5.0, when the edit was authorised by 1.1's planning pass and discharged nothing 5.0 owes.
+
+Was:
+> **A commit subject is `Phase {phase} / {checkpoint} - {what changed}`.** The checkpoint is never omitted, including on a commit that builds nothing: a ruling, a document pass, a correction and a sign-off addendum all belong to a checkpoint. Where work is done ahead of the checkpoint that owes it, the subject names that checkpoint rather than the one being worked on now.
+
+Now:
+> the same paragraph, followed by one stating that a commit belongs to the checkpoint that authorises the work and never to the phase whose subject matter the edited text describes, with the reason: a checkpoint from an unbuilt phase reaching `PROGRESS.md` makes the reconciliation refuse every claim still owed at it
+
+Why: the existing clause is about an obligation arriving early, and it reads as being about topic if nothing says otherwise. The cost is not an untidy log. `DuePoints.HasLanded` reads `PROGRESS.md`, and out of scope means a point that has not been reached, so a phase 5 checkpoint recorded while phases 2 to 4 are unbuilt would fail every claim owed at it.

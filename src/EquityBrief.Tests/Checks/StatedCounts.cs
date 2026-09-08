@@ -62,6 +62,78 @@ public class StatedCounts
         Assert.Equal(6, table.Body.Count);
     }
 
+    // Section 1 breaks the shortlist's conditions into three parts and states
+    // their total. That makes it the third place the count lives, after section
+    // 11's heading and section 11's rows, so it is the third place it can drift
+    // from them. Read as a total and as a sum, because a sentence can disagree
+    // with the table either by naming a different total or by having parts that
+    // do not add up to the one it names.
+    static readonly Dictionary<string, int> Numbers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["one"] = 1, ["two"] = 2, ["three"] = 3, ["four"] = 4,
+        ["five"] = 5, ["six"] = 6, ["seven"] = 7, ["eight"] = 8,
+    };
+
+    internal static (int Stated, int Parts)? ConditionBreakdown(string text)
+    {
+        var match = Regex.Match(
+            text,
+            @"(\w+) of the (\w+) conditions detect [^.]*?, (\w+) detects [^.]*?, and (\w+) is a calendar fact");
+
+        if (!match.Success || !Numbers.ContainsKey(match.Groups[2].Value))
+        {
+            return null;
+        }
+
+        int[] groups = [1, 3, 4];
+
+        return groups.Any(group => !Numbers.ContainsKey(match.Groups[group].Value))
+            ? null
+            : (Numbers[match.Groups[2].Value], groups.Sum(group => Numbers[match.Groups[group].Value]));
+    }
+
+    [Fact]
+    public void SectionOneCountsTheConditionsSectionElevenLists()
+    {
+        var architecture = File.ReadAllText(Repository.Architecture);
+
+        var listed = ArchitectureTables.In(architecture)
+            .Single(candidate => candidate.Heading == "11. The shortlist and its six reasons")
+            .Body.Count;
+
+        var breakdown = ConditionBreakdown(architecture);
+
+        Assert.True(
+            breakdown is not null,
+            "Section 1 no longer states the conditions as a total broken into parts, so this check " +
+            "reads nothing. A sentence that stopped stating the count is not a sentence that agrees " +
+            "with the table.");
+
+        Assert.Equal(listed, breakdown!.Value.Stated);
+        Assert.Equal(listed, breakdown.Value.Parts);
+    }
+
+    [Fact]
+    public void TheCheckReportsASentenceThatDisagreesWithTheTable()
+    {
+        // The permanent proof, over constructed sentences. The first agrees,
+        // the second names a total the parts do not reach, and the third stops
+        // stating the count at all, which reads as nothing rather than as a pass.
+        var agrees = ConditionBreakdown(
+            "Four of the six conditions detect arrival at a price, one detects a break on unusual volume, and one is a calendar fact");
+
+        Assert.Equal((6, 6), agrees);
+
+        var doesNot = ConditionBreakdown(
+            "Four of the seven conditions detect arrival at a price, one detects a break on unusual volume, and one is a calendar fact");
+
+        Assert.Equal(7, doesNot!.Value.Stated);
+        Assert.Equal(6, doesNot.Value.Parts);
+        Assert.NotEqual(doesNot.Value.Stated, doesNot.Value.Parts);
+
+        Assert.Null(ConditionBreakdown("the conditions are described in section 11"));
+    }
+
     [Fact]
     public void TheCheckWouldNoticeADisagreement()
     {
