@@ -1,0 +1,44 @@
+{
+  "reviewedOn": "2026-09-08",
+  "reviewBy": "2027-03-08",
+  "note": "Two lists, drafted at 1.7 from the coverage measurement recorded in PROGRESS.md. They govern the theme and company searches the research pass makes against the open web. They do not govern the licensed news feed: that feed delivers 1173 of 1253 measured articles under one domain, and the domain is the aggregator rather than the writing outlet, so a domain filter over it would discard everything or nothing. Admissibility is judged per document after the fetch in both cases. (see: Two source lists govern the open web, and the licensed feed is a channel rather than a list)",
+  "companyNews": {
+    "purpose": "reporting about a named company: results, guidance, management, transactions",
+    "sites": [
+      "reuters.com",
+      "apnews.com",
+      "bloomberg.com",
+      "wsj.com",
+      "ft.com",
+      "cnbc.com",
+      "barrons.com",
+      "marketwatch.com",
+      "investors.com",
+      "businesswire.com",
+      "globenewswire.com",
+      "prnewswire.com",
+      "sec.gov"
+    ],
+    "gated": ["bloomberg.com", "wsj.com", "ft.com", "barrons.com"],
+    "gatedNote": "Kept on the list and expected to return nothing to an automated fetch. They are listed so a later review measures whether that is still true rather than rediscovering the question, and so a search that surfaces them is not silently narrowed. (see: Gated sources are out of scope, and access is ranked before reputation)"
+  },
+  "industry": {
+    "purpose": "theme material: what an industry is doing, independent of any one company's quarter",
+    "sites": [
+      "spglobal.com",
+      "eia.gov",
+      "bls.gov",
+      "census.gov",
+      "federalreserve.gov",
+      "semiconductors.org",
+      "trendforce.com",
+      "digitimes.com",
+      "iea.org",
+      "worldsteel.org",
+      "ihsmarkit.com",
+      "statista.com"
+    ],
+    "gated": ["digitimes.com", "ihsmarkit.com", "statista.com"],
+    "gatedNote": "Same treatment as above. The measurement did not test these, because the licensed feed returned no article from any of them: the industry list is the one the 5.0 review has the least evidence behind and is named here as the weaker of the two."
+  }
+}

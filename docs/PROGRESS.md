@@ -1852,3 +1852,76 @@ Predicted:  35 passing claims, being 1.5's 30 plus the five owed at 1.6, one of 
             that row.
 
 Carried:    the fixture's expectations, to 1.8. The macOS runner. The live feeds, as filed at 1.4.
+
+### 1.7 - the coverage measurement                                           2026-09-08
+Built:      `RecordedNewsFeed` and `NewsArticle`, written against a captured response.
+            `news-parse` on the roster. `source-lists.json` at the root, the first draft of the
+            two open-web lists with a review date. Contradiction J resolved.
+
+Sample:     30 of the 503 S&P 500 constituents, taken at even intervals down the index's own
+            weight ranking so the sample spans it rather than being drawn from the top: ranks 1,
+            18, 36, 53 and so on to 503, weights from 8.4 per cent to 0.01 per cent. Not chosen
+            from a watch list and not chosen by hand. Two weeks, 2026-08-25 to 2026-09-08. 31
+            requests, one for the index and one per name.
+
+Measured:   1,253 articles over 30 names in 14 days. Coverage falls with size, and the figures
+            are stated per third of the ranked sample rather than as one average, because an
+            average over this population would be a statement about the largest names:
+
+              top third,    ranks 1 to 168:    883 articles, median 52 per name, none with zero
+              middle third, ranks 169 to 336:  195 articles, median 15 per name, none with zero
+              bottom third, ranks 337 to 503:  175 articles, median 13 per name, one with zero
+
+            So the assumption this measurement replaced was right to be doubted: a name in the
+            bottom third gets about a quarter of the coverage of one in the top, and one name in
+            thirty had no article at all in a fortnight. Tuning anything on the largest names
+            would starve the rest of the index invisibly, which is what the checkpoint existed
+            to find out.
+
+            Every one of the 1,253 articles carried retrievable text. That is the second half of
+            what was asked, and it is a stronger answer than expected: the document a claim rests
+            on arrives with the row and needs no second fetch.
+
+Found:      three distinct domains across 1,253 articles, and 1,173 of them are one domain.
+            That is not what a publisher count was expected to show and it changes what a source
+            list can do. The domain in the payload is the aggregator that carried the article,
+            not the outlet that wrote it: the writing outlet appears inside the article text
+            where it appears at all, as Business Wire, Globe Newswire or Bloomberg. A domain list
+            over this feed would hold three entries and would filter nothing, and filtering by
+            domain would discard the whole feed or none of it.
+
+            So the field is named `Channel` in code rather than `Publisher`, and the lists are
+            declared to govern the search tool rather than the feed. Naming it `Publisher` would
+            have been a wrong statement that every later reader inherits.
+
+Resolved:   contradiction J. Section 17 named two lists and `DECISIONS.md` carried an entry
+            called **Three source lists, not one, each with a review date** whose body described
+            two and said filings need none. The name was the defect. Superseded rather than
+            edited, with the old entry moved to "Previously decided" with its reasoning intact,
+            and the new entry carries what the measurement added.
+
+Drafted:    two lists, 13 company-news sites and 12 industry sites, reviewed 2026-09-08 and due
+            2027-03-08. Gated sites are kept on the lists and marked, rather than dropped, so a
+            later review measures whether they still refuse an automated fetch instead of
+            rediscovering the question. The industry list is named as the weaker of the two: the
+            licensed feed returned no article from any site on it, so nothing here measured it.
+
+Discharged: the news parser obligation 1.2 filed against this checkpoint, by capturing before
+            writing. Two shape facts came out of it: the published instant carries an offset and
+            is kept as one, because rounding it to a date at the parse would put evening
+            publications on the wrong session, and `symbols` arrives suffixed as AAPL.US where
+            every store here keys on the ticker alone.
+
+Asserted:   the parser and not the measurement. The measurement is an observation about one
+            provider over one fortnight, not a property of this code, and a test asserting it
+            would fail when the news does. It is recorded here with its sample named, which is
+            what the done condition asks.
+
+Report:     167 claims, 35 pass, 0 fail, 132 out of scope, 0 unexamined. 244 tests. `tools/ci`
+            green on Windows PowerShell and on bash on this machine. No architecture claim falls
+            due at 1.7, and that is stated rather than left to look like an omission: this
+            checkpoint's deliverable is a measurement and two drafts, and the news feed's own
+            catalogue claims arrive with the components that read it in phase 5.
+
+Carried:    the fixture's expectations, to 1.8. The macOS runner. The live feeds, as filed at 1.4.
+            The source lists' own review, to 5.0, which the obligations table already carries.

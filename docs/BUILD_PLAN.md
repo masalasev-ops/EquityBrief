@@ -59,7 +59,7 @@ Each is two documents disagreeing, which `CLAUDE.md` calls a finding rather than
 | G | The theme research runner's catalogue row declares it reads the theme store and source documents; its matrix row carries W in both columns and no R. **Resolved at 1.1**, both cells now R W | 1.1 |
 | H | `news_pulse` is declared one year retained and its ownership row gives Delete to nobody, which is contradiction A in a second table and unnoticed until now. **Resolved at 1.4**, with A and by the same reasoning: the counter is declared its deleter | 1.4, with A |
 | I | The splits and dividends feed is a read in the corporate action checker's catalogue row and is not one of section 5's source boxes, so the nightly path reads a feed the system overview does not carry. **Resolved at 1.6**, the box added | 1.6 |
-| J | Section 17's source lists row names two lists, company-news and industry; `DECISIONS.md` carries **Three source lists, not one, each with a review date** | 1.7 |
+| J | Section 17's source lists row names two lists, company-news and industry; `DECISIONS.md` carries **Three source lists, not one, each with a review date**. **Resolved at 1.7**: the decision's body always described two and its name said three, so the name was the defect. Superseded by a decision that also says where the lists apply | 1.7 |
 
 ---
 
@@ -400,7 +400,7 @@ Recorded when created, not remembered. An obligation names a due point this docu
 |---|---|---|
 | Architecture cites its decisions by name at each rule | 0.5 | 1.8 |
 | Splits and dividends parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.6, discharged |
-| News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7 |
+| News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7, discharged |
 | `two-platform` widened to what its roster row claims | 0.7 review | 1.4, discharged |
 | Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.3 |
 | News feed queryable by date without a ticker | authored with the architecture | 1.5, discharged |

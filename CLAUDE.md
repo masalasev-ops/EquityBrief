@@ -61,6 +61,7 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
 /prompts          gitignored. spent build prompts, kept locally
 /data             gitignored. the store lives here
 CLAUDE.md         these rules, read first every session
+source-lists.json the two open-web lists a research search may return, with their review date
 EquityBrief.slnx  the six projects, at the root
 global.json       pins the SDK to the 10.0.3xx feature band
 .github/workflows/ci.yml   the two-platform matrix and the Linux case-sensitivity job.
@@ -150,7 +151,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `changelog-reconciles` | every CI run | Every commit that deleted a line from a spec also changed `CHANGELOG.md`, read from the history |
 | `pinned-constants` | every CI run | Numeric constants stated in docs match the code constant they describe |
 | `stated-counts` | every CI run | Every count a spec states about itself matches the derived count. Record entries are dated measurements and are exempt |
-| `banned-prose` | every CI run | No text file the repository tracks contains the banned string or any form of it, and none contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
+| `banned-prose` | every CI run | No text file the repository tracks contains the banned string or any form of it, and none contains an em dash, excluding the captured provider responses a manifest names, which are the provider's bytes and not prose this repository writes. The line in CLAUDE.md's Prose convention that names the string is the single exemption within what is scanned, matched on the sentence that states the rule |
 | `coverage-reported` | every CI run | Every check the roster says runs is implemented, is invoked by `tools/ci.*`, states its own scope in numbers, and left a coverage record in the run the phase report reads |
 | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, no schedule is expressed in local time, and no date is parsed against the machine's locale. Comments are stripped first, because a sentence naming a pattern is not a use of it |
 | `path-casing` | every CI run | Every file path appearing as a string literal in source matches the on-disk path exactly, byte for byte |
@@ -161,6 +162,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `api-isolation` | every CI run | `EquityBrief.Api` has no transitive reference to `EquityBrief.Worker`, read from the compiled dependency file |
 | `bar-append-only` | every CI run | Nothing in the shipped source deletes or updates a bar table, and no migration deletes, updates or drops one |
 | `bar-bounds` | every CI run | Every stored bar has its low at or below its open and its close and its high at or above both, and carries the raw close its adjustment factor came from |
+| `news-parse` | every CI run | The captured news payload is read as the provider sends it: every article carries its text, an article is attributed to every name it names, the published instant keeps its time, and the domain is read as the delivering channel rather than claimed to be the publisher |
 | `corporate-actions` | every CI run | A captured action on a current member triggers a full-year refetch, the replacement is atomic, a name the index does not hold is not refetched, and a failure of the check itself marks the name suspect with its reason rather than passing |
 | `gap-refusal` | every CI run | A series arriving with an interior session missing is refused, that name's stored series is left as it was, and the gap's date is named on the run log; a hole at either edge is a shorter history rather than a gap, and one series alone reports that it cannot be checked rather than that it is clean |
 | `nightly-run` | every CI run | The night runs the steps that exist in the order section 14 states, each step doing what its own text says, and a failure names the step and exits non-zero |
