@@ -52,7 +52,11 @@ Each is two documents disagreeing, which `CLAUDE.md` calls a finding rather than
 | C | The failure table names a suspect state for a name whose corporate action check failed; no store column holds it | 1.6 |
 | D | `Scope.Screens` keys on the table heading, so a phase 5 export claim is forced to be asserted at the chart checkpoint. This is the 0.7 repair of `Scope.For` failing to sweep, not a new contradiction | 1.3 |
 | E | The catalogue gives four components a `calendar` read that SCHEMA does not declare and no component writes | 3.0 |
-| F | The catalogue's chart renderer reads levels and indicators, which do not exist until phase 2, while the phase table puts a chart in phase 1 | 1.3 |
+| F | Section 15.5's Level chart mark names four elements, candles, bands, moving averages and a volume pane, and two of them cannot exist until phase 2, while the phase table puts a chart in phase 1 | 1.3 |
+| G | The theme research runner's catalogue row declares it reads the theme store and source documents; its matrix row carries W in both columns and no R. **Resolved at 1.1**, both cells now R W | 1.1 |
+| H | `news_pulse` is declared one year retained and its ownership row gives Delete to nobody, which is contradiction A in a second table and unnoticed until now | 1.4, with A |
+| I | The splits and dividends feed is a read in the corporate action checker's catalogue row and is not one of section 5's source boxes, so the nightly path reads a feed the system overview does not carry | 1.6 |
+| J | Section 17's source lists row names two lists, company-news and industry; `DECISIONS.md` carries **Three source lists, not one, each with a review date** | 1.7 |
 
 ---
 
@@ -73,7 +77,9 @@ The phase planning pass belongs here, as its own `PROGRESS.md` entry opening "No
 
 Three decisions written before any code depends on them: the stored series is adjusted, what a gap is, and the bar provider with its per-ticker against bulk cost arithmetic. A provider abstraction taking its key from the secrets file, with a recorded-response double so no test touches the network. Migration creating `membership`. The membership loader with its access declaration. A query answering which names were members on a past date.
 
-The component access mechanism lands here: each component declares the stores it reads and writes, and a new check reconciles those declarations against the catalogue row and the matrix row in both directions. This is the largest piece of verification work in the phase and most of the phase's claims run through it.
+The component access mechanism lands here: each component declares the stores it reads and writes, and a new check reconciles those declarations against the catalogue row and the matrix row in both directions. This is the largest piece of verification work in the phase and most of the phase's claims run through it. The obligation to widen `writer-ownership` to what its roster row claims is discharged by the same work, and is forced to be: two of its tests assert over a population of zero and turn red the moment the first component lands.
+
+Two carried obligations re-pointed here from 1.5 and discharged: the manifest checker scanning the captured response and checking the named file exists, and the zoneless instant refused with the clock check widened to catch the implicit machine-zone read. Both concern the first committed manifest, which arrives with this checkpoint's recorded-response double rather than at 1.5.
 
 **Done when** a name that left the index carries its leave date, a membership query for a past date answers with that date's set rather than today's, and `component-access` reconciles in both directions with its scope stated and floored.
 
@@ -95,7 +101,9 @@ Candles are neutral ink, hollow for a close above the open and filled for below.
 
 Contradiction D resolved: `Scope.Screens` keyed on table and subject as `Scope.For` now is, and the harness swept for any other place a verdict, placement or reach is keyed on a heading alone, with the count found stated in advance.
 
-Contradiction F resolved: the catalogue's chart renderer read set says what it reads at each phase, or the claim is scoped to 2.4, whichever the reconciliation permits.
+Contradiction F resolved per element rather than per mark: candles and the volume pane are asserted at 1.3, and the bands and the moving averages stay out of scope until 2.4. The whole mark waiting for phase 2 would leave what exists unasserted for a phase and a half.
+
+One carried obligation re-pointed here from 1.5 and discharged: absolute path matching anywhere in a value rather than at position zero, which matters because `run_log.detail` is where exception text lands and exception text carries absolute paths mid-string.
 
 **Done when** the page draws the fixture's sessions, the drawn candle count is asserted against the stored row count rather than eyeballed, and the API is proved to compute nothing.
 
@@ -115,7 +123,7 @@ Refusal to the definition settled at 1.1: per name per night, that name's bar no
 
 The fixture-absent test inverted to assert present with the manifest checked, keeping a test that absence is still never a pass. The placement whose due point is this checkpoint converted to a check naming an instrument with declared reach, in this commit, because once `PROGRESS.md` records this checkpoint the reconciliation refuses a due point that has landed.
 
-Four carried obligations discharged: absolute path matching anywhere in a value rather than at position zero; the zoneless instant refused, with the clock check widened to catch the implicit machine-zone read; the manifest checker scanning the captured response and checking the named file exists; and the news feed probed for whether it is queryable by date without a ticker.
+One carried obligation discharged: the news feed probed for whether it is queryable by date without a ticker. The three manifest and path obligations that stood here are re-pointed to 1.1 and 1.3, because the first captured fixture arrives with 1.1's recorded-response double and an obligation owed at 1.5 would go unfixed across every manifest written from 1.1 onward.
 
 **Done when** the gap fixture is refused with its date named, the clean fixture is unaffected, and the induced failure produces what the failure table promises.
 
@@ -385,9 +393,9 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Stream ordering that can deadlock | 0.7 review | 1.2 |
 | Runtime money-precision guard, since the storage-form claim was disproved | 0.7 review | 1.2 |
 | `two-platform` widened to what its roster row claims | 0.7 review | 1.4 |
-| Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.5 |
-| Zoneless instant refused, clock check widened for the implicit machine-zone read | 0.7 review | 1.5 |
-| Manifest checker scans the captured response and checks the named file exists | 0.7 review | 1.5 |
+| Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.3 |
+| Zoneless instant refused, clock check widened for the implicit machine-zone read | 0.7 review | 1.1 |
+| Manifest checker scans the captured response and checks the named file exists | 0.7 review | 1.1 |
 | News feed queryable by date without a ticker | authored with the architecture | 1.5 |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.6 |
 | Source lists reviewed against measured coverage | 1.7 | 5.0 |
