@@ -1717,3 +1717,74 @@ Carried:    no feed reaches the network. Every provider implementation in the tr
             that builds them.
 
             The fixture's expectations, to 1.8, as at 1.3. The macOS runner, as before.
+
+### 1.5 - gap refusal                                                        2026-09-08
+Built:      `TradingCalendar` in `EquityBrief.Core`, which answers which sessions the exchange
+            traded and which of them one name is missing. The refusal in `Backfill`: a name whose
+            series arrives with an interior session missing is not stored, its stored series is
+            left as it was, and the gap's date is named in the run log. `gap-refusal` on the
+            roster. The gap fixture, `gap-KEYS.json`.
+
+Measured:   the gap fixture is the KEYS capture with one interior session removed, 2026-03-06,
+            which AAPL and MSFT both hold. 253 sessions become 252. Over the three names, one
+            name refused and two stored, 0 rows for KEYS and more than 250 each for the other
+            two. Over the clean fixture, none refused and all three stored, which is the
+            counter-test: without it every assertion above would hold over a backfill that
+            refused everything.
+
+            The report: 166 claims, 30 pass, 0 fail, 136 out of scope, 0 unexamined, 37
+            placements and verdicts reconciled against a floor of 28. 231 tests. `tools/ci` green
+            on Windows PowerShell and on bash on this machine.
+
+Detection:  against the calendar and never against the rows, which is the decision's own
+            reasoning and is the part that would have been easy to get wrong. A run of stored
+            dates is self-consistent whatever is missing from it: four days of a five-day week
+            look exactly like four days of a four-day week, so a series cannot be asked whether
+            it is complete. The calendar is observed rather than fetched, being the union of
+            session dates across the names in hand, so no call is added to a night to get it.
+
+            One consequence is stated rather than left implicit. Over a single series the union
+            is that series, so nothing can be found missing from it. `CanDetect` returns false
+            there rather than returning a clean answer, because a clean answer would mean
+            "nothing was compared" and would read as "there is no gap".
+
+            And interior only. A name that joined the index in March has no February bars and
+            that is a shorter history; a name whose last session is Friday has no Monday until
+            Monday's night runs. A gap is a hole with stored sessions on both sides of it.
+
+Decomposed: the failure row rather than re-dated, and the reasoning is worth recording because it
+            went the other way first. Its "What you see" cell names two surfaces: the name's
+            chart, which exists from 1.3, and its level and plan sections, which arrive at 2.5
+            and 3.4. Read as one claim the row is owed at 3.4 and the half that works sits
+            unasserted for two phases, which is exactly the argument that resolved contradiction
+            F. So it is read as two claims, `chart` at 1.5 and `level and plan sections` at 3.4.
+
+            This was nearly the third failure row re-dated whole, after "A name leaves the index"
+            at 1.1 and "Bulk price feed unavailable" at 1.4. Those two are correct because
+            neither names a surface that exists. This one does, and re-dating it would have been
+            the habit rather than the rule. The distinction: a failure row is owed where the last
+            surface it promises exists, and where its surfaces exist at different points it is
+            read per surface.
+
+            The element check now reads every cell of the row rather than the description column,
+            because the two decomposing tables put their elements in different columns and
+            reading one index would have been a rule about column order. Six elements over two
+            rows, stated in advance.
+
+Discharged: the news feed obligation, by spending one request. The feed is queryable by date with
+            no ticker: a date range with no ticker returns 200 with articles for the whole
+            market, every row carries a `symbols` array naming the tickers it is about, and the
+            response shape is identical either way. So a night makes one request and attributes
+            the rows in code, and the per-name cost of news is zero rather than one call per
+            name. The row also carries the article text, so the document a claim rests on arrives
+            with the row. Recorded as a decision rather than only as a discharged row.
+
+            The fixture-absent inversion this checkpoint's text also names was already discharged
+            at 1.1, where the first input was captured. It is noted rather than redone.
+
+Predicted:  30 passing claims, being 1.4's 29 plus the chart half of the gap row. Measured 30.
+            The claim total moves from 165 to 166 for the same reason, which 1.8 has to account
+            for when it checks the figure Pass B predicted: the decomposition count is now five
+            rather than three, four on the level chart and one added here.
+
+Carried:    the fixture's expectations, to 1.8. The macOS runner. The live feeds, as filed at 1.4.

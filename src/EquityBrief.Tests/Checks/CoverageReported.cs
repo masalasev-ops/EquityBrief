@@ -42,6 +42,7 @@ public class CoverageReported
         ["read-surface"] = "ReadSurface",
         ["nightly-cost"] = "NightlyCost",
         ["nightly-run"] = "NightlyRun",
+        ["gap-refusal"] = "GapRefusal",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };

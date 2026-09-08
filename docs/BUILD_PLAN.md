@@ -403,7 +403,7 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7 |
 | `two-platform` widened to what its roster row claims | 0.7 review | 1.4, discharged |
 | Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.3 |
-| News feed queryable by date without a ticker | authored with the architecture | 1.5 |
+| News feed queryable by date without a ticker | authored with the architecture | 1.5, discharged |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.6 |
 | Source lists reviewed against measured coverage | 1.7 | 5.0 |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 |

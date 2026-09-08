@@ -634,3 +634,21 @@ Was:
 Now: the same row reads `every CI run` and states that the run is measured over two universe sizes, and a `nightly-run` row is added above `read-surface`.
 
 Why: the limit is not "one request" but "a count that does not grow with the universe", and a night measured once over one population has been measured against a number rather than against the rule. So the check runs a night over three members and again over two and asserts the request count did not move. `nightly-run` is separate because the ordering of section 14's steps is a claim about the run rather than about cost: membership before the backfill because a backfill asks which names are members, and the backfill before the fetch because a name with no year is one the fetch would leave holding a single session.
+
+### 2026-09-08 - DECISIONS.md - news arrives in one dated feed request
+Corrects: nothing removed. A decision is added under Data, taken from a probe rather than from an assumption.
+
+Now:
+> **News arrives in one dated feed request and is attributed to names locally** The feed is queryable by date with no ticker, which was probed on the operator's key at 1.5 rather than assumed ...
+
+Why: the carried obligation asked whether the feed can be queried by date without a ticker, and 1.7 depends on the answer. One request settled it: a date range with no ticker returns 200 with articles for the whole market, every row carries a `symbols` array naming the tickers it is about, and the response shape is identical either way, so one parser serves both. A night therefore makes one request and fans the rows out in code. The alternative would put five hundred calls on the nightly path for the same articles and break the rule that a night costs the same for fifty names as for five hundred. The row also carries the article text, so the document a claim rests on arrives with the row rather than needing a second fetch.
+
+### 2026-09-08 - BUILD_PLAN.md - the news feed obligation discharged
+Corrects: an obligation that had stood since the architecture was authored.
+
+Was:
+> | News feed queryable by date without a ticker | authored with the architecture | 1.5 |
+
+Now: the same row reads `1.5, discharged`.
+
+Why: it was owed here because 1.7 cannot be planned without the answer, and the answer is yes. Recorded as a decision rather than only as a discharged row, because a later session could reasonably choose a request per ticker and the cost of that choice would be invisible until a night got slow.

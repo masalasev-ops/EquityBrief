@@ -1,3 +1,4 @@
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -97,11 +98,37 @@ public sealed class Backfill(
 
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
 
+        // Fetched before anything is stored, so the calendar the refusal reads
+        // is the whole set rather than whichever names happened to be stored
+        // first. A series checked against a calendar built only from the names
+        // already inserted would find fewer gaps the earlier it was checked.
+        var fetched = new Dictionary<string, IReadOnlyList<ProviderBar>>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var ticker in owed)
         {
-            var bars = await feed.BarsAsync(ticker, from, to, cancellationToken);
+            fetched[ticker] = await feed.BarsAsync(ticker, from, to, cancellationToken);
+        }
 
-            foreach (var bar in bars)
+        // The refusal. Per name per night: a name whose series arrives with an
+        // interior session missing is not stored, its stored series is left as
+        // it was, and the gap's date is named. Everything else is stored.
+        // see: Bars are never interpolated
+        var series = fetched.ToDictionary(
+            entry => entry.Key,
+            entry => (IReadOnlyCollection<DateOnly>)[.. entry.Value.Select(bar => bar.SessionDate)],
+            StringComparer.OrdinalIgnoreCase);
+
+        var gaps = TradingCalendar.CanDetect(series)
+            ? TradingCalendar.GapsIn(series)
+            : [];
+
+        var refused = gaps
+            .GroupBy(gap => gap.Ticker, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Select(gap => gap.SessionDate).ToArray(), StringComparer.OrdinalIgnoreCase);
+
+        foreach (var ticker in owed.Where(name => !refused.ContainsKey(name)))
+        {
+            foreach (var bar in fetched[ticker])
             {
                 await using var insert = connection.CreateCommand();
                 insert.CommandText = InsertBar;
@@ -144,12 +171,18 @@ public sealed class Backfill(
         // equals the number of names lacking history, and a literal could not
         // fail that.
         log.Parameters.AddWithValue("$network_requests", requests);
-        log.Parameters.AddWithValue("$detail", DBNull.Value);
+        // The gap's date named, on the surface a person reads. A refusal that
+        // left no trace would be a name quietly holding no history.
+        log.Parameters.AddWithValue(
+            "$detail",
+            gaps.Count == 0
+                ? (object)DBNull.Value
+                : "refused: " + string.Join(", ", gaps.Select(gap => $"{gap.Ticker} has no session on {gap.SessionDate:yyyy-MM-dd}")));
 
         await log.ExecuteNonQueryAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
-        return new BackfillOutcome(members.Count, owed.Length, requests, written);
+        return new BackfillOutcome(members.Count, owed.Length, requests, written, gaps);
     }
 
     static async Task<int> Count(SqliteConnection connection, CancellationToken cancellationToken)
@@ -191,4 +224,9 @@ public sealed class Backfill(
 // What one backfill did. Members and Owed are separate because the done
 // condition is about the second: the request count matches the number of names
 // lacking history, not the number of names.
-public sealed record BackfillOutcome(int Members, int Owed, int Requests, int RowsWritten);
+public sealed record BackfillOutcome(
+    int Members,
+    int Owed,
+    int Requests,
+    int RowsWritten,
+    IReadOnlyList<Gap> Refused);

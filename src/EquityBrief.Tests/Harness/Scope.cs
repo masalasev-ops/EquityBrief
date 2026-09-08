@@ -43,6 +43,7 @@ internal static class Scope
     // component-access, because a claim that something is drawn is a claim
     // about a surface and a declaration says nothing about one.
     const string ByReadSurface = "read-surface";
+    const string ByGap = "gap-refusal";
     const string ByCost = "nightly-cost";
     const string ByNight = "nightly-run";
 
@@ -134,6 +135,10 @@ internal static class Scope
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
+        [CheckReach.Key(FailureTable, "A gap in one name's series, chart")] = new Scoped(
+            Verdict.Pass,
+            "the holed series is refused with its date named, the clean one is unaffected, and the chart draws one candle per stored session with none for the missing one, so the gap is visible as an absence rather than closed over",
+            ByGap),
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane")] = new Scoped(
             Verdict.Pass,
             "one volume bar is drawn per candle on the same time axis, counted off the rendered markup",
@@ -360,6 +365,22 @@ internal static class Scope
     {
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
             ["candles", "the level bands", "the moving averages", "a volume pane"],
+
+        // The same shape in the failure table, and it arrived by the same
+        // route. This row's "What you see" cell names two surfaces drawn a
+        // phase and a half apart: the chart, which exists from 1.3 and shows
+        // the gap as an absence, and the level and plan sections, which arrive
+        // at 2.5 and 3.4. Read as one claim it would be owed at 3.4 and the
+        // half that works would sit unasserted for two phases, which is the
+        // argument that resolved contradiction F.
+        //
+        // This was nearly the third failure row re-dated whole, after "A name
+        // leaves the index" and "Bulk price feed unavailable". Those two are
+        // correct, because neither names a surface that exists yet. This one
+        // does, and re-dating it would have been the habit rather than the
+        // rule.
+        [CheckReach.Key(FailureTable, "A gap in one name's series")] =
+            ["chart", "level and plan sections"],
     };
 
     // The claim subjects a row yields. One, itself, unless the row decomposes.
@@ -407,7 +428,10 @@ internal static class Scope
         // due point is where the surface is, which is the same correction
         // "A name leaves the index" took at 1.1.
         ["Bulk price feed unavailable"] = "4.4",
-        ["A gap in one name's series"] = "1.5",
+        // The chart half is reached at 1.5 by gap-refusal, so only the other
+        // element is owed. The level sections arrive at 2.5 and the plan
+        // section's tables at 3.4, which is the last surface the cell names.
+        ["A gap in one name's series, level and plan sections"] = "3.4",
         ["A split or dividend not caught"] = "1.6",
         ["Cloud model unavailable"] = "phase 5",
         ["A source is returned but its text cannot be retrieved"] = "phase 5",
