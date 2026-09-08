@@ -1,0 +1,13 @@
+{
+  "General": {
+    "Code": "GSPC",
+    "Name": "S&P 500",
+    "CountryName": "USA"
+  },
+  "Components": {
+    "0": { "Code": "AAPL", "Exchange": "US", "Name": "Apple Inc", "StartDate": "1982-11-30", "EndDate": null },
+    "1": { "Code": "MSFT", "Exchange": "US", "Name": "Microsoft Corporation", "StartDate": "1994-06-01", "EndDate": null },
+    "2": { "Code": "KEYS", "Exchange": "US", "Name": "Keysight Technologies", "StartDate": "2018-11-06", "EndDate": null },
+    "3": { "Code": "XRAY", "Exchange": "US", "Name": "Dentsply Sirona", "StartDate": "2008-11-14", "EndDate": "2026-03-21" }
+  }
+}

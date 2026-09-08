@@ -398,3 +398,16 @@ Now:
 > the same sentence with "The mark renderer as its own component, declaring an empty access across all eleven stores, so the seam section 15.4 describes is a claim the harness asserts rather than a definition it trusts." between the two clauses
 
 Why: a checkpoint that builds a component and does not name it cannot be found by anything reading the plan, by a person or by the harness. The other half of this pass makes that concrete: due points are now read from the checkpoint whose text names the subject, so a component the plan does not name falls to a hand-written entry that nothing keeps current.
+
+### 2026-09-08 - CLAUDE.md, BUILD_PLAN.md - component-access on the roster, three obligations discharged
+Corrects: nothing. This records a clean edit rather than a defect, and it names no authorising decision because the corpus already required both changes: the Checks roster lists every check that runs, and the carried obligations table records a due point rather than remembering one.
+
+Was:
+> the Checks roster carried 24 rows and none for `component-access`
+> the carried obligations table carried three rows due at 1.1, being `writer-ownership` widened to what its roster row claims, the zoneless instant refused with the clock check widened, and the manifest checker scanning the captured response
+
+Now:
+> 25 roster rows, the new one reading: Every component declares the stores it reads and writes, and the declaration is reconciled against its catalogue row, its read and write matrix row cell by cell with the blanks included, SCHEMA's ownership, and the statements in its own source, in both directions
+> the three rows removed, with a paragraph beneath the table naming what discharged each and why the first was forced rather than merely due
+
+Why: a check that runs as a CI step and is not declared on the roster is a property nobody wrote down, and the phase report enumerates checks by name against that table. The three obligations were discharged by the first component landing rather than by anyone remembering them, which is what an obligation with a due point is for.

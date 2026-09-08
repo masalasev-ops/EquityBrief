@@ -143,6 +143,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | Check | Runs | Asserts |
 |---|---|---|
 | `writer-ownership` | every CI run | Every store has exactly one declared writer per operation, verified in both directions against SCHEMA |
+| `component-access` | every CI run | Every component declares the stores it reads and writes, and the declaration is reconciled against its catalogue row, its read and write matrix row cell by cell with the blanks included, SCHEMA's ownership, and the statements in its own source, in both directions |
 | `architecture-conformance` | every CI run | Every claim ARCHITECTURE.html makes, in a table or in the nightly run's ordered list, has a verdict: pass, fail, out of scope for this phase, or unexamined; every table in the document is placed so none can go unread; a claim that passes names the check that reached it, on both surfaces the report writes; and every placement and every pass is reconciled against what the check it names declares it reaches, in both directions |
 | `decision-resolves` | every CI run | Every decision name cited in code or docs matches a bold decision name in DECISIONS.md exactly, and no two decisions share a name |
 | `no-superseded-citation` | every CI run | No cited name resolves to a decision under "Previously decided" |

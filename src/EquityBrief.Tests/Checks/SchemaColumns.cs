@@ -18,6 +18,7 @@ public class SchemaColumns
         [
             CheckReach.Key(Scope.CatalogueTable, "Migration runner"),
             CheckReach.Key(Scope.StoresTable, "Run log"),
+            CheckReach.Key(Scope.StoresTable, "Membership"),
         ]);
 
     const string Sample =
@@ -28,6 +29,25 @@ public class SchemaColumns
         "| `a` | TEXT | |\n" +
         "| `b`, `c` | INTEGER | two names, one type |\n\n" +
         "Primary key: `a`.\n";
+
+    [Fact]
+    public void MembershipMatchesWhatSchemaDeclares()
+    {
+        // The second table, and the second store claim resting on this check.
+        // Same assertion as run_log's below: the columns the store has are the
+        // columns SCHEMA declares, in that order, with the declared types.
+        var schema = Corpus.Read("docs/SCHEMA.md");
+        var declared = StoreSchema.Declared(schema, "membership");
+
+        Assert.Equal(5, declared.Count);
+
+        using var store = new TemporaryStore().Migrated();
+        var built = StoreSchema.Built(store, "membership");
+
+        Assert.Equal(
+            declared.Select(column => (column.Name, column.Type)),
+            built.Select(column => (column.Name, column.Type)));
+    }
 
     [Fact]
     public void RunLogMatchesWhatSchemaDeclares()

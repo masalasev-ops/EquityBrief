@@ -76,7 +76,7 @@ public class ArchitectureConformance
         // mean something: over zero passing claims it would hold trivially.
         var passing = Report().Claims.Where(claim => claim.Verdict == Verdict.Pass).ToArray();
 
-        Assert.True(passing.Length >= 4, $"{passing.Length} claims pass, expected at least 4.");
+        Assert.True(passing.Length >= 6, $"{passing.Length} claims pass, expected at least 6. 7 do at 1.1, and this only grows.");
         Assert.DoesNotContain(passing, claim => claim.By.Length == 0);
     }
 
@@ -233,7 +233,7 @@ public class ArchitectureConformance
             .Select(claim => claim.GetProperty("by").GetString() ?? string.Empty)
             .ToArray();
 
-        Assert.True(passing.Length >= 4, $"{passing.Length} claims pass in the file, expected at least 4.");
+        Assert.True(passing.Length >= 6, $"{passing.Length} claims pass in the file, expected at least 6.");
         Assert.DoesNotContain(passing, by => by.Length == 0);
 
         Assert.Contains("<th>Reached by</th>", html, StringComparison.Ordinal);

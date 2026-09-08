@@ -34,9 +34,26 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // `left` is quoted in every statement that names it, here and in the loader.
+    // It is a keyword in SQLite's grammar, as in LEFT JOIN, and an unquoted use
+    // beside a table alias parses as the start of a join rather than as a
+    // column. SCHEMA declares the column and the name is not changed to suit the
+    // grammar; it is quoted instead.
+    const string CreateMembership = @"
+        CREATE TABLE membership (
+            index_code   TEXT NOT NULL,
+            ticker       TEXT NOT NULL,
+            joined       TEXT NOT NULL,
+            ""left""     TEXT,
+            observed_at  TEXT NOT NULL,
+            PRIMARY KEY (index_code, ticker, joined)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
+        new Migration(2, "create membership", CreateMembership),
     ];
 
     public static int LatestVersion => All.Max(migration => migration.Version);

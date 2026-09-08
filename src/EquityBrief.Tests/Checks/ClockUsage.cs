@@ -16,8 +16,14 @@ public class ClockUsage
         // enough below the count that ordinary growth never moves it.
         Assert.True(files.Count >= 15, $"Read {files.Count} source files, expected at least 15.");
 
+        // Comments are stripped before the scan, because a comment is not a
+        // read. The check flagged a sentence explaining why a zoneless instant
+        // is refused, on the strength of the words inside it, which is the same
+        // defect the statement reader had: a scan that finds a pattern in prose
+        // is not evidence of behaviour. Stripping narrows the scope to code,
+        // which is the only place a machine clock can actually be read.
         var uses = files
-            .SelectMany(file => MachineClock.In(File.ReadAllText(file), file))
+            .SelectMany(file => MachineClock.In(SourceStatements.WithoutComments(File.ReadAllText(file)), file))
             .Where(use => Path.GetFileName(use.File) != TheClock)
             .ToArray();
 
@@ -29,9 +35,25 @@ public class ClockUsage
     {
         // Without this, the check above passes just as well over a system that
         // reads no clock at all, which is not the property being asserted.
-        var uses = MachineClock.In(File.ReadAllText(Repository.SystemClock), Repository.SystemClock);
+        var uses = MachineClock.In(
+            SourceStatements.WithoutComments(File.ReadAllText(Repository.SystemClock)),
+            Repository.SystemClock);
 
         Assert.NotEmpty(uses);
+    }
+
+    [Fact]
+    public void AReadInACommentIsNotARead()
+    {
+        // The other half of the widening. A real read is still found, and the
+        // same words inside a comment are not, so this is not a scan that has
+        // simply been switched off.
+        var real = "var now = " + "DateTime" + ".Now;";
+        var talkedAbout = "// a grep for " + "DateTime" + ".Now would never find it";
+
+        Assert.NotEmpty(MachineClock.In(SourceStatements.WithoutComments(real), "real.cs"));
+        Assert.Empty(MachineClock.In(SourceStatements.WithoutComments(talkedAbout), "comment.cs"));
+        Assert.NotEmpty(MachineClock.In(talkedAbout, "comment.cs"));
     }
 
     [Fact]

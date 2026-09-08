@@ -102,13 +102,20 @@ internal static class PhaseReport
             "a plan for phase 6, with nothing built to assert it against", Due: "6.1"),
         ["13.3 The guardrails"] = new Placement(
             "rules for phase 6, asserted by register-append-only", Due: "6.1"),
-        // 1.1, not 1.3. The first captured input arrives with that checkpoint's
-        // recorded-response double, and the manifest checker obligation was
-        // re-pointed there in the same pass for the same reason: an obligation
-        // about manifests owed later goes unfixed across every manifest written
-        // from the first one onward.
+        // 1.8, and the journey here is worth stating because it was wrong twice.
+        //
+        // It was owed at 0.6, which had landed, then re-pointed to 1.3 and then
+        // to 1.1 on the reasoning that the first manifest arrives with the first
+        // captured input. The manifest does arrive at 1.1 and is checked there.
+        // But this table is not about the manifest: its rows are bars,
+        // fundamentals, news and the expectations, and a fixture holding one
+        // captured input holds almost none of what the table describes. Owing it
+        // where the first manifest lands confused one row for the table.
+        //
+        // 1.8 is where phase 1's expectations land, which is the first point the
+        // fixture holds a shape this table can be read against.
         ["19.1 What a fixture holds"] = new Placement(
-            "the fixture's shape, asserted by the manifest checker over the first fixture that lands", Due: "1.1"),
+            "the fixture's shape, whose rows are the captured inputs and the expectations derived from them; the manifest is checked from 1.1 and the expectations arrive at 1.8", Due: "1.8"),
         ["19.2 What the harness checks"] = new Placement(
             "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register", Due: "6.1"),
         ["19.3 What it produces"] = new Placement(

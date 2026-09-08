@@ -18,7 +18,13 @@ public class StorePortability
         // Scope, and it is context rather than a pass. A freshly migrated store
         // holds no rows, so this assertion has found nothing because there is
         // nothing there. The next test is the one that carries the property.
-        Assert.Equal(1, scan.TablesScanned);
+        //
+        // The table count is derived from the migrations rather than written
+        // here, so it moves with the schema instead of failing at every new
+        // table. The two sources are independent: the migrations say what should
+        // be created and the scan reads what the store actually has, so the
+        // comparison catches a migration that ran and made no table.
+        Assert.Equal(TablesTheMigrationsCreate(), scan.TablesScanned);
         Assert.Equal(0, scan.RowsScanned);
     }
 
@@ -38,7 +44,7 @@ public class StorePortability
 
         var scan = AbsolutePaths.Scan(store);
 
-        Assert.Equal(2, scan.TablesScanned);
+        Assert.Equal(TablesTheMigrationsCreate() + 1, scan.TablesScanned);
         Assert.Equal(3, scan.RowsScanned);
         Assert.Equal(2, scan.Offenders.Count);
         Assert.All(scan.Offenders, offence => Assert.Equal("note", offence.Column));
@@ -57,4 +63,12 @@ public class StorePortability
         Assert.False(AbsolutePaths.LooksAbsolute("AAPL"));
         Assert.False(AbsolutePaths.LooksAbsolute(""));
     }
+
+    // How many tables the migrations create, read from their SQL. An
+    // independent source from the store the scan opens.
+    static int TablesTheMigrationsCreate() =>
+        EquityBrief.Data.Migrations.SchemaMigrations.All
+            .Sum(migration => System.Text.RegularExpressions.Regex
+                .Matches(migration.Sql, @"CREATE\s+TABLE", System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+                .Count);
 }

@@ -11,6 +11,7 @@ internal sealed record Scoped(Verdict Verdict, string Note, string By);
 internal static class Scope
 {
     const string ByMigration = "schema-columns";
+    const string ByAccess = "component-access";
     const string ByHarness = "architecture-conformance";
 
     internal const string MatrixTable = "Read and write matrix";
@@ -33,10 +34,26 @@ internal static class Scope
             Verdict.Pass,
             "every claim in sections 7, 14, 15, 16, 17 and 18 carries a verdict, and both artifacts are written and read back",
             ByHarness),
+        [CheckReach.Key(StoresTable, "Membership")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(StoresTable, "Run log")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(CatalogueTable, "Membership loader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the feed it reads and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Membership loader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Migration runner")] = new Scoped(
+            Verdict.Pass,
+            "the row is eleven blanks, the runner declares no store, and no statement against a declared table appears in its source",
+            ByAccess),
         [CheckReach.Key(FailureTable, "The harness cannot parse this document")] = new Scoped(
             Verdict.Pass,
             "the parse guard fails rather than reporting zero claims",
@@ -153,7 +170,6 @@ internal static class Scope
     // the last of them is.
     static readonly Dictionary<string, string> MatrixRows = new(StringComparer.Ordinal)
     {
-        ["Migration runner"] = "phase 6",
         ["Verification harness"] = "phase 6",
     };
 
