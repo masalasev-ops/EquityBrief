@@ -360,6 +360,108 @@ public class ArchitectureConformance
     }
 
     [Fact]
+    public void EveryDeclaredExceptionRunsInTheDirectionItClaims()
+    {
+        var checkpoints = PlanCheckpoints.All();
+        var exceptions = Scope.Exceptions();
+
+        Assert.True(exceptions.Count >= 2, $"Read {exceptions.Count} declared exceptions, expected at least 2.");
+
+        var wrong = new List<string>();
+
+        foreach (var exception in exceptions)
+        {
+            var derived = PlanCheckpoints.DueFor(exception.Subject, checkpoints);
+
+            if (derived is null)
+            {
+                wrong.Add(
+                    $"{exception.Subject} is declared an exception and the plan does not name it, " +
+                    "so there is no derivation to except it from.");
+
+                continue;
+            }
+
+            var order = DuePoints.Compare(derived, exception.Declared);
+
+            // The label is not taken on trust. A mislabelled exception is the
+            // one failure the split into two lists cannot otherwise catch: an
+            // unsafe derivation filed under the safe heading passes every other
+            // assertion here and then fails the day its checkpoint lands.
+            if (exception.Later && order <= 0)
+            {
+                wrong.Add(
+                    $"{exception.Subject} is declared as derived later than the truth, and the plan " +
+                    $"derives {derived} against a declared {exception.Declared}, which is not later. " +
+                    "A late exception can only delay a claim; an early one fails the day its " +
+                    "checkpoint lands, so this belongs in the other list.");
+            }
+
+            if (!exception.Later && order >= 0)
+            {
+                wrong.Add(
+                    $"{exception.Subject} is declared as derived earlier than the truth, and the plan " +
+                    $"derives {derived} against a declared {exception.Declared}, which is not earlier. " +
+                    "An exception declared unsafe and reported every run should be the safe kind.");
+            }
+        }
+
+        Assert.Empty(wrong);
+    }
+
+    [Fact]
+    public void TheUnsafeExceptionsAreOnTheSurfaceAPersonReads()
+    {
+        // The lesson of finding 1 of the phase 0 review, applied before it can
+        // repeat: a claim that something is visible is a claim about a surface,
+        // so this reads the written files rather than the model behind them.
+        var json = File.ReadAllText(Path.Combine(Repository.Root, "artifacts", "phase-report.json"));
+        var html = File.ReadAllText(Path.Combine(Repository.Root, "artifacts", "phase-report.html"));
+
+        var unsafeOnes = Scope.Exceptions().Where(exception => !exception.Later).ToArray();
+
+        Assert.NotEmpty(unsafeOnes);
+
+        // The section itself, not the whole page. A subject named here is also a
+        // claim subject elsewhere on the page, so searching the whole document
+        // would pass on the claims table and prove nothing about this section.
+        var start = html.IndexOf("<h2>Unsafe due-point exceptions", StringComparison.Ordinal);
+
+        Assert.True(start >= 0, "The phase report carries no unsafe due-point exceptions section.");
+
+        var next = html.IndexOf("<h2>", start + 4, StringComparison.Ordinal);
+        var section = next < 0 ? html[start..] : html[start..next];
+
+        foreach (var exception in unsafeOnes)
+        {
+            Assert.Contains(exception.Subject, json, StringComparison.Ordinal);
+            Assert.Contains($">{exception.Subject}<", section, StringComparison.Ordinal);
+            Assert.Contains($">{exception.Declared}<", section, StringComparison.Ordinal);
+        }
+
+        // And the safe ones stay out of that section, or it stops meaning what
+        // it says and becomes a list of every exception rather than the ones
+        // worth looking at again.
+        foreach (var quiet in Scope.Exceptions().Where(exception => exception.Later))
+        {
+            Assert.DoesNotContain($">{quiet.Subject}<", section, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void TheOrderingPutsAPhaseBeforeItsCheckpoints()
+    {
+        // The permanent proof under the direction assertion above, since a
+        // comparator that returned zero for everything would pass every case.
+        Assert.True(DuePoints.Compare("1.3", "1.4") < 0);
+        Assert.True(DuePoints.Compare("6.1", "4.5") > 0);
+        Assert.True(DuePoints.Compare("1.7", "5.1") < 0);
+        Assert.Equal(0, DuePoints.Compare("2.4", "2.4"));
+        Assert.True(DuePoints.Compare("phase 5", "5.1") < 0);
+        Assert.True(DuePoints.Compare("phase 5", "4.7") > 0);
+    }
+
+    [Fact]
     public void MostDuePointsAreDerivedRatherThanWritten()
     {
         var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));

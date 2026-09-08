@@ -57,6 +57,12 @@ internal static class PhaseReportWriter
                     carrier = check.Carrier,
                     reads = check.Reads,
                 }),
+                unsafeDuePointExceptions = report.UnsafeExceptions.Select(exception => new
+                {
+                    subject = exception.Subject,
+                    declared = exception.Declared,
+                    derived = PlanCheckpoints.DueFor(exception.Subject),
+                }),
                 placement = report.Tables.Select(table => new
                 {
                     heading = table.Heading,
@@ -136,6 +142,26 @@ internal static class PhaseReportWriter
         }
 
         page.Append("</table>");
+
+        if (report.UnsafeExceptions.Count > 0)
+        {
+            page.Append($"<h2>Unsafe due-point exceptions ({report.UnsafeExceptions.Count})</h2>");
+            page.Append("<p>Due points are read from BUILD_PLAN's checkpoint text. These subjects ");
+            page.Append("are named by the plan in a way the derivation must not take, and the value ");
+            page.Append("it would take is <b>earlier</b> than the truth, which fails the day that ");
+            page.Append("checkpoint lands. They are listed here every run because an exception ");
+            page.Append("visible only in a source comment is one nobody sees again.</p>");
+            page.Append("<table><tr><th>Subject</th><th>Plan derives</th><th>Declared</th></tr>");
+
+            foreach (var exception in report.UnsafeExceptions)
+            {
+                page.Append($"<tr><td>{Escape(exception.Subject)}</td>");
+                page.Append($"<td>{Escape(PlanCheckpoints.DueFor(exception.Subject) ?? "nothing")}</td>");
+                page.Append($"<td>{Escape(exception.Declared)}</td></tr>");
+            }
+
+            page.Append("</table>");
+        }
 
         page.Append("<h2>Every table in the architecture</h2>");
         page.Append("<p>A table nobody placed is a table that can go unread, so all of them are ");

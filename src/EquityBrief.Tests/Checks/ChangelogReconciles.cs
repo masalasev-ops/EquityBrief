@@ -100,7 +100,20 @@ public class ChangelogReconciles
         // a spec line, not the commits. A run where that number is zero has
         // asserted nothing, so it is stated rather than folded into the total.
         Assert.True(deleting >= 1, $"{deleting} commits deleted a spec line, expected at least 1.");
-        Assert.Empty(offenders);
+
+        // The message says what a deletion is, because the commits that trip
+        // this are usually not the ones that removed anything. git counts a
+        // rewritten line as one deletion and one addition, so adding a sentence
+        // to the middle of a paragraph deletes the line it replaced. Without
+        // this line the next person to hit it reads the check's name, sees a
+        // commit that only added prose, and goes looking for the bug here.
+        Assert.True(
+            offenders.Count == 0,
+            "These commits deleted a line from a spec without changing " + Changelog + ": " +
+            string.Join(", ", offenders) +
+            ". A modified line counts as a deletion, so a commit that only added a sentence to an " +
+            "existing paragraph trips this: the line it replaced is gone and its prior text is " +
+            "owed here. The entry belongs in the same commit, not the one before it.");
     }
 
     [Fact]

@@ -7,9 +7,32 @@ namespace EquityBrief.Tests.Harness;
 // The checkpoint itself exists only once its phase is planned, which
 // BUILD_PLAN does at the previous phase's sign-off, so a checkpoint is in the
 // plan when the plan carries it by name or carries its phase.
+// A subject the plan names in a way the derivation must not take, and the
+// direction the exception claims. Later is safe and quiet; earlier is not, and
+// is reported on the phase report every run.
+internal sealed record DuePointException(string Subject, string Declared, bool Later);
+
 internal static class DuePoints
 {
     const string PhasePrefix = "phase ";
+
+    // Where a due point sits in the build order, as a pair the caller can
+    // compare. A phase sorts before every checkpoint in it, because "phase 5"
+    // is the whole of it and 5.1 is a point inside it.
+    internal static (int Phase, int Checkpoint) Order(string due)
+    {
+        if (NamesAPhase(due))
+        {
+            return (int.Parse(PhaseOf(due)), -1);
+        }
+
+        var parts = due.Split('.');
+
+        return (int.Parse(parts[0]), parts.Length > 1 ? int.Parse(parts[1]) : -1);
+    }
+
+    internal static int Compare(string left, string right) =>
+        Order(left).CompareTo(Order(right));
 
     internal static bool NamesAPhase(string due) =>
         due.StartsWith(PhasePrefix, StringComparison.Ordinal);
