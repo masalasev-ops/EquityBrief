@@ -27,6 +27,13 @@
       "endpoint": "eod/KEYS.US",
       "query": "eod/KEYS.US?from=2025-09-04&to=2026-09-04&period=d&fmt=json",
       "fetchedAt": "2026-09-08T12:37:09Z"
+    },
+    {
+      "file": "bulk-2026-09-08.json",
+      "endpoint": "eod-bulk-last-day/US",
+      "query": "eod-bulk-last-day/US?fmt=json",
+      "fetchedAt": "2026-09-08T20:49:02Z",
+      "trimmedTo": "seven of the 10,670 rows the whole US exchange returned, chosen so the membership filter has each thing it must reject. Three are current members and are stored: AAPL, MSFT and KEYS. Two are constituents that have left, AAL and XRAY, which the provider still returns because they still trade, and which prove the filter reads membership rather than the file. Two, A and AA, were never in this fixture's index at all. The session is 2026-09-08, which is the next trading session after the stored year ends on 2026-09-04, the Monday between them being a holiday, so appending it leaves a contiguous series and a fetcher that dropped it would be visible as a gap rather than as a shorter year. Rows keep the order the provider sent them in, and every key, nesting and type is the provider's."
     }
   ]
 }

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# What the scheduler calls. Runs the night's steps in order and exits non-zero
+# on the first failure, naming the step.
+#
+# Runs from the repository root, because a relative data root in appsettings.json
+# resolves against the working directory and the store must land in the same
+# place whoever calls this and from wherever.
+#
+# The fixture argument is here because the live feeds are not built yet. A night
+# reads recorded responses, so it has to be told which. When the HTTP feeds land
+# this argument becomes optional and the default is the provider.
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$root"
+
+fixture="${1:-fixtures/membership-2026-09-05}"
+shift || true
+
+exec dotnet run --project src/EquityBrief.Worker -- nightly --fixture "$fixture" "$@"

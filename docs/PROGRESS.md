@@ -1637,3 +1637,83 @@ Carried:    the fixture's expectations for this checkpoint, to 1.8, where the co
             request would break the key and would grow the operational record by something that is
             not an operation. A later checkpoint that wants a per-request record needs a different
             table, not a looser grain.
+
+### 1.4 - the bar fetcher and the nightly script                             2026-09-08
+Built:      `IBulkPriceFeed` and `RecordedBulkPriceFeed`. `BarFetcher`, one bulk request a night,
+            stored for current members only, then the sessions that fell out of the retention
+            window dropped. `Nightly`, the night's steps in section 14's order, and the `nightly`
+            verb behind `tools/nightly` and `tools/nightly.ps1`. `ProviderBarReader`, extracted so
+            the two bar feeds share one adjustment rather than carrying two copies of it.
+            `nightly-cost` and `nightly-run` on the roster, `bar-append-only` given its owner
+            exemption, `two-platform` widened.
+
+Captured:   one request against `eod-bulk-last-day/US`, weight 100 against a 100,000 daily
+            allowance, spent before the parser was written rather than after. Stated in advance
+            and then made. It returned 10,670 rows for 2026-09-08, and the shape is not the
+            historical endpoint's: the name is under `code`, and every row carries the exchange
+            it came from. A parser written first would have looked for a ticker field.
+
+            Trimmed to seven rows, chosen so the membership filter has each thing it must reject.
+            Three current members are stored. Two constituents that have left, AAL and XRAY, are
+            in the file because they still trade, which is what proves the filter reads membership
+            rather than the file. Two, A and AA, were never in this index. The session is the next
+            trading day after the stored year ends, the Monday between being a holiday, so a night
+            appends to a contiguous series.
+
+Measured:   over the fixture's 5 constituents, of which 3 are current members: 3 rows written,
+            1 request, and 4 rows in the file not stored. A second night writes 0. Retention with
+            the boundary at the fetched session less a year is 2025-09-08, and 0 rows remain below
+            it while none inside it is gone. A night by hand: membership 5, backfill 753 over 3
+            requests, fetch 3 for 3 members over 1 request, 0 model calls.
+
+            The report: 165 claims, 29 pass, 0 fail, 136 out of scope, 0 unexamined, 36
+            placements and verdicts reconciled against a floor of 28. 223 tests. `tools/ci` green
+            on Windows PowerShell and on bash on this machine; the macOS runner is the matrix.
+
+Predicted:  stated before the run. 29 passing claims, being 1.3's 20 plus nine of the ten owed at
+            1.4. Measured 29. The tenth is the bulk-feed failure row, re-dated rather than reached:
+            its "What you see" cell promises a banner giving the data date and tonight's list
+            absent rather than wrong, and both are phase 4 surfaces. A claim that something is
+            visible is a claim about a surface, which is the same correction "A name leaves the
+            index" took at 1.1, found again at the next row that makes one.
+
+Resolved:   contradictions A and H. A was three-way rather than two-way, which is why it survived
+            a review: the `bar` note said the fetcher drops old sessions, the ownership row gave
+            Delete to the corporate action checker alone, and the exception paragraph said twice
+            that a refetch was the only sanctioned removal. Any two of the three read as agreeing.
+
+            The resolution is not that the rule was wrong but that it was about a third thing.
+            Retention removes every session below a date boundary for every name at once and
+            leaves a contiguous series; a refetch replaces one name's year inside a transaction.
+            What the append-only rule forbids is a bar being deleted or edited from inside a
+            series that still stands, and that is untouched. `bar-append-only` now reads the
+            declared deleters out of SCHEMA rather than carrying a list, so the exemption moves
+            with the declaration, and its negative proof plants the same DELETE in a file SCHEMA
+            does not name and asserts it still fails. H is the same defect in `news_pulse` and
+            took the same resolution.
+
+Widened:    `two-platform`, discharging the obligation the 0.7 review carried here. It asserted
+            that the workflow names two runners, which would hold over a workflow whose macOS leg
+            was skipped or whose failure was swallowed. It now asserts that no leg can report
+            green without running the suite: no `continue-on-error`, no swallowed failure, every
+            leg invoking a CI script rather than a bare `dotnet test`, the Linux instrument
+            outside the matrix so "both" still means two, and the history fetched on every leg
+            that reads it. That last is not decoration: `changelog-reconciles` reads the history,
+            and a shallow clone gives it one commit, which is under-reporting on a runner and
+            invisible from here.
+
+Proved:     the suite found two defects in this checkpoint's own code. `bar-append-only` failed
+            the moment the retention delete was written, which is the check doing exactly what
+            the checkpoint text predicted it would. And a second night collided on the run log's
+            primary key: the run id was keyed on the date, so re-running a night that failed
+            halfway failed on its first step instead, which is precisely what a re-run is for.
+            The id now carries the instant, and a caller may name its own.
+
+Carried:    no feed reaches the network. Every provider implementation in the tree is a recorded
+            double, so `tools/nightly` takes a fixture folder and a live night cannot run;
+            captures have been made by hand at 1.1, 1.2 and 1.4. That is a hole rather than a
+            defect in any checkpoint, and it is now in `BUILD_PLAN.md` rather than named only
+            here: the HTTP feeds and the path from configuration to request have no checkpoint
+            that builds them.
+
+            The fixture's expectations, to 1.8, as at 1.3. The macOS runner, as before.
