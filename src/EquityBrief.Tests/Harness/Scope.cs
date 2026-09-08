@@ -311,6 +311,15 @@ internal static class Scope
 
     internal static IReadOnlyCollection<string> ScreensKeys() => Screens.Keys;
 
+    internal static IReadOnlyCollection<string> NightlyStepKeys() => NightlySteps.Keys;
+
+    // How many keys match a nightly step's full text. Exactly one is the
+    // property: the steps are sentences and the keys are their openings, so a
+    // key that is the opening of another key answers for both and whichever
+    // the dictionary yields first wins silently.
+    internal static int NightlyStepKeysMatching(string subject) =>
+        NightlySteps.Keys.Count(key => subject.StartsWith(key, StringComparison.Ordinal));
+
     static readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal)
     {
         ["Bulk price feed unavailable"] = "1.4",

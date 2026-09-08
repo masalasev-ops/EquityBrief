@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using EquityBrief.Tests.Harness;
 
 namespace EquityBrief.Tests.Checks;
 
@@ -150,18 +151,25 @@ public class CoverageReported
         foreach (var row in pending)
         {
             var checkpoint = row.Runs["from ".Length..].Trim();
-            var phase = checkpoint.Split('.')[0];
 
             // The checkpoint itself exists only once its phase is planned, which
             // BUILD_PLAN does at the previous phase's sign-off. What has to be
             // true now is that its phase is in the plan and that nothing has
             // recorded the checkpoint as landed.
+            //
+            // Both questions go through the same reader the reconciliation
+            // uses, rather than being asked again here with a text match. Asked
+            // again, they were the same prefix defect: "### 1.4 -" in the record
+            // reads as landed whatever the entry beneath it says, so a planning
+            // pass headed with a building checkpoint would have retired a
+            // roster row that has not started running.
             Assert.True(
-                plan.Contains($"### {checkpoint}", StringComparison.Ordinal)
-                    || plan.Contains($"## Phase {phase}", StringComparison.Ordinal),
+                DuePoints.InThePlan(checkpoint, plan),
                 $"{row.Check} runs from {checkpoint}, which the plan has neither as a checkpoint nor as a phase.");
 
-            Assert.DoesNotContain($"### {checkpoint} -", progress, StringComparison.Ordinal);
+            Assert.False(
+                DuePoints.HasLanded(checkpoint, progress),
+                $"{row.Check} is rostered from {checkpoint}, which PROGRESS records as built.");
             Assert.False(Implementations.ContainsKey(row.Check), $"{row.Check} is not due until {checkpoint}.");
         }
     }

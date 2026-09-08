@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EquityBrief.Tests.Checks;
 
 namespace EquityBrief.Tests.Harness;
@@ -44,10 +45,59 @@ internal static class DuePoints
         plan.Contains($"### {due} ", StringComparison.Ordinal)
         || plan.Contains($"## Phase {PhaseOf(due)}", StringComparison.Ordinal);
 
+    // The checkpoints PROGRESS records as built, read from its entries rather
+    // than matched against its text.
+    //
+    // The text match this replaced asked whether the file contained "### 2.",
+    // which is a question about everything sharing that prefix. An entry headed
+    // "### 2.0 planning" answered it, so the pass that plans phase 2 would have
+    // read as phase 2 having landed and failed every claim still owed at it:
+    // the mark vocabulary rows, the level window, the swing lookback, the band
+    // merge distance. "### 1.1 planning" already answered it for phase 1, and
+    // nothing noticed only because nothing is due at bare "phase 1", which is
+    // the state that carries a defect past the point where it bites.
+    //
+    // A planning pass is told from a checkpoint by the convention CLAUDE.md
+    // already states, the entry opening "Not a checkpoint entry", rather than
+    // by its number. The number is what misled the matcher, and an entry headed
+    // "### 2.0 -" whose body opens that way is still a planning pass.
+    internal static IReadOnlyList<string> Built(string progress)
+    {
+        var built = new List<string>();
+
+        // The heading is the rest of its own line and the body runs to the next
+        // one, so the character class is spelled out rather than left to a dot.
+        // A dot that matches newlines makes the heading swallow the file and
+        // the reader returns nothing, which is a parse failure that reads as a
+        // record with no checkpoints in it.
+        foreach (Match entry in Regex.Matches(
+                     progress,
+                     @"^### (?<heading>[^\r\n]*)(?<body>(?:(?!^### )[\s\S])*)",
+                     RegexOptions.Multiline))
+        {
+            var id = Regex.Match(entry.Groups["heading"].Value, @"^(\d+\.\d+)");
+
+            if (!id.Success || entry.Groups["body"].Value.TrimStart()
+                    .StartsWith(NotACheckpoint, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            built.Add(id.Groups[1].Value);
+        }
+
+        return built;
+    }
+
+    internal const string NotACheckpoint = "Not a checkpoint entry";
+
     internal static bool HasLanded(string due, string progress) =>
+        HasLanded(due, Built(progress));
+
+    internal static bool HasLanded(string due, IReadOnlyList<string> built) =>
         NamesAPhase(due)
-            ? progress.Contains($"### {PhaseOf(due)}.", StringComparison.Ordinal)
-            : progress.Contains($"### {due} -", StringComparison.Ordinal);
+            ? built.Any(checkpoint => PhaseOf(checkpoint) == PhaseOf(due))
+            : built.Contains(due, StringComparer.Ordinal);
 }
 
 // Reconciles what the report says an instrument covers against what that

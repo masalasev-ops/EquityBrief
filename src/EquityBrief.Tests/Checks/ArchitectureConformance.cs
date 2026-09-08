@@ -215,6 +215,100 @@ public class ArchitectureConformance
     }
 
     [Fact]
+    public void APlanningPassDoesNotLandItsPhaseAndACheckpointDoes()
+    {
+        // The permanent proof, over a constructed record rather than the real
+        // one, because the property has to hold for a phase this repository has
+        // not reached and cannot be shown on a file that has reached none.
+        //
+        // Both directions, and the second is the one that matters most. A
+        // tightening that made this answer no forever would be green today and
+        // wrong at every sign-off from here on, which is the shape of a check
+        // that narrows its own scope and keeps passing.
+        const string planningOnly = """
+            ### 2.0 planning - the pass that settles what phase 2 builds against
+            Not a checkpoint entry. It belongs to 2.0, which has not landed.
+
+            ### 1.2 - the one-year backfill
+            Built:      the backfill.
+            """;
+
+        Assert.False(DuePoints.HasLanded("phase 2", planningOnly));
+        Assert.False(DuePoints.HasLanded("2.0", planningOnly));
+        Assert.True(DuePoints.HasLanded("phase 1", planningOnly));
+
+        const string built = """
+            ### 2.1 - the indicator engine and the averages on the chart
+            Built:      the indicator engine.
+            """;
+
+        Assert.True(DuePoints.HasLanded("phase 2", built));
+        Assert.True(DuePoints.HasLanded("2.1", built));
+
+        // The number is not what tells them apart. An entry headed with a
+        // building checkpoint whose body opens the planning way is a planning
+        // pass, and the old matcher had no way to see that at all.
+        const string numberedLikeACheckpoint = """
+            ### 2.1 - the pass that settles what phase 2 builds against
+            Not a checkpoint entry. It belongs to 2.1, which has not landed.
+            """;
+
+        Assert.False(DuePoints.HasLanded("phase 2", numberedLikeACheckpoint));
+        Assert.False(DuePoints.HasLanded("2.1", numberedLikeACheckpoint));
+    }
+
+    [Fact]
+    public void EveryNightlyStepIsAnsweredByExactlyOneKey()
+    {
+        // The first instance of the prefix class, and the one that had no
+        // guard. Section 14's steps are sentences and the keys are their
+        // openings, matched with StartsWith, so a key that is the opening of
+        // another answers for both and the dictionary's first match wins with
+        // nothing reporting the collision.
+        //
+        // Both directions. Zero matches leaves a step with no due point, which
+        // the caller already refuses; two leaves one answered by the wrong
+        // entry, which nothing saw.
+        var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
+
+        Assert.True(steps.Count >= 8, $"Read {steps.Count} nightly steps, expected at least 8.");
+
+        var ambiguous = steps.Where(step => Scope.NightlyStepKeysMatching(step) != 1).ToArray();
+
+        Assert.True(
+            ambiguous.Length == 0,
+            "These nightly steps are matched by other than exactly one key: " +
+            string.Join("; ", ambiguous.Select(step => $"{step} ({Scope.NightlyStepKeysMatching(step)})")) + ".");
+
+        var unused = Scope.NightlyStepKeys()
+            .Where(key => !steps.Any(step => step.StartsWith(key, StringComparison.Ordinal)))
+            .ToArray();
+
+        Assert.True(
+            unused.Length == 0,
+            "These nightly step keys match no step in the document: " + string.Join("; ", unused) + ".");
+    }
+
+    [Fact]
+    public void TheRecordsOwnEntriesAreReadAsBuiltOrAsPlanning()
+    {
+        // Over the real record, so the reader is exercised against the shapes
+        // the file actually carries rather than only against constructed ones.
+        // A parse returning nothing would pass every assertion above.
+        var built = DuePoints.Built(Corpus.Read("docs/PROGRESS.md"));
+
+        Assert.True(built.Count >= 8, $"Read {built.Count} built checkpoints from PROGRESS, expected at least 8.");
+
+        Assert.Contains("1.1", built);
+        Assert.Contains("1.2", built);
+
+        // 1.3 is what this session is building and its entry is not written
+        // yet, which is what makes every claim owed at 1.3 out of scope rather
+        // than failing. The day that entry lands, they are due.
+        Assert.DoesNotContain("1.3", built);
+    }
+
+    [Fact]
     public void TheGeneratedReportNamesTheCheckBehindEveryPass()
     {
         // Over the generated artifact and not over the model. By was populated
