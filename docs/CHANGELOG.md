@@ -366,3 +366,24 @@ Now:
 > the catalogue row: Membership loader reads "index membership feed, membership" and answers which names were members on a past date
 
 Why: the alternative to a renderer row was a decision redefining "computes nothing" so that geometry is not computation, plus a check able to tell arithmetic on figures from arithmetic on coordinates by inspecting expressions. A check that has to make that distinction gets it wrong quietly, and the read API's done condition is that it is proved to compute nothing. A row makes the seam a claim the harness asserts rather than a definition it trusts, keeps the read API's row literally true, and gives the marks decision a component enforcing one renderer for both surfaces. Its access declaration is empty across all eleven stores, which is a claim and not an omission. The two disagreeing rows are the same defect read from opposite ends: a component that reads what it writes, with only the write declared.
+
+### 2026-09-08 - BUILD_PLAN.md - contradiction F named the wrong thing, and three more were found
+Corrects: F was written against "the catalogue's chart renderer", and section 7 carried no such row, so the contradictions table named a component that does not exist. The real defect of that shape is section 15.5's Level chart mark. Three further contradictions were found while planning 1.1 and had no home, and a finding named only in a planning conversation dies with it. Separately, three carried obligations were due at 1.5 and concern the first committed manifest, which arrives at 1.1.
+
+Was:
+> | F | The catalogue's chart renderer reads levels and indicators, which do not exist until phase 2, while the phase table puts a chart in phase 1 | 1.3 |
+> Contradiction F resolved: the catalogue's chart renderer read set says what it reads at each phase, or the claim is scoped to 2.4, whichever the reconciliation permits.
+> | Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.5 |
+> | Zoneless instant refused, clock check widened for the implicit machine-zone read | 0.7 review | 1.5 |
+> | Manifest checker scans the captured response and checks the named file exists | 0.7 review | 1.5 |
+> Four carried obligations discharged: absolute path matching anywhere in a value rather than at position zero; the zoneless instant refused, with the clock check widened to catch the implicit machine-zone read; the manifest checker scanning the captured response and checking the named file exists; and the news feed probed for whether it is queryable by date without a ticker.
+
+Now:
+> F names section 15.5's Level chart mark and its four elements, resolved per element rather than per mark: candles and the volume pane asserted at 1.3, bands and moving averages out of scope until 2.4
+> G, the theme research runner reading what it writes with only the write declared, resolved at 1.1
+> H, `news_pulse` declared one year retained with Delete given to nobody, due 1.4 with A
+> I, the splits and dividends feed read by the nightly path with no source box in section 5, due 1.6
+> J, section 17 naming two source lists against the record's three, due 1.7
+> the three obligations re-pointed to 1.1 and 1.3, with 1.5 keeping only the news feed probe
+
+Why: F named a component that does not exist, so nothing could have resolved it as written and a session reading the table would have gone looking for a row. Resolving the real defect per element rather than per mark keeps what exists asserted at 1.3 instead of leaving the whole mark unexamined for a phase and a half. The obligations were re-pointed on the reasoning the 0.7 repair session used when it moved them from 2.1: an obligation about manifests owed at 1.5 goes unfixed across every manifest written from 1.1 onward.
