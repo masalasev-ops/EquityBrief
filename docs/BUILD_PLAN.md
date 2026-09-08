@@ -50,14 +50,14 @@ Each is two documents disagreeing, which `CLAUDE.md` calls a finding rather than
 
 | # | Contradiction | Resolve at |
 |---|---|---|
-| A | SCHEMA's bar note says the fetcher drops sessions older than the retention window; its ownership table gives Delete to the corporate action checker alone and says nothing else may delete a bar | 1.4 |
+| A | SCHEMA's bar note says the fetcher drops sessions older than the retention window; its ownership table gives Delete to the corporate action checker alone and says nothing else may delete a bar. **Resolved at 1.4**, three-way rather than two-way: the fetcher is declared a deleter, two removals are sanctioned and named, and `bar-append-only` permits a delete only in a declared deleter's file | 1.4 |
 | B | The limits table says the nightly run makes zero per-name network calls; the run order backfills a new joiner per ticker. **Resolved at 1.2**, the limit carved rather than deleted | 1.2 |
 | C | The failure table names a suspect state for a name whose corporate action check failed; no store column holds it | 1.6 |
 | D | `Scope.Screens` keys on the table heading, so a phase 5 export claim is forced to be asserted at the chart checkpoint. This is the 0.7 repair of `Scope.For` failing to sweep, not a new contradiction. **Resolved at 1.3**, keyed on the table and the row together, with all 37 rows of section 15 reconciled against the document in both directions | 1.3 |
 | E | The catalogue gives four components a `calendar` read that SCHEMA does not declare and no component writes | 3.0 |
 | F | Section 15.5's Level chart mark names four elements, candles, bands, moving averages and a volume pane, and two of them cannot exist until phase 2, while the phase table puts a chart in phase 1. **Resolved at 1.3**, the row read as four claims in the harness rather than split into four rows in the document, with each element asserted to appear in the row's own description | 1.3 |
 | G | The theme research runner's catalogue row declares it reads the theme store and source documents; its matrix row carries W in both columns and no R. **Resolved at 1.1**, both cells now R W | 1.1 |
-| H | `news_pulse` is declared one year retained and its ownership row gives Delete to nobody, which is contradiction A in a second table and unnoticed until now | 1.4, with A |
+| H | `news_pulse` is declared one year retained and its ownership row gives Delete to nobody, which is contradiction A in a second table and unnoticed until now. **Resolved at 1.4**, with A and by the same reasoning: the counter is declared its deleter | 1.4, with A |
 | I | The splits and dividends feed is a read in the corporate action checker's catalogue row and is not one of section 5's source boxes, so the nightly path reads a feed the system overview does not carry | 1.6 |
 | J | Section 17's source lists row names two lists, company-news and industry; `DECISIONS.md` carries **Three source lists, not one, each with a review date** | 1.7 |
 
@@ -401,12 +401,16 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Architecture cites its decisions by name at each rule | 0.5 | 1.8 |
 | Splits and dividends parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.6 |
 | News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7 |
-| `two-platform` widened to what its roster row claims | 0.7 review | 1.4 |
+| `two-platform` widened to what its roster row claims | 0.7 review | 1.4, discharged |
 | Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.3 |
 | News feed queryable by date without a ticker | authored with the architecture | 1.5 |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.6 |
 | Source lists reviewed against measured coverage | 1.7 | 5.0 |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 |
+
+**Discharged at 1.4.** `two-platform`, widened from asserting that the workflow names two runners to asserting that no leg can report green without running the suite: no `continue-on-error`, no swallowed failure, every leg invoking a CI script rather than a bare `dotnet test`, the Linux instrument outside the matrix so "both" still means two, and the full history fetched on every leg that reads it.
+
+**Carried out of 1.4.** No feed reaches the network. Every provider implementation in the tree is a recorded double, so `tools/nightly` takes a fixture folder and a live night cannot run. Captures have been made by hand at 1.1, 1.2 and 1.4. This is a hole rather than a defect in any checkpoint, and it is filed here rather than named only in a commit: the HTTP feeds and the credential path from configuration to request have no checkpoint that builds them.
 
 **Discharged at 1.2.** The money column list, now read from SCHEMA's own Notes cell rather than kept beside the check. The stream ordering that can deadlock, with a probe that fills both pipes and a test bounded by a timeout, since the failure is a hang rather than a wrong answer. And the runtime money guard, which refuses anything that is not a decimal at the point a price is bound.
 

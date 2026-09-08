@@ -42,19 +42,83 @@ public class StoreWrites
         Assert.True(migrations.Count >= 2, $"Scanned {migrations.Count} migrations, expected at least 2.");
 
         var offences = sources
-            .SelectMany(file => WritesIn(File.ReadAllText(file))
-                .Where(write => IsBar(write.Table) && write.Operation is not SourceStatements.Insert)
+            .SelectMany(file => Offences(WritesIn(File.ReadAllText(file)), TypeIn(file))
                 .Select(write => $"{Path.GetFileName(file)}: {write.Operation} on {write.Table}: {write.Statement}"))
             .Concat(migrations
+                // A migration has no owner. The exemption is for a component
+                // SCHEMA names as a deleter, and a migration is not one: a
+                // migration that dropped or rewrote a bar table would take the
+                // series out from under every component at once.
                 .SelectMany(migration => WritesIn(migration.Sql)
                     .Where(write => IsBar(write.Table) && write.Operation is not SourceStatements.Insert)
                     .Select(write => $"{migration.Name}: {write.Operation} on {write.Table}: {write.Statement}")))
             .ToArray();
 
         Assert.Empty(offences);
+
+        // The exemption exists, so the scope it narrows is stated. Two owners
+        // are declared and both are exercised: a run that found none would mean
+        // the exemption had swallowed the property rather than narrowed it.
+        var owners = BarDeleters();
+
+        Assert.Equal(2, owners.Count);
+        Assert.Contains("BarFetcher", owners);
+        Assert.Contains("CorporateActionChecker", owners);
+    }
+
+    // Who SCHEMA declares may delete a bar, read from the ownership table
+    // rather than listed here. A list beside the check is a second statement of
+    // one fact, and this is the fact SCHEMA is the only place for.
+    internal static IReadOnlyList<string> BarDeleters() =>
+    [
+        .. Declared()
+            .Where(row => IsBar(row.Table) && row.Operation == SourceStatements.Delete)
+            .Select(row => row.Owner)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(owner => owner, StringComparer.Ordinal),
+    ];
+
+    // A delete against a bar table is permitted only in the file of a component
+    // SCHEMA declares as a deleter of it. An update is permitted nowhere, by
+    // anybody: SCHEMA's Update cell for `bar` is "none", and the two sanctioned
+    // removals both take whole sessions rather than editing one in place.
+    internal static IReadOnlyList<SourceWrite> Offences(IReadOnlyList<SourceWrite> writes, string type)
+    {
+        var owners = BarDeleters();
+
+        return
+        [
+            .. writes.Where(write => IsBar(write.Table)
+                && write.Operation != SourceStatements.Insert
+                && !(write.Operation == SourceStatements.Delete
+                    && owners.Contains(type, StringComparer.Ordinal))),
+        ];
     }
 
     static bool IsBar(string table) => table.Equals("bar", StringComparison.OrdinalIgnoreCase);
+
+    [Fact]
+    public void ADeleteInAFileTheSchemaDoesNotNameStillFails()
+    {
+        // The permanent negative proof under the exemption. The same statement
+        // passes in the owner's file and fails in one that is not named, so the
+        // exemption is a property of the declaration rather than of the text.
+        var delete = WritesIn("DELETE FROM bar WHERE session_date < $oldest;");
+
+        Assert.Empty(Offences(delete, "BarFetcher"));
+        Assert.Empty(Offences(delete, "CorporateActionChecker"));
+
+        var found = Assert.Single(Offences(delete, "Backfill"));
+
+        Assert.Equal(SourceStatements.Delete, found.Operation);
+        Assert.Single(Offences(delete, "ReadApi"));
+        Assert.Single(Offences(delete, "SomeNewComponent"));
+
+        // And the exemption is for deletes alone. An owner may drop the
+        // sessions that fell out of the window; nobody may edit a stored bar.
+        Assert.Single(Offences(WritesIn("UPDATE bar SET close = '1';"), "BarFetcher"));
+        Assert.Single(Offences(WritesIn("DROP TABLE bar;"), "CorporateActionChecker"));
+    }
 
     [Fact]
     public void TheCheckReportsADeleteAgainstABarTable()

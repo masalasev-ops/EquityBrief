@@ -43,6 +43,8 @@ internal static class Scope
     // component-access, because a claim that something is drawn is a claim
     // about a surface and a declaration says nothing about one.
     const string ByReadSurface = "read-surface";
+    const string ByCost = "nightly-cost";
+    const string ByNight = "nightly-run";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -136,6 +138,42 @@ internal static class Scope
             Verdict.Pass,
             "one volume bar is drawn per candle on the same time axis, counted off the rendered markup",
             ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Bar fetcher")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bulk feed it reads and the stores it touches, including the retention delete SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Bar fetcher")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "Model calls in the nightly run")] = new Scoped(
+            Verdict.Pass,
+            "zero over the shipped source and zero on every stage the recorded night wrote to the run log",
+            ByCost),
+        [CheckReach.Key(LimitsTable, "Per-name network calls in the nightly run")] = new Scoped(
+            Verdict.Pass,
+            "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once",
+            ByCost),
+        [CheckReach.Key(LimitsTable, "Bar history kept")] = new Scoped(
+            Verdict.Pass,
+            "the retention boundary is the fetched session less one year, and every session below it is gone from the store while none inside it is",
+            ByCost),
+        [CheckReach.Key(LimitsTable, "Backfill")] = new Scoped(
+            Verdict.Pass,
+            "the run log's request count for the backfill stage is one per name lacking history, which is the carve-out the row states and the reason the steady-state limit does not fail on it",
+            ByCost),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Load index membership and record any joins and leaves.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it first, and the step is named in the order section 14 states",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it after membership, and a second night backfills nothing",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it after the backfill, in one request, storing the day for current members only",
+            ByNight),
     };
 
     // Where the plan names a subject, the due point is read from the plan and
@@ -362,7 +400,13 @@ internal static class Scope
 
     static readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal)
     {
-        ["Bulk price feed unavailable"] = "1.4",
+        // The mechanism lands at 1.4 and the claim does not. This row's "What
+        // you see" cell promises a banner giving the data date and tonight's
+        // list absent rather than wrong, and both are surfaces phase 4 builds.
+        // A claim that something is visible is a claim about a surface, so the
+        // due point is where the surface is, which is the same correction
+        // "A name leaves the index" took at 1.1.
+        ["Bulk price feed unavailable"] = "4.4",
         ["A gap in one name's series"] = "1.5",
         ["A split or dividend not caught"] = "1.6",
         ["Cloud model unavailable"] = "phase 5",

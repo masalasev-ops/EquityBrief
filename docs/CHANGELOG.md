@@ -611,3 +611,26 @@ Now, added above `ci-parity`:
 > | `read-surface` | every CI run | The read API hands back every stored value unchanged, and the page draws one candle and one volume bar per stored session, matched session by session against the store |
 
 Why: three claims in section 15 are claims about a surface, and a surface is not something a declaration can assert. `component-access` reaches the read API, the mark renderer and the app as components, which says what each may touch and nothing about what the page draws. So the drawn claims are reached by a check that renders the surface and reads it back, and the reconciliation refused that check's name until it was on the roster with a declared reach, which is the fiat guard working on the session that wrote it.
+
+### 2026-09-08 - SCHEMA.md - contradictions A and H resolved, two sanctioned removals named
+Corrects: a three-way contradiction, not a two-way one. The `bar` note said the fetcher drops sessions older than the retention window, the ownership row gave Delete to `CorporateActionChecker` alone, and the exception paragraph said twice that a refetch was the only sanctioned removal of a bar. Any two of the three could be read as agreeing, which is why it survived a review. `news_pulse` carried the same defect in a second table, declared one year retained with a Delete cell of "none".
+
+Was:
+> | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | CorporateActionChecker |
+> | `news_pulse` | NewsPulseCounter | none | none |
+>
+> **`bar` has three inserters and one deleter, and that is the one exception this file argues for.** ... CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices, which is the only sanctioned removal of a bar in the system. ... Nothing else may delete or update a bar, and `bar-append-only` asserts that over the shipped source and over every migration.
+
+Now: `bar` has two deleters and `news_pulse` has one, and a paragraph states that two removals are sanctioned and that neither takes a bar out of a series it leaves standing.
+
+Why: the resolution is not that the rule was wrong but that it was about a third thing. Retention removes every session below a date boundary for every name at once, and what remains is a contiguous series ending tonight. A refetch removes one name's whole year and writes it back in the same transaction, so the series is replaced rather than shortened. What the append-only rule forbids is a bar inside a stored series being deleted or edited while the rest stands, and that is untouched: no update to a bar by anything, and no delete by a component this file does not name. `bar-append-only` reads the deleters out of the ownership table rather than carrying a list of its own, so the exemption is a property of the declaration and moves when the declaration does, and its negative proof plants the same statement in a file SCHEMA does not name and asserts it still fails.
+
+### 2026-09-08 - CLAUDE.md - nightly-cost promoted, nightly-run added
+Corrects: nothing removed except the `nightly-cost` row's Runs cell, which named a checkpoint that has now landed.
+
+Was:
+> | `nightly-cost` | from 1.4 | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run |
+
+Now: the same row reads `every CI run` and states that the run is measured over two universe sizes, and a `nightly-run` row is added above `read-surface`.
+
+Why: the limit is not "one request" but "a count that does not grow with the universe", and a night measured once over one population has been measured against a number rather than against the rule. So the check runs a night over three members and again over two and asserts the request count did not move. `nightly-run` is separate because the ordering of section 14's steps is a claim about the run rather than about cost: membership before the backfill because a backfill asks which names are members, and the backfill before the fetch because a name with no year is one the fetch would leave holding a single session.

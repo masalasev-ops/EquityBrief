@@ -121,7 +121,13 @@ internal static class Reconciliation
     // before the run: 18 passing claims were predicted and 20 measured, the two
     // extra being the app's catalogue and matrix rows, whose due point was a
     // stale 1.6 left over from the ordering 8ac2442 replaced.
-    internal const int Floor = 20;
+    //
+    // Raised from 20 to 28 at 1.4, which reconciles 36. Predicted before the
+    // run: 29 passing claims, being 1.3's 20 plus nine of the ten owed at 1.4,
+    // the tenth being the bulk-feed failure row whose due point moved to 4.4
+    // because its "What you see" cell promises a banner and tonight's list.
+    // Measured 29.
+    internal const int Floor = 28;
 
     // A note offering the report itself as its own evidence. The report is the
     // surface a verdict is printed on and is never the instrument that reached

@@ -40,6 +40,8 @@ public class CoverageReported
         ["bar-append-only"] = "StoreWrites",
         ["bar-bounds"] = "BarBounds",
         ["read-surface"] = "ReadSurface",
+        ["nightly-cost"] = "NightlyCost",
+        ["nightly-run"] = "NightlyRun",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };
@@ -147,7 +149,11 @@ public class CoverageReported
 
         var pending = Roster().Where(row => row.Runs.StartsWith("from ", StringComparison.Ordinal)).ToArray();
 
-        Assert.True(pending.Length >= 5, $"Read {pending.Length} checkpoint rows, expected at least 5.");
+        // The floor is low on purpose and falls as checks are promoted. Its
+        // size is a fact about how much is built rather than about the
+        // property, which is that every remaining row names a checkpoint that
+        // has not landed. It was 5 until 1.4 promoted nightly-cost.
+        Assert.True(pending.Length >= 3, $"Read {pending.Length} checkpoint rows, expected at least 3.");
 
         foreach (var row in pending)
         {
