@@ -115,6 +115,18 @@ internal static class Scope
         // and the row's own Asserted by column names a fixture search. That
         // arrives with the research pass at 5.1.
         ["Source lists"] = "5.1",
+
+        // 1.2 names the run log, because that is where the backfill's request
+        // count first reaches it. The catalogue row is not about one stage: its
+        // Reads cell says "every component appends", so the row is a claim about
+        // every component, and the last of them lands in phase 6.
+        ["Run log"] = "phase 6",
+
+        // 1.2 builds the backfill, and this row is the limit on it rather than
+        // the component. Its own Asserted by column names the run log's request
+        // count against the names lacking history, which is nightly-cost reading
+        // a recorded run, and that arrives at 1.4.
+        ["Backfill"] = "1.4",
     };
 
     // Components the plan does not name. The catalogue and the matrix share it.

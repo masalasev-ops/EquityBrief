@@ -1173,6 +1173,23 @@ Notes:      the backfill declares `Feed.HistoricalPrice` and the bar fetcher wil
             argument for the backfill running per ticker, and giving them one enum member would
             have hidden that in the one place a reader checks it.
 
+            Two claims derived 1.2 and had to be excepted once this entry was written, which is
+            the third time the reconciliation has refused a due point on the checkpoint that
+            landed. The catalogue's Run log row derives 1.2 because that is where the backfill's
+            request count first reaches the log, and the row is not about one stage: its Reads
+            cell says "every component appends", so it is a claim about every component and the
+            last of them lands in phase 6. The limits table's Backfill row derives 1.2 because
+            1.2 builds it, and the row is the limit rather than the component: its own Asserted
+            by column names the run log's request count against the names lacking history, which
+            is `nightly-cost` reading a recorded run at 1.4. Both are declared as derived earlier
+            than the truth, so both report themselves on the phase report every run.
+
+            The process error that surfaced them is worth naming. The suite was run after the
+            spec edits and before the PROGRESS entry, and `HasLanded` reads PROGRESS, so the
+            failure could not appear locally and CI found it. A checkpoint's own record is the
+            last thing written and the first thing that changes what the reconciliation
+            refuses, so the suite belongs after it.
+
             `Money.FromStorage` refuses a group separator, and the test that found this is the
             reason. `NumberStyles.Number`, the convenient default, allows one, and under the
             invariant culture the group separator is a comma, so "12,34" written by a
