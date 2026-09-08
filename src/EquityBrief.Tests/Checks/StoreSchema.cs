@@ -11,6 +11,16 @@ internal sealed record StoreColumn(string Name, string Type);
 // declared is a check that passes over the thing it was written to catch.
 internal static class StoreSchema
 {
+    // Every table SCHEMA describes, from its own section headings. The Tables
+    // reader below asks a store what it holds; this asks the document what it
+    // declares, and component-access compares the two vocabularies against it.
+    internal static IReadOnlyList<string> DeclaredTables(string schemaMarkdown) =>
+        System.Text.RegularExpressions.Regex
+            .Matches(schemaMarkdown, @"^### ([a-z_]+)\s*$", System.Text.RegularExpressions.RegexOptions.Multiline)
+            .Select(match => match.Groups[1].Value)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
     internal static IReadOnlyList<StoreColumn> Declared(string schemaMarkdown, string table)
     {
         var heading = $"### {table}";

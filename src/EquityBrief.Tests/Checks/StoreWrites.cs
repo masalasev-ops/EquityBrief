@@ -8,6 +8,12 @@ namespace EquityBrief.Tests.Checks;
 // Both read what the shipped source and the migrations actually say, because a
 // rule about writes that is checked by reading the components' own claims about
 // themselves is a rule checked against an opinion.
+//
+// writer-ownership runs in both directions from 1.1. Until the first component
+// landed, one direction had a population of zero and the other could not be
+// asserted at all, and the two tests standing in for them were placeholders that
+// said so. The first component is what turns them into the property the roster
+// row has always claimed.
 public class StoreWrites
 {
     static IReadOnlyList<string> ShippedSource() =>
@@ -16,105 +22,248 @@ public class StoreWrites
                 StringComparison.Ordinal))
             .ToArray();
 
-    static IReadOnlyList<string> Statements(string text, string verb, string table) =>
-        Regex.Matches(text, $@"\b{verb}\b[^;]*?\b{table}\b", RegexOptions.IgnoreCase | RegexOptions.Singleline)
-            .Select(match => Regex.Replace(match.Value, @"\s+", " ").Trim())
-            .ToArray();
+    // The type that carries a statement, taken from the file name. A coarse
+    // attribution and stated as one: a file holding two types would credit both
+    // writes to the first, and nothing in the shipped source does that today.
+    static string TypeIn(string file) => Path.GetFileNameWithoutExtension(file);
+
+    internal static IReadOnlyList<SourceWrite> WritesIn(string text) => SourceStatements.In(text);
 
     [Fact]
     public void NothingDeletesOrUpdatesABarTable()
     {
         // The scope is the whole shipped source and every migration, and it is
         // stated because the population that carries the property, statements
-        // touching a bar table, is currently zero: the bar store arrives at 1.3.
+        // touching a bar table, is currently zero: the bar table arrives at 1.2.
         var sources = ShippedSource();
         var migrations = SchemaMigrations.All;
 
         Assert.True(sources.Count >= 5, $"Scanned {sources.Count} shipped source files, expected at least 5.");
-        Assert.True(migrations.Count >= 1, $"Scanned {migrations.Count} migrations, expected at least 1.");
+        Assert.True(migrations.Count >= 2, $"Scanned {migrations.Count} migrations, expected at least 2.");
 
         var offences = sources
-            .SelectMany(file => new[] { "delete", "update" }
-                .SelectMany(verb => Statements(File.ReadAllText(file), verb, "bar")
-                    .Select(statement => $"{Path.GetFileName(file)}: {statement}")))
+            .SelectMany(file => WritesIn(File.ReadAllText(file))
+                .Where(write => IsBar(write.Table) && write.Operation is not SourceStatements.Insert)
+                .Select(write => $"{Path.GetFileName(file)}: {write.Operation} on {write.Table}: {write.Statement}"))
             .Concat(migrations
-                .SelectMany(migration => new[] { "delete", "update", "drop" }
-                    .SelectMany(verb => Statements(migration.Sql, verb, "bar")
-                        .Select(statement => $"{migration.Name}: {statement}"))))
+                .SelectMany(migration => WritesIn(migration.Sql)
+                    .Where(write => IsBar(write.Table) && write.Operation is not SourceStatements.Insert)
+                    .Select(write => $"{migration.Name}: {write.Operation} on {write.Table}: {write.Statement}")))
             .ToArray();
 
         Assert.Empty(offences);
     }
 
+    static bool IsBar(string table) => table.Equals("bar", StringComparison.OrdinalIgnoreCase);
+
     [Fact]
     public void TheCheckReportsADeleteAgainstABarTable()
     {
-        // The permanent proof that the reader can find one, written now because
-        // there is no bar table yet for it to find.
-        Assert.Single(Statements("DELETE FROM bar WHERE ticker = 'AAPL';", "delete", "bar"));
-        Assert.Single(Statements("UPDATE bar SET close = '1';", "update", "bar"));
-        Assert.Single(Statements("DROP TABLE bar;", "drop", "bar"));
-        Assert.Empty(Statements("INSERT INTO bar VALUES ('AAPL');", "delete", "bar"));
+        // The permanent proof that the reader can find one, written before there
+        // was a bar table for it to find.
+        Assert.Contains(WritesIn("DELETE FROM bar WHERE ticker = 'AAPL';"), write => write is { Operation: "Delete", Table: "bar" });
+        Assert.Contains(WritesIn("UPDATE bar SET close = '1';"), write => write is { Operation: "Update", Table: "bar" });
+        Assert.Contains(WritesIn("DROP TABLE bar;"), write => write is { Operation: "Drop", Table: "bar" });
+
+        var insert = WritesIn("INSERT INTO bar VALUES ('AAPL');");
+
+        Assert.Contains(insert, write => write is { Operation: "Insert", Table: "bar" });
+        Assert.DoesNotContain(insert, write => write.Operation == "Delete");
     }
 
     [Fact]
-    public void EveryWriterInTheCodeIsDeclaredInSchema()
+    public void TheReaderReadsSqlRatherThanProseOrIdentifiers()
+    {
+        // The two false positives the first version of this reader produced,
+        // both from shipped source that writes nothing. They are kept as cases
+        // because the repair is a shape match, and a shape match is the kind of
+        // thing a later widening quietly loosens back into a word match.
+        Assert.Empty(WritesIn(
+            "// Insert, Update and Delete are the three operations SCHEMA.md declares\n" +
+            "// ownership for, and membership and bar are two of the tables.\n"));
+
+        Assert.Empty(WritesIn("public enum Store { Membership, Bar, Level }"));
+        Assert.Empty(WritesIn("public enum Touch { None, Read, Insert, Update, Delete }"));
+
+        // A url inside a string keeps its slashes rather than being read as a
+        // comment, which is what the scanner exists for.
+        Assert.Contains("//example", SourceStatements.WithoutComments("var x = \"https://example\"; // gone"));
+        Assert.DoesNotContain("gone", SourceStatements.WithoutComments("var x = \"https://example\"; // gone"));
+
+        // And an upsert is one statement carrying two operations on one table.
+        var upsert = WritesIn(@"@""
+            INSERT INTO membership (ticker) VALUES ($ticker)
+            ON CONFLICT (ticker) DO UPDATE SET observed_at = excluded.observed_at;""");
+
+        Assert.Contains(upsert, write => write is { Operation: "Insert", Table: "membership" });
+        Assert.Contains(upsert, write => write is { Operation: "Update", Table: "membership" });
+    }
+
+    // The ownership table, read once for both directions.
+    internal static IReadOnlyList<(string Table, string Operation, string Owner)> Declared()
     {
         var schema = Corpus.Read("docs/SCHEMA.md");
-        var declared = Regex.Matches(schema, @"^\| `([a-z_]+)` \| ([^|]*) \| ([^|]*) \| ([^|]*) \|", RegexOptions.Multiline)
-            .Select(match => (
-                Table: match.Groups[1].Value,
-                Owners: string.Join(",", match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value)))
+
+        var rows = Regex.Matches(
+            schema,
+            @"^\| `([a-z_]+)` \| ([^|]*) \| ([^|]*) \| ([^|]*) \|",
+            RegexOptions.Multiline);
+
+        string[] operations = [SourceStatements.Insert, SourceStatements.Update, SourceStatements.Delete];
+
+        return rows
+            .SelectMany(row => operations
+                .Select((operation, index) => (Table: row.Groups[1].Value, Operation: operation, Cell: row.Groups[index + 2].Value))
+                .SelectMany(entry => entry.Cell
+                    .Split(',')
+                    .Select(name => name.Trim())
+                    // A component name. "none" is not one, and neither is the
+                    // run log's "every component appends", which is prose the
+                    // file uses deliberately and which the next test handles.
+                    .Where(name => Regex.IsMatch(name, "^[A-Z][A-Za-z]+$"))
+                    .Select(name => (entry.Table, entry.Operation, Owner: name))))
             .ToArray();
+    }
 
-        Assert.True(declared.Length >= 15, $"Read {declared.Length} ownership rows, expected at least 15.");
+    // The one cell in the ownership table that names no component. SCHEMA gives
+    // run_log's Insert to "every component appends", deliberately, because the
+    // run log is the one store every stage writes its own row to. Read from the
+    // document rather than hardcoded, so the exemption disappears the day the
+    // cell is changed to name an owner.
+    internal static bool AnyComponentMay(string table, string operation)
+    {
+        var schema = Corpus.Read("docs/SCHEMA.md");
 
-        // Every write in the shipped source, by the file that carries it. A
-        // write in a file whose type is not declared for that table is the
-        // failure; today there are none, because no component writes rows yet.
-        var writes = ShippedSource()
-            .SelectMany(file => declared
-                .SelectMany(row => new[] { "insert into", "update", "delete from" }
-                    .SelectMany(verb => Statements(File.ReadAllText(file), verb.Split(' ')[0], row.Table)
-                        .Select(statement => $"{Path.GetFileName(file)} -> {row.Table}: {statement}"))))
-            .ToArray();
+        var row = Regex.Match(
+            schema,
+            @"^\| `" + Regex.Escape(table) + @"` \| ([^|]*) \| ([^|]*) \| ([^|]*) \|",
+            RegexOptions.Multiline);
 
-        Assert.Empty(writes);
+        if (!row.Success)
+        {
+            return false;
+        }
+
+        var cell = operation switch
+        {
+            SourceStatements.Insert => row.Groups[1].Value,
+            SourceStatements.Update => row.Groups[2].Value,
+            _ => row.Groups[3].Value,
+        };
+
+        return cell.Contains("every component appends", StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void TheDeclaredWritersThatDoNotExistYetAreCounted()
+    public void TheRunLogIsTheOneStoreEveryComponentMayAppendTo()
     {
-        // The other direction of writer-ownership, which cannot hold until the
-        // components are built. Counted rather than asserted, and the count is
-        // what the phase report carries as out of scope.
-        //
-        // What this asserted until 0.7's review could not fail: built is a
-        // filter of owners, so every element of built is contained in owners by
-        // construction. What can be false is the count itself, so that is what
-        // is asserted, and its failure message says what the checkpoint that
-        // trips it owes.
-        var schema = Corpus.Read("docs/SCHEMA.md");
+        // Asserted rather than assumed, and both ways, so the exemption cannot
+        // quietly widen to a second table or a second operation.
+        Assert.True(AnyComponentMay("run_log", SourceStatements.Insert));
+        Assert.False(AnyComponentMay("run_log", SourceStatements.Update));
+        Assert.False(AnyComponentMay("run_log", SourceStatements.Delete));
+        Assert.False(AnyComponentMay("membership", SourceStatements.Insert));
+        Assert.False(AnyComponentMay("bar", SourceStatements.Insert));
+    }
 
-        var owners = Regex.Matches(schema, @"^\| `[a-z_]+` \| ([^|]*) \| ([^|]*) \| ([^|]*) \|", RegexOptions.Multiline)
-            .SelectMany(match => new[] { match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value })
-            .SelectMany(cell => cell.Split(','))
-            .Select(name => name.Trim())
-            .Where(name => Regex.IsMatch(name, "^[A-Z][A-Za-z]+$"))
+    [Fact]
+    public void EveryWriteInTheCodeIsDeclaredInSchema()
+    {
+        var declared = Declared();
+        var tables = declared.Select(row => row.Table).Distinct(StringComparer.Ordinal).ToArray();
+
+        Assert.True(declared.Count >= 15, $"Read {declared.Count} declared owner entries, expected at least 15.");
+
+        var found = ShippedSource()
+            .SelectMany(file => WritesIn(File.ReadAllText(file))
+                .Where(write => tables.Contains(write.Table, StringComparer.OrdinalIgnoreCase))
+                .Select(write => (Type: TypeIn(file), write.Operation, write.Table, write.Statement)))
+            .ToArray();
+
+        // Stated because the property is over the writes found, and a run that
+        // found none has asserted nothing. It was zero until 1.1.
+        Assert.True(found.Length >= 2, $"Found {found.Length} writes against a declared table, expected at least 2.");
+
+        var undeclared = found
+            .Where(write => !AnyComponentMay(write.Table, write.Operation))
+            .Where(write => !declared.Any(row =>
+                row.Table.Equals(write.Table, StringComparison.OrdinalIgnoreCase)
+                && row.Operation == write.Operation
+                && row.Owner == write.Type))
+            .Select(write => $"{write.Type} performs {write.Operation} on {write.Table}, which SCHEMA does not declare it owns: {write.Statement}")
+            .ToArray();
+
+        Assert.Empty(undeclared);
+    }
+
+    [Fact]
+    public void EveryDeclaredWriterThatExistsHasCodeBehindIt()
+    {
+        // The direction that could not hold until a component existed, and the
+        // reason the roster row read wider than the check for two phases. The
+        // ones that do not exist yet are still counted rather than asserted, and
+        // that count shrinks by one per component from here.
+        var declared = Declared();
+        var sources = ShippedSource();
+
+        // Grouped rather than keyed, because two projects each carry a
+        // Program.cs and a dictionary throws on the second one.
+        var writesByType = sources
+            .GroupBy(TypeIn, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<SourceWrite>)[.. group.SelectMany(file => WritesIn(File.ReadAllText(file)))],
+                StringComparer.Ordinal);
+
+        var built = declared
+            .Where(row => writesByType.ContainsKey(row.Owner))
+            .ToArray();
+
+        var absent = declared
+            .Select(row => row.Owner)
             .Distinct(StringComparer.Ordinal)
-            .ToArray();
+            .Count(owner => !writesByType.ContainsKey(owner));
 
-        Assert.True(owners.Length >= 15, $"Read {owners.Length} declared writers, expected at least 15.");
-
-        var built = owners
-            .Where(owner => ShippedSource().Any(file => Path.GetFileNameWithoutExtension(file) == owner))
-            .ToArray();
-
+        // Two: MembershipLoader against membership for Insert and for Update.
+        // At the measured value rather than below it, deliberately, because this
+        // population only grows: it was zero before 1.1 and rises by one per
+        // declared operation as each component lands.
         Assert.True(
-            built.Length == 0,
-            $"{built.Length} of the {owners.Length} declared writers now exist in the shipped " +
-            $"source: {string.Join(", ", built)}. The other direction of writer-ownership is " +
-            "assertable for those, so assert each against the table it is declared to own " +
-            "rather than raising this floor.");
+            built.Length >= 2,
+            $"{built.Length} declared owner entries have a class in the shipped source, expected at " +
+            "least 2. This direction of writer-ownership is asserted over those and counted over " +
+            "the rest, so a run finding none has asserted nothing.");
+
+        var empty = built
+            .Where(row => !writesByType[row.Owner].Any(write =>
+                write.Operation == row.Operation
+                && write.Table.Equals(row.Table, StringComparison.OrdinalIgnoreCase)))
+            .Select(row => $"{row.Owner} is declared to {row.Operation} {row.Table} and carries no statement that does")
+            .ToArray();
+
+        Assert.Empty(empty);
+
+        // Context, not the property. The number of declared writers with no
+        // class yet is a fact about how much of the system is unbuilt.
+        Assert.True(absent > 0, $"{absent} declared writers have no class yet, which is context and not a pass.");
+    }
+
+    [Fact]
+    public void TheCheckReportsAWriteNobodyDeclared()
+    {
+        // Both directions proved against constructed input, so neither rests on
+        // the corpus happening to be correct today.
+        var declared = Declared();
+
+        Assert.Contains(declared, row => row is { Table: "membership", Operation: "Insert", Owner: "MembershipLoader" });
+        Assert.Contains(declared, row => row is { Table: "membership", Operation: "Update", Owner: "MembershipLoader" });
+        Assert.DoesNotContain(declared, row => row is { Table: "membership", Operation: "Delete" });
+
+        // A write against a table the type does not own.
+        var rogue = WritesIn("INSERT INTO facts (ticker) VALUES ('AAPL');");
+
+        Assert.Contains(rogue, write => write is { Operation: "Insert", Table: "facts" });
+        Assert.DoesNotContain(declared, row =>
+            row.Table == "facts" && row.Operation == "Insert" && row.Owner == "MembershipLoader");
     }
 }

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using EquityBrief.Tests.Checks;
 
@@ -31,7 +32,7 @@ internal static class FixtureManifest
         return node.GetProperty("required").EnumerateArray().Select(field => field.GetString()!).ToArray();
     }
 
-    internal static IReadOnlyList<ManifestFault> Faults(string manifest, string schema)
+    internal static IReadOnlyList<ManifestFault> Faults(string manifest, string schema, string? folder = null)
     {
         var faults = new List<ManifestFault>();
 
@@ -114,9 +115,38 @@ internal static class FixtureManifest
                     }
                 }
 
-                if (input.TryGetProperty("file", out var file) && AbsolutePaths.LooksAbsolute(file.GetString() ?? string.Empty))
+                if (input.TryGetProperty("file", out var file))
                 {
-                    faults.Add(new ManifestFault($"inputs[{index}].file", "absolute, so the fixture stops being portable"));
+                    var named = file.GetString() ?? string.Empty;
+
+                    if (AbsolutePaths.LooksAbsolute(named))
+                    {
+                        faults.Add(new ManifestFault($"inputs[{index}].file", "absolute, so the fixture stops being portable"));
+                    }
+                    else if (folder is not null)
+                    {
+                        // The obligation carried out of 0.7: the checker scanned
+                        // the query and never opened the response, while both
+                        // manifest.schema.json and fixtures/README.md say no
+                        // credential appears in a captured response and that the
+                        // check scans as well. A manifest naming a file nobody
+                        // opened is an assertion about a document the check has
+                        // not read.
+                        var path = Path.Combine(folder, named.Replace('/', Path.DirectorySeparatorChar));
+
+                        if (!File.Exists(path))
+                        {
+                            faults.Add(new ManifestFault($"inputs[{index}].file", $"names '{named}', which is not in the fixture folder"));
+                        }
+                        else
+                        {
+                            var body = File.ReadAllText(path);
+
+                            faults.AddRange(CredentialMarkers
+                                .Where(marker => body.Contains(marker, StringComparison.OrdinalIgnoreCase))
+                                .Select(marker => new ManifestFault($"inputs[{index}].file", $"the captured response carries {marker}")));
+                        }
+                    }
                 }
 
                 index++;
@@ -126,11 +156,26 @@ internal static class FixtureManifest
         return faults;
     }
 
-    static bool IsUtcInstant(string? value) =>
-        DateTimeOffset.TryParse(
-            value ?? string.Empty,
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.RoundtripKind,
-            out var instant)
-        && instant.Offset == TimeSpan.Zero;
+    // A zoneless instant is refused rather than resolved.
+    //
+    // The obligation carried out of 0.7: RoundtripKind gives a string with no
+    // offset the machine's own zone, so the same manifest passed on a UTC runner
+    // and failed on the operator's machine. It is also an implicit read of the
+    // machine clock, which is the thing clock-usage exists to ban, and one no
+    // grep for DateTime.Now would ever find.
+    static bool IsUtcInstant(string? value)
+    {
+        var text = value ?? string.Empty;
+
+        var zoned = text.EndsWith('Z')
+            || Regex.IsMatch(text, @"[+-][0-9]{2}:?[0-9]{2}$");
+
+        return zoned
+            && DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out var instant)
+            && instant.Offset == TimeSpan.Zero;
+    }
 }

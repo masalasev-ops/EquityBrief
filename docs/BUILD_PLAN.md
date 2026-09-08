@@ -388,15 +388,14 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Obligation | Created at | Due at |
 |---|---|---|
 | Architecture cites its decisions by name at each rule | 0.5 | 1.8 |
-| `writer-ownership` widened to what its roster row claims | 0.7 review | 1.1 |
 | Money column list reconciled against SCHEMA | 0.7 review | 1.2 |
 | Stream ordering that can deadlock | 0.7 review | 1.2 |
 | Runtime money-precision guard, since the storage-form claim was disproved | 0.7 review | 1.2 |
 | `two-platform` widened to what its roster row claims | 0.7 review | 1.4 |
 | Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.3 |
-| Zoneless instant refused, clock check widened for the implicit machine-zone read | 0.7 review | 1.1 |
-| Manifest checker scans the captured response and checks the named file exists | 0.7 review | 1.1 |
 | News feed queryable by date without a ticker | authored with the architecture | 1.5 |
 | Volume shelf threshold checked against four names | authored with the architecture | 2.6 |
 | Source lists reviewed against measured coverage | 1.7 | 5.0 |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 |
+
+**Discharged at 1.1.** `writer-ownership` widened to both directions its roster row claims, which building the first component forced rather than allowed: two of its tests asserted over a population of zero and turned red the moment `MembershipLoader` landed. The zoneless instant refused, with `clock-usage` widened to read code rather than prose. The manifest checker opening every captured response and checking the file it names exists, which the first committed fixture made assertable.

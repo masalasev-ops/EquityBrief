@@ -123,31 +123,49 @@ public class FixtureManifestTests
     }
 
     [Fact]
-    public void TheHarnessReportsTheFixtureAsAbsentRatherThanAsPassing()
+    public void TheHarnessReportsTheFixtureThatIsThereAndAbsenceIsStillNeverAPass()
     {
-        // 0.6's done condition. The folder exists and holds the schema; no
-        // fixture is captured, and the report has to say so.
+        // Inverted at 1.1, which is where the first input was captured. It read
+        // ABSENT from 0.6 until then, and 0.6's done condition was that the
+        // harness says absent rather than passing.
         var status = Fixtures.Of(Repository.Root);
 
-        Assert.Equal("ABSENT", status.State);
-        Assert.Equal(0, status.Folders);
-        Assert.Contains("never a pass", status.Note, StringComparison.Ordinal);
+        Assert.Equal("PRESENT", status.State);
+        Assert.True(status.Folders >= 1, $"The harness reports {status.Folders} captured fixtures, expected at least 1.");
+
+        // The other half is kept rather than deleted. Absence must still report
+        // as absence, and over a root with no fixtures that is what it does, so
+        // the day a folder is emptied it says so instead of saying nothing.
+        using var empty = new TemporaryDirectory();
+        var absent = Fixtures.Of(empty.Path);
+
+        Assert.Equal("ABSENT", absent.State);
+        Assert.Equal(0, absent.Folders);
+        Assert.Contains("never a pass", absent.Note, StringComparison.Ordinal);
     }
 
     [Fact]
     public void EveryCapturedFixtureHasAManifestWithNoFaults()
     {
-        // Vacuous today, and the assertion above states that. It is written now
-        // so the first captured fixture is checked on the day it lands rather
-        // than on the day somebody remembers.
+        // Written at 0.6 over zero fixtures so the first one would be checked on
+        // the day it landed rather than on the day somebody remembered. It
+        // landed at 1.1.
         var folder = Path.Combine(Repository.Root, "fixtures");
+        var fixtures = Directory.GetDirectories(folder);
 
-        foreach (var fixture in Directory.GetDirectories(folder))
+        // Stated, because a walk over zero folders asserts nothing and this test
+        // was vacuous from 0.6 until the first fixture landed at 1.1.
+        Assert.True(fixtures.Length >= 1, $"Walked {fixtures.Length} fixtures, expected at least 1.");
+
+        foreach (var fixture in fixtures)
         {
             var manifest = Path.Combine(fixture, "manifest.json");
 
             Assert.True(File.Exists(manifest), $"{fixture} has no manifest.json.");
-            Assert.Empty(FixtureManifest.Faults(File.ReadAllText(manifest), Schema));
+
+            // The folder is handed over so the checker opens each captured
+            // response rather than only reading the query beside it.
+            Assert.Empty(FixtureManifest.Faults(File.ReadAllText(manifest), Schema, fixture));
         }
     }
 }

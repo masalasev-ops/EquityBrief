@@ -20,6 +20,7 @@ public class CoverageReported
     static readonly Dictionary<string, string> Implementations = new(StringComparer.Ordinal)
     {
         ["writer-ownership"] = "StoreWrites",
+        ["component-access"] = "ComponentAccess",
         ["architecture-conformance"] = "ArchitectureConformance",
         ["decision-resolves"] = "DecisionCitations",
         ["no-superseded-citation"] = "DecisionCitations",

@@ -942,3 +942,96 @@ Notes:      the surface assertion reads the generated files rather than the mode
             `Forward returns` is also a claim subject in the read and write matrix and appears
             in the claims table. The assertion was wrong and the code was right; it now reads
             the unsafe section alone.
+
+### 1.1 - the membership loader and the component access mechanism      2026-09-08
+Built:      `IComponent` in `EquityBrief.Core`, an interface with a static abstract member, and
+            the `Store`, `Feed` and `Touch` vocabulary behind it. `MembershipLoader` in
+            `EquityBrief.Worker`, with its access declaration, its upsert, its past-date query
+            and its own run log row. Migration 2 creating `membership`, with `left` quoted.
+            `IIndexMembershipFeed` and `RecordedIndexMembershipFeed`, which answers from a
+            captured payload and reaches no network by construction because it holds no HTTP
+            client to misconfigure. `ProviderCredentials`, which names the secrets key once and
+            refuses a blank. The first captured fixture, `membership-2026-09-05`, with its
+            manifest. And `component-access`, the twenty-fifth check on the roster.
+Declared:   the declaration lives in the component, discovered by its type rather than by the
+            spelling of a property. That is the one thing it does differently from `CheckReach`
+            inside the suite, which is found by the literal string "Reach" and would empty its
+            own population on a rename. A component declaration crosses an assembly boundary
+            and is read reflectively from outside, so a type is the safer key.
+Measured:   142 tests, up from 125 at the start of this checkpoint. 160 claims, 8 pass, 0 fail,
+            152 out of scope, 0 unexamined, 25 tables, 15 placements and verdicts reconciled
+            against a floor of 12.
+            The fixture is PRESENT with 1 captured, which is the first time it has not read
+            ABSENT. Over the 27 catalogue rows, 27 are compared against a matrix row and every
+            term in every Reads and Writes cell resolves except 4, all of them the `calendar`
+            read that is contradiction E and settled at 3.0. Over the 11 matrix columns, 11 map
+            to a store and every store but the candidate register has a column. Over the 18
+            tables SCHEMA declares, 18 have an enum member and 18 enum members have a table.
+            Over `MembershipLoader`'s matrix row, 11 cells asserted against the declaration of
+            which 9 are blanks.
+Floors:     each with the count it produced and the count expected before the run. Passing
+            claims: floor raised 4 to 6, expected 7, found 8, the eighth being the membership
+            store claim that `schema-columns` reached once the table existed. Reconciled
+            placements and verdicts: floor raised 8 to 12, expected 14, found 15. Declared owner entries with a
+            class: floor 2, expected 3, found 2, and the floor was corrected down to the
+            measured value rather than the guess. Writes found against a declared table: floor
+            2, expected 3, found 3. Matrix cells compared: floor 11, expected 11, found 11, of
+            which 9 blanks against a floor of 9. Shipped assemblies scanned: floor 5, found 5.
+            Catalogue rows: floor 25, expected 27, found 27.
+Discharged: three obligations, and the first was forced rather than merely due.
+            `writer-ownership` is now both directions its roster row has always claimed: two of
+            its tests asserted over a population of zero and turned red the moment the first
+            component landed, which is the mechanism that put the widening in the same commit
+            instead of leaving it to be remembered. The zoneless instant is refused rather than
+            resolved against the machine zone. The manifest checker opens every captured
+            response and checks the file it names exists.
+Amended:    this checkpoint amends its own done condition. `BUILD_PLAN.md` put the fixture-absent
+            test's inversion at 1.5 with the gap fixture; the first captured input arrives here,
+            with the recorded-response double this checkpoint was already told to build, so the
+            inversion fell due here and was done here. The absence half is kept rather than
+            deleted: absence still reports as absence over a root with no fixtures.
+Found:      four defects in the suite's own instruments, three of them in checks that had been
+            green for a phase.
+
+            The statement reader behind `writer-ownership` and `bar-append-only` read prose. It
+            matched a verb and a table name anywhere in one semicolon-delimited span over raw
+            file text, so a comment saying "Insert, Update and Delete are the three operations
+            SCHEMA declares" beside the word membership read as three writes. Stripping comments
+            was not enough on its own, because the `Store` enum has members named `Bar` and
+            `Membership` and the `Touch` enum has `Insert`, `Update` and `Delete`, and an enum
+            body carries no semicolon, so the whole declaration read as one statement naming
+            every table and every operation. It now matches the shape of SQL rather than words
+            that appear in it, and both false positives are kept as cases.
+
+            `clock-usage` had the same defect and it fired on a comment explaining the zoneless
+            instant repair. It now strips comments before scanning, with a test proving a real
+            read is still found and the same words in a comment are not.
+
+            `store-portability` hardcoded the number of tables in a migrated store. It now
+            derives that from the migrations, which is an independent source from the store the
+            scan opens.
+
+            And the loader's first test asserted that a second run reuses its run id, which the
+            run log's primary key refuses. The test was wrong: the grain is one row per run per
+            stage and SCHEMA gives the table no updater and no deleter, so a second run is a
+            second run. Idempotency is a claim about the stored data and the run log is a log.
+            Section 19.1's placement was owed at 1.1 and had to move the moment this entry was
+            written, which is the mechanism `BUILD_PLAN.md` predicted for 1.5 arriving four
+            checkpoints early. It had been owed at 0.6, then 1.3, then 1.1, each time on the
+            reasoning that the first manifest arrives with the first captured input. The
+            manifest does arrive here and is checked here, but the table's rows are the bars,
+            the fundamentals, the news and the expectations, and a fixture holding one captured
+            input holds almost none of that. Owing it where the first manifest lands confused
+            one row for the table. It is now owed at 1.8, where phase 1's expectations land.
+Carried:    nothing new. Contradiction D still keys the screens tables on a heading alone,
+            covering 31 subjects, and is 1.3's to resolve.
+Notes:      the run log is the one store every component may append to, and SCHEMA says so in
+            words rather than by naming an owner. Both checks read that exemption out of the
+            document rather than hardcoding it, so it disappears the day the cell names a
+            component. The catalogue states the same fact once, in the Run log row, and no
+            component's Writes cell lists it, so `component-access` takes the run log claim from
+            the matrix column and not from the Writes cell.
+
+            Eight files were converted from LF to CRLF by a scripted edit and converted back.
+            `.gitattributes` normalises to LF in the repository, so nothing reached a commit,
+            but two checks failed in the meantime by reading a line ending rather than a defect.
