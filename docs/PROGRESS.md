@@ -802,3 +802,92 @@ Notes:      the two checks were right and the document revision was wrong, which
             landed on 2026-09-07 in `8ac2442`. They are left as written. A record is corrected
             by a new dated entry and never by editing an old one, and this note is that
             correction.
+
+### 1.1 planning - the pass that settles what phase 1 builds against      2026-09-08
+Not a checkpoint entry. It belongs to 1.1, which has not landed. `BUILD_PLAN.md` places the
+            phase planning pass here, and this is it. No component is built and no migration is
+            written. This session committed code and may not sign it off.
+Decided:    four entries in `DECISIONS.md`. **A gap is a session the exchange traded and the
+            store does not hold**, detected against the trading calendar rather than against the
+            rows, because a run of stored dates is self-consistent whatever is missing from it.
+            Both behaviours the corpus described are kept and they are different things: the
+            fetcher refuses a series arriving with an interior session missing, and computation
+            over a name whose stored series has a gap stops and names the date. Derived on read
+            rather than kept in a column. **The stored series is adjusted**, one price set per
+            bar, which is why `bar` has four price columns and no adjusted variant and why the
+            corporate action checker has anything to do. **Bars come from EODHD, bulk nightly
+            and per ticker for the backfill**, with the arithmetic that settles the route: bulk
+            costs 100 weighted calls and a single-ticker historical request costs 1, so the
+            night takes bulk at 100 against 500 and the backfill takes per ticker at 500 against
+            25,000. And **the fixture is diffed on each stage's serialised output, of which the
+            facts file is one**, superseding the entry that named the facts file alone, which
+            was right about the rendered page and false for three phases because the facts file
+            arrives at 4.3.
+Resolved:   contradiction F, which named "the catalogue's chart renderer" and section 7 had no
+            such row, so nothing could have resolved it as written. Restated against the real
+            defect, section 15.5's Level chart mark and its four elements, and resolved per
+            element: candles and the volume pane at 1.3, bands and moving averages at 2.4.
+            Contradiction G, the theme research runner reading what it writes with only the
+            write declared, both cells now R W.
+Found:      three more contradictions, each given a resolve point in `BUILD_PLAN.md` because a
+            finding named only in a planning conversation dies with it. H, `news_pulse`
+            declared one year retained with Delete given to nobody, which is contradiction A in
+            a second table and unnoticed until now, due 1.4 with A. I, the splits and dividends
+            feed read by the nightly path with no source box in section 5, due 1.6. J, section
+            17 naming two source lists against the record's three, due 1.7.
+Built:      a tenth component. Section 15.4 says the server writes the shell and the marks, and
+            the only server-side serve component was the read API, whose row says it performs
+            no computation and no fetching, so the thing that turns stored values into SVG had
+            no row and 1.3's done condition had nothing to be stated against. **Mark renderer**
+            joins the catalogue with eleven blank matrix cells. The alternative was a decision
+            redefining "computes nothing" so geometry is not computation, plus a check able to
+            tell arithmetic on figures from arithmetic on coordinates by inspecting
+            expressions, which gets it wrong quietly.
+
+            And the due points are read from `BUILD_PLAN.md` rather than written a second time
+            in `Scope`. This is the repair for the drift `8ac2442` caused and nothing caught.
+Predicted:  stated before the pass and checked here. 158 claims before, 163 after: 160 now, plus
+            three when 15.5's Level chart row decomposes per element at 1.3. The mark renderer
+            supplies two of the five, one catalogue claim and one matrix claim, and both landed.
+            Contradiction G's two amended matrix cells and the membership loader's amended cell
+            change no count, which is stated rather than left silent, because a prediction that
+            does not account for the changes made beside it cannot be missed.
+Measured:   160 claims, 4 pass, 0 fail, 156 out of scope, 0 unexamined, 25 tables, 11
+            placements and verdicts reconciled against a floor of 8. Over the 132 distinct
+            out-of-scope subjects, 49 take their due point from the plan, 52 from the residual
+            maps, and 31 from a table heading, those last being the screens tables that
+            contradiction D moves to table and subject at 1.3.
+Missed:     the derivation's reach was predicted before it was run and the prediction was wrong
+            in the useful direction. Expected 20 to 30 derived and 70 to 80 residual over
+            roughly 100 subjects; found 49 derived and 52 residual over 132. The floor is set at
+            40, below the measured figure rather than at it.
+Proved:     the first run of the derivation was wrong and the run is what showed it. Reading a
+            due point from any checkpoint whose text names the subject put the trend classifier,
+            the ladder builder, the shortlist builder and the fundamentals fetcher at 3.0 and
+            the base rate at 4.0, because a planning checkpoint names what it settles and builds
+            none of it. Every one of those is earlier than the code and would have failed the
+            moment 3.0 landed. Planning checkpoints are now excluded, which is a rule about what
+            a planning checkpoint is rather than a patch, and the seventeen hand corrections
+            made in the same pass are what the derivation was checked against.
+Carried:    nothing new. Three obligations were re-pointed off 1.5, two to 1.1 and one to 1.3,
+            because all three concern the first committed manifest and the first stored value
+            and the first manifest arrives with 1.1's recorded-response double. That is the
+            reasoning the 0.7 repair session used when it moved two of them from 2.1, applied
+            one checkpoint further.
+Tests:      122, up from 119 at the start of the pass. `tools/ci.ps1` green end to end, all 6
+            steps. `tools/verify-phase` green.
+Notes:      two exceptions to the derivation are declared with their reasons, and the reasons
+            are the point. `Forward returns` derives 6.1 because 4.5 writes the table name in
+            snake case; that is later than the truth rather than earlier, so it is safe and
+            still wrong. `Source lists` derives 1.7 because 1.7 produces the first draft, while
+            the limits row is about a search returning only listed sites and its own Asserted by
+            column names a fixture search; deriving 1.7 would fail that claim the moment 1.7
+            lands, which is the one direction that is never safe.
+
+            `changelog-reconciles` caught this pass's own commit. A sentence added to 1.3
+            rewrote a line, which counts as a deletion, and the entry recording it had gone into
+            the commit before. The check was right and the commit was amended.
+
+            The screens tables still resolve by table heading alone, which is contradiction D
+            and is 1.3's to fix rather than this pass's. It is named here so the 31 subjects it
+            covers are not read as an oversight in the derivation.
