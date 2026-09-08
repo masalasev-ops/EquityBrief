@@ -310,3 +310,14 @@ Now:
 > 3. Copy `data/equitybrief.db` into the configured data root.
 
 Why: moving the installation is the one procedure a person follows on a machine where nothing works yet, so the step that has to come first belongs in it. The remaining steps are renumbered.
+
+### 2026-09-08 - ARCHITECTURE.html - what each lane writes, set out beside the figure
+Corrects: the key explained where the line falls and never listed what each lane writes, so a reader asking what the two sides do had to read the figure's box text. Found while planning phase 1, reading 12.2 for what the local lane owns.
+
+Was:
+> the key's four paragraphs, ending "The picture is the same either way; only the boundary moves.", and then section 13
+
+Now:
+> the same four paragraphs, then a subsection "What each lane actually writes" carrying a seven-row table of section, lane, what goes in and why it sits there, then the paragraph on what each lane holds in memory, then section 13
+
+Why: nothing is removed. The figure already names these inside its boxes, which is a picture's worth of information a reader cannot cite, search or check a claim against. The table is placed in the harness as a table that makes no claims yet, owed at 5.0, which is where `BUILD_PLAN.md` settles the section-to-lane assignment.

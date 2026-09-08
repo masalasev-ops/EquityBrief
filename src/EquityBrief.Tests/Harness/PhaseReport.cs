@@ -85,6 +85,14 @@ internal static class PhaseReport
             "outside the claim scope the catalogue states; the sections it maps are asserted by the screens tables in 15"),
         ["11. The shortlist and its six reasons"] = new Placement(
             "rules, asserted by the fixture's listings expectations", Due: "4.1"),
+        // Section 12.2's second table. Its heading is an h4 rather than a
+        // numbered one, because the numbers in this document are navigation and
+        // it sits inside 12.2 rather than beside it. The rows are the lane each
+        // section is written in, which is configuration rather than structure by
+        // the paragraph above them, and the shape of that configuration is the
+        // hole BUILD_PLAN settles at 5.0.
+        ["What each lane actually writes"] = new Placement(
+            "the section-to-lane assignment, which is a setting rather than a structure and has no code behind it until the lane configuration is settled", Due: "5.0"),
         ["13.2 Four things that can improve, shallowest first"] = new Placement(
             "a plan for phase 6, with nothing built to assert it against", Due: "6.1"),
         ["13.3 The guardrails"] = new Placement(
