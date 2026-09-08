@@ -6,7 +6,7 @@ Rules for any session working in this repository. Read this file first, every se
 
 ## What this repo is
 
-A nightly research tool over the S&P 500. It computes support and resistance levels for every name in the index each evening, decides which names reached a price where the plan says something, and produces a full research report on any name the operator opens. It does not trade and holds no position.
+A nightly research tool over the S&P 500. It computes support and resistance levels for every name in the index each evening, decides which names are sitting at a price their own chart has made significant, and produces a full research report on any name the operator opens. It does not trade and holds no position.
 
 **EquityBrief.** Solution, projects, namespaces and the root config section all use that name in full, with no abbreviation anywhere in code. A shortened form in one place and the full form in another is the kind of inconsistency that survives for years and then bites during a rename.
 
@@ -198,6 +198,8 @@ A decision is identified by its bold name in `DECISIONS.md`. Cite the exact name
 **Headings in ARCHITECTURE.html carry numbers and everything else does not.** That document is read section by section by a person and by the conformance check, and its numbers are navigation. Cross-document references cite heading text, not numbers, because a misremembered number resolves to the wrong place and nothing notices. Checkpoint identifiers keep their numbers, because they name work in a sequence where the sequence is the point.
 
 **A commit subject is `Phase {phase} / {checkpoint} - {what changed}`.** The checkpoint is never omitted, including on a commit that builds nothing: a ruling, a document pass, a correction and a sign-off addendum all belong to a checkpoint. Where work is done ahead of the checkpoint that owes it, the subject names that checkpoint rather than the one being worked on now.
+
+**A commit belongs to the checkpoint that authorises the work, never to the phase whose subject matter the edited text happens to describe.** A wording repair to the screens section during phase 1 is phase 1 work. The clause above is about an obligation: a checkpoint owes something and the work discharging it arrives early. It is not about what the text is about, and reading it that way puts a later phase's number on a commit that phase did not authorise and does not advance. That is worse than an untidy log, because a checkpoint from an unbuilt phase reaching `PROGRESS.md` makes the reconciliation refuse every claim still owed at it: out of scope means a point that has not been reached, and `HasLanded` reads this record to decide.
 
 **The pass that plans a phase belongs to the phase it plans, at that phase's opening checkpoint.** `Phase 2 / 2.0` for the pass that writes phase 2's section, not `Phase 1 / 1.8`. A PROGRESS entry for such a pass opens with **"Not a checkpoint entry"** so it says which checkpoint it belongs to without saying that checkpoint has landed.
 
