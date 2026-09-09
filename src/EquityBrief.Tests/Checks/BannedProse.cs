@@ -26,12 +26,51 @@ public class BannedProse
     const string TheExemptSentence = "One word is banned outright across the corpus and in chat";
 
     // Every text file git tracks, which is every file in the repository that is
-    // not gitignored. A file carrying a zero byte is not prose and is counted
-    // separately rather than read as though it were.
+    // not gitignored, less the captured provider responses. A file carrying a
+    // zero byte is not prose and is counted separately rather than read as
+    // though it were.
+    //
+    // The captures are excluded because they are not prose this repository
+    // writes. A rule about how this corpus is written cannot govern bytes a
+    // provider sent, and the only way to satisfy it over them would be to edit
+    // the provider's text, which would make the file no longer a capture: the
+    // manifest schema says in so many words that what may never be trimmed is
+    // the shape. Found at 1.7, when a news article's own text carried an em
+    // dash. The three earlier captures happened to carry neither pattern, so
+    // this was a rule that had not yet met the thing it could not govern.
+    //
+    // The exclusion is the captured files and nothing else. The manifest, the
+    // README and anything under expectations/ are written here and are scanned,
+    // which the next test asserts rather than leaves to the reader.
     static IReadOnlyList<string> Scanned() =>
         Repository.TrackedFiles()
+            .Where(file => !IsCapture(file))
             .Where(file => !File.ReadAllBytes(file).Contains((byte)0))
             .ToArray();
+
+    // A captured provider response: a .json file inside a fixture folder that
+    // some manifest names as an input.
+    internal static bool IsCapture(string file)
+    {
+        if (!file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var folder = Path.GetDirectoryName(file);
+        var manifest = folder is null ? null : Path.Combine(folder, "manifest.json");
+
+        if (manifest is null || !File.Exists(manifest) || string.Equals(file, manifest, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        // Named by the manifest, so a json file dropped into a fixture folder
+        // and never declared is still scanned. The exclusion follows the
+        // declaration rather than the folder.
+        return File.ReadAllText(manifest)
+            .Contains($"\"{Path.GetFileName(file)}\"", StringComparison.Ordinal);
+    }
 
     static IReadOnlyList<CorpusFinding> Occurrences(string pattern, bool exemptTheRule) =>
         Occurrences(pattern, exemptTheRule, Scanned());
@@ -141,5 +180,40 @@ public class BannedProse
             + "and this line is " + Banned + (char)10);
 
         Assert.Single(Occurrences(Banned, exemptTheRule: true, [borrowed]));
+    }
+
+    [Fact]
+    public void TheCaptureExclusionIsTheCapturesAndNothingElse()
+    {
+        // The permanent proof under the exclusion, in both directions. An
+        // exclusion nobody bounds is how a check quietly stops covering the
+        // thing it was written for.
+        var root = Path.Combine(Repository.Root, "fixtures", "membership-2026-09-05");
+
+        // Excluded: a json file the manifest names as an input.
+        Assert.True(IsCapture(Path.Combine(root, "news-2026-09-08.json")));
+        Assert.True(IsCapture(Path.Combine(root, "bars-AAPL.json")));
+
+        // Scanned: the manifest itself, the folder's README, and a json file in
+        // the folder that no manifest declares.
+        Assert.False(IsCapture(Path.Combine(root, "manifest.json")));
+        Assert.False(IsCapture(Path.Combine(Repository.Root, "fixtures", "README.md")));
+        Assert.False(IsCapture(Path.Combine(root, "undeclared.json")));
+        Assert.False(IsCapture(Path.Combine(Repository.Root, "source-lists.json")));
+
+        // And the scan still reads the corpus. The count is stated because an
+        // exclusion that had taken the whole population would leave every
+        // assertion above true and every assertion about prose vacuous.
+        var scanned = Scanned();
+
+        Assert.True(scanned.Count >= 40, $"Scanned {scanned.Count} tracked text files, expected at least 40.");
+        Assert.Contains(scanned, file => file.EndsWith("CLAUDE.md", StringComparison.Ordinal));
+        Assert.Contains(scanned, file => file.EndsWith("manifest.json", StringComparison.Ordinal));
+
+        // The excluded set is small and named, rather than whatever happened to
+        // be in a folder. Nine captured inputs today across one fixture.
+        var excluded = Repository.TrackedFiles().Count(IsCapture);
+
+        Assert.True(excluded is >= 5 and <= 30, $"Excluded {excluded} captured responses, expected between 5 and 30.");
     }
 }

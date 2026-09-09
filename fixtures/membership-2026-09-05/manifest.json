@@ -55,6 +55,13 @@
       "query": "eod-bulk-last-day/US?type=splits&date=2026-08-10&fmt=json",
       "fetchedAt": "2026-09-08T23:41:10Z",
       "trimmedTo": "three of the eight rows the whole US exchange returned for that session. None is a fixture name, which is deliberate: the split file is here for its shape rather than for its actions, and the shape is the thing a parser written first gets wrong. A split's value is a ratio in a string, and the exchange is under `exchange` where the price bulk file calls the same thing `exchange_short_name`."
+    },
+    {
+      "file": "news-2026-09-08.json",
+      "endpoint": "news",
+      "query": "news?s=NVDA.US&from=2026-08-25&to=2026-09-08&limit=200&fmt=json",
+      "fetchedAt": "2026-09-08T23:58:00Z",
+      "trimmedTo": "four of the articles one name's fortnight returned, kept in the provider's order. Four rather than one because the parser has to be exercised over a row naming several tickers, which is what makes one dated request serve every name; three of the four name three or more. Every key, nesting and type is the provider's. The whole set of thirty names this response came from is the 1.7 coverage measurement's sample and is recorded in PROGRESS.md rather than committed, because 1,253 articles of licensed text are not this repository's to hold."
     }
   ]
 }

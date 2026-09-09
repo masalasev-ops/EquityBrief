@@ -44,6 +44,7 @@ public class CoverageReported
         ["nightly-run"] = "NightlyRun",
         ["gap-refusal"] = "GapRefusal",
         ["corporate-actions"] = "CorporateActions",
+        ["news-parse"] = "NewsCoverage",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };

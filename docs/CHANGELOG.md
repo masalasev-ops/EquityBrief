@@ -678,3 +678,31 @@ Was:
 Now: the same row carves out the backfill and the corporate action refetch, and states that the refetch is bounded by the day's actions rather than by the universe.
 
 Why: the same shape as contradiction B and found the same way, by building the step the rule forbade. It is carved rather than the rule loosened, because a night that refetched every name would satisfy a loosened rule and defeat the whole design. On the fixture's captured day the actions affect one name.
+
+### 2026-09-08 - DECISIONS.md - contradiction J, and where the source lists apply
+Corrects: a decision whose name disagreed with its own body, and a premise the 1.7 measurement falsified.
+
+Was, and now under "Previously decided":
+> **Three source lists, not one, each with a review date** Filings and company releases need no list at all, since they are fetched by ticker. A company-news list governs reporting about a company. A separate industry list governs theme material ...
+
+Now: **Two source lists govern the open web, and the licensed feed is a channel rather than a list**.
+
+Why: the body described two lists and said filings need none, and the name said three. That is the whole of contradiction J and the name was the defect. The measurement added the second half. The licensed news feed delivered 1,173 of 1,253 articles under one domain, and the domain is the aggregator that carried the article rather than the outlet that wrote it, so a domain list over the feed would hold three entries and would filter nothing: filtering by domain would discard the whole feed or none of it. The lists therefore govern the search tool, where a query can return a football club, and the feed is admitted as a delivery channel with the per-document test doing all of the work on its articles.
+
+### 2026-09-08 - CLAUDE.md - source-lists.json added to the layout
+Corrects: nothing removed. A line is added to the repository layout block for the file 1.7 drafts.
+
+Now:
+> source-lists.json the two open-web lists a research search may return, with their review date
+
+Why: the lists are configuration a research pass reads, not a document that argues anything, so they are a file rather than a ninth corpus document. They are named in the layout block because a file at the root that the block does not describe is a file nobody knows the purpose of.
+
+### 2026-09-08 - CLAUDE.md - banned-prose does not govern a captured response
+Corrects: a rule about how this corpus is written was being applied to bytes a provider sent. Found at 1.7, when a captured news article's own text carried an em dash. The three earlier captures happened to carry neither banned pattern, so this was a rule that had not yet met the thing it cannot govern.
+
+Was:
+> | `banned-prose` | every CI run | No text file the repository tracks contains the banned string or any form of it, and none contains an em dash. The line in CLAUDE.md's Prose convention that names the string is the single exemption, matched on the sentence that states the rule |
+
+Now: the same row, with the captured provider responses excluded and the exclusion stated.
+
+Why: the only way to satisfy the rule over a capture would be to edit the provider's text, and the manifest schema says in so many words that what may never be trimmed is the shape. A file edited to suit a prose rule is no longer a capture, and the whole value of a capture is that the parser is checked against what the provider actually sends. The exclusion follows the manifest's declaration rather than the folder, so a json file dropped into a fixture folder and never declared is still scanned, and the manifest, the README and anything under expectations/ are written here and are scanned too.
