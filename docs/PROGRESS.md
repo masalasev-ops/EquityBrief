@@ -4586,3 +4586,65 @@ Measured:   203 claims, 79 PASS, 0 fail, 0 unexamined, 124 out of scope, unchang
 Amended:    nothing. This checkpoint amends no done condition.
 Tests:      394, from 393. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+
+### 4.3 - the calendar fetcher and the earnings date                    2026-09-09
+Built:      `IEarningsCalendarFeed` with its live implementation and its recorded double, the
+            calendar fetcher, migration 12 creating `calendar`, the fetcher as a nightly step, and
+            the next dated event on the name page's fact strip. Contradiction E's table now
+            exists, so the store four components declare a read against is one something writes.
+Captured:   before the parser was written, which is the rule 1.6 and 1.7 set and which this
+            endpoint justified inside one request.
+Found:      the provider files no confirmed-or-estimated flag. 4.0 gave this table a `status`
+            column carrying `confirmed` or `estimated`, on the reasoning that a booked print and
+            an unconfirmed one are different things. They are, and the payload has no such field.
+            What it does carry is whether the report lands before the session or after it, which
+            decides which bar prices the print, so `timing` replaces `status` and earns the column
+            for the same reason the status was thought to.
+            This is 1.2's membership parser one endpoint later. That one read a field the provider
+            does not send and the fixture agreed with it for two checkpoints because the same
+            session wrote both. Here nothing was written against the invented field at all,
+            because the capture came first.
+Also found: three things a parser written from the endpoint's name would have got wrong, each now
+            asserted against the captured bytes. The rows sit under an `earnings` key rather than
+            at the top level, where the bulk price file and both action feeds put theirs. `code`
+            is a ticker and an exchange, `AAPL.US`, and the store holds `AAPL`. And there are two
+            dates: `report_date` is when the report lands and `date` is the fiscal period it
+            covers. On this capture AAPL reports on 2026-10-29 for a period ending 2026-09-30, a
+            month apart, so a reader taking the wrong one puts every print early.
+Decided:    the window is a quarter and not the twenty-session horizon, measured rather than
+            assumed. Every name reports once a quarter, so ninety days holds every member's next
+            print. The fixture's names report six and seven weeks out, which is outside a
+            horizon-sized window: a window equal to the horizon would have made the earnings-soon
+            condition fire on the day the provider published the date rather than on the name
+            approaching it.
+            And the request is by date range and never by symbol. The endpoint filters by symbol
+            and a request carrying five hundred of them keeps the count at one while making the
+            request itself grow with the index, which is the page-count defect wearing a different
+            hat.
+Measured:   the endpoint's weight, against the account's own request counter rather than from
+            documentation, which is what the done condition asks and where the other four figures
+            came from. One request over ninety days returned 22,526 rows worldwide and moved the
+            counter by one, so the weight is 1 for a whole window. Recorded in section 17's row
+            and in the runbook's weights paragraph together.
+Fixture:    the capture is trimmed the way every other capture in this folder is, to the six
+            constituents plus four the index does not hold, being a US listing, a Frankfurt one,
+            a Stuttgart one and a Singapore one. That gives the fixture a population worth having:
+            two names with a print, two with none, and a departed constituent whose print is
+            inside the window and must not be stored. Three refusals are told apart rather than
+            one standing for the others: outside the window, not a member, and no row at all.
+            Every figure in the expectation was read off the captured file by hand before the
+            fetcher was run against it.
+Mutated:    the parser reading `date` where it reads `report_date`, in an isolated worktree at
+            0aa6b4b, reverted, the worktree removed. The rule for choosing was stated first:
+            mutate the assertion carrying the property this checkpoint exists to add, which is
+            that the event date is the report and not the period. It turned both calendar tests
+            red and nothing else.
+Measured:   203 claims, 85 PASS from 79, 0 fail, 0 unexamined, 118 out of scope. The six are the
+            Calendar store row, the calendar fetcher's catalogue and matrix rows, its nightly
+            step, the `calendar` fixture row and the earnings-date-missing row's calendar half.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      397, from 394. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+            Four live requests were made against the operator's key for the capture and the
+            measurement: one probe over a month, one over the fixture names, one capture over the
+            window, and two account reads that cost nothing.
