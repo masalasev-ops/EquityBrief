@@ -20,6 +20,19 @@ public sealed record BarRow(
     decimal Close,
     long Volume);
 
+// One stored indicator, handed over exactly as the store holds it.
+//
+// Value is a nullable double because the column is REAL and nullable, and an
+// indicator whose window is longer than the history behind its session has no
+// value. BarCount is what makes that null legible, and it is served rather than
+// dropped: a reader who sees no long average is owed the count that explains it.
+public sealed record IndicatorRow(
+    string Ticker,
+    DateOnly SessionDate,
+    string Name,
+    double? Value,
+    int BarCount);
+
 // The read surface. Serves what the nightly run stored, and nothing else.
 //
 // It computes nothing and fetches nothing, which section 7's row states and
@@ -87,6 +100,17 @@ public sealed class ReadApi : IComponent
         ORDER BY session_date;
     ";
 
+    // Ordered by session and then by name, for the reason the bars query is
+    // ordered: the caller does not have to sort and ordering says nothing about
+    // what a row holds. The null value is served as a null and never as a zero,
+    // because a zero is a reading and an absent indicator is not one.
+    const string IndicatorsForName = @"
+        SELECT ticker, session_date, name, value, bar_count
+        FROM indicator
+        WHERE ticker = $ticker AND session_date >= $from AND session_date <= $to
+        ORDER BY session_date, name;
+    ";
+
     // One row per process start, stage read-api, which is the grain SCHEMA
     // declares for the run log: one row per run per stage. A row per served
     // request would break that key and would grow the operational record by
@@ -135,6 +159,33 @@ public sealed class ReadApi : IComponent
         }
 
         return bars;
+    }
+
+    public async Task<IReadOnlyList<IndicatorRow>> IndicatorsAsync(string ticker, DateOnly from, DateOnly to)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndicatorsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$to", to.ToString("yyyy-MM-dd"));
+
+        var rows = new List<IndicatorRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new IndicatorRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                await reader.IsDBNullAsync(3) ? null : reader.GetDouble(3),
+                reader.GetInt32(4)));
+        }
+
+        return rows;
     }
 
     // The operational record of the read surface coming up, which section

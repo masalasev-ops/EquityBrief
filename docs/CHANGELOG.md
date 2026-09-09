@@ -25,6 +25,49 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - the averages are drawn, and one due point was wrong
+Authorised by: The volume profile accumulates over the same sixty sessions as the level window
+Was:
+> section 15.5's Level chart mark said the moving averages arrive at 3.1 and were not drawn;
+> section 17's Level window row said the window is the last 60 sessions without saying what
+> else reads it; and the obligations table put `Phase 3's expectations owed for 3.0's rulings`
+> at 3.1, with 3.1's own text citing it
+Now:
+> the averages are drawn, so the mark has one of its four elements absent rather than two; the
+> Level window row states that the volume profile accumulates over the same window; and the
+> expectations row is due at 3.4, cited by 3.4's text, because none of 3.0's three rulings is
+> assertable against a stage 3.1 builds
+Why: the due point was written by the pass that landed the rule requiring a due point to name
+what produces the evidence, and it named a checkpoint that produces none of it. The indicator
+engine reads no profile, no swing and no shelf, so a ruling about any of the three could not
+have been asserted there. It is recorded rather than quietly moved, because the rule catching
+its own author is the evidence that it works on something other than old text.
+
+### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - contradiction K, and the ninth row it did not name
+Corrects: contradiction K, which said eight components' write sat one column to the right of the
+store their catalogue row names. Repairing by reconciling every row against its catalogue row
+rather than by repairing the eight it named found a ninth, the Research runner, whose write sat
+in **Series state** where its row says source documents. It also found that on the Facts
+assembler the displacement had moved a read as well as a write, putting **News pulse** where the
+catalogue says fundamentals, so a repair confined to writes would have left that row failing on
+a read the moment the component landed.
+Was:
+> the matrix gave Indicator engine, Swing finder, Volume profile builder and Move annotator a
+> write in **Listings**; Shortlist builder in **Forward returns**; Facts assembler in
+> **Fundamentals** with a read in **News pulse**; Forward return filler in **Facts**; News pulse
+> counter in **Research and theme**; and Research runner in **Series state**. Contradiction K
+> described eight rows and named Ladder builder among the three that are correct
+Now:
+> every one of those rows carries the cells its catalogue row names, and contradiction K reads
+> nine with the Facts assembler's read named. Ladder builder is no longer listed as correct: its
+> **Fundamentals** read appears in no catalogue phrase and its catalogue names a calendar the
+> matrix has no column for, which is contradiction E and is settled at 4.0
+Why: 23 of the 27 matrix rows are now reconciled against the catalogue in both directions. The
+four left out each have a stated reason: the Read API reads every store, the Trend classifier
+writes none, the Shortlist builder's reads are contradiction L at 5.4, and the Ladder builder is
+contradiction E at 4.0. A repair that fixes the list it was handed cannot find what the list left
+out, which is the whole reason this one was done by reconciliation.
+
 ### 2026-09-09 - ARCHITECTURE.html, DECISIONS.md - phase 3's three holes settled
 Authorised by: A heavy volume shelf creates a band of its own and also strengthens one it coincides with
 Was:

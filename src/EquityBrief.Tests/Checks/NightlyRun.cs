@@ -66,6 +66,32 @@ public class NightlyRun
         return (code, output.ToString(), error.ToString());
     }
 
+    [Fact]
+    public void TheLimitsRowStatesTheFiguresTheCodeUses()
+    {
+        // The first clause of the Per-request timeout and the night's deadline
+        // note. It stood in ProviderRequestTests, where it ran, passed and
+        // backed no verdict, because a check's tests are the ones its carrier
+        // declares. Moved rather than copied: a limit stated in a document and
+        // again in code is two places holding one fact, and the same assertion
+        // in two test classes is a third.
+        //
+        // The row is read rather than repeated, so a figure changed in either
+        // place fails here.
+        var row = Corpus.Read("docs/ARCHITECTURE.html");
+        var at = row.IndexOf("Per-request timeout and the night's deadline", StringComparison.Ordinal);
+
+        Assert.True(at >= 0, "Section 17 no longer carries the timeout and deadline row.");
+
+        var cell = row[at..row.IndexOf("</tr>", at, StringComparison.Ordinal)];
+        var policy = RetryPolicy.Standard;
+
+        Assert.Contains($"at most {policy.Attempts} attempts", cell, StringComparison.Ordinal);
+        Assert.Contains($"{policy.FirstWait.TotalSeconds:0} seconds and then {policy.FirstWait.TotalSeconds * 2:0}", cell, StringComparison.Ordinal);
+        Assert.Contains($"bounded by {policy.Timeout.TotalSeconds:0} seconds", cell, StringComparison.Ordinal);
+        Assert.Contains($"bounded by {policy.Deadline.TotalMinutes:0} minutes", cell, StringComparison.Ordinal);
+    }
+
     // A payload that arrives and is wrong, in the two shapes section 18 now
     // carries. Both are induced against the fixture rather than described.
     //

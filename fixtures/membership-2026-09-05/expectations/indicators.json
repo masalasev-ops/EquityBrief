@@ -1,0 +1,106 @@
+{
+ "stage": "indicators",
+ "derivedFrom": "the arithmetic in section 9 and section 17 applied to the committed bar files, not to a run. Every figure below was computed from the captured adjusted closes and volumes by summing them directly, outside this repository and without running the indicator engine, which is what makes it an expectation rather than a regression baseline: an engine that averaged the wrong window would still agree with a figure taken from itself.",
+ "tables": [
+  "indicator"
+ ],
+ "window": {
+  "from": "2025-09-05",
+  "to": "2026-09-05",
+  "note": "the same window the backfill expectation states"
+ },
+ "namesComputed": [
+  "AAPL",
+  "KEYS",
+  "MSFT"
+ ],
+ "sessionsPerName": 252,
+ "indicatorNames": [
+  "sma20",
+  "sma50",
+  "sma200",
+  "rsi14",
+  "macd",
+  "macd_signal",
+  "macd_hist",
+  "atr14",
+  "vol_avg20",
+  "vol_avg50"
+ ],
+ "rowsExpected": 7560,
+ "rowsPerName": 2520,
+ "notAvailable": {
+  "note": "a row is written for every session and every name, and the value is null until the window is full. The count per indicator is its warm-up less one, because the first value sits at the warm-up. RSI and ATR read the change from the previous close, so fourteen periods need fifteen bars; the MACD signal needs nine MACD values and the first MACD sits at twenty-six bars, so it starts at thirty-four.",
+  "perIndicatorPerName": {
+   "sma20": 19,
+   "sma50": 49,
+   "sma200": 199,
+   "rsi14": 14,
+   "macd": 25,
+   "macd_signal": 33,
+   "macd_hist": 33,
+   "atr14": 14,
+   "vol_avg20": 19,
+   "vol_avg50": 49
+  },
+  "perName": 454,
+  "total": 1362
+ },
+ "barCount": {
+  "note": "bar_count is the lesser of the indicator window and the history behind the session, so it is what makes a null legible. At the first session every indicator reads 1. At the last session an indicator whose window is full reads its window.",
+  "atFirstSession": 1,
+  "sma200AtLastSession": 200,
+  "sma200SessionsWithAValue": 53
+ },
+ "lastSession": {
+  "AAPL": {
+   "lastSession": "2026-09-04",
+   "sma20": 313.14,
+   "sma50": 314.987766,
+   "sma200": 283.43901900000003,
+   "volAvg20": 39653085.0
+  },
+  "KEYS": {
+   "lastSession": "2026-09-04",
+   "sma20": 330.567,
+   "sma50": 326.1178,
+   "sma200": 288.5134,
+   "volAvg20": 1416250.0
+  },
+  "MSFT": {
+   "lastSession": "2026-09-04",
+   "sma20": 495.33926,
+   "sma50": 443.562084,
+   "sma200": 429.372915,
+   "volAvg20": 22996395.0
+  }
+ },
+ "workedExample": {
+  "name": "AAPL",
+  "session": "2026-09-04",
+  "note": "the twenty adjusted closes the last sma20 is the mean of, listed so the figure can be checked by adding them up",
+  "closes": [
+   308.26,
+   304.91,
+   302.25,
+   305.26,
+   305.93,
+   305.59,
+   310.03,
+   316.83,
+   311.3,
+   309.35,
+   310.34,
+   309.9,
+   313.45,
+   314.58,
+   319.7,
+   316.85,
+   325.13,
+   324.96,
+   328.21,
+   319.97
+  ],
+  "sma20": 313.14
+ }
+}

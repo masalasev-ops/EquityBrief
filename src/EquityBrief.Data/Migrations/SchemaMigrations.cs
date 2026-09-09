@@ -108,6 +108,29 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // Indicators, one row per ticker, session and indicator name.
+    //
+    // `value` is REAL and not TEXT, which is the one place in this store where a
+    // number computed from prices is not money. SCHEMA says so and the reason is
+    // that an average of a price is a statistic about prices rather than a price:
+    // nothing quotes it as money, no arithmetic on it settles a trade, and
+    // price-storage-form's money column list does not name it.
+    //
+    // `value` is nullable because an indicator whose window is longer than the
+    // history behind a session has no value, and `bar_count` is what makes that
+    // null legible. A row is written either way, so an absence is a stored fact
+    // rather than a missing row a reader has to interpret.
+    const string CreateIndicator = @"
+        CREATE TABLE indicator (
+            ticker       TEXT NOT NULL,
+            session_date TEXT NOT NULL,
+            name         TEXT NOT NULL,
+            value        REAL,
+            bar_count    INTEGER NOT NULL,
+            PRIMARY KEY (ticker, session_date, name)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -116,6 +139,7 @@ public static class SchemaMigrations
         new Migration(4, "add bar.raw_close", AddRawClose),
         new Migration(5, "create series_state", CreateSeriesState),
         new Migration(6, "membership.joined admits an unknown", JoinedMayBeUnknown),
+        new Migration(7, "create indicator", CreateIndicator),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

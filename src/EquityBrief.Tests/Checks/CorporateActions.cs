@@ -23,8 +23,11 @@ public class CorporateActions
         "corporate-actions",
         ["fixtures/membership-2026-09-05"],
         [
-            CheckReach.Key(Scope.CatalogueTable, "Corporate action checker"),
-            CheckReach.Key(Scope.MatrixTable, "Corporate action checker"),
+            // The catalogue and matrix rows are not here. Their notes describe a
+            // declaration reconciled against the row, the matrix row, SCHEMA's
+            // ownership and the component's own source, and this check performs
+            // none of that: component-access does, and 3.0's sweep found the
+            // claims naming a check whose tests could not fail on them.
             CheckReach.Key(Scope.FailureTable, "A split or dividend not caught"),
             CheckReach.Key(NightlyRunSteps.Heading, "Check splits and dividends, and refetch the full year for any name affected."),
         ]);
@@ -163,6 +166,29 @@ public class CorporateActions
         return Convert.ToInt32(command.ExecuteScalar());
     }
 
+    // The stored series itself rather than its size. A rollback that restored a
+    // count and not the values would satisfy a count, and the atomicity test
+    // below is about which bars are there.
+    static IReadOnlyList<string> Series(TemporaryStore store, string ticker)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT session_date, close FROM bar WHERE ticker = $t ORDER BY session_date;";
+        command.Parameters.AddWithValue("$t", ticker);
+
+        var rows = new List<string>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            rows.Add($"{reader.GetString(0)}|{reader.GetString(1)}");
+        }
+
+        return rows;
+    }
+
     [Fact]
     public void TheCapturedActionsAreRealAndCarryNamesTheIndexDoesNotHave()
     {
@@ -270,6 +296,75 @@ public class CorporateActions
 
         // The replacement is atomic: the year is not half gone.
         Assert.Equal(before, Rows(store, "AAPL"));
+    }
+
+    [Fact]
+    public async Task ARefetchInterruptedAfterTheDeleteLeavesTheOldYearEntire()
+    {
+        // The obligation the phase 1 sign-off carried here, and it asserts the
+        // property rather than the construct.
+        //
+        // The two tests above claim atomicity and cannot observe it: both induce
+        // their failure upstream of the DELETE, so the year was never dropped
+        // and there is no half-replaced state for them to catch. Removing the
+        // transaction left the whole suite green, which is what a scan for the
+        // keyword reports and what a behavioural test has to refuse.
+        //
+        // So the failure is induced downstream of the DELETE and partway through
+        // the inserts. The feed answers with a year whose third bar repeats the
+        // second's date, which parses cleanly and violates the bar table's
+        // primary key on insert. By then the delete has run and two rows are in,
+        // which is precisely the half-replaced series nothing could reach before.
+        using var store = await Stored();
+
+        var before = Series(store, "AAPL");
+
+        Assert.True(before.Count > 2, $"AAPL holds {before.Count} bars, and the interruption needs a year to replace.");
+
+        const string RepeatsASession = """
+            [
+             {"date":"2026-08-05","open":10,"high":11,"low":9,"close":10.5,"adjusted_close":10.5,"volume":100},
+             {"date":"2026-08-06","open":10.5,"high":12,"low":10,"close":11,"adjusted_close":11,"volume":110},
+             {"date":"2026-08-06","open":10.5,"high":12,"low":10,"close":11,"adjusted_close":11,"volume":110}
+            ]
+            """;
+
+        var outcome = await Checker(store, new RecordedHistoricalBarFeed(
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["AAPL"] = RepeatsASession }))
+            .RunAsync(Index, "run-actions");
+
+        Assert.Equal(0, outcome.Refetched);
+        Assert.Equal(["AAPL"], outcome.Suspect);
+
+        // The property. The stored series is the old one entire, session by
+        // session and price by price, and not the two bars that were written
+        // before the third failed. Without the transaction this holds 2 rows,
+        // both of them the interrupted refetch's.
+        Assert.Equal(before, Series(store, "AAPL"));
+
+        // And named on the values, not the dates. The interrupted refetch's two
+        // sessions are dates the real series also holds, so an assertion on the
+        // date would have passed over a half-replaced year; what it cannot hold
+        // is those sessions at the refetch's own prices.
+        Assert.DoesNotContain("2026-08-05|10.5", Series(store, "AAPL"));
+        Assert.DoesNotContain("2026-08-06|11", Series(store, "AAPL"));
+
+        var state = StateOf(store, "AAPL");
+
+        Assert.Equal(CorporateActionChecker.Suspect, state.State);
+        Assert.False(string.IsNullOrWhiteSpace(state.Reason), "The name is suspect and nothing says why.");
+
+        // And the reason is the insert failing, not a guard that fired before
+        // the delete. This is the assertion that keeps the interruption where it
+        // has to be: the first version of this test dated its bars outside the
+        // window the refetch asks for, the feed filtered them all away, and the
+        // empty-refetch guard refused upstream of the delete. It passed with the
+        // transaction removed, which is how it was caught.
+        Assert.Contains("UNIQUE", state.Reason!, StringComparison.OrdinalIgnoreCase);
+
+        // The other names are untouched, which is why each name refetches in its
+        // own transaction rather than the whole check in one.
+        Assert.NotEmpty(Series(store, "MSFT"));
     }
 
     [Fact]

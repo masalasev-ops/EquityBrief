@@ -166,40 +166,10 @@ public class BarFetcherTests
         Assert.Equal(3, again.MembersStored);
     }
 
-    [Fact]
-    public async Task RetentionDropsWhatFellOutOfTheWindowAndNothingInside()
-    {
-        // The boundary is the session the file is for, less a year, so a replay
-        // drops what that night would have dropped rather than what tonight
-        // would. 2026-09-08 less a year is 2025-09-08, and the stored year
-        // starts on 2025-09-05, so three sessions fall out per name.
-        using var store = await WithAYearStored();
-
-        var outcome = await Fetcher(store, Feed()).RunAsync(Index, "run-night");
-
-        Assert.Equal(new DateOnly(2025, 9, 8), outcome.Oldest);
-
-        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
-        connection.Open();
-
-        using var oldest = connection.CreateCommand();
-        oldest.CommandText = "SELECT MIN(session_date) FROM bar;";
-
-        var kept = (string)oldest.ExecuteScalar()!;
-
-        Assert.True(
-            string.CompareOrdinal(kept, "2025-09-08") >= 0,
-            $"The oldest stored session is {kept}, which is inside the window the drop should have cleared.");
-
-        using var below = connection.CreateCommand();
-        below.CommandText = "SELECT COUNT(*) FROM bar WHERE session_date < '2025-09-08';";
-
-        Assert.Equal(0L, (long)below.ExecuteScalar()!);
-
-        // And the drop is measured rather than reported: it is the difference
-        // in the table's own row count across the transaction.
-        Assert.True(outcome.RowsDropped > 0, "Nothing was dropped, so the retention path never ran.");
-    }
+    // Retention is asserted in NightlyCost, which is nightly-cost's carrier
+    // and therefore the only class whose tests can back the Bar history kept
+    // claim. It stood here, ran, passed and backed no verdict. Found by
+    // 3.0's sweep of the claim notes.
 
     [Fact]
     public async Task TheRunLogRecordsOneRequestAndZeroModelCalls()

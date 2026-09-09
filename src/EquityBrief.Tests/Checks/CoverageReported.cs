@@ -52,6 +52,7 @@ public class CoverageReported
         ["corporate-actions"] = "CorporateActions",
         ["news-parse"] = "NewsCoverage",
         ["fixture-expectations"] = "FixtureExpectations",
+        ["fixture-replay"] = "FixtureReplay",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };

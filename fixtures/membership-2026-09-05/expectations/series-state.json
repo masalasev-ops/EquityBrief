@@ -1,0 +1,31 @@
+{
+ "stage": "series-state",
+ "derivedFrom": "the captured action files intersected with the membership expectation's current members, not a run. The two files carry 7 actions over 7 distinct names; exactly one of them, AAPL, is a current member, so exactly one name is refetched and exactly one series state row exists. Every other name in the files is one the index does not hold and is not touched, which is what the captured actions were chosen to include.",
+ "tables": [
+  "series_state"
+ ],
+ "actionsInFiles": 7,
+ "distinctNamesInFiles": [
+  "AAMEKX",
+  "AAPL",
+  "AAPW",
+  "AEHL",
+  "AEP",
+  "ELPW",
+  "EXXBF"
+ ],
+ "currentMembers": [
+  "AAPL",
+  "KEYS",
+  "MSFT"
+ ],
+ "namesRefetched": [
+  "AAPL"
+ ],
+ "rowsExpected": 1,
+ "states": {
+  "AAPL": "ok"
+ },
+ "suspectExpected": 0,
+ "note": "a name is marked only when the check reaches it, so KEYS and MSFT carry no row rather than a row saying nothing happened. An absent row and an ok row are different facts and the table's grain is one row per name the check ran for."
+}

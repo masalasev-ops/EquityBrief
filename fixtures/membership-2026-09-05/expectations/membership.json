@@ -1,6 +1,9 @@
 {
  "stage": "membership",
  "derivedFrom": "the captured constituents payload read through the rules in section 7, not from a run. The spans come from HistoricalTickerComponents, which is where the provider puts dates; Components is tonight's snapshot and holds none.",
+ "tables": [
+  "membership"
+ ],
  "index": "GSPC",
  "constituents": 5,
  "currentMembers": [

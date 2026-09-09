@@ -15,13 +15,25 @@ public sealed record ChartBar(
     decimal Close,
     long Volume);
 
+// One moving average over the same sessions as the bars, as a mark is given it.
+//
+// Values are nullable and in session order, one per bar, so the line breaks
+// where the average has no value rather than joining across the absence. A
+// 200-day average has no value for the first 199 sessions of a stored year, and
+// a line drawn straight from the first value it does have would claim the
+// average was flat over sessions it did not exist for.
+//
+// Double rather than decimal, because an average of prices is a statistic and
+// the two worlds do not mix. It arrives already across that boundary.
+public sealed record ChartAverage(string Name, IReadOnlyList<double?> Values);
+
 // The marks, as SVG strings written server side.
 //
-// This is the level chart mark with two of its four elements absent. Section
+// This is the level chart mark with one of its four elements absent. Section
 // 15.5 names four: candles, the level bands, the moving averages and a volume
-// pane. Candles and the volume pane are drawn here at 1.3. The moving averages
-// arrive at 3.1 with the indicator engine and the bands at 3.4 with the level
-// builder, and both are drawn into this file rather than into a second one.
+// pane. Candles and the volume pane are drawn here at 1.3 and the moving
+// averages at 3.1. The bands arrive at 3.4 with the level builder, drawn into
+// this file rather than into a second one.
 //
 // That is the whole reason this is not a temporary chart. A temporary chart
 // becomes the second renderer, and one renderer for both the app and the export
@@ -66,15 +78,49 @@ public sealed class MarkRenderer : IComponent
 
     static string Number(double value) => value.ToString("0.##", Invariant);
 
-    public string LevelChart(string ticker, IReadOnlyList<ChartBar> bars)
+    public string LevelChart(
+        string ticker,
+        IReadOnlyList<ChartBar> bars,
+        IReadOnlyList<ChartAverage>? averages = null)
     {
         if (bars.Count < FewestBars)
         {
             return Degraded(ticker, bars.Count);
         }
 
+        // An average whose length does not match the bars is refused rather
+        // than drawn against the wrong sessions. A line one session short would
+        // draw every point one slot to the left and look entirely plausible,
+        // which is the failure that reports green.
+        var lines = averages ?? [];
+
+        foreach (var line in lines)
+        {
+            if (line.Values.Count != bars.Count)
+            {
+                throw new ArgumentException(
+                    $"The average '{line.Name}' carries {line.Values.Count} values against " +
+                    $"{bars.Count} sessions. A mark draws one value per session, and a line of a " +
+                    "different length would be drawn against the wrong dates rather than refused.",
+                    nameof(averages));
+            }
+        }
+
         var high = bars.Max(bar => PlotValue(bar.High));
         var low = bars.Min(bar => PlotValue(bar.Low));
+
+        // The price scale takes in the averages as well as the candles. A 200
+        // day average sits well below the price after a year of rising, and a
+        // scale drawn from the candles alone would push it off the bottom of
+        // the pane where it reads as absent rather than as low.
+        var drawnValues = lines.SelectMany(line => line.Values).Where(value => value is not null).ToArray();
+
+        if (drawnValues.Length > 0)
+        {
+            high = Math.Max(high, drawnValues.Max()!.Value);
+            low = Math.Min(low, drawnValues.Min()!.Value);
+        }
+
         var span = high - low;
 
         // A flat series would divide by zero and is a real series: a name can
@@ -95,7 +141,69 @@ public sealed class MarkRenderer : IComponent
 
         // Stated for a reader who cannot see the picture, and it says which
         // elements are here rather than describing the finished mark.
-        svg.Append(Invariant, $"<desc>Daily candles over a volume pane on a shared time axis. The level bands and the moving averages are not drawn yet.</desc>");
+        var drawn = lines.Count > 0
+            ? $"with {lines.Count} moving average(s) "
+            : "with no moving average given ";
+
+        svg.Append(Invariant, $"<desc>Daily candles {drawn}over a volume pane on a shared time axis. The level bands are not drawn yet.</desc>");
+
+        // Where a value sits in the price pane. Defined once here rather than
+        // per bar, because the averages and the candles have to share it: two
+        // scales on one pane is a picture that lies about where the price is.
+        double At(double value) => PriceHeight - Margin
+            - ((value - low) / range * (PriceHeight - (2 * Margin)));
+
+        double Centre(int index) => Margin + (slot * index) + (slot / 2);
+
+        // The averages are drawn before the candles so the price reads on top of
+        // them. They carry no hue of their own: green and orange belong to
+        // support and resistance on every screen, and a set of averages is a
+        // magnitude rather than a set of categories, so it is one hue in steps
+        // with the longer average darker, which is section 15.6's rule that
+        // magnitude is one ramp and never a rainbow. That rule has no decision
+        // behind it and is cited by section rather than by name, because the
+        // architecture states it once with its reasoning and a decision would be
+        // a second place holding one fact.
+        // see: Support and resistance own two hues and nothing else uses them
+        for (var line = 0; line < lines.Count; line++)
+        {
+            var average = lines[line];
+            var shade = 0.34 + (0.22 * Math.Min(line, 3));
+
+            svg.Append(Invariant, $"<g class=\"moving-average\" data-average=\"{Escaped(average.Name)}\" ");
+            svg.Append(Invariant, $"data-values=\"{average.Values.Count(value => value is not null)}\">");
+
+            // One path per unbroken run of values. A 200-day average has no
+            // value for the first 199 sessions of a stored year, and joining
+            // across an absence would draw a line over sessions the average did
+            // not exist for.
+            var run = new StringBuilder();
+
+            for (var index = 0; index <= average.Values.Count; index++)
+            {
+                var value = index < average.Values.Count ? average.Values[index] : null;
+
+                if (value is { } point)
+                {
+                    run.Append(run.Length == 0 ? 'M' : 'L')
+                        .Append(Number(Centre(index)))
+                        .Append(' ')
+                        .Append(Number(At(point)))
+                        .Append(' ');
+
+                    continue;
+                }
+
+                if (run.Length > 0)
+                {
+                    svg.Append(Invariant, $"<path d=\"{run.ToString().Trim()}\" fill=\"none\" ");
+                    svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"{Number(shade)}\" stroke-width=\"1.4\"/>");
+                    run.Clear();
+                }
+            }
+
+            svg.Append("</g>");
+        }
 
         for (var index = 0; index < bars.Count; index++)
         {
