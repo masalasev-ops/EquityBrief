@@ -4907,3 +4907,73 @@ Measured:   203 claims, 92 PASS, 0 fail, 0 unexamined, 111 out of scope, unchang
 Amended:    nothing. This checkpoint amends no done condition.
 Tests:      415, from 410. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+
+### 4.9 - the phase 4 report                                            2026-09-09
+Built:      nothing. This checkpoint reports, and its done condition is that every phase 4 claim
+            is PASS across four fixture names, that the plan section renders whole, and that the
+            claims 4.0 named are checked against the actual.
+Claims:     203, 92 pass, 111 out of scope, 0 fail, 0 unexamined, from 186 and 64 at the phase 3
+            sign-off. 98 placements and verdicts reconciled against a floor of 34. All four names,
+            over the fixture 3.6 widened and the calendar capture 4.3 added to it.
+Predicted:  204 claims, 93 PASS and 111 out of scope. The actual is 203, 92 and 111.
+            One claim short in both totals, and it is the same claim: 4.0 predicted section 14's
+            step 5 becoming nine elements, and 4.1 merged two of them back into one. A classifier
+            that writes nothing cannot be a stage of its own, so the trend state and the ladder are
+            one step rather than two, and the nine became eight.
+            The prediction's composition held everywhere else. Twelve rows that existed turned
+            PASS and sixteen of the nineteen the phase wrote did, with the three that did not being
+            the moves, list reasons and facts elements owed at phase 5 checkpoints and named as out
+            of scope rather than left inside the total.
+Prediction: 3.7's rule held and it was the right rule. It said a prediction is over the rows that
+            become assertable rather than the rows that get written, and phase 4 wrote 19 rows and
+            asserted 28. What 4.0 could not have known is that building a component would change
+            the document: the merged step is a row the phase removed, and no prediction made before
+            the code exists can see that.
+            The lesson for 5.0 is narrow and worth stating: predict the rows a phase writes as a
+            range rather than a figure where the phase invents a component, because a component
+            that turns out to write nothing changes the shape of the section that describes it.
+Measured:   over the phase. 35 new tests, 380 to 415. Two migrations, 10 to 12, creating `ladder`
+            and `calendar`. Three components, being the calendar fetcher, the trend classifier and
+            the ladder builder, and every one declares its access and is reconciled against its
+            catalogue row, its matrix row and SCHEMA in both directions. Ten decisions and one
+            supersession. The obligations table went from 27 rows to 38 and from 17 discharged to
+            29, so eleven were entered and twelve were discharged. One new check,
+            `record-append-only`. One new feed, one new store, one new mark, and the fixture gained
+            a calendar capture and a ladder expectation.
+Verified:   every claim in scope, by 31 carried checks, none of which failed or went unrun. The
+            marks: section 15.5 now has six of its seven drawn, the outstanding one being the
+            distance row phase 5 builds. Section 14's list runs end to end for every step phase 4
+            owes.
+Found:      nine things by building, and they are the phase's real output beside the code.
+            Three components had shipped in phase 3 and no night ran one, which one step with a
+            phase-due point had hidden.
+            The provider files no confirmed-or-estimated flag, which 4.0 had given the calendar a
+            column for, caught by capturing before the parser was written.
+            The trend classifier's matrix row gave it a run log write and its catalogue row says it
+            writes nothing.
+            The ladder builder reads the bar store and its catalogue row did not say so.
+            The every-name ladder rule was asserted against a fixture that could not tell it from a
+            narrower one, found by mutation.
+            Three arrangements of the event setups would have passed against an expectation frozen
+            from the code: a stop at a zero-width band's edge is the entry, a target taken as the
+            next band can sit below a gap-up entry, and a flush entering at the band's high edge
+            targeted a price below its own entry.
+            The invalidation was drawing a second rule on top of the lowest stop.
+            The stop distance and the arithmetic are independent, and conflating them left a name
+            with no reward to measure showing no prints either.
+            And the deadline test raced again, one order of magnitude up from where 2.7 repaired
+            it, which `two-platform` caught for the second time.
+Pattern:    seven of the nine were found by deriving figures by hand before running the code
+            against them, or by mutating an assertion. Two were found by declaring what a component
+            touches and watching a check refuse the row. None was found by reading.
+            Done condition 9 was added at 4.0 on three phases of evidence and it earned itself in
+            this one: the every-name rule and the near-exit skip were both mutations that went
+            green first.
+Carried:    six obligations, none owed inside phase 4. The earliest are the strength score at 5.4
+            and the news request at 5.5. Three operating rows stand, being the six reason
+            thresholds, the three reason records and the event setups' triggers, each with a
+            numeric trigger and the surface it is read on.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      415. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      this session has committed code to phase 4 and may not sign it off. The sign-off is
+            owed on the phase as a whole, by a fresh session, before phase 5's plan.
