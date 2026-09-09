@@ -4860,3 +4860,50 @@ Measured:   203 claims, 92 PASS from 91, 0 fail, 0 unexamined, 111 out of scope.
 Amended:    nothing. This checkpoint amends no done condition.
 Tests:      410, from 407. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+
+### 4.8 - the arithmetic and the earnings rule                           2026-09-09
+Built:      risk per tranche at the zone midpoint, reward to risk from the first tranche and from
+            the blended first two, the break-even each plan demands of itself, the worked sizing
+            paragraph, and the last two prints one-day moves stated against the stop distance.
+Derived:    every figure from the plan rather than stored beside it. The ladder holds prices and
+            the arithmetic turns them into the figures the report states, so the report and the
+            score cannot become two implementations of one arithmetic.
+            The target is the first traded exit and not the first exit, because a skipped one is
+            named and not acted on, and measuring reward to it would be measuring a trade the plan
+            says not to take.
+            The break-even is asserted against cases computed by hand rather than against the
+            code's own output, including the worked example section 13 already carries: risking 65
+            to make 137 breaks even at about 32 per cent.
+Widened:    the calendar window, to a year behind as well as a quarter ahead. The earnings rule
+            needs the dates the last two prints happened on, and the endpoint answers with
+            historical and upcoming events over whatever range it is asked, so one request carries
+            both. A year and no further, because the moves are read off bars kept for a year: a
+            calendar reaching further back would name a print whose session the store does not
+            hold. One more live request, and the capture retaken over the wider window.
+Found:      the timing column earning its place, which 4.3 could argue for and not demonstrate. A
+            report before the open moves that day's bar and one after the close moves the next, so
+            the same date with the two timings reads two different sessions. Every print in this
+            fixture lands after the close, so each is read off the session following its date.
+Also found: the stop distance and the arithmetic are independent, and conflating them cost a
+            reading. MSFT trades no exit, so it has no reward to measure and its arithmetic is
+            absent; it still has a stop and two prints to measure against it. My first derivation
+            took the stop distance from the arithmetic and left MSFT's share empty, which the hand
+            derivation showed before the code was compared to it.
+Reading:    NFLX is the name this rule exists for. Its last two prints moved it 3.91 and 2.02
+            times the distance to its own stop, so a position carried through the date is one the
+            plan's stop cannot protect. MSFT's moved it 1.40 and 5.09 times. AAPL's moved it 0.33
+            and 0.92, which is a name whose print the plan can carry.
+            AAPL's first tranche is the other reading worth stating: its reward to risk is 0.9292,
+            so the plan demands being right 51.83 per cent of the time. A plan that has to be right
+            more than half is one the reader should see stated rather than inferred.
+Mutated:    the timing no longer deciding the session, in an isolated worktree at 96b81b7,
+            reverted, the worktree removed. The rule for choosing was stated first: mutate the
+            assertion carrying the property this checkpoint exists to add, which is that a print
+            after the close moves the next session. It turned the fixture diff and the constructed
+            timing test red and nothing else.
+Measured:   203 claims, 92 PASS, 0 fail, 0 unexamined, 111 out of scope, unchanged. This checkpoint
+            adds no claim: the arithmetic is the plan section's content rather than a row of any
+            claim-bearing table, and section 15.9's plan region passed at 4.6.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      415, from 410. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
