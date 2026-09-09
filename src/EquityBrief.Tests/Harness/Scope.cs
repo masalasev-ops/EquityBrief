@@ -271,7 +271,15 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FixtureTable, "ladder")] = new Scoped(
             Verdict.Pass,
-            "the trend state of all four names is diffed against a set derived from the rule outside this repository, with the averages and the last two swings of each kind stated beside the answer so a disagreement is traceable to an input",
+            "the trend state and the tranches of all four names are diffed against a set derived from the rules outside this repository, with the averages, the last two swings of each kind and the band each stop comes from stated beside the answer so a disagreement is traceable to an input",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Tranche eligibility")] = new Scoped(
+            Verdict.Pass,
+            "a support band whose low edge is below the close carries a tranche and keeps its full width where it straddles, and a band anchored on an average alone carries none and is still the stop of the tranche above it, asserted over the fixture and over a constructed band",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "No band is eligible to carry a tranche")] = new Scoped(
+            Verdict.Pass,
+            "a name whose only support band below the price is anchored on an average produces no tranche and a plan saying so, told apart from a name with no support band below the price at all",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A name whose trend state cannot be classified")] = new Scoped(
             Verdict.Pass,

@@ -25,6 +25,19 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html - the ladder builder reads the bar store
+Corrects: the catalogue gave the ladder builder levels, indicators and the calendar, and it reads
+the bar store too: the close it places tranches against and the sessions the tranche conditions
+are read over are both bars. Found at 4.4 by declaring what the component touches and watching
+`component-access` refuse the row.
+Was:
+> the catalogue row read `levels, indicators, calendar`, and the matrix row's Bars cell was blank
+Now:
+> `levels, indicators, calendar, bar store`, and the Bars cell carries R
+Why: the same shape as contradiction K, in a row nothing could reach until the component existed.
+A blank cell is a claim as much as a filled one, and this one was wrong in the direction that
+reads as a component touching less than it does.
+
 ### 2026-09-09 - SCHEMA.md - the calendar's status column was a field the provider does not file
 Corrects: 4.0 gave the `calendar` table a `status` column carrying `confirmed` or `estimated`, on
 the reasoning that a booked print and an unconfirmed one are different things. They are, and the
