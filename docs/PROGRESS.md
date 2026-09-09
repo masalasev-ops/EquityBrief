@@ -4648,3 +4648,67 @@ Notes:      Windows for this run. The matrix carries macOS and the Linux case-se
             Four live requests were made against the operator's key for the capture and the
             measurement: one probe over a month, one over the fixture names, one capture over the
             window, and two account reads that cost nothing.
+
+### 4.4 - tranches, stops and the invalidation                          2026-09-09
+Built:      the tranche arithmetic in `LadderSeries`, read by the ladder builder. Tranches on
+            support bands whose low edge is below the close, nearest first, at most three,
+            skipping any band with no anchor other than a moving average. Each stop a daily close
+            below the low edge of the next support band beneath it. The invalidation the lowest of
+            those stops, or a tranche's own low edge where no band sits beneath it.
+Derived:    every figure from the rules, outside this repository and outside the shipped code,
+            over the committed bars and the levels expectation, before the builder was run against
+            them. AAPL and KEYS take two tranches, MSFT and NFLX three. The expectation states the
+            band each stop comes from, so a disagreement is traceable to a band rather than to the
+            answer.
+Found:      the eligibility rule and the stop rule do different things with the same band, and
+            AAPL is where it shows. Its 283.439 band is its 200-day average, so it carries no
+            tranche, and it is the first tranche's stop: a band that cannot be bought is still a
+            level the price has to break. A rule that only skipped such a band would move every
+            stop below it down to the next tradeable one, which the mutation below confirms.
+Conditions: the four patterns tested in the stated order so exactly one applies, which is the
+            prefix shape the verification rules name as having arrived four times. The order is
+            asserted where two conditions can both hold rather than left to whichever branch is
+            written first: with the close inside the band and a session that closed below it, both
+            available now and a failed breakdown are true, and the first wins.
+            `ReachesTheZone` is the absence of any of the four rather than a fifth pattern. A
+            tranche where nothing has happened at its band is not actionable yet, and saying so is
+            stating the absence rather than inventing a pattern that did not occur.
+Carried:    the trend-dependent stop, to 4.5. Section 10 says the stop trails the last higher low
+            in an uptrend and sits at the next band down in a range, and 4.4 places every stop at
+            the next band down. Three of the four fixture names are in an uptrend, and the literal
+            trailing rule puts their stop inside the band the first tranche sits on: AAPL's last
+            higher low is 300.5700 and its first tranche runs 299.7415 to 320.28. A stop inside
+            the band being bought is not a stop, so this is a checkpoint's work rather than a line,
+            and it lands with the trailing machinery at 4.5 (owes: The trend-dependent stop, which
+            trails in an uptrend rather than sitting at the next band).
+Discharged: the level boundaries and the swing boundaries the committed fixture cannot reach, both
+            over constructed input: the merge distance boundary, the role boundary at the close
+            and the retracement zero span with the tranche rules that read them, and the plateau
+            rule and the outside day that is a peak and a trough at once.
+Also found: the ladder builder reads the bar store and the catalogue said levels, indicators and
+            the calendar. The close it places tranches against and the sessions the conditions are
+            read over are both bars. Contradiction K's shape in a row nothing could reach until
+            the component existed, and it was found by declaring what the component touches and
+            watching `component-access` refuse the row.
+Rewritten:  4.1's test that every plan is empty, rather than deleted. It now asserts the pairing:
+            a plan with no tranche has a reason, one with tranches has an invalidation and a
+            condition on every tranche, and the count of plans that placed something is stated so
+            a builder that placed nothing fails. Left as it was it would have gone green on
+            exactly that.
+Mutated:    the stop taken from the next band that carries a tranche rather than from the next
+            band, in an isolated worktree at aa249de, reverted, the worktree removed. The rule for
+            choosing was stated first: mutate the assertion carrying the property this checkpoint
+            exists to add, which is where a stop sits. It turned the fixture diff and the
+            constructed band test red and nothing else.
+Found also: two stale due points, by done condition 8's mechanism again. Writing this entry made
+            4.4 a checkpoint the record shows as landed, and the plan column mark and the gap
+            row's plan section were still pointed at it from before the replan. Both moved to 4.6,
+            which is where the plan column and its tables are built. That is the second checkpoint
+            in a row the ordering has caught, and the pattern is the replan rather than
+            carelessness: every due point written as 4.x before phase 4 became ten checkpoints is
+            a candidate, and each surfaces on the checkpoint whose number it names.
+Measured:   203 claims, 87 PASS from 85, 0 fail, 0 unexamined, 116 out of scope. The two are the
+            tranche eligibility limit and the no-eligible-band failure row.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      402, from 397. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.

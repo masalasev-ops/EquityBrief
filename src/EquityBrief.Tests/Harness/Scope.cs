@@ -549,7 +549,7 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Volume profile")] = "3.3",
         // 4.4 is "The plan column mark and the tables", so this mark is owed a
         // phase later than the section it sits in.
-        [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] = "4.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] = "4.6",
         [CheckReach.Key("15.5 The mark vocabulary", "Momentum panel")] = "3.5",
         // Drawn from levels, which arrive at 3.4, and used by the universe
         // and tonight screens. 5.1 is where the first of those exists, and a
@@ -742,7 +742,7 @@ internal static class Scope
         // The chart half is reached at 1.5 by gap-refusal, so only the other
         // element is owed. The level sections arrive at 3.5 and the plan
         // section's tables at 4.4, which is the last surface the cell names.
-        ["A gap in one name's series, level and plan sections"] = "4.4",
+        ["A gap in one name's series, level and plan sections"] = "4.6",
         ["A split or dividend not caught"] = "1.6",
         ["Cloud model unavailable"] = "6.5",
         ["A source is returned but its text cannot be retrieved"] = "6.2",
