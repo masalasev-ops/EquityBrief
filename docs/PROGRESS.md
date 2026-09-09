@@ -3045,3 +3045,173 @@ Why here:   `two-platform` is the check that made this visible, and it is the re
             exists. Both runners ran the same suite and disagreed, which is exactly the class of
             fault a single-machine green cannot see.
 Tests:      312, unchanged.
+
+### Phase 2 sign-off                                                         2026-09-09
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. Every phase 2
+            checkpoint was committed by other sessions, and the 2.7 entry says in its own last
+            line that it does not sign the phase off.
+Verified:   by re-running rather than by reading the 2.7 entry. `tools/ci.ps1` green end to end,
+            all 6 steps, 0 warnings, 312 tests passing inside it, exit 0. `tools/verify-phase.ps1`
+            green at 185 claims, 42 PASS, 0 FAIL, 143 out of scope, 0 unexamined, 25 tables, 48
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT with 1
+            captured over 5 constituents and 3 names, 32 checks on the roster and 28 carried, 28
+            ran and passed and none did not run. Windows PowerShell on this machine, at commit
+            71328b5. Both surfaces of the report read the same, and the HTML carries the same
+            verdict block as the JSON.
+Counts:     by verdict, over the 185 claims in `artifacts/phase-report.json` at 71328b5: 42 PASS,
+            0 FAIL, 143 OUT OF SCOPE, 0 unexamined. The five passes phase 2 added, by the
+            instrument that reaches them: `nightly-run` 4, `nightly-cost` 1.
+
+Key:        the membership uniqueness, exercised rather than read. The index is
+            `UNIQUE (index_code, ticker, IFNULL(joined, ''))`, and the fold is what makes it the
+            non-naive form. Three duplicate inserts were tried against a store migrated to
+            version 6 by the shipped runner, plus a control and an edge case, all five by hand
+            from outside the repository so nothing was added to the tree.
+            All three refused, each on `membership_span` with SQLite 19/2067. A second span for a
+            null-join constituent, WAB, refused. A second span for a dated constituent, AAPL at
+            1982-11-30, refused. And the case a naive expression index lets through, two rows for
+            one ticker both carrying a null join and differing only in `left`, refused: the fold
+            makes both keys the same triple and the second collides.
+            The control ran because a refusal that refuses everything proves nothing. Three
+            distinct spans for one ticker, one null-join and two dated, were all accepted. So the
+            index enforces what the primary key enforced, over a domain the key could not hold.
+            One edge, stated because it is the sentinel's own risk: a literal empty string in
+            `joined` collides with the unknown, and it was confirmed to. It is unreachable through
+            the writing path rather than guarded. `RecordedIndexMembershipFeed.Date` yields a
+            nullable date, so a present StartDate either parses as yyyy-MM-dd or throws, and the
+            sole declared writer cannot produce an empty string. The exposure is a future writer,
+            not this one.
+Not tested: nothing in the suite asserts any of the four. `schema-columns` reads tables and
+            columns and does not read indexes, and no test names `membership_span`. A key changed
+            under time pressure is now examined once by hand, which `CLAUDE.md` says is exactly
+            what a permanent test replaces. Carried to 3.1.
+
+Out of scope: 143 at phase 1 sign-off and 143 now, and neither of the two readings offered is
+            what the numbers say. Measured by multiset difference on table and subject between
+            the report at f48d9d6 and the report at 71328b5, so a retirement could not cancel an
+            addition inside a net figure. The f48d9d6 report was regenerated in an isolated
+            worktree and reproduces the phase 1 sign-off figures exactly.
+            Retired by phase 2's build: 0. Added by wider reading: 0. The whole of the movement is
+            one row splitting in two. **Bulk price feed unavailable** left the set and **Bulk
+            price feed unavailable, banner** entered it, which is the same row's other half, and
+            its run log half passes at 2.3. One out, one in, the same subject.
+            The six other claims are all new and none touched the out-of-scope set: two section 17
+            rows, two section 18 rows and the decomposition's run log half all pass in the phase
+            that created them, and the banner half is the single addition above. Without the
+            section 18 rows this phase created, out of scope would stand at 143 as well: the
+            undecomposed row would still be there, out of scope, and the banner half would not
+            exist. The figure is unchanged under either accounting.
+            So the reading is neither. It is not treading water, because nothing was retired and
+            nothing was added by reading. It is that phase 2's deliverable has almost no
+            intersection with the out-of-scope set. The 143 are claims about levels, the plan,
+            tonight's list, research and the loop, and the feeds are the layer underneath all of
+            them, described by the section 17 and section 18 rows this phase wrote and passed.
+            Phase 1 was not like this: it moved 154 to 143, retiring 27 and adding 16.
+About the instrument: the fact worth stating at sign-off rather than at phase 6 is a different one
+            from the one suspected. The report does not get closer to green by building
+            infrastructure, because the out-of-scope count measures how much of the architecture
+            is unasserted and the architecture does not describe infrastructure claim by claim.
+            143 of 185 is 77 per cent of the document unchecked after two phases of building, and
+            a phase can be built end to end, run live, and move that figure by nothing. Green at
+            phase 2 is a statement about 42 claims and about no others.
+
+Deferrals:  the truncation rule generalised. The corpus was swept for deferrals that wait on
+            evidence, as distinct from deferrals that wait on a ruling or on code: the holes
+            table, the contradictions table, the carried obligations, and every deferral in
+            `ARCHITECTURE.html` and `DECISIONS.md`. 12 found, 1 of them the truncation rule
+            already corrected at 2.4. The count expected before looking was 8 to 12 with 2 or 3
+            of the shape, and the total was right while the proportion was badly wrong: 9 of the
+            11 open ones name a point that does not produce the evidence.
+            2 arrive when they say. The volume shelf threshold at 3.6, where the fixture widens to
+            four names and the widening is what produces the evidence. The research lane boundary
+            at phase 6, which needs a recorded research pass that phase 6 builds.
+            5 have their evidence already, earlier than the phase named. The news window at 5.5,
+            whose evidence is article counts per name and arrived at 2.5, where one live request
+            returned 1,000 articles over 3,232 symbols and reached the provider's cap. The bulk
+            fundamentals probe at 6.1, which is one live call on a key the credential path has
+            held since 2.1. The source lists review at 6.0, whose measured coverage was taken at
+            1.7. The refetch atomicity test and the fixture expectation sweep, both at 3.1,
+            deferred to group them with the next expectations rather than for want of evidence.
+            4 name a point that produces no evidence at all, which is the sharper half. The six
+            reason thresholds are settled at 5.0 and revisited from 5.6's data, and 5.6 is the run
+            page: it displays a record that weeks of nights accumulate, and no checkpoint
+            accumulates weeks. **Condition thresholds are calibrated from your own nights, not
+            from a backfill** says the same thing and names the same absent producer. The three
+            reason records needing resolved setups sit in phase 7 against months of accumulation,
+            which phase 7 arriving does not supply, though phase 5's storage obligation is the
+            mitigation and it is written down. And the provider's posting hour is due at 3.7,
+            which is the phase 3 report: it produces no evenings of observation, and its done
+            condition does not mention the obligation, so the due point is a placeholder.
+            The shape is one shape. A deferral to a phase is a guess about when evidence appears,
+            and it fails in both directions: early, where the evidence is already in hand and the
+            corpus keeps a guess it could have replaced, which is what the truncation rule did;
+            and never, where the named point is a report or a page rather than the thing that
+            measures. What a deferral should name is the producer. Recorded here and repaired
+            nowhere: no hole, obligation or decision is edited by this entry.
+
+Broke:      three passing claims, each reached by a check whose declared reach was written during
+            phase 2 and none of them carrying a permanent negative proof. Every mutation was made
+            in an isolated worktree at 71328b5 and reverted, and the main tree was not modified at
+            any point. Baseline in that worktree was 19 of 19 green across both checks before the
+            first mutation.
+            Two went red. Disabling the wrong-session refusal in `RecordedBulkPriceFeed` fails
+            `nightly-run` at `APayloadForAnotherSessionIsRefusedAndTheStoredBarsAreUnchanged`.
+            Disabling the none-of-index refusal in `BarFetcher` fails `nightly-run` at
+            `APayloadHoldingNoneOfTheIndexIsRefusedBeforeAnythingIsStored`. Both PASS verdicts are
+            load bearing.
+            One stayed green, and it is the third done deliberately against the other check. The
+            **Weighted-call budget** claim is reached by `nightly-cost`, and deleting the stop in
+            `Nightly.cs`, the branch that refuses to make a call once the night's weighted calls
+            have reached the stated daily allowance, leaves `nightly-cost` green at 8 of 8 and the
+            whole suite green at 312 of 312. The claim would still read PASS with the stop gone.
+            What is missing is exactly one of the three things the claim's own note asserts. Every
+            weight and the allowance are read back out of `RUNBOOK.md`, which `LiveFeedTests`
+            holds, and the night reports its weighted total beside its request count, which the
+            run log carries. The third clause, that a night already at the allowance stops before
+            making a call, is asserted by nothing: no test constructs a night at the allowance.
+            The behaviour is in the shipped source and runs; what is absent is the assertion, so
+            this is a verification hole rather than a wrong result, and under the stopping rules
+            it is carried rather than reopening the phase. It is the same class as the two carried
+            out of the phase 1 sign-off, and it sits beside **The spend cap is a stop, not an
+            allowance**, which is a stop of the same kind that phase 6 will owe its own proof of.
+            2 of 3 load bearing, against 1 of 3 at the phase 1 sign-off.
+
+What green does not mean, this time: a night has now run against the provider over the whole
+            index, so the two earlier paragraphs cannot be repeated. What ran is this. Two nights
+            end to end against the live provider, at 2.4 and 2.6, both for the 2026-09-08 session,
+            both on 2026-09-09, both on Windows, both started by hand and watched. The larger of
+            the two covered 503 current members: 822 membership rows, 126,235 bars, 501 bars for
+            the session, 182 corporate actions with 7 refetches, 514 network requests against the
+            backfill carve-out and 11 in the steady state, 820 weighted calls of 100,000, and 0
+            model calls. Four of section 14's nine steps exist and ran; five do not exist. What
+            that establishes is that the credential path, five feeds, the retry, the deadline, the
+            refusals and the store hold against real payloads at index scale, which is more than
+            any fixture could have said, and it is how three defects were found that a fixture of
+            five names had agreed with. What it does not establish is anything about a night
+            nobody is watching. No night has ever run for two different sessions, none has run on
+            two consecutive days, none has run unattended, none has run on a schedule, and none
+            has run on macOS, where only the suite has been. The one night that asked for a session
+            the exchange had not traded was refused, which is the guard working and is also the
+            only unhappy live path anyone has seen. Nothing downstream of the feeds exists to be
+            wrong yet: no levels, no listings, no plan, no research, and a news feed that is built,
+            asserted and called by nothing. And 143 of the 185 claims are out of scope, which is to
+            say unchecked, and this report says nothing about them.
+
+Carried:    two obligations created here, both due at 3.1, which is the next checkpoint that
+            writes code and the point the phase 1 sign-off's own two carries fall due.
+            The membership uniqueness asserted by a permanent test rather than by this entry:
+            the three duplicates above and the control, run against a migrated store, so the index
+            is proved to enforce what the key enforced and the proof survives the session that
+            made it.
+            The weighted-call stop asserted where `nightly-cost` reaches it: a night constructed
+            at the allowance, confirmed to make no call and to say so, so that deleting the branch
+            turns the check red.
+Noted:      the carried obligations table gives `Absolute path matching anywhere in a value, not
+            position zero` a due point of 1.3 and no discharge marker, while 1.3's own text in
+            `BUILD_PLAN.md` says it was discharged there. Every other discharged row carries the
+            word. It is a record inconsistency rather than an undone obligation, and it is
+            recorded rather than repaired because a sign-off does not edit a spec.
+Tests:      312, unchanged from 2.7. Windows for this run; the matrix carries macOS and the Linux
+            case-sensitivity job, and no live feed runs on either.
+Signed:     phase 2 is signed off at 71328b5. Phase 3's plan is not opened by this session.
