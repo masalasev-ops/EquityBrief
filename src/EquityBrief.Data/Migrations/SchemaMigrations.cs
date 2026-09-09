@@ -200,6 +200,36 @@ public static class SchemaMigrations
     // `has_non_average_anchor` is stored rather than derived because the ladder
     // builder reads it on every band, and a short average follows the price, so
     // a band anchored only on one sits at the price about half the time.
+    // The ladder, one row per ticker per as-of date, for every index member and
+    // not only the names carrying a plan.
+    //
+    // A name in a downtrend, a name whose only support band is anchored on a
+    // moving average, and a name whose trend could not be classified all get a
+    // row whose `plan` states why it is empty. An absent row says nothing, and
+    // the trend-changed condition compares tonight's label against last night's,
+    // so a name with no row on the night its band went ineligible has no
+    // yesterday for the transition that changes the whole plan.
+    //
+    // `trend_state` carries four values and not three. `not_classified` is a
+    // name with fewer than 200 bars or fewer than two swings of the kind the
+    // rule reads, and it is stored rather than defaulted to `range` for the
+    // reason `indicator.bar_count` exists: the label decides whether a plan
+    // exists at all.
+    //
+    // `plan` is TEXT holding JSON, and it is a column rather than a set of
+    // tables for the reason `level.members` is one: a tranche has no identity of
+    // its own and nothing queries for one. What queries this table asks for a
+    // name's plan on a date, which is the row.
+    const string CreateLadder = @"
+        CREATE TABLE ladder (
+            ticker       TEXT NOT NULL,
+            as_of        TEXT NOT NULL,
+            trend_state  TEXT NOT NULL,
+            plan         TEXT NOT NULL,
+            PRIMARY KEY (ticker, as_of)
+        ) STRICT;
+    ";
+
     const string CreateLevel = @"
         CREATE TABLE level (
             ticker                  TEXT NOT NULL,
@@ -227,6 +257,7 @@ public static class SchemaMigrations
         new Migration(8, "create swing", CreateSwing),
         new Migration(9, "create volume_profile", CreateVolumeProfile),
         new Migration(10, "create level", CreateLevel),
+        new Migration(11, "create ladder", CreateLadder),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

@@ -4466,3 +4466,75 @@ Measured:   204 claims from 186, 67 PASS from 64, 137 out of scope from 122, 0 f
             that writes rows and the checkpoints after it assert them.
 Tests:      387, from 380. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+
+### 4.1 - the nightly chain, the trend state and the ladder row          2026-09-09
+Built:      the trend classifier, the ladder builder, migration 11 creating `ladder`, and the
+            three phase 3 components wired into the night. The name page composing the chart
+            region section 15.9 names.
+Repaired:   what 4.0 found. The swing finder, the volume profile builder and the level builder
+            had shipped in phase 3 and no night ran one: their only callers were in the suite, so
+            a store this code wrote held no swing, no profile and no band while every phase 3
+            assertion held over stores the tests built themselves. All three are now steps in the
+            order section 14 states, and a test drives the night's own entry point and reads the
+            tables back rather than assembling them.
+            The same for the page. Every mark the chart region names has existed since 3.5 and
+            the app served none of them: the route drew candles and averages. The region is one
+            request rather than four because the profile is drawn against the chart's own price
+            axis, and the composition lives in `EquityBrief.Web` rather than in the route so the
+            suite asserts the shipped path rather than a copy of it.
+Decided:    nothing new. Two things 4.0 got wrong about a component that writes nothing, both
+            found by building it. The trend state and the ladder were two steps in section 14 and
+            are one, because a classifier that writes nothing cannot be a stage of its own: it
+            would either compute the label twice or carry it between steps in nothing. And the
+            read and write matrix gave the classifier a run log write while its catalogue row
+            says it writes nothing, which is contradiction K's shape in a row nothing could reach
+            until the class existed. The cell is blank now, and the classifier is the one
+            component in the catalogue that writes nothing at all.
+Derived:    the trend states from the rule, outside this repository and outside the shipped code,
+            over the committed bars and before the code was run against them. AAPL, KEYS and MSFT
+            uptrend; NFLX range. The expectation states the averages and the last two swings of
+            each kind beside each answer, so a disagreement is traceable to an input rather than
+            to the verdict.
+            NFLX is the case the rule is shaped for. Its close is above the 50-day average and
+            the 50 is below the 200, so neither branch holds. Reading the close against one
+            average alone would call it an uptrend and reading the swings alone would call it a
+            downtrend, since its last swing low is below the one before it.
+            KEYS is the nearest of the four to changing its answer, its close about a point above
+            its 50-day average.
+Mutated:    two, both in an isolated worktree at 8bd9cb3, reverted, and the worktree removed.
+            The rule for choosing was stated first: mutate the assertion carrying the property
+            this checkpoint exists to add, which is that the night runs the chain and writes a row
+            for every member.
+            Removing the swings step from the night turned the new night test red and nothing
+            else, which is the fault 4.0 found made assertable.
+            Narrowing the ladder's population from the index's members to the members with stored
+            bars left the whole suite green. That is the finding below.
+Found:      the every-name rule was asserted against a fixture that cannot tell it from a
+            narrower one. Every current member of this fixture holds a year, so a row for every
+            member and a row for every member with bars are the same four rows, and the rule the
+            ladder row exists for had no test that could fail on it. The same shape as the band
+            anchored on an average alone with no touch: not a gap in the fixture, a population
+            unrepresentative in the one way that matters, which is worse because it looks like
+            coverage.
+            Repaired in this checkpoint rather than carried. A current member with no stored bars
+            is a name that joined the index tonight before the backfill has run for it, which is
+            the case the backfill exists for. It gets a row, its state is not classified, and its
+            plan says no stored bars. With the test in place the same mutation turns it red at 5
+            rows against 4.
+Measured:   203 claims, from 204. The total falls by one because merging the two steps into one
+            removed a claim, which is checked against 4.0's prediction at 4.9 rather than
+            quietly absorbed. 79 PASS from 67, being the five nightly steps, the trend
+            classifier's and the ladder builder's catalogue and matrix rows, the `ladder` fixture
+            row, the not-classified failure row and the name screen's chart region. 124 out of
+            scope from 137. 0 fail and 0 unexamined.
+Owed:       the swing boundaries the committed fixture cannot reach are due here and are not
+            discharged. The plateau rule and the outside day that is a peak and a trough at once
+            are both unreachable from four names of committed bars, and the trend classifier
+            reads swings without reaching either. Carried to 4.4, where the tranche rules read
+            band edges and the other constructed-input tests over the level arithmetic are
+            written, so the two sets land together rather than one checkpoint writing one of
+            them.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      393, from 390. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+            This session has committed code and may not sign the phase off.

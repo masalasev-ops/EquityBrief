@@ -1,4 +1,7 @@
+using System.Globalization;
+using System.Text;
 using EquityBrief.Core.Components;
+using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
 
@@ -12,8 +15,11 @@ namespace EquityBrief.Web.App;
 // see: Marks are defined once and every screen draws from that list
 // see: A screen reads and renders, and computes nothing
 //
-// At 1.3 it answers one route, a name's chart. The other four screens arrive
-// with the data behind them, and this file is where they are added.
+// At 1.3 it answered one route drawing a name's candles. At 4.1 that route asks
+// for the name screen's chart region, which the server composes from the marks
+// section 15.9 lists, because the profile is drawn against the chart's own price
+// axis and a second request would be a second axis. The other four screens
+// arrive with the data behind them, and this file is where they are added.
 public sealed class SinglePageApp : IComponent
 {
     // It reads the read API and touches no store, which is its catalogue row
@@ -54,7 +60,7 @@ public sealed class SinglePageApp : IComponent
           const screen = document.getElementById('screen');
           if (!hash.startsWith('{{NameRoute}}')) { screen.innerHTML = ''; return; }
           const ticker = encodeURIComponent(hash.slice('{{NameRoute}}'.length));
-          const response = await fetch('/marks/level-chart/' + ticker);
+          const response = await fetch('/screens/name/' + ticker);
           screen.innerHTML = await response.text();
         }
         addEventListener('hashchange', show);
@@ -64,6 +70,62 @@ public sealed class SinglePageApp : IComponent
         </html>
         """;
 
+    // The name screen's chart region, composed from stored values.
+    //
+    // Section 15.9 puts the level chart, the volume profile on the same price
+    // axis, the momentum panel and the level summary table in one region, and
+    // every one of those marks has existed since 3.5 while the app served none
+    // of them: the route drew candles and averages, and the rest were asserted
+    // against stores the suite built and drawn on no page.
+    //
+    // It is one region rather than four requests because the profile is drawn
+    // against the chart's own price axis, and a second request would be a second
+    // axis. It computes nothing: every value here arrives already stored, and
+    // the only arithmetic is the axis the mark renderer itself derives.
+    // see: A screen reads and renders, and computes nothing
+    // see: Marks are defined once and every screen draws from that list
+    public string NameRegion(
+        MarkRenderer marks,
+        string ticker,
+        IReadOnlyList<ChartBar> bars,
+        IReadOnlyList<ChartAverage> averages,
+        IReadOnlyList<ChartBand> bands,
+        IReadOnlyList<ProfileBand> profile,
+        IReadOnlyList<MomentumReading> readings,
+        IReadOnlyList<SummaryBand> summary,
+        IReadOnlyList<AbsentAverage> absent,
+        string? trendState,
+        DateOnly? trendAsOf)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant($"<section class=\"name\" data-ticker=\"{Escaped(ticker)}\">"));
+
+        // The trend state, in a word. Read off the ladder row rather than worked
+        // out here, and a name with no row says so rather than showing nothing:
+        // an absence stated and an absence drawn as emptiness are different
+        // things, and only the first is readable.
+        region.Append(trendState is null
+            ? "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>"
+            : Invariant($"<p class=\"trend-state\" data-trend-state=\"{Escaped(trendState)}\" data-as-of=\"{trendAsOf:yyyy-MM-dd}\">{Escaped(trendState.Replace('_', ' '))}</p>"));
+
+        region.Append(marks.LevelChart(ticker, bars, averages, bands));
+
+        if (bars.Count > 0 && profile.Count > 0)
+        {
+            region.Append(marks.VolumeProfile(ticker, profile, marks.AxisFor(bars, averages)));
+        }
+
+        region.Append(marks.MomentumPanel(ticker, readings));
+        region.Append(marks.LevelSummary(ticker, summary, absent));
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    static string Invariant(FormattableString text) =>
+        text.ToString(CultureInfo.InvariantCulture);
+
     static string Escaped(string text) =>
-        text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+        text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
 }

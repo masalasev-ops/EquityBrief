@@ -48,6 +48,10 @@ public class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Volume profile builder"),
             CheckReach.Key(Scope.CatalogueTable, "Level builder"),
             CheckReach.Key(Scope.MatrixTable, "Level builder"),
+            CheckReach.Key(Scope.CatalogueTable, "Trend classifier"),
+            CheckReach.Key(Scope.MatrixTable, "Trend classifier"),
+            CheckReach.Key(Scope.CatalogueTable, "Ladder builder"),
+            CheckReach.Key(Scope.MatrixTable, "Ladder builder"),
         ]);
 
     static IReadOnlyList<ArchitectureTable> Tables() =>

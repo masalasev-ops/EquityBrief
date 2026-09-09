@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -9,6 +10,8 @@ using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
+using EquityBrief.Worker;
+using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Levels;
@@ -40,6 +43,7 @@ public class ReadSurface
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands"),
             CheckReach.Key("15.5 The mark vocabulary", "Momentum panel"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, nn bars"),
+            CheckReach.Key("15.9 Name", "The chart"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -414,7 +418,11 @@ public class ReadSurface
         var shell = new SinglePageApp().Shell("EquityBrief");
 
         Assert.Contains(SinglePageApp.NameRoute, shell, StringComparison.Ordinal);
-        Assert.Contains("/marks/level-chart/", shell, StringComparison.Ordinal);
+
+        // The region rather than one mark. 4.1 composes the name screen's chart
+        // region on the server, because the profile is drawn against the chart's
+        // own price axis and a second request would be a second axis.
+        Assert.Contains("/screens/name/", shell, StringComparison.Ordinal);
         Assert.DoesNotContain("<svg", shell, StringComparison.Ordinal);
         Assert.DoesNotContain("<rect", shell, StringComparison.Ordinal);
     }
@@ -632,6 +640,16 @@ public class ReadSurface
 
     // ---- 3.5, the momentum panel and the level summary table ----
 
+    static async Task<TemporaryStore> WithLadders()
+    {
+        var store = await WithBands();
+
+        await new LadderBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, "run-ladders");
+
+        return store;
+    }
+
     static async Task<TemporaryStore> WithBands()
     {
         var store = await WithIndicators();
@@ -642,6 +660,135 @@ public class ReadSurface
         await new LevelBuilder(clock, store.DatabaseFile).RunAsync("run-levels");
 
         return store;
+    }
+
+    [Fact]
+    public async Task TheNameRegionDrawsEveryMarkSectionFifteenPutsInItAndTheTrendState()
+    {
+        // 4.1's visible output, and the repair for what 4.0 found: every mark
+        // this region names has existed since 3.5 and the app served none of
+        // them. The region is composed by the shipped composer rather than by
+        // this test, because a test that assembled it would prove only that it
+        // agrees with itself.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+
+        var region = NameScreen.Region(
+            new SinglePageApp(),
+            new MarkRenderer(),
+            Name,
+            await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue),
+            await api.IndicatorsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue),
+            await api.LevelsAsync(Name),
+            await api.ProfileAsync(Name),
+            await api.LadderAsync(Name));
+
+        // The four marks section 15.9 lists for this region, each named and each
+        // asserted, rather than a count of svg elements which two of one kind
+        // would satisfy.
+        Assert.Contains("class=\"level-chart\"", region, StringComparison.Ordinal);
+        Assert.Contains("class=\"volume-profile\"", region, StringComparison.Ordinal);
+        Assert.Contains("class=\"momentum-panel\"", region, StringComparison.Ordinal);
+        Assert.Contains("class=\"level-summary\"", region, StringComparison.Ordinal);
+
+        // The bands are drawn, which is what the chart route did not do. Counted
+        // against the store rather than asserted to be present, because one band
+        // drawn out of five is a chart that looks right.
+        var levels = await api.LevelsAsync(Name);
+
+        Assert.Equal(
+            levels.Count,
+            Regex.Matches(region, "class=\"level-band\"").Count);
+
+        // And the profile is drawn against the chart's own price axis rather
+        // than one of its own, which is what composing the region in one place
+        // buys. The two marks carry the axis they used, so the assertion is
+        // against the values rather than against the arrangement.
+        var chartAxis = Regex.Match(region, "class=\"level-chart\"[^>]*data-axis-low=\"([^\"]+)\" data-axis-high=\"([^\"]+)\"");
+        var profileAxis = Regex.Match(region, "class=\"volume-profile\"[^>]*data-axis-low=\"([^\"]+)\" data-axis-high=\"([^\"]+)\"");
+
+        Assert.True(chartAxis.Success, "the level chart does not carry the axis it drew against.");
+        Assert.True(profileAxis.Success, "the volume profile does not carry the axis it drew against.");
+        Assert.Equal(chartAxis.Groups[1].Value, profileAxis.Groups[1].Value);
+        Assert.Equal(chartAxis.Groups[2].Value, profileAxis.Groups[2].Value);
+
+        // The trend state, in a word, read off the ladder row the night wrote
+        // and matched against the store rather than against a literal.
+        var ladder = await api.LadderAsync(Name);
+
+        Assert.NotNull(ladder);
+        Assert.Contains($"data-trend-state=\"{ladder!.TrendState}\"", region, StringComparison.Ordinal);
+        Assert.Contains($"data-as-of=\"{ladder.AsOf:yyyy-MM-dd}\"", region, StringComparison.Ordinal);
+
+        // A name with no ladder row says so rather than drawing nothing, which
+        // is the same rule the absent average follows.
+        var missing = NameScreen.Region(
+            new SinglePageApp(),
+            new MarkRenderer(),
+            "NOSUCH",
+            await api.BarsAsync("NOSUCH", DateOnly.MinValue, DateOnly.MaxValue),
+            await api.IndicatorsAsync("NOSUCH", DateOnly.MinValue, DateOnly.MaxValue),
+            await api.LevelsAsync("NOSUCH"),
+            await api.ProfileAsync("NOSUCH"),
+            await api.LadderAsync("NOSUCH"));
+
+        Assert.Contains("data-trend-state=\"none\"", missing, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheNightWritesTheTablesTheNameRegionDrawsFrom()
+    {
+        // The other half of 4.1, and the half 4.0 found missing. The three
+        // components were called only from the suite, so every phase 3
+        // assertion held over stores the tests built and a store the shipped
+        // night wrote held no swing, no profile and no band.
+        //
+        // This runs the night's own entry point over the fixture and reads the
+        // tables back, so what is asserted is what an evening produces rather
+        // than what a test can assemble.
+        using var store = new TemporaryStore().Migrated();
+
+        var output = new StringWriter();
+        var error = new StringWriter();
+
+        var code = await Nightly.RunAsync(
+            new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
+            FixtureFolder(),
+            Index,
+
+            // The session the captured bulk file carries, not the fixture's
+            // as-of date. A night told a different session refuses the payload,
+            // which is 2.3's wrong-session row doing its job.
+            FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            output,
+            error,
+            "run-name-region");
+
+        Assert.True(code == 0, $"the night exited {code}. {error} {output}");
+
+        foreach (var table in new[] { "swing", "volume_profile", "level", "ladder" })
+        {
+            Assert.True(
+                Count(store, table) > 0,
+                $"a night wrote no rows to {table}, so the page draws it from nothing.");
+        }
+
+        // The ladder row count is the index size, which is this fixture's
+        // current members, and it is read from the expectation rather than
+        // written here.
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, Count(store, "ladder"));
+    }
+
+    static long Count(TemporaryStore store, string table)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT COUNT(*) FROM {table};";
+
+        return Convert.ToInt64(command.ExecuteScalar());
     }
 
     [Fact]

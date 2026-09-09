@@ -202,6 +202,66 @@ internal static class Scope
             Verdict.Pass,
             "every name the corporate action check reached carries a state, and a name whose own check failed is suspect with its reason rather than absent",
             ByExpectations),
+        // ---- 4.1, the nightly chain, the trend state and the ladder row ----
+
+        // The five stages the night now runs in section 14's own order. Four of
+        // them existed and no night ran one: the swing finder, the volume
+        // profile builder and the level builder were called only from the
+        // suite, which is what one step over nine computations hid.
+        [CheckReach.Key(NightlyRunSteps.Heading, "Compute the indicators for every name.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it in the order section 14 states and the store holds the rows afterwards",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Mark the swings for every name.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it after the indicators and the store holds the rows afterwards, where before 4.1 no night ran it at all",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Build the volume profile for every name.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it after the swings and the store holds the rows afterwards, where before 4.1 no night ran it at all",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Build the levels for every name.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it after the profile, which is the order the levels depend on, and the store holds the bands afterwards",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Classify the trend state and build the ladder for every name, writing a row whether or not it carries a tranche (see: A ladder row is written for every index member every night) (see: The trend classifier returns its label to the ladder builder).")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it last of the five and writes one row per index member, counted against the membership expectation rather than against the names carrying a plan",
+            ByNight),
+
+        [CheckReach.Key(CatalogueTable, "Trend classifier")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the indicators and swings it reads and declares no write, which is what its row says in words, and the declaration matches its matrix row cell by cell",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Trend classifier")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, including the run log cell this checkpoint blanked: the row gave it a write and its catalogue row says it writes nothing",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Ladder builder")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the levels, indicators and calendar it reads and the ladder it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Ladder builder")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, against the row contradiction E repaired at 4.0",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Calendar")] = new Scoped(
+            Verdict.OutOfScope,
+            "nothing asserts this until 4.3",
+            string.Empty),
+        [CheckReach.Key(FixtureTable, "ladder")] = new Scoped(
+            Verdict.Pass,
+            "the trend state of all four names is diffed against a set derived from the rule outside this repository, with the averages and the last two swings of each kind stated beside the answer so a disagreement is traceable to an input",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A name whose trend state cannot be classified")] = new Scoped(
+            Verdict.Pass,
+            "each missing input is induced over constructed input and produces the fourth state naming what was absent, and the row is still written with its plan carrying the reason",
+            ByExpectations),
+        [CheckReach.Key("15.9 Name", "The chart")] = new Scoped(
+            Verdict.Pass,
+            "the region draws the level chart with its bands, the volume profile against the chart's own price axis, the momentum panel and the level summary table, counted off the rendered markup and matched against the store, from a store a night wrote",
+            ByReadSurface),
+
         [CheckReach.Key(FixtureTable, "indicators")] = new Scoped(
             Verdict.Pass,
             "every name, session and indicator carries a row, the averages match arithmetic done over the committed bars outside this repository, and an indicator without its window is null with the bar count that explains it",
@@ -748,8 +808,7 @@ internal static class Scope
         ["Mark the swings"] = "4.1",
         ["Build the volume profile"] = "4.1",
         ["Build the levels"] = "4.1",
-        ["Classify the trend state"] = "4.1",
-        ["Build the ladder"] = "4.1",
+        ["Classify the trend state and build the ladder"] = "4.1",
         ["Annotate the largest moves"] = "5.2",
         ["Evaluate the list reasons"] = "5.4",
         ["Write the facts file"] = "5.3",

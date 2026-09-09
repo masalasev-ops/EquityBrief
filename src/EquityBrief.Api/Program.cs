@@ -1,5 +1,8 @@
+using System.Globalization;
+using System.Text.Json;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Configuration;
+using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Time;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -69,6 +72,25 @@ app.MapGet("/marks/level-chart/{ticker}", async (
         .ToArray();
 
     return Results.Content(marks.LevelChart(ticker, drawn, averages), "image/svg+xml; charset=utf-8");
+});
+
+// The name screen's chart region, read here and composed by the app.
+//
+// The composition is in EquityBrief.Web rather than in this route so the suite
+// asserts the shipped path rather than a copy of it. A route that assembled the
+// region itself would be a second composer, and the one thing a test could then
+// prove is that the test agrees with itself.
+app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
+{
+    var bars = await read.BarsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
+    var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
+    var levels = await read.LevelsAsync(ticker);
+    var profile = await read.ProfileAsync(ticker);
+    var ladder = await read.LadderAsync(ticker);
+
+    return Results.Content(
+        NameScreen.Region(page, marks, ticker, bars, indicators, levels, profile, ladder),
+        "text/html; charset=utf-8");
 });
 
 // One run log row for the surface coming up, which is the grain SCHEMA declares
