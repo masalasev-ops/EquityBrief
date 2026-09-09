@@ -50,6 +50,21 @@ public sealed record LevelRow(
     bool HasNonAverageAnchor,
     string Members);
 
+// One band of a name's volume profile, as stored.
+public sealed record ProfileRow(
+    string Ticker,
+    DateOnly AsOf,
+    decimal BandLow,
+    decimal BandHigh,
+    long Shares,
+    double ShareOfPeriod);
+
+// A name's ladder row for one night: the trend state and the plan as stored.
+// The plan is handed over as the stored JSON rather than parsed, because
+// parsing it here would make this surface the second place the plan's shape is
+// stated.
+public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, string Plan);
+
 // The read surface. Serves what the nightly run stored, and nothing else.
 //
 // It computes nothing and fetches nothing, which section 7's row states and
@@ -132,6 +147,25 @@ public sealed class ReadApi : IComponent
         WHERE ticker = $ticker
               AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker)
         ORDER BY low_edge;
+    ";
+
+    // The latest night alone, for the same reason the level query binds as_of to
+    // the maximum: a page holding two nights of profile bands is a page holding
+    // two histograms of different periods.
+    const string ProfileForName = @"
+        SELECT ticker, as_of, band_low, band_high, share_count, share_of_period
+        FROM volume_profile
+        WHERE ticker = $ticker
+              AND as_of = (SELECT MAX(as_of) FROM volume_profile WHERE ticker = $ticker)
+        ORDER BY band_low;
+    ";
+
+    const string LadderForName = @"
+        SELECT ticker, as_of, trend_state, plan
+        FROM ladder
+        WHERE ticker = $ticker
+        ORDER BY as_of DESC
+        LIMIT 1;
     ";
 
     const string IndicatorsForName = @"
@@ -245,6 +279,51 @@ public sealed class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    public async Task<IReadOnlyList<ProfileRow>> ProfileAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ProfileForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var rows = new List<ProfileRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new ProfileRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(2)),
+                Money.FromStorage(reader.GetString(3)),
+                reader.GetInt64(4),
+                reader.GetDouble(5)));
+        }
+
+        return rows;
+    }
+
+    public async Task<LadderRow?> LadderAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LadderForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync()
+            ? new LadderRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetString(3))
+            : null;
     }
 
     // The operational record of the read surface coming up, which section

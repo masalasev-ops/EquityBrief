@@ -1,0 +1,73 @@
+{
+  "stage": "ladders",
+  "derivedFrom": "the trend rule settled at 4.0, applied to the committed bar files outside this repository and without running the ladder builder. The bars are adjusted first, the factor being the provider's adjusted close over its raw close with the high and low scaled by the same figure, because the swings are read off the scaled series. The averages are the arithmetic mean of the last 50 and the last 200 adjusted closes. The swings are sessions whose high is strictly above all six neighbours or whose low is strictly below all six, which is the lookback in section 17 with its tie rule. Nothing here was read back from a run.",
+  "tables": ["ladder"],
+  "namesComputed": ["AAPL", "KEYS", "MSFT", "NFLX"],
+  "note": "a row is written for every current index member and not only the names carrying a plan, so the row count is the membership expectation's currentMembers and never the count of names with a tranche. The two departed constituents get no row, because they are not members tonight.",
+  "asOf": {
+    "AAPL": "2026-09-04",
+    "KEYS": "2026-09-04",
+    "MSFT": "2026-09-04",
+    "NFLX": "2026-09-04"
+  },
+  "rows": {
+    "format": "trend_state",
+    "byName": {
+      "AAPL": "uptrend",
+      "KEYS": "uptrend",
+      "MSFT": "uptrend",
+      "NFLX": "range"
+    }
+  },
+  "inputs": {
+    "note": "what the rule read, stated so a disagreement can be traced to a figure rather than to the answer. Prices are strings because they are prices; the averages are quoted to the four places the store carries.",
+    "byName": {
+      "AAPL": {
+        "close": "319.9700",
+        "sma50": "314.9878",
+        "sma200": "283.4390",
+        "lastTwoSwingLows": [["2026-07-31", "299.7415"], ["2026-08-12", "300.5700"]],
+        "lastTwoSwingHighs": [["2026-08-06", "316.0175"], ["2026-08-20", "320.2800"]],
+        "why": "close above the 50, the 50 above the 200, and the last swing low above the one before it"
+      },
+      "KEYS": {
+        "close": "327.2100",
+        "sma50": "326.1178",
+        "sma200": "288.5134",
+        "lastTwoSwingLows": [["2026-07-29", "293.5500"], ["2026-08-24", "306.8520"]],
+        "lastTwoSwingHighs": [["2026-08-17", "366.4100"], ["2026-08-27", "327.4950"]],
+        "why": "close above the 50 by about a point, the 50 above the 200, and the last swing low above the one before it. The nearest of the four to changing its answer: a close a dollar lower is a range."
+      },
+      "MSFT": {
+        "close": "499.7000",
+        "sma50": "443.5621",
+        "sma200": "429.3729",
+        "lastTwoSwingLows": [["2026-07-23", "376.6809"], ["2026-08-18", "476.2534"]],
+        "lastTwoSwingHighs": [["2026-08-10", "512.7647"], ["2026-08-28", "517.7800"]],
+        "why": "close above the 50, the 50 above the 200, and the last swing low a hundred points above the one before it"
+      },
+      "NFLX": {
+        "close": "78.2500",
+        "sma50": "75.4402",
+        "sma200": "86.8835",
+        "lastTwoSwingLows": [["2026-06-25", "70.8600"], ["2026-07-17", "65.0800"]],
+        "lastTwoSwingHighs": [["2026-08-19", "81.1600"], ["2026-08-25", "82.4550"]],
+        "why": "the averages disagree with each other. The close is above the 50 and the 50 is below the 200, so neither branch holds and the name is a range. This is the case the rule is shaped for: reading the close against one average alone would call it an uptrend, and reading the swings alone would call it a downtrend, since the last swing low is below the one before it."
+      }
+    }
+  },
+  "counts": {
+    "rows": 4,
+    "uptrend": 3,
+    "downtrend": 0,
+    "range": 1,
+    "notClassified": 0
+  },
+  "properties": {
+    "aRowForEveryMember": "the row count equals the membership expectation's currentMembers, which is 4, and not the count of names carrying a tranche",
+    "theDepartedGetNoRow": "AAL and XRAY are constituents and not members tonight, so neither has a ladder row",
+    "thePlanIsEmptyAndSaysWhy": "at 4.1 every plan carries no tranche, no exit and no invalidation, and states that they are built from 4.4. A plan that is empty and states its reason is a different object from a plan that is absent",
+    "noDownttrendInThisFixture": "none of the four is in a downtrend, so the branch that produces no tranches at all is asserted over constructed input rather than over these bars",
+    "noNotClassifiedInThisFixture": "all four hold a full year, so all four have a 200-day average and two swings of each kind. The fourth state is asserted over constructed input for the same reason"
+  }
+}

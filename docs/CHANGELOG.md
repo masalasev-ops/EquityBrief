@@ -25,6 +25,28 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html - the trend state and the ladder are one stage, and the classifier writes nothing
+Corrects: two things 4.0 got wrong about a component that writes nothing, both found at 4.1 by
+building it. Section 14 carried the trend state and the ladder as two steps, and the classifier
+writes nothing and hands its label to the builder that writes the row it sits on, so a step of its
+own would be a step with no store behind it and the label would be computed twice or carried
+between steps in nothing. And the read and write matrix gave the classifier a run log write while
+its catalogue row says it writes nothing, which is contradiction K's shape in a row nothing could
+reach until the class existed.
+Was:
+> two list items, "Classify the trend state for every name." and "Build the ladder for every name,
+> writing a row whether or not it carries a tranche"; and the Trend classifier's matrix row
+> carried W under Run log
+Now:
+> one item, "Classify the trend state and build the ladder for every name, writing a row whether
+> or not it carries a tranche", citing both decisions; and the matrix row is blank throughout
+> except its computed tables read
+Why: the classifier is the one component in the catalogue that writes nothing at all, because it
+is called inside another component's stage and hands back a value. A run log write is what every
+other component has and this one does not, and a blank cell is a claim as much as a filled one.
+The step count in the note beside the list is gone rather than corrected, because the list states
+it.
+
 ### 2026-09-09 - BUILD_PLAN.md - phase 4 becomes ten checkpoints, and fifteen obligations are entered
 Authorised by: Every computed table's writer is its own deleter
 Was:

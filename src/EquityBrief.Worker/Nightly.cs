@@ -4,15 +4,21 @@ using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Ladders;
+using EquityBrief.Worker.Levels;
+using EquityBrief.Worker.Swings;
+using EquityBrief.Worker.Volume;
 using EquityBrief.Worker.Membership;
 
 namespace EquityBrief.Worker;
 
 // The night, as an ordered list of named steps.
 //
-// It runs only the steps that exist. Section 14's run order has nine and four
-// are built, so the rest are absent rather than stubbed: a step that printed
-// "skipped" would be a step a reader counts as run.
+// It runs only the steps that exist, so the rest are absent rather than stubbed:
+// a step that printed "skipped" would be a step a reader counts as run. Section
+// 14's per-name work was one step in that document and one step here until 4.0,
+// which is how three components shipped in phase 3 and were run by no night at
+// all.
 //
 // Every failure names the step. A night that fails silently in the middle is
 // one the operator finds by noticing the page is stale in the morning, and the
@@ -146,16 +152,20 @@ public static class Nightly
                 return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
                     $"{outcome.Suspect.Count} suspect, {outcome.Requests} request(s)";
             }),
-            // The first of the nine things section 14's fourth item lists. It is
-            // one step here rather than nine because the others do not exist,
-            // and the item's own claim stays out of scope until they do: a step
-            // named "for every name: indicators, swings, volume profile, levels,
-            // trend state, ladder, moves, list reasons, facts file" that did one
-            // of them would be a step a reader counts as run.
+            // Section 14's per-name computations, one step each and in its
+            // order. They were one step in the document until 4.0 and one step
+            // here because the others did not exist. What that hid is that
+            // three of them had existed since phase 3 and no night ran any of
+            // them: the swing finder, the volume profile builder and the level
+            // builder were called only from the suite, so a store this code
+            // wrote held no swing, no profile and no band while every fixture
+            // test passed over stores the tests built themselves.
             //
-            // It is on the night rather than left to a test because phase 3's
-            // visible output is the averages on the chart, and a chart draws
-            // what a night computed. It makes no request and calls no model.
+            // The order is load bearing rather than tidy. Levels read swings and
+            // the profile, and the ladder reads levels, so a step out of place
+            // computes over last night's rows or over none.
+            //
+            // None of them makes a request or calls a model.
             new("indicators", async () =>
             {
                 var outcome = await new IndicatorEngine(clock, store.DatabaseFile)
@@ -163,6 +173,43 @@ public static class Nightly
 
                 return $"{outcome.RowsWritten} rows written for {outcome.NamesComputed} name(s), " +
                     $"{outcome.NotAvailable} not available";
+            }),
+            new("swings", async () =>
+            {
+                var outcome = await new SwingFinder(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return $"{outcome.RowsWritten} rows written for {outcome.NamesExamined} name(s), " +
+                    $"{outcome.Highs} high(s) and {outcome.Lows} low(s)";
+            }),
+            new("volume-profile", async () =>
+            {
+                var outcome = await new VolumeProfileBuilder(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return $"{outcome.RowsWritten} rows written for {outcome.NamesProfiled} name(s), " +
+                    $"{outcome.NamesTooShort} too short for a window";
+            }),
+            new("levels", async () =>
+            {
+                var outcome = await new LevelBuilder(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return $"{outcome.BandsWritten} band(s) written for {outcome.NamesBanded} name(s), " +
+                    $"{outcome.NamesSkipped} skipped";
+            }),
+            // The trend state and the ladder are one stage rather than two.
+            // The classifier writes nothing and hands its label to the builder
+            // that writes the row it sits on, which is what the catalogue says
+            // of it in words.
+            new("ladders", async () =>
+            {
+                var outcome = await new LadderBuilder(clock, store.DatabaseFile)
+                    .RunAsync(indexCode, runId, night.Token);
+
+                return $"{outcome.RowsWritten} row(s) written for {outcome.MembersConsidered} member(s), " +
+                    $"{outcome.Uptrend} uptrend, {outcome.Downtrend} downtrend, {outcome.Range} range, " +
+                    $"{outcome.NotClassified} not classified";
             }),
         ];
 

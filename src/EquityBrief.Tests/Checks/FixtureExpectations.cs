@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Swings;
@@ -11,6 +12,7 @@ using EquityBrief.Data.Swings;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.Swings;
@@ -48,6 +50,8 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "swings"),
             CheckReach.Key(Scope.FixtureTable, "volume profile"),
             CheckReach.Key(Scope.FixtureTable, "levels"),
+            CheckReach.Key(Scope.FixtureTable, "ladder"),
+            CheckReach.Key(Scope.FailureTable, "A name whose trend state cannot be classified"),
             CheckReach.Key(Scope.LimitsTable, "Level window"),
             CheckReach.Key(Scope.LimitsTable, "Band merge distance"),
             CheckReach.Key(Scope.LimitsTable, "Volume shelf threshold"),
@@ -1811,16 +1815,17 @@ public class FixtureExpectations
         // rather than about whether anything reads them.
         Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
 
-        // Four stand unread and each is named rather than counted, because a
+        // Five stand unread and each is named rather than counted, because a
         // number here would drift silently as keys are added. `rowsInFile` is
         // the count of rows in the captured bulk payload, which the fetch
         // expectation states so a reader can see what the membership filter cut
-        // from; `index` is the index code; and the two notes are sentences.
+        // from; `index` is the index code; and the three notes are sentences.
         // None is a figure the pipeline produces, which is why nothing asserts
         // them. The series state file added two keys when it landed and this
-        // assertion caught both on the same run, which is what it is for.
+        // assertion caught both on the same run; the ladder file added its note
+        // at 4.1 and it caught that too, which is what it is for.
         Assert.Equal(
-            ["fetch.rowsInFile", "membership.index", "membership.note", "series-state.note"],
+            ["fetch.rowsInFile", "ladder.note", "membership.index", "membership.note", "series-state.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 
@@ -1887,6 +1892,185 @@ public class FixtureExpectations
         Assert.True(closures.Count >= 9, $"The expectation names {closures.Count} closures, expected at least 9.");
         Assert.DoesNotContain(traded, _ => true);
         Assert.DoesNotContain(missing, _ => true);
+    }
+
+    // ---- 4.1, the trend state and the ladder row ----
+
+    static async Task<TemporaryStore> WithLadders()
+    {
+        var store = await WithLevels();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-ladders");
+
+        return store;
+    }
+
+    [Fact]
+    public async Task TheTrendStateMatchesTheRuleOverTheCommittedBars()
+    {
+        var expected = Expected("ladder");
+        var states = expected.GetProperty("rows").GetProperty("byName");
+        var inputs = expected.GetProperty("inputs").GetProperty("byName");
+
+        using var store = await WithLadders();
+
+        var stored = Query(store, "SELECT ticker, as_of, trend_state FROM ladder ORDER BY ticker;");
+
+        // The population first, and it is the claim this row carries: one row
+        // per current index member, not one per name that carries a plan.
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, stored.Count);
+        Assert.Equal(expected.GetProperty("counts").GetProperty("rows").GetInt32(), stored.Count);
+
+        foreach (var name in FixtureExpectation.CurrentMembers)
+        {
+            var asOf = expected.GetProperty("asOf").GetProperty(name).GetString();
+
+            Assert.Contains($"{name}|{asOf}|{states.GetProperty(name).GetString()}", stored);
+        }
+
+        // The counts by state, so a run that got every label wrong in the same
+        // direction is not a run that matched four strings.
+        var counts = expected.GetProperty("counts");
+
+        foreach (var state in TrendState.All)
+        {
+            var key = state == TrendState.NotClassified
+                ? "notClassified"
+                : state;
+
+            Assert.Equal(
+                counts.GetProperty(key).GetInt32(),
+                stored.Count(row => row.EndsWith("|" + state, StringComparison.Ordinal)));
+        }
+
+        // The departed constituents get no row. They are in the membership
+        // payload and not in the index tonight, and a row for one would be a
+        // plan for a name the tool no longer covers.
+        foreach (var departed in FixtureExpectation.Departed)
+        {
+            Assert.DoesNotContain(stored, row => row.StartsWith(departed + "|", StringComparison.Ordinal));
+        }
+
+        // And the figures the rule read, so a disagreement is traceable to an
+        // input rather than to the answer. The averages are compared as the
+        // store holds them, which is REAL, against the four places the
+        // expectation quotes.
+        foreach (var name in FixtureExpectation.CurrentMembers)
+        {
+            var row = inputs.GetProperty(name);
+            var asOf = expected.GetProperty("asOf").GetProperty(name).GetString();
+
+            var read = Query(
+                store,
+                "SELECT name, value FROM indicator " +
+                $"WHERE ticker = '{name}' AND as_of_placeholder ORDER BY name;"
+                    .Replace("as_of_placeholder", $"session_date = '{asOf}' AND name IN ('sma50', 'sma200')", StringComparison.Ordinal));
+
+            Assert.Equal(2, read.Count);
+
+            foreach (var average in new[] { "sma50", "sma200" })
+            {
+                var stated = decimal.Parse(row.GetProperty(average).GetString()!, CultureInfo.InvariantCulture);
+                var value = decimal.Parse(read.Single(entry => entry.StartsWith(average + "|", StringComparison.Ordinal)).Split('|')[1], CultureInfo.InvariantCulture);
+
+                Assert.Equal(stated, Math.Round(value, 4));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task EveryLadderRowCarriesAPlanThatSaysWhyItIsEmpty()
+    {
+        // An empty plan stating its reason and an absent plan are different
+        // objects, and only the first is readable on a screen. At 4.1 every plan
+        // is empty and says the tranches arrive at 4.4, which is a sentence a
+        // reader can act on rather than a blank a reader has to interpret.
+        using var store = await WithLadders();
+
+        var plans = Query(store, "SELECT ticker, plan FROM ladder ORDER BY ticker;");
+
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, plans.Count);
+
+        foreach (var row in plans)
+        {
+            var plan = JsonDocument.Parse(row.Split('|', 2)[1]).RootElement;
+
+            Assert.Empty(plan.GetProperty("tranches").EnumerateArray());
+            Assert.Empty(plan.GetProperty("exits").EnumerateArray());
+            Assert.Equal(JsonValueKind.Null, plan.GetProperty("invalidation").ValueKind);
+
+            var reason = plan.GetProperty("reason").GetString();
+
+            Assert.False(string.IsNullOrWhiteSpace(reason), $"{row.Split('|')[0]} carries an empty plan with no reason.");
+        }
+    }
+
+    [Fact]
+    public void TheTrendRuleAnswersEachOfItsFourStatesOverConstructedInput()
+    {
+        // The two states the committed bars cannot reach, and the two they can,
+        // over input built for the purpose. All four names hold a full year and
+        // three of them are in an uptrend, so a downtrend and a name that cannot
+        // be classified are unreachable from this fixture, and the branch that
+        // produces no tranches at all would go unasserted.
+        var asOf = new DateOnly(2026, 9, 4);
+
+        Swing Low(int day, decimal price) => new(asOf.AddDays(-day), SwingSeries.Low, price, asOf.AddDays(-day + 3));
+        Swing High(int day, decimal price) => new(asOf.AddDays(-day), SwingSeries.High, price, asOf.AddDays(-day + 3));
+
+        // Uptrend: above the 50, the 50 above the 200, and a higher low.
+        Assert.Equal(
+            TrendState.Uptrend,
+            TrendSeries.For(110m, 100m, 90m, [Low(40, 80m), Low(10, 85m)]).State);
+
+        // Range from the same averages and a lower low, which is the case that
+        // separates the two halves of the rule: the averages alone would call it
+        // an uptrend.
+        Assert.Equal(
+            TrendState.Range,
+            TrendSeries.For(110m, 100m, 90m, [Low(40, 85m), Low(10, 80m)]).State);
+
+        // Downtrend: below the 50, the 50 below the 200, and a lower high.
+        Assert.Equal(
+            TrendState.Downtrend,
+            TrendSeries.For(90m, 100m, 110m, [High(40, 120m), High(10, 115m)]).State);
+
+        // And the averages disagreeing with each other, which is NFLX's case in
+        // the fixture: neither branch holds and the answer is a range whatever
+        // the swings did.
+        Assert.Equal(
+            TrendState.Range,
+            TrendSeries.For(110m, 100m, 120m, [Low(40, 85m), Low(10, 80m)]).State);
+
+        // Not classified, once per missing input, each naming what was missing.
+        var noLong = TrendSeries.For(110m, 100m, null, [Low(40, 80m), Low(10, 85m)]);
+        var noShort = TrendSeries.For(110m, null, 90m, [Low(40, 80m), Low(10, 85m)]);
+        var oneLow = TrendSeries.For(110m, 100m, 90m, [Low(10, 85m)]);
+        var noSwings = TrendSeries.For(110m, 100m, 90m, []);
+
+        Assert.Equal(TrendState.NotClassified, noLong.State);
+        Assert.Equal(TrendState.NotClassified, noShort.State);
+        Assert.Equal(TrendState.NotClassified, oneLow.State);
+        Assert.Equal(TrendState.NotClassified, noSwings.State);
+
+        Assert.Contains("200-day", noLong.Reason!, StringComparison.Ordinal);
+        Assert.Contains("50-day", noShort.Reason!, StringComparison.Ordinal);
+        Assert.Contains("swing lows", oneLow.Reason!, StringComparison.Ordinal);
+
+        // The reason is what makes the fourth state legible, so its absence on a
+        // classified name is asserted too: a label carrying a reason would read
+        // as one the rule could not reach.
+        Assert.True(TrendSeries.For(110m, 100m, 90m, [Low(40, 80m), Low(10, 85m)]).Classified);
+        Assert.False(noLong.Classified);
+
+        // A name with two highs and no lows can be read for a downtrend and not
+        // for an uptrend. Answering range for it would answer a question the
+        // rule could not ask, so it is not classified with the kind named.
+        var highsOnly = TrendSeries.For(110m, 100m, 90m, [High(40, 120m), High(10, 115m)]);
+
+        Assert.Equal(TrendState.NotClassified, highsOnly.State);
+        Assert.Contains("swing lows", highsOnly.Reason!, StringComparison.Ordinal);
     }
 
     [Fact]
