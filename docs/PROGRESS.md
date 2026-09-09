@@ -3290,3 +3290,68 @@ Notes:      the stale row the sign-off recorded is repaired here with its prior 
             names it, and a reach declaration nothing uses is a declaration nothing keeps
             current. Its floor sits on the rows, which carry the property; files opened is
             context and carries none.
+
+### 3.0 planning - the multi-part note sweep                                 2026-09-09
+Not a checkpoint entry. It belongs to 3.0, which has not landed. The second commit of the
+            planning pass. This session committed code and may not sign it off.
+Why first:  this runs before the weighted-call budget is repaired rather than after it.
+            Repairing the budget first repairs one instance of a class whose size is unknown,
+            and a sweep run afterwards can only report how much was left. The budget is the
+            first and worst instance and it is repaired at the next commit, with the
+            population it belongs to already measured.
+Unit:       a note asserts more than one thing when it joins two or more clauses naming
+            different behaviours, artefacts or files, such that a mutation could falsify one
+            and leave the others true. Two attributes of one comparison, "columns and types
+            asserted against SCHEMA.md", are one thing measured two ways and are not counted.
+Predicted:  stated before the sweep ran and named rather than only counted. 25 multi-part
+            notes, range 20 to 30, the downward cause being that the component-access family
+            reads as one reconciliation stated four ways and the upward cause being that it
+            does not, because the four sources are four separate files and a reconciliation
+            could be dropped against one alone. And 4 notes carrying at least one clause
+            unreached by a test in the check's carrier class, range 2 to 8, of which one was
+            known: the weighted-call budget, whose third clause the phase 2 sign-off proved
+            unreached and whose first two sit in `LiveFeedTests` and `NewsFeedTests`, outside
+            the `NightlyCost` carrier. The other three were expected to be notes whose clauses
+            span two checks.
+Measured:   over the 42 PASS claims in `artifacts/phase-report.json` at 9f12d66, 29 notes are
+            multi-part and 13 are not. That is the top of the predicted range and it is there
+            for the upward cause named in advance: the component-access family is five notes
+            asserting a declaration against four separate documents, and each of the four is
+            separately breakable.
+            6 of the 29 carry at least one clause unreached by a test in the carrier class,
+            against a prediction of 4 in a range of 2 to 8. A seventh finding sits outside the
+            multi-part set and is the same fault in a single-clause note.
+Found:      seven, in two classes, and both have the same consequence: deleting the behaviour
+            leaves the named check green and the claim reading PASS.
+            The first class is a clause nothing asserts anywhere. **Weighted-call budget**,
+            third clause, that a night at the allowance stops before making a call. And **A
+            split or dividend not caught**, the atomicity clause, which is the obligation the
+            phase 1 sign-off already carried to 3.1 and which this sweep reaches independently.
+            The second class is a clause asserted outside the carrier, which runs, passes and
+            backs no verdict. **Weighted-call budget**, first two clauses, in `LiveFeedTests`
+            and `NewsFeedTests`. **Bar history kept**, both clauses, in `Bars/BarFetcherTests.cs`.
+            **Per-request timeout and the night's deadline**, first clause, in
+            `Providers/ProviderRequestTests.cs` and `Providers/EodhdBulkPriceFeedTests.cs`; its
+            second clause is reached. **Series state**, second clause, which is the corporate
+            action checker's property and sits in that check's carrier. And the seventh, the
+            single-clause one: **Corporate action checker** in the catalogue and again in the
+            read and write matrix, whose notes describe a declaration reconciled against the
+            row, the matrix row, SCHEMA's ownership and its own source, which is
+            `component-access`'s property and which `corporate-actions` does not perform at
+            all. Its reach declares both rows, so the reconciliation is satisfied and the
+            content is another check's.
+Sharper than the sign-off: the sign-off proved one clause unasserted by mutation. What the
+            carrier rule adds is that the budget's other two clauses back no verdict either,
+            and that four more claims have the same fault. The mutation the sign-off ran
+            understated the finding rather than describing it, and it understated it in the
+            direction the corpus says these faults always run: under-reporting.
+No instrument: this stays a measurement and does not become a check. A note is prose and
+            whether a clause is reached is a judgment about what a test asserts, not a parse.
+            `TheCarrierOfEveryCheckOwnsItsTestsAndNoOthers` already asserts the mechanism the
+            fault runs through; what it cannot say is whether the tests a carrier owns cover
+            what its notes claim. The findings become obligations instead, which is what the
+            rule this pass landed is for.
+Carried:    four new rows, all due 3.1 and all cited by 3.1's own text, being the four
+            second-class findings. The budget is repaired at the next commit and the atomicity
+            clause was already carried. 24 rows in the table, up from 20.
+Tests:      325, unchanged. This commit measures and records and changes no code.
