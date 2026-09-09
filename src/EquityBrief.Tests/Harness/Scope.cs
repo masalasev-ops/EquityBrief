@@ -277,6 +277,10 @@ internal static class Scope
             Verdict.Pass,
             "one vertical price axis with the close marked in it, the tranches drawn below the marker and the exits above, the stops as horizontal rules and the invalidation as the lowest, with every price read off the mark's own attributes and matched against the stored plan in both directions",
             ByReadSurface),
+        [CheckReach.Key(FailureTable, "A gap in one name's series, level and plan sections")] = new Scoped(
+            Verdict.Pass,
+            "a name whose series was refused holds no bars, so it has no bands and no plan, and both sections state the absence rather than drawing nothing, with a name whose series was not refused carrying both over the same run",
+            ByGap),
         [CheckReach.Key("15.9 Name", "The plan")] = new Scoped(
             Verdict.Pass,
             "the region draws the plan column, the tranche table with its conditions and stops and the exit table with its actions, from the ladder row the night wrote, with a skipped exit carrying its reason rather than being omitted",

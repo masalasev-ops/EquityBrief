@@ -4758,3 +4758,39 @@ Measured:   203 claims, 88 PASS from 87, 0 fail, 0 unexamined, 115 out of scope.
 Amended:    nothing. This checkpoint amends no done condition.
 Tests:      404, from 402. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+
+### 4.6 - the plan column mark and the tables                            2026-09-09
+Built:      the plan column, one vertical price axis with the close marked in it, and the tranche
+            and exit tables beside it, all three on the name page. Everything above the marker is
+            a sale and everything below is a purchase, which is legible without a caption, and it
+            is one column rather than two facing sides because a reader should not have to learn a
+            convention before reading it.
+Asserted:   the containment property applied to pictures, in both directions. Every price the
+            figure draws is one the stored plan carries, and every price the plan carries is
+            drawn. The first is the done condition; the second is the half a figure that quietly
+            omitted a stop would pass, and it is what the mutation below turned red.
+            Read off the mark's own data attributes and matched against the store rather than by
+            eye, so an invented figure fails rather than looking plausible.
+Found:      the invalidation was drawing a second rule on top of the lowest stop. It is the lowest
+            stop, so a row of its own put two horizontal rules on one line saying two things where
+            section 15.5 says the figure says one. The stop at that price is relabelled instead,
+            and a row is added only where no stop sits there, which is a structure whose lowest
+            tranche has no band beneath it. Found by the test asserting a single row at the lowest
+            price rather than by reading the picture.
+Mutated:    the stop rows dropped from the figure, in an isolated worktree at the commit under
+            test, reverted, the worktree removed. The rule for choosing was stated first: mutate
+            the assertion carrying the property this checkpoint exists to add, which is that the
+            figure draws what the ladder carries and nothing else. It turned the containment test
+            red and nothing else, and it is the direction a one-way assertion would have missed:
+            a figure that draws fewer prices than the plan holds contains nothing it should not.
+Closed:     section 18's gap row, whose other element waited for these sections to exist. A name
+            whose series was refused holds no bars, so it has no bands and no plan, and both
+            sections state the absence rather than drawing nothing. The counter-reading runs over
+            the same store: a name whose series was not refused carries both, without which this
+            would pass over a pipeline that computed nothing for anybody.
+Measured:   203 claims, 91 PASS from 88, 0 fail, 0 unexamined, 112 out of scope. The three are the
+            plan column mark, the name screen's plan region and the gap row's level and plan
+            element.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      406, from 404. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
