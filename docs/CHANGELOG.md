@@ -25,6 +25,23 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - the swing boundaries move from 4.1 to 4.4
+Corrects: a due point that produces no evidence, which is the defect 3.0 swept the corpus for and
+which this pass wrote into the table itself. The row was placed at 4.1 because the trend
+classifier reads swings. It reads them to ask which of two is later, and reaches neither the
+plateau rule nor the outside day that is a peak and a trough at once, so the checkpoint could not
+have produced the evidence whatever it built.
+Was:
+> | **The swing boundaries the committed fixture cannot reach** | 3.7 sign-off | 4.1 | 4.1 builds
+> the trend classifier, which is the next component to read swings and the next to write
+> constructed-input tests over them
+Now:
+> due at 4.4, which writes the constructed-input tests over the level arithmetic, so the swing
+> cases land with them rather than one checkpoint writing one of the two sets
+Why: found at 4.1 by looking for what the checkpoint could actually assert rather than by reading
+the row. The two sets are the same kind of work over the same fixture, and 4.4 reads band edges
+and roles, which is where a constructed series is being built anyway.
+
 ### 2026-09-09 - ARCHITECTURE.html - the trend state and the ladder are one stage, and the classifier writes nothing
 Corrects: two things 4.0 got wrong about a component that writes nothing, both found at 4.1 by
 building it. Section 14 carried the trend state and the ladder as two steps, and the classifier

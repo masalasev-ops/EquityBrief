@@ -2007,6 +2007,62 @@ public class FixtureExpectations
     }
 
     [Fact]
+    public async Task AMemberWithNoStoredBarsStillGetsARow()
+    {
+        // Found by mutating, in the checkpoint that wrote the code, which is
+        // what done condition 9 is for.
+        //
+        // Narrowing the ladder's population from the index's members to the
+        // members with stored bars left the whole suite green, because every
+        // current member of this fixture has a year. The two populations cannot
+        // differ over it, so the rule the ladder row exists for was asserted
+        // against a fixture that cannot tell it from a narrower one. That is the
+        // same shape as the band anchored on an average alone with no touch: not
+        // a gap, a population unrepresentative in the one way that matters.
+        //
+        // A member with no bars is not exotic. It is a name that joined the
+        // index tonight, before the backfill has run for it, which is the case
+        // the backfill exists for.
+        using var store = await WithLevels();
+
+        const string joiner = "NEWCO";
+
+        await using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            await connection.OpenAsync();
+
+            await using var command = connection.CreateCommand();
+
+            command.CommandText =
+                @"INSERT INTO membership (index_code, ticker, joined, ""left"", observed_at)
+                  VALUES ($index, $ticker, '2026-09-04', NULL, '2026-09-04T21:10:00Z');";
+
+            command.Parameters.AddWithValue("$index", Index);
+            command.Parameters.AddWithValue("$ticker", joiner);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        await new LadderBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, "replay-ladders-joiner");
+
+        var rows = Query(store, "SELECT ticker, trend_state FROM ladder ORDER BY ticker;");
+
+        // The population is the index, so the joiner is in it and the count is
+        // one more than the names with bars.
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length + 1, rows.Count);
+        Assert.Contains($"{joiner}|{TrendState.NotClassified}", rows);
+
+        // And the row says why, rather than carrying a label the rule could not
+        // reach. A name with no bars has no close to compare and no swings to
+        // read, and answering range for it would answer a question nothing
+        // asked.
+        var plan = Query(store, $"SELECT plan FROM ladder WHERE ticker = '{joiner}';").Single();
+
+        Assert.Contains("no stored bars", plan, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheTrendRuleAnswersEachOfItsFourStatesOverConstructedInput()
     {
         // The two states the committed bars cannot reach, and the two they can,
