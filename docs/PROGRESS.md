@@ -4341,3 +4341,128 @@ Noted:      three worktrees from a phase 1 workflow run remain registered under 
 Tests:      380, unchanged from 3.7. Windows for this run; the matrix carries macOS and the
             Linux case-sensitivity job, and all three were green on 74b66b9.
 Signed:     phase 3 is signed off at 74b66b9. Phase 4's plan is not opened by this session.
+
+### 4.0 planning - the rulings, the calendar, and nine steps where there was one   2026-09-09
+Not a checkpoint entry. It belongs to 4.0, which has not landed. This session has committed
+            code and may not sign it off.
+Built:      no component. Five commits: the done conditions and the record guard, the rulings and
+            the calendar, the nightly step decomposition, the re-point and the replan, and the
+            populations with five constructed cases.
+Decided:    ten entries in `DECISIONS.md` and one supersession, covering every hole this
+            document's holes table assigns to 4.0 and the four the operator settled first.
+            **A ladder row is written for every index member every night**, carrying the trend
+            state and a plan that states why it is empty. The trend-changed condition compares
+            tonight's label to last night's, so under any other shape a name with no eligible
+            band has no yesterday and the reason cannot fire on the transition into or out of a
+            downtrend, which is the transition that changes the whole plan.
+            **The trend state is read from the averages and the last two swings, and a name that
+            cannot be classified says so**, with a fourth `trend_state` value. A name with fewer
+            than 200 bars or fewer than two swings of the kind the rule reads is not classified,
+            with the reason, rather than defaulted to a range. The label decides whether a plan
+            exists, and a label over inputs nobody had is the same lie as an average of sixty
+            bars called 200-day.
+            **The trend classifier returns its label to the ladder builder**, not to a component
+            built a phase after the screen that draws it.
+            **A calendar event is fetched once for the whole index, and the calendar holds
+            provider events only**, with `kind` carrying provider event kinds only.
+            **The second book is keyed to a dated event, and an earnings print is the only kind
+            on file**, superseding **The earnings trade is a second book**, whose body was about
+            carrying a momentum entry through a date and whose name said earnings.
+            **A tranche's condition is the pattern the price has made at its own band**, the four
+            patterns tested in a stated order so exactly one matches, asserted in both directions.
+            **Each traded exit sells an equal fraction of what is held, and the top of the ladder
+            trails**.
+            **A researched precondition attaches to a tranche and never creates one**, so no
+            nightly component reads research.
+            **The event setups' triggers are proposals until resolved setups can score them**,
+            with the twelve figures stated as proposals on the page.
+            **Every computed table's writer is its own deleter**, implemented at 4.2.
+Amended:    the holes table's row on the share of size per tranche, rather than superseding a
+            decision. The shares that fall with distance came from the hand-made report the
+            worked example is drawn from, where a person decided how much to commit, and that is
+            what **The plan places a position and never sizes one** reserves to the reader.
+Found:      three components have shipped since phase 3 and no night has ever run one. The swing
+            finder, the volume profile builder and the level builder are called only from the
+            suite, so a production store holds no swing, no profile and no band, and the served
+            route draws candles and averages alone. Nothing failed and nothing was going to:
+            section 14 carried the nine per-name computations as one step whose due point was a
+            phase, and a claim due at a phase cannot fail until that phase's first checkpoint
+            lands. The step is now nine, six owed at 4.1 and three at their own phase 5
+            checkpoints. This is what the phase-due claims were hiding, and it is the argument
+            for the obligation rather than a coincidence beside it.
+Also found: `BUILD_PLAN.md` said "the seven general done conditions" where `CLAUDE.md` said "All
+            eight", and only the second is inside what `stated-counts` reads. Repaired with the
+            ninth.
+Counted:    the phase-due claims before anything moved. The obligation says 66, being 5, 20, 29
+            and 12; the tree carried 65 at the commit that wrote the row, being 5, 20, 28 and 12,
+            so the phase 6 cell was one out and the total with it. 64 stood when the re-point
+            began, the difference being the step that had become nine. 63 were re-pointed and one
+            was decomposed: "Earnings date missing" names the calendar saying the date is not on
+            file and the earnings reason not firing, which are a phase apart.
+Conditions: a ninth. At least one assertion a checkpoint added is mutated and shown to go red,
+            chosen before the run by a stated rule rather than after by which assertion looks
+            weakest, made in an isolated worktree and reverted, and recorded here. It binds from
+            4.1. Three phases of evidence produced it: every checkpoint that mutated its own work
+            found its own holes, and of the two that recorded none, one carries two of the three
+            group one findings from the phase 3 sign-off and one of the two group two findings.
+            It raises the cost of every checkpoint and it is the only verification here that has
+            found a defect in the checkpoint performing it.
+Guarded:    `PROGRESS.md`'s append-only rule, which was a stated property with no instrument.
+            `record-append-only` reads the history as a high-water mark over the set of entry
+            headings, so it names the entry that went rather than reporting that one did. The one
+            removal this repository has made is named inside the check with its commit and its
+            reason, and the exemption is asserted in both directions.
+Mutated:    five, each in an isolated worktree at the commit it tests, reverted, the worktree
+            removed, and the main tree untouched throughout. Removing an entry from `PROGRESS.md`
+            turned `record-append-only` red naming the lost heading and the commit that wrote it.
+            Removing the `calendar` alias turned the catalogue term check red, where the
+            exemption it replaced would have let it pass. Widening the changelog reader rule to
+            every file turned its own proof red. Re-pointing the levels step to a checkpoint that
+            has landed turned the out-of-scope reconciliation red, which no claim could do while
+            the nine were one step due at a phase. Widening `has_non_average_anchor` to the whole
+            band and dropping the `as_of` clause from the level query turned exactly the two new
+            tests red and nothing else, both having been green before this pass.
+Repaired:   two readers, rather than working around either. The catalogue term check permitted
+            between one and six unresolved calendar reads until 4.0 settled it, and that
+            exemption went with the contradiction rather than outliving it. And a quoted line in
+            `CHANGELOG.md` is prior text, which that file's own format declares it to be, so a
+            citation inside one is being reported rather than made: without that, superseding a
+            decision whose citation the changelog has to quote leaves only paraphrasing text the
+            format requires verbatim or editing an append-only record.
+Discharged: nine obligations. The fixture table reconciled, the phase-due claims re-pointed, the
+            populations read from the expectation, the momentum reading set, the band hue
+            mapping, `has_non_average_anchor`, the level surface over two as-of dates, the four
+            volume profile boundaries, and the retention ruling.
+Carried:    the obligations table holds 37 rows, 26 discharged, 3 operating and 8 open. The
+            earliest open ones are the swing boundaries at 4.1 and the level boundaries at 4.4.
+Replanned:  phase 4 to ten checkpoints, 4.0 through 4.9. 4.1 as written carried a new feed, a new
+            table, a contradiction, a matrix column, a new component and a new nightly chain at
+            once. Retention is its own checkpoint at 4.2 at the operator's direction, because a
+            deleter built where the tables are first populated is a delete path whose first real
+            exercise is a night nobody has watched.
+Predicted:  phase 4's claims, named rather than counted, in two disjoint lists. A row this phase
+            writes and then asserts is one movement and is named once.
+            A, the rows that exist today and turn PASS in phase 4: the Trend classifier and
+            Ladder builder catalogue rows and matrix rows, the Plan column mark, the Name
+            screen's plan region, the Tranches and exits, Tranche eligibility and Earnings
+            horizon limits, the no-eligible-band failure row, the gap row's level and plan
+            element, and the `ladder` fixture row. Twelve.
+            B, the rows this phase writes: the Calendar fetcher's catalogue and matrix rows, the
+            Calendar store row, the nine elements replacing section 14's step 5, the calendar
+            step, the not-classified failure row, the two elements replacing the
+            earnings-date-missing row, and four fixture rows. Twenty written, two replaced.
+            Seventeen of the twenty turn PASS in phase 4; the three that do not are the moves,
+            list reasons and facts elements of step 5, owed at phase 5 checkpoints and named as
+            out of scope rather than left inside the total.
+            The arithmetic 4.9 checks: 186 less 2 replaced plus 20 written is 204, PASS 64 plus
+            12 plus 17 is 93, and out of scope 111. 204 and 111 sum to the total.
+            A is the list most likely to be short. That is where 3.7 was wrong by eight: it
+            reasoned about what the phase adds to the document and missed that a phase makes
+            assertable the rows the document already had.
+Measured:   204 claims from 186, 67 PASS from 64, 137 out of scope from 122, 0 fail and 0
+            unexamined throughout. 34 roster rows from 33 and 31 carried from 30. One new check.
+            Ten decisions and one supersession. 37 obligation rows from 28.
+            The claim total is already at the 204 the prediction names, because 4.0 is the pass
+            that writes rows and the checkpoints after it assert them.
+Tests:      387, from 380. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
