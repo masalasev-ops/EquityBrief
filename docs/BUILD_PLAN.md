@@ -2,7 +2,7 @@
 
 Checkpoints, their deliverables and their done conditions, for every phase.
 
-The seven general done conditions in `CLAUDE.md` apply to every checkpoint. What follows adds the deliverable and any condition particular to it.
+The nine general done conditions in `CLAUDE.md` apply to every checkpoint. What follows adds the deliverable and any condition particular to it.
 
 ---
 

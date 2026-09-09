@@ -32,6 +32,7 @@ public class CoverageReported
         ["no-superseded-citation"] = "DecisionCitations",
         ["obligation-reconciles"] = "ObligationReconciles",
         ["changelog-reconciles"] = "ChangelogReconciles",
+        ["record-append-only"] = "RecordAppendOnly",
         ["pinned-constants"] = "PinnedConstants",
         ["stated-counts"] = "StatedCounts",
         ["banned-prose"] = "BannedProse",

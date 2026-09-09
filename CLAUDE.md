@@ -152,6 +152,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `no-superseded-citation` | every CI run | No cited name resolves to a decision under "Previously decided" |
 | `obligation-reconciles` | every CI run | Every carried obligation is named, uniquely and without terminal punctuation, and is one of the two forms read from its own cells: a checkpoint that produces its evidence, whose text cites it back, or an operating condition stating a numeric trigger, the surface it is read on and the checkpoint that builds that surface. A row that is neither, or that carries parts of each, fails; so does an obligation citation naming no row, a citation sitting outside the checkpoint its row names, and an open row whose due point the plan lacks or the record already shows as landed |
 | `changelog-reconciles` | every CI run | Every commit that deleted a line from a spec also changed `CHANGELOG.md`, read from the history |
+| `record-append-only` | every CI run | Every entry heading ever present in `PROGRESS.md` is still present, read from the history as a high-water mark over the set of headings. The one removal this repository has made is named in the check with its commit and its reason, so the guard's window is visible rather than the removal sitting outside it |
 | `pinned-constants` | every CI run | Numeric constants stated in docs match the code constant they describe |
 | `stated-counts` | every CI run | Every count a spec states about itself matches the derived count. Record entries are dated measurements and are exempt |
 | `banned-prose` | every CI run | No text file the repository tracks contains the banned string or any form of it, and none contains an em dash, excluding the captured provider responses a manifest names, which are the provider's bytes and not prose this repository writes. The line in CLAUDE.md's Prose convention that names the string is the single exemption within what is scanned, matched on the sentence that states the rule |
@@ -241,7 +242,7 @@ Rules that exist before anything has gone wrong, taken from what has gone wrong 
 
 ## Definition of done for a checkpoint
 
-All eight, or it is not done:
+All nine, or it is not done:
 
 1. The checkpoint's stated deliverable exists and runs.
 2. `tools/ci.*` is green, with the test count recorded in PROGRESS. Until 0.4 builds those scripts, the checkpoint's own verification is run by hand and PROGRESS records the figures it produced and states that nothing guards them yet.
@@ -251,6 +252,9 @@ All eight, or it is not done:
 6. A PROGRESS entry naming what was built, what was measured, and any carried obligation.
 7. The checkpoint's expectations are added to the fixture, so `tools/verify-phase` covers it from now on, and at least one of them is derived independently rather than frozen from a run. A checkpoint that adds behaviour and no expectation has widened the unexamined set; one that adds only frozen expectations has added regression detection and called it verification. Where the fixture does not exist yet, expectations are carried to the checkpoint that first can, and the carried obligation is recorded in `BUILD_PLAN.md` when it is created rather than remembered.
 8. The PROGRESS entry of condition 6 is written **before** the run that verifies the checkpoint, not after it, and the figures conditions 2 and 5 record are filled in from that run. The record is what the reconciliation reads: `HasLanded` decides out of scope by asking `PROGRESS.md` which checkpoints have landed, so a suite run against a tree whose entry is missing is a run against a corpus where this checkpoint has not landed, and every claim the entry is about to make due is still out of scope and cannot fail. That run is green on a question it never asked. Written the other way round it is the same run in the same order, and the only difference is whether the last thing changed is the one thing nothing after it re-reads.
+9. At least one assertion the checkpoint added is mutated and shown to go red, with the mutation and its result recorded in the PROGRESS entry. The mutation is chosen before the run by a stated rule, not after by which assertion looks weakest, and it is made in an isolated worktree and reverted. A checkpoint recording no mutation has not shown that anything it wrote can fail.
+
+**Condition 9 is the cheapest verification in the project and three phases of evidence say so.** Every checkpoint that mutated its own work found its own holes, and the two that recorded no mutation are where a later session found them instead: 3.5 carries two of the three group one findings in the phase 3 sign-off and one of the two group two findings, and 3.5 is one of the two checkpoints with no mutation evidence in its entry. It raises the cost of every checkpoint, and it is the only form of verification here that has found a defect in the checkpoint performing it. It binds from 4.1.
 
 Done conditions are written against **what the file will say after the edit**, not as statements of intent. A done condition narrower than its clause is the most common defect in this class of corpus.
 
@@ -272,7 +276,7 @@ Done conditions are written against **what the file will say after the edit**, n
 
 **The condition binds from 0.4, which is where `tools/ci.*` first exists.** Before then the workflow fails on a missing script, which is phase 0 behaving as `BUILD_PLAN.md` describes it rather than a fault, and it does not block a merge. From 0.4 onward a red run blocks, with no exception and no override. This is written down because the rule above it was stated against a CI that exists, and the checkpoints that build the verification machinery come before it.
 
-**A checkpoint lands as its own commit** and satisfies all eight done conditions on its own, and a session that has committed code still may not sign it off.
+**A checkpoint lands as its own commit** and satisfies all nine done conditions on its own, and a session that has committed code still may not sign it off.
 
 **Every change reaches `main` through a branch and a pull request, and none is committed to `main` directly.** That includes a document pass, a correction, a ruling and a sign-off. The branch is deleted after the merge and the working tree is returned to `main`, because the tree the nightly runs from is this repository's production checkout and a branch left checked out is a live hazard.
 

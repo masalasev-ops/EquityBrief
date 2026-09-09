@@ -25,6 +25,49 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - CLAUDE.md, BUILD_PLAN.md - a ninth done condition, and the count two documents disagreed on
+Corrects: a checkpoint could satisfy every done condition without ever showing that an assertion
+it wrote can fail, and three phases of evidence now say what that costs. Found by the phase 3
+sign-off's mutation sweep, which ran 34 mutations over 32 distinct changes and left 13 green at
+380 of 380. The pattern is not that some checkpoints write weaker tests: every checkpoint that
+mutated its own work found its own holes, and of the two that recorded no mutation evidence, one
+carries two of the three group one findings and one of the two group two findings.
+Was:
+> CLAUDE.md: "All eight, or it is not done:", a list of eight, and "satisfies all eight done
+> conditions on its own"; BUILD_PLAN.md: "The seven general done conditions in `CLAUDE.md` apply
+> to every checkpoint."
+Now:
+> "All nine", a ninth condition requiring one added assertion to be mutated and shown to go red
+> with the mutation chosen before the run by a stated rule and recorded in the PROGRESS entry, a
+> paragraph stating what the condition costs and what the evidence for it is, "all nine done
+> conditions", and "The nine general done conditions".
+Why: the seven against eight disagreement was already live and is repaired in the same edit
+rather than left to be found again. It is named here as a defect the ninth exposed rather than
+one it created: `stated-counts` reads CLAUDE.md's own sentence and the list beneath it, and the
+count in BUILD_PLAN was outside what any check reads. The ninth condition binds from 4.1, and it
+raises the cost of every checkpoint, which is stated in the rules beside it rather than left for
+a later session to discover as an unexplained expense.
+
+### 2026-09-09 - CLAUDE.md - a guard behind the record's append-only rule
+Corrects: `PROGRESS.md` is declared append only in the document lifecycle table and nothing
+asserted it. `changelog-reconciles` reads the five specs, `PROGRESS.md` is a record, and no check
+covered a deletion from one. The gap is known because PR #37 deleted 70 lines from the record at
+the operator's direction and CI stayed green, which the phase 3 sign-off recorded as a stated
+property with no instrument behind it.
+Was:
+> the Checks table carried no row between `changelog-reconciles` and `pinned-constants`
+Now:
+> a `record-append-only` row, running every CI run, asserting that every entry heading ever
+> present in `PROGRESS.md` is still present, read from the history as a high-water mark over the
+> set of headings, with the one removal this repository has made named in the check with its
+> commit and its reason
+Why: beside `changelog-reconciles` rather than folded into it, because a check named for the
+changelog that also guarded a record would be a name that stopped describing its scope. Headings
+rather than a line count, because an entry's body can be reflowed without anything being lost and
+a count would read that as a removal. The exemption is asserted in both directions: a removal
+that is not the named one fails, and the named one being restored fails too, because an exemption
+for a removal that is no longer there is an exemption nothing reads.
+
 ### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - the averages are drawn, and one due point was wrong
 Authorised by: The volume profile accumulates over the same sixty sessions as the level window
 Was:
