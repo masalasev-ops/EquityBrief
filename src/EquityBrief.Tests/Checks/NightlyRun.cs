@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -248,22 +249,49 @@ public class NightlyRun
         // A clean night first, so the deadline below has only the fetch left to
         // spend itself on. Without it the migrate, membership and backfill steps
         // are doing real work and a slow runner reaches the deadline before the
-        // fetch, which is a test whose answer depends on the machine: it passed
-        // on this one and failed on the windows runner at the first push.
+        // fetch.
         //
-        // The bound is then generous rather than tight. Every step but the fetch
-        // is a no-op against a warm store and takes milliseconds; the fetch
-        // waits five minutes. A runner ten times slower still reaches the
-        // deadline in the fetch and nowhere else.
+        // The deadline is measured from that night rather than stated as a
+        // figure, and that is the repair this test has now had twice. 2.7 set it
+        // at a quarter of a second and a cold runner beat it; the correction
+        // raised it to three seconds and called it generous, and a runner that
+        // took seven and a half minutes over a suite the other ran in four beat
+        // that too. Both were the same shape: a bound written as an absolute
+        // number is a bound that assumes a machine speed, and this corpus's own
+        // rule is that a test whose answer depends on how fast the machine is
+        // has no answer.
+        //
+        // Measured, it scales. The warm night is every step doing its real work
+        // once, so twice that plus a margin is comfortably more than the steps
+        // before the fetch will take on the same machine, and it is far less
+        // than the five minutes the feed below hangs for. A runner ten times
+        // slower produces a warm night ten times longer and a deadline ten
+        // times larger, and the arrangement holds.
+        var started = Stopwatch.StartNew();
         var (warm, _, _) = await NightAsync(store, runId: "night-one");
 
+        started.Stop();
+
         Assert.Equal(0, warm);
+
+        var deadline = (started.Elapsed * 2) + TimeSpan.FromSeconds(2);
+
+        var slow = new SlowBulkFeed();
 
         var (code, _, error) = await NightAsync(
             store,
             runId: "night-slow",
-            bulk: new SlowBulkFeed(),
-            deadline: TimeSpan.FromSeconds(3));
+            bulk: slow,
+            deadline: deadline);
+
+        // The arrangement, asserted rather than assumed. If the deadline fired
+        // before the fetch the feed was never entered, and the assertions below
+        // would be about a step this test did not mean to name.
+        Assert.True(
+            slow.Requests == 1,
+            $"the night reached the fetch {slow.Requests} time(s) with a deadline of {deadline}, " +
+            $"measured from a warm night of {started.Elapsed}. The deadline fired before the step " +
+            "this test is about.");
 
         Assert.Equal(1, code);
         Assert.Contains("passed the night's deadline", error, StringComparison.Ordinal);

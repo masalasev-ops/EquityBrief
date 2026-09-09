@@ -70,6 +70,28 @@ public sealed record SummaryBand(
     bool HasNonAverageAnchor,
     IReadOnlyList<SummaryMember> Members);
 
+// One row of the plan column: a price, what happens there, and how it reads.
+//
+// `Kind` is what the reader is being told at that price, and the mark draws each
+// kind differently: a purchase below the marker, a sale above it, a stop as a
+// horizontal rule and the invalidation as the lowest rule of all. `Detail` is
+// what the row says in words, because hue is never the only channel.
+public sealed record PlanRow(
+    decimal LowEdge,
+    decimal HighEdge,
+    string Kind,
+    string Detail,
+    bool Traded);
+
+// The kinds a plan row takes, named once so the mark and the tables agree.
+public static class PlanKind
+{
+    public const string Tranche = "tranche";
+    public const string Exit = "exit";
+    public const string Stop = "stop";
+    public const string Invalidation = "invalidation";
+}
+
 // An average that anchors no band, with the count that explains it.
 //
 // Section 18's row says a name with fewer than two hundred bars records its long
@@ -181,6 +203,139 @@ public sealed class MarkRenderer : IComponent
     // scale is a picture that lies about where the price is.
     static double At(PriceAxis axis, double value) =>
         PriceHeight - Margin - ((value - axis.Low) / axis.Range * (PriceHeight - (2 * Margin)));
+
+    // The plan column: one vertical price axis with the current price marked in
+    // the middle of it.
+    //
+    // Everything above the marker is a sale and everything below is a purchase,
+    // which is legible without reading a caption, and it is one column rather
+    // than two facing sides because a reader should not have to learn a
+    // convention before reading it.
+    // see: The plan figure is one vertical price column with the current price marked in it
+    //
+    // It draws nothing the ladder does not carry. Every row handed in is a
+    // stored value, and the only arithmetic here is the axis, which is where a
+    // price sits on a scale rather than what the price is.
+    // see: A screen reads and renders, and computes nothing
+    public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows)
+    {
+        if (rows.Count == 0)
+        {
+            return $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"0\">" +
+                $"{Escaped(ticker)} has no plan to draw, which is what a name with no eligible " +
+                $"band gets.</p>";
+        }
+
+        var prices = rows
+            .SelectMany(row => new[] { PlotValue(row.LowEdge), PlotValue(row.HighEdge) })
+            .Append(PlotValue(close))
+            .ToArray();
+
+        var axis = new PriceAxis(prices.Min(), prices.Max());
+
+        var svg = new StringBuilder();
+
+        svg.Append(Invariant, $"<svg class=\"plan-column\" viewBox=\"0 0 {Width} {PriceHeight}\" ");
+        svg.Append(Invariant, $"role=\"img\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{rows.Count}\" ");
+        svg.Append(Invariant, $"data-close=\"{close}\" data-axis-low=\"{axis.Low}\" data-axis-high=\"{axis.High}\">");
+
+        svg.Append(Invariant, $"<title>{Escaped(ticker)} plan column</title>");
+        svg.Append(Invariant, $"<desc>One vertical price axis. Everything above the price marker is a sale, everything below is a purchase, stops are horizontal rules and the invalidation is the lowest.</desc>");
+
+        // The column itself, and the price marker on it.
+        const double column = Width / 2d;
+
+        svg.Append(Invariant, $"<line class=\"axis\" x1=\"{column}\" y1=\"{Margin}\" x2=\"{column}\" y2=\"{PriceHeight - Margin}\" stroke=\"var(--rule, #d8d8d8)\" stroke-width=\"1\"/>");
+
+        foreach (var row in rows)
+        {
+            var top = At(axis, PlotValue(row.HighEdge));
+            var bottom = At(axis, PlotValue(row.LowEdge));
+            var height = Math.Max(bottom - top, 1);
+
+            var hue = row.Kind switch
+            {
+                PlanKind.Tranche => SupportHue,
+                PlanKind.Exit => ResistanceHue,
+                _ => "var(--muted, #6a6a6a)",
+            };
+
+            svg.Append(Invariant, $"<g class=\"plan-row\" data-kind=\"{Escaped(row.Kind)}\" ");
+            svg.Append(Invariant, $"data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\" ");
+            svg.Append(Invariant, $"data-traded=\"{(row.Traded ? "true" : "false")}\">");
+
+            // A stop and the invalidation are rules rather than zones, because
+            // each is one price a close is measured against. A tranche and an
+            // exit are the band they sit on, which has width.
+            if (row.Kind is PlanKind.Stop or PlanKind.Invalidation)
+            {
+                svg.Append(Invariant, $"<line class=\"{row.Kind}-rule\" x1=\"{Margin}\" y1=\"{bottom}\" x2=\"{Width - Margin}\" y2=\"{bottom}\" ");
+                svg.Append(Invariant, $"stroke=\"{hue}\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/>");
+            }
+            else
+            {
+                var left = row.Kind == PlanKind.Tranche ? Margin : column;
+
+                svg.Append(Invariant, $"<rect class=\"{row.Kind}-zone\" x=\"{left}\" y=\"{top}\" ");
+                svg.Append(Invariant, $"width=\"{(Width / 2d) - Margin}\" height=\"{height}\" ");
+                svg.Append(Invariant, $"fill=\"{hue}\" fill-opacity=\"{(row.Traded ? 0.30 : 0.12)}\"/>");
+            }
+
+            // The row in words, because hue is never the only channel and a
+            // reader who cannot separate the two loses nothing.
+            svg.Append(Invariant, $"<text class=\"plan-label\" x=\"{Width - Margin}\" y=\"{bottom - 2}\" text-anchor=\"end\" ");
+            svg.Append(Invariant, $"font-family=\"Segoe UI, Arial, sans-serif\" font-size=\"11\" fill=\"var(--muted, #6a6a6a)\">{Escaped(row.Detail)}</text>");
+
+            svg.Append("</g>");
+        }
+
+        // The price marker last, so it is drawn over the zones rather than under
+        // them: it is the one thing the whole figure is read against.
+        var at = At(axis, PlotValue(close));
+
+        svg.Append(Invariant, $"<g class=\"price-marker\" data-close=\"{close}\">");
+        svg.Append(Invariant, $"<line x1=\"{Margin}\" y1=\"{at}\" x2=\"{Width - Margin}\" y2=\"{at}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1.4\"/>");
+        svg.Append(Invariant, $"<text x=\"{Margin}\" y=\"{at - 3}\" font-family=\"Segoe UI, Arial, sans-serif\" font-size=\"11\" fill=\"var(--ink, #1c1c1c)\">{close}</text>");
+        svg.Append("</g>");
+
+        svg.Append("</svg>");
+
+        return svg.ToString();
+    }
+
+    // The tranche table and the exit table, which are what the plan column's
+    // figure is read beside. Every cell is a stored value.
+    public string PlanTables(string ticker, IReadOnlyList<PlanRow> rows)
+    {
+        var tranches = rows.Where(row => row.Kind == PlanKind.Tranche).ToArray();
+        var exits = rows.Where(row => row.Kind == PlanKind.Exit).ToArray();
+
+        var html = new StringBuilder();
+
+        html.Append(Invariant, $"<table class=\"tranche-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{tranches.Length}\">");
+        html.Append("<tr><th>Zone</th><th>Condition and stop</th></tr>");
+
+        foreach (var row in tranches)
+        {
+            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\"><td>{row.LowEdge} to {row.HighEdge}</td>");
+            html.Append(Invariant, $"<td>{Escaped(row.Detail)}</td></tr>");
+        }
+
+        html.Append("</table>");
+
+        html.Append(Invariant, $"<table class=\"exit-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{exits.Length}\">");
+        html.Append("<tr><th>Zone</th><th>Action</th></tr>");
+
+        foreach (var row in exits)
+        {
+            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-traded=\"{(row.Traded ? "true" : "false")}\">");
+            html.Append(Invariant, $"<td>{row.LowEdge} to {row.HighEdge}</td><td>{Escaped(row.Detail)}</td></tr>");
+        }
+
+        html.Append("</table>");
+
+        return html.ToString();
+    }
 
     // The volume profile, drawn horizontally against a price axis it is given.
     //

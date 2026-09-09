@@ -3,6 +3,12 @@ using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
+using EquityBrief.Api.Reading;
+using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Ladders;
+using EquityBrief.Worker.Levels;
+using EquityBrief.Worker.Swings;
+using EquityBrief.Worker.Volume;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Membership;
 using Microsoft.Data.Sqlite;
@@ -28,7 +34,8 @@ public class GapRefusal
     internal static CheckReach Reach => new(
         "gap-refusal",
         ["fixtures/membership-2026-09-05"],
-        [CheckReach.Key(Scope.FailureTable, "A gap in one name's series, chart")]);
+        [CheckReach.Key(Scope.FailureTable, "A gap in one name's series, chart"),
+            CheckReach.Key(Scope.FailureTable, "A gap in one name's series, level and plan sections")]);
 
     const string Fixture = "membership-2026-09-05";
     const string Index = "GSPC";
@@ -94,6 +101,66 @@ public class GapRefusal
         string runId = "run-1") =>
         await new Backfill(feed, FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile)
             .RunAsync(Index, runId);
+
+    [Fact]
+    public async Task TheLevelAndPlanSectionsOfARefusedNameSayTheyAreNotComputed()
+    {
+        // Section 18's gap row, its other element. The chart half is reached
+        // here already: a refused series is one the store does not hold, so the
+        // chart shows the absence. This is the half that waited for the level
+        // and plan sections to exist, the level table since 3.5 and the plan
+        // column and its tables since 4.6.
+        //
+        // A name whose series was refused has no bars, so it has no bands and no
+        // plan, and both sections have to say so rather than drawing nothing.
+        // An empty picture and a picture saying what it does not have are
+        // different things, and only the second is readable.
+        using var store = await WithMembership();
+
+        await BackfillAsync(store, FeedWithTheGap());
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new IndicatorEngine(clock, store.DatabaseFile).RunAsync("gap-indicators");
+        await new SwingFinder(clock, store.DatabaseFile).RunAsync("gap-swings");
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("gap-profile");
+        await new LevelBuilder(clock, store.DatabaseFile).RunAsync("gap-levels");
+        await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "gap-ladders");
+
+        var api = new ReadApi(store.DatabaseFile, clock);
+        var marks = new MarkRenderer();
+
+        // The refused name holds nothing, which is what makes the two sections
+        // absences rather than short answers.
+        Assert.Equal(0, Rows(store, "KEYS"));
+        Assert.Empty(await api.LevelsAsync("KEYS"));
+
+        // The level summary says what it does not have.
+        var summary = marks.LevelSummary("KEYS", []);
+
+        Assert.Contains("degraded", summary, StringComparison.Ordinal);
+
+        // And the plan section says so too, in its own words, off the ladder row
+        // the night wrote for it: a member with no stored bars still gets a row,
+        // and its plan states the reason.
+        var ladder = await api.LadderAsync("KEYS");
+
+        Assert.NotNull(ladder);
+        Assert.Contains("no stored bars", ladder!.Plan, StringComparison.Ordinal);
+
+        var column = marks.PlanColumn("KEYS", 0m, NameScreen.PlanRows(ladder));
+
+        Assert.Contains("has no plan to draw", column, StringComparison.Ordinal);
+
+        // The counter-reading, over the same run: a name whose series was not
+        // refused has both sections. Without it this would pass over a pipeline
+        // that computed nothing for anybody.
+        Assert.NotEmpty(await api.LevelsAsync("AAPL"));
+
+        var drawn = marks.PlanColumn("AAPL", 319.97m, NameScreen.PlanRows(await api.LadderAsync("AAPL")));
+
+        Assert.Contains("class=\"plan-column\"", drawn, StringComparison.Ordinal);
+    }
 
     static int Rows(TemporaryStore store, string ticker)
     {
