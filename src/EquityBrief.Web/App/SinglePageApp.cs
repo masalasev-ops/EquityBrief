@@ -99,7 +99,8 @@ public sealed class SinglePageApp : IComponent
         DateOnly? nextEvent,
         IReadOnlyList<PlanRow> plan,
         decimal close,
-        string eventBook)
+        string eventBook,
+        string arithmetic)
     {
         var region = new StringBuilder();
 
@@ -140,6 +141,11 @@ public sealed class SinglePageApp : IComponent
         // tranche and exit tables. It arrives already written, because what it
         // holds is prose and stored figures rather than a mark.
         region.Append(eventBook);
+
+        // The sizing arithmetic and the earnings rule, which section 15.9 puts
+        // last in the plan region. It arrives written for the same reason the
+        // event book does.
+        region.Append(arithmetic);
 
         region.Append("</section>");
 

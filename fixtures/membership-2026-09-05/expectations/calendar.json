@@ -1,56 +1,99 @@
 {
   "stage": "calendar",
-  "derivedFrom": "the captured calendar response read through the rules in section 7 and the window the fetcher asks for, not from a run. The window is the night's session and ninety days, so a night dated 2026-09-08 asks 2026-09-08 to 2026-12-07. Each row's ticker is its code without the exchange suffix, its date is report_date and never date, which is the fiscal period the report covers, and a row is stored only where the ticker is a current index member. Every figure below was read off the captured file by hand before the fetcher was run against it.",
-  "tables": ["calendar"],
+  "derivedFrom": "the captured calendar response read through the rules in section 7 and the window the fetcher asks for, not from a run. The window is a year behind the night's session and ninety days ahead of it, so a night dated 2026-09-08 asks 2025-09-08 to 2026-12-07. Each row's ticker is its code without the exchange suffix, its date is report_date and never date, which is the fiscal period the report covers, and a row is stored only where the ticker is a current index member. Every figure below was read off the captured file by hand.",
+  "tables": [
+    "calendar"
+  ],
   "window": {
     "session": "2026-09-08",
-    "from": "2026-09-08",
+    "from": "2025-09-08",
     "to": "2026-12-07",
-    "days": 90,
-    "note": "a quarter and not the twenty-session earnings horizon. Every name reports once a quarter, so ninety days holds every member's next print, and a window equal to the horizon would mean a date arrives already inside it. Measured on this capture: the two names with a print report six and seven weeks out, which is outside a horizon-sized window and inside this one."
+    "daysAhead": 90,
+    "daysBehind": 365,
+    "note": "a quarter ahead and a year behind. Ahead, because every name reports once a quarter, so ninety days holds every member's next print, and a window equal to the twenty-session horizon would mean a date arrives already inside it. Behind, because the earnings rule states the last two prints' one-day moves and needs the dates those moves happened on. A year and no further: the moves are read off the bars, which are kept for a year, so a calendar reaching further back would name a print whose session the store does not hold."
   },
   "capture": {
-    "rows": 7,
-    "note": "the provider's own envelope and row shape, trimmed to the fixture's constituents plus four the index does not hold: a US listing, a Frankfurt one, a Stuttgart one and a Singapore one. The unfiltered response over this window carries 22,526 rows worldwide."
+    "rows": 31,
+    "note": "the provider's own envelope and row shape, trimmed to the fixture's six constituents plus four the index does not hold: a US listing, a London one, a Warsaw one and another US one. The unfiltered response over this window carries 112,647 rows worldwide. Every row in it falls inside the window, because the capture was taken over exactly that range; the window's own filtering is asserted by asking the parser for a narrower one."
   },
   "counts": {
-    "eventsReturned": 3,
-    "rowsWritten": 2,
-    "notMembers": 1,
-    "outsideTheWindow": 4
+    "eventsReturned": 31,
+    "rowsWritten": 18,
+    "notMembers": 13,
+    "outsideTheWindow": 0
   },
   "rows": {
     "format": "ticker|event_date|kind|timing",
     "stored": [
+      "AAPL|2025-10-30|earnings|after",
+      "AAPL|2026-01-29|earnings|after",
+      "AAPL|2026-04-30|earnings|after",
+      "AAPL|2026-07-30|earnings|after",
       "AAPL|2026-10-29|earnings|after",
+      "KEYS|2025-11-24|earnings|after",
+      "KEYS|2026-02-23|earnings|after",
+      "KEYS|2026-05-19|earnings|after",
+      "KEYS|2026-08-18|earnings|after",
+      "MSFT|2025-10-29|earnings|after",
+      "MSFT|2026-01-28|earnings|after",
+      "MSFT|2026-04-29|earnings|after",
+      "MSFT|2026-07-29|earnings|after",
+      "NFLX|2025-10-21|earnings|after",
+      "NFLX|2026-01-20|earnings|after",
+      "NFLX|2026-04-16|earnings|after",
+      "NFLX|2026-07-16|earnings|after",
       "NFLX|2026-10-20|earnings|after"
     ]
   },
   "detail": {
-    "note": "what the provider carries beyond the date. The estimate is kept as it was sent, as a string, because nothing computes with it.",
+    "note": "what the provider carries beyond the date, for the two names whose next print is ahead. The estimate is kept as it was sent, as a string, because nothing computes with it, and a past print carries an actual where an upcoming one does not.",
     "byName": {
-      "AAPL": { "periodEnd": "2026-09-30", "estimate": "1.98", "actual": null },
-      "NFLX": { "periodEnd": "2026-09-30", "estimate": "0.82", "actual": null }
+      "AAPL": {
+        "periodEnd": "2026-09-30",
+        "estimate": "1.98",
+        "actual": null
+      },
+      "NFLX": {
+        "periodEnd": "2026-09-30",
+        "estimate": "0.82",
+        "actual": null
+      }
+    },
+    "upcoming": {
+      "AAPL": "2026-10-29",
+      "NFLX": "2026-10-20"
     }
   },
   "refused": {
-    "AAL": "a constituent that left the index on 2026-09-23 by the membership expectation, so it is in the store's membership and not in the index tonight. Its print on 2026-10-22 is inside the window and is not stored, which is the only reason this row is in the capture.",
-    "outsideTheWindow": [
-      "A1B.STU 2026-09-07",
-      "IDEXY.US 2026-09-07",
-      "IXD2.F 2026-09-07",
-      "NEX.SG 2026-09-07"
-    ]
+    "AAL": "a constituent that left the index on 2026-09-23 by the membership expectation, so it is in the store's membership and not in the index tonight. Its five prints are inside the window and none is stored.",
+    "XRAY": "the second departed constituent, four prints inside the window and none stored",
+    "notMembers": [
+      "0KO8.LSE 2025-09-08",
+      "AAL.US 2025-10-23",
+      "AAL.US 2026-01-27",
+      "AAL.US 2026-04-23",
+      "AAL.US 2026-07-23",
+      "AAL.US 2026-10-22",
+      "CASY.US 2025-09-08",
+      "EMMA.US 2025-09-08",
+      "ENA.WAR 2025-09-08",
+      "XRAY.US 2025-11-06",
+      "XRAY.US 2026-02-26",
+      "XRAY.US 2026-05-05",
+      "XRAY.US 2026-08-06"
+    ],
+    "outsideTheWindow": "no row in this capture falls outside the window, because the capture was taken over exactly that range. The parser's own range filter is asserted by asking it for a narrower window than the file holds, which is a property of the reader rather than of the capture."
   },
   "absent": {
-    "KEYS": "no row in the capture over this window, so the calendar says the date is not on file",
-    "MSFT": "no row in the capture over this window, so the calendar says the date is not on file",
-    "note": "two of the four names have a date and two do not, which is what makes the explicit blank a state this fixture reaches rather than one only a constructed case could show."
+    "KEYS": "four past prints and no upcoming one inside the window, so the second book is empty and the earnings rule still has its two moves",
+    "MSFT": "the same",
+    "note": "two of the four names have an upcoming print and two do not, which is what makes the explicit blank a state this fixture reaches. All four have past prints, so the earnings rule is stated for every name whether or not it has a date ahead."
   },
   "properties": {
     "oneRequestWhateverTheUniverseSize": "the feed counts one request for the window, and the count does not vary with the number of members",
     "theTickerLosesItsExchange": "the provider sends AAPL.US and the store holds AAPL",
     "theDateIsTheReportAndNotThePeriod": "AAPL reports on 2026-10-29 for a period ending 2026-09-30, and the two are a month apart",
-    "theProviderFilesNoConfirmedFlag": "no row carries a confirmed or estimated field, which is the column 4.0 wrote into SCHEMA and 4.3 replaced with the timing the provider does file"
+    "theProviderFilesNoConfirmedFlag": "no row carries a confirmed or estimated field, which is the column 4.0 wrote into SCHEMA and 4.3 replaced with the timing the provider does file",
+    "theWindowReachesBothWays": "eighteen rows are stored for four names, of which two are upcoming and sixteen are past, which is what the earnings rule reads"
   }
 }

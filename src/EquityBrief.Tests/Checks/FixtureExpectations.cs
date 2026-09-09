@@ -1955,13 +1955,23 @@ public class FixtureExpectations
         // rather than the window doing the work.
         Assert.DoesNotContain(stored, row => row.StartsWith("AAL|", StringComparison.Ordinal));
 
-        // Two of the four names have no row at all, which is the explicit blank
-        // section 18 promises, reached from the fixture rather than constructed.
+        // Two of the four names have no upcoming print, which is the explicit
+        // blank section 18 promises, reached from the fixture rather than
+        // constructed. All four have past prints, so what is absent is the date
+        // ahead rather than the name.
+        var upcoming = expected.GetProperty("detail").GetProperty("upcoming");
+
         foreach (var name in expected.GetProperty("absent").EnumerateObject()
                      .Where(entry => entry.Name != "note")
                      .Select(entry => entry.Name))
         {
-            Assert.DoesNotContain(stored, row => row.StartsWith(name + "|", StringComparison.Ordinal));
+            Assert.False(
+                upcoming.TryGetProperty(name, out _),
+                $"{name} is named as having no upcoming print and the expectation gives it one.");
+
+            Assert.DoesNotContain(
+                stored,
+                row => row.StartsWith(name + "|2026-1", StringComparison.Ordinal));
         }
 
         // What the provider carries beyond the date, read back as stored.
@@ -1969,8 +1979,10 @@ public class FixtureExpectations
 
         foreach (var name in detail.EnumerateObject().Select(entry => entry.Name))
         {
+            var date = expected.GetProperty("detail").GetProperty("upcoming").GetProperty(name).GetString();
+
             var written = JsonDocument
-                .Parse(Query(store, $"SELECT detail FROM calendar WHERE ticker = '{name}';").Single())
+                .Parse(Query(store, $"SELECT detail FROM calendar WHERE ticker = '{name}' AND event_date = '{date}';").Single())
                 .RootElement;
 
             Assert.Equal(
@@ -2034,21 +2046,28 @@ public class FixtureExpectations
             expected.GetProperty("capture").GetProperty("rows").GetInt32(),
             JsonDocument.Parse(response).RootElement.GetProperty("earnings").GetArrayLength());
 
-        // The rows the window refuses, named in the expectation and asserted
-        // both ways: each is in the capture and none is in the parsed events.
+        // The window's own filter, asserted by asking the parser for a narrower
+        // range than the capture holds. The capture was taken over exactly the
+        // window a night asks for, so no row in it falls outside: what is under
+        // test is the reader rather than the file, and a capture that happened
+        // to hold a stale row would be testing the file.
         var refused = expected.GetProperty("refused");
 
-        foreach (var row in refused.GetProperty("outsideTheWindow").EnumerateArray().Select(entry => entry.GetString()!))
-        {
-            var code = row.Split(' ')[0];
+        Assert.False(
+            string.IsNullOrWhiteSpace(refused.GetProperty("outsideTheWindow").GetString()),
+            "the expectation says nothing about how the window is asserted.");
 
-            Assert.Contains($"\"code\": \"{code}\"", response, StringComparison.Ordinal);
-            Assert.DoesNotContain(events, entry => entry.Ticker == code.Split('.')[0]);
-        }
+        var narrow = RecordedEarningsCalendarFeed.Parse(
+            response,
+            new DateOnly(2026, 10, 1),
+            new DateOnly(2026, 10, 31));
 
-        Assert.Equal(
-            expected.GetProperty("counts").GetProperty("outsideTheWindow").GetInt32(),
-            refused.GetProperty("outsideTheWindow").GetArrayLength());
+        Assert.NotEmpty(narrow);
+        Assert.True(narrow.Count < events.Count, "a narrower window returned as much as the whole one.");
+        Assert.All(narrow, entry => Assert.InRange(
+            entry.EventDate,
+            new DateOnly(2026, 10, 1),
+            new DateOnly(2026, 10, 31)));
 
         // And the departed constituent, which the window admits and the member
         // filter refuses, so the two refusals are told apart rather than one
@@ -2064,7 +2083,7 @@ public class FixtureExpectations
         // Two. The event date is report_date and never date, which is the
         // fiscal period the report covers. They are a month apart on this
         // capture, so a parser reading the wrong one puts every print early.
-        var apple = events.Single(entry => entry.Ticker == "AAPL");
+        var apple = events.Last(entry => entry.Ticker == "AAPL");
 
         Assert.Equal(new DateOnly(2026, 10, 29), apple.EventDate);
         Assert.Equal(new DateOnly(2026, 9, 30), apple.PeriodEnd);
@@ -2561,6 +2580,201 @@ public class FixtureExpectations
         Assert.All(
             apple.GetProperty("tranches").EnumerateArray(),
             tranche => Assert.False(tranche.TryGetProperty("target", out _)));
+    }
+
+    // ---- 4.8, the arithmetic and the earnings rule ----
+
+    [Fact]
+    public async Task TheArithmeticIsDerivedFromThePlanAndMatchesTheHandDerivation()
+    {
+        var expected = Expected("ladder").GetProperty("arithmetic").GetProperty("byName");
+
+        using var store = await WithLadders();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var figures = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement.GetProperty("arithmetic");
+
+            var stated = expected.GetProperty(name);
+
+            if (stated.TryGetProperty("absent", out var absent))
+            {
+                Assert.Equal(absent.GetString(), figures.GetProperty("absent").GetString());
+
+                continue;
+            }
+
+            Assert.Equal(JsonValueKind.Null, figures.GetProperty("absent").ValueKind);
+
+            foreach (var key in stated.EnumerateObject().Select(entry => entry.Name))
+            {
+                Assert.Equal(
+                    stated.GetProperty(key).GetString(),
+                    figures.GetProperty(key).GetString());
+            }
+        }
+
+        // Nothing here is stored. Every figure is a function of prices the row
+        // already carries, which is what keeps the report and the score from
+        // being two implementations of one arithmetic.
+        // see: Code owns every number
+        var apple = JsonDocument
+            .Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'AAPL';").Single())
+            .RootElement;
+
+        var tranche = apple.GetProperty("tranches").EnumerateArray().First();
+        var low = decimal.Parse(tranche.GetProperty("lowEdge").GetString()!, CultureInfo.InvariantCulture);
+        var high = decimal.Parse(tranche.GetProperty("highEdge").GetString()!, CultureInfo.InvariantCulture);
+        var stop = decimal.Parse(tranche.GetProperty("stop").GetString()!, CultureInfo.InvariantCulture);
+
+        var midpoint = (low + high) / 2;
+
+        Assert.Equal(
+            midpoint.ToString(CultureInfo.InvariantCulture),
+            apple.GetProperty("arithmetic").GetProperty("firstEntry").GetString());
+
+        Assert.Equal(
+            (midpoint - stop).ToString(CultureInfo.InvariantCulture),
+            apple.GetProperty("arithmetic").GetProperty("firstRisk").GetString());
+    }
+
+    [Fact]
+    public void TheBreakEvenIsWhatTheRatioDemandsOverWorkedCases()
+    {
+        // The arithmetic asserted against cases computed by hand rather than
+        // against the code's own output, which is 4.8's done condition. A plan
+        // risking one to make two is worth taking if it is right more than a
+        // third of the time, and that is a number rather than a preference.
+        // see: A condition is judged against the break-even its own plan demands
+        Assert.Equal(0.5m, LadderSeries.BreakEvenOf(1m));
+        Assert.Equal(1m / 3m, LadderSeries.BreakEvenOf(2m));
+        Assert.Equal(0.25m, LadderSeries.BreakEvenOf(3m));
+
+        // A plan whose reward is a fraction of its risk demands more than half,
+        // which is AAPL's case in this fixture: its first tranche's ratio is
+        // 0.9292 and it needs to be right 51.83 per cent of the time.
+        var demanding = LadderSeries.BreakEvenOf(0.9292m);
+
+        Assert.NotNull(demanding);
+        Assert.True(demanding > 0.5m, $"a ratio below one demanded {demanding}, which is not more than half.");
+        Assert.Equal(0.5183m, Math.Round(demanding!.Value, 4, MidpointRounding.AwayFromZero));
+
+        // A ratio of nothing has no break-even rather than a break-even of one,
+        // because a plan with no reward is not a plan that always loses: it is
+        // one nothing can be said about.
+        Assert.Null(LadderSeries.BreakEvenOf(null));
+        Assert.Null(LadderSeries.BreakEvenOf(0m));
+
+        // And the worked example section 13 states, which is the one figure in
+        // this arithmetic the corpus already carries: entry near 920, stop below
+        // 855, first traded target 1057, risking 65 to make 137, breaking even
+        // at about 32 per cent.
+        var worked = LadderSeries.BreakEvenOf(137m / 65m);
+
+        Assert.NotNull(worked);
+        Assert.Equal(0.32m, Math.Round(worked!.Value, 2, MidpointRounding.AwayFromZero));
+    }
+
+    [Fact]
+    public async Task TheEarningsRuleStatesTheLastTwoPrintsAgainstTheStopDistance()
+    {
+        var expected = Expected("ladder").GetProperty("earningsRule");
+        var byName = expected.GetProperty("byName");
+
+        using var store = await WithLadders();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var prints = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement.GetProperty("earningsRule").EnumerateArray()
+                .Select(print => string.Join(
+                    "|",
+                    print.GetProperty("eventDate").GetString(),
+                    print.GetProperty("session").GetString(),
+                    print.GetProperty("move").GetString(),
+                    print.GetProperty("shareOfStop").GetString() ?? string.Empty))
+                .ToArray();
+
+            Assert.Equal(
+                byName.GetProperty(name).EnumerateArray().Select(row => row.GetString()).ToArray(),
+                prints);
+
+            // Two, which is what the rule states, for every name. All four have
+            // past prints whether or not they have one ahead, so this is the
+            // population the rule is about rather than a subset of it.
+            Assert.Equal(LadderSeries.PrintsStated, prints.Length);
+        }
+
+        // The session is the one the print moved, which is the next session for a
+        // report after the close. Every print in this fixture lands after the
+        // close, and each is read off the session following its date rather than
+        // its own.
+        var apple = JsonDocument
+            .Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'AAPL';").Single())
+            .RootElement.GetProperty("earningsRule").EnumerateArray().Last();
+
+        Assert.Equal("2026-07-30", apple.GetProperty("eventDate").GetString());
+        Assert.Equal("2026-07-31", apple.GetProperty("session").GetString());
+
+        // And MSFT, which trades no exit and so has no reward to measure, still
+        // has a stop and two prints measured against it. The two figures are
+        // independent and a rule that took the stop distance from the arithmetic
+        // would have left MSFT's share empty.
+        var msft = JsonDocument
+            .Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'MSFT';").Single())
+            .RootElement;
+
+        Assert.NotNull(msft.GetProperty("arithmetic").GetProperty("absent").GetString());
+        Assert.All(
+            msft.GetProperty("earningsRule").EnumerateArray(),
+            print => Assert.False(string.IsNullOrWhiteSpace(print.GetProperty("shareOfStop").GetString())));
+    }
+
+    [Fact]
+    public void TheEarningsRuleReadsTheSessionTheTimingDecides()
+    {
+        // The timing column earning its place. A report before the open moves
+        // that day's bar and one after the close moves the next, and the same
+        // date with the two timings reads two different sessions.
+        var start = new DateOnly(2026, 9, 1);
+
+        LadderBar Bar(int day, decimal close) => new(start.AddDays(day), close, close, close);
+
+        LadderBar[] sessions = [Bar(0, 100m), Bar(1, 102m), Bar(2, 110m), Bar(3, 111m)];
+
+        var print = new DateOnly(2026, 9, 2);
+
+        var before = LadderSeries.EarningsRuleFor([(print, EventTiming.Before)], sessions, 4m).Single();
+        var after = LadderSeries.EarningsRuleFor([(print, EventTiming.After)], sessions, 4m).Single();
+
+        // Before the open: the print's own session, 102 against the 100 before it.
+        Assert.Equal(new DateOnly(2026, 9, 2), before.Session);
+        Assert.Equal(2m, before.Move);
+
+        // After the close: the next session, 110 against the 102 before it.
+        Assert.Equal(new DateOnly(2026, 9, 3), after.Session);
+        Assert.Equal(8m, after.Move);
+
+        // A timing the provider left unstated reads as the print's own day,
+        // which is the reading that assumes least.
+        Assert.Equal(before.Session, LadderSeries.EarningsRuleFor([(print, EventTiming.Unstated)], sessions, 4m).Single().Session);
+
+        // The move is a distance rather than a direction, because what is being
+        // decided is whether the position can take it.
+        LadderBar[] falling = [Bar(0, 100m), Bar(1, 102m), Bar(2, 90m), Bar(3, 91m)];
+
+        Assert.Equal(12m, LadderSeries.EarningsRuleFor([(print, EventTiming.After)], falling, 4m).Single().Move);
+
+        // And the share is against the stop distance, so a print that moved the
+        // name further than the plan risks reads above one.
+        Assert.Equal(3m, LadderSeries.EarningsRuleFor([(print, EventTiming.After)], falling, 4m).Single().ShareOfStop);
+
+        // A plan with no stop states the move and no share, rather than a share
+        // of nothing.
+        Assert.Null(LadderSeries.EarningsRuleFor([(print, EventTiming.After)], falling, null).Single().ShareOfStop);
     }
 
     [Fact]

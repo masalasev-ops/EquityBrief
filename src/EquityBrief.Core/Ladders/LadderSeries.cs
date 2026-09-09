@@ -1,4 +1,5 @@
 using EquityBrief.Core.Levels;
+using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Core.Ladders;
 
@@ -61,6 +62,48 @@ public sealed record EventSetup(
     decimal Entry,
     decimal Stop,
     decimal Target);
+
+// The arithmetic the plan section states, derived from the plan and never
+// stored.
+//
+// Risk is per tranche at the zone midpoint, because a fill can land anywhere in
+// the band and the midpoint is the only price in it that is not a choice.
+// Reward to risk is stated twice, from the first tranche and from the blended
+// first two, because a plan staged across two zones is carried at neither of
+// them alone.
+//
+// The break-even is what falls out of the two: a setup risking one to make two
+// is worth taking if it is right more than a third of the time. It is stated
+// rather than judged, which is the whole of section 13's argument.
+// see: A condition is judged against the break-even its own plan demands
+public sealed record PlanArithmetic(
+    decimal FirstEntry,
+    decimal FirstRisk,
+    decimal FirstReward,
+    decimal? BlendedEntry,
+    decimal? BlendedRisk,
+    decimal? BlendedReward,
+    decimal? FirstRewardToRisk,
+    decimal? BlendedRewardToRisk,
+    decimal? BreakEven,
+    string? Absent);
+
+// What one past print did to the price, and how that compares with the stop the
+// plan is carrying.
+//
+// The session is the one the print moved, which is the print's own day when it
+// lands before the open and the next session when it lands after the close.
+// That is what the calendar's timing column is for, and it decides which bar the
+// move is read off.
+//
+// `ShareOfStop` is the move against the first tranche's risk. A print that has
+// twice moved a name further than the stop distance is a print the reader may
+// not want to carry, and stating it is what lets them decide.
+public sealed record PastPrint(
+    DateOnly EventDate,
+    DateOnly Session,
+    decimal Move,
+    decimal? ShareOfStop);
 
 // The position book and the second book: the tranches, their stops, the exits,
 // the price the whole thing is wrong below, and the setups keyed to a date.
@@ -428,6 +471,145 @@ public static class LadderSeries
 
         return above?.LowEdge ?? entry + (typicalMove * 2);
     }
+
+    // The last two prints' one-day moves, stated against the stop distance.
+    //
+    // "so the reader decides what to carry through the date" is the whole of the
+    // rule: it computes no decision and produces no verdict, it states two
+    // measurements and the risk they are measured against.
+    // see: The second book is keyed to a dated event, and an earnings print is the only kind on file
+    public const int PrintsStated = 2;
+
+    public static IReadOnlyList<PastPrint> EarningsRuleFor(
+        IReadOnlyList<(DateOnly Date, EventTiming Timing)> pastPrints,
+        IReadOnlyList<LadderBar> sessions,
+        decimal? stopDistance)
+    {
+        var stated = new List<PastPrint>();
+
+        foreach (var print in pastPrints.OrderBy(print => print.Date).TakeLast(PrintsStated))
+        {
+            // The session the print moved. A report before the open moves that
+            // day's bar and one after the close moves the next, and a timing the
+            // provider left unstated is read as the print's own day, which is
+            // the reading that assumes least.
+            var at = print.Timing == EventTiming.After
+                ? sessions.FirstOrDefault(session => session.SessionDate > print.Date)
+                : sessions.FirstOrDefault(session => session.SessionDate >= print.Date);
+
+            if (at.SessionDate == default)
+            {
+                continue;
+            }
+
+            var before = sessions.LastOrDefault(session => session.SessionDate < at.SessionDate);
+
+            if (before.SessionDate == default)
+            {
+                continue;
+            }
+
+            // The one-day move, as a distance rather than a direction: what the
+            // reader is deciding is whether the position can take it, and a
+            // print that fell that far is the same risk as one that rose.
+            var move = Math.Abs(at.Close - before.Close);
+
+            stated.Add(new PastPrint(
+                print.Date,
+                at.SessionDate,
+                move,
+                stopDistance is { } distance && distance > 0 ? move / distance : null));
+        }
+
+        return stated;
+    }
+
+    // The arithmetic, derived from a plan rather than read off it.
+    //
+    // Nothing here is stored. The ladder holds prices and this turns them into
+    // the figures the report states, which is why it is a function of the plan
+    // and takes no store: two implementations of one arithmetic disagree
+    // eventually, and the report and the score would be the two.
+    // see: Code owns every number
+    public static PlanArithmetic ArithmeticFor(Ladder plan)
+    {
+        if (plan.Tranches.Count == 0)
+        {
+            return Absent("no tranche is placed, so there is nothing to size");
+        }
+
+        var traded = plan.Exits.Where(exit => exit.Traded).ToArray();
+
+        var first = plan.Tranches[0];
+        var firstEntry = Midpoint(first);
+
+        // The target is the first traded exit, which is the first price the plan
+        // actually sells at. A skipped exit is named on the chart and not acted
+        // on, so measuring reward to it would be measuring a trade the plan says
+        // not to take.
+        // see: An exit closer than two typical days' moves is listed but not traded
+        if (traded.Length == 0)
+        {
+            return Absent("no exit is traded, so there is no reward to measure");
+        }
+
+        var target = traded[0].LowEdge;
+
+        if (first.Stop is not { } firstStop)
+        {
+            return Absent("the first tranche has no stop, so there is no risk to measure");
+        }
+
+        var firstRisk = firstEntry - firstStop;
+        var firstReward = target - firstEntry;
+
+        decimal? blendedEntry = null;
+        decimal? blendedRisk = null;
+        decimal? blendedReward = null;
+
+        // The blended first two, which is what the position is carried at once
+        // the plan has staged what it can. Stated only where a second tranche
+        // exists: a blend over one zone is that zone with another name.
+        if (plan.Tranches.Count > 1 && plan.Tranches[1].Stop is { } secondStop)
+        {
+            blendedEntry = (firstEntry + Midpoint(plan.Tranches[1])) / 2;
+            blendedRisk = blendedEntry - secondStop;
+            blendedReward = target - blendedEntry;
+        }
+
+        return new PlanArithmetic(
+            firstEntry,
+            firstRisk,
+            firstReward,
+            blendedEntry,
+            blendedRisk,
+            blendedReward,
+            Ratio(firstReward, firstRisk),
+            Ratio(blendedReward, blendedRisk),
+            BreakEvenOf(Ratio(firstReward, firstRisk)),
+            null);
+    }
+
+    // The share of setups that have to reach the target before the stop for the
+    // plan to be worth taking, which falls out of where the bands sit rather
+    // than being a preference borrowed from elsewhere.
+    //
+    // One over one plus the ratio: a plan risking one to make two breaks even at
+    // a third. It is a fraction rather than a percentage, because a percentage
+    // is a presentation and this is a number.
+    public static decimal? BreakEvenOf(decimal? rewardToRisk) =>
+        rewardToRisk is { } ratio && ratio > 0 ? 1 / (1 + ratio) : null;
+
+    // A fill can land anywhere in the band, so the price a tranche is carried at
+    // is the middle of it. Any other point in the zone is a choice about how the
+    // fill went.
+    public static decimal Midpoint(Tranche tranche) => (tranche.LowEdge + tranche.HighEdge) / 2;
+
+    static decimal? Ratio(decimal? reward, decimal? risk) =>
+        reward is { } r && risk is { } k && k > 0 ? r / k : null;
+
+    static PlanArithmetic Absent(string reason) =>
+        new(0m, 0m, 0m, null, null, null, null, null, null, reason);
 
     // Exactly one condition, tested in a stated order, because a matcher keyed
     // on the first thing that fits answers about everything that fits. The order
