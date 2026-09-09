@@ -44,6 +44,8 @@ public class ReadSurface
             CheckReach.Key("15.5 The mark vocabulary", "Momentum panel"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, nn bars"),
             CheckReach.Key("15.9 Name", "The chart"),
+            CheckReach.Key("15.9 Name", "The plan"),
+            CheckReach.Key("15.5 The mark vocabulary", "Plan column"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -736,6 +738,133 @@ public class ReadSurface
             await api.NextEventAsync("NOSUCH", DateOnly.MinValue));
 
         Assert.Contains("data-trend-state=\"none\"", missing, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ThePlanColumnDrawsNoValueTheLadderDoesNotCarry()
+    {
+        // The containment property applied to pictures, which is 4.6's done
+        // condition. Read off the mark's own data attributes and matched against
+        // the stored plan rather than by eye, so a figure the drawing invented
+        // fails rather than looking plausible.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var ladder = await api.LadderAsync(Name);
+
+        Assert.NotNull(ladder);
+
+        var rows = NameScreen.PlanRows(ladder);
+        var svg = new MarkRenderer().PlanColumn(Name, 319.97m, rows);
+
+        // Every price the figure draws, taken off the markup.
+        var drawn = Regex.Matches(svg, "data-low-edge=\"([^\"]+)\" data-high-edge=\"([^\"]+)\"")
+            .SelectMany(match => new[] { match.Groups[1].Value, match.Groups[2].Value })
+            .Distinct()
+            .OrderBy(price => price, StringComparer.Ordinal)
+            .ToArray();
+
+        // Every price the stored plan carries.
+        using var plan = JsonDocument.Parse(ladder!.Plan);
+        var stored = new List<string>();
+
+        foreach (var tranche in plan.RootElement.GetProperty("tranches").EnumerateArray())
+        {
+            stored.Add(tranche.GetProperty("lowEdge").GetString()!);
+            stored.Add(tranche.GetProperty("highEdge").GetString()!);
+
+            if (tranche.GetProperty("stop").GetString() is { } stop)
+            {
+                stored.Add(stop);
+            }
+        }
+
+        foreach (var exit in plan.RootElement.GetProperty("exits").EnumerateArray())
+        {
+            stored.Add(exit.GetProperty("lowEdge").GetString()!);
+            stored.Add(exit.GetProperty("highEdge").GetString()!);
+        }
+
+        if (plan.RootElement.GetProperty("invalidation").GetString() is { } invalidation)
+        {
+            stored.Add(invalidation);
+        }
+
+        // Both directions. Nothing drawn that is not stored, which is the
+        // containment property, and nothing stored that is not drawn, which is
+        // the half a figure that quietly omitted a stop would pass.
+        Assert.Equal(stored.Distinct().OrderBy(price => price, StringComparer.Ordinal), drawn);
+
+        // The population carrying the property, stated: a plan with no rows
+        // would satisfy the comparison above.
+        Assert.True(rows.Count >= 5, $"the plan draws {rows.Count} rows, expected at least 5.");
+
+        // The invalidation is the lowest rule of all, which is what the mark
+        // exists to make legible.
+        var lowest = rows.Min(row => row.LowEdge);
+
+        Assert.Equal(lowest, Assert.Single(rows, row => row.Kind == PlanKind.Invalidation).LowEdge);
+
+        // And it is one rule rather than two at one price. The invalidation is
+        // the lowest stop, so drawing both would put two horizontal rules on the
+        // same line and say two things where the figure says one.
+        Assert.DoesNotContain(rows, row => row.Kind == PlanKind.Stop && row.LowEdge == lowest);
+
+        // Everything above the marker is a sale and everything below is a
+        // purchase, asserted against the close rather than against the drawing
+        // order.
+        Assert.All(
+            rows.Where(row => row.Kind == PlanKind.Tranche),
+            row => Assert.True(row.LowEdge < 319.97m, $"a tranche at {row.LowEdge} sits above the price."));
+
+        Assert.All(
+            rows.Where(row => row.Kind == PlanKind.Exit),
+            row => Assert.True(row.LowEdge > 319.97m, $"an exit at {row.LowEdge} sits below the price."));
+
+        // And a name with no plan says so rather than drawing an empty column.
+        Assert.Contains(
+            "has no plan to draw",
+            new MarkRenderer().PlanColumn("NOSUCH", 10m, []),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ThePlanTablesCarryEveryTrancheAndEveryExitWithItsAction()
+    {
+        // The two tables the figure is read beside. A skipped exit is a row with
+        // its reason rather than an absence, which is the rule the ladder
+        // already applies and the table has to carry through.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+
+        foreach (var name in new[] { "AAPL", "MSFT", "NFLX" })
+        {
+            var ladder = await api.LadderAsync(name);
+            var rows = NameScreen.PlanRows(ladder);
+            var tables = new MarkRenderer().PlanTables(name, rows);
+
+            using var plan = JsonDocument.Parse(ladder!.Plan);
+
+            var tranches = plan.RootElement.GetProperty("tranches").GetArrayLength();
+            var exits = plan.RootElement.GetProperty("exits").GetArrayLength();
+
+            Assert.Contains($"class=\"tranche-table\" data-ticker=\"{name}\" data-rows=\"{tranches}\"", tables, StringComparison.Ordinal);
+            Assert.Contains($"class=\"exit-table\" data-ticker=\"{name}\" data-rows=\"{exits}\"", tables, StringComparison.Ordinal);
+
+            // Every tranche row names its condition in words and its stop, and
+            // every exit row says what to do there.
+            Assert.Equal(tranches, Regex.Matches(tables, "<tr data-low-edge=\"[^\"]+\"><td>").Count);
+            Assert.Equal(exits, Regex.Matches(tables, "data-traded=\"(true|false)\"").Count);
+        }
+
+        // MSFT's only exit is the skipped one, so its exit table is a row saying
+        // why rather than an empty table.
+        var msft = NameScreen.PlanRows(await api.LadderAsync("MSFT"));
+        var skipped = new MarkRenderer().PlanTables("MSFT", msft);
+
+        Assert.Contains("data-traded=\"false\"", skipped, StringComparison.Ordinal);
+        Assert.Contains("typical days", skipped, StringComparison.Ordinal);
     }
 
     [Fact]

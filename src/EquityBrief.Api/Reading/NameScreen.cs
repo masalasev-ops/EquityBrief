@@ -23,6 +23,109 @@ public static class NameScreen
     // among them for the reason the level builder gives: an RSI is not a price.
     static readonly string[] Averages = [IndicatorSeries.Sma20, IndicatorSeries.Sma50, IndicatorSeries.Sma200];
 
+    // The plan column's rows, from the ladder's stored plan. Nothing here
+    // derives a figure: each row is a price the ladder wrote and a sentence
+    // saying what it is, and the sentences are assembled from stored values
+    // rather than computed from them.
+    public static IReadOnlyList<PlanRow> PlanRows(LadderRow? ladder)
+    {
+        if (ladder is null)
+        {
+            return [];
+        }
+
+        using var plan = JsonDocument.Parse(ladder.Plan);
+        var root = plan.RootElement;
+        var rows = new List<PlanRow>();
+
+        foreach (var tranche in root.GetProperty("tranches").EnumerateArray())
+        {
+            var low = Price(tranche, "lowEdge");
+            var high = Price(tranche, "highEdge");
+            var stop = tranche.GetProperty("stop").GetString();
+            var condition = tranche.GetProperty("condition").GetString();
+
+            rows.Add(new PlanRow(
+                low,
+                high,
+                PlanKind.Tranche,
+                stop is null
+                    ? $"buy on {Words(condition)}, no stop beneath"
+                    : $"buy on {Words(condition)}, stop on a daily close below {stop}",
+                Traded: true));
+
+            // The stop is its own row, because it is a price a close is measured
+            // against rather than a zone anything is bought in.
+            if (stop is not null)
+            {
+                var price = decimal.Parse(stop, CultureInfo.InvariantCulture);
+
+                rows.Add(new PlanRow(price, price, PlanKind.Stop, $"stop for the {low} zone", Traded: true));
+            }
+        }
+
+        foreach (var exit in root.GetProperty("exits").EnumerateArray())
+        {
+            var traded = exit.GetProperty("traded").GetBoolean();
+            var trailing = exit.GetProperty("trailing").GetBoolean();
+            var fraction = exit.GetProperty("fraction").GetString();
+
+            rows.Add(new PlanRow(
+                Price(exit, "lowEdge"),
+                Price(exit, "highEdge"),
+                PlanKind.Exit,
+                traded
+                    ? trailing
+                        ? $"sell {fraction} and trail the rest"
+                        : $"sell {fraction}"
+                    : exit.GetProperty("reason").GetString() ?? "listed and not traded",
+                traded));
+        }
+
+        // The invalidation is the lowest stop rather than a rule beside it, which
+        // is what section 15.5 says the figure shows: stops are horizontal rules
+        // and the invalidation is the lowest one. So the stop at that price is
+        // relabelled rather than a second rule being drawn on top of it, and a
+        // row is added only where no stop sits there, which is a structure whose
+        // lowest tranche has no band beneath it.
+        if (root.GetProperty("invalidation").GetString() is { } invalidation)
+        {
+            var price = decimal.Parse(invalidation, CultureInfo.InvariantCulture);
+            var at = rows.FindIndex(row => row.Kind == PlanKind.Stop && row.LowEdge == price);
+
+            var detail = "the whole position is wrong below this";
+
+            if (at >= 0)
+            {
+                rows[at] = rows[at] with
+                {
+                    Kind = PlanKind.Invalidation,
+                    Detail = $"{rows[at].Detail}, and {detail}",
+                };
+            }
+            else
+            {
+                rows.Add(new PlanRow(price, price, PlanKind.Invalidation, detail, Traded: true));
+            }
+        }
+
+        return rows;
+    }
+
+    static decimal Price(JsonElement row, string name) =>
+        decimal.Parse(row.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
+
+    // The condition in words. The enum's names are what the store holds and are
+    // not what a reader reads, and this is the one place the two are paired.
+    static string Words(string? condition) => condition switch
+    {
+        "AvailableNow" => "this price now",
+        "FailedBreakdown" => "a failed breakdown back into the zone",
+        "FirstCloseBackAbove" => "the first close back above the zone after a dip",
+        "SecondDayAfterAShock" => "the second day after a shock, once the first day's low has held",
+        _ => "the price reaching the zone",
+    };
+
     public static string Region(
         SinglePageApp page,
         MarkRenderer marks,
@@ -99,7 +202,9 @@ public static class NameScreen
             absent,
             ladder?.TrendState,
             ladder?.AsOf,
-            nextEvent?.EventDate);
+            nextEvent?.EventDate,
+            PlanRows(ladder),
+            bars.Count > 0 ? bars[^1].Close : 0m);
     }
 
     // The members column, as the mark needs it. SCHEMA stores each member's

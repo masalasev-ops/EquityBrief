@@ -96,7 +96,9 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<AbsentAverage> absent,
         string? trendState,
         DateOnly? trendAsOf,
-        DateOnly? nextEvent)
+        DateOnly? nextEvent,
+        IReadOnlyList<PlanRow> plan,
+        decimal close)
     {
         var region = new StringBuilder();
 
@@ -127,6 +129,12 @@ public sealed class SinglePageApp : IComponent
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));
+
+        // The plan region, which section 15.9 puts after the chart: the plan
+        // column and the two tables it is read beside.
+        region.Append(marks.PlanColumn(ticker, close, plan));
+        region.Append(marks.PlanTables(ticker, plan));
+
         region.Append("</section>");
 
         return region.ToString();
