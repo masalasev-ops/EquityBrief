@@ -1432,6 +1432,59 @@ public class FixtureExpectations
     }
 
     [Fact]
+    public void OnlyASessionWhoseHighOrLowLandedInABandTouchedIt()
+    {
+        // Written after a mutation found the test above wanting.
+        //
+        // Widening a band to the range of all its members, touches included,
+        // left the whole suite green. That is because a touch is only added
+        // where its price is already inside the anchors' range, so the two
+        // ranges are equal by construction and the assertion that the edges are
+        // the anchors alone cannot fail. It is a true statement and a tautology,
+        // and a tautology is what a test looks like when the property it guards
+        // is held by the shape of the code rather than by the line under test.
+        //
+        // The rule that is not a tautology is which sessions count. The document
+        // says any session high or low that reached a band, so a session whose
+        // range covers the band without either extreme landing in it did not
+        // reach it, and one whose low landed in it did. Both are choices a later
+        // session could take the other way.
+        // see: Touches strengthen a band and never create one
+        var band = new[]
+        {
+            new LevelMember(MemberSource.Swing, "swing low", 100m, new DateOnly(2026, 1, 5)),
+            new LevelMember(MemberSource.Swing, "swing high", 101m, new DateOnly(2026, 1, 6)),
+        };
+
+        var window = new[]
+        {
+            // Straddles the band without either extreme inside it.
+            new LevelBar(new DateOnly(2026, 1, 7), 120m, 80m, 110m),
+            // Its low lands inside.
+            new LevelBar(new DateOnly(2026, 1, 8), 130m, 100.5m, 120m),
+            // Nowhere near.
+            new LevelBar(new DateOnly(2026, 1, 9), 140m, 130m, 135m),
+        };
+
+        // A merge distance of two, so the two swings a point apart are one band
+        // running 100 to 101 rather than two bands with nothing between them.
+        var levels = LevelSeries.For(window, band, 200m, 2m, new DateOnly(2026, 1, 9));
+        var touches = levels.Single(level => level.LowEdge == 100m)
+            .Members
+            .Where(member => member.Source == MemberSource.Touch)
+            .ToArray();
+
+        Assert.Single(touches);
+        Assert.Equal(new DateOnly(2026, 1, 8), touches[0].Date);
+        Assert.Equal(100.5m, touches[0].Price);
+
+        // And the edges are where the two swings put them, with a session that
+        // traded from 80 to 120 having moved neither.
+        Assert.Equal(100m, levels.Single().LowEdge);
+        Assert.Equal(101m, levels.Single().HighEdge);
+    }
+
+    [Fact]
     public void ARetracementIsDrawnFromTheEndTheMoveFinishedAt()
     {
         // The ruling 3.0 took, exercised where the two readings differ. The

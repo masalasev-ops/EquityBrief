@@ -3936,6 +3936,39 @@ Reached:    six claims move to PASS. Section 19.1's levels row, section 17's lev
             `read-surface`, and the builder's catalogue and matrix rows by `component-access`.
             The level chart now has all four of its elements drawn.
 Amended:    nothing. This checkpoint amends no done condition.
-Tests:      374. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Tests:      374, and 375 after the addendum below. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Carried:    nothing new. One obligation stands for the rest of phase 3, the volume shelf
             threshold at 3.6.
+
+### Addendum to 3.4 - four mutations, and a tautology one of them found        2026-09-09
+Adds:       the mutation evidence for 3.4, run after the commit above in an isolated worktree,
+            and one test written because a mutation found a hole. The suite is 375 rather than
+            374 for that reason.
+Proved:     the merge distance. With half a typical day's move replaced by a whole one, five
+            tests go red, 369 of 374 passing, which is the spread a band set changing shape
+            produces.
+            The role rule. With the role assigned on the high edge rather than the low, two go
+            red, and one of them is the worked band: it contains the close, so it is the row
+            the two readings disagree about, and it flips from support to resistance.
+            The recency point. With the point awarded on date alone, so an average dated as-of
+            wins it, two go red. That is the decision this checkpoint took, and it is the one
+            that would otherwise have been invisible: every band holding an average would have
+            scored a point every night and nothing would have said so.
+Found:      a tautology in my own test. Widening a band to the range of all its members,
+            touches included, left the whole suite green at 374 of 374. The reason is that a
+            touch is only added where its price is already inside the anchors' range, so the
+            two ranges are equal by construction and `ATouchSitsInsideItsBandAndTheEdgesAreThe
+            AnchorsAlone` cannot fail on that line. The statement is true and the assertion is
+            empty, which is what a test looks like when the property it guards is held by the
+            shape of the code rather than by the line under test.
+            The rule that is not a tautology is which sessions count. The document says any
+            session high or low that reached a band, so a session that traded from 80 to 120
+            through a band at 100 to 101 did not reach it, and one whose low landed at 100.5
+            did. Both are choices a later session could take the other way, and the new test
+            asserts both over constructed input.
+Notes:      this is the second time in two checkpoints that a mutation strengthened a test
+            rather than confirming one, and both were the same shape: an assertion written
+            against the expectation and the stored row when the property lives in neither. The
+            first was the volume spreading at 3.3. Worth carrying into the sign-off as a
+            pattern rather than as two incidents.
+            The worktree was removed after each run and the working tree was never mutated.
