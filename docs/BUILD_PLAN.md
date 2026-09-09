@@ -407,6 +407,27 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Volume shelf threshold checked against four names | authored with the architecture | 2.6 |
 | Source lists reviewed against measured coverage | 1.7 | 5.0 |
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 |
+| The refetch's atomicity asserted as a property rather than as a construct | 1.8 | 2.1 |
+| Every file under `fixtures/` named as an expectation swept for whether a test reads it | 1.8 | 2.1 |
+
+**Carried out of the phase 1 sign-off.** Two defects found by breaking a passing claim and
+watching the suite stay green. Neither falsifies shipped behaviour, so under the stopping rules
+both are carried rather than reopening the phase, and both fall due at 2.1 because that is the
+first checkpoint that adds expectations to the fixture: the sweep and the atomicity test land
+where the next expectations are written rather than after them.
+
+The refetch's atomicity is claimed and untested. Removing the transaction from the corporate
+action refetch leaves the whole suite passing, because both tests that claim atomicity induce
+their failure upstream of the only destructive statement and neither can observe a half-replaced
+series. What is owed asserts the property rather than the construct: interrupt a refetch partway
+and confirm the stored series is the old one entire rather than a mixture. A scan for the keyword
+reports the construct, and reporting the construct is what let this pass.
+
+An expectation file that nothing reads. Renaming a traded session as a market closure in the bars
+expectation leaves the whole suite passing, because the fixture refutes it and no instrument
+consults it. What is owed is a sweep of every file under `fixtures/` named as an expectation,
+reporting which are read by a test and which are not, with the count stated before looking. An
+expectation nobody reads is the same object as a check that runs nothing.
 
 **Discharged at 1.4.** `two-platform`, widened from asserting that the workflow names two runners to asserting that no leg can report green without running the suite: no `continue-on-error`, no swallowed failure, every leg invoking a CI script rather than a bare `dotnet test`, the Linux instrument outside the matrix so "both" still means two, and the full history fetched on every leg that reads it.
 
