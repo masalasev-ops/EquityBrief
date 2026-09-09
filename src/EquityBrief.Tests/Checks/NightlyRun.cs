@@ -202,6 +202,10 @@ sealed class FailingBulkFeed : EquityBrief.Core.Providers.IBulkPriceFeed
 {
     public int Requests { get; private set; }
 
+    // A feed that did not answer skipped nothing. The two are different states
+    // and this is the one where the file never arrived.
+    public IReadOnlyList<string> NotSessions => [];
+
     public Task<IReadOnlyList<EquityBrief.Core.Providers.BulkBar>> RowsAsync(
         string exchange,
         CancellationToken cancellation = default)

@@ -74,7 +74,10 @@ public class NightlyCost
     // day it stops being empty is the day it stops being tested for the first
     // time. Both directions are proved now, while the exemption carries nothing.
     // see: The outward-request scan names the files that may hold a client rather than dropping the patterns
-    internal static readonly string[] MayHoldAClient = [];
+    internal static readonly string[] MayHoldAClient =
+    [
+        "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
+    ];
 
     // Which of the scanned files carries something it is not permitted to.
     //

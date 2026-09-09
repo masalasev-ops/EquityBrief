@@ -25,6 +25,17 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - the posting hour is bounded rather than measured
+Corrects: an obligation written at 2.0 as though one fetch could answer it.
+Was:
+> | The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 |
+Now:
+> | The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 bounded at 06:13 UTC the following day; the hour itself carried to 2.6 |
+Why: a single fetch gives an upper bound and not an hour. Measuring when the file first appears
+means asking repeatedly across an evening, which is a live night's work rather than a
+checkpoint's. The bound is recorded in `PROGRESS.md` with the instant it was taken.
+
+
 ### 2026-09-09 - BUILD_PLAN.md - the feed rulings, and what they do to 2.1, 2.2 and 2.3
 Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
 Was:

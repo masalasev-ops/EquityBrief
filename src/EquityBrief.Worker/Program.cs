@@ -1,4 +1,5 @@
 using EquityBrief.Core.Configuration;
+using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker;
@@ -20,7 +21,8 @@ static int NoVerb()
 {
     Console.Error.WriteLine(
         "EquityBrief.Worker: no verb given. Two are built: 'migrate' applies pending migrations, " +
-        "and 'nightly --fixture <folder>' runs the night's steps in order.");
+        "and 'nightly --fixture <folder>' runs the night's steps in order, with '--live' fetching " +
+        "the day's bars from the provider instead of from the fixture.");
 
     return 1;
 }
@@ -32,6 +34,30 @@ static async Task<int> NightlyRun(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IBulkPriceFeed? bulk = null;
+
+    // The key is required when a live feed is asked for and not before, and it
+    // is refused here rather than at the request. A fixture night makes no
+    // request at all, so demanding a key for one would stop CI on a machine that
+    // has no business holding a key, and RUNBOOK's promise is about not reaching
+    // the provider anonymously rather than about holding a key to replay a
+    // capture. The refusal names the setting, because a rejection from the
+    // provider names nothing.
+    if (args.Contains("--live"))
+    {
+        try
+        {
+            bulk = NightFeeds.LiveBulk(
+                configuration[EodhdBulkPriceFeed.BaseAddressKey],
+                configuration[ProviderCredentials.ApiKeyName]);
+        }
+        catch (InvalidOperationException refusal)
+        {
+            Console.Error.WriteLine($"nightly: {refusal.Message}");
+
+            return 1;
+        }
+    }
 
     return await Nightly.RunAsync(
         store,
@@ -39,7 +65,9 @@ static async Task<int> NightlyRun(string[] args)
         Argument(args, "--index") ?? "GSPC",
         SystemClock.ForUnitedStatesSessions(),
         Console.Out,
-        Console.Error);
+        Console.Error,
+        runId: null,
+        bulk: bulk);
 }
 
 static string? Argument(string[] args, string name)

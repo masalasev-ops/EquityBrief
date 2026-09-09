@@ -83,6 +83,57 @@ public class FixtureExpectations
     }
 
     [Fact]
+    public async Task TheFetchStageStoresWhatTheMembershipFilterLeaves()
+    {
+        // 2.1's expectation. Every figure in the file is the result of applying
+        // the membership filter to the two committed inputs, so this recomputes
+        // it from the same inputs rather than comparing a run against itself.
+        var expected = Expected("fetch");
+        var bulk = RecordedBulkPriceFeed.FromFolder(Folder());
+        var rows = await bulk.RowsAsync(expected.GetProperty("exchange").GetString()!);
+
+        var members = Expected("membership").GetProperty("currentMembers")
+            .EnumerateArray().Select(one => one.GetString()!).ToArray();
+        var departed = Expected("membership").GetProperty("departed")
+            .EnumerateArray().Select(one => one.GetString()!).ToArray();
+
+        Assert.Equal(expected.GetProperty("rowsForThisExchange").GetInt32(), rows.Count);
+        Assert.Equal(
+            expected.GetProperty("rowsForCurrentMembers").GetInt32(),
+            rows.Count(row => members.Contains(row.Ticker, StringComparer.Ordinal)));
+        Assert.Equal(
+            expected.GetProperty("rowsForDepartedConstituents").GetInt32(),
+            rows.Count(row => departed.Contains(row.Ticker, StringComparer.Ordinal)));
+        Assert.Equal(
+            expected.GetProperty("rowsForNamesTheIndexDoesNotHold").GetInt32(),
+            rows.Count(row => !members.Contains(row.Ticker, StringComparer.Ordinal)
+                && !departed.Contains(row.Ticker, StringComparer.Ordinal)));
+
+        // Zero here, and stated rather than left to be inferred from an empty
+        // result. Every one of the seven rows was hand-picked at 1.4 and every
+        // one of them traded, so this figure is a property of the capture and
+        // not of the exchange: the first live night found 62 in 44,362, and a
+        // fixture that never exercises the path is what let that run fail.
+        Assert.Equal(expected.GetProperty("notSessionsExpected").GetInt32(), bulk.NotSessions.Count);
+
+        // And the store, which is the surface the figure is about.
+        using var store = await Replayed();
+
+        await new BarFetcher(
+            RecordedBulkPriceFeed.FromFolder(Folder()),
+            FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync(Index, "replay-fetch");
+
+        var session = expected.GetProperty("session").GetString()!;
+        var stored = Query(store, $"SELECT ticker FROM bar WHERE session_date = '{session}' ORDER BY ticker;");
+
+        Assert.Equal(expected.GetProperty("barsStoredExpected").GetInt32(), stored.Count);
+        Assert.Equal(
+            expected.GetProperty("namesStored").EnumerateArray().Select(one => one.GetString()!).ToArray(),
+            stored);
+    }
+
+    [Fact]
     public void TheSessionCountIsDerivedFromTheCalendarAndNotFromARun()
     {
         // The independently derived expectation the done condition asks for.

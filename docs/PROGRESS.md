@@ -2625,3 +2625,85 @@ Claims:     180, 37 pass, 143 out of scope, 0 unexamined, unchanged. Predicted b
             a decision record carries no claim, and the plan amendments name checkpoints that
             already existed. The 185 above is what phase 2 ends at, not what it stands at now.
 Tests:      257, unchanged.
+
+### 2.1 The credential path and the bulk price feed                          2026-09-09
+Built:      the first feed in this tree that reaches a provider. `EodhdBulkPriceFeed`, the
+            credential path from configuration with the startup refusal `RUNBOOK.md` promised and
+            no startup path performed, and `NightFeeds`, which is the seam the live-against-
+            fixture choice will go through at 2.6.
+Two commits: the `nightly-cost` carve-out landed first and alone, before any feed existed. A
+            commit that removes a guard and adds the thing the guard forbade authorises itself
+            whichever half is read first, which is done condition 8's ordering applied to a guard
+            rather than to a record. `BUILD_PLAN.md` asks for it in those words, and this entry
+            says it happened because "a checkpoint lands as its own commit" is the rule it bends.
+Carve-out:  the scan is now written over its inputs rather than over the checkout, so the
+            exemption can be exercised on constructed sources. It was proved in both directions
+            while it still carried nothing, which was the point of landing it early: an assertion
+            over an empty list is one that has never run. Verified against the real tree as well:
+            a client field added to `Backfill.cs` fails the scan naming the file by its path, and
+            the same file added to the exemption passes the scan and fails the other test,
+            because a file earns the exemption by being a feed. Both edits reverted.
+Redaction:  the key travels in this provider's query string, so it is one substring away from
+            every message a failed request produces. The scrub takes the address as well as the
+            key, and the second half is the one that matters: a message quoting a URL this
+            process did not build would carry a live key past a scrub that only looked for the
+            value it happens to hold. The inner exception is not attached at all, so a logger
+            expanding the chain cannot reach a message this code never scrubbed. The stack trace
+            of the transport is what that costs.
+Live:       a night ran against the provider at 06:16:17 UTC on 2026-09-09, over the fixture for
+            everything except the fetch. One request. 44,362 rows, 6,676,343 bytes, 4.21 seconds
+            to fetch. Three bars stored for the three current members, AAPL at 316.22, MSFT at
+            493.95 and KEYS at 333.42, each matching the provider's payload. The run log records
+            the fetch stage as 0 model calls and 1 network request, and the whole store was
+            scanned afterwards for anything holding a scheme separator, the parameter name or the
+            provider's domain: none.
+Found:      the live run failed on its first attempt, and it failed on real data the fixture
+            could not hold. `ProviderBarReader.Read` refuses a row whose close is not positive,
+            because the adjustment factor divides by it, and 62 of the 44,362 rows carry one.
+            The night stopped on DEWM. The bulk file is the whole exchange rather than the index,
+            so it carries symbols that are listed and did not trade, and refusing the file for
+            one of them lets a penny stock stop the night for five hundred names.
+            This is the failure 1.2 found one layer up, arriving exactly where 2.0's plan said it
+            would. All seven rows of the captured bulk file were hand-picked at 1.4 and every one
+            of them traded, so no suite that read only the fixture could have found it. What
+            fixed it is that the run was live rather than that the code was read again.
+Skipped:    a row with no positive close is now skipped and named rather than throwing, and the
+            count reaches the operator on the fetch step's own line. Named rather than counted,
+            because the same skip at scale is a night that stores almost nothing and reports
+            success. Three guards hold the shape: a row from another exchange is dropped without
+            being counted, since it is not this night's at all; a row missing a field still
+            throws, since a payload that cannot be read is not a payload with fewer bars; and a
+            file where every row is a symbol that did not trade is refused outright, since
+            answering with no bars would be stored as an exchange that did not trade.
+Measured:   the payload was fetched once more, on its own, so the design was made against the
+            real distribution rather than against the one row that happened to fail first. 62
+            rows carry no usable close. 27,540 of 44,362 carry zero volume, which is a session
+            with no trades rather than a fault and is stored as one. Zero rows produce an
+            adjusted bar that could not have traded, so 1.2's guard finds nothing to refuse on
+            live data. Every row carries every field the parser reads.
+Note:       the manifest records the 1.4 capture as seven of 10,670 rows. Today's file holds
+            44,362. The manifest is a dated record of what that capture held and is left as it
+            is; the two figures are four days and one endpoint apart, and which of them is the
+            steady state is not something one fetch each can say.
+Hour:       the obligation created at 2.0 is bounded rather than discharged. The file for the
+            2026-09-08 session was already being served at 06:13:42 UTC on 2026-09-09, which is
+            an upper bound on the posting hour and not the hour. Measuring the hour means asking
+            repeatedly across an evening, which is a live night's work rather than a checkpoint's,
+            so the remainder is re-pointed to 2.6 and the bound is recorded here.
+Selection:  `--live` is a flag on the command line and not yet a setting. That is the state 2.6
+            improves, and it is deliberate: a half-built configuration path is what lets a
+            mistyped fixture folder resolve to the network, so the choice stays loud until the
+            checkpoint that asserts both directions of it.
+Fixture:    `expectations/fetch.json`, derived from the two committed inputs rather than frozen
+            from a run: the membership filter applied to the captured bulk file gives three bars
+            stored, two rows for departed constituents and two for names the index does not hold.
+            It states `notSessionsExpected` as 0 and says why the zero is a property of the
+            capture rather than of the exchange, so the figure reads as a gap in the fixture and
+            not as a fact about the world.
+Claims:     180, 37 pass, 143 out of scope, 0 unexamined. Predicted before the run: 2.1 adds no
+            row to any table this harness parses. The two limits rows and the two failure rows
+            phase 2 owes arrive at 2.2 and 2.3, so the count moves there and not here.
+Tests:      275, from 257. Four with the carve-out and fourteen with the feed.
+Platform:   Windows for the by-hand live run. The suite runs on both runners through the matrix,
+            and the live run is not part of it: no runner holds a key, and one that did would
+            spend the operator's allowance on every push.

@@ -24,6 +24,13 @@ public static class Nightly
     // the script can print them and nightly-cost can read them back.
     public sealed record NightOutcome(string RunId, int ModelCalls, int NetworkRequests, IReadOnlyList<string> Steps);
 
+    // What the command line calls: resolve the feeds from a fixture folder,
+    // optionally replace one of them with a live feed, then run.
+    //
+    // `bulk` is how 2.1 puts one live feed on the night while the other three
+    // stay recorded. It is a parameter rather than a setting because the setting
+    // is 2.6's work, and a half-built configuration path is the thing that lets
+    // a mistyped fixture folder resolve to the network.
     public static async Task<int> RunAsync(
         StoreLocation store,
         string fixtureFolder,
@@ -31,17 +38,40 @@ public static class Nightly
         IClock clock,
         TextWriter output,
         TextWriter error,
-        string? runId = null)
+        string? runId = null,
+        IBulkPriceFeed? bulk = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
             error.WriteLine(
-                $"nightly: no fixture at '{fixtureFolder}'. The live feeds are not built yet, so a " +
-                "night runs over a captured one and needs to be told which.");
+                $"nightly: no fixture at '{fixtureFolder}'. Only the bulk price feed reaches the " +
+                "provider so far, so the rest of a night runs over a captured one and needs to be " +
+                "told which.");
 
             return 1;
         }
 
+        var feeds = NightFeeds.FromFixture(fixtureFolder);
+
+        return await RunAsync(
+            store,
+            bulk is null ? feeds : feeds with { Bulk = bulk },
+            indexCode,
+            clock,
+            output,
+            error,
+            runId);
+    }
+
+    public static async Task<int> RunAsync(
+        StoreLocation store,
+        NightFeeds feeds,
+        string indexCode,
+        IClock clock,
+        TextWriter output,
+        TextWriter error,
+        string? runId = null)
+    {
         // The instant and not only the date. A night that fails halfway and is
         // re-run is a second run, and SCHEMA's grain is one row per run per
         // stage: keyed on the date alone the re-run collides on the primary key
@@ -50,11 +80,7 @@ public static class Nightly
         // records under an id it chose.
         runId ??= $"night-{clock.UtcNow:yyyyMMddTHHmmssZ}";
 
-        var membership = RecordedIndexMembershipFeed.FromFile(
-            Path.Combine(fixtureFolder, "index-constituents.json"));
-        var historical = RecordedHistoricalBarFeed.FromFolder(fixtureFolder);
-        var bulk = RecordedBulkPriceFeed.FromFolder(fixtureFolder);
-        var corporate = RecordedCorporateActionFeed.FromFolder(fixtureFolder);
+        var (membership, historical, bulkFeed, corporate) = feeds;
 
         // The order is section 14's, for the steps that exist. Migrate is not
         // one of its steps: it is what makes the store able to hold the night,
@@ -86,11 +112,12 @@ public static class Nightly
             }),
             new("fetch", async () =>
             {
-                var outcome = await new BarFetcher(bulk, clock, store.DatabaseFile)
+                var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId);
 
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
                     $"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, " +
+                    $"{bulkFeed.NotSessions.Count} row(s) listed and not traded, " +
                     $"{outcome.Requests} request(s)";
             }),
             new("actions", async () =>
@@ -123,8 +150,9 @@ public static class Nightly
 
         // The nightly claim, printed where the operator reads it rather than
         // only stored. Zero model calls because nothing on this path calls one,
-        // and the request count is what the two feeds counted.
-        var requests = historical.Requests + bulk.Requests + corporate.Requests;
+        // and the request count is what the four feeds counted, live or
+        // recorded alike, because the count is on the interface.
+        var requests = feeds.Requests;
 
         output.WriteLine($"nightly: green, 0 model calls, {requests} network request(s)");
 

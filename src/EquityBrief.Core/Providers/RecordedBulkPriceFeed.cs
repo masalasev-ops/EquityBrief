@@ -40,14 +40,24 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
     // the whole claim the nightly path rests on: one request for the night
     // whatever the universe is, and nightly-cost reads the figure back off the
     // run log.
+    readonly List<string> notSessions = [];
+
+    public IReadOnlyList<string> NotSessions => notSessions;
+
     public Task<IReadOnlyList<BulkBar>> RowsAsync(string exchange, CancellationToken cancellation = default)
     {
         Requests++;
 
-        return Task.FromResult(Parse(response, exchange));
+        return Task.FromResult(Parse(response, exchange, notSessions));
     }
 
-    public static IReadOnlyList<BulkBar> Parse(string json, string exchange)
+    // Shared by this and the live feed, which is what makes the double and the
+    // provider the same reader. A second parser would be a second opinion about
+    // what the provider sends, and the fixture would exercise only one of them.
+    public static IReadOnlyList<BulkBar> Parse(
+        string json,
+        string exchange,
+        ICollection<string>? notSessions = null)
     {
         using var document = JsonDocument.Parse(json);
 
@@ -59,20 +69,48 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
                 "an exchange that did not trade.");
         }
 
-        return
-        [
-            .. document.RootElement
-                .EnumerateArray()
-                .Select(entry => Read(entry, exchange))
-                .Where(row => row is not null)
-                .Select(row => row!),
-        ];
+        var rows = new List<BulkBar>();
+        var skipped = 0;
+
+        foreach (var entry in document.RootElement.EnumerateArray())
+        {
+            var (row, ticker) = Read(entry, exchange);
+
+            if (row is not null)
+            {
+                rows.Add(row);
+            }
+            else if (ticker is not null)
+            {
+                // Listed and did not trade, which is a fact about an exchange
+                // file rather than a broken payload.
+                skipped++;
+                notSessions?.Add(ticker);
+            }
+        }
+
+        // A payload that produced nothing is a payload that could not be read,
+        // whatever the reason each row gave. Answering with no bars would be
+        // stored as an exchange that did not trade, which is the failure this
+        // parser has refused since 1.4 and which skipping rows would reopen.
+        return rows.Count == 0 && skipped > 0
+            ? throw new FormatException(
+                $"Every one of the {skipped} rows the bulk response carried for {exchange} is a " +
+                "symbol that did not trade. An exchange on which nothing traded is not a result " +
+                "this system has any use for, and storing it would read as a night that ran.")
+            : rows;
     }
 
     const string Code = "code";
     const string Exchange = "exchange_short_name";
 
-    static BulkBar? Read(JsonElement entry, string exchange)
+    // The row, and the ticker when the row was a symbol that did not trade.
+    //
+    // Three outcomes rather than two, kept apart because they mean different
+    // things. A row from another exchange is not this night's and is dropped
+    // with nothing recorded. A row that is this night's and did not trade is
+    // dropped and named, so the count is visible. Anything else throws.
+    static (BulkBar? Row, string? NotASession) Read(JsonElement entry, string exchange)
     {
         if (!entry.TryGetProperty(Code, out var code) || code.ValueKind is not JsonValueKind.String)
         {
@@ -91,9 +129,11 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
             && from.ValueKind is JsonValueKind.String
             && !string.Equals(from.GetString(), exchange, StringComparison.OrdinalIgnoreCase))
         {
-            return null;
+            return (null, null);
         }
 
-        return new BulkBar(ticker, ProviderBarReader.Read(entry, ticker));
+        return ProviderBarReader.TryRead(entry, ticker, out var bar)
+            ? (new BulkBar(ticker, bar!), null)
+            : (null, ticker);
     }
 }
