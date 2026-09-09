@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html - the remap's second sweep
+Corrects: two defects in the remap of the same date, found by sweeping every tracked text file
+rather than the four the first pass listed by hand.
+Was:
+> section 20's phase table ended its levels row "all phase-2 rows PASS across four names" and
+> its plan row "all phase-3 rows PASS", and section 23's dated rows read "Phase 5 gains an
+> obligation to store each listing's plan" and "a phase 6 expectation that the boundary is
+> measured against the reference"
+Now:
+> the two section 20 cells read phase-3 and phase-4, matching the rows they end; the two
+> section 23 rows are reverted to the phase numbers their own dates were written under
+Why: the first sweep matched a phase word followed by a space, so the two hyphenated cells were
+left describing the phases they used to belong to. Section 23 is the dated record of what each
+version of this document said, and a record is corrected by a new dated entry rather than by an
+edit, which is the rule `PROGRESS.md` was already being held to. The finding and the rule are in
+that record's entry of the same date.
+
+
 ### 2026-09-09 - BUILD_PLAN.md, CLAUDE.md, ARCHITECTURE.html - the phase remap
 Corrects: nothing that was wrong. This is a reordering rather than a repair, and it is here
 because a renumbering deletes a line from three specs and `changelog-reconciles` reads the

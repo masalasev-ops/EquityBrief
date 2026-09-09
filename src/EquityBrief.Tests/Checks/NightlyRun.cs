@@ -156,7 +156,7 @@ public class NightlyRun
     public async Task AFeedThatFailsLeavesTheStoredBarsAsTheyWere()
     {
         // The half of the failure row that lands here. The banner and tonight's
-        // list are phase 4 surfaces, so the row's claim is owed at 4.4; what is
+        // list are phase 5 surfaces, so the row's claim is owed at 5.4; what is
         // owed now is that a failed fetch keeps last night's bars rather than
         // leaving a half-written night.
         using var store = new TemporaryStore();

@@ -2453,3 +2453,50 @@ Gap:        `BUILD_PLAN.md` and section 20 now run 0, 1, 3, 4, 5, 6, 7 with noth
             commit after this one writes phase 2 into that gap. Nothing is due at a bare phase 2
             today, so no check asks for it in between.
 Tests:      257, unchanged by a pass that renames due points and builds nothing.
+
+### Correction to the remap entry above - the sweep was scoped by hand         2026-09-09
+Not a checkpoint entry. It belongs to 2.0, like the entry it corrects, and it is written as a
+            new dated entry rather than as an edit because `PROGRESS.md` is append only.
+Corrects:   two sentences in the entry above. "Moved" lists four files and the remap touched
+            four files, which was true and was not the same thing as complete. And "its failures
+            are loud: `InThePlan` refuses a due point the plan does not have" is wrong as a
+            general claim, for the reason below. The rest of that entry stands.
+Found:      46 stale references across 18 files, none of them in the four the first pass swept.
+            The first pass chose its files by reading the remap and listing what it thought
+            carried numbers. This one derived them: every tracked text file except the two
+            append-only records, scanned for a checkpoint token or a phase word, 349 matches in
+            26 files read in context. The difference between the two counts is the whole
+            finding, and it is the same shape as the shape this corpus has now met five times:
+            a population chosen by hand is a population whose gaps are invisible.
+Quiet:      five of the misses were live due points in `PhaseReport.Placed`, which is where a
+            table too broad to be one claim is placed with the checkpoint that ends it. Section
+            11 was owed at 4.1, the lane table at 5.0, and sections 13.2, 13.3 and 19.2 at 6.1.
+            Every one of those still exists after the remap and none of them has landed, so
+            `InThePlan` had nothing to refuse and `HasLanded` had nothing to catch: the report
+            stayed green at 143 out of scope while five claims pointed at checkpoints doing
+            different work. A renumber goes loud only where it produces a due point the plan
+            does not have. Where the plan has a checkpoint at every number, it goes quiet, and
+            that is every renumber of a contiguous range. They are now 5.1, 6.0 and 7.1.
+Not moved:  a dated record keeps the numbering in force on its date. That was applied to
+            `PROGRESS.md` in the entry above and not to the two other places the corpus keeps
+            one, so the first pass rewrote two rows of `ARCHITECTURE.html`'s section 23, which
+            is the dated record of what each version of that document said. A row dated
+            2026-09-05 now says something that version did not say. Both are reverted, and the
+            same rule leaves the superseded entry in `DECISIONS.md` under "Previously decided"
+            alone: it carries the date it was superseded, which is what tells a reader which
+            numbering it used. Live text shifts, a dated record does not.
+Also:       `docs/DECISIONS.md`, `fixtures/README.md` and `source-lists.json` are none of them
+            specs, so none is in `CHANGELOG.md`, and each carried a reference nothing else
+            would have caught. `source-lists.json`'s was a review owed at 5.0, which is now
+            6.0, and it sits in a JSON string that no grep over the documents would reach.
+Constructed: the fabricated `PROGRESS.md` fragments inside `ArchitectureConformance` were moved
+            too, though their numbers are the test's own data and no assertion depends on which
+            they are. One of them read "### 2.1 - the indicator engine and the averages on the
+            chart", which is a statement about the plan whatever the code around it does with
+            it, and a reader has no way to tell a constructed number from a cited one.
+Claims:     180, 37 pass, 143 out of scope, 0 unexamined, all unchanged. Predicted before the
+            run and for a stated reason: every due point this repair moved went from an unlanded
+            checkpoint to another unlanded checkpoint, so no claim crosses the scope boundary in
+            either direction. A change in the figures would have meant the repair moved
+            something it was not meant to.
+Tests:      257, unchanged.

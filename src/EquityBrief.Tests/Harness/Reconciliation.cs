@@ -124,7 +124,7 @@ internal static class Reconciliation
     //
     // Raised from 20 to 28 at 1.4, which reconciles 36. Predicted before the
     // run: 29 passing claims, being 1.3's 20 plus nine of the ten owed at 1.4,
-    // the tenth being the bulk-feed failure row whose due point moved to 4.4
+    // the tenth being the bulk-feed failure row whose due point moved to 5.4
     // because its "What you see" cell promises a banner and tonight's list.
     // Measured 29.
     // Raised from 28 to 34 at 1.6, which reconciles 42. Predicted before the

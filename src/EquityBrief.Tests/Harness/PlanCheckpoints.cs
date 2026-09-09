@@ -53,12 +53,12 @@ internal static class PlanCheckpoints
 
     // A planning checkpoint names what it settles, not what it builds.
     //
-    // This is not a convenience. 3.0's text names the trend classifier, the
+    // This is not a convenience. 4.0's text names the trend classifier, the
     // ladder builder, the shortlist builder and the fundamentals fetcher, and
     // builds none of them: it settles the rules they will be written to. Reading
-    // a due point from it would put four components at 3.0 and fail every one of
-    // them the moment 3.0 landed, which is earlier than any of the code. The
-    // same holds for 4.0 and the base rate. Naming a later point than needed is
+    // a due point from it would put four components at 4.0 and fail every one of
+    // them the moment 4.0 landed, which is earlier than any of the code. The
+    // same holds for 5.0 and the base rate. Naming a later point than needed is
     // safe and naming an earlier one is not, so the checkpoint that only decides
     // is not a checkpoint that can end a claim.
     internal static bool Builds(PlanCheckpoint checkpoint) =>

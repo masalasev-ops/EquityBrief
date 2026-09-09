@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Harness;
 // Both are derived from the folder rather than stated anywhere. The distinction
 // was written in fixtures/README.md first, and a distinction that lives only in
 // prose is one a later session reads past, which this one is positioned for:
-// phase 2's sentence says four and this fixture holds five.
+// phase 3's sentence says four and this fixture holds five.
 internal sealed record FixturePopulations(
     string Fixture,
     int Constituents,

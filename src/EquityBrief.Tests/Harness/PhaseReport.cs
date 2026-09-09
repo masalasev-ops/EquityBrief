@@ -114,19 +114,19 @@ internal static class PhaseReport
         ["4. The report, section by section, and where each part comes from"] = new Placement(
             "outside the claim scope the catalogue states; the sections it maps are asserted by the screens tables in 15"),
         ["11. The shortlist and its six reasons"] = new Placement(
-            "rules, asserted by the fixture's listings expectations", Due: "4.1"),
+            "rules, asserted by the fixture's listings expectations", Due: "5.1"),
         // Section 12.2's second table. Its heading is an h4 rather than a
         // numbered one, because the numbers in this document are navigation and
         // it sits inside 12.2 rather than beside it. The rows are the lane each
         // section is written in, which is configuration rather than structure by
         // the paragraph above them, and the shape of that configuration is the
-        // hole BUILD_PLAN settles at 5.0.
+        // hole BUILD_PLAN settles at 6.0.
         ["What each lane actually writes"] = new Placement(
-            "the section-to-lane assignment, which is a setting rather than a structure and has no code behind it until the lane configuration is settled", Due: "5.0"),
+            "the section-to-lane assignment, which is a setting rather than a structure and has no code behind it until the lane configuration is settled", Due: "6.0"),
         ["13.2 Four things that can improve, shallowest first"] = new Placement(
-            "a plan for phase 6, with nothing built to assert it against", Due: "6.1"),
+            "a plan for phase 7, with nothing built to assert it against", Due: "7.1"),
         ["13.3 The guardrails"] = new Placement(
-            "rules for phase 6, asserted by register-append-only", Due: "6.1"),
+            "rules for phase 7, asserted by register-append-only", Due: "7.1"),
         // 1.8, and the journey here is worth stating because it was wrong twice.
         //
         // It was owed at 0.6, which had landed, then re-pointed to 1.3 and then
@@ -140,7 +140,7 @@ internal static class PhaseReport
         // 1.8 is where phase 1's expectations land, which is the first point the
         // fixture holds a shape this table can be read against.
         ["19.2 What the harness checks"] = new Placement(
-            "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register", Due: "6.1"),
+            "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register", Due: "7.1"),
         ["19.3 What it produces"] = new Placement(
             "this harness's own output, asserted over the generated report rather than over the model behind it",
             Check: "architecture-conformance"),
