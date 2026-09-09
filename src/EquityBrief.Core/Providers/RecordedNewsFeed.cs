@@ -22,13 +22,69 @@ public sealed record NewsArticle(
     IReadOnlyList<string> Symbols,
     string Text);
 
+// The news feed of section 5, behind an interface so the nightly path and the
+// suite meet the same shape.
+//
+// News was the only feed without one until 2.5, which meant it was the only feed
+// whose request count no contract forced: the 1.7 measurement ran through a
+// class the nightly path does not reach, and a live implementation could have
+// made one request per name with nothing to say so. `Requests` is on the
+// interface for the same reason it is on the other four.
+//
+// One request for the window, whatever the universe is. The feed is queryable by
+// date with no ticker, which was probed on the operator's key at 1.5 rather than
+// assumed, and every row names the tickers it is about, so the fan-out is
+// arithmetic on a payload rather than a second request
+// (see: News arrives in one dated feed request and is attributed to names locally).
+public interface INewsFeed
+{
+    int Requests { get; }
+
+    Task<IReadOnlyList<NewsArticle>> ArticlesAsync(
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellation = default);
+}
+
+// One request's worth of articles, indexed by the names they are about.
+//
+// The fan-out, done in code and not by the provider. This is what the zero
+// per-name rule buys: one dated request covers the whole market and every name
+// in it is reached by reading the attribution the payload already carries.
+public static class NewsAttribution
+{
+    public static IReadOnlyDictionary<string, IReadOnlyList<NewsArticle>> ByName(
+        IEnumerable<NewsArticle> articles)
+    {
+        var byName = new Dictionary<string, List<NewsArticle>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var article in articles)
+        {
+            foreach (var symbol in article.Symbols)
+            {
+                if (!byName.TryGetValue(symbol, out var forName))
+                {
+                    byName[symbol] = forName = [];
+                }
+
+                forName.Add(article);
+            }
+        }
+
+        return byName.ToDictionary(
+            pair => pair.Key,
+            pair => (IReadOnlyList<NewsArticle>)pair.Value,
+            StringComparer.OrdinalIgnoreCase);
+    }
+}
+
 // The news feed, answered from a recorded response.
 //
 // The parser was written against a captured response, which is the obligation
 // 1.2 filed against this checkpoint. The measurement this checkpoint runs needs
 // live responses in any case; what it must not do is write the parser against a
 // payload composed to suit it.
-public sealed class RecordedNewsFeed(string response)
+public sealed class RecordedNewsFeed(string response) : INewsFeed
 {
     public const string FilePrefix = "news-";
 

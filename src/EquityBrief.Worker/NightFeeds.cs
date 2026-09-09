@@ -19,11 +19,13 @@ public sealed record NightFeeds(
     IIndexMembershipFeed Membership,
     IHistoricalBarFeed Historical,
     IBulkPriceFeed Bulk,
-    ICorporateActionFeed Corporate)
+    ICorporateActionFeed Corporate,
+    INewsFeed News)
 {
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
-    public int Requests => Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests;
+    public int Requests =>
+        Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests + News.Requests;
 
     // The same night in the units the provider bills in.
     //
@@ -41,7 +43,8 @@ public sealed record NightFeeds(
         (Membership.Requests * ProviderWeights.Fundamentals)
         + (Historical.Requests * ProviderWeights.HistoricalPerTicker)
         + (Bulk.Requests * ProviderWeights.BulkEndOfDay)
-        + (Corporate.Requests * ProviderWeights.BulkEndOfDay);
+        + (Corporate.Requests * ProviderWeights.BulkEndOfDay)
+        + (News.Requests * ProviderWeights.News);
 
     public const string ConstituentsFile = "index-constituents.json";
 
@@ -50,7 +53,8 @@ public sealed record NightFeeds(
             RecordedIndexMembershipFeed.FromFile(Path.Combine(folder, ConstituentsFile)),
             RecordedHistoricalBarFeed.FromFolder(folder),
             RecordedBulkPriceFeed.FromFolder(folder),
-            RecordedCorporateActionFeed.FromFolder(folder));
+            RecordedCorporateActionFeed.FromFolder(folder),
+            RecordedNewsFeed.FromFolder(folder));
 
     // The live bulk feed, from the two settings, or a refusal naming the one
     // that is missing.
@@ -74,7 +78,8 @@ public sealed record NightFeeds(
             EodhdIndexMembershipFeed.Live(address, key),
             EodhdHistoricalBarFeed.Live(address, key),
             EodhdBulkPriceFeed.Live(address, key),
-            EodhdCorporateActionFeed.Live(address, key));
+            EodhdCorporateActionFeed.Live(address, key),
+            EodhdNewsFeed.Live(address, key));
     }
 
     // A blank base address falls back and a blank key does not. The address has

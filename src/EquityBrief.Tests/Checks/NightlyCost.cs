@@ -81,6 +81,7 @@ public class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
     ];
 
     // Which of the scanned files carries something it is not permitted to.

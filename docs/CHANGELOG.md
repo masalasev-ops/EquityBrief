@@ -25,6 +25,19 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - one day of news is wider than one request
+Corrects: nothing. An obligation recorded when it was created rather than remembered.
+Was:
+> the obligations table carried nothing about the news window
+Now:
+> | One day of news exceeds one request at the provider's limit, so the pulse count needs a window
+> or a page | 2.5 | 5.5 |
+Why: the first dated request with no ticker came back holding exactly the provider's limit of
+1,000 articles, so a single day of market-wide news does not fit in one request. What that means
+for the pulse count cannot be settled until 5.5 counts articles per name, and an obligation filed
+now is the difference between a later session finding it and a later session inheriting it.
+
+
 ### 2026-09-09 - ARCHITECTURE.html, SCHEMA.md, CLAUDE.md, BUILD_PLAN.md - what a live index taught the two rules
 Corrects: two rules written against a five-name fixture and refuted by the first night over five
 hundred, found by running rather than by reading.

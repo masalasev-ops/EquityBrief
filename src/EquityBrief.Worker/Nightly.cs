@@ -96,7 +96,7 @@ public static class Nightly
         // records under an id it chose.
         runId ??= $"night-{clock.UtcNow:yyyyMMddTHHmmssZ}";
 
-        var (membership, historical, bulkFeed, corporate) = feeds;
+        var (membership, historical, bulkFeed, corporate, _) = feeds;
 
         // The order is section 14's, for the steps that exist. Migrate is not
         // one of its steps: it is what makes the store able to hold the night,

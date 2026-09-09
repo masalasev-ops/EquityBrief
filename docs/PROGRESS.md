@@ -2882,3 +2882,41 @@ Claims:     185, 42 pass, 143 out of scope, 0 unexamined, from 184 and 41. That 
             2.0 predicted for the end of the phase, reached at 2.4: the prediction named seven new
             claims and all seven now exist. 2.5 and 2.6 add none, which 2.7 checks.
 Tests:      298, from 289.
+
+### 2.5 The news feed                                                        2026-09-09
+Built:      `INewsFeed`, which news has never had, and `EodhdNewsFeed` behind it.
+            `RecordedNewsFeed` now implements the same interface, and `NewsAttribution.ByName` is
+            the fan-out done in code.
+Why it mattered: news was the only feed without an interface, which made it the only one whose
+            request count no contract forced. The 1.7 measurement ran through a class the nightly
+            path does not reach, so a live implementation could have made one request per name and
+            nothing in the harness would have said so. `Requests` is now on the interface for the
+            same reason it is on the other four, and the test reads it through the interface rather
+            than off either implementation.
+Live:       one dated request with no ticker, for the 2026-09-08 window. 1,000 articles, 4,753,520
+            bytes, and 3,232 distinct symbols attributed from that single request. The fan-out is
+            not a design intention: it is what the payload carries, and one request reached three
+            thousand names.
+Found:      the request came back holding exactly the limit. The provider caps one request at
+            1,000 articles and a single day of market-wide news reaches it, so one dated request
+            does not carry a whole day. The decision that news arrives in one dated feed request
+            still holds for the shape of the cost, and what it does not yet settle is the window.
+            Recorded as an obligation due at 5.5, which is the checkpoint that counts articles per
+            name and the first that can measure what a night actually needs.
+            The limit is asked for in full and never paged around, which is why this was visible at
+            all. A feed that paged quietly would have turned one request into ten and reported the
+            truth in a count nobody was reading, and the paging decision at 2.0 is what says the
+            count includes every page rather than the feed hiding them.
+Not built:  nothing calls the news feed on the nightly path yet. The news pulse counter is a phase
+            5 component and section 14's step seven is one of the five that do not exist, so the
+            feed is built, asserted and unused, which is the same state every other feed was in at
+            the checkpoint that built it.
+Compared:   the live feed and the double are asserted to read one payload the same way, field by
+            field rather than as records. `NewsArticle` carries its attribution as a list and a
+            record compares a list by reference, so two parses of one payload are never equal
+            however identical their contents. Asserting the records would have been an assertion
+            that could not hold, which is a different failure from one that does not.
+Claims:     185, 42 pass, 143 out of scope, 0 unexamined, unchanged. Predicted before the run:
+            2.5 adds no row to any table the harness parses, and the seven claims 2.0 named all
+            arrived by 2.4.
+Tests:      304, from 298.
