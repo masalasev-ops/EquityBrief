@@ -942,32 +942,113 @@ public class ArchitectureConformance
 
         var trx = Path.Combine(elsewhere.Path, "suite.trx");
 
-        File.WriteAllText(trx, Constructed);
+        // Passing is the only outcome that is a pass. Each of the others is
+        // written beside a passing sibling of the same carrier, which is the
+        // case that let the first version of this reader call a skipped or
+        // errored check passed: two Skip attributes were the whole distance
+        // between this repair working and not working.
+        foreach (var outcome in new[] { "Failed", "Error", "Timeout", "Aborted" })
+        {
+            File.WriteAllText(trx, Constructed("ComponentAccess", outcome));
 
-        var outcomes = SuiteOutcomes.FromTrx(trx);
+            Assert.Equal(CheckRun.Failed, SuiteOutcomes.FromTrx(trx).For("component-access").Run);
+        }
 
-        Assert.Equal(CheckRun.Passed, outcomes.For("schema-columns").Run);
-        Assert.Equal(CheckRun.Failed, outcomes.For("component-access").Run);
+        File.WriteAllText(trx, Constructed("ComponentAccess", "NotExecuted"));
+
+        var skipped = SuiteOutcomes.FromTrx(trx);
+
+        // Skipped is not run rather than run and failed, and it is never a pass.
+        Assert.Equal(CheckRun.DidNotRun, skipped.For("component-access").Run);
+        Assert.Equal(CheckRun.Passed, skipped.For("schema-columns").Run);
         Assert.Contains(
-            "did not match", outcomes.For("component-access").Message, StringComparison.Ordinal);
+            "did not match",
+            SuiteOutcomes.FromTrx(WrittenWith(trx, "ComponentAccess", "Failed")).For("component-access").Message,
+            StringComparison.Ordinal);
 
         // A check with no test in the file did not run, and a file that is not
         // there is a run that said nothing. Neither of those is a pass.
-        Assert.Equal(CheckRun.DidNotRun, outcomes.For("nightly-run").Run);
-        Assert.Equal(
-            CheckRun.DidNotRun,
-            SuiteOutcomes.FromTrx(Path.Combine(elsewhere.Path, "absent.trx")).For("schema-columns").Run);
+        Assert.Equal(CheckRun.DidNotRun, skipped.For("nightly-run").Run);
+
+        var absent = SuiteOutcomes.FromTrx(Path.Combine(elsewhere.Path, "absent.trx"));
+
+        Assert.Equal(CheckRun.DidNotRun, absent.For("schema-columns").Run);
+        Assert.False(absent.Run.Clean);
     }
 
-    const string Constructed =
+    static string WrittenWith(string path, string carrier, string outcome)
+    {
+        File.WriteAllText(path, Constructed(carrier, outcome));
+
+        return path;
+    }
+
+    [Fact]
+    public void ARunWithAFailureOutsideEveryCarrierStillRedensTheReport()
+    {
+        // The second population, and the reason the report reads the run as
+        // well as the carried checks. 81 of the suite's tests sit in classes
+        // carrying no check, so a failure in one of them moves no claim. Before
+        // this the report printed green and exited 0 over a red suite, which is
+        // the fault this repair exists to remove, one level out.
+        var outcomes = SuiteOutcomes.Of(
+            EveryCarriedCheck(CheckRun.Passed),
+            new SuiteRun(Total: 256, Executed: 256, Failed: 1, NotExecuted: 0));
+
+        var report = ReportFrom(outcomes);
+
+        // No claim moved, and the report is still not green.
+        Assert.Equal(0, report.Count(Verdict.Fail));
+        Assert.Equal(0, report.Count(Verdict.Unexamined));
+        Assert.False(report.Green);
+
+        using var elsewhere = new TemporaryDirectory();
+
+        PhaseReportWriter.Write(report, elsewhere.Path, DateTimeOffset.UnixEpoch);
+
+        using var written = JsonDocument.Parse(
+            File.ReadAllText(PhaseReportWriter.JsonPath(elsewhere.Path)));
+
+        Assert.False(written.RootElement.GetProperty("green").GetBoolean());
+
+        // And the run is on the artifact rather than only in the scrollback,
+        // because a claim that something is visible is a claim about a surface.
+        var suite = written.RootElement.GetProperty("suite");
+
+        Assert.Equal(1, suite.GetProperty("failed").GetInt32());
+        Assert.False(suite.GetProperty("clean").GetBoolean());
+        Assert.Contains(
+            "1 failed",
+            File.ReadAllText(PhaseReportWriter.HtmlPath(elsewhere.Path)),
+            StringComparison.Ordinal);
+
+        // A skipped test is the same fault by a different name.
+        Assert.False(ReportFrom(SuiteOutcomes.Of(
+            EveryCarriedCheck(CheckRun.Passed),
+            new SuiteRun(256, 254, 0, 2))).Green);
+
+        // And a run that executed nothing is not a clean run.
+        Assert.False(ReportFrom(SuiteOutcomes.Of(
+            EveryCarriedCheck(CheckRun.Passed),
+            new SuiteRun(0, 0, 0, 0))).Green);
+    }
+
+    // Every outcome the format writes, and each beside a passing sibling of the
+    // same carrier, because that is the shape that made the first version of
+    // this reader wrong: it asked only whether any row said "Failed" and let a
+    // passing sibling answer for the rest.
+    static string Constructed(string carrier, string outcome) =>
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<TestRun xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\">\n" +
         "  <Results>\n" +
         "    <UnitTestResult testName=\"EquityBrief.Tests.Checks.SchemaColumns.One\" outcome=\"Passed\" />\n" +
-        "    <UnitTestResult testName=\"EquityBrief.Tests.Checks.ComponentAccess.Two\" outcome=\"Failed\">\n" +
+        $"    <UnitTestResult testName=\"EquityBrief.Tests.Checks.{carrier}.First\" outcome=\"Passed\" />\n" +
+        $"    <UnitTestResult testName=\"EquityBrief.Tests.Checks.{carrier}.Second\" outcome=\"{outcome}\">\n" +
         "      <Output><ErrorInfo><Message>the declaration did not match</Message></ErrorInfo></Output>\n" +
         "    </UnitTestResult>\n" +
         "  </Results>\n" +
+        "  <ResultSummary><Counters total=\"3\" executed=\"3\" passed=\"2\" failed=\"1\" " +
+        "error=\"0\" timeout=\"0\" aborted=\"0\" notExecuted=\"0\" /></ResultSummary>\n" +
         "</TestRun>\n";
 
     [Fact]
@@ -987,23 +1068,41 @@ public class ArchitectureConformance
 
         Assert.True(carriers.Length >= 20, $"Resolved {carriers.Length} carriers, expected at least 20.");
 
-        var tests = carriers
+        // Over every test in the suite and not only over the carriers' own,
+        // which is what the first version did: it built this list by reflecting
+        // over the carriers, so both loops below asked only about tests the
+        // carriers already declared and the question that matters, whether a
+        // test is owned at all, could not be reached.
+        var tests = Assembly.GetExecutingAssembly().GetTypes()
+            .Where(type => type.IsPublic)
             .SelectMany(type => type.GetMethods()
                 .Where(method => method.GetCustomAttributes()
                     .Any(attribute => attribute.GetType().Name is "FactAttribute" or "TheoryAttribute"))
                 .Select(method => type.FullName + "." + method.Name))
             .ToArray();
 
-        Assert.True(tests.Length >= 100, $"Found {tests.Length} tests across the carriers, expected at least 100.");
+        Assert.True(tests.Length >= 200, $"Found {tests.Length} tests in the suite, expected at least 200.");
 
+        // Tests owned by no carrier are not a defect and are not zero: eleven
+        // classes test components rather than carry a check. They are counted
+        // rather than assumed, and the report reads the run's own tally so a
+        // failure in one of them still reddens it.
+        var unowned = tests
+            .Count(test => !carriers.Any(type => test.StartsWith(type.FullName + ".", StringComparison.Ordinal)));
+
+        Assert.True(unowned >= 40, $"{unowned} tests are owned by no carrier, expected at least 40.");
+
+        // At most one, which is the prefix property. Zero is allowed and
+        // counted above; two would mean one carrier's full name is a prefix of
+        // another's and two checks would share a result.
         foreach (var test in tests)
         {
             var owners = carriers.Count(
                 type => test.StartsWith(type.FullName + ".", StringComparison.Ordinal));
 
             Assert.True(
-                owners == 1,
-                $"{test} is owned by {owners} carriers, where it has to be owned by exactly one.");
+                owners <= 1,
+                $"{test} is owned by {owners} carriers, where it has to be owned by at most one.");
         }
 
         foreach (var type in carriers)

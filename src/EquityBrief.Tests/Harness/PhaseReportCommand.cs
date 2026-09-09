@@ -47,13 +47,18 @@ internal static class PhaseReportCommand
             $"{report.Fixture.Constituents} constituents and {report.Fixture.Names} names");
         Console.WriteLine($"checks       {report.Coverage.Count} on the roster, {report.Coverage.Count(check => check.Carrier != CoverageReported.NotDueYet)} carried");
         Console.WriteLine(
-            $"suite        {outcomes.Count(CheckRun.Passed)} checks passed, "
+            $"checks ran   {outcomes.Count(CheckRun.Passed)} passed, "
             + $"{outcomes.Count(CheckRun.Failed)} failed, "
             + $"{outcomes.Count(CheckRun.DidNotRun)} did not run");
+
+        // The run as a whole beside the carried checks, because they are two
+        // populations and the first line alone said the suite was clean over a
+        // run with a failing test in a class that carries no check.
+        Console.WriteLine($"suite        {report.Suite.Describe()}");
         Console.WriteLine(PhaseReportWriter.HtmlPath(root));
         Console.WriteLine(PhaseReportWriter.JsonPath(root));
 
-        var green = report.Count(Verdict.Fail) == 0 && report.Count(Verdict.Unexamined) == 0;
+        var green = report.Green;
 
         // Naming both counts, because they are different faults and the line
         // said only one of them. Until 0.7's repair that was harmless in the way
@@ -62,8 +67,10 @@ internal static class PhaseReportCommand
         Console.WriteLine(green
             ? "verify-phase: green"
             : $"verify-phase: not green. {report.Count(Verdict.Fail)} claim(s) were checked and "
-                + $"did not hold, and {report.Count(Verdict.Unexamined)} were not checked. "
-                + "A phase is not done while either is above zero.");
+                + $"did not hold, {report.Count(Verdict.Unexamined)} were not checked, "
+                + $"{report.ChecksNotPassing} carried check(s) did not run or did not hold, and "
+                + $"{report.Suite.Describe()}. A phase is not done while any of those is above "
+                + "zero.");
 
         return green ? 0 : 1;
     }
