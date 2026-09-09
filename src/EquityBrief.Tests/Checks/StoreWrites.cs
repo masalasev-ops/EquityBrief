@@ -1,3 +1,6 @@
+using Microsoft.Data.Sqlite;
+using EquityBrief.Tests.Harness;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using EquityBrief.Data.Migrations;
 
@@ -378,5 +381,147 @@ public class StoreWrites
         Assert.Contains(rogue, write => write is { Operation: "Insert", Table: "facts" });
         Assert.DoesNotContain(declared, row =>
             row.Table == "facts" && row.Operation == "Insert" && row.Owner == "MembershipLoader");
+    }
+
+    // ---- 4.2, retention on the computed tables ----
+
+    // The five tables whose writer became their deleter, with the column each
+    // window is measured on. Two keys are a session and three are an as-of
+    // date, and the split is the whole reason the ruling was urgent: the
+    // session-keyed pair replaces with the series, and the as-of-keyed three
+    // write a new set every night and replaced nothing.
+    static readonly (string Table, string Column)[] Retained =
+    [
+        ("indicator", "session_date"),
+        ("swing", "session_date"),
+        ("volume_profile", "as_of"),
+        ("level", "as_of"),
+        ("ladder", "as_of"),
+    ];
+
+    [Fact]
+    public async Task EveryComputedTableDropsWhatFallsOutOfItsWindowAndKeepsWhatDoesNot()
+    {
+        // Asserted per table rather than in one loop over a mixed population,
+        // because two of the five are keyed on a session and three on an as-of
+        // date, and a figure over both would be a figure over the wrong
+        // population. The counts are read table by table and reported that way
+        // when one of them fails.
+        //
+        // The store is a real night's, so the rows inside the window are what a
+        // night produced rather than what a test inserted. What a test inserts
+        // is the old set, because the fixture holds one year and a second year
+        // of nights cannot be replayed from it.
+        using var store = await FixtureExpectations.ReplayedForRetention();
+
+        var newest = Scalar(store, "SELECT MAX(session_date) FROM bar;");
+        var boundary = DateOnly.ParseExact(newest!, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            .AddYears(-1);
+
+        var stale = boundary.AddDays(-1);
+        var fresh = boundary;
+
+        foreach (var (table, column) in Retained)
+        {
+            Insert(store, table, column, stale);
+            Insert(store, table, column, fresh);
+        }
+
+        // Both are present before the run, which is what makes the assertion
+        // afterwards a statement about the drop rather than about an insert
+        // that never happened.
+        foreach (var (table, column) in Retained)
+        {
+            Assert.True(
+                Rows(store, table, column, stale) > 0,
+                $"{table} holds no row below the boundary before the run, so the drop cannot be observed.");
+
+            Assert.True(
+                Rows(store, table, column, fresh) > 0,
+                $"{table} holds no row at the boundary before the run, so keeping cannot be observed.");
+        }
+
+        await FixtureExpectations.RunTheComputedStages(store);
+
+        foreach (var (table, column) in Retained)
+        {
+            Assert.True(
+                Rows(store, table, column, stale) == 0,
+                $"{table} still holds a row dated {stale:yyyy-MM-dd}, which is below the one-year boundary of {boundary:yyyy-MM-dd}.");
+
+            // The other half, and the one a drop that took everything would
+            // fail. A boundary off by one direction empties the table and a
+            // check that only asserted the absence would call that a pass.
+            Assert.True(
+                Rows(store, table, column, fresh) > 0,
+                $"{table} lost the row dated {fresh:yyyy-MM-dd}, which is the boundary itself and inside the window.");
+
+            Assert.True(
+                Total(store, table) > 1,
+                $"{table} holds {Total(store, table)} rows after the drop, so the window took the night with it.");
+        }
+    }
+
+    // A row a year and a day old, in whichever shape the table takes. The
+    // values are the smallest thing each table's columns admit: what is under
+    // test is the date, and a row that had to be plausible would be a second
+    // implementation of what the builders write.
+    static void Insert(TemporaryStore store, string table, string column, DateOnly dated)
+    {
+        var statements = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["indicator"] = "INSERT OR REPLACE INTO indicator (ticker, session_date, name, value, bar_count) VALUES ('AAPL', $dated, 'sma20', 1.0, 1);",
+            ["swing"] = "INSERT OR REPLACE INTO swing (ticker, session_date, direction, price, confirmed_on) VALUES ('AAPL', $dated, 'high', '1.0000', $dated);",
+            ["volume_profile"] = "INSERT OR REPLACE INTO volume_profile (ticker, as_of, band_low, band_high, share_count, share_of_period) VALUES ('AAPL', $dated, '1.0000', '2.0000', 1, 1.0);",
+            ["level"] = "INSERT OR REPLACE INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES ('AAPL', $dated, '1.0000', '2.0000', 'support', 0, 1, 1, '[]');",
+            ["ladder"] = "INSERT OR REPLACE INTO ladder (ticker, as_of, trend_state, plan) VALUES ('AAPL', $dated, 'range', '{}');",
+        };
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+
+        command.CommandText = statements[table];
+        command.Parameters.AddWithValue("$dated", dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        command.ExecuteNonQuery();
+    }
+
+    static long Rows(TemporaryStore store, string table, string column, DateOnly dated)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"SELECT COUNT(*) FROM {table} WHERE {column} = $dated;";
+        command.Parameters.AddWithValue("$dated", dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return Convert.ToInt64(command.ExecuteScalar());
+    }
+
+    static long Total(TemporaryStore store, string table)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT COUNT(*) FROM {table};";
+
+        return Convert.ToInt64(command.ExecuteScalar());
+    }
+
+    static string? Scalar(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        var value = command.ExecuteScalar();
+
+        return value is null or DBNull ? null : (string)value;
     }
 }

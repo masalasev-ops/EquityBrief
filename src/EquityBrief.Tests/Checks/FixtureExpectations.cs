@@ -1894,6 +1894,23 @@ public class FixtureExpectations
         Assert.DoesNotContain(missing, _ => true);
     }
 
+    // The replayed store the retention check is asserted against, and the five
+    // stages re-run over it. Exposed here rather than rebuilt there because a
+    // second replay would be a second statement of what a night runs, and the
+    // order is the property the night carries.
+    internal static Task<TemporaryStore> ReplayedForRetention() => WithLadders();
+
+    internal static async Task RunTheComputedStages(TemporaryStore store)
+    {
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new IndicatorEngine(clock, store.DatabaseFile).RunAsync("retention-indicators");
+        await new SwingFinder(clock, store.DatabaseFile).RunAsync("retention-swings");
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("retention-profile");
+        await new LevelBuilder(clock, store.DatabaseFile).RunAsync("retention-levels");
+        await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "retention-ladders");
+    }
+
     // ---- 4.1, the trend state and the ladder row ----
 
     static async Task<TemporaryStore> WithLadders()

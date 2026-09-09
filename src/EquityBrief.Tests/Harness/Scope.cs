@@ -462,7 +462,7 @@ internal static class Scope
     static readonly Dictionary<string, string> Components = new(StringComparer.Ordinal)
     {
         // 4.2 builds the ladder and never uses the component's name.
-        ["Ladder builder"] = "4.2",
+        ["Ladder builder"] = "4.4",
         ["Report exporter"] = "6.9",
     };
 
@@ -687,7 +687,7 @@ internal static class Scope
     static readonly Dictionary<string, string> FixtureRows = new(StringComparer.Ordinal)
     {
         ["fundamentals"] = "6.1",
-        ["calendar"] = "4.2",
+        ["calendar"] = "4.3",
         ["membership"] = "1.1",
         ["fetch"] = "2.1",
         ["series state"] = "1.6",
@@ -695,7 +695,7 @@ internal static class Scope
         ["swings"] = "3.2",
         ["volume profile"] = "3.3",
         ["levels"] = "3.4",
-        ["ladder"] = "4.2",
+        ["ladder"] = "4.4",
         ["listings"] = "5.4",
         ["facts"] = "5.3",
         ["a poisoned paragraph"] = "6.3",
@@ -793,7 +793,7 @@ internal static class Scope
         ["Backfill one year"] = "1.4",
         ["Fetch the day"] = "1.4",
         ["Check splits and dividends"] = "1.6",
-        ["Fetch the index's dated events"] = "4.2",
+        ["Fetch the index's dated events"] = "4.3",
 
         // The nine that were one step until 4.0. Written as "For every name:
         // indicators, swings, volume profile, levels, trend state, ladder,

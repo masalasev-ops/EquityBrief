@@ -4538,3 +4538,51 @@ Amended:    nothing. This checkpoint amends no done condition.
 Tests:      393, from 390. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
             This session has committed code and may not sign the phase off.
+
+### 4.2 - retention on the computed tables                              2026-09-09
+Built:      the retention drop for `indicator`, `swing`, `volume_profile`, `level` and `ladder`,
+            each in its own writer, declared in `SCHEMA.md`'s ownership table and in each
+            component's access. `move` waits for 5.2, because `MoveAnnotator` does not exist.
+Why here:   at the operator's direction, and the reason held. A deleter built in the checkpoint
+            that first populates the tables is a delete path whose first real exercise is a night
+            nobody has watched, over the tables whose growth is the argument for the ruling. 4.1
+            wrote the rows and this asserts the drop against them.
+Shape:      the `DELETE` is in each component's own file rather than in a shared helper, because
+            a write is attributed to the file it appears in: a helper holding the statement would
+            be a file that deletes and is declared nowhere, which is the same reading
+            `bar-append-only` uses to permit a delete only in a declared deleter's file.
+            The boundary is one year back from the newest stored session, read from the store
+            rather than passed in, so a component run on its own drops what a night would. A
+            store with no bars has no boundary and drops nothing, which is a different thing from
+            a boundary of today.
+Asserted:   per table rather than in one loop over a mixed population. Two of the five key on a
+            session and three on an as-of date, and a figure over both would be a figure over the
+            wrong population, which is the rule this corpus applies to every other count.
+            Both halves for each table: the row below the boundary goes, and the row at the
+            boundary stays. Without the second, a drop that emptied the table would read as a
+            pass, and the boundary is exactly where an off-by-one lands.
+Mutated:    the level table's boundary moved by one session, from below the date to at or below
+            it, in an isolated worktree at the commit under test, reverted, the worktree removed.
+            The rule for choosing was stated first: mutate the assertion carrying the property
+            this checkpoint exists to add, which is that a row at the boundary survives. It
+            turned the retention test red and nothing else.
+Found:      two stale due points, by the mechanism done condition 8 exists for. Writing this
+            entry made 4.2 a checkpoint the record shows as landed, and the calendar's fixture row
+            and its nightly step were still pointed at 4.2 from before phase 4 was replanned to
+            ten checkpoints. Both moved to 4.3, which is where the calendar fetcher now is. Had
+            the entry been written after the run, the run would have been green on a question it
+            never asked.
+Found also: nothing new in the code. The mutation run turned `changelog-reconciles` red on
+            this checkpoint's own commit, because the SCHEMA edit had no changelog entry yet.
+            That is the check working and it is recorded because the same thing reached CI at
+            4.1: a suite run before a commit exists cannot see that commit, so the check that
+            reads history is one a local run always reads a commit behind. The habit that follows
+            is to write the changelog entry with the edit rather than with the record.
+Measured:   203 claims, 79 PASS, 0 fail, 0 unexamined, 124 out of scope, unchanged. This
+            checkpoint adds no claim: section 16's retention row covers six tables and the last
+            of them arrives at 5.2, so the row stays out of scope until then and what is
+            assertable now is the declaration, which `writer-ownership` reconciles in both
+            directions.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      394, from 393. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.

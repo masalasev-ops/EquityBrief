@@ -4,6 +4,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Bars;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Ladders;
@@ -11,6 +12,7 @@ namespace EquityBrief.Worker.Ladders;
 public sealed record LadderOutcome(
     int MembersConsidered,
     int RowsWritten,
+    int RowsDropped,
     int Uptrend,
     int Downtrend,
     int Range,
@@ -41,7 +43,7 @@ public sealed class LadderBuilder : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
-            new StoreTouch(Store.Ladder, Touch.Insert | Touch.Update),
+            new StoreTouch(Store.Ladder, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -65,6 +67,24 @@ public sealed class LadderBuilder : IComponent
         WHERE ticker = $ticker
         ORDER BY session_date DESC
         LIMIT 1;
+    ";
+
+    // The retention drop, one year back from the as-of date this run wrote.
+    //
+    // Section 16 states one year over the six computed tables and SCHEMA gave
+    // Delete to nobody until 4.2, which is contradiction A and contradiction H
+    // in a third place: a retention window nobody owns is a table that grows
+    // forever while the document says it does not.
+    //
+    // Nothing here can remove a row from inside a set it leaves standing. The
+    // boundary is a date and every row below it goes, for every name at once,
+    // which is the same shape BarFetcher's drop has and the same reason it is
+    // sanctioned.
+    // Keyed on the as-of date, and one row per index member every night
+    // whether or not it carries a plan, so this is the table whose growth is
+    // most exactly the index size times the nights.
+    const string DropOlderThan = @"
+        DELETE FROM ladder WHERE as_of < $oldest;
     ";
 
     const string Upsert = @"
@@ -148,9 +168,15 @@ public sealed class LadderBuilder : IComponent
 
         await transaction.CommitAsync(cancellation);
 
+        // The retention drop, after the write and outside its transaction, so
+        // a night that fails partway leaves the old sets standing rather than
+        // dropping them for rows it never wrote.
+        var dropped = await DroppedAsync(connection, await BoundaryAsync(connection, cancellation), cancellation);
+
         var outcome = new LadderOutcome(
             members.Count,
             written,
+            dropped,
             counts[TrendState.Uptrend],
             counts[TrendState.Downtrend],
             counts[TrendState.Range],
@@ -242,8 +268,44 @@ public sealed class LadderBuilder : IComponent
             "$detail",
             $"{outcome.RowsWritten} row(s) for {outcome.MembersConsidered} member(s), " +
             $"{outcome.Uptrend} uptrend, {outcome.Downtrend} downtrend, {outcome.Range} range, " +
-            $"{outcome.NotClassified} not classified, {outcome.WithoutBars} with no stored bars");
+            $"{outcome.NotClassified} not classified, {outcome.WithoutBars} with no stored bars, " +
+            $"{outcome.RowsDropped} dropped");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }
+
+    // One year back from the newest stored session, which is the boundary
+    // BarFetcher already drops bars at. Read from the store rather than passed
+    // in, so a component run on its own drops the same rows a night would.
+    static async Task<DateOnly?> BoundaryAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT MAX(session_date) FROM bar;";
+
+        var newest = await command.ExecuteScalarAsync(cancellation);
+
+        return newest is null or DBNull
+            ? null
+            : DateOnly.ParseExact((string)newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                .AddYears(-BarFetcher.RetentionYears);
+    }
+
+    static async Task<int> DroppedAsync(
+        SqliteConnection connection,
+        DateOnly? boundary,
+        CancellationToken cancellation)
+    {
+        if (boundary is not { } oldest)
+        {
+            return 0;
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = DropOlderThan;
+        command.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteNonQueryAsync(cancellation);
+    }
+
 }

@@ -5,9 +5,11 @@ using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
+using EquityBrief.Worker.Bars;
+
 namespace EquityBrief.Worker.Indicators;
 
-public sealed record IndicatorOutcome(int NamesComputed, int RowsWritten, int NotAvailable);
+public sealed record IndicatorOutcome(int NamesComputed, int RowsWritten, int NotAvailable, int RowsDropped);
 
 // The indicator engine. Reads the stored bars for every current member and
 // writes the ten values SCHEMA's name column enumerates, per session, each row
@@ -31,7 +33,7 @@ public sealed class IndicatorEngine : IComponent
         Stores:
         [
             new StoreTouch(Store.Bar, Touch.Read),
-            new StoreTouch(Store.Indicator, Touch.Insert | Touch.Update),
+            new StoreTouch(Store.Indicator, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -58,6 +60,24 @@ public sealed class IndicatorEngine : IComponent
     // conflict target is the declared primary key, and the update is what makes
     // the night idempotent in what it records: two runs over one session leave
     // one row saying the same thing.
+    // The retention drop, one year back from the as-of date this run wrote.
+    //
+    // Section 16 states one year over the six computed tables and SCHEMA gave
+    // Delete to nobody until 4.2, which is contradiction A and contradiction H
+    // in a third place: a retention window nobody owns is a table that grows
+    // forever while the document says it does not.
+    //
+    // Nothing here can remove a row from inside a set it leaves standing. The
+    // boundary is a date and every row below it goes, for every name at once,
+    // which is the same shape BarFetcher's drop has and the same reason it is
+    // sanctioned.
+    // Keyed on the session, so this replaces with the series and grows only
+    // as the series does. The boundary is the one the bar fetcher uses, so an
+    // indicator whose bar has gone does not outlive it.
+    const string DropOlderThan = @"
+        DELETE FROM indicator WHERE session_date < $oldest;
+    ";
+
     const string Upsert = @"
         INSERT INTO indicator (ticker, session_date, name, value, bar_count)
         VALUES ($ticker, $session_date, $name, $value, $bar_count)
@@ -128,9 +148,15 @@ public sealed class IndicatorEngine : IComponent
             await transaction.CommitAsync(cancellation);
         }
 
-        await RecordAsync(connection, runId, startedAt, tickers.Count, rows, absent, cancellation);
+        var dropped = await DroppedAsync(
+            connection,
+            DropOlderThan,
+            await BoundaryAsync(connection, cancellation),
+            cancellation);
 
-        return new IndicatorOutcome(tickers.Count, rows, absent);
+        await RecordAsync(connection, runId, startedAt, tickers.Count, rows, absent, dropped, cancellation);
+
+        return new IndicatorOutcome(tickers.Count, rows, absent, dropped);
     }
 
     async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, CancellationToken cancellation)
@@ -187,6 +213,7 @@ public sealed class IndicatorEngine : IComponent
         int names,
         int rows,
         int absent,
+        int dropped,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -196,7 +223,7 @@ public sealed class IndicatorEngine : IComponent
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-        command.Parameters.AddWithValue("$outcome", "ok");
+        command.Parameters.AddWithValue("$outcome", "ok, {dropped} dropped");
         command.Parameters.AddWithValue("$rows_written", rows);
 
         // The absent count is on the row a person reads rather than inferred
@@ -205,8 +232,49 @@ public sealed class IndicatorEngine : IComponent
         // series that stopped arriving would show.
         command.Parameters.AddWithValue(
             "$detail",
-            $"{names} name(s), {rows} row(s), {absent} not available");
+            $"{names} name(s), {rows} row(s), {absent} not available, {dropped} dropped");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }
+
+    // One year back from the newest stored session, which is the boundary
+    // BarFetcher already drops bars at. Read from the store rather than passed
+    // in, so a component run on its own drops the same rows a night would.
+    //
+    // A store with no bars has no boundary and nothing to drop, which is a
+    // different thing from a boundary of today.
+    static async Task<DateOnly?> BoundaryAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT MAX(session_date) FROM bar;";
+
+        var newest = await command.ExecuteScalarAsync(cancellation);
+
+        return newest is null or DBNull
+            ? null
+            : DateOnly.ParseExact((string)newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                .AddYears(-BarFetcher.RetentionYears);
+    }
+
+    // Every row below the boundary, for every name at once, so what is left is
+    // still the window ending tonight.
+    static async Task<int> DroppedAsync(
+        SqliteConnection connection,
+        string statement,
+        DateOnly? boundary,
+        CancellationToken cancellation)
+    {
+        if (boundary is not { } oldest)
+        {
+            return 0;
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = statement;
+        command.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteNonQueryAsync(cancellation);
+    }
+
 }

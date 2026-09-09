@@ -35,11 +35,11 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `membership` | MembershipLoader | MembershipLoader | none |
 | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
-| `indicator` | IndicatorEngine | IndicatorEngine | none |
-| `swing` | SwingFinder | SwingFinder | none |
-| `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | none |
-| `level` | LevelBuilder | LevelBuilder | none |
-| `ladder` | LadderBuilder | LadderBuilder | none |
+| `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
+| `swing` | SwingFinder | SwingFinder | SwingFinder |
+| `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
+| `level` | LevelBuilder | LevelBuilder | LevelBuilder |
+| `ladder` | LadderBuilder | LadderBuilder | LadderBuilder |
 | `move` | MoveAnnotator | MoveAnnotator | none |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
@@ -63,7 +63,11 @@ This was a three-way contradiction until 1.4 and not a two-way one. The `bar` no
 
 The grain is what makes it urgent rather than tidy. `indicator` and `swing` key on a session, so both replace with the series and grow only as it does. `volume_profile`, `level` and `ladder` key on an as-of date, so each writes a new set every night and replaces nothing. At the band counts the fixture averages, five hundred names put something of the order of three and a half million rows a year into a store nothing can reduce.
 
-**The rows above still read `none`, and that is the file describing the code rather than the intention.** This file is reconciled against the shipped source in both directions, so a deleter declared here before the component deletes is a declaration with nothing behind it, which `writer-ownership` refuses and should. Five rows change at 4.2, which is the checkpoint that writes the deletes: `indicator`, `swing`, `volume_profile`, `level` and `ladder`. `move` waits for 5.2, because `MoveAnnotator` does not exist until then. Each writer will drop the rows that fall out of the window on the night they fall out, which is what `BarFetcher` does for `bar` and `NewsPulseCounter` for `news_pulse`, removing whole as-of sets or whole sessions and never a row from inside a set that stands.
+**Five of the six are declared at 4.2 and `move` waits for 5.2**, because `MoveAnnotator` does not exist until then and a deleter declared before its component deletes is a declaration with nothing behind it, which `writer-ownership` refuses in that direction too. It refused exactly that when the rows were changed at 4.0 ahead of the code.
+
+Each writer drops the rows that fall out of the window on the night they fall out, which is what `BarFetcher` does for `bar` and `NewsPulseCounter` for `news_pulse`. The boundary is one year back from the newest stored session, read from the store so a component run on its own drops what a night would. A drop removes whole sessions or whole as-of sets below that date and never a row from inside a set that stands, which is the distinction the `bar` note draws.
+
+The `DELETE` lives in each component's own file rather than in a shared helper, because a write is attributed to the file it appears in: a helper holding the statement would be a file that deletes and is declared nowhere.
 
 **`facts` is inserted by one component and updated by another, on disjoint columns.** FactsAssembler writes the facts file and its hash. ChangeDetector writes only the material-change list, on a row that already exists. A split is permitted where two components own disjoint declared column sets on the same grain, and the declared sets are below.
 
