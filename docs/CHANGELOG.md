@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - the feed rulings, and what they do to 2.1, 2.2 and 2.3
+Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
+Was:
+> 2.3 read "section 18 given the rows it lacks" without saying how many or which, 2.2 named the
+> policy settled at 2.0 without citing it, and 2.1 did not say where the provider's posting hour
+> comes from
+Now:
+> 2.3 names two rows and says why a rejected rate and a missed deadline add none, 2.2 cites the
+> retry decision, and 2.1 measures the posting hour from live fetches with the obligation
+> recorded in the table at the foot of this document
+Why: 2.0 settled what unavailable means, and the definition decides how many rows section 18 is
+short of. Written before the ruling, 2.3 could only say "the rows it lacks"; written after it,
+the count is a consequence rather than a guess. The two rows that remain are refused in different
+components, which is why they are two.
+
+
 ### 2026-09-09 - BUILD_PLAN.md, ARCHITECTURE.html - phase 2 written into the gap
 Corrects: contradiction M, and nothing else. The rest is an addition: the remap of the same date
 left a gap at phase 2 deliberately and this fills it.

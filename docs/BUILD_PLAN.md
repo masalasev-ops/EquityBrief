@@ -184,15 +184,21 @@ Then `ProviderCredentials` bound from configuration, and the startup refusal `RU
 
 Then one live feed end to end: the bulk price feed, because it is the nightly path's own and the one the zero-per-name rule is shaped around. The capture-before-parse rule of 1.6 and 1.7 does not apply to it, because the parser exists and was written against a captured response at 1.4; what is new here is the transport, not the shape.
 
+The provider's posting hour for the day's bulk file is measured here from live fetches rather than taken from documentation, which is the one figure the schedule decision leaves open and the first thing a live feed can be asked (see: The night runs at a fixed UTC instant set after the provider posts the day's bulk file).
+
 **Done when** a night fetches the day's bars from the provider in one request, the run log's `network_requests` is measured off the live feed rather than off a double, the key is refused by name at startup when it is blank, and no request URL reaches a log line or a store row. The last is not incidental: a URL carries the key in a query string on this provider, and the run log is a store this repository copies between machines.
 
 ### 2.2 Retry, backoff and the night's deadline
-To the policy settled at 2.0. A cancellation source threaded into `Nightly.RunAsync`, which takes none today while every feed interface accepts one, so a night that hangs on a socket has no deadline and nothing to cancel it.
+To the policy settled at 2.0 (see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move). A cancellation source threaded into `Nightly.RunAsync`, which takes none today while every feed interface accepts one, so a night that hangs on a socket has no deadline and nothing to cancel it.
 
 **Done when** a transient refusal is retried to the stated policy and a persistent one is not, a night exceeding its deadline stops with the step named and exits non-zero, and the retry is proved not to double-write over the delete-and-reinsert refetch path SCHEMA declares. That last condition is why this checkpoint is not folded into 2.1: a retry over a non-idempotent write is a defect that only appears once both exist.
 
 ### 2.3 Failure behaviour at the wire
-"Unavailable" implemented to the definition settled at 2.0, and section 18 given the rows it lacks. The existing "Bulk price feed unavailable" row is decomposed per surface the way the gap row was at 1.5: its behaviour half is assertable here and its banner half needs tonight's list, so the two are asserted at different checkpoints rather than the whole row waiting for the later one.
+"Unavailable" implemented to the definition settled at 2.0 (see: A feed is unavailable when it does not answer, and wrong when it answers with something else), and section 18 given the two rows that definition leaves it short of. Both are answers that arrive: a payload holding fewer names than the index, and a payload holding a session other than the one asked for. They are two rows rather than one because they are refused in different places. Only the feed can see the date the payload declares, and only the fetcher knows how many members the index has, so one is refused before parsing and the other after it.
+
+A rejected request rate and an answer past the night's deadline add no row. The definition settled at 2.0 makes both of them unavailable, and the row that promises what the system does when a feed is unavailable already exists; a second row saying the same thing in all four cells is the two-statements defect this corpus refuses everywhere else. They are induced as two of that row's cases instead.
+
+The existing "Bulk price feed unavailable" row is decomposed per surface the way the gap row was at 1.5: its behaviour half is assertable here and its banner half needs tonight's list, so the two are asserted at different checkpoints rather than the whole row waiting for the later one.
 
 **Done when** each new row's failure is induced against the fixture and produces what the row promises, and a response carrying a session other than the one asked for is refused rather than stored. A night answered with yesterday's bulk file logs one request and no error, which is the failure that reports green, and it is the reason the wrong-session row exists at all.
 
@@ -480,6 +486,7 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 6.1 |
 | The refetch's atomicity asserted as a property rather than as a construct | 1.8 | 3.1 |
 | Every file under `fixtures/` named as an expectation swept for whether a test reads it | 1.8 | 3.1 |
+| The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 |
 
 **Carried out of the phase 1 sign-off.** Two defects found by breaking a passing claim and
 watching the suite stay green. Neither falsifies shipped behaviour, so under the stopping rules

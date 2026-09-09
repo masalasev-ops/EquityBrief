@@ -2579,3 +2579,49 @@ Claims:     180, 37 pass, 143 out of scope, 0 unexamined, unchanged. Predicted b
             none, and section 14's amended sentence sits in a note rather than in the ordered
             list. Nothing is due at phase 2 yet, so no claim moved.
 Tests:      257, unchanged.
+
+### 2.0 planning - the feed rulings                                          2026-09-09
+Not a checkpoint entry. It belongs to 2.0, and it is the other half of it. The commit before this
+            one wrote the plan; this settles the six holes that plan assigns to 2.0, each as a
+            `DECISIONS.md` entry under a new heading, Feeds and the wire.
+Settled:    what unavailable means, and what wrong means beside it. The retry count, the backoff,
+            the per-request timeout and the night's deadline. The schedule as a UTC instant. What
+            a paged answer does to the request count. The weighted-call budget. And the shape of
+            the `nightly-cost` carve-out.
+Range:      the prediction stated 185 to 188 and named what would move it. It is 185, the bottom,
+            and it is the downward cause named in advance rather than a different one.
+            Two of the four failure rows collapse. A rejected request rate and an answer past the
+            deadline are both unavailable under the definition settled here, and section 18
+            already carries a row promising what the system does when a feed is unavailable:
+            keep last night's bars, mark every name stale, still serve the app, banner with the
+            data date. Two more rows would have repeated that row in all four of its cells, which
+            is the two-statements defect this corpus refuses everywhere else. They are induced as
+            two of that row's cases instead, so nothing goes untested and nothing is said twice.
+            The two wrong-content rows do not collapse, and the reason is sharper than the one
+            the prediction gave. It is not only that a wrong answer is refused rather than
+            treated as an absence. It is that the two are refused in different places: only the
+            feed can see the session date a payload declares, and only the fetcher knows how many
+            members the index holds. One is refused before parsing and the other after it, which
+            is two behaviours in two components and cannot be one row.
+Count:      185 claims and 42 PASS at the end of phase 2, from 180 and 37. Two new section 18
+            rows, one more from decomposing the unavailable row per surface, two new section 17
+            rows. 42 plus 143 out of scope is 185, which is the arithmetic checked at 2.7.
+Hour:       the schedule decision fixes the form and not the hour. A UTC instant, registered with
+            whatever scheduler the machine has, set at the provider's posting hour plus a margin.
+            The hour itself is measured at 2.1 from live fetches rather than taken from
+            documentation, and it is recorded as an obligation rather than left in this entry,
+            because a number nobody has measured written into a decision is the shape that gets
+            cited later as though it were settled.
+Carve-out:  the `nightly-cost` decision is about a check rather than about cost, and it is the
+            one of the six most likely to be got wrong quietly. The check scans every shipped
+            file for the outward-request types and reports zero, which is true only while no feed
+            reaches the network. Deleting the patterns would leave a check reporting the absence
+            of a scan as the absence of a client, inside the check that carries the nightly
+            path's own claim. The exemption is named instead, one file per live feed, and the
+            list is asserted to hold exactly the feed implementations.
+Not built:  still no code. 2.0 settles and builds none of it, which is why a planning checkpoint
+            can never be the answer to a due point.
+Claims:     180, 37 pass, 143 out of scope, 0 unexamined, unchanged. Predicted before the run:
+            a decision record carries no claim, and the plan amendments name checkpoints that
+            already existed. The 185 above is what phase 2 ends at, not what it stands at now.
+Tests:      257, unchanged.
