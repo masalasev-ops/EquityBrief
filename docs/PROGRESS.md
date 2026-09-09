@@ -4141,3 +4141,203 @@ Amended:    nothing. This checkpoint amends no done condition.
 Tests:      380. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      this session has committed code to phase 3 and may not sign it off. The sign-off is
             owed on the phase as a whole, by a fresh session, before phase 4's plan.
+
+### Phase 3 sign-off                                                         2026-09-09
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. The building
+            session committed code at 3.2, 3.3, 3.4, 3.5 and 3.6, and the 3.7 entry says in its
+            own last line that it does not sign the phase off.
+Verified:   by re-running both gates on `main` rather than by reading the 3.7 entry.
+            `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, 380 tests passing inside
+            it, migrations 0 to 10, exit 0. `tools/verify-phase.ps1` green at 186 claims, 64
+            PASS, 0 FAIL, 122 out of scope, 0 unexamined, 25 tables, 70 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT with 1 captured over 6
+            constituents and 4 names, 33 checks on the roster and 30 carried, 30 ran and passed
+            and none did not run. Windows PowerShell on this machine, at commit 74b66b9. Every
+            figure the 3.7 entry states reproduces exactly.
+Matrix:     read from the run that pushed 74b66b9 rather than from the machine at hand, because
+            done condition 5 is about both runners. All three jobs green: matrix
+            windows-latest, matrix macos-latest and case-sensitivity. The same holds for every
+            one of the ten phase 3 merges, 28 through 37.
+Plan:       all eight checkpoints, 3.0 through 3.7, are in `BUILD_PLAN.md` and all eight are
+            recorded above. No open pull request and no unmerged branch. The carried obligations
+            table holds 27 rows, 17 discharged and 10 open, and the earliest open one is due at
+            4.0, so nothing is owed inside phase 3. Every one of the eight expectation files
+            states an independent derivation and none is frozen from a run, which is done
+            condition 7 read off the files rather than off the entries.
+
+Swept:      the tautology pattern, which 3.7 recorded as a pattern rather than as two incidents
+            and predicted would arrive again. It arrived again. Every mutation was made in an
+            isolated worktree at 74b66b9 and reverted, the worktree was removed, and the main
+            tree was not modified at any point.
+            34 mutation runs over 32 distinct mutations, of which 4 were controls, run to prove
+            the harness detects: the sixty session guard, the swing confirmation date, the short
+            window average and the role rule each turned red in the test named for them. Of the
+            27 distinct candidate mutations, 14 turned a test red and 13 left the whole suite
+            green at 380 of 380.
+            The 13 sort into three groups and only the first two are defects of the shape 3.7
+            named.
+Group one:  a test names the property and cannot fail on it. Two.
+            `EveryMomentumReadingDrawsItsNeutralRule`, which is 3.5's second done condition. The
+            panel is rendered from `IndicatorSeries.Momentum` and the test asserts the drawn
+            names back against `IndicatorSeries.Momentum`, so both sides are the same constant.
+            Dropping `macd_hist` from that set draws three readings instead of four and leaves
+            the suite green. The hole is asymmetric and that is what identifies it: adding
+            `atr14` to the set does turn the test red, because `NeutralOf` throws on a reading
+            that has no neutral rule, so the test is sensitive to the set only through an
+            exception and never through membership. The document enumerates the four nowhere, so
+            there is no independent statement for a test to read; section 15 says only that the
+            momentum readings sit on their own small axes.
+            `SupportAndResistanceAreTheOnlyTwoHuesAndTheImmediateBandIsStronger`. It asserts that
+            three fills carry exactly two distinct hues and that one contains the support token
+            and one the resistance token. It never asserts which band got which. Swapping the two
+            constants draws every support band in the resistance hue and leaves the suite green,
+            because both tokens still appear.
+Group two:  a property the code states and no test names. Two, and both matter downstream.
+            `has_non_average_anchor` is computed over the anchors rather than over the whole
+            band. Computing it over the whole band instead, so that a touch counts as a
+            non-average anchor, leaves the suite green: every band in this fixture anchored on an
+            average alone happens to carry no touch. SCHEMA's own note says the case that would
+            separate them is common, that a short moving average follows the price and sits at it
+            about half the time. This is the column 4.2 reads to decide that a band anchored only
+            by an average carries no tranche, so the value decides whether a tranche exists.
+            `LevelsForName` serves the latest as-of date only, and deleting the clause that binds
+            `as_of` to the maximum leaves the suite green. The fixture holds one as-of date per
+            name, so the two queries cannot differ over it. The comment states the reason the
+            clause is there, that a page holding two nights of bands is a page holding two maps,
+            and that is a fault which first appears on the second night rather than in any
+            fixture.
+Group three: a boundary or a population the committed fixture does not hold. Nine. The swing
+            plateau rule and the outside day that is a peak and a trough at once, both in 3.2;
+            the merge distance boundary and the role boundary at the close, both in 3.4; the
+            retracement zero span guard; and four in 3.3, being the largest remainder tie order,
+            the one price session, the collapsing edge guard, and the top edge taking the
+            window's own high. Each is documented at length in the source and none is reachable
+            from four names of committed bars. A fixture cannot hold every boundary and this is
+            not the same defect as the first two groups. The repair where one is wanted is the
+            one 3.3 and 3.4 already used, a test over constructed input rather than a wider
+            fixture, and the swing outside day is the case that says so plainly: the test
+            covering it asserts a stored count of zero, and its own comment says the count is
+            stated so that a name which has one is a change somebody reads.
+Not a reopen: under the stopping rules none of the 13 reopens the phase. No check broke and no
+            done condition fails. In every case the shipped code is correct and what is absent is
+            the assertion, which is the same class as the weighted-call stop carried out of the
+            phase 2 sign-off, and it is carried the same way.
+How to look: the sweep found nothing by reading that it had not already found by mutating, which
+            is now the third time that has been true. It also found where the corpus was not
+            looking. `PROGRESS.md` records mutation evidence for 3.2, 3.3 and 3.4 and none for
+            3.5 or 3.6, and both group one findings and one of the two group two findings are in
+            3.5. The pattern is not that some checkpoints write weaker tests. It is that the
+            checkpoints which mutated their own work found their own holes, and the two that did
+            not, did not.
+
+Retention:  section 16's data stores matrix, and not section 12, is where the retention cell
+            sits. It states one year, recomputed nightly and kept for the harness, over
+            indicators, swings, volume profile, levels, ladders and moves, and `SCHEMA.md` gives
+            Delete to nobody for any of the six. This is contradiction A and contradiction H a
+            third time, and `SCHEMA.md` says so about itself twice already: the note under `bar`
+            records the three-way form resolved at 1.4, and the note under the second table
+            records that a retention window nobody owns is a table which grows forever while
+            that file says it does not.
+            It fails no done condition and breaks no check, and nothing stored today is wrong.
+            Two things make it a ruling rather than a note. Its due point is 5.2, which is where
+            the last of the six tables arrives and not where a deleter is built, so it is a
+            deferral naming a point that produces no evidence, which is the defect 3.0 swept the
+            corpus for. And the four tables that exist split in two on grain, which decides which
+            of them the window is actually about. `indicator` keys on ticker, session date and
+            name, and `swing` on ticker, session date and direction, so both replace and grow
+            only with the series. `volume_profile` keys on ticker, as-of date and band low, and
+            `level` on ticker, as-of date and low edge, so both write a new set every night and
+            replace nothing. At twenty bands a name, and the 7.25 bands a name this fixture
+            averages, five hundred names put about 10,000 profile rows and about 3,600 level rows
+            into the store every night, which is of the order of three and a half million rows a
+            year that nothing is declared able to remove.
+
+Strength:   the strength score is dominated by touches, which 3.4 recorded as a consequence to
+            watch on the one name it was written over. It now has four names of different
+            character and the reading holds on all four. Measured over every band of every name
+            in the levels expectation.
+            The strongest band is the most touched band for all four names. Touches are 72, 73,
+            79 and 78 per cent of the members of each name's strongest band. Anchor counts are
+            bunched, at most 15 for AAPL and KEYS and at most 4 for MSFT and NFLX, while touch
+            counts run from 0 to 41, so the whole dynamic range of the score comes from touches
+            and almost none of it from the evidence that makes a level a level.
+            MSFT is the case that shows it changing an answer and not only a number. Its top band
+            by strength, at 492.1166, and the band at 369.6983 carry the same 4 anchors, and the
+            first wins on 15 touches against 9. Ranking by anchors alone puts a different band
+            first.
+            Width buys the score twice, because chain merging lets a band grow past the merge
+            distance and a wider band is reached by more sessions. AAPL's immediate support band
+            is 20.54 wide against a merge distance of 3.82, and KEYS's is 31.91 against 5.64,
+            which is 5.4 and 5.7 times the distance that is supposed to bound a band. 65 per cent
+            of AAPL's sixty sessions and 68 per cent of KEYS's reached the band their own name
+            calls strongest, which is to say that two thirds of the quarter traded through it.
+            What makes this due rather than interesting: section 15 orders tonight's list by how
+            many reasons fired and then by band strength, so strength is the tiebreaker deciding
+            what the operator reads first, over at most twenty drawn rows. That surface is built
+            at 5.4. The builder implements figure 9.1 literally and correctly and this is not a
+            phase 3 defect. It is a question about the rule, and it should be settled before the
+            surface that reads it exists.
+
+As-of:      the level builder's as-of swing filter is unexercised through the builder, and it is
+            not a defect. While the as-of date is a name's own last session the filter can
+            exclude nothing, because a swing exists only where three sessions follow it. 3.4 read
+            it through `StoredSwings.AsOf` rather than through a second copy of the WHERE clause,
+            which is the right construction and puts the rule where 3.2's test can fail on it.
+            That test is not itself a tautology: it asserts the withheld set is not empty over
+            rows dated at or before the as-of date and confirmed after it, which is the
+            population that makes the filter observable, and it carries the counter-reading in
+            the same test. The mutation confirms it, since dating the confirmation on the swing's
+            own day turns that test red. What is absent is any exercise on the path the level
+            builder takes, and nothing can supply one until something asks for levels as of a
+            date that is not the name's last session.
+
+Prediction: 3.7's rule is right and it has nowhere to be applied. The rule it derived, that a
+            claim prediction is over the rows which become assertable and not over the rows which
+            get written, is stated in the 3.7 entry and in no spec. `BUILD_PLAN.md` states the
+            practice for phase 1 at 1.8 and for phase 2 at 2.7, and 3.7's own done condition
+            carries it. Phase 4 carries it nowhere: 4.0's text makes no prediction, and 4.7's
+            done condition is that every phase 4 claim is PASS across four fixture names and the
+            plan section renders whole, with no clause checking a predicted total against the
+            actual. So the lesson of the eight missed claims has no phase to be tested against
+            unless 4.0 puts the practice back. Recorded rather than repaired, because a sign-off
+            does not edit a spec and the pass that plans phase 4 is 4.0's own.
+
+Record:     `PROGRESS.md` is declared append only in `CLAUDE.md`'s document lifecycle table, and
+            corrections are new dated entries. PR #37 deleted 70 lines from it, being the 3.7
+            handover addendum, at the operator's direction, and CI stayed green. Nothing guards
+            the rule: `changelog-reconciles` reads the five specs and `PROGRESS.md` is a record,
+            so no check covers a deletion from a record. The removal was deliberate and is the
+            operator's call on the operator's own record, and this entry does not restore it.
+            What is recorded here is that the file no longer shows the addendum was written or
+            withdrawn, that the reasoning survives only in the commit message of 11708c9, and
+            that the append only rule is a stated property with no instrument behind it, which is
+            the same shape as everything in the sweep above.
+
+Carried:    six obligations created here, for 4.0 to enter in the table rather than by this
+            entry, which edits no spec. Four are tests and two are rulings.
+            The momentum panel's reading set asserted independently of the constant it is drawn
+            from, due at 4.0. The four readings stated somewhere a test can read them, or named
+            literally in the test, so that dropping one turns it red.
+            The band hue mapping asserted, and not only the two hues, due at 4.0. A support band
+            is drawn in the support hue and a resistance band in the resistance hue.
+            `has_non_average_anchor` asserted over a band anchored on an average alone that a
+            session reached, due at 4.2, which is the checkpoint reading the column to decide
+            tranche eligibility. Constructed input rather than a wider fixture, since the fixture
+            holds no such band.
+            The level read surface asserted over two stored as-of dates, due at 4.0. One name,
+            two nights, and the page holds the later night's bands alone.
+            A ruling on the six retention rows, due at 4.0 rather than at 5.2. Either a deleter
+            is declared for the four tables that exist and the two that do not, or section 16's
+            retention cell is changed to say what is true, and the due point moves to the
+            checkpoint producing the evidence rather than to the one completing the set.
+            A ruling on the strength score against four names, due at 5.4, which builds the list
+            that orders on it. The evidence is in this entry and needs no further checkpoint to
+            produce it.
+Noted:      three worktrees from a phase 1 workflow run remain registered under the repository's
+            local worktree directory, all at f48d9d6. They are outside the tree the nightly runs
+            from and they touch nothing, and they are recorded rather than removed because a
+            sign-off changes no state it is measuring.
+Tests:      380, unchanged from 3.7. Windows for this run; the matrix carries macOS and the
+            Linux case-sensitivity job, and all three were green on 74b66b9.
+Signed:     phase 3 is signed off at 74b66b9. Phase 4's plan is not opened by this session.
