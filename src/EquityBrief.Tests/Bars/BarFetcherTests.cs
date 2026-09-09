@@ -163,7 +163,7 @@ public class BarFetcherTests
 
         Assert.Equal(0, again.RowsWritten);
         Assert.Equal(0, again.RowsDropped);
-        Assert.Equal(4, again.MembersStored);
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, again.MembersStored);
     }
 
     // Retention is asserted in NightlyCost, which is nightly-cost's carrier

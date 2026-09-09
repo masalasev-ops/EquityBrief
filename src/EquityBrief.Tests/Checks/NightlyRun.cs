@@ -356,8 +356,8 @@ public class NightlyRun
         Assert.Contains("1 request(s)", first, StringComparison.Ordinal);
 
         // Stated, because the two derivations above would agree at zero.
-        Assert.Equal(6, populations.Constituents);
-        Assert.Equal(4, current);
+        Assert.Equal(FixtureExpectation.Constituents, populations.Constituents);
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, current);
         Assert.True(backfilled > 700, $"The backfill wrote {backfilled} rows, expected more than 700.");
 
         // A second night over the same store backfills nothing, which is what

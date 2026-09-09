@@ -49,7 +49,7 @@ public class MembershipLoaderTests
 
         var current = Rows(store, @"SELECT ticker, ""left"" FROM membership WHERE ""left"" IS NULL;");
 
-        Assert.Equal(4, current.Count);
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, current.Count);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class MembershipLoaderTests
         // before XRAY left are the same region, because the first is there as an
         // edge against the day before it rather than as a region of its own. So
         // seven dates draw six answers, and the sixth is what this test is for.
-        Assert.Equal(6, answers.Select(answer => string.Join(",", answer)).Distinct().Count());
+        Assert.Equal(FixtureExpectation.Constituents, answers.Select(answer => string.Join(",", answer)).Distinct().Count());
         Assert.Equal(theDayKeysJoined, betweenJoinAndLeave);
 
         // Named separately because it is the one that had collapsed: with a
@@ -174,7 +174,7 @@ public class MembershipLoaderTests
 
         Assert.Equal(first, second);
         Assert.Equal(after, again);
-        Assert.Equal(6, after.Count);
+        Assert.Equal(FixtureExpectation.Constituents, after.Count);
 
         var logged = Rows(store, "SELECT run_id, stage FROM run_log ORDER BY run_id;");
 
@@ -192,7 +192,7 @@ public class MembershipLoaderTests
         // the whole row while quietly making one about four fifths of it.
         var instants = Rows(store, "SELECT ticker, observed_at FROM membership ORDER BY ticker;");
 
-        Assert.Equal(6, instants.Count);
+        Assert.Equal(FixtureExpectation.Constituents, instants.Count);
         Assert.All(instants, row => Assert.NotEqual(string.Empty, row.Item2));
         Assert.Single(instants.Select(row => row.Item2).Distinct());
     }
