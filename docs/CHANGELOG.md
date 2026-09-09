@@ -25,6 +25,20 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - the weighted-call stop is discharged
+Authorised by: The night's cost is counted in weighted calls against the stated daily allowance
+Was:
+> | **The weighted-call stop asserted where `nightly-cost` reaches it** | 2.7 sign-off | 3.1 |
+> 3.1 constructs a night at the allowance, which is what makes the stop observable rather
+> than read |
+Now:
+> the same row reading `3.1, discharged`, with the producer cell adding that all three clauses
+> of the note now sit in the carrier and that deleting the stop turns `nightly-cost` red
+Why: the obligation is discharged ahead of the checkpoint that owes it, which is legitimate
+and which the reconciliation permits: a discharged row is exempt from the rule that an open
+row's due point must not have landed, because work committed early is the case that exemption
+exists for.
+
 ### 2026-09-09 - CLAUDE.md, BUILD_PLAN.md - a deferral names what produces the evidence
 Corrects: a deferral could name a point that produces nothing it waits on, and nothing said
 otherwise. Found by the phase 2 sign-off, which swept the holes table, the contradictions

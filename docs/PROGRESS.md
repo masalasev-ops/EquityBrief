@@ -3355,3 +3355,46 @@ Carried:    four new rows, all due 3.1 and all cited by 3.1's own text, being th
             second-class findings. The budget is repaired at the next commit and the atomicity
             clause was already carried. 24 rows in the table, up from 20.
 Tests:      325, unchanged. This commit measures and records and changes no code.
+
+### 3.1 - the weighted-call stop asserted where nightly-cost reaches it      2026-09-09
+Not a checkpoint entry. It belongs to 3.1, which has not landed. The work is committed ahead
+            of the checkpoint that owes it, which `CLAUDE.md` permits and which is why the
+            commit subject names 3.1 rather than 3.0. Nothing here records 3.1 as landed: a
+            `.0` is not a due point and a checkpoint is landed by its own entry, not by an
+            obligation discharged early. This session committed code and may not sign it off.
+Built:      all three clauses of the **Weighted-call budget** note asserted inside
+            `NightlyCost`, which is `nightly-cost`'s carrier and therefore the only class
+            whose tests can back that claim. The third clause is new: a night is constructed
+            already at the allowance, with a bulk feed reporting the requests an earlier run
+            spent and throwing if it is ever asked for rows, and the night is asserted to exit
+            non-zero, to name the step it stopped before, to state what it had spent against
+            what it was allowed, to have asked the feed for nothing, and to have written no
+            run log row at all.
+Moved:      the first two clauses, rather than copied. They were asserted in `LiveFeedTests`
+            and `NewsFeedTests`, where they ran, passed and backed no verdict. Copying would
+            have left a number asserted in two places, which is the two-statements defect this
+            corpus refuses everywhere else, so each site now carries a comment saying where
+            the assertion went and why. The news leg is folded into the weighted-total
+            assertion, which now exercises all five feed roles at once: six requests and 316
+            weighted calls, up from five and 311, because news was counted in a separate class.
+Proved:     the mutation the phase 2 sign-off ran, repeated against this tree. Deleting the
+            stop in `Nightly.cs` now fails `nightly-cost` at
+            `ANightAlreadyAtItsAllowanceStopsBeforeItsNextStepAndSaysWhy`, 10 of 11 passing,
+            where at the sign-off it left the check green at 8 of 8 and the suite green at 312
+            of 312. The mutation was reverted and `Nightly.cs` is byte identical to the commit
+            before this one.
+Found:      warnings as errors refused the first form of the mutation. Replacing the condition
+            with a constant false produced CS0162 for unreachable code, so the branch was
+            deleted outright, which is what the sign-off did and is the sharper mutation in any
+            case. Worth writing down because it means this class of mutation cannot be made by
+            disabling a condition in this tree and has to be made by removing the code.
+            And the stop fires before `migrate`, not before `membership`. The first version of
+            the test asserted the wrong step name and failed, which is the test finding the
+            night's real first step rather than the step section 14 opens with. The assertion
+            names `migrate` and says why: the property is that the stop precedes every step,
+            and the empty run log is the other half of it.
+Measured:   over the 42 PASS claims, the Weighted-call budget note's 3 clauses are now 3 of 3
+            reached by the carrier, against 0 of 3 before. Tests 325, unchanged, being 3 added
+            to `NightlyCost` and 3 removed from the two classes they backed nothing from.
+            `nightly-cost` carries 11 tests, up from 8.
+Carried:    the four rows 3.0's sweep opened stand, all due 3.1. This discharges the fifth.

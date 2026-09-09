@@ -196,51 +196,11 @@ public class LiveFeedTests
         Assert.Equal(RetryPolicy.Standard.Attempts, rh.Asked.Count);
     }
 
-    [Fact]
-    public void EveryWeightAndTheAllowanceAreTheOnesTheRunbookStates()
-    {
-        // The figures have been in RUNBOOK since the architecture was written
-        // and no code read either. Read back rather than repeated, because a
-        // number stated in a document and again in code is two places holding
-        // one fact.
-        var runbook = Corpus.Read("docs/RUNBOOK.md");
-
-        Assert.Contains("100,000 weighted calls", runbook, StringComparison.Ordinal);
-        Assert.Contains($"entire exchange costs {ProviderWeights.BulkEndOfDay}", runbook, StringComparison.Ordinal);
-        Assert.Contains(
-            $"single-ticker historical request costs {ProviderWeights.HistoricalPerTicker}",
-            runbook,
-            StringComparison.Ordinal);
-        Assert.Contains($"Fundamentals cost {ProviderWeights.Fundamentals} per ticker", runbook, StringComparison.Ordinal);
-        Assert.Contains($"News costs {ProviderWeights.News}", runbook, StringComparison.Ordinal);
-        Assert.Contains($"cost {ProviderWeights.Fundamentals}.", runbook, StringComparison.Ordinal);
-        Assert.Equal(100_000, ProviderWeights.DailyAllowance);
-    }
-
-    [Fact]
-    public async Task ANightsWeightedTotalIsCountedInTheUnitsTheProviderBillsIn()
-    {
-        // A night counted in requests alone says four where the provider says
-        // two hundred and twelve, which is the whole reason the allowance could
-        // not be read against anything before this.
-        var feeds = NightFeeds.FromFixture(Folder());
-
-        Assert.Equal(0, feeds.WeightedCalls);
-
-        await feeds.Membership.ConstituentsAsync("GSPC");
-        await feeds.Bulk.RowsAsync("US", new DateOnly(2026, 9, 8));
-        await feeds.Corporate.ActionsAsync("US", Session);
-        await feeds.Historical.BarsAsync("AAPL", new DateOnly(2025, 9, 4), new DateOnly(2026, 9, 4));
-
-        // One membership at 10, one bulk at 100, two action requests at 100 each
-        // and one ticker's history at 1. Five requests, 311 weighted calls.
-        Assert.Equal(5, feeds.Requests);
-        Assert.Equal(
-            ProviderWeights.Fundamentals
-            + ProviderWeights.BulkEndOfDay
-            + (2 * ProviderWeights.BulkEndOfDay)
-            + ProviderWeights.HistoricalPerTicker,
-            feeds.WeightedCalls);
-        Assert.Equal(311, feeds.WeightedCalls);
-    }
+    // The two weighted-call assertions that stood here are in NightlyCost, which
+    // is nightly-cost's carrier class and therefore the only place a test can
+    // back the Weighted-call budget claim. They ran here, passed here, and the
+    // claim would have read PASS with either of them deleted, because
+    // SuiteOutcomes reads a check's tests from the carrier the roster names.
+    // Found by 3.0's sweep of the claim notes, which reached six more of the
+    // same shape.
 }
