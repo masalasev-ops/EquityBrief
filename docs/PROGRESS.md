@@ -2816,3 +2816,69 @@ Claims:     184, 41 pass, 143 out of scope, 0 unexamined, from 181 and 38. Predi
             run: two new rows and one more claim from the decomposition, all three passing in the
             checkpoint that creates them, and the banner half staying out of scope.
 Tests:      289, from 286.
+
+### 2.4 The remaining price and membership feeds                             2026-09-09
+Built:      `EodhdIndexMembershipFeed`, `EodhdHistoricalBarFeed` and `EodhdCorporateActionFeed`,
+            each reading its answer through the parser the double already uses. The weighted-call
+            budget, which `RUNBOOK.md` has stated since the architecture was written and no code
+            had read. `--session`, so a night can be run by hand for a session the operator names.
+Live:       a night ran end to end against the provider for the 2026-09-08 session. 822 membership
+            rows, 125,742 bars over 503 tickers backfilled at one request per name, 501 bars for
+            the session, 182 corporate actions of which 7 fell on current members and each
+            triggered a full-year refetch. 11 network requests, 317 weighted calls of 100,000, 0
+            model calls. The store was scanned afterwards: no URL and no key anywhere in it.
+Found:      the live payload broke the membership parser on its first attempt, and the fixture
+            could not have shown it. `IndexConstituent.Joined` was not nullable and the parser
+            threw on a constituent with no StartDate. The provider carries 822 spans and 145 have
+            none, two of those being current members: IR and WAB are in tonight's snapshot of 503
+            and the provider will not say since when. The fixture's five constituents all carried
+            one.
+            Dropping such a name takes a real member out of the index and out of everything
+            computed from it. Writing a date nobody has is the guess this corpus refuses
+            everywhere else. So the column admits null, which needed migration 6.
+Rebuilt:    the unknown cannot sit in a primary key. SQLite treats nulls as distinct, so a second
+            night would insert a second row for the same name rather than conflicting with the
+            first, and the uniqueness moved to an expression index that folds the unknown to a
+            value. That is the one place a sentinel belongs: inside the index that enforces
+            uniqueness, and never in the column a query reads. A row whose join date is unknown
+            answers no to a past-date query, because a comparison against null is null, and yes
+            to members now, which is `left IS NULL`. Both are true rather than convenient.
+Rebuild:    `writer-ownership` reported the migration's `DROP TABLE membership` as a write nobody
+            declared, which it was reading correctly: SCHEMA gives membership no deleter. The
+            drop is half of a rename rather than a removal, and the permission is narrow in three
+            ways, being only the migration runner, only a drop, and only where the same migration
+            renames something back to the name it dropped. Its proof runs both directions over
+            the real migrations rather than over a description.
+Corrected:  2.3's truncation rule, by the first live night over five hundred names. It refused a
+            payload carrying nothing for any current member, and two of 503 are absent from an
+            ordinary day's file: EQR and PSTG are not in the 2026-09-08 bulk file at all, neither
+            as a bar nor as a symbol that did not trade. A rule that refused on any absence would
+            refuse every night.
+            The 2.3 entry said that if it fired on ordinary nights the row could be revisited with
+            data rather than with a guess, and phase 5 would have the data. Phase 5 was three
+            checkpoints too late: the data arrived the moment a night ran over the whole index.
+            The row is now **A feed answers with none of the index in it**, which is the wrong
+            file or a session the exchange has not traded and is not the same as a file with no
+            rows: a night run before the close produced exactly that, a payload full of symbols
+            this index does not hold and carrying nothing for any of its five hundred members.
+            A file short of some members but not all is stored for the rest, the names it carried
+            nothing for leave the stage as a count, and the fetch line reports them. The count is
+            what stops the correction from becoming silence: a rise from two to two hundred is a
+            fact about the provider that nothing else would show.
+Session:    a night run this morning asked the provider for 2026-09-09, which the exchange has not
+            traded, and every one of 503 members came back unaccounted for. That is the schedule
+            decision doing its work rather than a defect, and it is why `--session` exists: the
+            run RUNBOOK asks for by hand, and the catch-up night after a machine was off. It
+            resolves to a fixed instant in that session's evening so the same derivation runs as
+            on any other night. Its run id carries the real instant as well, because a clock fixed
+            to a session gives the same id every time and the second by-hand run for one session
+            collided on the run log's key.
+Weights:    the budget is composed from the feeds' roles rather than declared on each feed, and
+            every figure is read back out of `RUNBOOK.md` rather than repeated in code. A request
+            is not a request: the live night made 11 and spent 317. The local stop exists because
+            the provider's own stop is a rejected rate, which arrives as an unavailable feed and
+            loses the reason.
+Claims:     185, 42 pass, 143 out of scope, 0 unexamined, from 184 and 41. That is the figure
+            2.0 predicted for the end of the phase, reached at 2.4: the prediction named seven new
+            claims and all seven now exist. 2.5 and 2.6 add none, which 2.7 checks.
+Tests:      298, from 289.

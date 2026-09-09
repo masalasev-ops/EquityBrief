@@ -32,7 +32,7 @@ public class NightlyRun
             CheckReach.Key(Scope.LimitsTable, "Per-request timeout and the night's deadline"),
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
-            CheckReach.Key(Scope.FailureTable, "A feed answers with fewer names than the index holds"),
+            CheckReach.Key(Scope.FailureTable, "A feed answers with none of the index in it"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -109,7 +109,7 @@ public class NightlyRun
     }
 
     [Fact]
-    public async Task APayloadMissingACurrentMemberIsRefusedBeforeAnythingIsStored()
+    public async Task APayloadHoldingNoneOfTheIndexIsRefusedBeforeAnythingIsStored()
     {
         using var store = new TemporaryStore();
 
@@ -119,23 +119,64 @@ public class NightlyRun
 
         var before = Count(store);
 
-        // A payload holding two of the three current members. The third is
-        // absent from the file entirely, which is what a truncated bulk file
-        // looks like: not a symbol that did not trade, but a name the exchange's
-        // own day does not carry.
-        var short2 = new ShortBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), "MSFT");
+        // A file with rows in it and none of them ours, which is what a night
+        // run before the close produced against the live provider: the payload
+        // was full of symbols this index does not hold and carried nothing for
+        // any of its five hundred members.
+        var none = new ShortBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), "AAPL", "MSFT", "KEYS");
 
-        var (code, _, error) = await NightAsync(store, runId: "night-short", bulk: short2);
+        var (code, _, error) = await NightAsync(store, runId: "night-none", bulk: none);
 
         Assert.Equal(1, code);
         Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
-        Assert.Contains("carries nothing for 1 of 3 current member(s)", error, StringComparison.Ordinal);
-        Assert.Contains("MSFT", error, StringComparison.Ordinal);
-
-        // Refused before the transaction opens, so the two names it did carry
-        // are not stored either. A partial store is the failure the row exists
-        // to prevent, not a smaller version of a good night.
+        Assert.Contains("carries nothing for any of the 3 current member(s)", error, StringComparison.Ordinal);
         Assert.Equal(before, Count(store));
+    }
+
+    [Fact]
+    public async Task APayloadShortOfSomeMembersIsStoredForTheRestAndSaysHowMany()
+    {
+        // The counter-test, and it is the one the live night wrote. Two of 503
+        // current members are absent from an ordinary day's file, so a rule that
+        // refused on any absence would refuse every night. The name simply has
+        // no bar tonight, which is its own shorter history.
+        //
+        // What must not happen is silence. The count leaves the stage so a rise
+        // from two to two hundred is visible without refusing anything.
+        using var store = new TemporaryStore();
+
+        var short1 = new ShortBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), "MSFT");
+
+        var (code, output, error) = await NightAsync(store, runId: "night-short", bulk: short1);
+
+        Assert.Equal(0, code);
+        Assert.Equal(string.Empty, error);
+        Assert.Contains("1 member(s) the file carried nothing for", output, StringComparison.Ordinal);
+
+        // The two it did carry are stored, and the one it did not is absent
+        // rather than invented.
+        var stored = Tickers(store, "2026-09-08");
+
+        Assert.Equal(["AAPL", "KEYS"], stored);
+    }
+
+    static IReadOnlyList<string> Tickers(TemporaryStore store, string session)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT ticker FROM bar WHERE session_date = '{session}' ORDER BY ticker;";
+
+        var rows = new List<string>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            rows.Add(reader.GetString(0));
+        }
+
+        return rows;
     }
 
     [Fact]
@@ -344,7 +385,7 @@ public sealed class HttpRequestFailure(string message) : Exception(message);
 // A feed that answers with the file minus one name, which is what a truncated
 // bulk payload looks like: the name is absent altogether rather than present and
 // not traded.
-sealed class ShortBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, string drop)
+sealed class ShortBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, params string[] drop)
     : EquityBrief.Core.Providers.IBulkPriceFeed
 {
     public int Requests => inner.Requests;
@@ -356,7 +397,7 @@ sealed class ShortBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, stri
         DateOnly session,
         CancellationToken cancellation = default) =>
         [.. (await inner.RowsAsync(exchange, session, cancellation))
-            .Where(row => !string.Equals(row.Ticker, drop, StringComparison.Ordinal))];
+            .Where(row => !drop.Contains(row.Ticker, StringComparer.Ordinal))];
 }
 
 // A feed that never answers, which is what a hung socket looks like from here.

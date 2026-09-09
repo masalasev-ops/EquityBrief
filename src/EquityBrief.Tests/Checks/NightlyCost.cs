@@ -29,6 +29,7 @@ public class NightlyCost
             CheckReach.Key(Scope.LimitsTable, "Per-name network calls in the nightly run"),
             CheckReach.Key(Scope.LimitsTable, "Bar history kept"),
             CheckReach.Key(Scope.LimitsTable, "Backfill"),
+            CheckReach.Key(Scope.LimitsTable, "Weighted-call budget"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -77,6 +78,9 @@ public class NightlyCost
     internal static readonly string[] MayHoldAClient =
     [
         "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
     ];
 
     // Which of the scanned files carries something it is not permitted to.

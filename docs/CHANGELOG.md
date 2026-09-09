@@ -25,6 +25,25 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html, SCHEMA.md, CLAUDE.md, BUILD_PLAN.md - what a live index taught the two rules
+Corrects: two rules written against a five-name fixture and refuted by the first night over five
+hundred, found by running rather than by reading.
+Was:
+> SCHEMA declared `membership.joined` as "date" with a primary key of `index_code`, `ticker`,
+> `joined`; and section 18 carried the row "A feed answers with fewer names than the index holds",
+> which refused a payload carrying nothing for any current member
+Now:
+> `joined` is "date, null when the provider carries none", unique on the three columns with the
+> unknown folded to a value by an expression index rather than a primary key; and the row is
+> "A feed answers with none of the index in it", which refuses only a payload carrying nothing for
+> every member and stores one short of some for the rest
+Why: the provider carries 822 spans for this index and 145 have no start date, two of them current
+members, so a non-null column drops two real names or writes a date nobody has. And two of 503
+current members are absent from an ordinary day's bulk file, so refusing on any absence refuses
+every night. Both figures are measurements from the live payloads rather than estimates, and both
+rules were written when the only evidence available was a fixture of five names.
+
+
 ### 2026-09-09 - ARCHITECTURE.html, CLAUDE.md, BUILD_PLAN.md - the two rows for an answer that arrives
 Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
 Was:

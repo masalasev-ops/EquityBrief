@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -21,8 +22,9 @@ static int NoVerb()
 {
     Console.Error.WriteLine(
         "EquityBrief.Worker: no verb given. Two are built: 'migrate' applies pending migrations, " +
-        "and 'nightly --fixture <folder>' runs the night's steps in order, with '--live' fetching " +
-        "the day's bars from the provider instead of from the fixture.");
+        "and 'nightly --fixture <folder>' runs the night's steps in order. '--live' fetches from " +
+        "the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the night for a " +
+        "session the operator names rather than the one the clock falls on.");
 
     return 1;
 }
@@ -34,41 +36,90 @@ static async Task<int> NightlyRun(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
-    IBulkPriceFeed? bulk = null;
+    var index = Argument(args, "--index") ?? "GSPC";
 
-    // The key is required when a live feed is asked for and not before, and it
-    // is refused here rather than at the request. A fixture night makes no
-    // request at all, so demanding a key for one would stop CI on a machine that
-    // has no business holding a key, and RUNBOOK's promise is about not reaching
-    // the provider anonymously rather than about holding a key to replay a
-    // capture. The refusal names the setting, because a rejection from the
-    // provider names nothing.
-    if (args.Contains("--live"))
+    // The clock, or a session the operator named.
+    //
+    // A night is scheduled after the close and takes its session from the
+    // instant it runs at. `--session` is for the run RUNBOOK asks for by hand,
+    // and for the catch-up night after a machine was off: without it a night run
+    // this morning asks the provider for a session the exchange has not traded
+    // yet, and every member comes back unaccounted for.
+    //
+    // It resolves to a fixed instant in the middle of that session's evening,
+    // so the same derivation runs as on any other night rather than a second one
+    // written for this argument.
+    var named = Argument(args, "--session");
+    IClock clock;
+
+    if (named is null)
     {
-        try
-        {
-            bulk = NightFeeds.LiveBulk(
-                configuration[EodhdBulkPriceFeed.BaseAddressKey],
-                configuration[ProviderCredentials.ApiKeyName]);
-        }
-        catch (InvalidOperationException refusal)
-        {
-            Console.Error.WriteLine($"nightly: {refusal.Message}");
+        clock = SystemClock.ForUnitedStatesSessions();
+    }
+    else if (DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
+    {
+        clock = new FixedClock(
+            new DateTimeOffset(session.ToDateTime(new TimeOnly(21, 10)), TimeSpan.Zero),
+            SessionZones.ResolveSessionZone(SessionZones.UnitedStates));
+    }
+    else
+    {
+        Console.Error.WriteLine(
+            $"nightly: '--session {named}' is not a date in yyyy-MM-dd. A session read against the " +
+            "machine's locale would be a different date here and a refusal on the runner.");
 
-            return 1;
-        }
+        return 1;
     }
 
-    return await Nightly.RunAsync(
-        store,
-        Argument(args, "--fixture") ?? string.Empty,
-        Argument(args, "--index") ?? "GSPC",
-        SystemClock.ForUnitedStatesSessions(),
-        Console.Out,
-        Console.Error,
-        runId: null,
-        bulk: bulk);
+    // A fixture night takes no key at all, and that is the point of resolving
+    // here rather than at the request. A night over a capture makes no request,
+    // so demanding a key for one would stop CI on a machine that has no business
+    // holding a key; RUNBOOK's promise is about not reaching the provider
+    // anonymously rather than about holding a key to replay a capture. The
+    // refusal names the setting, because a rejection from the provider names
+    // nothing.
+    if (!args.Contains("--live"))
+    {
+        return await Nightly.RunAsync(
+            store,
+            Argument(args, "--fixture") ?? string.Empty,
+            index,
+            clock,
+            Console.Out,
+            Console.Error,
+            RunId(named));
+    }
+
+    NightFeeds live;
+
+    try
+    {
+        live = NightFeeds.Live(
+            configuration[EodhdBulkPriceFeed.BaseAddressKey],
+            configuration[ProviderCredentials.ApiKeyName]);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine($"nightly: {refusal.Message}");
+
+        return 1;
+    }
+
+    return await Nightly.RunAsync(store, live, index, clock, Console.Out, Console.Error, RunId(named));
 }
+
+// The run id, which a named session cannot take from its own clock.
+//
+// A night's id is the instant it ran at, because SCHEMA's grain is one row per
+// run per stage and a re-run of the same night is a second run. A clock fixed to
+// a session gives the same instant every time, so a second by-hand run for the
+// same session collides on the run log's key and fails on its first step. The id
+// therefore carries the real instant as well as the session it was for, read
+// through the clock abstraction like every other instant in this system.
+static string? RunId(string? session) =>
+    session is null
+        ? null
+        : $"night-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}-for-{session}";
 
 static string? Argument(string[] args, string name)
 {

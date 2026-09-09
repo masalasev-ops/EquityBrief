@@ -132,9 +132,17 @@ public class StorePortability
 
     // How many tables the migrations create, read from their SQL. An
     // independent source from the store the scan opens.
+    // What the migrations leave behind, which is not the same as what they
+    // create. A rebuild creates a replacement, copies into it, drops the
+    // original and renames, so it makes two tables and leaves one. Counting
+    // creations alone said five where the store had four the first time a
+    // rebuild landed.
     static int TablesTheMigrationsCreate() =>
         EquityBrief.Data.Migrations.SchemaMigrations.All
-            .Sum(migration => System.Text.RegularExpressions.Regex
-                .Matches(migration.Sql, @"CREATE\s+TABLE", System.Text.RegularExpressions.RegexOptions.IgnoreCase)
-                .Count);
+            .Sum(migration => Occurrences(migration.Sql, @"CREATE\s+TABLE") - Occurrences(migration.Sql, @"DROP\s+TABLE"));
+
+    static int Occurrences(string sql, string pattern) =>
+        System.Text.RegularExpressions.Regex
+            .Matches(sql, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+            .Count;
 }

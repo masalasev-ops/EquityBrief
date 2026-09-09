@@ -198,14 +198,18 @@ internal static class Scope
             Verdict.Pass,
             "a payload carrying a session other than the requested one is refused inside the feed, naming both dates, and the stored series is unchanged",
             ByNight),
-        [CheckReach.Key(FailureTable, "A feed answers with fewer names than the index holds")] = new Scoped(
+        [CheckReach.Key(FailureTable, "A feed answers with none of the index in it")] = new Scoped(
             Verdict.Pass,
-            "a payload carrying nothing for a current member is refused by the fetcher before the transaction opens, naming how many and the first of them",
+            "a payload carrying nothing for any current member is refused by the fetcher before the transaction opens, and one short of some but not all is stored for the rest with the count carried out of the stage",
             ByNight),
         [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
             Verdict.Pass,
             "the three attempts, the doubling wait and both bounds are read off the row and asserted against the policy the code uses, and a night given a deadline it cannot meet stops on the step it was on and says so",
             ByNight),
+        [CheckReach.Key(LimitsTable, "Weighted-call budget")] = new Scoped(
+            Verdict.Pass,
+            "every weight and the allowance are read back out of RUNBOOK rather than repeated in code, the night reports its weighted total beside its request count, and a night already at the allowance stops before its next step",
+            ByCost),
         [CheckReach.Key(LimitsTable, "Bar history kept")] = new Scoped(
             Verdict.Pass,
             "the retention boundary is the fetched session less one year, and every session below it is gone from the store while none inside it is",

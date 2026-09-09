@@ -12,7 +12,13 @@ public sealed record FetchOutcome(
     int MembersStored,
     int RowsDropped,
     DateOnly Session,
-    DateOnly Oldest);
+    DateOnly Oldest,
+    // Current members the file carried nothing for. Two of 503 on an ordinary
+    // night, and carried out of the fetch rather than swallowed: the count no
+    // longer refuses the file, so it has to be somewhere a person reads it. A
+    // rise from two to two hundred is a fact about the provider that nothing
+    // else would show.
+    IReadOnlyList<string> Unaccounted);
 
 // The nightly bar fetch. One bulk request, stored for current members only,
 // then the sessions that have fallen out of the retention window are dropped.
@@ -154,14 +160,27 @@ public sealed class BarFetcher : IComponent
             .OrderBy(member => member, StringComparer.Ordinal)
             .ToArray();
 
-        if (missing.Length > 0)
+        // Every one, and not merely some. Corrected at 2.4 by the first live
+        // night over the whole index: two of 503 current members, EQR and PSTG,
+        // are absent from an ordinary day's file, so refusing on any absence
+        // refuses every night. A name the file carries nothing for has no bar
+        // tonight, which is that name's own shorter history and is what the gap
+        // machinery already reads.
+        //
+        // What is unambiguous is a file carrying nothing for any of them. That
+        // is the wrong file or a session the exchange has not traded, and it is
+        // not the same as a file with no rows at all: the payload can be full of
+        // symbols this index does not hold. A night run before the close
+        // produced exactly that, which is how this rule was measured rather than
+        // chosen.
+        if (missing.Length == members.Count && members.Count > 0)
         {
             throw new InvalidOperationException(
-                $"The bulk file for {session:yyyy-MM-dd} carries nothing for {missing.Length} of " +
-                $"{members.Count} current member(s): {string.Join(", ", missing.Take(FirstNamed))}" +
-                (missing.Length > FirstNamed ? ", and others" : string.Empty) +
-                ". A payload short of names is refused rather than stored, because the names it " +
-                "does carry would look current beside the ones it does not.");
+                $"The bulk file for {session:yyyy-MM-dd} carries nothing for any of the " +
+                $"{members.Count} current member(s), the first being " +
+                $"{string.Join(", ", missing.Take(FirstNamed))}. A payload holding none of the " +
+                "index is the wrong file or a session the exchange has not traded, and storing " +
+                "nothing from it would read as a night that ran.");
         }
 
         await using var transaction = await connection.BeginTransactionAsync();
@@ -201,7 +220,8 @@ public sealed class BarFetcher : IComponent
             wanted.Length,
             stored - after,
             session,
-            oldest);
+            oldest,
+            missing);
 
         await AppendAsync(connection, runId, started, outcome);
 

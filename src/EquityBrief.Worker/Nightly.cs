@@ -134,6 +134,7 @@ public static class Nightly
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
                     $"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, " +
                     $"{bulkFeed.NotSessions.Count} row(s) listed and not traded, " +
+                    $"{outcome.Unaccounted.Count} member(s) the file carried nothing for, " +
                     $"{outcome.Requests} request(s)";
             }),
             new("actions", async () =>
@@ -150,6 +151,22 @@ public static class Nightly
 
         foreach (var step in steps)
         {
+            // The local stop, before the provider's own. Exceeding the daily
+            // allowance arrives from the provider as a rejected rate, which is
+            // an unavailable feed and loses the reason; stopping here says what
+            // actually happened.
+            // see: The night's cost is counted in weighted calls against the stated daily allowance
+            if (feeds.WeightedCalls >= ProviderWeights.DailyAllowance)
+            {
+                error.WriteLine(
+                    $"nightly: stopped before step '{step.Name}'. The night has spent " +
+                    $"{feeds.WeightedCalls} weighted call(s) against an allowance of " +
+                    $"{ProviderWeights.DailyAllowance}. Last night's bars are kept and every name " +
+                    "is stale.");
+
+                return 1;
+            }
+
             try
             {
                 output.WriteLine($"  {step.Name}: {await step.Run()}");
@@ -183,7 +200,9 @@ public static class Nightly
         // recorded alike, because the count is on the interface.
         var requests = feeds.Requests;
 
-        output.WriteLine($"nightly: green, 0 model calls, {requests} network request(s)");
+        output.WriteLine(
+            $"nightly: green, 0 model calls, {requests} network request(s), " +
+            $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
 
         return 0;
     }

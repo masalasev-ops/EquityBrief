@@ -25,6 +25,24 @@ public sealed record NightFeeds(
     // A caller that wrote the figure would be recording its own intention.
     public int Requests => Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests;
 
+    // The same night in the units the provider bills in.
+    //
+    // A request is not a request: the bulk file weighs a hundred, a ticker's
+    // history weighs one and the constituents come through the fundamentals
+    // endpoint at ten. A night counted in requests alone says four where the
+    // provider says two hundred and twelve, and `RUNBOOK.md` states an allowance
+    // in the second unit that no code read.
+    //
+    // Composed from the roles rather than declared on each feed, because the
+    // role is what decides the endpoint and this record is the one place that
+    // knows all four.
+    // see: The night's cost is counted in weighted calls against the stated daily allowance
+    public int WeightedCalls =>
+        (Membership.Requests * ProviderWeights.Fundamentals)
+        + (Historical.Requests * ProviderWeights.HistoricalPerTicker)
+        + (Bulk.Requests * ProviderWeights.BulkEndOfDay)
+        + (Corporate.Requests * ProviderWeights.BulkEndOfDay);
+
     public const string ConstituentsFile = "index-constituents.json";
 
     public static NightFeeds FromFixture(string folder) =>
@@ -42,13 +60,29 @@ public sealed record NightFeeds(
     // by starting a process. The command line still has to be run to prove the
     // operator sees it, because a claim that something is stated is a claim
     // about a surface.
-    //
+    public static IBulkPriceFeed LiveBulk(string? baseAddress, string? apiKey) =>
+        EodhdBulkPriceFeed.Live(Address(baseAddress), Key(apiKey));
+
+    // Every feed live, which is what 2.6 selects between and what a night against
+    // the provider runs on.
+    public static NightFeeds Live(string? baseAddress, string? apiKey)
+    {
+        var address = Address(baseAddress);
+        var key = Key(apiKey);
+
+        return new(
+            EodhdIndexMembershipFeed.Live(address, key),
+            EodhdHistoricalBarFeed.Live(address, key),
+            EodhdBulkPriceFeed.Live(address, key),
+            EodhdCorporateActionFeed.Live(address, key));
+    }
+
     // A blank base address falls back and a blank key does not. The address has
     // a right answer that does not vary by machine; the key has no answer this
     // code could invent, and inventing one sends an anonymous request whose
     // rejection names nothing.
-    public static IBulkPriceFeed LiveBulk(string? baseAddress, string? apiKey) =>
-        EodhdBulkPriceFeed.Live(
-            string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress,
-            new ProviderCredentials(apiKey ?? string.Empty));
+    static string Address(string? baseAddress) =>
+        string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress;
+
+    static ProviderCredentials Key(string? apiKey) => new(apiKey ?? string.Empty);
 }
