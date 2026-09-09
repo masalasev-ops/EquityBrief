@@ -194,6 +194,22 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included, against the row contradiction K repaired at this checkpoint",
             ByAccess),
+        [CheckReach.Key(FixtureTable, "swings")] = new Scoped(
+            Verdict.Pass,
+            "every swing the committed bars carry is diffed against a set found outside this repository, with the session that would be a swing at two bars each side and is not one at three named so the lookback is asserted rather than agreed with",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Swing lookback")] = new Scoped(
+            Verdict.Pass,
+            "the number the row states is read against the constant the finder uses, and the diff is run over a fixture holding a session the two lookbacks disagree about",
+            ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Swing finder")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bar store it reads and the swings it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Swing finder")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(CatalogueTable, "Bar fetcher")] = new Scoped(
             Verdict.Pass,
             "the class declares the bulk feed it reads and the stores it touches, including the retention delete SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
@@ -530,7 +546,6 @@ internal static class Scope
     {
         ["fundamentals"] = "6.1",
         ["indicators"] = "3.1",
-        ["swings"] = "3.2",
         ["volume profile"] = "3.3",
         ["levels"] = "3.4",
         ["ladder"] = "4.2",
@@ -601,7 +616,6 @@ internal static class Scope
         // and it lands with the fetcher at 1.4.
         ["Bar history kept"] = "1.4",
         ["Level window"] = "3.4",
-        ["Swing lookback"] = "3.2",
         ["Band merge distance"] = "3.4",
         ["Tranches, exits"] = "phase 4",
         ["Tranche eligibility"] = "phase 4",

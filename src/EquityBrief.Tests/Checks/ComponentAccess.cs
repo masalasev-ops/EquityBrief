@@ -42,6 +42,8 @@ public class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Indicator engine"),
             CheckReach.Key(Scope.CatalogueTable, "Corporate action checker"),
             CheckReach.Key(Scope.MatrixTable, "Corporate action checker"),
+            CheckReach.Key(Scope.CatalogueTable, "Swing finder"),
+            CheckReach.Key(Scope.MatrixTable, "Swing finder"),
         ]);
 
     static IReadOnlyList<ArchitectureTable> Tables() =>

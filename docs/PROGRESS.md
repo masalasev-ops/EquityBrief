@@ -3687,3 +3687,67 @@ Measured:   over the 5 expectation files, 51 top-level keys and 4 unread, each n
 Notes:      the entry above is left as it was written apart from its figures, which were filled
             in from the run that verified it as done condition 8 requires. What it says about
             the work is what was true when it was written.
+
+### 3.2 - the swing finder                                                  2026-09-09
+Built:      `SwingSeries` in Core, the arithmetic as a pure function of a session-ordered
+            series; migration 8 creating `swing`; `SwingFinder` in the Worker, declaring the
+            bar store it reads, the swings it inserts and updates and the run log it appends
+            to; and `StoredSwings.AsOf` in Data, which is the reading half and is the reason
+            this checkpoint has a second done condition.
+Prices:     decimal throughout, and this component crosses no money boundary at all. A swing
+            is a price, read as decimal and written as TEXT, so `Statistic.FromPrice` has no
+            place here. That is the difference from the indicator engine next door, which
+            computes statistics about prices from the same bars and stores them REAL.
+Derived:    the expectation, computed from the committed bar files outside this repository and
+            without running the finder. Each session's high and low adjusted by the factor the
+            stored series carries, then the sessions whose high is above all six neighbours or
+            whose low is below all six. 131 swings over three names: AAPL 44, being 23 highs
+            and 21 lows; KEYS 41, being 20 and 21; MSFT 46, being 24 and 22. The whole diff is
+            in the file rather than a count and a sample, because section 17's row names a
+            fixture swing diff and a count agrees with a finder that marked the wrong days in
+            the right number.
+Asserted:   the lookback rather than agreed with it. Every diff above passes unchanged against
+            a finder comparing two bars each side or four, because the expectation and the code
+            would be wrong together. So the expectation names AAPL on 2025-09-16, whose high is
+            above the four nearest neighbours and below the seventh session in its window: a
+            two-bar lookback marks it and a three-bar lookback does not, and the test asserts
+            both halves off the window and then asserts no row exists. A session the two
+            answers disagree about is the only kind that can tell them apart.
+Withheld:   a swing is not knowable on its own day, so `StoredSwings.AsOf` filters on
+            `confirmed_on` and not on `session_date`. As of 2026-08-22, 43 of AAPL's 44 are
+            visible and the one withheld is dated 2026-08-20 and confirmed 2026-08-25. It is
+            in the store, it is dated before the as-of date, and a reader filtering on the
+            session returns it: that is a peak nobody could have seen, and it is what a
+            backtest walking a year forward would find an edge in. The test asserts the row is
+            stored, that the reader does not return it, and that a later as-of date returns
+            everything, so the filter is withholding by date rather than by anything else.
+Reader:     written before anything reads it, which is unusual here and deliberate. Writing a
+            swing is arithmetic over seven bars with one way to get it wrong; reading one is a
+            filter, and the obvious filter is the wrong one. The level builder at 3.4 and the
+            trend classifier in phase 4 both read swings as of a date, and neither would fail
+            visibly if it read them the other way.
+Notes:      `swing` has an inserter and an updater and no deleter, which SCHEMA declares and
+            which is sound rather than an oversight. A swing at one session is decided by seven
+            bars, all fixed once the third after it has closed, and bars are append-only, so a
+            confirmed swing never stops being one. The single case that moves it is a corporate
+            action, which rescales every price in the year by one factor, and a uniform
+            positive factor cannot reorder seven prices: the swing survives with a new price,
+            which is what the update covers.
+
+            The strictness of the comparison is the whole of the tie rule. Two adjacent
+            sessions sharing a high are a plateau rather than a peak, and marking both would
+            put two swings at one price three days apart while marking one would make the
+            answer depend on which end the scan started from.
+
+            No session in this fixture is a swing high and a swing low at once. An outside day
+            is both, SCHEMA's primary key carries the direction so the two rows sit side by
+            side, and the count is stated in the expectation at zero so a fourth name that has
+            one is a change somebody reads.
+Reached:    four claims move to PASS. Section 19.1's swings row and section 17's swing lookback
+            by `fixture-expectations`, and the swing finder's catalogue and matrix rows by
+            `component-access`. The two residual due points 3.1 re-pointed here were removed in
+            the same pass, so nothing names 3.2 as a point still to come.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      352. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Carried:    nothing new. Two obligations stand for the rest of phase 3: the expectations owed
+            for 3.0's rulings at 3.4, and the volume shelf threshold at 3.6.
