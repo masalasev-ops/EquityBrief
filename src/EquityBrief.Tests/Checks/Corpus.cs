@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace EquityBrief.Tests.Checks;
@@ -33,14 +34,15 @@ internal static class Corpus
     }
 
     // A citation is the same string in a document and in code, so one reader
-    // covers both. The two patterns are assembled from parts so this file never
+    // covers both. The patterns are assembled from parts so this file never
     // contains the form it looks for, which would otherwise need an exemption
     // written down somewhere and remembered.
     //
     // The document form is parenthesised. The code form is a comment whose whole
     // content is the citation, which is what keeps prose describing the form
     // from reading as a use of it.
-    // The two markers, assembled the same way for the same reason. A decision
+    //
+    // Two markers, assembled the same way for the same reason. A decision
     // citation names a decision; an obligation citation names a row in
     // BUILD_PLAN's carried obligations table.
     internal const string Decision = "see";
@@ -64,7 +66,16 @@ internal static class Corpus
         {
             foreach (Match match in Regex.Matches(lines[index], InADocument(marker)))
             {
-                found.Add(new CorpusFinding(file, index + 1, match.Groups[1].Value.Trim()));
+                // Decoded, because a citation inside ARCHITECTURE.html is HTML.
+                // The one decision whose name carries an ampersand could not be
+                // cited from that document at all before this: written properly
+                // as an entity it resolved to nothing, and written raw it would
+                // have put invalid markup in the document to satisfy a reader.
+                // Decoding is a no-op for every name that carries no entity.
+                found.Add(new CorpusFinding(
+                    file,
+                    index + 1,
+                    WebUtility.HtmlDecode(match.Groups[1].Value).Trim()));
             }
 
             var comment = Regex.Match(lines[index], InCode(marker));

@@ -3445,3 +3445,64 @@ Widened:    `schema-columns`'s roster row, which said columns and types and now 
             does is the same defect as one saying more, read from the other end.
 Carried:    the four rows 3.0's sweep opened stand, all due 3.1. This discharges the sixth of
             the seven obligations that were due there.
+
+### 3.0 planning - the holes settled and phase 3's detail confirmed          2026-09-09
+Not a checkpoint entry. It belongs to 3.0, which has not landed. The last commit of the
+            planning pass. This session committed code and may not sign it off.
+Decided:    three entries in `DECISIONS.md`, one per hole the holes table assigns to 3.0.
+            **A heavy volume shelf creates a band of its own and also strengthens one it
+            coincides with**, which is what figure 9.1 says in its first step and its last step
+            separately, and which the four-sources decision already required: a source of
+            levels that could only rank would be three sources and a modifier. It is also the
+            reading the volume argument needs, because a range where almost nothing traded is
+            a statement only a band existing on volume alone can carry.
+            **The volume profile accumulates over the same sixty sessions as the level window**,
+            one window and not two, because a shelf drawn from a different span puts a band on
+            volume no other member of the level table can see and its share of the period
+            becomes a share of a different period. The moving averages stay the stated
+            exception, reading the full year, because an average is a price rather than a share.
+            **A retracement is drawn between the last swing high and the last swing low**. The
+            phrase "the retracements of the last two swings" reads equally as two swings of any
+            kind, which allows a retracement between two highs, and a fraction of the distance
+            between two highs retraces nothing. A window holding no swing of one kind produces
+            no retracements rather than retracements drawn from a substitute end.
+Citation pass: discharged, and the 1.8 judgement behind it was wrong. That entry said the 52
+            uncited decisions were mostly things the architecture states no rule about. Reading
+            the remaining sections found the opposite: nearly every one had a rule to sit at.
+Measured:   111 citations in `ARCHITECTURE.html` covering 85 of the 90 current decisions, from
+            39 covering 29 of 81 at 1.8. Placed across sections 1, 2, 4, 6, 9, 10, 11, 12, 13,
+            14, 15, 17, 18, 19 and 20. Five stand uncited and each is named in the obligations
+            table with the reason: the seam for a second universe, which is a data model
+            `SCHEMA.md` carries; the outward-request scan's carve-out, which is about a check's
+            internals; and three about how the build is run. A citation cannot be placed at a
+            rule that does not exist, and writing spec text to give a citation a home would be
+            moving the count rather than the coverage.
+Found:      the citation reader could not carry a decision name containing an ampersand from
+            `ARCHITECTURE.html` at all. Written properly as an entity it resolved to nothing;
+            written raw it would have put invalid markup in the document to satisfy a reader.
+            One decision has such a name and it had never been cited, which is why nothing had
+            met this. The document form is now decoded before matching, which is a no-op for
+            every name carrying no entity. This is the same class as the placeholder exemption
+            deleted at the first commit of this pass: a reader that cannot express what the
+            corpus contains, met by writing around it rather than by fixing the reader.
+Carried:    two rows discharged here, the citation pass and its residue. Four stand at 3.1 from
+            the sweep, plus the atomicity test, the fixture expectation sweep and 3.0's own
+            expectations. 24 rows in the table, 8 of them open.
+Tests:      331, unchanged. This commit settles rules and places citations and adds no test;
+            the reader repair is covered by `decision-resolves`, which would have gone red on
+            the first ampersand citation and did.
+Phase 3:    the checkpoint split from 3.1 to 3.7 is confirmed against the size the work turns
+            out to be and is unchanged. Nothing in the three rulings moves work between
+            checkpoints: the shelf ruling makes the level builder at 3.4 collect four candidate
+            kinds rather than three, which was already its shape; the window ruling ties 3.3's
+            profile to a number 3.4 already reads; and the retracement ruling is a rule 3.4
+            applies to swings 3.2 produces.
+Predicted:  phase 3's new claims, named rather than counted, for the reason 2.7 gives. No new
+            row in section 17: the level window row now states that the profile shares the
+            window rather than a second row stating a second window, so the phase adds no
+            limits claim. No new section 18 row: none of the three rulings describes a failure
+            the document does not already carry. The phase's claims are the catalogue and
+            matrix rows of the four components it builds, being the indicator engine, the swing
+            finder, the volume profile builder and the level builder, which is 8 claims, plus
+            the two level chart elements 1.3 left absent, the moving averages at 3.1 and the
+            bands at 3.4. 10 claims, and the count is expected to stay at 185.

@@ -25,6 +25,41 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html, DECISIONS.md - phase 3's three holes settled
+Authorised by: A heavy volume shelf creates a band of its own and also strengthens one it coincides with
+Was:
+> "Whether a heavy volume shelf creates a band or only strengthens one built by the other
+> three is settled at 3.0 and is not decided here. The two readings produce different band
+> sets, so the level builder differs depending which is taken."; "The window for swings and
+> retracements is the last sixty sessions"; and, in figure 9.1's first step, "the five
+> retracements of the last two swings"
+Now:
+> a shelf creates a band of its own and also adds strength to one it coincides with, which is
+> what the figure's first and last steps say separately; the window covers swings,
+> retracements and the volume profile, one window and not two; and the five retracements are
+> drawn between the window's most recent swing high and its most recent swing low, with a
+> window holding no swing of one kind producing none rather than drawing from a substitute end
+Why: three of the holes table's entries were assigned to 3.0 and each decides what a phase 3
+component is. The shelf question makes the level builder a different component depending which
+reading is taken; a profile window that differs from the level window would put a band on
+volume no other member of the level table can see; and "the last two swings" reads equally as
+two swings of the same kind, which is a fraction of a distance nobody retraced.
+
+### 2026-09-09 - ARCHITECTURE.html - the citation pass completed
+Corrects: 52 decisions stood uncited in the architecture and the obligation had been carried
+from 0.5 to 1.8 to 3.0 without a pass that read the remaining sections. The 1.8 entry judged
+that most of the residue settled things the document states no rule about, and reading it
+showed that judgement was wrong: nearly all of them had a rule to sit at.
+Was:
+> 39 citations in the document, covering 29 of the 81 decisions then current
+Now:
+> 111 citations covering 85 of the 90 current decisions, placed at the sentence each rule rests
+> on across sections 1, 2, 4, 6, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19 and 20. Five stand
+> uncited and each is named in the obligations table as a decision the document states no rule
+> about
+Why: a citation cannot be placed at a rule that does not exist, and the residue is now five
+rather than a number nobody had read. The reading is what turned an estimate into a count.
+
 ### 2026-09-09 - CLAUDE.md, BUILD_PLAN.md - schema-columns reads the index it always claimed
 Corrects: `schema-columns`'s roster row said less than the check now does. Migration 6 replaced
 membership's primary key with a unique expression index, and nothing in the suite asserted it:
