@@ -54,6 +54,8 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "ladder"),
             CheckReach.Key(Scope.FixtureTable, "calendar"),
             CheckReach.Key(Scope.FailureTable, "Earnings date missing, the calendar"),
+            CheckReach.Key(Scope.LimitsTable, "Tranche eligibility"),
+            CheckReach.Key(Scope.FailureTable, "No band is eligible to carry a tranche"),
             CheckReach.Key(Scope.FailureTable, "A name whose trend state cannot be classified"),
             CheckReach.Key(Scope.LimitsTable, "Level window"),
             CheckReach.Key(Scope.LimitsTable, "Band merge distance"),
@@ -2172,30 +2174,54 @@ public class FixtureExpectations
     }
 
     [Fact]
-    public async Task EveryLadderRowCarriesAPlanThatSaysWhyItIsEmpty()
+    public async Task EveryLadderRowCarriesAPlanAndAnEmptyOneSaysWhy()
     {
         // An empty plan stating its reason and an absent plan are different
-        // objects, and only the first is readable on a screen. At 4.1 every plan
-        // is empty and says the tranches arrive at 4.4, which is a sentence a
-        // reader can act on rather than a blank a reader has to interpret.
+        // objects, and only the first is readable on a screen.
+        //
+        // Written at 4.1 when every plan was empty, and it asserted that. From
+        // 4.4 the plans carry tranches, so what it asserts is the pairing: a
+        // plan with no tranche has a reason, and one with tranches has an
+        // invalidation. A test left asserting emptiness would have gone green on
+        // a builder that placed nothing.
         using var store = await WithLadders();
 
         var plans = Query(store, "SELECT ticker, plan FROM ladder ORDER BY ticker;");
 
         Assert.Equal(FixtureExpectation.CurrentMembers.Length, plans.Count);
 
+        var placed = 0;
+
         foreach (var row in plans)
         {
             var plan = JsonDocument.Parse(row.Split('|', 2)[1]).RootElement;
-
-            Assert.Empty(plan.GetProperty("tranches").EnumerateArray());
-            Assert.Empty(plan.GetProperty("exits").EnumerateArray());
-            Assert.Equal(JsonValueKind.Null, plan.GetProperty("invalidation").ValueKind);
-
+            var tranches = plan.GetProperty("tranches").EnumerateArray().ToArray();
             var reason = plan.GetProperty("reason").GetString();
 
-            Assert.False(string.IsNullOrWhiteSpace(reason), $"{row.Split('|')[0]} carries an empty plan with no reason.");
+            Assert.False(string.IsNullOrWhiteSpace(reason), $"{row.Split('|')[0]} carries a plan with no reason.");
+
+            if (tranches.Length == 0)
+            {
+                Assert.Equal(JsonValueKind.Null, plan.GetProperty("invalidation").ValueKind);
+
+                continue;
+            }
+
+            placed++;
+
+            // A plan with tranches has a price the whole thing is wrong below,
+            // and every tranche carries a condition. A tranche with neither
+            // would be a purchase with no exit and no trigger.
+            Assert.Equal(JsonValueKind.String, plan.GetProperty("invalidation").ValueKind);
+
+            Assert.All(tranches, tranche => Assert.False(
+                string.IsNullOrWhiteSpace(tranche.GetProperty("condition").GetString())));
         }
+
+        // The population that carries the property is the plans with tranches,
+        // and it is stated: a run where nothing was placed would satisfy every
+        // assertion above.
+        Assert.Equal(FixtureExpectation.Names.Length, placed);
     }
 
     [Fact]
@@ -2252,6 +2278,272 @@ public class FixtureExpectations
         var plan = Query(store, $"SELECT plan FROM ladder WHERE ticker = '{joiner}';").Single();
 
         Assert.Contains("no stored bars", plan, StringComparison.Ordinal);
+    }
+
+    // ---- 4.4, the tranches, the stops and the invalidation ----
+
+    [Fact]
+    public async Task TheTranchesAndStopsMatchTheRulesOverTheCommittedBands()
+    {
+        var expected = Expected("ladder");
+        var tranches = expected.GetProperty("tranches").GetProperty("byName");
+        var invalidation = expected.GetProperty("invalidation").GetProperty("byName");
+        var counts = expected.GetProperty("counts").GetProperty("tranches");
+
+        using var store = await WithLadders();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var plan = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            var placed = plan.GetProperty("tranches").EnumerateArray()
+                .Select(tranche => string.Join(
+                    "|",
+                    tranche.GetProperty("lowEdge").GetString(),
+                    tranche.GetProperty("highEdge").GetString(),
+                    tranche.GetProperty("condition").GetString(),
+                    tranche.GetProperty("stop").GetString() ?? string.Empty))
+                .ToArray();
+
+            Assert.Equal(
+                tranches.GetProperty(name).EnumerateArray().Select(row => row.GetString()).ToArray(),
+                placed);
+
+            Assert.Equal(counts.GetProperty(name).GetInt32(), placed.Length);
+
+            Assert.Equal(
+                invalidation.GetProperty(name).GetString(),
+                plan.GetProperty("invalidation").GetString());
+        }
+
+        // The bands below the price that carry no tranche, named per name. AAPL's
+        // 283.439 is its 200-day average: it carries no tranche and is the first
+        // tranche's stop, which is the rule doing both things at once.
+        var skipped = expected.GetProperty("skipped").GetProperty("byName");
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var plan = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            var edges = plan.GetProperty("tranches").EnumerateArray()
+                .Select(tranche => tranche.GetProperty("lowEdge").GetString()!)
+                .ToArray();
+
+            foreach (var edge in skipped.GetProperty(name).EnumerateArray().Select(row => row.GetString()!))
+            {
+                var price = edge.Split(' ')[0];
+
+                Assert.DoesNotContain(price, edges);
+            }
+        }
+
+        Assert.Contains(
+            "283.439",
+            JsonDocument.Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'AAPL';").Single())
+                .RootElement.GetProperty("tranches").EnumerateArray().First()
+                .GetProperty("stop").GetString()!,
+            StringComparison.Ordinal);
+
+        // At most three, which is section 17's count, over the two names that
+        // have more eligible bands than that.
+        Assert.All(
+            FixtureExpectation.Names,
+            name => Assert.True(counts.GetProperty(name).GetInt32() <= LadderSeries.MostTranches));
+    }
+
+    [Fact]
+    public void ABandAnchoredOnAnAverageAloneCarriesNoTrancheAndIsStillAStop()
+    {
+        // The column 4.0 constructed a band for, now read by the rule that
+        // decides whether a purchase is placed. Both halves are asserted,
+        // because the band does two things at once: it carries no tranche and it
+        // is still the stop of the tranche above it.
+        // see: A moving average is a level on the chart and never an anchor for a tranche
+        var asOf = new DateOnly(2026, 9, 4);
+
+        Level Band(decimal low, decimal high, bool anchored) =>
+            new(low, high, LevelSeries.Support, false, 1, anchored, []);
+
+        List<Level> bands =
+        [
+            Band(90m, 92m, anchored: true),
+            Band(95m, 95m, anchored: false),
+            Band(98m, 99m, anchored: true),
+        ];
+
+        var flat = Enumerable.Range(0, LadderSeries.ConditionLookback)
+            .Select(day => new LadderBar(asOf.AddDays(day - 9), 101m, 100m, 100.5m))
+            .ToArray();
+
+        var ladder = LadderSeries.For(bands, close: 100m, typicalMove: 1m, flat, TrendState.Range);
+
+        // Two tranches from three eligible bands, and the one missing is the
+        // average-only one.
+        Assert.Equal(2, ladder.Tranches.Count);
+        Assert.DoesNotContain(ladder.Tranches, tranche => tranche.LowEdge == 95m);
+
+        // And it is the stop of the tranche above it, which is the half a rule
+        // that only skipped it would lose.
+        Assert.Equal(95m, ladder.Tranches[0].Stop);
+        Assert.Equal(98m, ladder.Tranches[0].LowEdge);
+
+        // A name whose only eligible band is average-anchored produces no ladder
+        // and says why, which is section 18's row.
+        var only = LadderSeries.For([Band(95m, 95m, anchored: false)], 100m, 1m, flat, TrendState.Range);
+
+        Assert.Empty(only.Tranches);
+        Assert.Contains("moving average", only.Reason!, StringComparison.Ordinal);
+
+        // And a name with no support band below the price at all is a different
+        // absence with a different sentence, rather than one standing for both.
+        var none = LadderSeries.For([Band(120m, 121m, anchored: true) with { Role = LevelSeries.Resistance }], 100m, 1m, flat, TrendState.Range);
+
+        Assert.Empty(none.Tranches);
+        Assert.Contains("no support band sits below the price", none.Reason!, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ExactlyOneTrancheConditionMatchesAndTheOrderIsTheOneStated()
+    {
+        // The prefix shape the verification rules name as having arrived four
+        // times: a matcher keyed on the first thing that fits answers about
+        // everything that fits. So the order is asserted where two conditions
+        // could both be true, in both directions, rather than left to whichever
+        // branch is written first.
+        var asOf = new DateOnly(2026, 9, 4);
+        var band = new Level(90m, 95m, LevelSeries.Support, false, 1, true, []);
+
+        LadderBar Bar(int day, decimal high, decimal low, decimal close) =>
+            new(asOf.AddDays(day - 9), high, low, close);
+
+        // Available now wins over a failed breakdown, which is the pair that can
+        // both hold: the close is inside the band and a session closed below it.
+        var both = Enumerable.Range(0, 10).Select(day => Bar(day, 96m, 85m, day == 2 ? 88m : 92m)).ToArray();
+
+        Assert.Equal(TrancheCondition.AvailableNow, LadderSeries.ConditionFor(band, 92m, 1m, both));
+
+        // With the close above the band the same window is a failed breakdown,
+        // so the first branch was deciding rather than the window being empty.
+        Assert.Equal(TrancheCondition.FailedBreakdown, LadderSeries.ConditionFor(band, 97m, 1m, both));
+
+        // A shock landing in the band whose low holds the next day, with no
+        // close below the band, is the second day after a shock.
+        var shock = Enumerable.Range(0, 10)
+            .Select(day => day == 5 ? Bar(day, 110m, 94m, 100m) : Bar(day, 101m, 99m, 100m))
+            .ToArray();
+
+        Assert.Equal(TrancheCondition.SecondDayAfterAShock, LadderSeries.ConditionFor(band, 100m, 1m, shock));
+
+        // The same window with a move too small to be a shock is the first close
+        // back above instead, so the multiple is deciding rather than the dip.
+        Assert.Equal(TrancheCondition.FirstCloseBackAbove, LadderSeries.ConditionFor(band, 100m, 20m, shock));
+
+        // And a window that never came near the band is none of the four.
+        var away = Enumerable.Range(0, 10).Select(day => Bar(day, 120m, 118m, 119m)).ToArray();
+
+        Assert.Equal(TrancheCondition.ReachesTheZone, LadderSeries.ConditionFor(band, 119m, 1m, away));
+
+        // Exactly one, in both directions: every condition the enum carries is
+        // reachable, and no input produces two. The second half is structural,
+        // since the function returns one value, so what is asserted is that the
+        // set of reachable answers is the whole set rather than a subset the
+        // order happens to admit.
+        var reached = new[]
+        {
+            LadderSeries.ConditionFor(band, 92m, 1m, both),
+            LadderSeries.ConditionFor(band, 97m, 1m, both),
+            LadderSeries.ConditionFor(band, 100m, 1m, shock),
+            LadderSeries.ConditionFor(band, 100m, 20m, shock),
+            LadderSeries.ConditionFor(band, 119m, 1m, away),
+        };
+
+        Assert.Equal(
+            Enum.GetValues<TrancheCondition>().OrderBy(value => value),
+            reached.Distinct().OrderBy(value => value));
+    }
+
+    [Fact]
+    public void ADowntrendAndAnUnclassifiedNameCarryNoTrancheAndSayWhy()
+    {
+        // The branch the fixture cannot reach: three of its four names are in an
+        // uptrend and the fourth is a range, so the state that produces no plan
+        // at all is unreachable from these bars.
+        // see: The stop rule depends on the trend state
+        var asOf = new DateOnly(2026, 9, 4);
+        var bands = new List<Level> { new(90m, 95m, LevelSeries.Support, false, 1, true, []) };
+        var flat = Enumerable.Range(0, 10)
+            .Select(day => new LadderBar(asOf.AddDays(day - 9), 101m, 99m, 100m))
+            .ToArray();
+
+        var down = LadderSeries.For(bands, 100m, 1m, flat, TrendState.Downtrend);
+        var unknown = LadderSeries.For(bands, 100m, 1m, flat, TrendState.NotClassified);
+
+        Assert.Empty(down.Tranches);
+        Assert.Null(down.Invalidation);
+        Assert.Contains("trend is down", down.Reason!, StringComparison.Ordinal);
+
+        Assert.Empty(unknown.Tranches);
+        Assert.Contains("could not be classified", unknown.Reason!, StringComparison.Ordinal);
+
+        // The counter-reading, over the same bands: a range places the tranche,
+        // so the refusals above are the state deciding rather than the bands
+        // being ineligible.
+        Assert.Single(LadderSeries.For(bands, 100m, 1m, flat, TrendState.Range).Tranches);
+    }
+
+    [Fact]
+    public void TheSwingBoundariesTheCommittedFixtureCannotReach()
+    {
+        // owes: The swing boundaries the committed fixture cannot reach
+        //
+        // Two cases the phase 3 sign-off mutated and found green, both
+        // unreachable from four names of committed bars. They land here rather
+        // than at 4.1 because the trend classifier reads swings to ask which of
+        // two is later and reaches neither.
+        var start = new DateOnly(2026, 9, 1);
+
+        SwingBar Bar(int day, decimal high, decimal low) => new(start.AddDays(day), high, low);
+
+        // One. A plateau is not a peak. Two adjacent sessions sharing a high
+        // produce nothing, because marking both would put two swings at one
+        // price three days apart and marking one would make the answer depend on
+        // which end the scan started from.
+        SwingBar[] plateau =
+        [
+            Bar(0, 10m, 5m), Bar(1, 10m, 5m), Bar(2, 10m, 5m),
+            Bar(3, 20m, 5m), Bar(4, 20m, 4m),
+            Bar(5, 10m, 5m), Bar(6, 10m, 5m), Bar(7, 10m, 5m),
+        ];
+
+        Assert.DoesNotContain(SwingSeries.For(plateau), swing => swing.Direction == SwingSeries.High);
+
+        // The same series with one of the pair a shade lower is a peak, so the
+        // strictness is deciding rather than the window being too short.
+        var peak = plateau.ToArray();
+        peak[4] = Bar(4, 19m, 4m);
+
+        Assert.Contains(SwingSeries.For(peak), swing => swing.Direction == SwingSeries.High && swing.Price == 20m);
+
+        // Two. An outside day is a peak and a trough at once, and SCHEMA's key
+        // carries the direction so the two rows sit side by side rather than one
+        // overwriting the other.
+        SwingBar[] outside =
+        [
+            Bar(0, 10m, 5m), Bar(1, 10m, 5m), Bar(2, 10m, 5m),
+            Bar(3, 20m, 1m),
+            Bar(4, 10m, 5m), Bar(5, 10m, 5m), Bar(6, 10m, 5m),
+        ];
+
+        var both = SwingSeries.For(outside);
+
+        Assert.Equal(2, both.Count);
+        Assert.Contains(both, swing => swing.Direction == SwingSeries.High && swing.Price == 20m);
+        Assert.Contains(both, swing => swing.Direction == SwingSeries.Low && swing.Price == 1m);
+        Assert.Single(both.Select(swing => swing.SessionDate).Distinct());
     }
 
     [Fact]

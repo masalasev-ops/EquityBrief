@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Levels;
+using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Bars;
@@ -42,6 +44,7 @@ public sealed class LadderBuilder : IComponent
         [
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
+            new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -85,6 +88,29 @@ public sealed class LadderBuilder : IComponent
     // most exactly the index size times the nights.
     const string DropOlderThan = @"
         DELETE FROM ladder WHERE as_of < $oldest;
+    ";
+
+    const string BandsFor = @"
+        SELECT low_edge, high_edge, role, immediate, strength, has_non_average_anchor
+        FROM level
+        WHERE ticker = $ticker
+              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker)
+        ORDER BY low_edge;
+    ";
+
+    const string TypicalMoveFor = @"
+        SELECT value
+        FROM indicator
+        WHERE ticker = $ticker AND session_date = $as_of AND name = $name AND value IS NOT NULL;
+    ";
+
+    // The lookback the tranche conditions are read over, newest last, so the
+    // reader takes the window rather than the whole year.
+    const string RecentFor = @"
+        SELECT session_date, high, low, close
+        FROM (SELECT session_date, high, low, close FROM bar WHERE ticker = $ticker
+              ORDER BY session_date DESC LIMIT $window)
+        ORDER BY session_date;
     ";
 
     const string Upsert = @"
@@ -145,6 +171,10 @@ public sealed class LadderBuilder : IComponent
                 ? await TrendClassifier.ForAsync(connection, ticker, bar.SessionDate, bar.Close, cancellation)
                 : new Trend(TrendState.NotClassified, "no stored bars");
 
+            var plan = session is { } priced
+                ? await PlanAsync(connection, ticker, priced.SessionDate, priced.Close, trend, cancellation)
+                : new Ladder([], null, trend.Reason);
+
             if (session is null)
             {
                 withoutBars++;
@@ -159,7 +189,7 @@ public sealed class LadderBuilder : IComponent
             command.Parameters.AddWithValue("$ticker", ticker);
             command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$trend_state", trend.State);
-            command.Parameters.AddWithValue("$plan", Plan(trend));
+            command.Parameters.AddWithValue("$plan", Serialised(plan));
 
             await command.ExecuteNonQueryAsync(cancellation);
 
@@ -188,24 +218,144 @@ public sealed class LadderBuilder : IComponent
         return outcome;
     }
 
-    // The plan, as SCHEMA's column describes it. Empty at 4.1 and saying why,
-    // rather than absent: an empty plan stating its reason and an absent plan
-    // are different objects and only the first is readable on a screen.
+    // The plan for one name, from the bands the level builder wrote, the typical
+    // day's move and the sessions the conditions are read over.
     //
-    // The reason a name carries no tranche is the trend classifier's when the
-    // state is not classified, and it is the checkpoint's until 4.4 builds the
-    // tranches. Both are stated here rather than one standing for the other.
-    static string Plan(Trend trend) =>
+    // A name with no band set at all gets an empty plan saying so rather than
+    // one that looks placed and is not.
+    async Task<Ladder> PlanAsync(
+        SqliteConnection connection,
+        string ticker,
+        DateOnly asOf,
+        decimal close,
+        Trend trend,
+        CancellationToken cancellation)
+    {
+        if (!trend.Classified)
+        {
+            return new Ladder([], null, trend.Reason);
+        }
+
+        var bands = await BandsAsync(connection, ticker, cancellation);
+
+        if (bands.Count == 0)
+        {
+            return new Ladder([], null, "no bands are stored for this name");
+        }
+
+        var typicalMove = await TypicalMoveAsync(connection, ticker, asOf, cancellation);
+
+        if (typicalMove is not { } move)
+        {
+            return new Ladder([], null, "no typical daily move is stored for this name");
+        }
+
+        var recent = await RecentAsync(connection, ticker, cancellation);
+
+        return LadderSeries.For(bands, close, move, recent, trend.State);
+    }
+
+    // The plan, as SCHEMA's column describes it. Prices are written in the
+    // storage form rather than as JSON numbers, because a JSON number is a
+    // double and a price is not.
+    //
+    // An empty plan states why it is empty. An empty plan stating its reason and
+    // an absent plan are different objects, and only the first is readable on a
+    // screen.
+    static string Serialised(Ladder plan) =>
         JsonSerializer.Serialize(new
         {
-            tranches = Array.Empty<object>(),
+            tranches = plan.Tranches.Select(tranche => new
+            {
+                lowEdge = Money.ToStorage(tranche.LowEdge),
+                highEdge = Money.ToStorage(tranche.HighEdge),
+                condition = tranche.Condition.ToString(),
+                stop = tranche.Stop is { } stop ? Money.ToStorage(stop) : null,
+            }),
             exits = Array.Empty<object>(),
-            invalidation = (string?)null,
+            invalidation = plan.Invalidation is { } price ? Money.ToStorage(price) : null,
             events = Array.Empty<object>(),
-            reason = trend.Classified
-                ? "the tranches, stops, exits and event setups are built from 4.4"
-                : trend.Reason,
+            reason = plan.Reason ?? (plan.Tranches.Count == 0
+                ? "no tranche is placed"
+                : "the exits and the event setups are built from 4.5"),
         });
+
+    static async Task<IReadOnlyList<Level>> BandsAsync(
+        SqliteConnection connection,
+        string ticker,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = BandsFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var bands = new List<Level>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            bands.Add(new Level(
+                Money.FromStorage(reader.GetString(0)),
+                Money.FromStorage(reader.GetString(1)),
+                reader.GetString(2),
+                reader.GetInt32(3) == 1,
+                reader.GetInt32(4),
+                reader.GetInt32(5) == 1,
+                []));
+        }
+
+        return bands;
+    }
+
+    // The crossing a statistic makes to become a price, named for it as the
+    // level builder's is. A typical day's move is stored REAL because it is a
+    // statistic about prices and it is compared here against band edges.
+    static async Task<decimal?> TypicalMoveAsync(
+        SqliteConnection connection,
+        string ticker,
+        DateOnly asOf,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = TypicalMoveFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$name", IndicatorSeries.Atr14);
+
+        var value = await command.ExecuteScalarAsync(cancellation);
+
+        return value is null or DBNull ? null : Statistic.ToPrice((double)value);
+    }
+
+    static async Task<IReadOnlyList<LadderBar>> RecentAsync(
+        SqliteConnection connection,
+        string ticker,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RecentFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$window", LadderSeries.ConditionLookback);
+
+        var bars = new List<LadderBar>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            bars.Add(new LadderBar(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(1)),
+                Money.FromStorage(reader.GetString(2)),
+                Money.FromStorage(reader.GetString(3))));
+        }
+
+        return bars;
+    }
 
     async Task<IReadOnlyList<string>> MembersAsync(
         SqliteConnection connection,

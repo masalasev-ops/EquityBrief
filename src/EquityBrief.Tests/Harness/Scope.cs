@@ -271,7 +271,15 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FixtureTable, "ladder")] = new Scoped(
             Verdict.Pass,
-            "the trend state of all four names is diffed against a set derived from the rule outside this repository, with the averages and the last two swings of each kind stated beside the answer so a disagreement is traceable to an input",
+            "the trend state and the tranches of all four names are diffed against a set derived from the rules outside this repository, with the averages, the last two swings of each kind and the band each stop comes from stated beside the answer so a disagreement is traceable to an input",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Tranche eligibility")] = new Scoped(
+            Verdict.Pass,
+            "a support band whose low edge is below the close carries a tranche and keeps its full width where it straddles, and a band anchored on an average alone carries none and is still the stop of the tranche above it, asserted over the fixture and over a constructed band",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "No band is eligible to carry a tranche")] = new Scoped(
+            Verdict.Pass,
+            "a name whose only support band below the price is anchored on an average produces no tranche and a plan saying so, told apart from a name with no support band below the price at all",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A name whose trend state cannot be classified")] = new Scoped(
             Verdict.Pass,
@@ -541,7 +549,7 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Volume profile")] = "3.3",
         // 4.4 is "The plan column mark and the tables", so this mark is owed a
         // phase later than the section it sits in.
-        [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] = "4.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] = "4.6",
         [CheckReach.Key("15.5 The mark vocabulary", "Momentum panel")] = "3.5",
         // Drawn from levels, which arrive at 3.4, and used by the universe
         // and tonight screens. 5.1 is where the first of those exists, and a
@@ -734,7 +742,7 @@ internal static class Scope
         // The chart half is reached at 1.5 by gap-refusal, so only the other
         // element is owed. The level sections arrive at 3.5 and the plan
         // section's tables at 4.4, which is the last surface the cell names.
-        ["A gap in one name's series, level and plan sections"] = "4.4",
+        ["A gap in one name's series, level and plan sections"] = "4.6",
         ["A split or dividend not caught"] = "1.6",
         ["Cloud model unavailable"] = "6.5",
         ["A source is returned but its text cannot be retrieved"] = "6.2",

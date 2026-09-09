@@ -1,8 +1,15 @@
 {
   "stage": "ladders",
-  "derivedFrom": "the trend rule settled at 4.0, applied to the committed bar files outside this repository and without running the ladder builder. The bars are adjusted first, the factor being the provider's adjusted close over its raw close with the high and low scaled by the same figure, because the swings are read off the scaled series. The averages are the arithmetic mean of the last 50 and the last 200 adjusted closes. The swings are sessions whose high is strictly above all six neighbours or whose low is strictly below all six, which is the lookback in section 17 with its tie rule. Nothing here was read back from a run.",
-  "tables": ["ladder"],
-  "namesComputed": ["AAPL", "KEYS", "MSFT", "NFLX"],
+  "derivedFrom": "the trend rule and the tranche rules settled at 4.0, applied to the committed bar files and the levels expectation outside this repository and without running the ladder builder. The bars are adjusted first, the factor being the provider's adjusted close over its raw close with the high and low scaled by the same figure. The averages are the arithmetic mean of the last 50 and the last 200 adjusted closes. The swings are sessions whose high is strictly above all six neighbours or whose low is strictly below all six. The tranches are the support bands whose low edge is below the close, nearest first, at most three, skipping any band with no anchor other than a moving average; each stop is the low edge of the next support band beneath it whatever anchors that one; the invalidation is the lowest of those stops, or a tranche's own low edge where no band sits beneath it. The typical day's move is twice the merge distance the levels expectation states, the merge distance being half of it. Nothing here was read back from a run.",
+  "tables": [
+    "ladder"
+  ],
+  "namesComputed": [
+    "AAPL",
+    "KEYS",
+    "MSFT",
+    "NFLX"
+  ],
   "note": "a row is written for every current index member and not only the names carrying a plan, so the row count is the membership expectation's currentMembers and never the count of names with a tranche. The two departed constituents get no row, because they are not members tonight.",
   "asOf": {
     "AAPL": "2026-09-04",
@@ -26,32 +33,104 @@
         "close": "319.9700",
         "sma50": "314.9878",
         "sma200": "283.4390",
-        "lastTwoSwingLows": [["2026-07-31", "299.7415"], ["2026-08-12", "300.5700"]],
-        "lastTwoSwingHighs": [["2026-08-06", "316.0175"], ["2026-08-20", "320.2800"]],
+        "lastTwoSwingLows": [
+          [
+            "2026-07-31",
+            "299.7415"
+          ],
+          [
+            "2026-08-12",
+            "300.5700"
+          ]
+        ],
+        "lastTwoSwingHighs": [
+          [
+            "2026-08-06",
+            "316.0175"
+          ],
+          [
+            "2026-08-20",
+            "320.2800"
+          ]
+        ],
         "why": "close above the 50, the 50 above the 200, and the last swing low above the one before it"
       },
       "KEYS": {
         "close": "327.2100",
         "sma50": "326.1178",
         "sma200": "288.5134",
-        "lastTwoSwingLows": [["2026-07-29", "293.5500"], ["2026-08-24", "306.8520"]],
-        "lastTwoSwingHighs": [["2026-08-17", "366.4100"], ["2026-08-27", "327.4950"]],
+        "lastTwoSwingLows": [
+          [
+            "2026-07-29",
+            "293.5500"
+          ],
+          [
+            "2026-08-24",
+            "306.8520"
+          ]
+        ],
+        "lastTwoSwingHighs": [
+          [
+            "2026-08-17",
+            "366.4100"
+          ],
+          [
+            "2026-08-27",
+            "327.4950"
+          ]
+        ],
         "why": "close above the 50 by about a point, the 50 above the 200, and the last swing low above the one before it. The nearest of the four to changing its answer: a close a dollar lower is a range."
       },
       "MSFT": {
         "close": "499.7000",
         "sma50": "443.5621",
         "sma200": "429.3729",
-        "lastTwoSwingLows": [["2026-07-23", "376.6809"], ["2026-08-18", "476.2534"]],
-        "lastTwoSwingHighs": [["2026-08-10", "512.7647"], ["2026-08-28", "517.7800"]],
+        "lastTwoSwingLows": [
+          [
+            "2026-07-23",
+            "376.6809"
+          ],
+          [
+            "2026-08-18",
+            "476.2534"
+          ]
+        ],
+        "lastTwoSwingHighs": [
+          [
+            "2026-08-10",
+            "512.7647"
+          ],
+          [
+            "2026-08-28",
+            "517.7800"
+          ]
+        ],
         "why": "close above the 50, the 50 above the 200, and the last swing low a hundred points above the one before it"
       },
       "NFLX": {
         "close": "78.2500",
         "sma50": "75.4402",
         "sma200": "86.8835",
-        "lastTwoSwingLows": [["2026-06-25", "70.8600"], ["2026-07-17", "65.0800"]],
-        "lastTwoSwingHighs": [["2026-08-19", "81.1600"], ["2026-08-25", "82.4550"]],
+        "lastTwoSwingLows": [
+          [
+            "2026-06-25",
+            "70.8600"
+          ],
+          [
+            "2026-07-17",
+            "65.0800"
+          ]
+        ],
+        "lastTwoSwingHighs": [
+          [
+            "2026-08-19",
+            "81.1600"
+          ],
+          [
+            "2026-08-25",
+            "82.4550"
+          ]
+        ],
         "why": "the averages disagree with each other. The close is above the 50 and the 50 is below the 200, so neither branch holds and the name is a range. This is the case the rule is shaped for: reading the close against one average alone would call it an uptrend, and reading the swings alone would call it a downtrend, since the last swing low is below the one before it."
       }
     }
@@ -61,13 +140,71 @@
     "uptrend": 3,
     "downtrend": 0,
     "range": 1,
-    "notClassified": 0
+    "notClassified": 0,
+    "tranches": {
+      "AAPL": 2,
+      "KEYS": 2,
+      "MSFT": 3,
+      "NFLX": 3
+    }
   },
   "properties": {
     "aRowForEveryMember": "the row count equals the membership expectation's currentMembers, which is 4, and not the count of names carrying a tranche",
     "theDepartedGetNoRow": "AAL and XRAY are constituents and not members tonight, so neither has a ladder row",
     "thePlanIsEmptyAndSaysWhy": "at 4.1 every plan carries no tranche, no exit and no invalidation, and states that they are built from 4.4. A plan that is empty and states its reason is a different object from a plan that is absent",
     "noDownttrendInThisFixture": "none of the four is in a downtrend, so the branch that produces no tranches at all is asserted over constructed input rather than over these bars",
-    "noNotClassifiedInThisFixture": "all four hold a full year, so all four have a 200-day average and two swings of each kind. The fourth state is asserted over constructed input for the same reason"
+    "noNotClassifiedInThisFixture": "all four hold a full year, so all four have a 200-day average and two swings of each kind. The fourth state is asserted over constructed input for the same reason",
+    "atMostThreeTranches": "MSFT and NFLX each have more eligible bands than three and take the three nearest, which is section 17's count",
+    "aStraddlingBandKeepsItsFullWidth": "AAPL's first tranche runs 299.7415 to 320.28 with the close at 319.97 inside it, and the band is not trimmed to the close",
+    "theStopIsTheBandBeneathAndNotTheTrancheBelow": "AAPL's first tranche stops at 283.439, which is the average-only band beneath it and not the 273.5141 band that carries the second tranche"
+  },
+  "tranches": {
+    "note": "at most three per name, nearest first. The condition is the pattern the price has made at that band, tested in the stated order so exactly one applies, and ReachesTheZone is the absence of any of the four rather than a fifth pattern: a tranche where none has occurred is not actionable yet and says so.",
+    "format": "lowEdge|highEdge|condition|stop",
+    "byName": {
+      "AAPL": [
+        "299.7415|320.28|AvailableNow|283.439",
+        "273.5141|273.5141|ReachesTheZone|"
+      ],
+      "KEYS": [
+        "300.87|332.78|AvailableNow|288.5134",
+        "288.5134|293.55|ReachesTheZone|"
+      ],
+      "MSFT": [
+        "492.1166|501.9168|AvailableNow|485.1401",
+        "485.1401|485.1401|FirstCloseBackAbove|476.2534",
+        "476.2534|476.2534|ReachesTheZone|443.5621"
+      ],
+      "NFLX": [
+        "75.4402|75.8178|ReachesTheZone|72.951",
+        "72.951|73.877|ReachesTheZone|70.86",
+        "70.86|71.7172|ReachesTheZone|68.7982"
+      ]
+    }
+  },
+  "invalidation": {
+    "note": "the lowest price the structure depends on, which is the lowest stop the tranches carry. Where a tranche has no band beneath it the structure ends at that tranche's own low edge, which is AAPL's and KEYS's case: their second tranche is the lowest support band the name has.",
+    "byName": {
+      "AAPL": "273.5141",
+      "KEYS": "288.5134",
+      "MSFT": "443.5621",
+      "NFLX": "68.7982"
+    }
+  },
+  "skipped": {
+    "note": "bands below the close with no anchor other than a moving average carry no tranche, and they are still stops: a band that cannot be bought is a level the price has to break. AAPL's 283.439 is its 200-day average and is the first tranche's stop while carrying no tranche of its own, which is the rule doing both things at once.",
+    "byName": {
+      "AAPL": [
+        "283.439"
+      ],
+      "KEYS": [],
+      "MSFT": [
+        "429.3729",
+        "443.5621"
+      ],
+      "NFLX": [
+        "86.8835 is resistance and not a candidate"
+      ]
+    }
   }
 }

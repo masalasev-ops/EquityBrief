@@ -25,6 +25,36 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - the trend-dependent stop moves to 4.5
+Corrects: 4.4 places every stop at the low edge of the next band beneath, which is the rule
+section 10 states for a range, and **The stop rule depends on the trend state** says an uptrend
+trails the last higher low instead. Three of the four fixture names are in an uptrend, and the
+literal trailing rule puts their stop inside the band the first tranche sits on: AAPL's last
+higher low is 300.5700 and its first tranche runs 299.7415 to 320.28.
+Was:
+> 4.5 read "Exits on the resistance bands above the close, at most five, one closer than two
+> typical days' moves from the blended entry listed and not traded, equal fractions per traded
+> exit, the top of the ladder a trailing rule rather than a price."
+Now:
+> the same, and "The trailing machinery is what the trend-dependent stop needs, so it lands here
+> too", with the obligation named
+Why: a stop inside the band being bought is not a stop, so this is a checkpoint's work rather than
+a line, and 4.5 builds the trailing rule at the top of the ladder, which is the same machinery: a
+stop that follows a swing rather than naming a price.
+
+### 2026-09-09 - ARCHITECTURE.html - the ladder builder reads the bar store
+Corrects: the catalogue gave the ladder builder levels, indicators and the calendar, and it reads
+the bar store too: the close it places tranches against and the sessions the tranche conditions
+are read over are both bars. Found at 4.4 by declaring what the component touches and watching
+`component-access` refuse the row.
+Was:
+> the catalogue row read `levels, indicators, calendar`, and the matrix row's Bars cell was blank
+Now:
+> `levels, indicators, calendar, bar store`, and the Bars cell carries R
+Why: the same shape as contradiction K, in a row nothing could reach until the component existed.
+A blank cell is a claim as much as a filled one, and this one was wrong in the direction that
+reads as a component touching less than it does.
+
 ### 2026-09-09 - SCHEMA.md - the calendar's status column was a field the provider does not file
 Corrects: 4.0 gave the `calendar` table a `status` column carrying `confirmed` or `estimated`, on
 the reasoning that a booked print and an unconfirmed one are different things. They are, and the
