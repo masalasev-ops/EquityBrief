@@ -2500,3 +2500,82 @@ Claims:     180, 37 pass, 143 out of scope, 0 unexamined, all unchanged. Predict
             either direction. A change in the figures would have meant the repair moved
             something it was not meant to.
 Tests:      257, unchanged.
+
+### 2.0 planning - phase 2 written into the gap                              2026-09-09
+Not a checkpoint entry. It belongs to 2.0, which has not landed. This is the second half of the
+            planning pass: the remap left `BUILD_PLAN.md` and section 20 running 0, 1, 3, 4, 5,
+            6, 7 with nothing at 2, and this writes phase 2 into that gap.
+Built:      eight checkpoints, 2.0 to 2.7, in `BUILD_PLAN.md`. Six holes added to the holes
+            table, all settled at 2.0. Three contradictions added, K, L and M. A phase row in
+            section 20. Contradiction M resolved in the same pass, since it is one sentence.
+Visible:    2.1. The chart from 1.3 drawing a bar the provider sent tonight rather than one a
+            capture holds. Every phase opens with something to look at and this one can, because
+            the surface already exists and only the source of the bar changes.
+K:          section 16's matrix puts eight components' write one column to the right of the store
+            their catalogue row names. The plan that opened this pass said three rows and named
+            the indicator engine, the swing finder and the volume profile builder. Parsing the
+            table against the catalogue rather than reading it found eight: those three plus the
+            move annotator, the shortlist builder, the facts assembler, the forward return filler
+            and the news pulse counter. Level builder, ladder builder and fundamentals fetcher
+            are correct, which is what makes it a displacement rather than a convention somebody
+            meant. It is invisible today because `component-access` reaches a matrix row only
+            when its component exists in code, and none of the eight does.
+            All eight are repaired at 3.1 rather than three there and five in phase 5. One defect
+            with one cause, and the alternative leaves four cells known wrong in a spec across
+            two phases while the check that would catch them grows toward them.
+L:          found with K and kept apart from it. The shortlist builder's row disagrees with its
+            catalogue row in its reads as well as its write: the row reads fundamentals and news
+            pulse, the catalogue names levels, indicators, ladders, calendar and facts. K has one
+            answer per row, read straight off the Writes cell. This one does not, because what
+            the component reads is decided by section 11's six reasons, so it waits for 5.4.
+M:          section 14 closed by scheduling the night with Task Scheduler after the US close.
+            That is a Windows-only mechanism against one hard rule and a local time against
+            another, in one sentence, in the section the nightly run is specified in. The
+            sentence now states a UTC instant set after the provider posts the day's bulk file
+            and names no scheduler, because scheduling lives outside the application.
+Shadowed:   the suite refused the first version of this pass, which is the outcome it exists for.
+            Writing a checkpoint whose text names "Bulk price feed unavailable" gave the plan a
+            derivation for a subject `Scope.cs` also answered by hand, and
+            `EveryDuePointThePlanSuppliesIsReadFromThePlan` failed on the shadowing. The row is
+            now a declared exception under `DerivedIsEarly`, carrying the same 5.4 and the same
+            reason: the plan derives 2.3 because 2.3 decomposes the row, and the claim is owed at
+            5.4 because the row's "What you see" cell promises a banner and tonight's list.
+Prediction: 187 claims and 44 PASS at the end of phase 2, from 180 and 37 today. It is derived
+            rather than estimated, because section 18's gap row already shows what a
+            decomposition does to the count: 19 rows in that table produce 20 claims, the gap row
+            being two.
+            Seven new claims, named rather than counted, because a prediction of "seven" cannot
+            be missed legibly. An eighth found at 2.0 reads as a number that drifted and so does
+            one of the seven turning out unnecessary; named, both are visible as what they are.
+            Four new rows in section 18, in two kinds. Absence: the provider refuses the request
+            rate, and a feed answers past the night's deadline. Wrong content: a feed answers
+            with a truncated payload, and a feed answers with a session other than the one asked
+            for. The second kind is the one that reports green today, since a night answered with
+            yesterday's bulk file logs one request and no error.
+            One more from decomposing "Bulk price feed unavailable" per surface, exactly as the
+            gap row was decomposed at 1.5: the behaviour half passes at 2.3 and the banner half
+            stays out of scope until 5.4.
+            Two new rows in section 17: the per-request timeout with the night's deadline, and
+            the weighted-call budget, which `RUNBOOK.md` states as 100,000 and no code reads.
+            Six of the seven pass in the phase that creates them. The seventh is the banner half.
+Range:      185 to 188, and the rulings pass reports which end and why rather than restating the
+            number. Upward is a failure mode the sign-off inventory did not catch: that inventory
+            was built by reading the feed surface and section 18 together, and a mode that
+            appears only once the retry policy and the deadline are actually specified would
+            surface at 2.0 and not before. A credential rejected mid-night, and a partial answer
+            that parses cleanly and holds fewer names than the index, are the shapes to look for.
+            Downward is the two absence rows collapsing into one, or into the decomposed
+            unavailable row, because they share a behaviour: a refused rate and an answer past
+            the deadline both end as the feed did not answer, and section 18 already promises
+            what the system does then. If the definition of unavailable covers both, they are one
+            row or none. The two wrong-content rows cannot collapse the same way, because an
+            answer that arrives and is wrong is refused rather than treated as an absence, which
+            is a different behaviour and the whole reason the wrong-session row exists.
+Not built:  no code. This pass writes a plan and repairs one sentence. The rulings phase 2 needs
+            are the other half of 2.0 and land in the commit after this one, so a reader can see
+            the plan and the decisions as two diffs rather than one.
+Claims:     180, 37 pass, 143 out of scope, 0 unexamined, unchanged. Predicted before the run:
+            section 20 is placed as a whole rather than claimed row by row, so the phase row adds
+            none, and section 14's amended sentence sits in a note rather than in the ordered
+            list. Nothing is due at phase 2 yet, so no claim moved.
+Tests:      257, unchanged.

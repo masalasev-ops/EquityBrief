@@ -28,6 +28,12 @@ Each is a place the architecture names something without saying what it is. They
 | Is the stored series adjusted | SCHEMA's bar row carries four price columns and no adjusted variant; an unadjusted series never diverges, which would make the corporate action checker pointless | 1.1 |
 | What a gap is | The catalogue says a series with a gap is refused; the failure table says nothing is computed across it. Those are different behaviours | 1.1 |
 | Which bar provider, as a decision | Named in the architecture and the runbook, absent from `DECISIONS.md`, and the per-ticker against bulk cost arithmetic is a choice a later session could reasonably reverse | 1.1 |
+| **What "unavailable" means** | Section 18's first row promises a behaviour for a feed that is unavailable and nothing anywhere says what unavailable is. A refusal, a socket that never answers, a rejected request rate and a payload that parses to nothing are four events with four right answers, and a row treating them as one is a row no test can induce | 2.0 |
+| The retry policy, the backoff schedule, the per-request timeout and the night's deadline | Every feed interface accepts a cancellation token and nothing supplies one. There is no stated timeout, no retry and no deadline for the night as a whole, so a night that hangs on a socket hangs until someone looks | 2.0 |
+| The night's schedule, as an instant | Section 14 schedules the run with Task Scheduler after the US close, which names one platform's mechanism and a local time. The provider posts the bulk file at a fixed UTC hour, and a schedule written in local time moves against it twice a year with nothing to announce it | 2.0, with contradiction M |
+| What a paged payload does to the request count | Every feed counts its own requests and none says what happens when a payload arrives paged. A feed that starts paging keeps the one-request claim true in the document and false in the run, and the count would report the truth while the limits row read as a lie | 2.0 |
+| The weighted-call budget | `RUNBOOK.md` states a daily allowance of 100,000 weighted calls and the weight of each endpoint. No code reads either figure, so nothing stops a night spending a month's allowance and nothing would say it had | 2.0 |
+| The `nightly-cost` carve-out | The check's coverage half bans every outward-request type across every shipped file and reports zero. The first live feed turns a green check red, so what may hold a client is named before one exists. It is a decision because the wrong shape, deleting the patterns, leaves a check that reports the absence of a scan as the absence of a client | 2.0, applied at 2.1 |
 | The volume profile's window | SCHEMA gives the profile an as-of date and price bands and never says over how many sessions volume is accumulated. If it differs from the level window the two disagree about the same chart | 3.0 |
 | Which two swings the retracements are drawn between | "the retracements of the last two swings" is ambiguous between the last high and the last low, and the last two swings of any kind | 3.0 |
 | Does a volume shelf create a band or only rank one | Section 9.1 lists heavy volume shelves as one of four candidate sources that create bands. A price range holding heavy volume with no swing, average or retracement is a band under that reading and invisible under one where shelves only rank. The two produce different band sets, so the level builder at 3.4 is a different component depending which is meant, and the profile built at 3.3 feeds it either way | 3.0 |
@@ -60,6 +66,9 @@ Each is two documents disagreeing, which `CLAUDE.md` calls a finding rather than
 | H | `news_pulse` is declared one year retained and its ownership row gives Delete to nobody, which is contradiction A in a second table and unnoticed until now. **Resolved at 1.4**, with A and by the same reasoning: the counter is declared its deleter | 1.4, with A |
 | I | The splits and dividends feed is a read in the corporate action checker's catalogue row and is not one of section 5's source boxes, so the nightly path reads a feed the system overview does not carry. **Resolved at 1.6**, the box added | 1.6 |
 | J | Section 17's source lists row names two lists, company-news and industry; `DECISIONS.md` carries **Three source lists, not one, each with a review date**. **Resolved at 1.7**: the decision's body always described two and its name said three, so the name was the defect. Superseded by a decision that also says where the lists apply | 1.7 |
+| K | Section 16's read and write matrix puts eight components' write one column to the right of the store their catalogue row names. Indicator engine, Swing finder, Volume profile builder and Move annotator write **Listings** where their rows say indicators, swings, volume profile and moves; Shortlist builder writes **Forward returns** where its row says listings; Facts assembler writes **Fundamentals** where its row says facts; Forward return filler writes **Facts** where its row says forward returns; News pulse counter writes **Research and theme** where its row says news pulse. Level builder, Ladder builder and Fundamentals fetcher are correct, which is what makes it a displacement rather than a convention. `component-access` matches cell by cell including blanks and reaches a row only when its component exists, so all eight are invisible until the code lands and then produce two faults each | 3.1, all eight together. They are one defect with one cause, and repairing four at 3.1 and four at 5.x would leave four cells known wrong in a spec for two phases |
+| L | The shortlist builder's matrix row disagrees with its catalogue row in its reads as well. The row reads **Fundamentals** and **News pulse**; the catalogue names levels, indicators, ladders, calendar and facts. Facts has a column and is not read, and neither named store is in the catalogue phrase. This is separate from K because K has one answer per row and this one does not: what the component reads is decided by section 11's six reasons | 5.4, where the component is built and `component-access` first reaches the row |
+| M | Section 14 closes by scheduling the night with Task Scheduler after the US close. That names a Windows-only mechanism, against **Nothing is written against one operating system**, and a local time, against **Queued work runs off-peak, and every schedule is written in UTC**. Two hard rules, in one sentence, in the section the nightly run is specified in | 2.0 |
 
 ---
 
@@ -151,6 +160,66 @@ The claim total is predicted before 1.1 and checked here: the expected total aft
 
 ---
 
+## Phase 2: the feeds reach the network
+
+**Visible output at 2.1**, which is the chart from 1.3 drawing a bar the provider sent tonight rather than one a capture holds.
+
+The phase exists because no feed reaches the network. Every provider implementation in the tree is a recorded double, `tools/nightly` takes a fixture folder, and a live night cannot run. That was carried out of 1.4 as a hole rather than as a defect in any checkpoint, and it is a phase rather than a checkpoint for the reason the level work cannot go first: building four compute stages against a fixture no provider produced means deriving every indicator, swing, profile and level expectation from it and then calibrating the shelf threshold, the merge distance and the profile window over it. 1.2 found a membership parser reading a field the provider does not send, which the fixture had agreed with for two checkpoints because the same session wrote both. That failure is available again here, one layer down and across four stages at once.
+
+### 2.0 Planning
+The phase planning pass belongs here, as its own `PROGRESS.md` entry opening "Not a checkpoint entry".
+
+Settles every hole this document's holes table assigns to 2.0, and takes a decision for each. Six of them, and the first is the one the others hang off: section 18 promises a behaviour for a feed that is unavailable and never says what unavailable is. A refusal, a socket that never answers, a rejected request rate and a payload that parses to nothing are four events, and a row that treats them as one is a row no test can induce.
+
+The holes are named in the holes table rather than repeated here, for the reason 3.0 states.
+
+Contradiction M resolved: section 14's closing sentence schedules the night with Task Scheduler after the US close, which is a Windows mechanism and a local time, and both are against a hard rule. The schedule becomes a UTC instant stated against the hour the provider posts the bulk file, and the mechanism leaves the document, because scheduling lives outside the application and naming one platform's scheduler inside the design is what put it there.
+
+Also settles the shape of the `nightly-cost` carve-out, which is a decision about a check rather than about cost. Its coverage half scans every shipped file for `System.Net.Http`, `HttpClient`, `WebClient`, `HttpRequestMessage` and the socket constructor, and reports zero. The first live feed turns that green check red, so the carve-out has to name what may hold a client, or scope the scan to the components section 14 lists, before one exists. What it never does is delete the patterns: the rule being asserted is that the nightly path makes no per-name request, and a scan that stopped looking would report the absence of a scan as the absence of a client.
+
+### 2.1 The credential path and the bulk price feed
+**The `nightly-cost` carve-out lands first, in its own commit, before any live feed.** Done condition 8 exists to stop a commit whose last change is the one nothing after it re-reads, and a commit that removes a guard and adds the thing the guard forbade is the same shape: whichever half is read first, the other looks authorised.
+
+Then `ProviderCredentials` bound from configuration, and the startup refusal `RUNBOOK.md` already promises and no startup path performs. The class refuses a blank key today and nothing constructs it, so the promise is a constructor nobody calls.
+
+Then one live feed end to end: the bulk price feed, because it is the nightly path's own and the one the zero-per-name rule is shaped around. The capture-before-parse rule of 1.6 and 1.7 does not apply to it, because the parser exists and was written against a captured response at 1.4; what is new here is the transport, not the shape.
+
+**Done when** a night fetches the day's bars from the provider in one request, the run log's `network_requests` is measured off the live feed rather than off a double, the key is refused by name at startup when it is blank, and no request URL reaches a log line or a store row. The last is not incidental: a URL carries the key in a query string on this provider, and the run log is a store this repository copies between machines.
+
+### 2.2 Retry, backoff and the night's deadline
+To the policy settled at 2.0. A cancellation source threaded into `Nightly.RunAsync`, which takes none today while every feed interface accepts one, so a night that hangs on a socket has no deadline and nothing to cancel it.
+
+**Done when** a transient refusal is retried to the stated policy and a persistent one is not, a night exceeding its deadline stops with the step named and exits non-zero, and the retry is proved not to double-write over the delete-and-reinsert refetch path SCHEMA declares. That last condition is why this checkpoint is not folded into 2.1: a retry over a non-idempotent write is a defect that only appears once both exist.
+
+### 2.3 Failure behaviour at the wire
+"Unavailable" implemented to the definition settled at 2.0, and section 18 given the rows it lacks. The existing "Bulk price feed unavailable" row is decomposed per surface the way the gap row was at 1.5: its behaviour half is assertable here and its banner half needs tonight's list, so the two are asserted at different checkpoints rather than the whole row waiting for the later one.
+
+**Done when** each new row's failure is induced against the fixture and produces what the row promises, and a response carrying a session other than the one asked for is refused rather than stored. A night answered with yesterday's bulk file logs one request and no error, which is the failure that reports green, and it is the reason the wrong-session row exists at all.
+
+### 2.4 The remaining price and membership feeds
+Live implementations of `IIndexMembershipFeed`, `IHistoricalBarFeed` and `ICorporateActionFeed`, each answering the `Requests` member its interface already mandates rather than a count the caller states.
+
+**Done when** a night loads membership, backfills a new joiner and checks actions against the provider, the per-name limit still holds over the live path with both carve-outs measured rather than asserted, and each feed's captured response and its live response are read by the same parser.
+
+### 2.5 The news feed
+`INewsFeed` invented. News is the only feed with no interface, so it is the only one whose request count no contract forces, and the 1.7 measurement was run through a class the nightly path does not reach. The live implementation behind it.
+
+**Done when** one dated feed request is fanned out to names in code rather than one request being made per name, and the request count is measured on the interface so the live feed answers the same question the double does.
+
+### 2.6 The selection point and a live night
+Live against fixture chosen by configuration rather than by a required positional argument. `Nightly.RunAsync` stops constructing the doubles inline, which is where the choice lives today and is why there is no choice.
+
+Both directions are kept and both are asserted. A mistyped fixture path cannot silently reach the network, and a live run cannot silently fall back to a capture. Either one alone is a night that ran against something other than what the operator asked for and said nothing.
+
+**Done when** a night runs end to end against the provider with no fixture folder given, a night given a fixture folder makes no request, and a fixture folder that does not exist is refused rather than resolved to the live path.
+
+### 2.7 Phase 2 report
+**Done when** every claim the phase owes is PASS naming an instrument whose declared reach includes it, unexamined is zero, and the fixture holds phase 2 expectations with at least one derived independently rather than frozen from a run.
+
+The claim total is predicted at 2.0 by naming each new claim rather than counting them, and checked here. A prediction of "seven" cannot be missed legibly: a row found later reads as a number that drifted, and a row that turns out unnecessary reads the same way. Named, both are visible as what they are.
+
+---
+
 ## Phase 3: levels on the chart
 
 **Visible output at 3.1.** The moving averages are the cheapest thing that draws, so they come first.
@@ -161,6 +230,8 @@ Settles every hole this document's holes table assigns to 3.0, and takes a decis
 The holes are named there rather than repeated here. A checkpoint listing its own subset is a second statement of the table's contents, and it is the statement that goes stale: this one named two of the three it is now assigned, so a hole filed against 3.0 would have been settled at 3.0 only if somebody happened to read both.
 
 ### 3.1 The indicator engine and the averages on the chart
+Contradiction K repaired in `ARCHITECTURE.html` first, in its own commit, for all eight rows rather than the three this checkpoint would otherwise force. The moment `IndicatorEngine` declares its write, `component-access` produces a write nobody declared and a declaration with no cell behind it, which is two faults for one displaced letter.
+
 Migration creating `indicator`. The averages, the momentum readings, the typical daily move and the volume ratios, each row carrying the bar count it was computed from.
 
 The chart from 1.3 extended in place with the average lines drawn.

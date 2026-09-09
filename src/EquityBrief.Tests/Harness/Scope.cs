@@ -267,6 +267,21 @@ internal static class Scope
         // count against the names lacking history, which is nightly-cost reading
         // a recorded run, and that arrives at 1.4.
         ["Backfill"] = "1.4",
+
+        // 2.3 names this row because it decomposes it per surface and asserts
+        // the behaviour half there, which is what the gap row got at 1.5. The
+        // claim the row makes is not the behaviour: its "What you see" cell
+        // promises a banner giving the data date and tonight's list absent
+        // rather than wrong, and both are surfaces phase 5 builds. A claim that
+        // something is visible is a claim about a surface, so the row is owed
+        // where the surface is.
+        //
+        // It moved here from the written failures map when the plan first named
+        // it. The value did not change and the reason did not change; what
+        // changed is that the plan can now derive a point for it, so leaving it
+        // written would have been a second statement of one fact with the wrong
+        // answer in it.
+        ["Bulk price feed unavailable"] = "5.4",
     };
 
     // Components the plan does not name. The catalogue and the matrix share it.
@@ -474,13 +489,11 @@ internal static class Scope
 
     static readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal)
     {
-        // The mechanism lands at 1.4 and the claim does not. This row's "What
-        // you see" cell promises a banner giving the data date and tonight's
-        // list absent rather than wrong, and both are surfaces phase 5 builds.
-        // A claim that something is visible is a claim about a surface, so the
-        // due point is where the surface is, which is the same correction
-        // "A name leaves the index" took at 1.1.
-        ["Bulk price feed unavailable"] = "5.4",
+        // "Bulk price feed unavailable" stood here until 2.0 wrote a phase that
+        // names it. It is now a declared exception above, keeping the same value
+        // and the same reason, because the plan derives 2.3 for it and a written
+        // value beside a derivable one is the drift this file exists to stop.
+        //
         // The chart half is reached at 1.5 by gap-refusal, so only the other
         // element is owed. The level sections arrive at 3.5 and the plan
         // section's tables at 4.4, which is the last surface the cell names.

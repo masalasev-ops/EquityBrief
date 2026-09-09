@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md, ARCHITECTURE.html - phase 2 written into the gap
+Corrects: contradiction M, and nothing else. The rest is an addition: the remap of the same date
+left a gap at phase 2 deliberately and this fills it.
+Was:
+> section 14's closing note ended "It is scheduled with Task Scheduler after the US close", and
+> section 20's phase table ran 0, 1, 3, 4, 5, 6, 7 with no row at 2, and BUILD_PLAN's 3.1 opened
+> "Migration creating `indicator`."
+Now:
+> the section 14 note ends with the schedule as a UTC instant set after the provider posts the
+> day's bulk file, naming no scheduler and citing the decision that requires UTC; section 20
+> carries a phase 2 row; and 3.1 opens by repairing contradiction K in its own commit
+Why: the sentence named a Windows-only mechanism against **Nothing is written against one
+operating system** and a local time against **Queued work runs off-peak, and every schedule is
+written in UTC**. Two hard rules in one sentence, in the section that specifies the nightly run.
+The rest of the change writes the phase the remap left room for, with its holes, its
+contradictions and its checkpoints.
+
+
 ### 2026-09-09 - ARCHITECTURE.html - the remap's second sweep
 Corrects: two defects in the remap of the same date, found by sweeping every tracked text file
 rather than the four the first pass listed by hand.
