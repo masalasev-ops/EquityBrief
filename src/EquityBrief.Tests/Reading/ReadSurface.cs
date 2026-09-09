@@ -11,6 +11,7 @@ using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker;
+using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
@@ -645,9 +646,17 @@ public class ReadSurface
     static async Task<TemporaryStore> WithLadders()
     {
         var store = await WithBands();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
 
-        await new LadderBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile)
-            .RunAsync(Index, "run-ladders");
+        // The calendar first, because the second book is keyed to a dated event
+        // and a ladder built before it would carry none. The night runs them in
+        // that order for the same reason.
+        await new CalendarFetcher(
+            RecordedEarningsCalendarFeed.FromFolder(FixtureFolder()),
+            clock,
+            store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "run-calendar");
+
+        await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "run-ladders");
 
         return store;
     }
@@ -865,6 +874,39 @@ public class ReadSurface
 
         Assert.Contains("data-traded=\"false\"", skipped, StringComparison.Ordinal);
         Assert.Contains("typical days", skipped, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheEventBookSaysItsFiguresAreProposals()
+    {
+        // A figure on a screen gets acted on, and one that looks measured and is
+        // not is the failure this states its way out of. The page says so once
+        // for the book and once on every row, so a reader who reads one setup
+        // still reads it.
+        // see: The event setups' triggers are proposals until resolved setups can score them
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var written = NameScreen.EventBook(await api.LadderAsync(Name));
+
+        Assert.Contains("data-proposal=\"true\"", written, StringComparison.Ordinal);
+        Assert.Contains("is a proposal and none has been tested", written, StringComparison.Ordinal);
+        Assert.Contains("run page", written, StringComparison.Ordinal);
+
+        // One row per setup, each naming its trigger, entry, stop and target.
+        var ladder = await api.LadderAsync(Name);
+        using var plan = JsonDocument.Parse(ladder!.Plan);
+        var setups = plan.RootElement.GetProperty("events").GetArrayLength();
+
+        Assert.Equal(setups, Regex.Matches(written, "data-setup=\"[^\"]+\"").Count);
+        Assert.Contains($"data-setups=\"{setups}\"", written, StringComparison.Ordinal);
+
+        // And a name with no dated event says so rather than showing an empty
+        // table, which is the same rule the plan column follows.
+        var absent = NameScreen.EventBook(await api.LadderAsync("KEYS"));
+
+        Assert.Contains("no dated event is on file", absent, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-setup=", absent, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -158,6 +158,12 @@
       "KEYS": 2,
       "MSFT": 0,
       "NFLX": 3
+    },
+    "events": {
+      "AAPL": 3,
+      "KEYS": 0,
+      "MSFT": 0,
+      "NFLX": 3
     }
   },
   "properties": {
@@ -171,7 +177,9 @@
     "theStopIsTheBandBeneathAndNotTheTrancheBelow": "AAPL's first tranche stops at 283.439, which is the average-only band beneath it and not the 273.5141 band that carries the second tranche",
     "theTrailingStopIsNeverLooserThanTheRangeRule": "every uptrend stop is the higher of the band beneath and the swing low beneath, so no stop in this fixture sits below the band the range rule would have given it",
     "theFractionsSumToTheWhole": "each name's traded exits carry one over their count, so they sum to one over the position that exists rather than to a capital figure",
-    "aSkippedExitIsListedRatherThanOmitted": "MSFT and NFLX each carry a row for the exit they do not trade, with the reason on it"
+    "aSkippedExitIsListedRatherThanOmitted": "MSFT and NFLX each carry a row for the exit they do not trade, with the reason on it",
+    "everySetupHasAPositiveReward": "every target sits above its entry, which two arrangements of these rules did not manage: a stop at a zero-width band's low edge equals the entry, and a target taken as the next band can sit below a gap-up entry",
+    "aNameWithNoDateGetsNoSetups": "KEYS and MSFT have no row in the calendar over its window, so their second book is empty and the plan says why rather than producing setups from a guessed date"
   },
   "tranches": {
     "note": "at most three per name, nearest first. The condition is the pattern the price has made at that band, tested in the stated order so exactly one applies, and ReachesTheZone is the absence of any of the four rather than a fifth pattern: a tranche where none has occurred is not actionable yet and says so.",
@@ -268,5 +276,44 @@
       "MSFT": "its only resistance band sits 16.90 above the blended entry against a bar of 23.65, so every exit it has is listed and not traded and it has no top of the ladder at all. A plan that says take nothing here is a different object from one with a trailing rule attached to nothing.",
       "NFLX": "its immediate resistance sits 3.83 above the blended entry against a bar of 4.79, so it is listed and not traded while the three above it are"
     }
+  },
+  "events": {
+    "note": "the second book, keyed to a dated event and never merged with the position book. Every figure in it is a proposal: nothing has scored a setup, so a number written as a rule would be a constant nobody could later tell from a measured one, and the page says so. What is not a proposal is the shape, each carrying a trigger, an entry, a stop and a target, and each built from vocabulary the corpus already has.",
+    "format": "name|eventDate|entry|stop|target",
+    "byName": {
+      "AAPL": [
+        "a breakout before the print|2026-10-29|334.7013|327.0674|344.2731",
+        "a flush after the print|2026-10-29|299.7415|292.1076|320.28",
+        "a gap up after the print|2026-10-29|342.3352|327.0674|344.2731"
+      ],
+      "KEYS": [],
+      "MSFT": [],
+      "NFLX": [
+        "a breakout before the print|2026-10-20|79.31|75.9587|81.16",
+        "a flush after the print|2026-10-20|75.4402|73.0444|78.25",
+        "a gap up after the print|2026-10-20|81.7058|75.9587|82.455"
+      ]
+    },
+    "absent": {
+      "KEYS": "no dated event on file over the calendar's window, so it gets no setups rather than setups built from a guessed date",
+      "MSFT": "the same"
+    },
+    "stops": "a typical day's move below the band rather than at its edge. At the edge a stop is inside the noise, and on a band whose edges are one price, which is most of them, a stop at the low edge is the entry: the setup could never win and would stop out on the session that triggered it.",
+    "targets": "the first resistance band above the entry rather than the next band. A gap up enters above the band it cleared and the band after it can sit below that entry, which would be a target the setup starts past.",
+    "flush": "the entry is the band's low edge, where a flush lands, and the target is the price it flushed from. Entering at the high edge is buying the top of the band the price has just fallen through, and on a name whose close sits inside that band it is a target below the entry: AAPL's close is inside its immediate support band.",
+    "rewardToRisk": {
+      "note": "stated so a setup whose reward is a fraction of its risk is visible rather than implied. 4.8 computes these from the stored figures; here they are the hand derivation.",
+      "AAPL": [
+        "a breakout before the print: reward 9.5718 risk 7.6339",
+        "a flush after the print: reward 20.5385 risk 7.6339",
+        "a gap up after the print: reward 1.9379 risk 15.2678"
+      ],
+      "NFLX": [
+        "a breakout before the print: reward 1.85 risk 3.3513",
+        "a flush after the print: reward 2.8098 risk 2.3958",
+        "a gap up after the print: reward 0.7492 risk 5.7471"
+      ]
+    },
+    "places": "every figure is quoted to the four places the store carries. A typical day's move is a statistic crossing to a price and is rounded there, so the arithmetic is on four-place values: deriving it from the merge distance without that rounding produces a fifth place the store never holds, which is how this expectation was wrong the first time."
   }
 }

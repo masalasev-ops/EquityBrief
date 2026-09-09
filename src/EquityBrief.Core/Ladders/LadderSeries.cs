@@ -48,13 +48,33 @@ public sealed record Exit(
     string Fraction,
     string? Reason);
 
-// The position book: the tranches, their stops, the exits, and the price the
-// whole thing is wrong below.
+// One setup in the second book, keyed to a dated event.
+//
+// Every figure in it is a proposal. Nothing has scored a setup, so a number
+// written here as a rule would be a constant nobody could later tell from a
+// measured one, and the page says so where a reader will see it.
+// see: The event setups' triggers are proposals until resolved setups can score them
+public sealed record EventSetup(
+    string Name,
+    DateOnly EventDate,
+    string Trigger,
+    decimal Entry,
+    decimal Stop,
+    decimal Target);
+
+// The position book and the second book: the tranches, their stops, the exits,
+// the price the whole thing is wrong below, and the setups keyed to a date.
+//
+// The two never merge. Holding a momentum entry through a print is the thing the
+// separation exists to prevent, so the setups are a list of their own rather
+// than tranches with a date on them.
+// see: The second book is keyed to a dated event, and an earnings print is the only kind on file
 public sealed record Ladder(
     IReadOnlyList<Tranche> Tranches,
     IReadOnlyList<Exit> Exits,
     decimal? Invalidation,
-    string? Reason);
+    string? Reason,
+    IReadOnlyList<EventSetup> Events);
 
 // One session, as the ladder reads it.
 public readonly record struct LadderBar(DateOnly SessionDate, decimal High, decimal Low, decimal Close);
@@ -94,7 +114,8 @@ public static class LadderSeries
         decimal typicalMove,
         IReadOnlyList<LadderBar> recent,
         string trendState,
-        IReadOnlyList<decimal>? swingLows = null)
+        IReadOnlyList<decimal>? swingLows = null,
+        DateOnly? nextEvent = null)
     {
         // A downtrend carries no tranches at all, and a name whose trend could
         // not be classified carries none either: the label decides whether a
@@ -103,12 +124,12 @@ public static class LadderSeries
         // see: The stop rule depends on the trend state
         if (trendState is TrendState.Downtrend)
         {
-            return new Ladder([], [], null, "the trend is down, so no tranche is placed");
+            return new Ladder([], [], null, "the trend is down, so no tranche is placed", []);
         }
 
         if (trendState is TrendState.NotClassified)
         {
-            return new Ladder([], [], null, "the trend state could not be classified, so no tranche is placed");
+            return new Ladder([], [], null, "the trend state could not be classified, so no tranche is placed", []);
         }
 
         // Support bands whose low edge is below the close, nearest first. The
@@ -135,7 +156,8 @@ public static class LadderSeries
                 null,
                 eligible.Length == 0
                     ? "no support band sits below the price"
-                    : "no support band below the price has an anchor other than a moving average");
+                    : "no support band below the price has an anchor other than a moving average",
+                []);
         }
 
         var chosen = anchored.Take(MostTranches).ToArray();
@@ -170,7 +192,12 @@ public static class LadderSeries
             .DefaultIfEmpty()
             .Min();
 
-        return new Ladder(tranches, ExitsFor(bands, tranches, typicalMove), invalidation, null);
+        return new Ladder(
+            tranches,
+            ExitsFor(bands, tranches, typicalMove),
+            invalidation,
+            null,
+            EventsFor(bands, close, typicalMove, nextEvent, recent));
     }
 
     // Where the stop sits, which the trend decides.
@@ -273,6 +300,133 @@ public static class LadderSeries
                         : $"closer than {NearExitInTypicalDays} typical days' moves to the blended entry");
             }),
         ];
+    }
+
+    // The three setups keyed to the print, from figure 10.1's own list: a
+    // breakout before it, a flush after it, and a gap up after it.
+    //
+    // Every figure is a proposal and the page says so. What is not a proposal is
+    // the shape: each carries a trigger, an entry, a stop and a target, and each
+    // is built from vocabulary the corpus already has, being band edges, the
+    // typical daily move and the twenty-session horizon. A setup built from a
+    // figure nothing else uses would be a number with no reading behind it.
+    // see: The event setups' triggers are proposals until resolved setups can score them
+    //
+    // A name with no date on file gets none of them and says so, rather than
+    // producing them from a guessed date.
+    // see: The second book is keyed to a dated event, and an earnings print is the only kind on file
+    public static IReadOnlyList<EventSetup> EventsFor(
+        IReadOnlyList<Level> bands,
+        decimal close,
+        decimal typicalMove,
+        DateOnly? nextEvent,
+        IReadOnlyList<LadderBar> recent)
+    {
+        if (nextEvent is not { } date || recent.Count == 0)
+        {
+            return [];
+        }
+
+        var resistance = bands
+            .Where(band => band.Role == LevelSeries.Resistance && band.LowEdge > close)
+            .OrderBy(band => band.LowEdge)
+            .ToArray();
+
+        var support = bands
+            .Where(band => band.Role == LevelSeries.Support && band.LowEdge < close)
+            .OrderByDescending(band => band.LowEdge)
+            .ToArray();
+
+        var setups = new List<EventSetup>();
+
+        // One. A breakout before the print. The trigger is a daily close above
+        // the immediate resistance band's high edge on volume above its fifty-day
+        // average, with the print still ahead. The entry is that close, the stop
+        // is a close back below that band's low edge, and the target is the next
+        // resistance band's low edge.
+        if (resistance.Length > 0)
+        {
+            var band = resistance[0];
+            var entry = band.HighEdge;
+
+            setups.Add(new EventSetup(
+                "a breakout before the print",
+                date,
+                $"a daily close above {band.HighEdge} on volume above its fifty-day average, with the print still ahead",
+                entry,
+                StopBelow(band, typicalMove),
+                TargetAbove(resistance, entry, typicalMove)));
+        }
+
+        // Two. A flush after the print. The trigger is the session after the
+        // print closing down by more than two typical days and inside a support
+        // band, and the entry waits for the following close once that session's
+        // low has held. The stop is a close below that low; the target is the
+        // price the flush came from, which is the band above it.
+        if (support.Length > 0)
+        {
+            var band = support[0];
+
+            // The entry is the low edge, which is where a flush lands, and the
+            // target is the price it flushed from. Entering at the high edge
+            // would be buying the top of the band the price has just fallen
+            // through, and on a name whose close sits inside that band it is a
+            // target below the entry: AAPL's close is inside its immediate
+            // support band, so the first arrangement gave that setup a negative
+            // reward. Found by deriving the figures before running the code.
+            var target = close > band.HighEdge ? close : band.HighEdge;
+
+            setups.Add(new EventSetup(
+                "a flush after the print",
+                date,
+                $"the session after the print closes down more than {NearExitInTypicalDays} typical days and inside {band.LowEdge} to {band.HighEdge}, and the next session holds its low",
+                band.LowEdge,
+                StopBelow(band, typicalMove),
+                target));
+        }
+
+        // Three. A gap up after the print. The trigger is the session after the
+        // print opening above the immediate resistance band and closing above
+        // its own open, which is a gap the day did not give back. The stop is a
+        // close back inside the band.
+        if (resistance.Length > 0)
+        {
+            var band = resistance[0];
+            var entry = band.HighEdge + typicalMove;
+
+            setups.Add(new EventSetup(
+                "a gap up after the print",
+                date,
+                $"the session after the print opens above {band.HighEdge} and closes above its own open",
+                entry,
+                StopBelow(band, typicalMove),
+                TargetAbove(resistance, entry, typicalMove)));
+        }
+
+        return setups;
+    }
+
+    // A stop a typical day's move below the band rather than at its low edge.
+    //
+    // At the edge it is inside the noise, which is the reason the position
+    // book's stops sit below the next band down rather than just below the
+    // tranche. On a band whose edges are one price, which is most of them, a
+    // stop at the low edge is the entry: the setup could never win and would
+    // stop out on the session that triggered it.
+    // see: A tranche is a support band, and its stop is a daily close below the low edge of the next band beneath it
+    static decimal StopBelow(Level band, decimal typicalMove) => band.LowEdge - typicalMove;
+
+    // The first resistance band above the entry, or two typical days above it
+    // where there is none.
+    //
+    // Above the entry and not merely the next band: a gap up enters above the
+    // band it cleared, and the band after it can sit below that entry, which
+    // would be a target the setup starts past.
+    static decimal TargetAbove(IReadOnlyList<Level> resistance, decimal entry, decimal typicalMove)
+    {
+        var above = resistance.FirstOrDefault(band => band.LowEdge > entry);
+
+        return above?.LowEdge ?? entry + (typicalMove * 2);
     }
 
     // Exactly one condition, tested in a stated order, because a matcher keyed

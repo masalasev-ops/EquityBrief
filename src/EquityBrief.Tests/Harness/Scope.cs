@@ -285,6 +285,10 @@ internal static class Scope
             Verdict.Pass,
             "the region draws the plan column, the tranche table with its conditions and stops and the exit table with its actions, from the ladder row the night wrote, with a skipped exit carrying its reason rather than being omitted",
             ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Earnings horizon")] = new Scoped(
+            Verdict.Pass,
+            "the second book is keyed to the next dated event the calendar holds, a name with none produces no setups and says why, and every setup carries a trigger, an entry, a stop and a target with each figure stated on the page as a proposal",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Tranches, exits")] = new Scoped(
             Verdict.Pass,
             "at most three tranches and at most five exits over four names, and an exit within two typical days' moves of the blended entry is listed and not traded with its reason on the row rather than omitted",

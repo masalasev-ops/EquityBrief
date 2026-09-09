@@ -112,6 +112,52 @@ public static class NameScreen
         return rows;
     }
 
+    // The second book, as the page shows it. Every setup says it is a proposal
+    // and names what will calibrate it, because a figure on a screen gets acted
+    // on and one that looks measured and is not is the failure this states its
+    // way out of.
+    // see: The event setups' triggers are proposals until resolved setups can score them
+    public static string EventBook(LadderRow? ladder)
+    {
+        if (ladder is null)
+        {
+            return string.Empty;
+        }
+
+        using var plan = JsonDocument.Parse(ladder.Plan);
+        var setups = plan.RootElement.GetProperty("events").EnumerateArray().ToArray();
+
+        var html = new System.Text.StringBuilder();
+
+        html.Append(CultureInfo.InvariantCulture, $"<section class=\"event-book\" data-ticker=\"{ladder.Ticker}\" data-setups=\"{setups.Length}\">");
+
+        if (setups.Length == 0)
+        {
+            html.Append("<p class=\"degraded\">no dated event is on file, so there are no setups</p></section>");
+
+            return html.ToString();
+        }
+
+        html.Append(
+            "<p class=\"proposal-note\" data-proposal=\"true\">Every figure in these setups is a " +
+            "proposal and none has been tested. They are calibrated against resolved setups on the " +
+            "run page, not tuned in advance.</p>");
+
+        html.Append("<table class=\"event-table\"><tr><th>Setup</th><th>Trigger</th><th>Entry, stop and target</th></tr>");
+
+        foreach (var setup in setups)
+        {
+            html.Append(CultureInfo.InvariantCulture, $"<tr data-setup=\"{setup.GetProperty("name").GetString()}\" data-proposal=\"true\">");
+            html.Append(CultureInfo.InvariantCulture, $"<td>{setup.GetProperty("name").GetString()} on {setup.GetProperty("eventDate").GetString()}</td>");
+            html.Append(CultureInfo.InvariantCulture, $"<td>{setup.GetProperty("trigger").GetString()}</td>");
+            html.Append(CultureInfo.InvariantCulture, $"<td>enter {setup.GetProperty("entry").GetString()}, stop {setup.GetProperty("stop").GetString()}, target {setup.GetProperty("target").GetString()}</td></tr>");
+        }
+
+        html.Append("</table></section>");
+
+        return html.ToString();
+    }
+
     static decimal Price(JsonElement row, string name) =>
         decimal.Parse(row.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
 
@@ -204,7 +250,8 @@ public static class NameScreen
             ladder?.AsOf,
             nextEvent?.EventDate,
             PlanRows(ladder),
-            bars.Count > 0 ? bars[^1].Close : 0m);
+            bars.Count > 0 ? bars[^1].Close : 0m,
+            EventBook(ladder));
     }
 
     // The members column, as the mark needs it. SCHEMA stores each member's

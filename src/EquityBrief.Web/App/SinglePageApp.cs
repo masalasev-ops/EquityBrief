@@ -98,7 +98,8 @@ public sealed class SinglePageApp : IComponent
         DateOnly? trendAsOf,
         DateOnly? nextEvent,
         IReadOnlyList<PlanRow> plan,
-        decimal close)
+        decimal close,
+        string eventBook)
     {
         var region = new StringBuilder();
 
@@ -134,6 +135,11 @@ public sealed class SinglePageApp : IComponent
         // column and the two tables it is read beside.
         region.Append(marks.PlanColumn(ticker, close, plan));
         region.Append(marks.PlanTables(ticker, plan));
+
+        // The second book, which section 15.9 puts in the plan region beside the
+        // tranche and exit tables. It arrives already written, because what it
+        // holds is prose and stored figures rather than a mark.
+        region.Append(eventBook);
 
         region.Append("</section>");
 
