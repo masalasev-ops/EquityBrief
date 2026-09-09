@@ -11,9 +11,11 @@ using EquityBrief.Data;
 using EquityBrief.Data.Swings;
 using Microsoft.Data.Sqlite;
 
+using EquityBrief.Worker.Bars;
+
 namespace EquityBrief.Worker.Levels;
 
-public sealed record LevelOutcome(int NamesBanded, int NamesSkipped, int BandsWritten);
+public sealed record LevelOutcome(int NamesBanded, int NamesSkipped, int BandsWritten, int RowsDropped);
 
 // The level builder. Reads swings, indicators, the volume profile and the bar
 // store, and writes the bands figure 9.1 describes: collect the four candidate
@@ -35,7 +37,7 @@ public sealed class LevelBuilder : IComponent
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.VolumeProfile, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
-            new StoreTouch(Store.Level, Touch.Insert | Touch.Update),
+            new StoreTouch(Store.Level, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -66,6 +68,24 @@ public sealed class LevelBuilder : IComponent
         FROM volume_profile
         WHERE ticker = $ticker AND as_of = $as_of AND share_of_period >= $threshold
         ORDER BY band_low;
+    ";
+
+    // The retention drop, one year back from the as-of date this run wrote.
+    //
+    // Section 16 states one year over the six computed tables and SCHEMA gave
+    // Delete to nobody until 4.2, which is contradiction A and contradiction H
+    // in a third place: a retention window nobody owns is a table that grows
+    // forever while the document says it does not.
+    //
+    // Nothing here can remove a row from inside a set it leaves standing. The
+    // boundary is a date and every row below it goes, for every name at once,
+    // which is the same shape BarFetcher's drop has and the same reason it is
+    // sanctioned.
+    // Keyed on the as-of date, so a new band set every night and nothing
+    // replaced. At the bands a name this fixture averages that is thousands of
+    // rows a night across the index.
+    const string DropOlderThan = @"
+        DELETE FROM level WHERE as_of < $oldest;
     ";
 
     const string Upsert = @"
@@ -179,9 +199,15 @@ public sealed class LevelBuilder : IComponent
             banded++;
         }
 
-        await RecordAsync(connection, runId, startedAt, banded, skipped, bands, cancellation);
+        var dropped = await DroppedAsync(
+            connection,
+            DropOlderThan,
+            await BoundaryAsync(connection, cancellation),
+            cancellation);
 
-        return new LevelOutcome(banded, skipped, bands);
+        await RecordAsync(connection, runId, startedAt, banded, skipped, bands, dropped, cancellation);
+
+        return new LevelOutcome(banded, skipped, bands, dropped);
     }
 
     // The members, as SCHEMA's column describes them: each member's kind, price
@@ -414,6 +440,7 @@ public sealed class LevelBuilder : IComponent
         int banded,
         int skipped,
         int bands,
+        int dropped,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -423,13 +450,54 @@ public sealed class LevelBuilder : IComponent
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-        command.Parameters.AddWithValue("$outcome", "ok");
+        command.Parameters.AddWithValue("$outcome", "ok, {dropped} dropped");
         command.Parameters.AddWithValue("$rows_written", bands);
 
         command.Parameters.AddWithValue(
             "$detail",
-            $"{banded} name(s) banded, {skipped} skipped, {bands} band(s)");
+            $"{banded} name(s) banded, {skipped} skipped, {bands} band(s), {dropped} dropped");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }
+
+    // One year back from the newest stored session, which is the boundary
+    // BarFetcher already drops bars at. Read from the store rather than passed
+    // in, so a component run on its own drops the same rows a night would.
+    //
+    // A store with no bars has no boundary and nothing to drop, which is a
+    // different thing from a boundary of today.
+    static async Task<DateOnly?> BoundaryAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT MAX(session_date) FROM bar;";
+
+        var newest = await command.ExecuteScalarAsync(cancellation);
+
+        return newest is null or DBNull
+            ? null
+            : DateOnly.ParseExact((string)newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                .AddYears(-BarFetcher.RetentionYears);
+    }
+
+    // Every row below the boundary, for every name at once, so what is left is
+    // still the window ending tonight.
+    static async Task<int> DroppedAsync(
+        SqliteConnection connection,
+        string statement,
+        DateOnly? boundary,
+        CancellationToken cancellation)
+    {
+        if (boundary is not { } oldest)
+        {
+            return 0;
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = statement;
+        command.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteNonQueryAsync(cancellation);
+    }
+
 }

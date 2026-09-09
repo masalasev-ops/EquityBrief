@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - SCHEMA.md - five computed tables get their deleter
+Authorised by: Every computed table's writer is its own deleter
+Was:
+> `indicator`, `swing`, `volume_profile`, `level` and `ladder` each gave Delete to none, and a
+> note said the rows still read none because this file describes the code rather than the
+> intention, with the five due to change at 4.2
+Now:
+> each of the five names its own writer as its deleter, and the note says why `move` is not among
+> them, where the boundary comes from, and why the statement lives in each component's file
+Why: 4.2 wrote the deletes, so the declaration now has code behind it. `move` waits for 5.2
+because `MoveAnnotator` does not exist, and `writer-ownership` refuses a declaration with nothing
+behind it in that direction as well, which it did when these rows were changed at 4.0 ahead of the
+code. The statement is in each component's own file because a write is attributed to the file it
+appears in, so a shared helper holding the `DELETE` would be a file that deletes and is declared
+nowhere.
+
 ### 2026-09-09 - BUILD_PLAN.md - the swing boundaries move from 4.1 to 4.4
 Corrects: a due point that produces no evidence, which is the defect 3.0 swept the corpus for and
 which this pass wrote into the table itself. The row was placed at 4.1 because the trend

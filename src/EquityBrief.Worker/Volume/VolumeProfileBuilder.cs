@@ -5,9 +5,11 @@ using EquityBrief.Core.Volume;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
+using EquityBrief.Worker.Bars;
+
 namespace EquityBrief.Worker.Volume;
 
-public sealed record ProfileOutcome(int NamesProfiled, int NamesTooShort, int RowsWritten);
+public sealed record ProfileOutcome(int NamesProfiled, int NamesTooShort, int RowsWritten, int RowsDropped);
 
 // The volume profile builder. Reads the stored bars, spreads each day's volume
 // across that day's range into twenty price bands over the last sixty sessions,
@@ -27,7 +29,7 @@ public sealed class VolumeProfileBuilder : IComponent
         Stores:
         [
             new StoreTouch(Store.Bar, Touch.Read),
-            new StoreTouch(Store.VolumeProfile, Touch.Insert | Touch.Update),
+            new StoreTouch(Store.VolumeProfile, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -52,6 +54,25 @@ public sealed class VolumeProfileBuilder : IComponent
     // what SCHEMA's grain says and it is the difference from the indicator and
     // swing tables, whose keys carry the session the value belongs to rather
     // than the date the computation was run for.
+    // The retention drop, one year back from the as-of date this run wrote.
+    //
+    // Section 16 states one year over the six computed tables and SCHEMA gave
+    // Delete to nobody until 4.2, which is contradiction A and contradiction H
+    // in a third place: a retention window nobody owns is a table that grows
+    // forever while the document says it does not.
+    //
+    // Nothing here can remove a row from inside a set it leaves standing. The
+    // boundary is a date and every row below it goes, for every name at once,
+    // which is the same shape BarFetcher's drop has and the same reason it is
+    // sanctioned.
+    // Keyed on the as-of date, so this writes a new set every night and
+    // replaces nothing. Twenty bands a name over five hundred names is about
+    // ten thousand rows a night, which is the arithmetic that makes the ruling
+    // urgent rather than tidy.
+    const string DropOlderThan = @"
+        DELETE FROM volume_profile WHERE as_of < $oldest;
+    ";
+
     const string Upsert = @"
         INSERT INTO volume_profile (ticker, as_of, band_low, band_high, share_count, share_of_period)
         VALUES ($ticker, $as_of, $band_low, $band_high, $share_count, $share_of_period)
@@ -135,9 +156,15 @@ public sealed class VolumeProfileBuilder : IComponent
             profiled++;
         }
 
-        await RecordAsync(connection, runId, startedAt, profiled, tooShort, rows, cancellation);
+        var dropped = await DroppedAsync(
+            connection,
+            DropOlderThan,
+            await BoundaryAsync(connection, cancellation),
+            cancellation);
 
-        return new ProfileOutcome(profiled, tooShort, rows);
+        await RecordAsync(connection, runId, startedAt, profiled, tooShort, rows, dropped, cancellation);
+
+        return new ProfileOutcome(profiled, tooShort, rows, dropped);
     }
 
     async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, CancellationToken cancellation)
@@ -190,6 +217,7 @@ public sealed class VolumeProfileBuilder : IComponent
         int profiled,
         int tooShort,
         int rows,
+        int dropped,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -199,7 +227,7 @@ public sealed class VolumeProfileBuilder : IComponent
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-        command.Parameters.AddWithValue("$outcome", "ok");
+        command.Parameters.AddWithValue("$outcome", "ok, {dropped} dropped");
         command.Parameters.AddWithValue("$rows_written", rows);
 
         // The skipped names are on the row a person reads, because a name with
@@ -208,8 +236,49 @@ public sealed class VolumeProfileBuilder : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{profiled} name(s) profiled, {tooShort} with fewer than " +
-            $"{VolumeProfileSeries.Window} session(s), {rows} band row(s)");
+            $"{VolumeProfileSeries.Window} session(s), {rows} band row(s), {dropped} dropped");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }
+
+    // One year back from the newest stored session, which is the boundary
+    // BarFetcher already drops bars at. Read from the store rather than passed
+    // in, so a component run on its own drops the same rows a night would.
+    //
+    // A store with no bars has no boundary and nothing to drop, which is a
+    // different thing from a boundary of today.
+    static async Task<DateOnly?> BoundaryAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT MAX(session_date) FROM bar;";
+
+        var newest = await command.ExecuteScalarAsync(cancellation);
+
+        return newest is null or DBNull
+            ? null
+            : DateOnly.ParseExact((string)newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                .AddYears(-BarFetcher.RetentionYears);
+    }
+
+    // Every row below the boundary, for every name at once, so what is left is
+    // still the window ending tonight.
+    static async Task<int> DroppedAsync(
+        SqliteConnection connection,
+        string statement,
+        DateOnly? boundary,
+        CancellationToken cancellation)
+    {
+        if (boundary is not { } oldest)
+        {
+            return 0;
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = statement;
+        command.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteNonQueryAsync(cancellation);
+    }
+
 }
