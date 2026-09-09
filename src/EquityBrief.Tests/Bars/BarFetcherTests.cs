@@ -82,7 +82,7 @@ public class BarFetcherTests
 
         var tickers = rows.Select(row => row.Ticker).ToArray();
 
-        Assert.Equal(7, rows.Count);
+        Assert.Equal(8, rows.Count);
         Assert.Contains("AAPL", tickers);
         Assert.Contains("XRAY", tickers);
         Assert.Contains("AAL", tickers);
@@ -112,7 +112,7 @@ public class BarFetcherTests
         Assert.Equal(1, outcome.Requests);
         Assert.Equal(new DateOnly(2026, 9, 8), outcome.Session);
 
-        Assert.Equal(["AAPL", "KEYS", "MSFT"], TickersOn(store, "2026-09-08"));
+        Assert.Equal(["AAPL", "KEYS", "MSFT", "NFLX"], TickersOn(store, "2026-09-08"));
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class BarFetcherTests
 
         Assert.Equal(0, again.RowsWritten);
         Assert.Equal(0, again.RowsDropped);
-        Assert.Equal(3, again.MembersStored);
+        Assert.Equal(4, again.MembersStored);
     }
 
     // Retention is asserted in NightlyCost, which is nightly-cost's carrier
@@ -195,7 +195,7 @@ public class BarFetcherTests
         Assert.True(reader.Read(), "The fetch left no run log row.");
         Assert.Equal(0L, reader.GetInt64(0));
         Assert.Equal(1L, reader.GetInt64(1));
-        Assert.Equal(3L, reader.GetInt64(2));
+        Assert.Equal(4L, reader.GetInt64(2));
     }
 
     [Fact]

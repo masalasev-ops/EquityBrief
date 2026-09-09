@@ -49,7 +49,7 @@ public class MembershipLoaderTests
 
         var current = Rows(store, @"SELECT ticker, ""left"" FROM membership WHERE ""left"" IS NULL;");
 
-        Assert.Equal(3, current.Count);
+        Assert.Equal(4, current.Count);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class MembershipLoaderTests
         // absent from a window it was part of.
         var betweenJoinAndLeave = await loader.MembersOnAsync(Index, new DateOnly(2024, 4, 2));
 
-        Assert.Equal(["AAL", "AAPL", "KEYS", "MSFT", "XRAY"], betweenJoinAndLeave);
+        Assert.Equal(["AAL", "AAPL", "KEYS", "MSFT", "NFLX", "XRAY"], betweenJoinAndLeave);
 
         // After a leave and before tonight. Two things at once, and both matter.
         //
@@ -124,12 +124,12 @@ public class MembershipLoaderTests
         // passed. AAL left five months later and splits that stretch in two.
         var afterALeave = await loader.MembersOnAsync(Index, new DateOnly(2024, 4, 3));
 
-        Assert.Equal(["AAL", "AAPL", "KEYS", "MSFT"], afterALeave);
+        Assert.Equal(["AAL", "AAPL", "KEYS", "MSFT", "NFLX"], afterALeave);
 
         // Tonight: the three still in the index.
         var tonight = await loader.MembersOnAsync(Index, new DateOnly(2026, 9, 5));
 
-        Assert.Equal(["AAPL", "KEYS", "MSFT"], tonight);
+        Assert.Equal(["AAPL", "KEYS", "MSFT", "NFLX"], tonight);
 
         // The distinctions, derived rather than stated and asserted as
         // distinctions rather than left to be read off the expectations above.
@@ -174,7 +174,7 @@ public class MembershipLoaderTests
 
         Assert.Equal(first, second);
         Assert.Equal(after, again);
-        Assert.Equal(5, after.Count);
+        Assert.Equal(6, after.Count);
 
         var logged = Rows(store, "SELECT run_id, stage FROM run_log ORDER BY run_id;");
 
@@ -192,7 +192,7 @@ public class MembershipLoaderTests
         // the whole row while quietly making one about four fifths of it.
         var instants = Rows(store, "SELECT ticker, observed_at FROM membership ORDER BY ticker;");
 
-        Assert.Equal(5, instants.Count);
+        Assert.Equal(6, instants.Count);
         Assert.All(instants, row => Assert.NotEqual(string.Empty, row.Item2));
         Assert.Single(instants.Select(row => row.Item2).Distinct());
     }
@@ -211,9 +211,9 @@ public class MembershipLoaderTests
 
         var measured = Rows(store, "SELECT CAST(rows_written AS TEXT), CAST(network_requests AS TEXT) FROM run_log WHERE run_id = 'run-1';");
 
-        // Five rows written and one request. Both are measured rather than
+        // Six rows written and one request. Both are measured rather than
         // stated: the rows from the store, and the requests off the feed.
-        Assert.Equal(("5", "1"), Assert.Single(measured));
+        Assert.Equal(("6", "1"), Assert.Single(measured));
 
         var free = Rows(store, "SELECT CAST(model_calls AS TEXT), spend FROM run_log WHERE run_id = 'run-1';");
 
@@ -232,9 +232,9 @@ public class MembershipLoaderTests
 
         // The whole projection rather than a count and two Contains clauses.
         //
-        // Two clauses named one of the two departed names and one of the three
-        // current ones, which is two rows of five: a parser regression dropping
-        // AAL's end date leaves the count at five and both clauses true. The
+        // Two clauses named one of the two departed names and one of the four
+        // current ones, which is two rows of six: a parser regression dropping
+        // AAL's end date leaves the count where it was and both clauses true. The
         // count is the weakest half of that, since it survives every error that
         // does not add or remove a row.
         Assert.Equal(
@@ -243,6 +243,7 @@ public class MembershipLoaderTests
                 ("AAPL", null),
                 ("KEYS", null),
                 ("MSFT", null),
+                ("NFLX", null),
                 ("XRAY", "2024-04-03"),
             ],
             parsed.Select(constituent => (constituent.Ticker, constituent.Left?.ToString("yyyy-MM-dd"))));

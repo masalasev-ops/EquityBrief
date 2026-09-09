@@ -18,7 +18,7 @@ public class ApiIsolation
     public void TheApiShipsTheThreeItReferences()
     {
         // The scope carrying the property is the library list, and this is its
-        // floor. The three names are the assertion; the count is context, set
+        // floor. The named projects are the assertion; the count is context, set
         // far enough below its value that a package added at 1.5 cannot move it.
         var libraries = LibrariesOf("EquityBrief.Api");
 

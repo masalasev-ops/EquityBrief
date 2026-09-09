@@ -88,7 +88,7 @@ public class BackfillTests
     // 261 weekdays less 9 closures. Stated so the derivation above is legible
     // as a number and a reader can check it without running anything.
     const int SessionsInTheYear = 252;
-    const int CurrentMembers = 3;
+    const int CurrentMembers = 4;
     const int RowsPerRun = SessionsInTheYear * CurrentMembers;
 
     static IClock Clock() => FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -145,7 +145,7 @@ public class BackfillTests
 
         var outcome = await backfill.RunAsync(Index, "run-1");
 
-        // Three current members and two departed names. The departed ones keep
+        // Four current members and two departed names. The departed ones keep
         // the history they have, which here is none, and are not fetched: a
         // backfill is owed for names in the index, not for every name ever in
         // it.
@@ -156,7 +156,7 @@ public class BackfillTests
 
         var tickers = Column(store, "SELECT DISTINCT ticker FROM bar ORDER BY ticker;");
 
-        Assert.Equal(["AAPL", "KEYS", "MSFT"], tickers);
+        Assert.Equal(["AAPL", "KEYS", "MSFT", "NFLX"], tickers);
 
         // Both departed names, named rather than covered by the equality above.
         // The equality already fails if either appears, but naming them says

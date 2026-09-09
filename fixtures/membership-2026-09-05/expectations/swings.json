@@ -16,10 +16,11 @@
  "namesComputed": [
   "AAPL",
   "KEYS",
-  "MSFT"
+  "MSFT",
+  "NFLX"
  ],
  "sessionsPerName": 252,
- "rowsExpected": 131,
+ "rowsExpected": 171,
  "perName": {
   "AAPL": {
    "swings": 44,
@@ -35,11 +36,16 @@
    "swings": 46,
    "highs": 24,
    "lows": 22
+  },
+  "NFLX": {
+   "swings": 40,
+   "highs": 22,
+   "lows": 18
   }
  },
  "bothDirections": {
   "count": 0,
-  "note": "no session in this fixture is a swing high and a swing low at once. That is a fact about these three names and not a rule: an outside day whose range covers the six around it on both sides is both, SCHEMA's primary key carries the direction so the two rows sit side by side, and the count is stated here so a fourth name that has one is a change somebody reads rather than a silent one."
+  "note": "no session in this fixture is a swing high and a swing low at once. That is a fact about these four names and not a rule: an outside day whose range covers the six around it on both sides is both, SCHEMA's primary key carries the direction so the two rows sit side by side, and the count is stated here so a fifth name that has one is a change somebody reads rather than a silent one. The fourth name added at 3.6 has none either."
  },
  "edges": {
   "firstSessionsWithNoSwing": [
@@ -291,6 +297,48 @@
     "2026-08-10|high|512.7647|2026-08-13",
     "2026-08-18|low|476.2534|2026-08-21",
     "2026-08-28|high|517.78|2026-09-02"
+   ],
+   "NFLX": [
+    "2025-09-15|low|117.3208|2025-09-18",
+    "2025-09-17|high|123.393|2025-09-22",
+    "2025-09-29|high|122.449|2025-10-02",
+    "2025-10-02|low|113.4|2025-10-07",
+    "2025-10-10|high|124.7|2025-10-15",
+    "2025-10-16|low|117.6|2025-10-21",
+    "2025-10-21|high|124.86|2025-10-24",
+    "2025-10-27|low|108.73|2025-10-30",
+    "2025-10-31|high|113.488|2025-11-05",
+    "2025-11-05|low|107.337|2025-11-10",
+    "2025-11-13|high|116.733|2025-11-18",
+    "2025-11-24|low|103.32|2025-11-28",
+    "2025-12-02|high|109.73|2025-12-05",
+    "2025-12-10|low|92.35|2025-12-15",
+    "2025-12-17|high|97.33|2025-12-22",
+    "2025-12-23|low|91.33|2025-12-29",
+    "2025-12-29|high|94.97|2026-01-02",
+    "2026-01-14|high|91.58|2026-01-20",
+    "2026-01-21|low|81.93|2026-01-26",
+    "2026-01-26|high|86.94|2026-01-29",
+    "2026-02-04|low|79.225|2026-02-09",
+    "2026-02-10|high|84.66|2026-02-13",
+    "2026-02-12|low|75.23|2026-02-18",
+    "2026-02-23|low|75.01|2026-02-26",
+    "2026-03-05|high|100.19|2026-03-10",
+    "2026-03-12|low|93.87|2026-03-17",
+    "2026-03-17|high|96.34|2026-03-20",
+    "2026-03-20|low|90.69|2026-03-25",
+    "2026-04-06|high|102.69|2026-04-09",
+    "2026-04-16|high|108.95|2026-04-21",
+    "2026-04-28|low|90.02|2026-05-01",
+    "2026-05-01|high|94.7|2026-05-06",
+    "2026-05-11|low|85.1|2026-05-14",
+    "2026-05-19|high|91.48|2026-05-22",
+    "2026-06-25|low|70.86|2026-06-30",
+    "2026-07-02|high|78.44|2026-07-08",
+    "2026-07-17|low|65.08|2026-07-22",
+    "2026-07-28|high|73.76|2026-07-31",
+    "2026-08-19|high|81.16|2026-08-24",
+    "2026-08-25|high|82.455|2026-08-28"
    ]
   }
  }

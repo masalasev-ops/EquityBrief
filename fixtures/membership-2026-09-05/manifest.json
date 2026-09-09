@@ -7,8 +7,8 @@
       "file": "index-constituents.json",
       "endpoint": "fundamentals/GSPC.INDX",
       "query": "fundamentals/GSPC.INDX?fmt=json",
-      "fetchedAt": "2026-09-08T12:44:31Z",
-      "trimmedTo": "the five names this fixture is built around: 3 of the 503 in Components, which is tonight's snapshot and holds no departed name, and all 5 of the 822 in HistoricalTickerComponents, which is where the spans are. Three are current members and two have left, on different dates, so a past-date query has a stretch to answer differently from tonight rather than one leave at the end of the record. The provider's keys are kept as sent, so the gaps in them show where the cut was made. General is whole and every field, nesting and type is the provider's."
+      "fetchedAt": "2026-09-09T17:42:38Z",
+      "trimmedTo": "the six names this fixture is built around: 4 of the 503 in Components, which is tonight's snapshot and holds no departed name, and all 6 of the 822 in HistoricalTickerComponents, which is where the spans are. Four are current members and two have left, on different dates, so a past-date query has a stretch to answer differently from tonight rather than one leave at the end of the record. The provider's keys are kept as sent, so the gaps in them show where the cut was made. General is whole and every field, nesting and type is the provider's. Recaptured at 3.6 to widen the fixture to four names: the whole file is this one capture rather than the earlier one with a row spliced in, so no row here came from a payload another row did not. The index weights moved a few hundredths between the two captures, which nothing in the pipeline reads and which is the drift a weight is."
     },
     {
       "file": "bars-AAPL.json",
@@ -29,11 +29,18 @@
       "fetchedAt": "2026-09-08T12:37:09Z"
     },
     {
+      "file": "bars-NFLX.json",
+      "endpoint": "eod/NFLX.US",
+      "query": "eod/NFLX.US?from=2025-09-04&to=2026-09-04&period=d&fmt=json",
+      "fetchedAt": "2026-09-09T17:41:02Z",
+      "trimmedTo": "nothing. The whole capture, which is the fourth name 3.6 widens the fixture to and the one chosen for character rather than for size. Its year holds a ten for one split on 2025-11-17, so every bar before it is adjusted by a factor of a tenth and the adjustment path is exercised over a whole series rather than over the fractions of a percent a dividend moves. It also holds four sessions that moved more than seven percent from the close before them, which is the gapping character the phase table asks for, and after adjustment it trades between 65 and 127 against ranges of 245 to 345, 350 to 520 and 155 to 375, so the four names differ in price scale as well as in width."
+    },
+    {
       "file": "bulk-2026-09-08.json",
       "endpoint": "eod-bulk-last-day/US",
-      "query": "eod-bulk-last-day/US?fmt=json",
-      "fetchedAt": "2026-09-08T20:49:02Z",
-      "trimmedTo": "seven of the 10,670 rows the whole US exchange returned, chosen so the membership filter has each thing it must reject. Three are current members and are stored: AAPL, MSFT and KEYS. Two are constituents that have left, AAL and XRAY, which the provider still returns because they still trade, and which prove the filter reads membership rather than the file. Two, A and AA, were never in this fixture's index at all. The session is 2026-09-08, which is the next trading session after the stored year ends on 2026-09-04, the Monday between them being a holiday, so appending it leaves a contiguous series and a fetcher that dropped it would be visible as a gap rather than as a shorter year. Rows keep the order the provider sent them in, and every key, nesting and type is the provider's."
+      "query": "eod-bulk-last-day/US?date=2026-09-08&fmt=json",
+      "fetchedAt": "2026-09-09T17:42:38Z",
+      "trimmedTo": "eight of the 44,575 rows the whole US exchange returned, chosen so the membership filter has each thing it must reject. Four are current members and are stored: AAPL, MSFT, NFLX and KEYS. Two are constituents that have left, AAL and XRAY, which the provider still returns because they still trade, and which prove the filter reads membership rather than the file. Two, A and AA, were never in this fixture's index at all. The session is 2026-09-08, which is the next trading session after the stored year ends on 2026-09-04, the Monday between them being a holiday, so appending it leaves a contiguous series and a fetcher that dropped it would be visible as a gap rather than as a shorter year. Rows keep the order the provider sent them in, and every key, nesting and type is the provider's. Recaptured at 3.6 with the session asked for by date rather than as the last day, because the fourth name needed a row for the same session and a file holding rows from two captures is a file whose provenance is per row. The provider's figures for that session had settled between the two fetches: six of the seven earlier rows carry a revised volume or a revised low, which is what a fetchedAt on a capture is for."
     },
     {
       "file": "gap-KEYS.json",

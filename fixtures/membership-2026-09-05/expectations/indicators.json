@@ -1,6 +1,6 @@
 {
  "stage": "indicators",
- "derivedFrom": "the arithmetic in section 9 and section 17 applied to the committed bar files, not to a run. Every figure below was computed from the captured adjusted closes and volumes by summing them directly, outside this repository and without running the indicator engine, which is what makes it an expectation rather than a regression baseline: an engine that averaged the wrong window would still agree with a figure taken from itself.",
+ "derivedFrom": "the arithmetic in section 9 and section 17 applied to the committed bar files, not to a run. Every figure below was computed from the captured adjusted closes and volumes by summing them directly, outside this repository and without running the indicator engine, which is what makes it an expectation rather than a regression baseline: an engine that averaged the wrong window would still agree with a figure taken from itself. Widened to four names at 3.6. The fourth carries a ten for one split inside the window, so every close before 2025-11-17 is an adjusted one and its averages are computed over a series the provider restated rather than over the prices it printed.",
  "tables": [
   "indicator"
  ],
@@ -12,7 +12,8 @@
  "namesComputed": [
   "AAPL",
   "KEYS",
-  "MSFT"
+  "MSFT",
+  "NFLX"
  ],
  "sessionsPerName": 252,
  "indicatorNames": [
@@ -27,7 +28,7 @@
   "vol_avg20",
   "vol_avg50"
  ],
- "rowsExpected": 7560,
+ "rowsExpected": 10080,
  "rowsPerName": 2520,
  "notAvailable": {
   "note": "a row is written for every session and every name, and the value is null until the window is full. The count per indicator is its warm-up less one, because the first value sits at the warm-up. RSI and ATR read the change from the previous close, so fourteen periods need fifteen bars; the MACD signal needs nine MACD values and the first MACD sits at twenty-six bars, so it starts at thirty-four.",
@@ -44,7 +45,7 @@
    "vol_avg50": 49
   },
   "perName": 454,
-  "total": 1362
+  "total": 1816
  },
  "barCount": {
   "note": "bar_count is the lesser of the indicator window and the history behind the session, so it is what makes a null legible. At the first session every indicator reads 1. At the last session an indicator whose window is full reads its window.",
@@ -73,6 +74,13 @@
    "sma50": 443.562084,
    "sma200": 429.372915,
    "volAvg20": 22996395.0
+  },
+  "NFLX": {
+   "lastSession": "2026-09-04",
+   "sma20": 79.31,
+   "sma50": 75.44019999999999,
+   "sma200": 86.88349999999998,
+   "volAvg20": 28039053.1
   }
  },
  "workedExample": {

@@ -47,6 +47,7 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "levels"),
             CheckReach.Key(Scope.LimitsTable, "Level window"),
             CheckReach.Key(Scope.LimitsTable, "Band merge distance"),
+            CheckReach.Key(Scope.LimitsTable, "Volume shelf threshold"),
             CheckReach.Key(Scope.LimitsTable, "Swing lookback"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, 200-day average"),
         ]);
@@ -1006,6 +1007,81 @@ public class FixtureExpectations
             // threshold above the largest band.
             Assert.NotEmpty(clearing);
         }
+    }
+
+    [Fact]
+    public async Task TheShelfThresholdHoldsAcrossFourNamesAndItsNeighboursDoNot()
+    {
+        // The obligation 3.6 carries, discharged.
+        // owes: Volume shelf threshold checked against four names
+        //
+        // Section 17 set the threshold at twice an even share from one chart,
+        // and the obligation was that one chart cannot fix a threshold. So the
+        // fixture was widened to four names of different character and the two
+        // candidates either side of the figure are measured beside it, which is
+        // what makes this a calibration rather than a number that happens to
+        // work: a threshold asserted alone agrees with itself, and one asserted
+        // against its neighbours has to beat them.
+        var expected = Expected("volume-profile");
+        var across = expected.GetProperty("thresholdAcrossFourNames");
+        var sweep = across.GetProperty("sweep");
+        var names = expected.GetProperty("namesComputed").EnumerateArray().Select(name => name.GetString()!).ToArray();
+        var bands = expected.GetProperty("bands").GetProperty("count").GetInt32();
+
+        Assert.Equal(4, names.Length);
+        Assert.Equal(2, across.GetProperty("chosen").GetInt32());
+        Assert.Equal(2d / bands, LevelBuilder.ShelfThreshold);
+
+        using var store = await WithProfile();
+
+        // Every multiple the sweep names, read off the store rather than off the
+        // expectation, so the three columns are three readings of one profile.
+        foreach (var multiple in sweep.EnumerateObject())
+        {
+            var factor = int.Parse(multiple.Name[1..], CultureInfo.InvariantCulture);
+            var threshold = (factor / (double)bands).ToString(CultureInfo.InvariantCulture);
+
+            foreach (var name in multiple.Value.EnumerateObject())
+            {
+                var counted = Query(
+                    store,
+                    $"SELECT COUNT(*), printf('%.6f', COALESCE(SUM(share_of_period), 0)) FROM volume_profile WHERE ticker = '{name.Name}' AND share_of_period >= {threshold};").Single();
+
+                Assert.Equal(
+                    $"{name.Value.GetProperty("shelves").GetInt32()}|{name.Value.GetProperty("shareOfPeriod").GetDouble():0.000000}",
+                    counted);
+            }
+        }
+
+        // What the three columns say, asserted as the property rather than left
+        // for a reader to notice in the numbers.
+        var at = sweep.GetProperty("x2");
+        var below = sweep.GetProperty("x1");
+        var above = sweep.GetProperty("x3");
+
+        foreach (var name in names)
+        {
+            // At the chosen figure every name has a shelf, and it is a minority
+            // of its bands. A threshold that named half the chart is not
+            // finding where volume clusters, it is describing the chart.
+            var chosen = at.GetProperty(name).GetProperty("shelves").GetInt32();
+
+            Assert.True(chosen > 0, $"{name} has no shelf at twice an even share, so the fourth source is absent for it.");
+            Assert.True(chosen <= bands / 4, $"{name} has {chosen} shelves of {bands} bands, which names too much of the chart to be a cluster.");
+
+            // One multiple below, the count is at least three times as many and
+            // more than a third of the bands.
+            Assert.True(
+                below.GetProperty(name).GetProperty("shelves").GetInt32() > bands / 3,
+                $"{name} at an even share names {below.GetProperty(name).GetProperty("shelves").GetInt32()} bands, which would not show the threshold discriminating.");
+        }
+
+        // And one multiple above, most of the names lose their shelf entirely.
+        // That is the failure in the other direction, and it is the reason the
+        // figure is not simply raised until only the largest band survives.
+        Assert.True(
+            names.Count(name => above.GetProperty(name).GetProperty("shelves").GetInt32() == 0) >= 3,
+            "At three times an even share the names still have shelves, so the upper bound is not shown.");
     }
 
     [Fact]

@@ -308,8 +308,8 @@ public class NightlyCost
         var (three, threeCount) = await NightAsync(members: null);
         var (two, twoCount) = await NightAsync(members: "AAPL");
 
-        Assert.Equal(3, threeCount);
-        Assert.Equal(2, twoCount);
+        Assert.Equal(4, threeCount);
+        Assert.Equal(3, twoCount);
 
         // The universe halved and the request count did not move.
         Assert.Equal(three.Requests, two.Requests);
@@ -376,7 +376,7 @@ public class NightlyCost
             "SELECT network_requests FROM run_log WHERE stage = $stage;";
         command.Parameters.AddWithValue("$stage", Backfill.Stage);
 
-        Assert.Equal(3L, (long)command.ExecuteScalar()!);
+        Assert.Equal(4L, (long)command.ExecuteScalar()!);
 
         var limits = Corpus.Read("docs/ARCHITECTURE.html");
 

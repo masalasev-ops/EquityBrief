@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Levels;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Swings;
 using EquityBrief.Core.Time;
 using EquityBrief.Core.Volume;
@@ -374,7 +375,7 @@ public sealed class LevelBuilder : IComponent
             shelves.Add(new LevelMember(
                 MemberSource.Shelf,
                 "shelf",
-                decimal.Round((low + high) / 2, Statistic.Places, MidpointRounding.ToEven),
+                PriceForm.Round((low + high) / 2, Statistic.Places),
                 asOf));
         }
 

@@ -1,6 +1,6 @@
 {
  "stage": "series-state",
- "derivedFrom": "the captured action files intersected with the membership expectation's current members, not a run. The two files carry 7 actions over 7 distinct names; exactly one of them, AAPL, is a current member, so exactly one name is refetched and exactly one series state row exists. Every other name in the files is one the index does not hold and is not touched, which is what the captured actions were chosen to include.",
+ "derivedFrom": "the captured action files intersected with the membership expectation's current members, not a run. The two files carry 7 actions over 7 distinct names; exactly one of them, AAPL, is a current member, which the fourth name did not change, so exactly one name is refetched and exactly one series state row exists. Every other name in the files is one the index does not hold and is not touched, which is what the captured actions were chosen to include.",
  "tables": [
   "series_state"
  ],
@@ -17,7 +17,8 @@
  "currentMembers": [
   "AAPL",
   "KEYS",
-  "MSFT"
+  "MSFT",
+  "NFLX"
  ],
  "namesRefetched": [
   "AAPL"

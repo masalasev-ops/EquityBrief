@@ -15,7 +15,7 @@ internal sealed record ImpossibleBar(string Ticker, string SessionDate, string R
 //
 // This is the check the 1.2 store needed and did not have. The backfill stored
 // the provider's adjusted close beside its unadjusted open, high and low, and 96
-// of 756 fixture bars carried a close outside their own low and high. Nothing
+// of the fixture bars carried a close outside their own low and high. Nothing
 // looked. Every figure phase 3 computes rests on these rows, and the first thing
 // that would have shown it is a chart drawn a phase later.
 //
@@ -109,7 +109,7 @@ public class BarBounds
         Assert.Empty(impossible);
 
         // The scope, stated in numbers and floored on the population carrying
-        // the property. 756 bars today, three names of a year each. The floor
+        // the property. 1,008 bars today, four names of a year each. The floor
         // sits below that and above zero, because a scan over an empty store
         // would otherwise report the same green as a scan over a full one.
         Assert.True(scanned >= 700, $"Scanned {scanned} stored bars, expected at least 700.");

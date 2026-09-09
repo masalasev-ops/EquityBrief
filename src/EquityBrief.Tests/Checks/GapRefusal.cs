@@ -68,6 +68,7 @@ public class GapRefusal
             ["AAPL"] = File.ReadAllText(Path.Combine(folder, "bars-AAPL.json")),
             ["MSFT"] = File.ReadAllText(Path.Combine(folder, "bars-MSFT.json")),
             ["KEYS"] = File.ReadAllText(Path.Combine(folder, "gap-KEYS.json")),
+            ["NFLX"] = File.ReadAllText(Path.Combine(folder, "bars-NFLX.json")),
         });
     }
 
@@ -157,7 +158,7 @@ public class GapRefusal
         var outcome = await BackfillAsync(store, RecordedHistoricalBarFeed.FromFolder(FixtureFolder()));
 
         Assert.Empty(outcome.Refused);
-        Assert.Equal(3, outcome.Owed);
+        Assert.Equal(4, outcome.Owed);
         Assert.True(Rows(store, "KEYS") > 250, "KEYS was refused over a clean series.");
     }
 
