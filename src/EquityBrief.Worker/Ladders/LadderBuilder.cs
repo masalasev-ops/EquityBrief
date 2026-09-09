@@ -4,6 +4,8 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Swings;
+using EquityBrief.Data.Swings;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Bars;
@@ -173,7 +175,7 @@ public sealed class LadderBuilder : IComponent
 
             var plan = session is { } priced
                 ? await PlanAsync(connection, ticker, priced.SessionDate, priced.Close, trend, cancellation)
-                : new Ladder([], null, trend.Reason);
+                : new Ladder([], [], null, trend.Reason);
 
             if (session is null)
             {
@@ -233,26 +235,35 @@ public sealed class LadderBuilder : IComponent
     {
         if (!trend.Classified)
         {
-            return new Ladder([], null, trend.Reason);
+            return new Ladder([], [], null, trend.Reason);
         }
 
         var bands = await BandsAsync(connection, ticker, cancellation);
 
         if (bands.Count == 0)
         {
-            return new Ladder([], null, "no bands are stored for this name");
+            return new Ladder([], [], null, "no bands are stored for this name");
         }
 
         var typicalMove = await TypicalMoveAsync(connection, ticker, asOf, cancellation);
 
         if (typicalMove is not { } move)
         {
-            return new Ladder([], null, "no typical daily move is stored for this name");
+            return new Ladder([], [], null, "no typical daily move is stored for this name");
         }
 
         var recent = await RecentAsync(connection, ticker, cancellation);
 
-        return LadderSeries.For(bands, close, move, recent, trend.State);
+        // The swing lows the trailing stop follows, in session order and as of
+        // the date, through the reader the level builder and the classifier
+        // both use rather than a third copy of the clause.
+        var lows = StoredSwings.AsOf(connection, ticker, asOf)
+            .Where(swing => swing.Direction == SwingSeries.Low)
+            .OrderBy(swing => swing.SessionDate)
+            .Select(swing => swing.Price)
+            .ToArray();
+
+        return LadderSeries.For(bands, close, move, recent, trend.State, lows);
     }
 
     // The plan, as SCHEMA's column describes it. Prices are written in the
@@ -272,12 +283,20 @@ public sealed class LadderBuilder : IComponent
                 condition = tranche.Condition.ToString(),
                 stop = tranche.Stop is { } stop ? Money.ToStorage(stop) : null,
             }),
-            exits = Array.Empty<object>(),
+            exits = plan.Exits.Select(exit => new
+            {
+                lowEdge = Money.ToStorage(exit.LowEdge),
+                highEdge = Money.ToStorage(exit.HighEdge),
+                traded = exit.Traded,
+                trailing = exit.Trailing,
+                fraction = exit.Fraction,
+                reason = exit.Reason,
+            }),
             invalidation = plan.Invalidation is { } price ? Money.ToStorage(price) : null,
             events = Array.Empty<object>(),
             reason = plan.Reason ?? (plan.Tranches.Count == 0
                 ? "no tranche is placed"
-                : "the exits and the event setups are built from 4.5"),
+                : "the event setups are built from 4.7"),
         });
 
     static async Task<IReadOnlyList<Level>> BandsAsync(

@@ -4712,3 +4712,49 @@ Measured:   203 claims, 87 PASS from 85, 0 fail, 0 unexamined, 116 out of scope.
 Amended:    nothing. This checkpoint amends no done condition.
 Tests:      402, from 397. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+
+### 4.5 - exits, the near-exit skip and the trailing stop                2026-09-09
+Built:      one exit per resistance band above the price, nearest first, at most five. An exit
+            closer than two typical days' moves to the blended entry is listed and not traded,
+            with its reason on the row. Each traded exit sells an equal fraction of what is held.
+            The highest traded exit is a trailing rule rather than a price.
+Blended:    the entry the skip is measured from is the mean of the first two tranche zones'
+            midpoints, or the first alone where there is only one. That is what section 17's row
+            names and it is the price the position is carried at once the plan has staged what it
+            can, rather than the first tranche's midpoint, which would measure the skip against a
+            price the reader may never pay alone.
+Discharged: the trend-dependent stop, carried out of 4.4. Read literally, the trailing rule puts
+            the stop wherever the last swing low happens to be. On a name that has run a long way
+            that is far below the band beneath, which is looser protection than the range rule
+            gives, and a trailing stop that can sit below the range floor is not trailing
+            anything. So the stop is the higher of the band beneath and the most recent swing low
+            beneath the tranche: it rises as the structure makes higher lows and is never looser
+            than the range rule.
+Measured:   where the rule bites, stated rather than left to look like a rule that works. Of the
+            ten tranches in this fixture the trailing rule moves exactly one stop: KEYS's first,
+            from the band at 288.5134 to the swing low at 293.55. AAPL's and KEYS's lowest
+            tranches get a stop where the range rule gives none, because each is the lowest
+            support band its name has. MSFT's three all take the band, and its third is the case
+            that argues for taking the higher of the two: its last swing low beneath 476.2534 is
+            376.6809, a hundred points down.
+Found:      MSFT trades none of its exits. Its only resistance band sits 16.90 above the blended
+            entry against a bar of 23.65, so every exit it has is listed and not traded and it has
+            no top of the ladder at all. A plan that says take nothing here is a different object
+            from one with a trailing rule attached to nothing, and both are asserted rather than
+            the first standing for the second.
+Also found: the third checkpoint in a row where `changelog-reconciles` caught a spec edit with no
+            entry, and the pattern is now legible rather than three incidents. Every checkpoint
+            that discharges an obligation edits `BUILD_PLAN.md`, which is a spec, so every one of
+            them owes a changelog entry in the same commit. It was found here by the mutation run
+            rather than by CI, which is the earlier of the two places and the one a local suite
+            can reach, because the mutation worktree carries the commit under test.
+Mutated:    the skipped exit omitted rather than listed, in an isolated worktree at the commit
+            under test, reverted, the worktree removed. The rule for choosing was stated first:
+            mutate the assertion carrying the property this checkpoint exists to add, which is
+            that an exit inside the noise is named and not acted on. It turned the exit diff red
+            and nothing else.
+Measured:   203 claims, 88 PASS from 87, 0 fail, 0 unexamined, 115 out of scope. The one is
+            section 17's tranches and exits row.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      404, from 402. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.

@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - the trend-dependent stop is discharged at 4.5
+Authorised by: The stop rule depends on the trend state
+Was:
+> | **The trend-dependent stop, which trails in an uptrend rather than sitting at the next band**
+> | 4.4 | 4.5 | ...
+Now:
+> the same row with `4.5, discharged`
+Why: 4.5 built the trailing rule at the top of the ladder and the trailing stop with it, which is
+the same machinery. The stop is the higher of the band beneath and the most recent swing low
+beneath the tranche, because a trailing stop that can sit below the range floor is not trailing
+anything.
+
 ### 2026-09-09 - BUILD_PLAN.md - the trend-dependent stop moves to 4.5
 Corrects: 4.4 places every stop at the low edge of the next band beneath, which is the rule
 section 10 states for a range, and **The stop rule depends on the trend state** says an uptrend

@@ -26,10 +26,33 @@ public sealed record Tranche(
     TrancheCondition Condition,
     decimal? Stop);
 
-// The position book: the tranches, their stops, and the price the whole thing
-// is wrong below.
+// One place the plan sells part of what is held.
+//
+// `Fraction` is a share of the position that already exists, which is scaling
+// out and not sizing: it needs no capital figure and it is the same for every
+// traded exit, because any other split is a preference dressed as arithmetic.
+// see: Each traded exit sells an equal fraction of what is held, and the top of the ladder trails
+//
+// A `Traded` of false is an exit listed and not acted on, because it is closer
+// than two typical days' moves to the blended entry and a move inside the noise
+// is worth naming on the chart and not worth paying a spread to act on.
+// see: An exit closer than two typical days' moves is listed but not traded
+//
+// `Trailing` is the top of the ladder, which is a rule rather than a price:
+// there is no band above it to name, so what is left is to follow the price up.
+public sealed record Exit(
+    decimal LowEdge,
+    decimal HighEdge,
+    bool Traded,
+    bool Trailing,
+    string Fraction,
+    string? Reason);
+
+// The position book: the tranches, their stops, the exits, and the price the
+// whole thing is wrong below.
 public sealed record Ladder(
     IReadOnlyList<Tranche> Tranches,
+    IReadOnlyList<Exit> Exits,
     decimal? Invalidation,
     string? Reason);
 
@@ -54,6 +77,13 @@ public static class LadderSeries
     // scored a tranche, so a figure written here as a rule would be a constant
     // nobody could later tell from a measured one.
     // see: The event setups' triggers are proposals until resolved setups can score them
+    // Section 17's other count: five exits covers the distance from the nearest
+    // resistance band to a prior high.
+    public const int MostExits = 5;
+
+    // An exit closer than this to the blended entry is listed and not traded.
+    public const int NearExitInTypicalDays = 2;
+
     public const int ConditionLookback = 10;
 
     public const int ShockInTypicalDays = 3;
@@ -63,7 +93,8 @@ public static class LadderSeries
         decimal close,
         decimal typicalMove,
         IReadOnlyList<LadderBar> recent,
-        string trendState)
+        string trendState,
+        IReadOnlyList<decimal>? swingLows = null)
     {
         // A downtrend carries no tranches at all, and a name whose trend could
         // not be classified carries none either: the label decides whether a
@@ -72,12 +103,12 @@ public static class LadderSeries
         // see: The stop rule depends on the trend state
         if (trendState is TrendState.Downtrend)
         {
-            return new Ladder([], null, "the trend is down, so no tranche is placed");
+            return new Ladder([], [], null, "the trend is down, so no tranche is placed");
         }
 
         if (trendState is TrendState.NotClassified)
         {
-            return new Ladder([], null, "the trend state could not be classified, so no tranche is placed");
+            return new Ladder([], [], null, "the trend state could not be classified, so no tranche is placed");
         }
 
         // Support bands whose low edge is below the close, nearest first. The
@@ -99,6 +130,7 @@ public static class LadderSeries
         if (anchored.Length == 0)
         {
             return new Ladder(
+                [],
                 [],
                 null,
                 eligible.Length == 0
@@ -126,7 +158,7 @@ public static class LadderSeries
                 band.LowEdge,
                 band.HighEdge,
                 ConditionFor(band, close, typicalMove, recent),
-                beneath?.LowEdge));
+                StopFor(band, beneath?.LowEdge, trendState, swingLows ?? [])));
         }
 
         // The whole position is wrong below the lowest band the structure
@@ -138,7 +170,109 @@ public static class LadderSeries
             .DefaultIfEmpty()
             .Min();
 
-        return new Ladder(tranches, invalidation, null);
+        return new Ladder(tranches, ExitsFor(bands, tranches, typicalMove), invalidation, null);
+    }
+
+    // Where the stop sits, which the trend decides.
+    //
+    // In a range it is the low edge of the next band beneath, which is the range
+    // floor. In an uptrend it trails: the stop is the higher of that band and
+    // the most recent swing low beneath the tranche, so it rises as the
+    // structure makes higher lows and is never looser than the range rule.
+    // see: The stop rule depends on the trend state
+    //
+    // Taking the higher of the two rather than the swing low alone is what keeps
+    // the rule meaningful. Read literally, "the stop trails the last higher low"
+    // puts the stop wherever the last swing low happens to be, which on a name
+    // that has run a long way is far below the band beneath and is looser
+    // protection than the range rule gives. A trailing stop that can sit below
+    // the range floor is not trailing anything.
+    public static decimal? StopFor(
+        Level band,
+        decimal? beneath,
+        string trendState,
+        IReadOnlyList<decimal> swingLows)
+    {
+        if (trendState != TrendState.Uptrend)
+        {
+            return beneath;
+        }
+
+        var trailing = swingLows.Where(low => low < band.LowEdge).ToArray();
+
+        if (trailing.Length == 0)
+        {
+            return beneath;
+        }
+
+        // The most recent one beneath the tranche, which is the last in the
+        // series the caller hands over in session order.
+        var last = trailing[^1];
+
+        return beneath is { } floor ? Math.Max(floor, last) : last;
+    }
+
+    // One exit per resistance band above the price, at most five, the nearest
+    // first.
+    //
+    // The near-exit skip is measured from the blended entry, which is the mean
+    // of the first two tranche zones' midpoints, or the first alone where there
+    // is only one. That is what section 17's row names, and it is the price the
+    // position is actually carried at once the plan has staged what it can.
+    public static IReadOnlyList<Exit> ExitsFor(
+        IReadOnlyList<Level> bands,
+        IReadOnlyList<Tranche> tranches,
+        decimal typicalMove)
+    {
+        if (tranches.Count == 0)
+        {
+            return [];
+        }
+
+        var midpoints = tranches
+            .Take(2)
+            .Select(tranche => (tranche.LowEdge + tranche.HighEdge) / 2)
+            .ToArray();
+
+        var blended = midpoints.Sum() / midpoints.Length;
+        var near = typicalMove * NearExitInTypicalDays;
+
+        var above = bands
+            .Where(band => band.Role == LevelSeries.Resistance)
+            .OrderBy(band => band.LowEdge)
+            .Take(MostExits)
+            .ToArray();
+
+        var traded = above.Where(band => band.LowEdge - blended >= near).ToArray();
+
+        // The top of the ladder is the highest traded exit, and it is a trailing
+        // rule rather than a price: there is no band above it to name, so what
+        // is left is to follow the price up. A name whose every exit is skipped
+        // has no top of the ladder, which is a plan that says take nothing here
+        // rather than one with a rule attached to nothing.
+        var top = traded.Length == 0 ? null : traded[^1];
+
+        // Equal fractions over the traded exits, stated as the share rather than
+        // computed into a quantity: what is held is the reader's.
+        var share = traded.Length == 0 ? "0" : $"1/{traded.Length}";
+
+        return
+        [
+            .. above.Select(band =>
+            {
+                var isTraded = band.LowEdge - blended >= near;
+
+                return new Exit(
+                    band.LowEdge,
+                    band.HighEdge,
+                    isTraded,
+                    isTraded && ReferenceEquals(band, top),
+                    isTraded ? share : "0",
+                    isTraded
+                        ? null
+                        : $"closer than {NearExitInTypicalDays} typical days' moves to the blended entry");
+            }),
+        ];
     }
 
     // Exactly one condition, tested in a stated order, because a matcher keyed
