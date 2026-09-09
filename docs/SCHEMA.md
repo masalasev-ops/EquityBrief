@@ -143,7 +143,9 @@ The failure table's explicit blank is a name with no row at all. That is legible
 
 One writer for all three operations. The fetcher inserts tonight's events, updates a date the provider has moved, and drops rows for events that have fallen out of the window it fetches, which is the same shape `BarFetcher` and `NewsPulseCounter` carry for their own tables.
 
-**The window is a quarter and not the earnings horizon.** Every name reports once a quarter, so ninety days ahead holds every member's next print, and a window equal to the twenty-session horizon would mean a date arrives already inside it: the earnings-soon condition would fire on the day the provider published the date rather than on the name approaching it. Measured on the fixture's own capture, the four names' next prints fall six to eight weeks out, which is outside a horizon-sized window and inside this one.
+**The window is a quarter ahead and a year behind.** Ahead, because every name reports once a quarter, so ninety days holds every member's next print, and a window equal to the twenty-session horizon would mean a date arrives already inside it: the earnings-soon condition would fire on the day the provider published the date rather than on the name approaching it. Measured on the fixture's own capture, the two names with a print ahead report six and seven weeks out, which is outside a horizon-sized window and inside this one.
+
+Behind, because the earnings rule states the last two prints' one-day moves and needs the dates those moves happened on. The endpoint answers with historical and upcoming events over whatever range it is asked for, so one request carries both. A year and no further: the moves are read off the bars, which are kept for a year, so a calendar reaching further back would name a print whose session the store does not hold.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

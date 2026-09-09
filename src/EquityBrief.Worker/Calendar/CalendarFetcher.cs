@@ -46,12 +46,24 @@ public sealed class CalendarFetcher : IComponent
     // reader: a second kind arriving later must not read as this one.
     public const string Earnings = "earnings";
 
-    // A quarter, not the twenty-session horizon. Every name reports once a
-    // quarter, so ninety days ahead holds every member's next print, and a
-    // window equal to the horizon would mean a date arrives already inside it:
-    // the earnings-soon condition would fire on the day the provider published
-    // the date rather than on the name approaching it.
+    // A quarter ahead. Every name reports once a quarter, so ninety days holds
+    // every member's next print, and a window equal to the twenty-session
+    // horizon would mean a date arrives already inside it: the earnings-soon
+    // condition would fire on the day the provider published the date rather
+    // than on the name approaching it.
     public const int WindowDays = 90;
+
+    // And a year behind, which 4.8 added and which the endpoint gives in the
+    // same request: it answers with historical and upcoming events over
+    // whatever range it is asked for.
+    //
+    // The earnings rule states the last two prints' one-day moves against the
+    // stop distance, so the plan needs the dates those moves happened on. A
+    // window that held only what is coming could not state them, and the moves
+    // themselves are in the bars, which are kept for a year: a calendar reaching
+    // further back than the bars would name a print whose session the store does
+    // not hold.
+    public const int HistoryDays = 365;
 
     const string CurrentMembers = @"
         SELECT ticker
@@ -68,9 +80,9 @@ public sealed class CalendarFetcher : IComponent
             observed_at = excluded.observed_at;
     ";
 
-    // Rows that have fallen behind the window the fetcher asks for. A print that
-    // has happened is history, and this table is what is coming: the record of
-    // what a print did is in the bars.
+    // Rows that have fallen behind the window the fetcher asks for, which is now
+    // a year rather than the session itself. A print older than the stored bars
+    // is a date whose session the store cannot show, so it goes with them.
     const string DropBefore = @"
         DELETE FROM calendar WHERE event_date < $from;
     ";
@@ -102,7 +114,7 @@ public sealed class CalendarFetcher : IComponent
         CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
-        var from = session;
+        var from = session.AddDays(-HistoryDays);
         var to = session.AddDays(WindowDays);
 
         var events = await feed.EventsAsync(from, to, cancellation).ConfigureAwait(false);

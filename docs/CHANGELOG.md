@@ -25,6 +25,20 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - SCHEMA.md - the calendar window reaches a year behind
+Authorised by: A calendar event is fetched once for the whole index, and the calendar holds provider events only
+Was:
+> the note said the window is a quarter and not the earnings horizon, and gave the reason for
+> reaching ahead
+Now:
+> a quarter ahead and a year behind, with the reason for each and the reason it is a year and no
+> further
+Why: 4.8's earnings rule states the last two prints' one-day moves and needs the dates those moves
+happened on, and the endpoint answers with historical and upcoming events over whatever range it is
+asked for, so one request carries both. A year and no further because the moves are read off the
+bars, which are kept for a year: a calendar reaching further back would name a print whose session
+the store does not hold.
+
 ### 2026-09-09 - BUILD_PLAN.md - the trend-dependent stop is discharged at 4.5
 Authorised by: The stop rule depends on the trend state
 Was:

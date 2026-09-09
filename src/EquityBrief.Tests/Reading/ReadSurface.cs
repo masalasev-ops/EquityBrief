@@ -910,6 +910,51 @@ public class ReadSurface
     }
 
     [Fact]
+    public async Task ThePlanSectionStatesItsArithmeticAndTheEarningsRule()
+    {
+        // The figures a reader acts on, drawn from the ladder row rather than
+        // computed on the page: two implementations of one arithmetic disagree
+        // eventually, and the report and the score would be the two.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var written = NameScreen.Arithmetic(await api.LadderAsync(Name));
+
+        using var plan = JsonDocument.Parse((await api.LadderAsync(Name))!.Plan);
+        var figures = plan.RootElement.GetProperty("arithmetic");
+
+        // Every figure on the page is the figure the row carries, matched rather
+        // than merely present.
+        foreach (var key in new[] { "firstEntry", "firstRisk", "firstReward", "firstRewardToRisk", "breakEven" })
+        {
+            Assert.Contains(figures.GetProperty(key).GetString()!, written, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("data-from=\"first\"", written, StringComparison.Ordinal);
+        Assert.Contains("data-from=\"blended\"", written, StringComparison.Ordinal);
+
+        // The break-even is stated as what this plan demands of itself rather
+        // than as a benchmark, and the sizing paragraph says the sizing is the
+        // reader's.
+        Assert.Contains("worth taking if its first tranche", written, StringComparison.Ordinal);
+        Assert.Contains("never sizes it", written, StringComparison.Ordinal);
+
+        // The earnings rule, one row per print, with the session the timing
+        // decided and the move against the stop.
+        var prints = plan.RootElement.GetProperty("earningsRule").GetArrayLength();
+
+        Assert.Equal(prints, Regex.Matches(written, "data-print=\"[^\"]+\"").Count);
+
+        // A name whose plan has no reward to measure says so rather than showing
+        // an empty table, and still shows its prints.
+        var msft = NameScreen.Arithmetic(await api.LadderAsync("MSFT"));
+
+        Assert.Contains("data-absent=\"true\"", msft, StringComparison.Ordinal);
+        Assert.Contains("no exit is traded", msft, StringComparison.Ordinal);
+        Assert.Contains("data-print=", msft, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task TheNightWritesTheTablesTheNameRegionDrawsFrom()
     {
         // The other half of 4.1, and the half 4.0 found missing. The three

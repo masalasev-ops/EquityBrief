@@ -315,5 +315,79 @@
       ]
     },
     "places": "every figure is quoted to the four places the store carries. A typical day's move is a statistic crossing to a price and is rounded there, so the arithmetic is on four-place values: deriving it from the merge distance without that rounding produces a fifth place the store never holds, which is how this expectation was wrong the first time."
+  },
+  "arithmetic": {
+    "note": "derived from the stored plan rather than stored beside it. Risk is per tranche at the zone midpoint, because a fill can land anywhere in the band and the midpoint is the only price in it that is not a choice. The target is the first traded exit, because a skipped exit is named and not acted on and measuring reward to it would be measuring a trade the plan says not to take. The break-even is one over one plus the ratio.",
+    "byName": {
+      "AAPL": {
+        "firstEntry": "310.01075",
+        "firstRisk": "26.57175",
+        "firstReward": "24.69055",
+        "firstRewardToRisk": "0.9292",
+        "breakEven": "0.5183",
+        "blendedEntry": "291.762425",
+        "blendedRisk": "27.164625",
+        "blendedReward": "42.938875",
+        "blendedRewardToRisk": "1.5807"
+      },
+      "KEYS": {
+        "firstEntry": "316.825",
+        "firstRisk": "23.275",
+        "firstReward": "49.585",
+        "firstRewardToRisk": "2.1304",
+        "breakEven": "0.3194",
+        "blendedEntry": "303.92835",
+        "blendedRisk": "37.45835",
+        "blendedReward": "62.48165",
+        "blendedRewardToRisk": "1.6680"
+      },
+      "MSFT": {
+        "absent": "no exit is traded, so there is no reward to measure"
+      },
+      "NFLX": {
+        "firstEntry": "75.6290",
+        "firstRisk": "2.6780",
+        "firstReward": "5.5310",
+        "firstRewardToRisk": "2.0653",
+        "breakEven": "0.3262",
+        "blendedEntry": "74.5215",
+        "blendedRisk": "3.6615",
+        "blendedReward": "6.6385",
+        "blendedRewardToRisk": "1.8131"
+      }
+    }
+  },
+  "earningsRule": {
+    "note": "the last two prints' one-day moves, stated against the first tranche's risk so the reader decides what to carry through the date. The session is the print's own day where it lands before the open and the next session where it lands after the close, which is what the calendar's timing column decides. The move is a distance rather than a direction: what is being decided is whether the position can take it.",
+    "format": "eventDate|session|move|shareOfStop",
+    "byName": {
+      "AAPL": [
+        "2026-04-30|2026-05-01|8.7744|0.3302",
+        "2026-07-30|2026-07-31|24.4989|0.9220"
+      ],
+      "KEYS": [
+        "2026-05-19|2026-05-20|2.03|0.0872",
+        "2026-08-18|2026-08-19|21.55|0.9259"
+      ],
+      "MSFT": [
+        "2026-04-29|2026-04-30|16.6126|1.3988",
+        "2026-07-29|2026-07-30|60.4462|5.0895"
+      ],
+      "NFLX": [
+        "2026-04-16|2026-04-17|10.48|3.9134",
+        "2026-07-16|2026-07-17|5.40|2.0164"
+      ]
+    },
+    "stopDistance": {
+      "note": "the first tranche's own risk, its zone midpoint less its stop, and it exists whether or not any exit is traded. MSFT trades none of its exits so it has no reward to measure, and it still has a stop and two prints to measure against it.",
+      "byName": {
+        "AAPL": "26.57175",
+        "KEYS": "23.275",
+        "MSFT": "11.8766",
+        "NFLX": "2.678"
+      }
+    },
+    "reading": "NFLX is the name this rule exists for. Its last two prints moved it 3.91 and 2.02 times the distance to its own stop, so a position carried through the date is one the plan's stop cannot protect. AAPL's second print moved it 0.92 of the distance and its first 0.33.",
+    "places": "the move is quoted as the store holds it, which is the provider's own adjusted close subtracted from another: the close is kept as sent rather than rounded to four places, so a name whose provider quotes three carries three. The share is a ratio and is quoted to four."
   }
 }

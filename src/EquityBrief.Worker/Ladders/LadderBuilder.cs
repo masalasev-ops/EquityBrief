@@ -4,6 +4,8 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Prices;
+using EquityBrief.Core.Providers;
 using EquityBrief.Core.Swings;
 using EquityBrief.Data.Swings;
 using EquityBrief.Core.Time;
@@ -126,6 +128,25 @@ public sealed class LadderBuilder : IComponent
         LIMIT 1;
     ";
 
+    // The prints already on file, newest last. The calendar reaches a year back
+    // since 4.8, so the two most recent are here for any name that has reported.
+    const string PastEventsFor = @"
+        SELECT event_date, timing
+        FROM calendar
+        WHERE ticker = $ticker AND event_date < $as_of
+        ORDER BY event_date;
+    ";
+
+    // The sessions the earnings rule reads its moves off. It needs the whole
+    // stored year rather than the condition window, because a print a year ago
+    // is a print in the year the bars cover.
+    const string SessionsFor = @"
+        SELECT session_date, high, low, close
+        FROM bar
+        WHERE ticker = $ticker
+        ORDER BY session_date;
+    ";
+
     const string Upsert = @"
         INSERT INTO ladder (ticker, as_of, trend_state, plan)
         VALUES ($ticker, $as_of, $trend_state, $plan)
@@ -188,6 +209,10 @@ public sealed class LadderBuilder : IComponent
                 ? await PlanAsync(connection, ticker, priced.SessionDate, priced.Close, trend, cancellation)
                 : new Ladder([], [], null, trend.Reason, []);
 
+            var prints = session is { } dated
+                ? await EarningsRuleAsync(connection, ticker, dated.SessionDate, plan, cancellation)
+                : [];
+
             if (session is null)
             {
                 withoutBars++;
@@ -202,7 +227,7 @@ public sealed class LadderBuilder : IComponent
             command.Parameters.AddWithValue("$ticker", ticker);
             command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$trend_state", trend.State);
-            command.Parameters.AddWithValue("$plan", Serialised(plan));
+            command.Parameters.AddWithValue("$plan", Serialised(plan, prints));
 
             await command.ExecuteNonQueryAsync(cancellation);
 
@@ -282,6 +307,36 @@ public sealed class LadderBuilder : IComponent
         return LadderSeries.For(bands, close, move, recent, trend.State, lows, nextEvent);
     }
 
+    // The earnings rule's figures for one name, which are a statement about the
+    // plan rather than part of it: they say what the last two prints did to the
+    // price and how that compares with what the plan is risking.
+    async Task<IReadOnlyList<PastPrint>> EarningsRuleAsync(
+        SqliteConnection connection,
+        string ticker,
+        DateOnly asOf,
+        Ladder plan,
+        CancellationToken cancellation)
+    {
+        var prints = await PastEventsAsync(connection, ticker, asOf, cancellation);
+
+        if (prints.Count == 0)
+        {
+            return [];
+        }
+
+        var sessions = await SessionsAsync(connection, ticker, cancellation);
+
+        // The distance the first tranche is risking, which is what the moves are
+        // stated against. A plan with no tranche has none, and the moves are
+        // still worth stating: a reader deciding whether to open a position at
+        // all reads the same two numbers.
+        var stopDistance = plan.Tranches.Count > 0 && plan.Tranches[0].Stop is { } stop
+            ? LadderSeries.Midpoint(plan.Tranches[0]) - stop
+            : (decimal?)null;
+
+        return LadderSeries.EarningsRuleFor(prints, sessions, stopDistance);
+    }
+
     // The plan, as SCHEMA's column describes it. Prices are written in the
     // storage form rather than as JSON numbers, because a JSON number is a
     // double and a price is not.
@@ -289,7 +344,7 @@ public sealed class LadderBuilder : IComponent
     // An empty plan states why it is empty. An empty plan stating its reason and
     // an absent plan are different objects, and only the first is readable on a
     // screen.
-    static string Serialised(Ladder plan) =>
+    static string Serialised(Ladder plan, IReadOnlyList<PastPrint> prints) =>
         JsonSerializer.Serialize(new
         {
             tranches = plan.Tranches.Select(tranche => new
@@ -319,12 +374,44 @@ public sealed class LadderBuilder : IComponent
                 target = Money.ToStorage(setup.Target),
                 proposal = true,
             }),
+            // The arithmetic, derived from the plan above rather than stored
+            // beside it. Every figure here is a function of prices the row
+            // already carries, so nothing can drift between the two.
+            // see: Code owns every number
+            arithmetic = Figures(LadderSeries.ArithmeticFor(plan)),
+            earningsRule = prints.Select(print => new
+            {
+                eventDate = print.EventDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                session = print.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                move = Money.ToStorage(print.Move),
+                shareOfStop = print.ShareOfStop is { } share ? Money.ToStorage(Round(share)) : null,
+            }),
             reason = plan.Reason ?? (plan.Tranches.Count == 0
                 ? "no tranche is placed"
                 : plan.Events.Count == 0
                     ? "no dated event is on file, so the second book is empty"
                     : "every figure in the second book is a proposal"),
         });
+
+    // The arithmetic in the storage form, so the figures a reader sees are the
+    // figures the arithmetic produced rather than a rendering of them.
+    static object Figures(PlanArithmetic arithmetic) => new
+    {
+        absent = arithmetic.Absent,
+        firstEntry = Money.ToStorage(arithmetic.FirstEntry),
+        firstRisk = Money.ToStorage(arithmetic.FirstRisk),
+        firstReward = Money.ToStorage(arithmetic.FirstReward),
+        blendedEntry = arithmetic.BlendedEntry is { } entry ? Money.ToStorage(entry) : null,
+        blendedRisk = arithmetic.BlendedRisk is { } risk ? Money.ToStorage(risk) : null,
+        blendedReward = arithmetic.BlendedReward is { } reward ? Money.ToStorage(reward) : null,
+        firstRewardToRisk = arithmetic.FirstRewardToRisk is { } first ? Money.ToStorage(Round(first)) : null,
+        blendedRewardToRisk = arithmetic.BlendedRewardToRisk is { } blended ? Money.ToStorage(Round(blended)) : null,
+        breakEven = arithmetic.BreakEven is { } even ? Money.ToStorage(Round(even)) : null,
+    };
+
+    // A ratio is not a price and carries no storage precision of its own, so it
+    // is quoted to the four places every other figure on the row carries.
+    static decimal Round(decimal ratio) => Math.Round(ratio, PriceForm.Places, MidpointRounding.AwayFromZero);
 
     static async Task<IReadOnlyList<Level>> BandsAsync(
         SqliteConnection connection,
@@ -374,6 +461,63 @@ public sealed class LadderBuilder : IComponent
         var value = await command.ExecuteScalarAsync(cancellation);
 
         return value is null or DBNull ? null : Statistic.ToPrice((double)value);
+    }
+
+    static async Task<IReadOnlyList<(DateOnly Date, EventTiming Timing)>> PastEventsAsync(
+        SqliteConnection connection,
+        string ticker,
+        DateOnly asOf,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PastEventsFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var prints = new List<(DateOnly, EventTiming)>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            prints.Add((
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1) switch
+                {
+                    "before" => EventTiming.Before,
+                    "after" => EventTiming.After,
+                    _ => EventTiming.Unstated,
+                }));
+        }
+
+        return prints;
+    }
+
+    static async Task<IReadOnlyList<LadderBar>> SessionsAsync(
+        SqliteConnection connection,
+        string ticker,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SessionsFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var bars = new List<LadderBar>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            bars.Add(new LadderBar(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(1)),
+                Money.FromStorage(reader.GetString(2)),
+                Money.FromStorage(reader.GetString(3))));
+        }
+
+        return bars;
     }
 
     static async Task<DateOnly?> NextEventAsync(

@@ -158,6 +158,89 @@ public static class NameScreen
         return html.ToString();
     }
 
+    // The sizing arithmetic and the earnings rule, as the plan section states
+    // them. Every figure is read off the ladder row, which derived them from its
+    // own prices, so nothing here computes and nothing can drift.
+    // see: A screen reads and renders, and computes nothing
+    public static string Arithmetic(LadderRow? ladder)
+    {
+        if (ladder is null)
+        {
+            return string.Empty;
+        }
+
+        using var plan = JsonDocument.Parse(ladder.Plan);
+        var figures = plan.RootElement.GetProperty("arithmetic");
+        var prints = plan.RootElement.GetProperty("earningsRule").EnumerateArray().ToArray();
+
+        var html = new System.Text.StringBuilder();
+
+        html.Append(CultureInfo.InvariantCulture, $"<section class=\"plan-arithmetic\" data-ticker=\"{ladder.Ticker}\">");
+
+        if (figures.GetProperty("absent").GetString() is { } absent)
+        {
+            html.Append(CultureInfo.InvariantCulture, $"<p class=\"degraded\" data-absent=\"true\">{absent}</p>");
+        }
+        else
+        {
+            html.Append("<table class=\"arithmetic-table\">");
+            html.Append("<tr><th>From</th><th>Entry</th><th>Risk</th><th>Reward</th><th>Reward to risk</th></tr>");
+
+            html.Append(CultureInfo.InvariantCulture,
+                $"<tr data-from=\"first\"><td>the first tranche</td><td>{figures.GetProperty("firstEntry").GetString()}</td>" +
+                $"<td>{figures.GetProperty("firstRisk").GetString()}</td><td>{figures.GetProperty("firstReward").GetString()}</td>" +
+                $"<td>{figures.GetProperty("firstRewardToRisk").GetString()}</td></tr>");
+
+            if (figures.GetProperty("blendedEntry").GetString() is { } blended)
+            {
+                html.Append(CultureInfo.InvariantCulture,
+                    $"<tr data-from=\"blended\"><td>the blended first two</td><td>{blended}</td>" +
+                    $"<td>{figures.GetProperty("blendedRisk").GetString()}</td><td>{figures.GetProperty("blendedReward").GetString()}</td>" +
+                    $"<td>{figures.GetProperty("blendedRewardToRisk").GetString()}</td></tr>");
+            }
+
+            html.Append("</table>");
+
+            // The break-even, which is what the plan demands of itself rather
+            // than a benchmark borrowed from elsewhere.
+            html.Append(CultureInfo.InvariantCulture,
+                $"<p class=\"break-even\" data-break-even=\"{figures.GetProperty("breakEven").GetString()}\">" +
+                $"This plan is worth taking if its first tranche reaches the target before the stop " +
+                $"more than {figures.GetProperty("breakEven").GetString()} of the time.</p>");
+
+            // The worked sizing example, from a risk budget the reader chooses.
+            // The plan places a position and never sizes one, so the budget is a
+            // sentence rather than a figure this system holds.
+            // see: The plan places a position and never sizes one
+            html.Append(CultureInfo.InvariantCulture,
+                $"<p class=\"sizing\" data-risk=\"{figures.GetProperty("firstRisk").GetString()}\">" +
+                $"Sizing is yours: a risk budget divided by {figures.GetProperty("firstRisk").GetString()} " +
+                $"is the number of shares the first tranche takes. This tool places the position and " +
+                $"never sizes it.</p>");
+        }
+
+        if (prints.Length > 0)
+        {
+            html.Append("<table class=\"earnings-rule\"><tr><th>Print</th><th>Session</th><th>One-day move</th><th>Against the stop</th></tr>");
+
+            foreach (var print in prints)
+            {
+                html.Append(CultureInfo.InvariantCulture,
+                    $"<tr data-print=\"{print.GetProperty("eventDate").GetString()}\">" +
+                    $"<td>{print.GetProperty("eventDate").GetString()}</td>" +
+                    $"<td>{print.GetProperty("session").GetString()}</td>" +
+                    $"<td>{print.GetProperty("move").GetString()}</td>" +
+                    $"<td>{print.GetProperty("shareOfStop").GetString() ?? "no stop to measure against"}</td></tr>");
+            }
+
+            html.Append("</table>");
+        }
+
+        html.Append("</section>");
+
+        return html.ToString();
+    }
+
     static decimal Price(JsonElement row, string name) =>
         decimal.Parse(row.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
 
@@ -251,7 +334,8 @@ public static class NameScreen
             nextEvent?.EventDate,
             PlanRows(ladder),
             bars.Count > 0 ? bars[^1].Close : 0m,
-            EventBook(ladder));
+            EventBook(ladder),
+            Arithmetic(ladder));
     }
 
     // The members column, as the mark needs it. SCHEMA stores each member's
