@@ -1925,3 +1925,82 @@ Report:     167 claims, 35 pass, 0 fail, 132 out of scope, 0 unexamined. 244 tes
 
 Carried:    the fixture's expectations, to 1.8. The macOS runner. The live feeds, as filed at 1.4.
             The source lists' own review, to 5.0, which the obligations table already carries.
+
+### 1.8 - phase 1 report                                                     2026-09-08
+Built:      the fixture's expectations and `fixture-expectations` on the roster. Section 19.1
+            read as a claim source rather than placed whole. The citation pass owed since 0.5.
+
+Done:       every claim phase 1 owes is PASS naming an instrument whose declared reach includes
+            it, and unexamined is zero. No claim and no placement is owed at any 1.x checkpoint.
+
+Expectations: two files, `expectations/bars.json` and `expectations/membership.json`, each stating
+            which of the two kinds it is. That statement is asserted, because a frozen figure and
+            a derived one look identical in a JSON file and the difference is the whole point.
+
+            The derived one is the session count. It is the weekdays in the backfill's window
+            less the nine named United States market closures that fall inside it: 261 weekdays,
+            9 closures, 252 sessions, 756 rows over three names. The file states the rule and the
+            check recomputes it, so the two are two derivations of one calendar rather than a
+            number and a copy of it. A count frozen from the run would agree with a backfill that
+            stored the wrong window, because it would have been taken from that backfill.
+
+            The three properties the bars expectation names in words are asserted rather than
+            left as prose: every stored bar could have traded, every one carries its raw close,
+            and at least one was actually adjusted, that last so the one-price-set rule is
+            exercised rather than trivially true over a year with no action.
+
+Read:       section 19.1 as a claim source. Placed whole and owed at 1.8, it would have been
+            asserted with eleven of its thirteen rows describing artefacts that do not exist:
+            seven expected outputs across phases 2 to 4, three rejections at phase 5, and a
+            fundamentals input at 5.1. That is the same defect as reading a failure row whole and
+            it takes the same repair. `bars` and `news` pass; the rest are owed where the
+            artefact they describe arrives.
+
+            One thing came out of doing it. The table groups its rows under Inputs, Expected
+            outputs and Expected rejections, and each heading is a row spanning the table. A
+            claim needs a subject and something said about it, so a row with one cell is a
+            heading; the harness now says so and refuses if a second table starts doing it,
+            because one table with that shape is known and two is a shape nobody has read.
+
+Predicted:  the claim total, checked here as 1.8's own done condition requires. Pass B predicted
+            163 from a base of 160. The measured total is 180. The chain, stated in full rather
+            than as a difference:
+
+              160  Pass B's measurement
+              162  after 1.1 and 1.2, recorded in 1.2's entry and not accounted for there
+              165  the level chart decomposed per element, contradiction F, +3 as predicted
+              166  the gap failure row decomposed per surface, 1.5, +1
+              167  `series_state` added to the stores table, contradiction C, 1.6, +1
+              180  section 19.1 read as a claim source, 1.8, +13
+
+            So the prediction was right about the only movement it foresaw and missed four. Three
+            of the four are decompositions taken after it, each with its own reasoning recorded
+            at the checkpoint that took it, and one is a store the corpus did not have when the
+            prediction was made. The prediction was made before phase 1 was built and could not
+            have foreseen a table the harness had not yet been asked to read.
+
+            The +2 at 1.2 is the one movement in the chain nobody accounted for. It is recorded
+            here as a gap in that entry rather than reconstructed now, because reconstructing it
+            from the diff would be a figure computed afterwards, which is the thing this done
+            condition exists to refuse.
+
+Measured:   180 claims, 37 pass, 0 fail, 143 out of scope, 0 unexamined, 26 tables, 43 placements
+            and verdicts reconciled against a floor of 34. 251 tests. 32 checks on the roster, 28
+            carried. `tools/ci` green on Windows PowerShell and on bash on this machine.
+
+Cited:      39 citations in `ARCHITECTURE.html` against 6 before, covering 29 of the 81 current
+            decisions. The obligation created at 0.5 is discharged for the rules phase 1 reaches
+            and the remainder is carried to 2.0 with the figure recorded. The 52 uncited are not
+            one omission: most settle process, phase order, scope or how the build is run, and a
+            citation cannot be placed at a rule the document does not state. What is owed is a
+            pass that decides, decision by decision, whether a rule rests on it, and that belongs
+            where the sections are being worked on rather than in a sweep at a phase boundary.
+
+Carried:    the live feeds, filed at 1.4 and unchanged: every provider implementation in the tree
+            is a recorded double, so a live night cannot run and every capture has been made by
+            hand. The macOS runner. The remainder of the citation pass, to 2.0. The source lists'
+            review, to 5.0.
+
+Not:        this entry does not sign phase 1 off. Sign-off is owed on the phase as a whole before
+            phase 2's plan, by a session that has committed no code to it, and this session has
+            committed code to every checkpoint in it.

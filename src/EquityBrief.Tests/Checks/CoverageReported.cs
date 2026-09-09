@@ -45,6 +45,7 @@ public class CoverageReported
         ["gap-refusal"] = "GapRefusal",
         ["corporate-actions"] = "CorporateActions",
         ["news-parse"] = "NewsCoverage",
+        ["fixture-expectations"] = "FixtureExpectations",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };

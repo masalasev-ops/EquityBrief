@@ -45,6 +45,7 @@ internal static class Scope
     const string ByReadSurface = "read-surface";
     const string ByGap = "gap-refusal";
     const string ByActions = "corporate-actions";
+    const string ByExpectations = "fixture-expectations";
     const string ByCost = "nightly-cost";
     const string ByNight = "nightly-run";
 
@@ -53,6 +54,7 @@ internal static class Scope
     internal const string StoresTable = "16. Data stores and the read and write matrix";
     internal const string FailureTable = "18. Failure behaviour";
     internal const string LimitsTable = "17. Limits, spend and the numbers the harness asserts";
+    internal const string FixtureTable = "19.1 What a fixture holds";
 
     // The ones a check has actually reached, keyed on the table and the subject
     // together. Keyed on the subject alone until 0.7's review, which meant a
@@ -136,6 +138,14 @@ internal static class Scope
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
+        [CheckReach.Key(FixtureTable, "bars")] = new Scoped(
+            Verdict.Pass,
+            "the fixture holds a year of daily bars per name, and the pipeline over them is asserted against a session count derived from the trading calendar rather than frozen from a run",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "news")] = new Scoped(
+            Verdict.Pass,
+            "the fixture holds captured articles with their publish dates and their text, readable without a network",
+            ByExpectations),
         [CheckReach.Key(CatalogueTable, "Corporate action checker")] = new Scoped(
             Verdict.Pass,
             "the class declares the two feeds it reads and the stores it touches, including the refetch delete and the series state SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
@@ -440,6 +450,28 @@ internal static class Scope
     internal static int NightlyStepKeysMatching(string subject) =>
         NightlySteps.Keys.Count(key => subject.StartsWith(key, StringComparison.Ordinal));
 
+    // Section 19.1's rows, each owed where the artefact it describes arrives.
+    //
+    // Read as one table it would have been asserted whole at 1.8 with eleven of
+    // its thirteen rows describing artefacts that do not exist: seven expected
+    // outputs arriving across phases 2 to 4, three rejections at phase 5, and a
+    // fundamentals input at 5.1. A placement owed at 1.8 was the shape this
+    // replaced, and it had the same defect as reading a failure row whole.
+    static readonly Dictionary<string, string> FixtureRows = new(StringComparer.Ordinal)
+    {
+        ["fundamentals"] = "5.1",
+        ["indicators"] = "2.1",
+        ["swings"] = "2.2",
+        ["volume profile"] = "2.3",
+        ["levels"] = "2.4",
+        ["ladder"] = "3.2",
+        ["listings"] = "4.4",
+        ["facts"] = "4.3",
+        ["a poisoned paragraph"] = "5.3",
+        ["an unsourced claim"] = "5.3",
+        ["an inadmissible document"] = "5.2",
+    };
+
     static readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal)
     {
         // The mechanism lands at 1.4 and the claim does not. This row's "What
@@ -633,6 +665,11 @@ internal static class Scope
         if (Failures.TryGetValue(subject, out var failure))
         {
             return (failure, DueOrigin.Residual);
+        }
+
+        if (table == FixtureTable && FixtureRows.TryGetValue(subject, out var row2))
+        {
+            return (row2, DueOrigin.Residual);
         }
 
         // Nothing above it carried this subject, so the plan is asked. This is

@@ -706,3 +706,12 @@ Was:
 Now: the same row, with the captured provider responses excluded and the exclusion stated.
 
 Why: the only way to satisfy the rule over a capture would be to edit the provider's text, and the manifest schema says in so many words that what may never be trimmed is the shape. A file edited to suit a prose rule is no longer a capture, and the whole value of a capture is that the parser is checked against what the provider actually sends. The exclusion follows the manifest's declaration rather than the folder, so a json file dropped into a fixture folder and never declared is still scanned, and the manifest, the README and anything under expectations/ are written here and are scanned too.
+
+### 2026-09-08 - ARCHITECTURE.html - the citation pass, and section 19.1 read as claims
+Corrects: two things owed at 1.8.
+
+**The citations.** The obligation created at 0.5 was that the architecture cites its decisions by name at each rule. Six citations stood; 39 stand now, covering 29 of the 81 current decisions. Nothing is removed: each is added at the end of the cell or sentence stating the rule, so a reader meets it where they are already reading rather than in a footnote. The 52 that remain uncited mostly settle things the architecture states no rule about, and the remainder of the pass is carried to 2.0 with the figure recorded, because a citation cannot be placed at a rule that does not exist.
+
+**19.1.** The table was placed whole, owed at 1.8. It is now a claim source, so each of its 13 rows carries its own due point. Nothing in the document changed for this; what changed is the harness's reading of it.
+
+Why the second: read whole at 1.8 the table would have been asserted with eleven of its thirteen rows describing artefacts that do not exist, seven expected outputs arriving across phases 2 to 4, three rejections at phase 5 and a fundamentals input at 5.1. That is the same defect as reading a failure row whole, and it takes the same repair. `bars` and `news` pass now; the rest are owed where the artefact they describe arrives.
