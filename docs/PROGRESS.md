@@ -4822,3 +4822,41 @@ Why here:   `two-platform` made it visible again, which is the second time it ha
             carried, and this broke one.
 Tests:      407, unchanged. The repair changes an arrangement and asserts one more thing about it;
             what is claimed is unchanged.
+
+### 4.7 - the event book                                                 2026-09-09
+Built:      three setups keyed to the print, each with a trigger, an entry, a stop and a target,
+            kept as a second book that never merges with the position book. Every figure is a
+            proposal and the page says so once for the book and once on every row, because a
+            figure on a screen gets acted on and one that looks measured and is not is the failure
+            that statement exists to prevent.
+Population: two of the four fixture names have a dated event and two do not, so the rule that a
+            name with no date produces no setups and says why is reached from the fixture rather
+            than constructed. That is the capture at 4.3 earning its trimming: a window holding
+            every name would have made this rule unassertable.
+Found:      three arrangements of these rules that would have passed against an expectation frozen
+            from the code, all three by deriving the figures first.
+            A stop at a zero-width band low edge is the entry. Most bands in this fixture are one
+            price, so the setup could never win and would stop out on the session that triggered
+            it. The stop is a typical day's move below the band, which is the rule the position
+            book's stops already follow and for the same reason.
+            A target taken as the next band can sit below a gap-up entry, because the entry is
+            above the band it cleared. NFLX's gap up entered at 81.7058 and would have targeted
+            81.16. The target is the first band above the entry.
+            And the flush entered at the band's high edge and targeted the close. AAPL's close
+            sits inside its immediate support band, so that setup had a reward of minus 0.31. It
+            enters at the low edge, where a flush lands, and targets the price it flushed from.
+Also found: one assertion of mine was wrong rather than the code. A setup sharing a price with a
+            tranche is not the books merging: both read the same band, and AAPL's flush enters at
+            the low edge its first tranche sits on. What separates the books is structural, a
+            setup carrying its own stop and a target where a tranche has neither, and that is what
+            is asserted now.
+Mutated:    the setup stop moved back to the band edge, in an isolated worktree at the commit under
+            test, reverted, the worktree removed. The rule for choosing was stated first: mutate
+            the assertion carrying the property this checkpoint exists to add, which is that a
+            setup can be won. It turned the fixture diff and the constructed reward test red and
+            nothing else.
+Measured:   203 claims, 92 PASS from 91, 0 fail, 0 unexamined, 111 out of scope. The one is
+            section 17's earnings horizon row.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      410, from 407. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
