@@ -80,6 +80,7 @@ internal static class PhaseReport
         "Read and write matrix",
         "17. Limits, spend and the numbers the harness asserts",
         "18. Failure behaviour",
+        "19.1 What a fixture holds",
     ];
 
     static readonly Dictionary<string, Placement> Placed = new(StringComparer.Ordinal)
@@ -114,8 +115,6 @@ internal static class PhaseReport
         //
         // 1.8 is where phase 1's expectations land, which is the first point the
         // fixture holds a shape this table can be read against.
-        ["19.1 What a fixture holds"] = new Placement(
-            "the fixture's shape, whose rows are the captured inputs and the expectations derived from them; the manifest is checked from 1.1 and the expectations arrive at 1.8", Due: "1.8"),
         ["19.2 What the harness checks"] = new Placement(
             "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register", Due: "6.1"),
         ["19.3 What it produces"] = new Placement(
@@ -174,6 +173,7 @@ internal static class PhaseReport
 
         var claims = new List<Claim>();
         var placed = new List<PlacedTable>();
+        var skipped = new List<string>();
 
         foreach (var table in tables)
         {
@@ -191,8 +191,21 @@ internal static class PhaseReport
             // 15.5's Level chart names four elements drawn at three different
             // points, and one verdict over the row would hold what exists
             // hostage to what does not until phase 2.
+            // A row with one cell is a heading inside the table rather than a
+            // claim: section 19.1 groups its rows under Inputs, Expected
+            // outputs and Expected rejections, and each of those spans the
+            // table. A claim needs a subject and something said about it, so
+            // one cell is the test. Counted below, because a filter that
+            // quietly took real rows would look exactly like this one.
+            var headings = table.Body.Count(row => row.Count == 1);
+
+            if (headings > 0)
+            {
+                skipped.Add($"{table.Heading}: {headings}");
+            }
+
             var rows = table.Body
-                .Where(row => row.Count > 0 && row[0].Length > 0)
+                .Where(row => row.Count > 1 && row[0].Length > 0)
                 .SelectMany(row => Scope.SubjectsOf(table.Heading, row[0]))
                 .Select(subject => Scoped(table.Heading, subject))
                 .ToArray();
@@ -223,6 +236,16 @@ internal static class PhaseReport
             CoverageReported.Roster(),
             Corpus.Read("docs/BUILD_PLAN.md"),
             Corpus.Read("docs/PROGRESS.md"));
+
+        // Stated rather than silent. Three headings in one table today; a
+        // fourth appearing somewhere else is a table shape nobody looked at.
+        if (skipped.Count > 1)
+        {
+            throw new InvalidOperationException(
+                "More than one table carries rows with a single cell, which this reads as headings " +
+                "inside a table: " + string.Join("; ", skipped) +
+                ". One table doing that is a shape the harness knows; two is a shape nobody has read.");
+        }
 
         return new PhaseReportModel(
             placed,

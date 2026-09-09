@@ -398,7 +398,7 @@ Recorded when created, not remembered. An obligation names a due point this docu
 
 | Obligation | Created at | Due at |
 |---|---|---|
-| Architecture cites its decisions by name at each rule | 0.5 | 1.8 |
+| Architecture cites its decisions by name at each rule | 0.5 | 1.8, discharged for the rules phase 1 reaches; the remainder carried to 2.0 |
 | Splits and dividends parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.6, discharged |
 | News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7, discharged |
 | `two-platform` widened to what its roster row claims | 0.7 review | 1.4, discharged |
@@ -409,6 +409,8 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 5.1 |
 
 **Discharged at 1.4.** `two-platform`, widened from asserting that the workflow names two runners to asserting that no leg can report green without running the suite: no `continue-on-error`, no swallowed failure, every leg invoking a CI script rather than a bare `dotnet test`, the Linux instrument outside the matrix so "both" still means two, and the full history fetched on every leg that reads it.
+
+**Carried out of 1.8.** The remainder of the citation pass. 39 citations now stand in `ARCHITECTURE.html` against 6 before, covering 29 of the 81 current decisions. The 52 uncited are not one omission: most settle things the architecture states no rule about, being about process, phase order, scope or how the build is run, and a citation cannot be placed at a rule that does not exist. What is owed is a pass that reads the remaining sections and decides, decision by decision, whether the document states a rule that rests on it. That belongs where the sections it would read are being worked on rather than in one sweep at a phase boundary, so it is re-pointed to 2.0 with the figure recorded here.
 
 **Carried out of 1.4.** No feed reaches the network. Every provider implementation in the tree is a recorded double, so `tools/nightly` takes a fixture folder and a live night cannot run. Captures have been made by hand at 1.1, 1.2 and 1.4. This is a hole rather than a defect in any checkpoint, and it is filed here rather than named only in a commit: the HTTP feeds and the credential path from configuration to request have no checkpoint that builds them.
 

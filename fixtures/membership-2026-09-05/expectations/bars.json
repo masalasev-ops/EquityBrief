@@ -1,0 +1,35 @@
+{
+ "stage": "backfill",
+ "derivedFrom": "the trading calendar, not a run. Sessions are the weekdays in the window less the nine United States market closures that fall inside it, each named below. This figure is computed from the rules rather than frozen from what the backfill happened to write, which is what makes it an expectation rather than a regression baseline: a backfill that stored the wrong window would still agree with a frozen count taken from itself.",
+ "window": {
+  "from": "2025-09-05",
+  "to": "2026-09-05",
+  "note": "the year ending on the fixture's session date, which is what the backfill asks for"
+ },
+ "closures": [
+  "2025-11-27",
+  "2025-12-25",
+  "2026-01-01",
+  "2026-01-19",
+  "2026-02-16",
+  "2026-04-03",
+  "2026-05-25",
+  "2026-06-19",
+  "2026-07-03"
+ ],
+ "weekdaysInWindow": 261,
+ "sessionsExpected": 252,
+ "namesBackfilled": [
+  "AAPL",
+  "KEYS",
+  "MSFT"
+ ],
+ "rowsExpected": 756,
+ "firstSession": "2025-09-05",
+ "lastSession": "2026-09-04",
+ "properties": {
+  "everyBarCouldHaveTraded": "low at or below open and close, high at or above both, over every stored row",
+  "everyBarCarriesItsRawClose": "the input to the adjustment factor, so a later restatement can be audited",
+  "oneAdjustedPriceSet": "all four prices scaled by adjusted_close over close, never three raw beside one adjusted"
+ }
+}

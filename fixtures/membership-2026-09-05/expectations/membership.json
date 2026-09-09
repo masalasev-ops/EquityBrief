@@ -1,0 +1,20 @@
+{
+ "stage": "membership",
+ "derivedFrom": "the captured constituents payload read through the rules in section 7, not from a run. The spans come from HistoricalTickerComponents, which is where the provider puts dates; Components is tonight's snapshot and holds none.",
+ "index": "GSPC",
+ "constituents": 5,
+ "currentMembers": [
+  "AAPL",
+  "KEYS",
+  "MSFT"
+ ],
+ "departed": [
+  "AAL",
+  "XRAY"
+ ],
+ "note": "constituents and names are different populations: a constituent is a membership row and a name is a ticker with a captured price series, so the two departed constituents are owed no series.",
+ "properties": {
+  "aDepartedNameKeepsItsRowAndItsLeaveDate": "membership has no declared deleter",
+  "aPastDateQueryAnswersWithThatDatesSet": "not with tonight's"
+ }
+}
