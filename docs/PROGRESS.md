@@ -2968,3 +2968,62 @@ Hour:        the posting-hour obligation is bounded twice and discharged neither
 Claims:      185, 42 pass, 143 out of scope, 0 unexamined, unchanged and predicted. 2.6 changes
             where the feeds come from and adds no row to any table the harness parses.
 Tests:       312, from 304.
+
+### 2.7 Phase 2 report                                                       2026-09-09
+Report:     185 claims, 42 pass, 0 fail, 143 out of scope, 0 unexamined, 48 placements and
+            verdicts reconciled against a floor of 34. 32 checks on the roster, 28 carried, 28 ran
+            and passed and none did not run. 312 of 312 tests ran, 0 failed and 0 did not run.
+Prediction: 2.0 predicted 185 claims and 42 pass, with a range of 185 to 188 and a named cause at
+            each end. It is 185 and 42, which is the bottom of the range, and it is there for the
+            downward cause the prediction named rather than a different one.
+            Named rather than counted, which is what made the check possible. Four section 18 rows
+            were predicted and two exist: a rejected request rate and an answer past the deadline
+            both collapsed into the unavailable row, because the definition settled at 2.0 makes
+            both of them unavailable and section 18 already promised what the system does then.
+            Two more would have repeated that row in all four of its cells. The two wrong-content
+            rows survived, and the reason turned out to be sharper than the prediction gave: they
+            are refused in different components, not merely for different reasons.
+            A prediction of seven could not have reported this. It would have read as a number
+            that drifted by two, where what actually happened is that two named rows turned out to
+            be one row's cases and two others were confirmed for a better reason than the one
+            written down.
+Claims by source: two section 17 rows, being the per-request timeout with the night's deadline at
+            2.2 and the weighted-call budget at 2.4. Two section 18 rows at 2.3. One more from
+            decomposing the unavailable row per surface, whose run log half passes at 2.3 and
+            whose banner half is out of scope until 5.4. Five new claims, five new passes, and the
+            out-of-scope count unchanged at 143 because nothing was owed at phase 2 before it.
+Instruments: every passing claim names a check whose declared reach includes it, reconciled in
+            both directions. The phase's own claims are carried by `nightly-run` and
+            `nightly-cost`, and `nightly-run`'s roster row in `CLAUDE.md` was widened at 2.3 to
+            what it now asserts rather than left describing a narrower check.
+Fixture:    `expectations/fetch.json`, added at 2.1 and derived from the two committed inputs
+            rather than frozen from a run: the membership filter applied to the captured bulk file
+            gives three bars stored, two rows for departed constituents and two for names the
+            index does not hold. It states `notSessionsExpected` as 0 and says why that zero is a
+            property of the capture rather than of the exchange, which is the sentence that made
+            the 2.1 defect legible after the live run found it.
+Live:       every feed reached the provider during this phase and each run is recorded at its own
+            checkpoint. The last of them, at 2.6, ran end to end with nothing on the command line
+            but a session: 822 membership rows, 126,235 bars over 503 tickers, 501 bars for the
+            session, 182 corporate actions with 7 refetches, 514 requests, 820 weighted calls of
+            100,000, 0 model calls.
+Found live: three defects the fixture could not have shown, each found by running rather than by
+            reading. A row with no positive close stopped the night, and 62 of 44,362 rows carry
+            one. A constituent with no join date threw in the parser, and 145 of 822 spans have
+            none with two of those current members. A truncation rule that refused any absence
+            would have refused every night, because two of 503 members are absent from an ordinary
+            day's file. All three were written against a fixture of five names and all three were
+            refuted within hours of the first live run.
+What green does not mean: it does not mean a night will run tonight. Every figure above is a
+            statement about the build and about runs made by hand today, and the schedule that
+            would make them nightly is a setting on a machine rather than anything this report
+            reads. It does not mean the feeds are complete: the news feed is built, asserted and
+            called by nothing, because the component that would call it is a phase 5 one. It does
+            not mean the numbers are right, only that they are the numbers the rules produce over
+            one captured fixture of three names and whatever the provider sent today. And 143 of
+            the 185 claims are out of scope, which is to say unchecked: the report says nothing
+            about them and is not meant to.
+Not signed off: this session committed code to phase 2, so it may not sign phase 2 off. The
+            report is written here and the sign-off is a separate activity with its own record,
+            owed before phase 3's plan and not gating the merge.
+Tests:      312, from 257 at the start of the phase.
