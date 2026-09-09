@@ -15,6 +15,11 @@ internal sealed record RosterRow(string Check, string Runs, string Asserts);
 // check that silently narrows its own scope keeps passing.
 public class CoverageReported
 {
+    // The carrier of a roster row nothing implements yet. Named rather than
+    // spelled out at each site, because the report, the command and the suite
+    // outcomes all test against it and three literals is three places to drift.
+    internal const string NotDueYet = "not due yet";
+
     // Which class carries which check. Two checks may share a class where they
     // read the same thing, and one class may carry no check at all, but a roster
     // row with nothing behind it is the failure this map exists to expose.
@@ -78,7 +83,7 @@ public class CoverageReported
             .Select(row => new Harness.CheckCoverage(
                 row.Check,
                 row.Runs,
-                Implementations.TryGetValue(row.Check, out var carrier) ? carrier : "not due yet",
+                Implementations.TryGetValue(row.Check, out var carrier) ? carrier : NotDueYet,
                 Harness.CheckReaches.Of(row.Check) is { } reach
                     ? string.Join(", ", reach.Reads)
                     : "no reach declared"))

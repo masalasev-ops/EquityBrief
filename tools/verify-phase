@@ -2,9 +2,35 @@
 # The phase report. Not a CI step: a phase signs off against this, and it is
 # green only when nothing is unexamined, which is a gate on a phase rather than
 # on a commit.
+#
+# Two steps, and the first is what makes the second able to fail. The suite runs
+# and writes what each test did; the report reads that back and gives a claim
+# PASS only where the check reaching it ran and held. Before 0.7's repair this
+# script ran the report alone, so every verdict came from a reach declaration
+# and Verdict.Fail was reachable from nowhere.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
-exec dotnet run --project src/EquityBrief.Tests -- "$root"
+mkdir -p artifacts
+
+# Removed before the run rather than overwritten by it. A result left from an
+# earlier run is worse than none: the report would read it, find every check
+# passing, and print green over a tree whose suite had failed to build. The two
+# report files go with it, so a run that cannot get that far leaves no green page
+# from the run before rather than a stale one nothing dates.
+rm -f artifacts/suite.trx artifacts/phase-report.html artifacts/phase-report.json
+
+# A failing suite is not an error here. It is the input that makes the report
+# red, so the non-zero exit is swallowed and the verdict is left to the report.
+# Relative paths throughout, because this hands them to a native binary and an
+# absolute path composed here is the one that needs translating on Windows.
+dotnet test src/EquityBrief.Tests \
+  --results-directory artifacts \
+  --logger "trx;LogFileName=suite.trx" \
+  >artifacts/suite.log 2>&1 || true
+
+code=0
+dotnet run --project src/EquityBrief.Tests -- "$root" artifacts/suite.trx || code=$?
+exit $code

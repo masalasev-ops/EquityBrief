@@ -2245,3 +2245,163 @@ Verdict:    phase 1 is signed off. Eight checkpoints landed, `tools/ci` is green
             derived, and the night does what section 14 says it does. What each of them
             falsifies is a claim about how well that is known, and keeping those two apart is
             the thing this corpus exists to do.
+
+### Repairs to 0.7 - verify-phase had no failing branch                      2026-09-08
+Not a checkpoint entry. It belongs to 0.7, which built the harness and has landed. This is a
+            defect in phase 0's instrument found at phase 1's sign-off, and it lands on its own
+            branch before phase 2's planning pass opens rather than waiting for 2.0, because
+            2.0's own verification would otherwise be signed off by an instrument known to have
+            no failing branch.
+Defect:     `Verdict.Fail` was assigned nowhere in the report path. Every verdict came from
+            `Harness/Scope.cs`, a map naming the instrument that reaches each claim, and the
+            report printed PASS from the naming without asking whether that instrument had run.
+            So the "fail 0" line was structural rather than measured and could not take another
+            value, and green meant no claim was unexamined rather than that any claim held.
+            Unchecked from 0.5, where the harness first read the architecture, through 1.8.
+Proof:      on record from the sign-off two entries above rather than constructed for this
+            entry. Deleting the membership filter from the bar fetcher left five tests failing,
+            and `tools/verify-phase` printed an identical block, 180 claims, 37 pass, 0 fail,
+            143 out of scope, 0 unexamined, exit 0, with the claim about storing bars for
+            current members still reading PASS by `nightly-run` and its note about current
+            members intact.
+Repaired:   three changes, in the order the defect needs them.
+
+            The tool reads a run. `tools/verify-phase` now runs the suite first with a trx
+            logger and hands the result to the report, and the report gives a claim PASS only
+            where the check reaching it ran and held, FAIL where that check ran and did not
+            hold, and UNEXAMINED where it did not run. That is section 19.3's own table, which
+            has said exactly this since it was written; what was missing was any code reading
+            it. The result file is deleted before the suite runs rather than overwritten by it,
+            because a result left from an earlier run is worse than none: the report would read
+            it, find every check passing, and print green over a tree whose suite had failed to
+            build.
+
+            The outcome is applied after the reconciliation and not before. Whether a
+            declaration is used by a verdict is a question about the map and has to answer the
+            same on a run where every check failed as on one where every check passed. Applying
+            outcomes first made the reconciliation refuse every declaration the moment a check
+            went red, which is the first version of this repair failing on its own first test.
+
+            And the not-green line names both counts. It said a phase is not done while anything
+            is unexamined, which was the only reason the report could be red while fail could
+            not be above zero. A dead branch made a wrong message harmless.
+Proved:     five new tests, and the two that carry the property are asserted over the written
+            file rather than over the model, because the surface was the defect the last time
+            this class appeared. A constructed run in which one check fails writes a report
+            whose JSON reads fail equal to the number of claims that check reaches, green false,
+            and pass reduced by the same number. A run that produced no result writes pass 0,
+            fail 0, unexamined above zero and green false, with out of scope unmoved, since out
+            of scope is a statement about the plan rather than about a run. The trx reader is
+            asserted over a constructed file for all three outcomes. The carrier of every check
+            is asserted to own its tests and no others, in both directions, because the match is
+            on a type's full name and a prefix key answers about everything sharing it: on the
+            class name alone "Store" would answer for "StoreWrites" and two checks would share
+            one result. And every check a passing claim names is one the result can answer for.
+Measured:   over the 180 claims of the report at this commit, before the repair and after it.
+            Stated before the run: 37 read PASS before. 37 read PASS after, and no verdict
+            changed. That is the outcome to expect rather than a disappointment: every carried
+            check passes on this tree, so a report that reads the run agrees with one that
+            assumed it. The repair is not visible in the verdicts and is visible in what happens
+            when a check fails.
+            The new line the report prints: 28 checks passed, 0 failed, 0 did not run, over the
+            28 the roster carries of 32.
+            Against a constructed run with `nightly-run` failing: 34 pass, 3 fail, 143 out of
+            scope, 0 unexamined, green false, exit 1, each FAIL row naming the failing test.
+            Before the repair the same input produced 37 pass and 0 fail.
+Tests:      256, up from 251. `tools/ci.ps1` green end to end, all 6 steps.
+Sign-offs:  what this does to the two already written, which is less than it looks and worth
+            stating rather than leaving to be worked out. It reverses neither. The suite carried
+            the assertions in both cases and the suite was green in both, so the properties held
+            when each was signed and hold now. What it does mean is that every phase report's
+            fail count was uninformative, phase 0's and phase 1's alike, and that a reader who
+            took "0 fail" as a measurement was reading a constant. Both sign-offs carry a
+            paragraph on what green does not mean, and both were true for a reason neither of
+            them gave: phase 0's said the report was green because 154 of 158 claims were out of
+            scope, and phase 1's said every figure was computed from the corpus and the fixture
+            rather than from a store. Neither said the fail count could not have been anything
+            else.
+Notes:      the table this repair satisfies was placed against `architecture-conformance` from
+            0.5, and that check asserted the three verdict names matched the document and never
+            that the harness could produce the second of them. A table can be covered by an
+            instrument that reads its vocabulary and not its content, and this is what that
+            looks like.
+
+### Addendum to the repairs above - the first version of the repair was defeated   2026-09-08
+Not a checkpoint entry. It belongs to 0.7 with the entry above, which it corrects rather than
+            edits. An adversarial review was run against `7372d8b` before it merged, and it
+            reproduced the original defect against the repair. Recorded because a repair to
+            something that could not fail is the repair that can silently not work, the entry
+            above says so in those words, and it was true of the entry above.
+Defeated:   two ways, both reproduced end to end rather than argued.
+
+            A skipped test. `SuiteOutcomes.ResultOf` asked whether any result said "Failed" and
+            took a passing sibling as the answer otherwise, so every other outcome the format
+            carries read as a pass: `NotExecuted`, `Error`, `Timeout` and `Aborted` alike. With
+            the membership filter deleted from the bar fetcher and two carrier tests marked
+            `[Fact(Skip = ...)]`, `tools/verify-phase` printed 37 pass, 0 fail, green and exit
+            0, with the claim about storing bars for current members reading PASS over code
+            storing every ticker. Two attributes were the whole distance between the repair
+            working and not working, and `dotnet test` exits zero on a skip as well.
+
+            A failing test in a class carrying no check. Green was computed from the claim
+            counts alone, and 83 of the suite's 257 tests sit in the eleven classes that test
+            components rather than carry a roster check. Changing `Money.FromStorage` to accept
+            a group separator, which is the hundredfold price error the comment above that line
+            warns about, left one test red and the report green at exit 0.
+Repaired:   passing is now the only outcome that counts as passing, and everything else is read
+            against it rather than listed, so an outcome the format adds later fails safe. Not
+            run and run badly are kept apart: a carrier whose rows are all `NotExecuted` did not
+            run, one carrying an `Error` or a `Timeout` ran and did not hold, and any test of a
+            carrier skipped makes that check not run even beside a passing sibling.
+
+            And the report reads the run's own tally from the trx's `Counters` element beside
+            the carried checks, because they are two populations and neither subsumes the other:
+            a check can fail with no claim attached, and a claim can go unchecked in a run that
+            reported no failure. Green is now four conditions rather than two, and it is stated
+            once on the model where it had been written out twice, in the command returning the
+            exit code and in the writer stamping the artifact.
+Surfaced:   the run is on both artifacts rather than only in the scrollback. The JSON carries a
+            `suite` object with the four counters and the count of carried checks not passing;
+            the page carries a paragraph saying what the run did. A claim that something is
+            visible is a claim about a surface, and terminal output is not one.
+Widened:    `TheCarrierOfEveryCheckOwnsItsTestsAndNoOthers` said both directions and asserted
+            one. It built its list of tests by reflecting over the carriers, so both loops asked
+            only about tests the carriers already declared, and the question that matters,
+            whether a test is owned at all, could not be reached. It now reads every test in the
+            suite, counts the unowned against a floor of 40 rather than assuming zero, and
+            asserts at most one owner rather than exactly one. This is the guard whose scope was
+            narrower than its own prose, which is the defect this corpus calls the most common
+            in its class, found in the commit that repaired the same shape one level up.
+Corrected:  four claims in the CLAUDE.md passage the entry above rewrote, each wrong and each
+            checked once, which is worse than not checked. Green was said to mean every claim
+            was checked and held, false for the 143 of 180 that are out of scope. The committed
+            expectations were called frozen, where both files declare in their first field that
+            they are derived from the rules and where the same document twice uses frozen as the
+            disqualifying kind. The map and the PASS-by-fiat were dated from 0.5, where the
+            record shows 0.5 and 0.6 reporting 0 pass, 120 unexamined and exit 1, so the tool
+            ran no check from 0.5 and printed PASS from a name only from 0.7. And a report
+            stamped with its generation instant on both surfaces was called byte-identical.
+            Prior text to `CHANGELOG.md` in two entries.
+Measured:   over the 180 claims at this commit. 37 read PASS, unchanged from before either
+            version of the repair, and no verdict moved: every carried check passes on this tree
+            and the run is clean, so a report that reads the run agrees with one that assumed
+            it. What changed is what happens when it is not.
+            Against the two runs that defeated the first version: the skipped-test run now gives
+            3 unexamined, 1 carried check not run, notExecuted 1 and exit 1; the failing test
+            outside every carrier gives exit 1 where it gave 0.
+            Over the suite, 257 tests of which 173 sit in a carrier class and 83 do not.
+Tests:      257, up from 256 at the first version of this repair and 251 before it. Six new in
+            total. `tools/ci.ps1` green end to end, all 6 steps.
+Carried:    one, and it is section 19.3's own words. That table says a failure shows the diff
+            beside it, and what the report shows is the failing test's name and its message. For
+            most checks here that message is an `Assert.True` sentence carrying no expected and
+            no actual, only the first failing test of a carrier is named, and the message renders
+            in a plain cell. Either the report renders expected against actual, or 19.3 is
+            amended to say the failing test and its message with prior text to `CHANGELOG.md`.
+            Due at 2.0, with the rest of the citation pass. It is filed here rather than left in
+            a review, because the table is placed as wholly asserted by `architecture-conformance`
+            and this is one clause of it that no assertion reaches.
+Notes:      the review that found all of this was run against the repair before it merged, by
+            agents given the commit and told to break it. The two defeats were reproduced in
+            worktrees rather than reasoned about, which is the only reason they are in this
+            entry rather than in a later one.

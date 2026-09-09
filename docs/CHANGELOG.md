@@ -25,6 +25,80 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-08 - CLAUDE.md - four claims in the corrected verify-phase passage
+Corrects: the passage rewritten by the entry below, checked once and wrong in four places.
+Found by an adversarial review of that same commit before it merged. Green was said to mean
+every claim was checked and held, which is false for the 143 of 180 claims that are out of
+scope and that green never looks at, and it contradicts the separation rule in this file and
+phase 0's own sign-off. The committed expectations were called frozen, where both files in the
+one committed fixture declare in their first field that they are derived from the rules and not
+frozen from a run, and where this file twice uses frozen as the disqualifying kind. The map and
+the PASS-by-fiat were dated from 0.5, where the record shows 0.5 and 0.6 reporting 0 pass, 120
+unexamined and exit 1, with the map arriving at 0.7. And a report stamped with its generation
+instant on both surfaces was called byte-identical across two runs.
+Was:
+> It runs the suite, which is what replays the pipeline over the committed fixture and diffs
+> every stage's output against the frozen expectations, and it writes what each check did. Then
+> it parses `docs/ARCHITECTURE.html`'s tables and gives every claim a verdict by reading that
+> result
+>
+> A phase is not done until that report is green, and green means no claim failed and none is
+> unexamined.
+>
+> From 0.5 to 1.8 the tool ran no check at all
+>
+> A tree with five failing tests produced a byte-identical green report. What a green report
+> says is that every claim was checked and held; what it does not say is anything about a
+> running system, which is the separate rule below.
+Now:
+> the stages that exist rather than the pipeline, expectations derived from the rules rather
+> than frozen ones, every claim in scope rather than every claim, the two further conditions
+> green now carries, the span split at 0.7 where the map arrived, an identical verdict block
+> and the same green exit rather than a byte-identical report, and a green report saying that
+> no claim in scope failed and none went unexamined.
+Why: a corrected passage that is still wrong is worse than the original, because it has been
+checked once and reads as settled. Three of the four are the same conflation the repair beneath
+exists to remove, which is the report's scope being read as the whole of what it looked at.
+
+### 2026-09-08 - CLAUDE.md - the layout block did not name the suite result
+Corrects: `tools/verify-phase` now writes `artifacts/suite.trx` and `artifacts/suite.log` beside
+the two report files, and the block describing that folder named only the report. The block is
+the map of the tree, so a file it does not name is a file no document places.
+Was:
+> /artifacts        gitignored. the phase report, written by verify-phase
+Now:
+> /artifacts        gitignored. the phase report and the suite result it reads, written by verify-phase
+Why: the same commit that put two new files in that folder left the line describing it alone.
+Nothing leaks, because the folder is gitignored whole, so this is a map defect rather than a
+hazard.
+
+
+### 2026-09-08 - CLAUDE.md - what tools/verify-phase actually did
+Corrects: the tool ran no check. Every verdict came from a map naming the instrument that
+reaches a claim, `Verdict.Fail` was assigned nowhere in the report path, and the "fail 0" line
+was structural rather than measured. Found at the phase 1 sign-off by deleting the membership
+filter from the bar fetcher: five tests failed, and the report printed an identical block and
+still called the claim about storing bars for current members PASS. The claim went unchecked
+from 0.5, where the harness first read the architecture, through 1.8.
+Was:
+> **`tools/verify-phase` is what a phase signs off against.** It runs the pipeline over the
+> committed fixture, diffs every stage's output against frozen expectations, parses
+> `docs/ARCHITECTURE.html`'s tables and asserts each claim against the code, and writes
+> `artifacts/phase-report.html` for the operator and `artifacts/phase-report.json` for a build
+> session. A phase is not done until that report is green, and green includes that nothing is
+> listed as unexamined.
+Now:
+> the same paragraph rewritten to say that the tool runs the suite and reads its result, with
+> the three verdicts of section 19.3 stated against what the run did, plus a second paragraph
+> naming the defect and the span it covered.
+Why: three of the four things the passage claimed were not true of the tool. It did not run the
+pipeline, it did not diff stage output against expectations, and it did not assert claims
+against the code; it parsed the tables and printed a stored verdict. The repair makes the first
+two true by running the suite, which is what replays the fixture and diffs the stages, and makes
+the third true by reading that run's result. The passage is corrected rather than narrowed,
+because the description was right about what a sign-off needs and wrong about what the tool did.
+
+
 ### 2026-09-05 - ARCHITECTURE.html - decisions moved out of the document
 Authorised by: Facts are declared once and cited by descriptive name
 

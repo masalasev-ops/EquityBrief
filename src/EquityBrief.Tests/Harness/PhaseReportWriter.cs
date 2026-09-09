@@ -25,7 +25,7 @@ internal static class PhaseReportWriter
             new
             {
                 generatedAt = generatedAt.ToString("O"),
-                green = report.Count(Verdict.Fail) == 0 && report.Count(Verdict.Unexamined) == 0,
+                green = report.Green,
                 tables = new
                 {
                     total = report.Tables.Count,
@@ -58,6 +58,19 @@ internal static class PhaseReportWriter
                     fail = report.Count(Verdict.Fail),
                     outOfScope = report.Count(Verdict.OutOfScope),
                     unexamined = report.Count(Verdict.Unexamined),
+                },
+
+                // What the run did, on the artifact and not only in the
+                // scrollback. A claim that something is visible is a claim
+                // about a surface, and terminal output is not one.
+                suite = new
+                {
+                    total = report.Suite.Total,
+                    executed = report.Suite.Executed,
+                    failed = report.Suite.Failed,
+                    notExecuted = report.Suite.NotExecuted,
+                    clean = report.Suite.Clean,
+                    checksNotPassing = report.ChecksNotPassing,
                 },
                 reconciliation = new
                 {
@@ -132,6 +145,11 @@ internal static class PhaseReportWriter
         }
 
         page.Append("</table>");
+
+        page.Append("<h2>The run behind this report</h2><p>");
+        page.Append(Escape(report.Suite.Describe()));
+        page.Append($". {report.ChecksNotPassing} carried check(s) did not run or did not hold. ");
+        page.Append("A claim is PASS only where the check reaching it ran and held.</p>");
 
         page.Append("<h2>Fixture</h2>");
         page.Append($"<p><b>{Escape(report.Fixture.State)}</b>, {report.Fixture.Folders} captured, ");
