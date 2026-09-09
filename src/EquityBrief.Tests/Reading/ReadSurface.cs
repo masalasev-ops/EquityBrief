@@ -1,6 +1,8 @@
 using System.Globalization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
@@ -9,7 +11,10 @@ using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Swings;
+using EquityBrief.Worker.Volume;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Reading;
@@ -33,6 +38,8 @@ public class ReadSurface
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, the moving averages"),
             CheckReach.Key("15.5 The mark vocabulary", "Volume profile"),
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands"),
+            CheckReach.Key("15.5 The mark vocabulary", "Momentum panel"),
+            CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, nn bars"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -601,6 +608,201 @@ public class ReadSurface
 
         Assert.Contains("which is inverted", refusal.Message, StringComparison.Ordinal);
     }
+
+    // ---- 3.5, the momentum panel and the level summary table ----
+
+    static async Task<TemporaryStore> WithBands()
+    {
+        var store = await WithIndicators();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new SwingFinder(clock, store.DatabaseFile).RunAsync("run-swings");
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("run-profile");
+        await new LevelBuilder(clock, store.DatabaseFile).RunAsync("run-levels");
+
+        return store;
+    }
+
+    static MomentumReading[] Readings(IReadOnlyList<IndicatorRow> rows, int sessions) =>
+    [
+        .. IndicatorSeries.Momentum.Select(name =>
+        {
+            var bounds = IndicatorSeries.BoundsOf(name);
+
+            return new MomentumReading(
+                name,
+                [.. rows.Where(row => row.Name == name).OrderBy(row => row.SessionDate).Select(row => row.Value)],
+                IndicatorSeries.NeutralOf(name),
+                bounds?.Floor,
+                bounds?.Ceiling);
+        }),
+    ];
+
+    [Fact]
+    public async Task EveryMomentumReadingDrawsItsNeutralRule()
+    {
+        // 3.5's second done condition. A number like 53 means nothing without
+        // the band it sits in, so the rule is the mark rather than decoration,
+        // and it is counted off the rendered markup rather than off the input.
+        using var store = await WithIndicators();
+
+        var api = Api(store);
+        var bars = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        var rows = await api.IndicatorsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+
+        var svg = new MarkRenderer().MomentumPanel(Name, Readings(rows, bars.Count));
+
+        var groups = Regex.Matches(svg, "<g class=\"reading\" data-name=\"([^\"]+)\" data-neutral=\"([^\"]+)\"")
+            .Select(match => (Name: match.Groups[1].Value, Neutral: match.Groups[2].Value))
+            .ToArray();
+
+        Assert.Equal(IndicatorSeries.Momentum.Count, groups.Length);
+        Assert.Equal(IndicatorSeries.Momentum, groups.Select(group => group.Name).ToArray());
+
+        // One rule per reading, and its value is the one the arithmetic states
+        // rather than one the mark chose.
+        Assert.Equal(groups.Length, Regex.Matches(svg, "class=\"neutral-rule\"").Count);
+
+        foreach (var group in groups)
+        {
+            Assert.Equal(
+                IndicatorSeries.NeutralOf(group.Name).ToString("0.##", CultureInfo.InvariantCulture),
+                group.Neutral);
+        }
+
+        // The RSI rule sits at 50 on an axis running 0 to 100, so it is halfway
+        // down its own pane whatever the stock did. That is what a fixed range
+        // buys and it is asserted rather than assumed: a reading scaled to its
+        // own values would put the rule wherever the week happened to end.
+        var rsi = Regex.Match(svg, "data-name=\"rsi14\".*?class=\"neutral-rule\" x1=\"[0-9]+\" y1=\"([0-9.]+)\"", RegexOptions.Singleline);
+
+        Assert.True(rsi.Success);
+        Assert.Equal(32, double.Parse(rsi.Groups[1].Value, CultureInfo.InvariantCulture), 1);
+    }
+
+    [Fact]
+    public void AReadingHasNoNeutralRuleUnlessItIsAMomentumReading()
+    {
+        // The counter-test. An average is a price and a volume ratio is a
+        // quantity, and neither is read against a rule, so asking for one is
+        // refused rather than answered with a zero that would draw a line
+        // through the middle of a price.
+        Assert.Equal(50, IndicatorSeries.NeutralOf(IndicatorSeries.Rsi14));
+        Assert.Equal(0, IndicatorSeries.NeutralOf(IndicatorSeries.MacdHist));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => IndicatorSeries.NeutralOf(IndicatorSeries.Sma200));
+        Assert.Throws<ArgumentOutOfRangeException>(() => IndicatorSeries.NeutralOf(IndicatorSeries.VolAvg20));
+
+        Assert.Equal((0d, 100d), IndicatorSeries.BoundsOf(IndicatorSeries.Rsi14));
+        Assert.Null(IndicatorSeries.BoundsOf(IndicatorSeries.Macd));
+
+        // And a panel with nothing to draw states that rather than drawing an
+        // empty box.
+        var none = new MarkRenderer().MomentumPanel("TEST", []);
+
+        Assert.DoesNotContain("<svg", none, StringComparison.Ordinal);
+        Assert.Contains("no momentum readings", none, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EveryBandInTheTableNamesItsMembersWithTheirDates()
+    {
+        // 3.5's first done condition, read off the rendered table rather than
+        // off the rows handed to it, because the claim is about what a person
+        // sees and a table that dropped every member would pass a count of its
+        // input.
+        using var store = await WithBands();
+
+        var bands = await Api(store).LevelsAsync(Name);
+
+        Assert.NotEmpty(bands);
+
+        var summary = new MarkRenderer().LevelSummary(Name, Summarised(bands));
+
+        Assert.Equal(bands.Count, Regex.Matches(summary, "class=\"band\"").Count);
+
+        var members = Regex.Matches(summary, "class=\"member\" data-kind=\"([^\"]+)\" data-date=\"([^\"]+)\"")
+            .Select(match => (Kind: match.Groups[1].Value, Date: match.Groups[2].Value))
+            .ToArray();
+
+        // Every member of every band, and every one of them dated. The stored
+        // count is read from the JSON the level builder wrote, so this compares
+        // the surface against the store rather than against itself.
+        var stored = bands.Sum(band => JsonDocument.Parse(band.Members).RootElement.GetArrayLength());
+
+        Assert.Equal(stored, members.Length);
+        Assert.True(members.Length >= 20, $"The table drew {members.Length} members, expected at least 20.");
+        Assert.All(members, member => Assert.Matches(@"^\d{4}-\d{2}-\d{2}$", member.Date));
+        Assert.All(members, member => Assert.NotEmpty(member.Kind));
+
+        // The immediate band on each side says so in words, because a row a
+        // reader scans should carry its own meaning.
+        Assert.Contains("support, immediate", summary, StringComparison.Ordinal);
+        Assert.Contains("resistance, immediate", summary, StringComparison.Ordinal);
+
+        // A band of one price reads as one price rather than as a range from a
+        // number to itself.
+        var single = Summarised(bands).FirstOrDefault(band => band.LowEdge == band.HighEdge);
+
+        if (single is not null)
+        {
+            Assert.DoesNotContain($"{single.LowEdge.ToString(CultureInfo.InvariantCulture)} to {single.LowEdge.ToString(CultureInfo.InvariantCulture)}", summary, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void AnAverageWithNoValueSaysSoWithTheBarCountThatExplainsIt()
+    {
+        // Section 18's row, on the surface a person reads it on. The stored half
+        // passes at 3.1 by fixture-expectations; this is the other element, and
+        // it is here because an average with no value cannot be a band member,
+        // so the table would otherwise not mention it at all.
+        var bands = new SummaryBand[]
+        {
+            new(100m, 102m, "support", true, 4, true,
+                [new SummaryMember("swing low", 100m, new DateOnly(2026, 8, 3))]),
+        };
+
+        var summary = new MarkRenderer().LevelSummary(
+            "TEST",
+            bands,
+            [new AbsentAverage(IndicatorSeries.Sma200, 60)]);
+
+        Assert.Contains("not available, 60 bars", summary, StringComparison.Ordinal);
+        Assert.Contains("data-name=\"sma200\"", summary, StringComparison.Ordinal);
+        Assert.Contains("data-bar-count=\"60\"", summary, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(summary, "class=\"absent-average\""));
+
+        // And with nothing absent there is no footer at all, so the row appears
+        // when it is true and not as a permanent caveat.
+        var complete = new MarkRenderer().LevelSummary("TEST", bands);
+
+        Assert.DoesNotContain("not available", complete, StringComparison.Ordinal);
+        Assert.DoesNotContain("<tfoot", complete, StringComparison.Ordinal);
+
+        // A name with no bands says so rather than drawing an empty table.
+        var none = new MarkRenderer().LevelSummary("TEST", []);
+
+        Assert.DoesNotContain("<table", none, StringComparison.Ordinal);
+        Assert.Contains("no level bands stored", none, StringComparison.Ordinal);
+    }
+
+    static SummaryBand[] Summarised(IReadOnlyList<LevelRow> bands) =>
+    [
+        .. bands.Select(band => new SummaryBand(
+            band.LowEdge,
+            band.HighEdge,
+            band.Role,
+            band.Immediate,
+            band.Strength,
+            band.HasNonAverageAnchor,
+            [
+                .. JsonDocument.Parse(band.Members).RootElement.EnumerateArray().Select(member => new SummaryMember(
+                    member.GetProperty("kind").GetString()!,
+                    decimal.Parse(member.GetProperty("price").GetString()!, CultureInfo.InvariantCulture),
+                    DateOnly.ParseExact(member.GetProperty("date").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture))),
+            ])),
+    ];
 
     static ChartBar[] Bars(IReadOnlyList<BarRow> served) =>
         [.. served.Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))];

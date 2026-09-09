@@ -45,6 +45,39 @@ public static class IndicatorSeries
         Sma20, Sma50, Sma200, Rsi14, Macd, MacdSignal, MacdHist, Atr14, VolAvg20, VolAvg50,
     ];
 
+    // The value each momentum reading means nothing without.
+    //
+    // Section 5 says an RSI near 50 is balanced, above 70 stretched upward and
+    // below 30 stretched downward, so 50 is the rule and the other two are the
+    // context around it. The MACD family is a gap between two averages and the
+    // gap closing is the event, so zero is the rule for all three of them.
+    //
+    // Here rather than in the mark that draws it, because it is a fact about the
+    // reading and not about the picture: the report quotes an RSI against the
+    // same rule the panel draws, and two places holding one number is how they
+    // come to disagree.
+    public static double NeutralOf(string name) => name switch
+    {
+        Rsi14 => 50,
+        Macd or MacdSignal or MacdHist => 0,
+        _ => throw new ArgumentOutOfRangeException(
+            nameof(name),
+            $"'{name}' is not a momentum reading, so it has no neutral rule. The three averages and " +
+            "the two volume ratios are levels and quantities rather than readings against a rule, and " +
+            "drawing one on a momentum axis would put a price beside a score out of a hundred."),
+    };
+
+    // The bounds a reading has whatever the stock does, or nothing.
+    //
+    // An RSI runs 0 to 100 by construction, so its axis is drawn to that and a
+    // quiet week reads as a quiet week rather than being stretched to fill the
+    // pane. A MACD is in the stock's own money and has no bounds but its own.
+    public static (double Floor, double Ceiling)? BoundsOf(string name) =>
+        name == Rsi14 ? (0, 100) : null;
+
+    // The readings the momentum panel draws, in the order it draws them.
+    public static IReadOnlyList<string> Momentum { get; } = [Rsi14, Macd, MacdSignal, MacdHist];
+
     // The windows, and they are stated rather than inlined because bar_count is
     // the minimum of the window and the history, and a window written twice
     // drifts.

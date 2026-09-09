@@ -3972,3 +3972,46 @@ Notes:      this is the second time in two checkpoints that a mutation strengthe
             first was the volume spreading at 3.3. Worth carrying into the sign-off as a
             pattern rather than as two incidents.
             The worktree was removed after each run and the working tree was never mutated.
+
+### 3.5 - the level summary table and the momentum panel                    2026-09-09
+Built:      `MomentumPanel` and `LevelSummary` in `MarkRenderer`, and `ReadApi.LevelsAsync`
+            beneath them. The panel draws each momentum reading on its own small axis with its
+            neutral rule across it; the table names every band with its members and their
+            dates.
+Ruled:      the neutral rules, in Core beside the arithmetic rather than in the mark that draws
+            them. An RSI's rule is 50, because section 5 says near 50 is balanced and above 70
+            is stretched, so 50 is the rule and the other two are the context around it. The
+            MACD family's is zero for all three, the gap closing being the event. They are
+            facts about the readings and not about the picture: the report quotes an RSI
+            against the same rule the panel draws, and two places holding one number is how
+            they come to disagree. Asking for an average's neutral rule is refused rather than
+            answered with a zero, which would draw a line through the middle of a price.
+Bounded:    the RSI axis to 0 and 100 and the MACD axis to its own values. An RSI runs to a
+            hundred whatever the stock does, so a quiet week reads as a quiet week rather than
+            being stretched to fill the pane, and the test asserts the rule sits halfway down
+            its own axis for that reason. A MACD is in the stock's money and has no bounds but
+            its own. Each reading is scaled on its own axis, because one shared scale would
+            flatten whichever of them has the smaller numbers into a straight line.
+Surfaced:   the other half of section 18's two hundred bar row, which has been owed since 3.1.
+            An average with no value cannot be a band member, so the summary table would have
+            omitted it with nothing saying why, which is exactly the absence that row is about.
+            The table names it in a row of its own reading "not available, nn bars", with the
+            bar count that explains it, and the row is absent where nothing is absent rather
+            than standing as a permanent caveat. That is the third failure row read per surface
+            and the last of the three to be completed.
+Notes:      the level summary table is not a mark. Section 15.5 states seven marks and this is
+            not one of them; it is a region of the name screen listed in 15.9 beside the chart.
+            It is written in the renderer because the marks and the regions that read them are
+            drawn by the same server, and a second renderer is what the marks decision exists
+            to prevent.
+
+            A band of one price is written as one price rather than as a range from a number to
+            itself, because the second reads as a mistake rather than as a level.
+Reached:    two claims move to PASS, both by `read-surface`: section 15.5's momentum panel, and
+            the displayed half of the two hundred bar failure row. Section 15.5 now has five of
+            its seven marks drawn, the two remaining being the plan column at 4.4 and the marks
+            phase 5 builds.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      379. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Carried:    nothing new. One obligation stands for the rest of phase 3, the volume shelf
+            threshold at 3.6.

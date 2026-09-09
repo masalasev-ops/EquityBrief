@@ -250,6 +250,14 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key("15.5 The mark vocabulary", "Momentum panel")] = new Scoped(
+            Verdict.Pass,
+            "each reading is drawn on its own small axis with its neutral rule across it, counted off the rendered markup, and the rule's value is read from the arithmetic that defines the reading rather than chosen by the mark",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "Fewer than 200 bars for a new index member, nn bars")] = new Scoped(
+            Verdict.Pass,
+            "an average with no value anchors no band, so the level summary table names it in its own row with the bar count that explains it, and the row is absent where nothing is absent rather than standing as a permanent caveat",
+            ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Bar fetcher")] = new Scoped(
             Verdict.Pass,
             "the class declares the bulk feed it reads and the stores it touches, including the retention delete SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
