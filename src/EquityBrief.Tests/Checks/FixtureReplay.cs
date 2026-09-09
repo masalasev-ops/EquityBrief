@@ -5,6 +5,7 @@ using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Swings;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
@@ -70,6 +71,7 @@ public class FixtureReplay
             store.DatabaseFile).RunAsync(Index, "replay-actions");
 
         await new IndicatorEngine(night, store.DatabaseFile).RunAsync("replay-indicators");
+        await new SwingFinder(night, store.DatabaseFile).RunAsync("replay-swings");
 
         return store;
     }

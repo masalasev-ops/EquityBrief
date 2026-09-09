@@ -1,0 +1,297 @@
+{
+ "stage": "swings",
+ "derivedFrom": "section 5's definition of a swing and section 17's swing lookback, applied to the committed bar files outside this repository and without running the swing finder. Every row below was found by adjusting each session's high and low by the same factor the stored series carries, then keeping the sessions whose high is above all six neighbours or whose low is below all six. An engine comparing against four neighbours instead of six would still agree with a count taken from itself, which is what makes this an expectation rather than a regression baseline.",
+ "tables": [
+  "swing"
+ ],
+ "window": {
+  "from": "2025-09-05",
+  "to": "2026-09-05",
+  "note": "the same window the backfill expectation states, being the retention year ending at the session the clock is fixed to"
+ },
+ "lookback": {
+  "barsEachSide": 3,
+  "note": "three bars each side, so a swing is decided over seven sessions. Stated here as a number the check reads rather than as a sentence, because section 17's row is asserted by this diff and a lookback written twice drifts."
+ },
+ "namesComputed": [
+  "AAPL",
+  "KEYS",
+  "MSFT"
+ ],
+ "sessionsPerName": 252,
+ "rowsExpected": 131,
+ "perName": {
+  "AAPL": {
+   "swings": 44,
+   "highs": 23,
+   "lows": 21
+  },
+  "KEYS": {
+   "swings": 41,
+   "highs": 20,
+   "lows": 21
+  },
+  "MSFT": {
+   "swings": 46,
+   "highs": 24,
+   "lows": 22
+  }
+ },
+ "bothDirections": {
+  "count": 0,
+  "note": "no session in this fixture is a swing high and a swing low at once. That is a fact about these three names and not a rule: an outside day whose range covers the six around it on both sides is both, SCHEMA's primary key carries the direction so the two rows sit side by side, and the count is stated here so a fourth name that has one is a change somebody reads rather than a silent one."
+ },
+ "edges": {
+  "firstSessionsWithNoSwing": [
+   "2025-09-05",
+   "2025-09-08",
+   "2025-09-09"
+  ],
+  "lastSessionsWithNoSwing": [
+   "2026-09-02",
+   "2026-09-03",
+   "2026-09-04"
+  ],
+  "note": "the first and last three sessions of the stored series can carry no swing, having no window on one side. The first three are an artefact of the retention window rather than of the name's history, and the last three are sessions whose lookback has not completed yet."
+ },
+ "workedExample": {
+  "name": "AAPL",
+  "session": "2026-08-20",
+  "direction": "high",
+  "price": "320.28",
+  "confirmedOn": "2026-08-25",
+  "window": [
+   [
+    "2026-08-17",
+    "307.66",
+    "302.94"
+   ],
+   [
+    "2026-08-18",
+    "311.49",
+    "305.74"
+   ],
+   [
+    "2026-08-19",
+    "319.28",
+    "309.6"
+   ],
+   [
+    "2026-08-20",
+    "320.28",
+    "310.65"
+   ],
+   [
+    "2026-08-21",
+    "312.38",
+    "307.01"
+   ],
+   [
+    "2026-08-24",
+    "313.36",
+    "309.97"
+   ],
+   [
+    "2026-08-25",
+    "313.59",
+    "308.21"
+   ]
+  ],
+  "note": "the seven sessions the decision was made over, high and low, read off the committed bar file. The middle one's high is above the other six, and the confirmation date is the seventh session's, being the third after the peak."
+ },
+ "notASwingAtThisLookback": {
+  "name": "AAPL",
+  "session": "2025-09-16",
+  "direction": "high",
+  "window": [
+   [
+    "2025-09-11",
+    "229.6019",
+    "225.8158"
+   ],
+   [
+    "2025-09-12",
+    "233.6469",
+    "228.1771"
+   ],
+   [
+    "2025-09-15",
+    "237.3133",
+    "234.1649"
+   ],
+   [
+    "2025-09-16",
+    "240.3322",
+    "235.4502"
+   ],
+   [
+    "2025-09-17",
+    "239.2163",
+    "236.855"
+   ],
+   [
+    "2025-09-18",
+    "240.3123",
+    "235.779"
+   ],
+   [
+    "2025-09-19",
+    "245.3936",
+    "239.326"
+   ]
+  ],
+  "note": "the case that makes the lookback assertable rather than agreed with. This session's high is above the four nearest neighbours, so a finder comparing two bars each side would mark it, and the seventh session in its window is higher, so a finder comparing three does not. No row exists for it, and that absence is the difference between three bars each side and two."
+ },
+ "asOf": {
+  "name": "AAPL",
+  "date": "2026-08-22",
+  "visible": 43,
+  "withheld": [
+   "2026-08-20|high|320.28|2026-08-25"
+  ],
+  "note": "what a component reading swings as of this date may see. The withheld row is dated before the as-of date and confirmed after it, so a reader filtering on the session sees a peak nobody could have seen at the time, and a reader filtering on the confirmation does not. One row is enough to tell the two filters apart, and it is the whole reason confirmed_on is stored."
+ },
+ "rows": {
+  "format": "session_date|direction|price|confirmed_on",
+  "note": "the full diff rather than a sample, in the order the primary key sorts them, because section 17's row names a fixture swing diff and a sample would agree with an engine that found half of them.",
+  "byName": {
+   "AAPL": [
+    "2025-09-10|low|225.1184|2025-09-15",
+    "2025-10-03|high|258.2859|2025-10-08",
+    "2025-10-10|low|243.102|2025-10-15",
+    "2025-10-21|high|264.3136|2025-10-24",
+    "2025-10-31|high|276.2993|2025-11-05",
+    "2025-11-03|low|265.2701|2025-11-06",
+    "2025-11-07|low|265.7882|2025-11-12",
+    "2025-11-13|high|275.9489|2025-11-18",
+    "2025-11-18|low|264.5998|2025-11-21",
+    "2025-12-03|high|287.8365|2025-12-08",
+    "2025-12-15|high|279.3895|2025-12-18",
+    "2025-12-18|low|266.2253|2025-12-23",
+    "2025-12-24|high|274.6823|2025-12-30",
+    "2026-01-02|high|277.0858|2026-01-07",
+    "2026-01-08|low|255.0059|2026-01-13",
+    "2026-01-14|high|261.1093|2026-01-20",
+    "2026-01-20|low|242.7592|2026-01-23",
+    "2026-01-27|high|261.2389|2026-01-30",
+    "2026-01-30|low|251.4954|2026-02-04",
+    "2026-02-06|high|280.1474|2026-02-11",
+    "2026-02-13|low|254.9949|2026-02-19",
+    "2026-02-26|high|275.6182|2026-03-03",
+    "2026-03-09|low|253.228|2026-03-12",
+    "2026-03-10|high|262.0125|2026-03-13",
+    "2026-03-20|low|245.5617|2026-03-25",
+    "2026-03-26|high|256.5422|2026-03-31",
+    "2026-03-30|low|245.0726|2026-04-02",
+    "2026-04-06|high|261.693|2026-04-09",
+    "2026-04-07|low|245.2623|2026-04-10",
+    "2026-04-23|high|275.2787|2026-04-28",
+    "2026-04-27|low|264.5978|2026-04-30",
+    "2026-05-15|high|302.9387|2026-05-20",
+    "2026-06-01|low|304.7571|2026-06-04",
+    "2026-06-08|high|317.1265|2026-06-11",
+    "2026-06-10|low|287.1323|2026-06-15",
+    "2026-06-22|high|302.1594|2026-06-25",
+    "2026-06-25|low|273.5141|2026-06-30",
+    "2026-07-17|high|334.7013|2026-07-22",
+    "2026-07-23|low|319.0748|2026-07-28",
+    "2026-07-29|high|344.2731|2026-08-03",
+    "2026-07-31|low|299.7415|2026-08-05",
+    "2026-08-06|high|316.0175|2026-08-11",
+    "2026-08-12|low|300.57|2026-08-17",
+    "2026-08-20|high|320.28|2026-08-25"
+   ],
+   "KEYS": [
+    "2025-09-23|high|180.08|2025-09-26",
+    "2025-09-25|low|170.545|2025-09-30",
+    "2025-10-03|high|176.85|2025-10-08",
+    "2025-10-10|low|158.79|2025-10-15",
+    "2025-11-06|high|187.67|2025-11-11",
+    "2025-11-07|low|177.205|2025-11-12",
+    "2025-11-12|high|185.9|2025-11-17",
+    "2025-11-21|low|167.23|2025-11-26",
+    "2025-11-25|high|201.5|2025-12-01",
+    "2025-12-11|high|214.58|2025-12-16",
+    "2025-12-17|low|196.39|2025-12-22",
+    "2025-12-31|low|203.08|2026-01-06",
+    "2026-01-06|high|214.4|2026-01-09",
+    "2026-01-12|low|205|2026-01-15",
+    "2026-01-15|high|218.15|2026-01-21",
+    "2026-01-20|low|206.492|2026-01-23",
+    "2026-01-22|high|220.115|2026-01-27",
+    "2026-02-05|low|214.49|2026-02-10",
+    "2026-02-13|low|228.35|2026-02-19",
+    "2026-03-02|high|317|2026-03-05",
+    "2026-03-09|low|264.7|2026-03-12",
+    "2026-03-20|low|275.27|2026-03-25",
+    "2026-03-24|high|301.99|2026-03-27",
+    "2026-03-30|low|266.47|2026-04-02",
+    "2026-04-24|high|352.78|2026-04-29",
+    "2026-04-28|low|324.27|2026-05-01",
+    "2026-05-11|high|370.175|2026-05-14",
+    "2026-05-19|low|326.48|2026-05-22",
+    "2026-05-27|high|359.05|2026-06-01",
+    "2026-06-01|low|326.11|2026-06-04",
+    "2026-06-03|high|355.49|2026-06-08",
+    "2026-06-09|low|315.01|2026-06-12",
+    "2026-06-22|high|374.963|2026-06-25",
+    "2026-07-08|low|305.42|2026-07-13",
+    "2026-07-13|high|332.35|2026-07-16",
+    "2026-07-17|low|300.87|2026-07-22",
+    "2026-07-23|high|332.78|2026-07-28",
+    "2026-07-29|low|293.55|2026-08-03",
+    "2026-08-17|high|366.41|2026-08-20",
+    "2026-08-24|low|306.852|2026-08-27",
+    "2026-08-27|high|327.495|2026-09-01"
+   ],
+   "MSFT": [
+    "2025-09-19|high|515.0622|2025-09-24",
+    "2025-09-25|low|500.9186|2025-09-30",
+    "2025-10-06|high|526.6965|2025-10-09",
+    "2025-10-14|low|501.8708|2025-10-17",
+    "2025-10-28|high|549.2013|2025-10-31",
+    "2025-11-07|low|489.2248|2025-11-12",
+    "2025-11-13|high|509.3096|2025-11-18",
+    "2025-11-25|low|461.9593|2025-12-01",
+    "2025-12-02|high|490.3888|2025-12-05",
+    "2025-12-03|low|472.2042|2025-12-08",
+    "2025-12-08|high|489.1964|2025-12-11",
+    "2025-12-16|low|467.9114|2025-12-19",
+    "2025-12-18|high|486.5135|2025-12-23",
+    "2025-12-30|high|486.5929|2026-01-05",
+    "2026-01-05|low|466.5402|2026-01-08",
+    "2026-01-07|high|486.6128|2026-01-12",
+    "2026-01-21|low|435.9144|2026-01-26",
+    "2026-01-28|high|480.6904|2026-02-02",
+    "2026-02-05|low|389.8467|2026-02-10",
+    "2026-02-10|high|421.0091|2026-02-13",
+    "2026-02-17|low|392.0428|2026-02-20",
+    "2026-02-24|low|380.1694|2026-02-27",
+    "2026-02-26|high|405.8453|2026-03-03",
+    "2026-03-06|high|411.3829|2026-03-11",
+    "2026-03-30|low|354.842|2026-04-02",
+    "2026-04-01|high|372.4806|2026-04-07",
+    "2026-04-08|high|383.4461|2026-04-13",
+    "2026-04-22|high|431.9496|2026-04-27",
+    "2026-04-23|low|409.7495|2026-04-28",
+    "2026-04-28|high|428.1848|2026-05-01",
+    "2026-04-30|low|396.4036|2026-05-05",
+    "2026-05-06|low|403.4749|2026-05-11",
+    "2026-05-07|high|426.2526|2026-05-12",
+    "2026-05-14|low|399.262|2026-05-19",
+    "2026-05-19|high|430.9535|2026-05-22",
+    "2026-05-20|low|409.64|2026-05-26",
+    "2026-05-27|low|408.8104|2026-06-01",
+    "2026-06-01|high|465.4438|2026-06-04",
+    "2026-06-25|low|348.5438|2026-06-30",
+    "2026-07-07|high|394.8268|2026-07-10",
+    "2026-07-09|low|372.6485|2026-07-14",
+    "2026-07-16|high|405.2271|2026-07-21",
+    "2026-07-23|low|376.6809|2026-07-28",
+    "2026-08-10|high|512.7647|2026-08-13",
+    "2026-08-18|low|476.2534|2026-08-21",
+    "2026-08-28|high|517.78|2026-09-02"
+   ]
+  }
+ }
+}

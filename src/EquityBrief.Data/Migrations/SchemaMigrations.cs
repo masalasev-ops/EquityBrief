@@ -131,6 +131,35 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // Swings, one row per ticker, session and direction.
+    //
+    // Every column is NOT NULL, which is the difference from `indicator` next
+    // door and is worth stating rather than leaving to be noticed. An indicator
+    // is written for every session whether or not its window is full, so an
+    // absence is a stored fact. A swing is written only where there is one, so
+    // there is no absent case to record: a session that is not a peak has no row
+    // rather than a row with no price.
+    //
+    // `direction` carries the two values SCHEMA's column note names and no
+    // constraint enforces that, because the enforcement is the one declared
+    // writer: SwingFinder writes the two constants SwingSeries states and
+    // nothing else inserts here. A CHECK would be a second statement of a fact
+    // SCHEMA already carries, in a place SCHEMA does not describe.
+    //
+    // `price` is TEXT because a swing is a price. That is the money rule rather
+    // than a preference, and it is the column that makes this table differ in
+    // storage type from the indicator table computed off the same bars.
+    const string CreateSwing = @"
+        CREATE TABLE swing (
+            ticker       TEXT NOT NULL,
+            session_date TEXT NOT NULL,
+            direction    TEXT NOT NULL,
+            price        TEXT NOT NULL,
+            confirmed_on TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date, direction)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -140,6 +169,7 @@ public static class SchemaMigrations
         new Migration(5, "create series_state", CreateSeriesState),
         new Migration(6, "membership.joined admits an unknown", JoinedMayBeUnknown),
         new Migration(7, "create indicator", CreateIndicator),
+        new Migration(8, "create swing", CreateSwing),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

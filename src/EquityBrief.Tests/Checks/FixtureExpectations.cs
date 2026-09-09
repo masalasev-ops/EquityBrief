@@ -3,11 +3,14 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Swings;
 using EquityBrief.Core.Time;
+using EquityBrief.Data.Swings;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Swings;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
@@ -35,6 +38,8 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "bars"),
             CheckReach.Key(Scope.FixtureTable, "news"),
             CheckReach.Key(Scope.FixtureTable, "indicators"),
+            CheckReach.Key(Scope.FixtureTable, "swings"),
+            CheckReach.Key(Scope.LimitsTable, "Swing lookback"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, 200-day average"),
         ]);
 
@@ -530,6 +535,263 @@ public class FixtureExpectations
         Assert.Equal(
             [expected.GetProperty("suspectExpected").GetInt32().ToString()],
             Query(store, $"SELECT COUNT(*) FROM series_state WHERE state = '{CorporateActionChecker.Suspect}';"));
+    }
+
+    // ---- 3.2, the swings ----
+
+    static async Task<TemporaryStore> WithSwings()
+    {
+        var store = await Replayed();
+
+        await new SwingFinder(
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("replay-swings");
+
+        return store;
+    }
+
+    [Fact]
+    public async Task TheSwingsMatchTheArithmeticOverTheCommittedBars()
+    {
+        // The whole diff, name by name, rather than a count and a sample. A
+        // count agrees with a finder that marked the wrong days in the right
+        // number, and a sample agrees with one that found half of them.
+        var expected = Expected("swings");
+        var names = expected.GetProperty("namesComputed").EnumerateArray().Select(name => name.GetString()!).ToArray();
+        var rows = expected.GetProperty("rows");
+
+        using var store = await WithSwings();
+
+        Assert.Equal(
+            [expected.GetProperty("rowsExpected").GetInt32().ToString()],
+            Query(store, "SELECT COUNT(*) FROM swing;"));
+
+        foreach (var ticker in names)
+        {
+            Assert.Equal(
+                rows.GetProperty("byName").GetProperty(ticker).EnumerateArray().Select(row => row.GetString()!),
+                Query(store, $"SELECT session_date, direction, price, confirmed_on FROM swing WHERE ticker = '{ticker}' ORDER BY session_date, direction;"));
+
+            var counts = expected.GetProperty("perName").GetProperty(ticker);
+
+            Assert.Equal(
+                [$"{counts.GetProperty("highs").GetInt32()}|{counts.GetProperty("lows").GetInt32()}"],
+                Query(store, $"SELECT SUM(direction = 'high'), SUM(direction = 'low') FROM swing WHERE ticker = '{ticker}';"));
+        }
+
+        // The lookback the expectation was derived at is the one the code uses.
+        // Section 17 states the number and this diff is its Asserted by column,
+        // so the two are read against each other here rather than left to agree
+        // by coincidence.
+        Assert.Equal(
+            SwingSeries.Lookback,
+            expected.GetProperty("lookback").GetProperty("barsEachSide").GetInt32());
+
+        // The session count is the same population the indicators run over, so
+        // a fixture whose window moved would fail here as well as there.
+        Assert.Equal(
+            expected.GetProperty("sessionsPerName").GetInt32().ToString(),
+            Query(store, "SELECT COUNT(DISTINCT session_date) FROM bar WHERE ticker = 'AAPL';").Single());
+    }
+
+    [Fact]
+    public async Task TheWorkedSwingIsAboveTheSixSessionsAroundIt()
+    {
+        // The expectation asserted against the store rather than trusted, the
+        // way the twenty closes behind the worked average are.
+        //
+        // Against the store and not against the committed bar file, which is the
+        // difference from that one. A swing compares highs and lows, and those
+        // are adjusted before they are stored, so the file's numbers are not the
+        // ones the comparison ran over. The stored series is asserted against the
+        // file by the bars expectation and by bar-bounds, so reading it here is
+        // reading something already held rather than assuming it.
+        var worked = Expected("swings").GetProperty("workedExample");
+        var ticker = worked.GetProperty("name").GetString()!;
+        var session = worked.GetProperty("session").GetString()!;
+
+        using var store = await WithSwings();
+
+        var window = worked.GetProperty("window")
+            .EnumerateArray()
+            .Select(row => string.Join("|", row.EnumerateArray().Select(cell => cell.GetString())))
+            .ToArray();
+
+        Assert.Equal(SwingSeries.Lookback * 2 + 1, window.Length);
+
+        var first = window[0].Split('|')[0];
+        var last = window[^1].Split('|')[0];
+
+        Assert.Equal(
+            window,
+            Query(store, $"SELECT session_date, high, low FROM bar WHERE ticker = '{ticker}' AND session_date BETWEEN '{first}' AND '{last}' ORDER BY session_date;"));
+
+        // The middle session's high above all six others, read off the window
+        // the expectation names rather than restated.
+        var highs = window.Select(row => decimal.Parse(row.Split('|')[1], CultureInfo.InvariantCulture)).ToArray();
+        var peak = highs[SwingSeries.Lookback];
+
+        Assert.All(
+            highs.Where((_, index) => index != SwingSeries.Lookback),
+            neighbour => Assert.True(peak > neighbour, $"{session} has a high of {peak} and a neighbour at {neighbour}."));
+
+        // And the row is in the store, with the confirmation date the seventh
+        // session of the window carries.
+        Assert.Equal(
+            [$"{worked.GetProperty("price").GetString()}|{last}"],
+            Query(store, $"SELECT price, confirmed_on FROM swing WHERE ticker = '{ticker}' AND session_date = '{session}' AND direction = '{worked.GetProperty("direction").GetString()}';"));
+
+        Assert.Equal(worked.GetProperty("confirmedOn").GetString(), last);
+    }
+
+    [Fact]
+    public async Task ASessionThatWouldBeASwingAtTwoBarsEachSideIsNotOneAtThree()
+    {
+        // Section 17's swing lookback, asserted rather than agreed with.
+        //
+        // Every test above would pass unchanged against a finder comparing two
+        // bars each side or four, because they compare its output with an
+        // expectation derived at three and a wrong lookback would simply make
+        // both wrong together. This one names a session where the two answers
+        // differ, which is the only kind of case that can tell them apart.
+        var near = Expected("swings").GetProperty("notASwingAtThisLookback");
+        var ticker = near.GetProperty("name").GetString()!;
+        var session = near.GetProperty("session").GetString()!;
+
+        var window = near.GetProperty("window")
+            .EnumerateArray()
+            .Select(row => row.EnumerateArray().Select(cell => cell.GetString()!).ToArray())
+            .ToArray();
+
+        var highs = window.Select(row => decimal.Parse(row[1], CultureInfo.InvariantCulture)).ToArray();
+        var middle = SwingSeries.Lookback;
+
+        // Highest of the five, which is what a two-bar lookback would see.
+        Assert.All(
+            new[] { highs[middle - 2], highs[middle - 1], highs[middle + 1], highs[middle + 2] },
+            neighbour => Assert.True(highs[middle] > neighbour, $"{session} is not the highest of its five bars."));
+
+        // And not the highest of the seven, which is what a three-bar lookback
+        // sees. The outer pair is where the difference lives.
+        Assert.True(
+            highs[middle] < highs[middle - 3] || highs[middle] < highs[middle + 3],
+            $"{session} is the highest of its seven bars, so it does not tell two bars each side from three.");
+
+        using var store = await WithSwings();
+
+        Assert.Equal(
+            window.Select(row => string.Join("|", row)),
+            Query(store, $"SELECT session_date, high, low FROM bar WHERE ticker = '{ticker}' AND session_date BETWEEN '{window[0][0]}' AND '{window[^1][0]}' ORDER BY session_date;"));
+
+        Assert.Empty(
+            Query(store, $"SELECT session_date FROM swing WHERE ticker = '{ticker}' AND session_date = '{session}' AND direction = '{near.GetProperty("direction").GetString()}';"));
+    }
+
+    [Fact]
+    public async Task TheEdgesOfTheStoredSeriesCarryNoSwingAndNoSessionIsBothDirections()
+    {
+        var expected = Expected("swings");
+        var edges = expected.GetProperty("edges");
+
+        using var store = await WithSwings();
+
+        foreach (var key in new[] { "firstSessionsWithNoSwing", "lastSessionsWithNoSwing" })
+        {
+            var sessions = edges.GetProperty(key).EnumerateArray().Select(day => day.GetString()!).ToArray();
+
+            Assert.Equal(SwingSeries.Lookback, sessions.Length);
+
+            // Over every name, not only the one the dates were read from. The
+            // three names share a trading calendar, so the edge sessions are the
+            // same three at each end for all of them.
+            Assert.Empty(Query(
+                store,
+                $"SELECT ticker, session_date FROM swing WHERE session_date IN ({string.Join(", ", sessions.Select(day => $"'{day}'"))});"));
+        }
+
+        // A session may be a swing high and a swing low at once, and none in this
+        // fixture is. The count is stated so a fourth name that has one is a
+        // change somebody reads.
+        Assert.Equal(
+            [expected.GetProperty("bothDirections").GetProperty("count").GetInt32().ToString()],
+            Query(store, "SELECT COUNT(*) FROM (SELECT ticker, session_date FROM swing GROUP BY ticker, session_date HAVING COUNT(*) > 1);"));
+    }
+
+    [Fact]
+    public async Task ASwingIsNotVisibleToAReaderAsOfADateBeforeItsLookbackCompleted()
+    {
+        // 3.2's second done condition, and the reason confirmed_on is a column.
+        //
+        // The row this withholds is dated before the as-of date and confirmed
+        // after it. A reader filtering on session_date returns it and gets a peak
+        // nobody could have seen at the time; a reader filtering on confirmed_on
+        // does not. Both queries return rows and both look right, which is why
+        // the property is asserted here rather than left to the shape of a
+        // WHERE clause somebody may rewrite.
+        var asOf = Expected("swings").GetProperty("asOf");
+        var ticker = asOf.GetProperty("name").GetString()!;
+        var date = DateOnly.ParseExact(asOf.GetProperty("date").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        using var store = await WithSwings();
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        var visible = StoredSwings.AsOf(connection, ticker, date);
+
+        Assert.Equal(asOf.GetProperty("visible").GetInt32(), visible.Count);
+        Assert.All(visible, swing => Assert.True(
+            swing.ConfirmedOn <= date,
+            $"{swing.SessionDate:yyyy-MM-dd} was confirmed on {swing.ConfirmedOn:yyyy-MM-dd}, after the as-of date."));
+
+        var withheld = asOf.GetProperty("withheld")
+            .EnumerateArray()
+            .Select(row => row.GetString()!.Split('|'))
+            .ToArray();
+
+        // The population that makes this a test rather than a tautology: at
+        // least one row dated at or before the as-of date and confirmed after
+        // it. Without one, filtering on either column returns the same set and
+        // the assertion above holds against the wrong query.
+        Assert.NotEmpty(withheld);
+
+        foreach (var row in withheld)
+        {
+            var session = DateOnly.ParseExact(row[0], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            Assert.True(session <= date, $"{row[0]} is not before the as-of date, so it proves nothing.");
+            Assert.DoesNotContain(visible, swing => swing.SessionDate == session && swing.Direction == row[1]);
+
+            // And it is in the store, so the reader is withholding a row rather
+            // than answering about one that was never written.
+            Assert.Equal(
+                [string.Join("|", row)],
+                Query(store, $"SELECT session_date, direction, price, confirmed_on FROM swing WHERE ticker = '{ticker}' AND session_date = '{row[0]}' AND direction = '{row[1]}';"));
+        }
+
+        // The counter-reading, in the same test rather than in a comment. As of
+        // the last confirmation date the fixture holds, everything is visible,
+        // so the filter is withholding by date rather than by anything else.
+        Assert.Equal(
+            Query(store, $"SELECT COUNT(*) FROM swing WHERE ticker = '{ticker}';").Single(),
+            StoredSwings.AsOf(connection, ticker, new DateOnly(2026, 12, 31)).Count.ToString());
+    }
+
+    [Fact]
+    public async Task ASecondSwingRunReplacesRatherThanDuplicating()
+    {
+        // The same property the indicators carry, and it matters more here:
+        // `swing` has no declared deleter, so a run that inserted instead of
+        // upserting would fail on the primary key and a run that wrote new rows
+        // would leave the old ones with nothing able to remove them.
+        using var store = await WithSwings();
+
+        var before = Query(store, "SELECT COUNT(*), COUNT(DISTINCT confirmed_on) FROM swing;");
+
+        await new SwingFinder(
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("replay-swings-again");
+
+        Assert.Equal(before, Query(store, "SELECT COUNT(*), COUNT(DISTINCT confirmed_on) FROM swing;"));
     }
 
     // ---- the expectation sweep, carried out of the phase 1 sign-off ----
