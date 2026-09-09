@@ -25,6 +25,51 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - SCHEMA.md - the calendar's status column was a field the provider does not file
+Corrects: 4.0 gave the `calendar` table a `status` column carrying `confirmed` or `estimated`, on
+the reasoning that a booked print and an unconfirmed one are different things. They are, and the
+provider files no such field. Found at 4.3 by capturing the endpoint before writing the parser,
+which is the rule 1.6 and 1.7 set after 1.2 stored a membership parser reading a field the
+provider does not send.
+Was:
+> | `status` | TEXT | `confirmed` or `estimated`, as the provider files it |
+> and a note arguing that a name whose next print is an estimate is a different thing from one
+> whose print is booked
+Now:
+> | `timing` | TEXT | `before`, `after`, or `unstated`, which is when in the session the provider
+> says it falls |
+> and a note recording what the payload carries, what it does not, and how the difference was
+> found
+Why: what the provider does carry is whether the report lands before the session or after it,
+which decides which bar prices the print, and that earns a column for the same reason the status
+was thought to. The explicit blank the failure table promises needs no status column: the row
+exists or it does not.
+
+### 2026-09-09 - SCHEMA.md - the calendar window is a quarter
+Authorised by: A calendar event is fetched once for the whole index, and the calendar holds provider events only
+Was:
+> the note said the fetcher drops rows for events that have fallen out of the window it fetches
+> and did not say what the window is
+Now:
+> ninety days, with the reason: every name reports once a quarter, so a quarter ahead holds every
+> member's next print, and a window equal to the twenty-session horizon would mean a date arrives
+> already inside it
+Why: measured on the capture rather than assumed. The four fixture names' next prints fall six to
+eight weeks out, which is outside a horizon-sized window and inside this one, so a horizon-sized
+window would have made the earnings-soon condition fire on the day the provider published the date
+rather than on the name approaching it.
+
+### 2026-09-09 - ARCHITECTURE.html, RUNBOOK.md - the calendar endpoint's weight, measured
+Authorised by: The night's cost is counted in weighted calls against the stated daily allowance
+Was:
+> the weighted-call row named the bulk file at 100, a ticker's history at 1, fundamentals at 10
+> and news at 5, and the runbook's weights paragraph said the same four
+Now:
+> both name the earnings calendar at 1 for a whole window
+Why: measured at 4.3 against the account's own request counter rather than read from
+documentation, which is what the done condition asks and where the other four figures came from.
+One request over ninety days returned 22,526 rows worldwide and moved the counter by one.
+
 ### 2026-09-09 - SCHEMA.md - five computed tables get their deleter
 Authorised by: Every computed table's writer is its own deleter
 Was:

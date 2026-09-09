@@ -1,0 +1,56 @@
+{
+  "stage": "calendar",
+  "derivedFrom": "the captured calendar response read through the rules in section 7 and the window the fetcher asks for, not from a run. The window is the night's session and ninety days, so a night dated 2026-09-08 asks 2026-09-08 to 2026-12-07. Each row's ticker is its code without the exchange suffix, its date is report_date and never date, which is the fiscal period the report covers, and a row is stored only where the ticker is a current index member. Every figure below was read off the captured file by hand before the fetcher was run against it.",
+  "tables": ["calendar"],
+  "window": {
+    "session": "2026-09-08",
+    "from": "2026-09-08",
+    "to": "2026-12-07",
+    "days": 90,
+    "note": "a quarter and not the twenty-session earnings horizon. Every name reports once a quarter, so ninety days holds every member's next print, and a window equal to the horizon would mean a date arrives already inside it. Measured on this capture: the two names with a print report six and seven weeks out, which is outside a horizon-sized window and inside this one."
+  },
+  "capture": {
+    "rows": 7,
+    "note": "the provider's own envelope and row shape, trimmed to the fixture's constituents plus four the index does not hold: a US listing, a Frankfurt one, a Stuttgart one and a Singapore one. The unfiltered response over this window carries 22,526 rows worldwide."
+  },
+  "counts": {
+    "eventsReturned": 3,
+    "rowsWritten": 2,
+    "notMembers": 1,
+    "outsideTheWindow": 4
+  },
+  "rows": {
+    "format": "ticker|event_date|kind|timing",
+    "stored": [
+      "AAPL|2026-10-29|earnings|after",
+      "NFLX|2026-10-20|earnings|after"
+    ]
+  },
+  "detail": {
+    "note": "what the provider carries beyond the date. The estimate is kept as it was sent, as a string, because nothing computes with it.",
+    "byName": {
+      "AAPL": { "periodEnd": "2026-09-30", "estimate": "1.98", "actual": null },
+      "NFLX": { "periodEnd": "2026-09-30", "estimate": "0.82", "actual": null }
+    }
+  },
+  "refused": {
+    "AAL": "a constituent that left the index on 2026-09-23 by the membership expectation, so it is in the store's membership and not in the index tonight. Its print on 2026-10-22 is inside the window and is not stored, which is the only reason this row is in the capture.",
+    "outsideTheWindow": [
+      "A1B.STU 2026-09-07",
+      "IDEXY.US 2026-09-07",
+      "IXD2.F 2026-09-07",
+      "NEX.SG 2026-09-07"
+    ]
+  },
+  "absent": {
+    "KEYS": "no row in the capture over this window, so the calendar says the date is not on file",
+    "MSFT": "no row in the capture over this window, so the calendar says the date is not on file",
+    "note": "two of the four names have a date and two do not, which is what makes the explicit blank a state this fixture reaches rather than one only a constructed case could show."
+  },
+  "properties": {
+    "oneRequestWhateverTheUniverseSize": "the feed counts one request for the window, and the count does not vary with the number of members",
+    "theTickerLosesItsExchange": "the provider sends AAPL.US and the store holds AAPL",
+    "theDateIsTheReportAndNotThePeriod": "AAPL reports on 2026-10-29 for a period ending 2026-09-30, and the two are a month apart",
+    "theProviderFilesNoConfirmedFlag": "no row carries a confirmed or estimated field, which is the column 4.0 wrote into SCHEMA and 4.3 replaced with the timing the provider does file"
+  }
+}

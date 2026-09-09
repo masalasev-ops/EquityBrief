@@ -246,9 +246,29 @@ internal static class Scope
             "every cell of the row is asserted against the declaration, the blanks included, against the row contradiction E repaired at 4.0",
             ByAccess),
         [CheckReach.Key(StoresTable, "Calendar")] = new Scoped(
-            Verdict.OutOfScope,
-            "nothing asserts this until 4.3",
-            string.Empty),
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, including the timing column that replaced the status 4.0 invented",
+            ByMigration),
+        [CheckReach.Key(CatalogueTable, "Calendar fetcher")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the feed and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Calendar fetcher")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the index's dated events for the horizon, one request, and store what the provider files (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only).")] = new Scoped(
+            Verdict.Pass,
+            "the night runs it after the corporate actions and before the per-name work, and the feed's own count is one for the window whatever the universe size",
+            ByNight),
+        [CheckReach.Key(FixtureTable, "calendar")] = new Scoped(
+            Verdict.Pass,
+            "the captured response is diffed against what the rules produce over it, read off the file by hand before the fetcher was run: three events inside the window, two stored, and one refused for a name the index does not hold",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "Earnings date missing, the calendar")] = new Scoped(
+            Verdict.Pass,
+            "two of the four fixture names have no row over the window, and the page states that the date is not on file rather than drawing a blank",
+            ByExpectations),
         [CheckReach.Key(FixtureTable, "ladder")] = new Scoped(
             Verdict.Pass,
             "the trend state of all four names is diffed against a set derived from the rule outside this repository, with the averages and the last two swings of each kind stated beside the answer so a disagreement is traceable to an input",

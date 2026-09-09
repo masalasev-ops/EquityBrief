@@ -81,6 +81,7 @@ public class NightlyCost
     [
         "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdEarningsCalendarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
@@ -200,9 +201,22 @@ public class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         Assert.True(
-            MayHoldAClient.Length <= 5,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are five feeds. " +
-            "A sixth is a file that is not a feed, or a feed nobody declared.");
+            MayHoldAClient.Length <= 6,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are six feeds. " +
+            "A seventh is a file that is not a feed, or a feed nobody declared.");
+
+        // And the list holds exactly the feed implementations, in both
+        // directions, so a file added to it that is not a feed fails rather than
+        // passing quietly. It was six against five before 4.3 added the calendar.
+        var live = Repository.SourceFiles()
+            .Select(file => file[Repository.Root.Length..].Replace(Path.DirectorySeparatorChar, '/').TrimStart('/'))
+            .Where(file => file.Contains("/Providers/Eodhd", StringComparison.Ordinal))
+            .OrderBy(file => file, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(
+            live.Where(file => file.EndsWith("Feed.cs", StringComparison.Ordinal)),
+            MayHoldAClient.OrderBy(file => file, StringComparer.Ordinal));
 
         Assert.Empty(Offences(sources, MayHoldAClient));
     }

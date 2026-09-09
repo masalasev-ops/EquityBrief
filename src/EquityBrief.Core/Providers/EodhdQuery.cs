@@ -68,4 +68,10 @@ public static class ProviderWeights
     public const int Fundamentals = 10;
 
     public const int News = 5;
+
+    // Measured at 4.3 rather than read from documentation, which is what the
+    // done condition asks for and what the other four figures came from. One
+    // calendar request over a ninety-day window returned 22,526 rows worldwide
+    // and moved the account's own request counter by one.
+    public const int EarningsCalendar = 1;
 }

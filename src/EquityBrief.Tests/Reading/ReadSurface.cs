@@ -682,7 +682,8 @@ public class ReadSurface
             await api.IndicatorsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue),
             await api.LevelsAsync(Name),
             await api.ProfileAsync(Name),
-            await api.LadderAsync(Name));
+            await api.LadderAsync(Name),
+            await api.NextEventAsync(Name, DateOnly.MinValue));
 
         // The four marks section 15.9 lists for this region, each named and each
         // asserted, rather than a count of svg elements which two of one kind
@@ -731,7 +732,8 @@ public class ReadSurface
             await api.IndicatorsAsync("NOSUCH", DateOnly.MinValue, DateOnly.MaxValue),
             await api.LevelsAsync("NOSUCH"),
             await api.ProfileAsync("NOSUCH"),
-            await api.LadderAsync("NOSUCH"));
+            await api.LadderAsync("NOSUCH"),
+            await api.NextEventAsync("NOSUCH", DateOnly.MinValue));
 
         Assert.Contains("data-trend-state=\"none\"", missing, StringComparison.Ordinal);
     }

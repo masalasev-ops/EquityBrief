@@ -3,6 +3,7 @@ using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Levels;
@@ -103,7 +104,7 @@ public static class Nightly
         // records under an id it chose.
         runId ??= $"night-{clock.UtcNow:yyyyMMddTHHmmssZ}";
 
-        var (membership, historical, bulkFeed, corporate, _) = feeds;
+        var (membership, historical, bulkFeed, corporate, calendar, _) = feeds;
 
         // The order is section 14's, for the steps that exist. Migrate is not
         // one of its steps: it is what makes the store able to hold the night,
@@ -151,6 +152,21 @@ public static class Nightly
 
                 return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
                     $"{outcome.Suspect.Count} suspect, {outcome.Requests} request(s)";
+            }),
+            // The calendar, one request for the whole index's dated events over
+            // the window. The earnings date is needed nightly by the ladder
+            // builder and the shortlist builder, so it is here rather than on
+            // the on-demand path, and it is one request whatever the universe
+            // size.
+            new("calendar", async () =>
+            {
+                var outcome = await new CalendarFetcher(calendar, clock, store.DatabaseFile)
+                    .RunAsync(indexCode, clock.SessionDateAt(clock.UtcNow), runId, night.Token);
+
+                return $"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to " +
+                    $"{outcome.To:yyyy-MM-dd}, {outcome.RowsWritten} stored, " +
+                    $"{outcome.NotMembers} for names the index does not hold, " +
+                    $"{outcome.RowsDropped} dropped, {outcome.Requests} request(s)";
             }),
             // Section 14's per-name computations, one step each and in its
             // order. They were one step in the document until 4.0 and one step

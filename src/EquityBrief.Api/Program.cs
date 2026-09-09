@@ -88,8 +88,15 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     var profile = await read.ProfileAsync(ticker);
     var ladder = await read.LadderAsync(ticker);
 
+    // On or after the last stored session, so the strip states what is coming
+    // rather than what has been. A night's own session is what the calendar
+    // window starts at.
+    var nextEvent = await read.NextEventAsync(
+        ticker,
+        bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
+
     return Results.Content(
-        NameScreen.Region(page, marks, ticker, bars, indicators, levels, profile, ladder),
+        NameScreen.Region(page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent),
         "text/html; charset=utf-8");
 });
 

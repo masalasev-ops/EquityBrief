@@ -4,6 +4,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
@@ -72,6 +73,11 @@ public class FixtureReplay
             RecordedHistoricalBarFeed.FromFolder(Folder()),
             FixedClock.At(new DateTimeOffset(2026, 8, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
             store.DatabaseFile).RunAsync(Index, "replay-actions");
+
+        await new CalendarFetcher(
+            RecordedEarningsCalendarFeed.FromFolder(Folder()),
+            night,
+            store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "replay-calendar");
 
         await new IndicatorEngine(night, store.DatabaseFile).RunAsync("replay-indicators");
         await new SwingFinder(night, store.DatabaseFile).RunAsync("replay-swings");

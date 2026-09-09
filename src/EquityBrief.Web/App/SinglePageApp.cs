@@ -95,7 +95,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<SummaryBand> summary,
         IReadOnlyList<AbsentAverage> absent,
         string? trendState,
-        DateOnly? trendAsOf)
+        DateOnly? trendAsOf,
+        DateOnly? nextEvent)
     {
         var region = new StringBuilder();
 
@@ -108,6 +109,14 @@ public sealed class SinglePageApp : IComponent
         region.Append(trendState is null
             ? "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>"
             : Invariant($"<p class=\"trend-state\" data-trend-state=\"{Escaped(trendState)}\" data-as-of=\"{trendAsOf:yyyy-MM-dd}\">{Escaped(trendState.Replace('_', ' '))}</p>"));
+
+        // The next dated event, which section 15.9 puts in the fact strip. A
+        // name with none says the date is not on file rather than showing an
+        // empty space: a guessed date is a wrong date, and a blank is a date a
+        // reader supplies themselves.
+        region.Append(nextEvent is null
+            ? "<p class=\"fact-strip\" data-next-event=\"none\">next dated event: not on file</p>"
+            : Invariant($"<p class=\"fact-strip\" data-next-event=\"{nextEvent:yyyy-MM-dd}\">next dated event: {nextEvent:yyyy-MM-dd}</p>"));
 
         region.Append(marks.LevelChart(ticker, bars, averages, bands));
 
