@@ -25,6 +25,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - phase 4 becomes ten checkpoints, and fifteen obligations are entered
+Authorised by: Every computed table's writer is its own deleter
+Was:
+> phase 4 carried 4.0 through 4.7, with 4.1 as "The calendar fetcher and the trend state", 4.2
+> "Tranches and stops", 4.3 "Exits, the invalidation and the near-exit skip", 4.4 "The plan column
+> mark and the tables", 4.5 "The earnings trade", 4.6 "The arithmetic and the earnings rule" and
+> 4.7 "Phase 4 report"; and the carried obligations table held 28 rows
+Now:
+> 4.0 through 4.9. The nightly chain and the trend state at 4.1, retention on the computed tables
+> at 4.2, the calendar fetcher at 4.3, and the rest renumbered behind them. 4.0 gains the work
+> the phase 3 sign-off left it and the clause restoring the claim prediction. The obligations
+> table holds 43 rows
+Why: 4.1 as written carried a new feed, a new table, a contradiction, a matrix column, a new
+component and a new nightly chain at once, and done condition 9 raises the cost of every
+checkpoint. Retention is its own checkpoint rather than folded into 4.1 because a deleter built in
+the checkpoint that first populates the tables is a delete path whose first real exercise is a
+night nobody has watched, over the tables whose growth is the argument for the ruling. The fifteen
+new obligations are the six the phase 3 sign-off named and the nine mutations that survived it,
+each with the checkpoint that produces its evidence rather than a phase.
+
 ### 2026-09-09 - ARCHITECTURE.html - section 14's per-name step becomes nine, and the calendar joins the night
 Corrects: three components have shipped since phase 3 and no night has ever run one. `SwingFinder`,
 `VolumeProfileBuilder` and `LevelBuilder` are called only from the suite, so a production store

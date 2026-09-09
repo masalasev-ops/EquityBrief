@@ -388,7 +388,7 @@ internal static class Scope
         // count first reaches it. The catalogue row is not about one stage: its
         // Reads cell says "every component appends", so the row is a claim about
         // every component, and the last of them lands in phase 6.
-        ["Run log"] = "phase 7",
+        ["Run log"] = "6.9",
 
         // 1.2 builds the backfill, and this row is the limit on it rather than
         // the component. Its own Asserted by column names the run log's request
@@ -403,7 +403,7 @@ internal static class Scope
     {
         // 4.2 builds the ladder and never uses the component's name.
         ["Ladder builder"] = "4.2",
-        ["Report exporter"] = "phase 6",
+        ["Report exporter"] = "6.9",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -412,9 +412,9 @@ internal static class Scope
         // arrives rather than where the first does. The move annotator at 5.2
         // is that point; indicators land at 3.1 and ladders at 4.2.
         ["Indicators, swings, volume profile, levels, ladders, moves"] = "5.2",
-        ["Research store"] = "phase 6",
-        ["Theme store"] = "phase 6",
-        ["Source documents"] = "phase 6",
+        ["Research store"] = "6.3",
+        ["Theme store"] = "6.3",
+        ["Source documents"] = "6.2",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -447,7 +447,7 @@ internal static class Scope
         [CheckReach.Key("15.4 The two surfaces", "The app")] = "1.3",
         // Contradiction D's own case. The exporter is a phase 6 component and
         // this row is the surface it writes.
-        [CheckReach.Key("15.4 The two surfaces", "The exported report")] = "phase 6",
+        [CheckReach.Key("15.4 The two surfaces", "The exported report")] = "6.9",
 
         // Contradiction F. This row names four elements and they are drawn at
         // three different points, so the row is read as four claims. See
@@ -469,43 +469,43 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Distance row")] = "5.1",
         // Both need a listing and a reason behind them, which phase 5 is the
         // first to write.
-        [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] = "phase 5",
-        [CheckReach.Key("15.5 The mark vocabulary", "Listing strip")] = "phase 5",
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] = "5.6",
+        [CheckReach.Key("15.5 The mark vocabulary", "Listing strip")] = "5.4",
 
-        [CheckReach.Key("15.7 Tonight", "Night header")] = "phase 5",
-        [CheckReach.Key("15.7 Tonight", "Watch list")] = "phase 5",
-        [CheckReach.Key("15.7 Tonight", "The list")] = "phase 5",
-        [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = "phase 5",
-        [CheckReach.Key("15.7 Tonight", "Selected name")] = "phase 5",
-        [CheckReach.Key("15.7 Tonight", "Reason totals")] = "phase 5",
+        [CheckReach.Key("15.7 Tonight", "Night header")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "Watch list")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "The list")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = "5.6",
+        [CheckReach.Key("15.7 Tonight", "Selected name")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "Reason totals")] = "5.6",
 
-        [CheckReach.Key("15.8 Universe", "Sector strip")] = "phase 5",
-        [CheckReach.Key("15.8 Universe", "The table")] = "phase 5",
-        [CheckReach.Key("15.8 Universe", "Filters")] = "phase 5",
+        [CheckReach.Key("15.8 Universe", "Sector strip")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table")] = "5.4",
+        [CheckReach.Key("15.8 Universe", "Filters")] = "5.1",
 
-        [CheckReach.Key("15.9 Name", "Why it is here")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "Fact strip")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "The short version")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "How it got here")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "The chart")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "The plan")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "Dates and sources")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "Provenance footer")] = "phase 6",
-        [CheckReach.Key("15.9 Name", "Walk")] = "phase 6",
+        [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",
+        [CheckReach.Key("15.9 Name", "Fact strip")] = "6.1",
+        [CheckReach.Key("15.9 Name", "The short version")] = "6.4",
+        [CheckReach.Key("15.9 Name", "How it got here")] = "6.5",
+        [CheckReach.Key("15.9 Name", "The chart")] = "4.1",
+        [CheckReach.Key("15.9 Name", "The plan")] = "4.6",
+        [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Provenance footer")] = "6.4",
+        [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
 
-        [CheckReach.Key("15.10 Run", "Operational header")] = "phase 5",
+        [CheckReach.Key("15.10 Run", "Operational header")] = "5.6",
         // 7.5 is "Reason verdicts on the run page" and 7.4 is "The shadow
         // column", so two rows of this section are owed two phases after it.
         [CheckReach.Key("15.10 Run", "Reason records")] = "7.5",
         [CheckReach.Key("15.10 Run", "Shadow candidates")] = "7.4",
-        [CheckReach.Key("15.10 Run", "Stale and failed")] = "phase 5",
-        [CheckReach.Key("15.10 Run", "Harness")] = "phase 5",
+        [CheckReach.Key("15.10 Run", "Stale and failed")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Harness")] = "5.6",
 
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "phase 7",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "phase 7",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = "phase 7",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = "phase 7",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "7.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "7.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = "7.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = "7.5",
     };
 
     // Contradiction F. Section 15.5's Level chart names four elements, candles,
@@ -569,6 +569,16 @@ internal static class Scope
         // unasserted for the rest of the phase.
         [CheckReach.Key(FailureTable, "Fewer than 200 bars for a new index member")] =
             ["200-day average", "nn bars"],
+
+        // The fifth, and the one row that could not be re-pointed at 4.0
+        // without being read per surface. Its two halves are a phase apart: the
+        // calendar saying the date is not on file is what the fetcher stores or
+        // fails to store, and the earnings reason not firing is one of the six
+        // conditions, which arrives with the shortlist builder. Read whole it
+        // would be owed at 5.4 and the half that works would sit unasserted
+        // through the phase that builds it.
+        [CheckReach.Key(FailureTable, "Earnings date missing")] =
+            ["the earnings reason", "the calendar"],
     };
 
     // The claim subjects a row yields. One, itself, unless the row decomposes.
@@ -646,15 +656,16 @@ internal static class Scope
         // section's tables at 4.4, which is the last surface the cell names.
         ["A gap in one name's series, level and plan sections"] = "4.4",
         ["A split or dividend not caught"] = "1.6",
-        ["Cloud model unavailable"] = "phase 6",
-        ["A source is returned but its text cannot be retrieved"] = "phase 6",
-        ["A pass finds no admissible source for a section"] = "phase 6",
-        ["Claim checker rejects twice"] = "phase 6",
-        ["Spend cap reached"] = "phase 6",
-        ["Filing not yet parsed for a name"] = "phase 6",
+        ["Cloud model unavailable"] = "6.5",
+        ["A source is returned but its text cannot be retrieved"] = "6.2",
+        ["A pass finds no admissible source for a section"] = "6.2",
+        ["Claim checker rejects twice"] = "6.3",
+        ["Spend cap reached"] = "6.9",
+        ["Filing not yet parsed for a name"] = "6.1",
         ["A name whose trend state cannot be classified"] = "4.1",
-        ["No band is eligible to carry a tranche"] = "phase 4",
-        ["Earnings date missing"] = "phase 4",
+        ["No band is eligible to carry a tranche"] = "4.4",
+        ["Earnings date missing, the earnings reason"] = "5.4",
+        ["Earnings date missing, the calendar"] = "4.3",
         // The store half is reached at 3.1 by fixture-expectations, so only the
         // other element is owed. The name page's fact strip is where
         // "not available, nn bars" is read, and 3.5 is the checkpoint that first
@@ -664,11 +675,11 @@ internal static class Scope
         // universe screen, which is 5.1. 1.1 records the leave date and asserts
         // nothing a reader looks at.
         ["A name leaves the index"] = "5.1",
-        ["A condition has fired but nothing has resolved yet"] = "phase 7",
-        ["A section is assigned to the local lane that the machine cannot hold"] = "phase 6",
-        ["The machine slept and the overnight queue did not run"] = "phase 6",
-        ["Something tries to edit or delete a register row"] = "phase 7",
-        ["The candidate register and the correction disagree"] = "phase 7",
+        ["A condition has fired but nothing has resolved yet"] = "7.5",
+        ["A section is assigned to the local lane that the machine cannot hold"] = "6.4",
+        ["The machine slept and the overnight queue did not run"] = "6.8",
+        ["Something tries to edit or delete a register row"] = "7.3",
+        ["The candidate register and the correction disagree"] = "7.3",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -678,7 +689,7 @@ internal static class Scope
     // the last of them is.
     static readonly Dictionary<string, string> MatrixRows = new(StringComparer.Ordinal)
     {
-        ["Verification harness"] = "phase 7",
+        ["Verification harness"] = "6.9",
     };
 
     // Section 17's limits. Each row is a claim about the code, and the code
@@ -689,28 +700,28 @@ internal static class Scope
         // recorded run, which is the first point either limit is asserted.
         ["Model calls in the nightly run"] = "1.4",
         ["Per-name network calls in the nightly run"] = "1.4",
-        ["Nightly wall clock, 500 names"] = "phase 5",
+        ["Nightly wall clock, 500 names"] = "5.1",
         // Retention is what makes the year a limit rather than a description,
         // and it lands with the fetcher at 1.4.
         ["Bar history kept"] = "1.4",
         ["Level window"] = "3.4",
         ["Swing lookback"] = "3.2",
         ["Band merge distance"] = "3.4",
-        ["Tranches, exits"] = "phase 4",
-        ["Tranche eligibility"] = "phase 4",
-        ["Earnings horizon"] = "phase 4",
-        ["List display"] = "phase 5",
-        ["Research passes per name per open"] = "phase 6",
-        ["Research staleness triggers"] = "phase 6",
-        ["Scheduling of queued work"] = "phase 6",
+        ["Tranches, exits"] = "4.5",
+        ["Tranche eligibility"] = "4.4",
+        ["Earnings horizon"] = "4.7",
+        ["List display"] = "5.4",
+        ["Research passes per name per open"] = "6.7",
+        ["Research staleness triggers"] = "6.7",
+        ["Scheduling of queued work"] = "6.8",
         ["Claim rejection"] = "6.1",
-        ["Theme search parameters"] = "phase 6",
+        ["Theme search parameters"] = "6.6",
         ["Source admissibility"] = "6.1",
         ["Nightly row coverage"] = "5.1",
-        ["Reason record display"] = "phase 7",
-        ["Minimum resolved setups"] = "phase 7",
+        ["Reason record display"] = "7.5",
+        ["Minimum resolved setups"] = "7.5",
         ["Family size and correction"] = "7.1",
-        ["Frozen measurement windows"] = "phase 7",
+        ["Frozen measurement windows"] = "7.6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
@@ -743,10 +754,10 @@ internal static class Scope
         ["Evaluate the list reasons"] = "5.4",
         ["Write the facts file"] = "5.3",
 
-        ["Fill forward returns"] = "phase 5",
-        ["Count today"] = "phase 5",
-        ["Close the arithmetic"] = "phase 5",
-        ["Run the overnight queue"] = "phase 6",
+        ["Fill forward returns"] = "5.5",
+        ["Count today"] = "5.5",
+        ["Close the arithmetic"] = "5.5",
+        ["Run the overnight queue"] = "6.8",
     };
 
     internal static Scoped For(string table, string subject)
