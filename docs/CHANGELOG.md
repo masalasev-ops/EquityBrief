@@ -25,6 +25,23 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md, CLAUDE.md, ARCHITECTURE.html - the phase remap
+Corrects: nothing that was wrong. This is a reordering rather than a repair, and it is here
+because a renumbering deletes a line from three specs and `changelog-reconciles` reads the
+history rather than the intent.
+Was:
+> phases 2 through 6 were levels on the chart, the plan, tonight's list, research on demand and
+> the improvement loop, with their checkpoints numbered to match, and the roster's checkpoint
+> rows read from 2.1, from 4.1, from 5.1 and from 6.1
+Now:
+> the same five phases at 3 through 7 with their checkpoints moved with them, the roster rows at
+> from 3.1, from 5.1, from 6.1 and from 7.1, and phase 2 left empty for the feed work
+Why: no feed reaches the network, so the level work would be built and calibrated against a
+fixture no provider produced. The reasoning is in `PROGRESS.md`'s entry of the same date,
+including why the feed work is a phase rather than a checkpoint and why renumbering was taken
+over an inserted phase 1A.
+
+
 ### 2026-09-08 - CLAUDE.md - four claims in the corrected verify-phase passage
 Corrects: the passage rewritten by the entry below, checked once and wrong in four places.
 Found by an adversarial review of that same commit before it merged. Green was said to mean

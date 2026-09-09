@@ -173,10 +173,10 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `ci-parity` | every CI run | `tools/ci.ps1` and `tools/ci.sh` run the same steps in the same order, and a step that fails fails the script it runs in |
 | `two-platform` | the matrix | The suite passes on both windows and macos runners |
 | `nightly-cost` | every CI run | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run, with the run measured over two universe sizes so the count is shown not to grow with the population |
-| `fixture-replay` | from 2.1 | The pipeline over the committed fixture matches every expectation, with every figure it produces named by one |
-| `listings-coverage` | from 4.1 | A listings row exists for every index member on every night the run completed |
-| `claim-admissibility` | from 5.1 | A poisoned paragraph, an unsourced claim, and each inadmissible document class are refused, and nothing resting on them is written |
-| `register-append-only` | from 6.1 | The candidate register refuses updates and deletes, and the correction divisor matches the rows registered before the window opened |
+| `fixture-replay` | from 3.1 | The pipeline over the committed fixture matches every expectation, with every figure it produces named by one |
+| `listings-coverage` | from 5.1 | A listings row exists for every index member on every night the run completed |
+| `claim-admissibility` | from 6.1 | A poisoned paragraph, an unsourced claim, and each inadmissible document class are refused, and nothing resting on them is written |
+| `register-append-only` | from 7.1 | The candidate register refuses updates and deletes, and the correction divisor matches the rows registered before the window opened |
 
 **The table lists every check that runs, not only the properties this file argues for.** A check that runs as a CI step and is not declared here is a property nobody wrote down, and the phase report enumerates checks by name, so the two would disagree with nothing to reconcile them.
 

@@ -2405,3 +2405,51 @@ Notes:      the review that found all of this was run against the repair before 
             agents given the commit and told to break it. The two defeats were reproduced in
             worktrees rather than reasoned about, which is the only reason they are in this
             entry rather than in a later one.
+
+### 2.0 planning - the phase remap                                           2026-09-09
+Not a checkpoint entry. It belongs to 2.0, which has not landed. `BUILD_PLAN.md` places a phase
+            planning pass at that phase's opening checkpoint, and this is the first half of it:
+            the renumbering alone, so the substantive pass that follows is readable as a diff
+            rather than buried inside one.
+Remapped:   the feed work becomes phase 2, and levels, the plan, tonight's list, research and the
+            loop become phases 3 through 7. Every checkpoint moves with its phase: what was 2.1
+            is 3.1 and what was 6.8 is 7.8.
+Why:        no feed reaches the network. Every provider implementation is a recorded double, and
+            three of the fixture's names were captured by hand from endpoints no code has called.
+            Building the level work first means deriving every indicator, swing, profile and
+            level expectation from that fixture, and then calibrating the shelf threshold, the
+            merge distance and the profile window over it. 1.2 found a membership parser reading
+            a field the provider does not send, which the fixture had agreed with for two
+            checkpoints because the same session wrote both. That failure is available again
+            here, one layer down and across four stages at once.
+Why not 1A: `Reconciliation.Order` parses a phase with `int.Parse`, so a phase has to be an
+            integer and "1A" throws. `DuePoints.Built` recognises a landed checkpoint by a
+            leading digit, dot, digit, which never matches a heading beginning "1A.1", so such a
+            checkpoint could not register as landed and every claim due at it would stay out of
+            scope forever. Admitting it means changing `Order`, `PhaseOf`, `Compare` and `Built`,
+            which are the primitives deciding what landed and before mean, to accommodate a name.
+            Renumbering keeps every phase an integer and the order total, and its failures are
+            loud: `InThePlan` refuses a due point the plan does not have, `HasLanded` refuses one
+            already recorded, and the reconciliation runs both directions.
+Stale:      every forward reference in an entry above this one was stale rather than wrong when
+            written. Each was correct under the numbering in force on its own date, and this
+            remap is what made it point elsewhere. So a reference to phase 2 in an entry dated
+            before today means the level work, and the same words in an entry dated after today
+            mean the feeds. An entry's own date is what says which side of the remap it came
+            from, and nothing else does.
+Moved:      89 checkpoint tokens and every phase word in `BUILD_PLAN.md`. 40 due points, every
+            phase word and one prose range in `Scope.cs`. Four roster rows in `CLAUDE.md`. Two
+            checkpoint references and five phase rows in `ARCHITECTURE.html`.
+Not moved:  the eight tokens in `ARCHITECTURE.html` that look like checkpoints and are not.
+            Figure 5.1 is named twice and sections 6.1 through 6.6 are headings, so a blanket
+            shift would have renumbered all eight silently and left the document referring to
+            sections that do not exist. They were found by reading every token in context rather
+            than by trusting the pattern, which is the only reason they survived. Ten tokens
+            matched the shape and two of them were the ones meant.
+            And `CLAUDE.md`'s commit-subject example, which reads `Phase 2 / 2.0` for the pass
+            that writes phase 2's section. It is an illustration rather than a due point and it
+            is still true, because that is the subject this commit carries.
+Gap:        `BUILD_PLAN.md` and section 20 now run 0, 1, 3, 4, 5, 6, 7 with nothing at 2. The
+            commit after this one writes phase 2 into that gap. Nothing is due at a bare phase 2
+            today, so no check asks for it in between.
+Tests:      257, unchanged by a pass that renames due points and builds nothing.
