@@ -2004,3 +2004,244 @@ Carried:    the live feeds, filed at 1.4 and unchanged: every provider implement
 Not:        this entry does not sign phase 1 off. Sign-off is owed on the phase as a whole before
             phase 2's plan, by a session that has committed no code to it, and this session has
             committed code to every checkpoint in it.
+
+### Phase 1 sign-off                                                         2026-09-08
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. Every checkpoint
+            from 1.1 to 1.8 was committed by other sessions, and the 1.8 entry says in its own
+            last line that it does not sign the phase off.
+Verified:   by re-running rather than by reading the 1.8 entry. `tools/ci.ps1` green end to
+            end, all 6 steps, 251 tests passing inside it, exit 0. `tools/verify-phase.ps1`
+            green at 180 claims, 37 pass, 0 fail, 143 out of scope, 0 unexamined, 25 tables,
+            43 placements and verdicts reconciled against a floor of 34, fixture PRESENT with
+            1 captured over 5 constituents and 3 names, 32 checks on the roster and 28
+            carried. Windows PowerShell on this machine, at commit f48d9d6.
+Corrects:   the 1.8 entry's Measured line, which states 26 tables. The run at that same commit
+            reports 25, every entry before it reports 25, and every other figure on that line
+            reproduces exactly. The figure is a transcription error and the count is 25.
+Counts:     by verdict, over the 180 claims in `artifacts/phase-report.json` at f48d9d6: 37
+            PASS, 0 FAIL, 143 OUT OF SCOPE, 0 unexamined. The 37 by the instrument that
+            reached them: `component-access` 13, `schema-columns` 5, `corporate-actions` 4,
+            `nightly-cost` 4, `read-surface` 3, `nightly-run` 3, `architecture-conformance` 2,
+            `fixture-expectations` 2, `gap-refusal` 1.
+
+Reconstructed: the +2 at 1.2, which the 1.8 entry records as the one movement nobody accounted
+            for and declines to reconstruct. It is the Backfill becoming a component: one row
+            in section 7's component catalogue and one row in the read and write matrix, both
+            added by a68a504. Established three ways that agree. The diff of
+            `docs/ARCHITECTURE.html` across that commit is 4 insertions and 2 deletions, and
+            the two deletions are rewrites of an existing note and an existing limits row,
+            leaving those two rows as the only new claim-bearing lines. A re-implementation of
+            the harness's own counting rules over every phase 1 commit gives 160 before and 162
+            after, with 2 added and 0 removed, by multiset difference so a removal could not
+            hide inside a net figure. And the 1.2 entry already records the cause under Found,
+            that the backfill had no catalogue row and was made a component there. The shape
+            was accounted for once already: at 1.1 planning the mark renderer supplied one
+            catalogue claim and one matrix claim, and that entry said so.
+            The reason the 1.8 entry gives for leaving it does not hold. Done condition 8
+            refuses a prediction written after the run it predicts, because a forecast made
+            afterwards is not a forecast. It does not refuse explaining where a figure already
+            measured came from, which is what every other step of that chain is. The movement
+            was measured at the time and only its cause was missing, so recovering the cause
+            adds nothing to the prediction and closes the chain.
+Also:       the pass movement at 1.2, 8 to 11, which no entry accounts for either. Two of the
+            three are the Backfill rows and the third is the bar store claim turning from out
+            of scope to PASS as migration 3 landed.
+
+Ratio:      37 of 180 passing, against 4 of 158 at phase 0 close. Passing claims added per
+            checkpoint, from each entry's own Measured line: 1.1 +4, 1.2 +3, 1.3 +9, 1.4 +9,
+            1.5 +1, 1.6 +5, 1.7 +0, 1.8 +2, over a claim total moving 160, 162, 165, 165, 166,
+            167, 167, 180.
+            Of the 33 new passes, 28 came from code a check could then reach, 1 from the
+            harness reading more on its own, and 4 from both together. Of the 20 new claims,
+            17 came from the harness reading more. The two columns answer differently and both
+            answers hold: code is what turns a claim green, reading is what finds claims, and
+            in this phase reading found them faster than code turned them.
+            The figure that settles it is neither percentage. Out of scope moved 154 to 143, a
+            fall of 11, while the build retired 27 pre-existing out-of-scope claims and the
+            harness added 16 new ones. 16 of the 27 was given back. Held on the 158 that
+            existed when the phase opened, out of scope is 127 of 158, so the growing
+            denominator flatters the headline by about one point and in the opposite direction
+            to the one suspected. The convergence is real; the quantity of unasserted
+            architecture is what barely moved.
+Spot check: ten of the 143 out-of-scope claims drawn at random, seeded on the date so the draw
+            is reproducible, each read against its named due point and that point's text in
+            `BUILD_PLAN.md`. 5 of the 10 name a point that does the work.
+            The split is the finding rather than the score. All 4 that name a checkpoint are
+            right, clause for clause: Listings at 4.4, News pulse at 4.5, Staleness judge at
+            5.7, Volume profile builder at 2.3. Of the 6 that name only a phase, 1 lands right
+            and does so by coincidence, the nightly wall clock at phase 4 where 4.1 happens to
+            be the checkpoint that measures it. The other 5 resolve earlier than the work:
+            Dates and sources is 5.5, Reason record display is 6.5, the register row refusal is
+            6.3, no eligible band is 3.2, and the per-name nightly step is not complete until
+            4.4.
+            Early is the direction the corpus names as never safe. `HasLanded` resolves a
+            phase-only due point against any non-planning checkpoint in that phase, so a claim
+            saying phase 6 falls due at 6.1 and fails there. 74 of the 143 name a phase rather
+            than a checkpoint: 8 at phase 2, 5 at phase 3, 20 at phase 4, 29 at phase 5, 12 at
+            phase 6. `CLAUDE.md` says an out-of-scope claim names the checkpoint that ends it,
+            and `Scope.cs` accepts either, which is two documents disagreeing rather than an
+            oversight in any one map entry.
+            The nearest instance is dated. All 8 phase 2 claims fall due at 2.1, and read
+            against phase 2's checkpoints, 1 of the 8 is 2.1 work, the failure row for fewer
+            than 200 bars, which is 2.1's own done condition. The other 7 are owed later: the
+            swing lookback at 2.2, the volume profile mark at 2.3, the level window and the
+            band merge distance at 2.4, the momentum panel at 2.5, the six-store row not
+            complete until `move` at 4.2, and the distance row whose surfaces are the Universe
+            and Tonight screens. Recorded here and repaired nowhere: nothing in phase 2's plan
+            is touched by this entry.
+
+Broke:      three passing claims, each reached by a check whose declared reach was written
+            during this phase and none of them already carrying a permanent negative proof.
+            Every mutation was made in an isolated worktree at f48d9d6 and reverted, and the
+            main tree was not modified at any point.
+            One went red. Deleting the membership filter from `BarFetcher` falsifies the
+            section 14 step "store the bars for current members", and `nightly-run` fails at
+            its own assertion with 5 of 251 tests red. That PASS is load bearing.
+            Two did not.
+            Removing the transaction from the corporate action refetch, so the year is dropped
+            and reinserted in autocommit, leaves 251 of 251 passing. The two tests that claim
+            atomicity both induce their failure upstream of the only destructive statement, an
+            empty history feed that throws before the delete runs, so neither can observe a
+            half-replaced series. 1.6's done condition says the replacement is atomic, and the
+            code is atomic; what is absent is any assertion that would notice if it stopped
+            being.
+            Changing the bars expectation to name a traded session a market closure and to drop
+            a real one, 2026-07-06 in place of 2026-07-03, leaves 251 of 251 passing. The
+            derivation recomputes weekdays and sessions from a window and a closure list it
+            reads out of the file it is checking, then pins the results to the literals 261 and
+            252 and the closure count to 9. So a wrong total or a wrong window goes red, and a
+            wrong set of nine dates does not. All three captured series hold a bar for
+            2026-07-06 and none for 2026-07-03, so the fixture already carries the refutation
+            and nothing reads it. 1.8's done condition asks for an expectation derived rather
+            than frozen; the count is derived and the calendar it derives from is checked
+            against nothing.
+
+Found:      the finding that outranks those three, and it is about the instrument this entry is
+            written against. `tools/verify-phase` runs no check. It is one `dotnet run` of the
+            report generator, which parses `ARCHITECTURE.html`, reads section 14's list and the
+            fixture folder, and assembles the report from verdict literals in `Harness/Scope.cs`.
+            `Verdict.Fail` is assigned nowhere in that path, so the "fail 0" line is structural
+            rather than measured and cannot take another value, and green means nothing is
+            unexamined rather than that anything held.
+            Shown rather than argued. With the membership filter deleted and 5 tests failing,
+            `tools/verify-phase` printed the identical block, 180 claims, 37 pass, 0 fail, 143
+            out of scope, 0 unexamined, exit 0, and the claim about storing bars for current
+            members still read PASS by `nightly-run` with its note about current members
+            intact.
+            This is not a hole in the property. The suite asserts, `architecture-conformance`
+            reconciles that a passing claim names a check whose declared reach covers it, and
+            `tools/ci` is red the moment a property breaks, so the two instruments run together
+            do give the guarantee. What is wrong is the description. `CLAUDE.md` says
+            verify-phase runs the pipeline over the committed fixture, diffs every stage's
+            output against frozen expectations, and asserts each claim against the code, and it
+            does none of those three. A green phase report is a statement about scope and
+            attribution and never about behaviour, and neither surface it writes says so on its
+            face.
+
+Feed gap:   no feed reaches the network. All five provider implementations are recorded doubles
+            reading a file, `Nightly.RunAsync` constructs them inline and takes a fixture folder
+            as a required argument, and `tools/nightly` passes one positionally with a default.
+            There is no configuration switch and no injection seam. Every capture in `fixtures/`
+            was made by hand, at 1.1, 1.2, 1.4, 1.6 and 1.7, which is two more checkpoints than
+            the obligation paragraph in `BUILD_PLAN.md` records.
+            What a live feed owes beyond the double, each verified against the tree.
+            The HTTP client and a live class per feed, of which there is not one line: no
+            `System.Net.Http`, no client, no base address and no URL construction in any
+            shipped file.
+            `INewsFeed`, which does not exist, so news is the one feed whose request count is
+            not forced by an interface the way the other four force it.
+            The credential bind. `ProviderCredentials` names the key once, refuses a blank and
+            withholds itself from a log, and is constructed nowhere outside its own tests; both
+            configuration call sites read only the data root. `RUNBOOK.md` already states that
+            a blank or missing key is refused by name at startup, and no startup path reads the
+            key at all.
+            Retry, backoff, a per-request timeout and a night-level deadline, none of which
+            exists and none of which any document names, with no cancellation source to thread
+            because `Nightly.RunAsync` takes no token while every feed interface accepts one.
+            A definition of unavailable, which the failure table promises a behaviour for under
+            "Bulk price feed unavailable" and never defines, together with the rows it has none
+            of: a rejected rate, a slow answer, a truncated payload, and a response carrying the
+            wrong session. The last of those is the failure that reports green, since a night
+            answered with yesterday's bulk file logs one request and no error.
+            The `nightly-cost` carve-out. Its coverage half bans `System.Net.Http`,
+            `HttpClient`, `WebClient`, `HttpRequestMessage` and the socket constructor across
+            every shipped file outside the test project, so the first live feed turns a green
+            check red on the day it is written. The carve-out has to name what may hold a
+            client, or scope the scan to the components section 14 lists, rather than delete the
+            patterns, and it belongs in its own commit ahead of the first feed rather than
+            beside it.
+            Paging, which falsifies the limits row wording "bars arrive in one bulk file and
+            news in one feed request" the day a news request pages, and forces that row to be
+            restated as a limit that does not grow with the universe rather than as one request.
+            The weighted-call budget, stated in `RUNBOOK.md` as 100,000 with per-endpoint
+            weights, read by no code and pinned by no check, beside a `run_log.spend` column no
+            component writes.
+            Idempotency under a retry. `RUNBOOK.md` and section 14 both promise it, and today it
+            is a claim over a file that is always fully present. Over a wire it becomes a claim
+            about a retry landing inside the delete-and-reinsert refetch path SCHEMA declares,
+            which is the one place a partial write can cost stored bars.
+            And the schedule as a UTC instant. Section 14 ends by saying the run is scheduled
+            with Task Scheduler after the US close, naming a Windows-only mechanism and a
+            local-relative time against two hard rules, where `RUNBOOK.md` says the platform's
+            scheduler in UTC. Neither states the instant the provider posts the bulk file, which
+            live is what decides whether a night fetches tonight's session or last night's.
+Belongs:    phase 2 can be built without it, and that is why it has survived this long: phase 2
+            computes over stored bars and does not care where they came from. So phase 2 is the
+            cheapest place to put it and not the place that forces it.
+            The first checkpoint that cannot be built without it is 3.1, whose deliverable is
+            itself a live nightly fetcher for the calendar, against an endpoint never probed,
+            with no interface, no double, no capture, no `Feed` enum member and no step in
+            section 14. 4.1 is where the wall clock and the weighted-call budget stop being
+            decorative. 4.7, a week of unattended nights, is the done condition no number of
+            hand captures can satisfy, and 4.4's deferred "Bulk price feed unavailable" row
+            already rests on work no checkpoint owns.
+            The recommendation is that it is settled at 3.0 at the latest and built at the head
+            of phase 3 ahead of the calendar fetcher, because a calendar fetcher cannot be
+            specified before it is settled what a fetcher is, and 3.0 already owns contradiction
+            E and the missing calendar component. Doing it inside phase 2 instead is a
+            defensible scheduling choice and buys the same thing earlier, while nothing depends
+            on it. Either way it wants two rows rather than one: a carried obligation created at
+            1.4, and a specification hole, the second because the holes table is what forces a
+            `DECISIONS.md` entry where the obligations table forces only a date. Named here and
+            written into `BUILD_PLAN.md` by the pass that plans the phase that takes it, since
+            neither table is this entry's to edit.
+
+Green:      what it does not mean, for this phase. A night has run end to end and no night has
+            run against a provider: every feed is a recorded double reading a file a person
+            saved by hand, and `tools/nightly` will not start without being told which folder to
+            read. The store this repository creates holds 3 names and 5 constituents, against a
+            system specified for about 500. Every figure in the phase report is about the build,
+            computed from the corpus and the fixture and never from a store a night wrote, by a
+            tool that runs no check and cannot print a failure. The suite is what asserts, and
+            it stayed green through two of the three properties this entry removed by hand. What
+            phase 1 has established is that a chart can be drawn from stored bars, and that the
+            corpus and the code agree about what exists. It has established nothing about a
+            night nobody watched.
+
+Carried:    out of phase 1, each with the point that ends it.
+            The live feeds and the credential path, created at 1.4, due at 3.0. The largest by
+            some distance, and the only one that is a hole rather than a repair.
+            The atomicity of the corporate action refetch, asserted by nothing, created here,
+            due at 2.0 as a suite repair rather than a phase 3 item, because the code is correct
+            today and only the assertion guarding it is missing.
+            The closure list in the bars expectation, checked against nothing, created here, due
+            at 2.0. The captured series already carry the answer and the check does not read
+            them against it.
+            The description of `tools/verify-phase` in `CLAUDE.md`, which claims three things
+            the tool does not do, created here, due at 2.0. Either the tool runs the suite first
+            or the sentence is corrected and both report surfaces state that they presuppose a
+            green one.
+            74 out-of-scope claims naming a phase rather than a checkpoint, of which 8 fall due
+            at 2.1 and 7 of those 8 are owed later than 2.1, created here, due at 2.0.
+            Unchanged from the 1.8 entry: the remainder of the citation pass to 2.0, the macOS
+            runner, the source lists' review to 5.0, and the volume shelf threshold to 2.6.
+
+Verdict:    phase 1 is signed off. Eight checkpoints landed, `tools/ci` is green at 251 tests,
+            the phase report is green on everything it can assert, unexamined is zero, and no
+            claim passes without naming an instrument whose declared reach includes it. The
+            findings above are carried with due points rather than repaired here, because none
+            of them falsifies shipped behaviour: the refetch is atomic, the session count is
+            derived, and the night does what section 14 says it does. What each of them
+            falsifies is a claim about how well that is known, and keeping those two apart is
+            the thing this corpus exists to do.
