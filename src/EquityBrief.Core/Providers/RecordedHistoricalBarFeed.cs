@@ -7,7 +7,7 @@ namespace EquityBrief.Core.Providers;
 // network. One captured file per ticker, named for it.
 //
 // It ships for the same reason the membership double does: the fixture replay at
-// 2.1 runs the pipeline rather than the tests, and a double the shipped code
+// 3.1 runs the pipeline rather than the tests, and a double the shipped code
 // cannot be pointed at is one the pipeline cannot replay through. It holds no
 // HTTP client, so a test using it cannot fall back to the live provider.
 public sealed class RecordedHistoricalBarFeed(IReadOnlyDictionary<string, string> responses) : IHistoricalBarFeed

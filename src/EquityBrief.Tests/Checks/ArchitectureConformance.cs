@@ -233,35 +233,35 @@ public class ArchitectureConformance
         // wrong at every sign-off from here on, which is the shape of a check
         // that narrows its own scope and keeps passing.
         const string planningOnly = """
-            ### 2.0 planning - the pass that settles what phase 2 builds against
-            Not a checkpoint entry. It belongs to 2.0, which has not landed.
+            ### 3.0 planning - the pass that settles what phase 3 builds against
+            Not a checkpoint entry. It belongs to 3.0, which has not landed.
 
             ### 1.2 - the one-year backfill
             Built:      the backfill.
             """;
 
-        Assert.False(DuePoints.HasLanded("phase 2", planningOnly));
-        Assert.False(DuePoints.HasLanded("2.0", planningOnly));
+        Assert.False(DuePoints.HasLanded("phase 3", planningOnly));
+        Assert.False(DuePoints.HasLanded("3.0", planningOnly));
         Assert.True(DuePoints.HasLanded("phase 1", planningOnly));
 
         const string built = """
-            ### 2.1 - the indicator engine and the averages on the chart
+            ### 3.1 - the indicator engine and the averages on the chart
             Built:      the indicator engine.
             """;
 
-        Assert.True(DuePoints.HasLanded("phase 2", built));
-        Assert.True(DuePoints.HasLanded("2.1", built));
+        Assert.True(DuePoints.HasLanded("phase 3", built));
+        Assert.True(DuePoints.HasLanded("3.1", built));
 
         // The number is not what tells them apart. An entry headed with a
         // building checkpoint whose body opens the planning way is a planning
         // pass, and the old matcher had no way to see that at all.
         const string numberedLikeACheckpoint = """
-            ### 2.1 - the pass that settles what phase 2 builds against
-            Not a checkpoint entry. It belongs to 2.1, which has not landed.
+            ### 3.1 - the pass that settles what phase 3 builds against
+            Not a checkpoint entry. It belongs to 3.1, which has not landed.
             """;
 
-        Assert.False(DuePoints.HasLanded("phase 2", numberedLikeACheckpoint));
-        Assert.False(DuePoints.HasLanded("2.1", numberedLikeACheckpoint));
+        Assert.False(DuePoints.HasLanded("phase 3", numberedLikeACheckpoint));
+        Assert.False(DuePoints.HasLanded("3.1", numberedLikeACheckpoint));
     }
 
     [Fact]
@@ -610,7 +610,7 @@ public class ArchitectureConformance
         //
         // The claims out of scope is a fact about how much of the system is
         // unbuilt. So is the count answered by the plan: every checkpoint that
-        // lands moves claims out of this population, and at phase 6 it is zero
+        // lands moves claims out of this population, and at phase 7 it is zero
         // by construction. Neither size is a fact about the property, so the
         // floor sits far enough below the value that ordinary building never
         // reaches it, and catches the one thing worth catching: a derivation
@@ -797,17 +797,17 @@ public class ArchitectureConformance
         Assert.Equal("1.4", PlanCheckpoints.DueFor("Bar fetcher", PlanCheckpoints.In(after, floor: 2)));
 
         // A planning checkpoint names what it settles and builds none of it, so
-        // it can never be the answer. 3.0 named four components this way and
+        // it can never be the answer. 4.0 named four components this way and
         // reading a due point from it put every one of them before its code.
         const string planning = """
-            ### 3.0 Planning
+            ### 4.0 Planning
             Settles the trend classifier's rule.
 
-            ### 3.1 The calendar fetcher and the trend state
-            The trend classifier to the rule settled at 3.0.
+            ### 4.1 The calendar fetcher and the trend state
+            The trend classifier to the rule settled at 4.0.
             """;
 
-        Assert.Equal("3.1", PlanCheckpoints.DueFor("Trend classifier", PlanCheckpoints.In(planning, floor: 2)));
+        Assert.Equal("4.1", PlanCheckpoints.DueFor("Trend classifier", PlanCheckpoints.In(planning, floor: 2)));
 
         // And a subject the plan does not name derives nothing, which is what
         // sends it to the residual map rather than to a wrong answer.

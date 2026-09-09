@@ -20,7 +20,7 @@ public sealed record ChartBar(
 // This is the level chart mark with two of its four elements absent. Section
 // 15.5 names four: candles, the level bands, the moving averages and a volume
 // pane. Candles and the volume pane are drawn here at 1.3. The moving averages
-// arrive at 2.1 with the indicator engine and the bands at 2.4 with the level
+// arrive at 3.1 with the indicator engine and the bands at 3.4 with the level
 // builder, and both are drawn into this file rather than into a second one.
 //
 // That is the whole reason this is not a temporary chart. A temporary chart

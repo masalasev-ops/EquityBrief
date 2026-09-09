@@ -42,7 +42,7 @@ public sealed class ReadApi : IComponent
     //
     // Every store means every store the matrix has a column for. The candidate
     // register has no column and is not in the catalogue's phrase, so it is not
-    // declared here either; it arrives with the registrar in phase 6.
+    // declared here either; it arrives with the registrar in phase 7.
     public static ComponentAccess Access => new(
         Stores:
         [

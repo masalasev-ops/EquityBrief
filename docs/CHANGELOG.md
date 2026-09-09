@@ -25,6 +25,75 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - the feed rulings, and what they do to 2.1, 2.2 and 2.3
+Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
+Was:
+> 2.3 read "section 18 given the rows it lacks" without saying how many or which, 2.2 named the
+> policy settled at 2.0 without citing it, and 2.1 did not say where the provider's posting hour
+> comes from
+Now:
+> 2.3 names two rows and says why a rejected rate and a missed deadline add none, 2.2 cites the
+> retry decision, and 2.1 measures the posting hour from live fetches with the obligation
+> recorded in the table at the foot of this document
+Why: 2.0 settled what unavailable means, and the definition decides how many rows section 18 is
+short of. Written before the ruling, 2.3 could only say "the rows it lacks"; written after it,
+the count is a consequence rather than a guess. The two rows that remain are refused in different
+components, which is why they are two.
+
+
+### 2026-09-09 - BUILD_PLAN.md, ARCHITECTURE.html - phase 2 written into the gap
+Corrects: contradiction M, and nothing else. The rest is an addition: the remap of the same date
+left a gap at phase 2 deliberately and this fills it.
+Was:
+> section 14's closing note ended "It is scheduled with Task Scheduler after the US close", and
+> section 20's phase table ran 0, 1, 3, 4, 5, 6, 7 with no row at 2, and BUILD_PLAN's 3.1 opened
+> "Migration creating `indicator`."
+Now:
+> the section 14 note ends with the schedule as a UTC instant set after the provider posts the
+> day's bulk file, naming no scheduler and citing the decision that requires UTC; section 20
+> carries a phase 2 row; and 3.1 opens by repairing contradiction K in its own commit
+Why: the sentence named a Windows-only mechanism against **Nothing is written against one
+operating system** and a local time against **Queued work runs off-peak, and every schedule is
+written in UTC**. Two hard rules in one sentence, in the section that specifies the nightly run.
+The rest of the change writes the phase the remap left room for, with its holes, its
+contradictions and its checkpoints.
+
+
+### 2026-09-09 - ARCHITECTURE.html - the remap's second sweep
+Corrects: two defects in the remap of the same date, found by sweeping every tracked text file
+rather than the four the first pass listed by hand.
+Was:
+> section 20's phase table ended its levels row "all phase-2 rows PASS across four names" and
+> its plan row "all phase-3 rows PASS", and section 23's dated rows read "Phase 5 gains an
+> obligation to store each listing's plan" and "a phase 6 expectation that the boundary is
+> measured against the reference"
+Now:
+> the two section 20 cells read phase-3 and phase-4, matching the rows they end; the two
+> section 23 rows are reverted to the phase numbers their own dates were written under
+Why: the first sweep matched a phase word followed by a space, so the two hyphenated cells were
+left describing the phases they used to belong to. Section 23 is the dated record of what each
+version of this document said, and a record is corrected by a new dated entry rather than by an
+edit, which is the rule `PROGRESS.md` was already being held to. The finding and the rule are in
+that record's entry of the same date.
+
+
+### 2026-09-09 - BUILD_PLAN.md, CLAUDE.md, ARCHITECTURE.html - the phase remap
+Corrects: nothing that was wrong. This is a reordering rather than a repair, and it is here
+because a renumbering deletes a line from three specs and `changelog-reconciles` reads the
+history rather than the intent.
+Was:
+> phases 2 through 6 were levels on the chart, the plan, tonight's list, research on demand and
+> the improvement loop, with their checkpoints numbered to match, and the roster's checkpoint
+> rows read from 2.1, from 4.1, from 5.1 and from 6.1
+Now:
+> the same five phases at 3 through 7 with their checkpoints moved with them, the roster rows at
+> from 3.1, from 5.1, from 6.1 and from 7.1, and phase 2 left empty for the feed work
+Why: no feed reaches the network, so the level work would be built and calibrated against a
+fixture no provider produced. The reasoning is in `PROGRESS.md`'s entry of the same date,
+including why the feed work is a phase rather than a checkpoint and why renumbering was taken
+over an inserted phase 1A.
+
+
 ### 2026-09-08 - CLAUDE.md - four claims in the corrected verify-phase passage
 Corrects: the passage rewritten by the entry below, checked once and wrong in four places.
 Found by an adversarial review of that same commit before it merged. Green was said to mean

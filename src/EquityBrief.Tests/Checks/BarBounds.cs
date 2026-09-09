@@ -16,7 +16,7 @@ internal sealed record ImpossibleBar(string Ticker, string SessionDate, string R
 // This is the check the 1.2 store needed and did not have. The backfill stored
 // the provider's adjusted close beside its unadjusted open, high and low, and 96
 // of 756 fixture bars carried a close outside their own low and high. Nothing
-// looked. Every figure phase 2 computes rests on these rows, and the first thing
+// looked. Every figure phase 3 computes rests on these rows, and the first thing
 // that would have shown it is a chart drawn a phase later.
 //
 // The finding is not the mixed price set. The finding is that a bar could be

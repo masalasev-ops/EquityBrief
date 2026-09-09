@@ -205,7 +205,7 @@ public class FixtureExpectations
         // 19.1's news row: the articles a research pass is allowed to read,
         // with their publish dates. What phase 1 owes is that the input exists
         // and is readable without a network; the admissibility rules that use
-        // it arrive at 5.2.
+        // it arrive at 6.2.
         var articles = RecordedNewsFeed.Parse(File.ReadAllText(
             Directory.GetFiles(Folder(), RecordedNewsFeed.FilePrefix + "*.json").Single()));
 

@@ -2405,3 +2405,223 @@ Notes:      the review that found all of this was run against the repair before 
             agents given the commit and told to break it. The two defeats were reproduced in
             worktrees rather than reasoned about, which is the only reason they are in this
             entry rather than in a later one.
+
+### 2.0 planning - the phase remap                                           2026-09-09
+Not a checkpoint entry. It belongs to 2.0, which has not landed. `BUILD_PLAN.md` places a phase
+            planning pass at that phase's opening checkpoint, and this is the first half of it:
+            the renumbering alone, so the substantive pass that follows is readable as a diff
+            rather than buried inside one.
+Remapped:   the feed work becomes phase 2, and levels, the plan, tonight's list, research and the
+            loop become phases 3 through 7. Every checkpoint moves with its phase: what was 2.1
+            is 3.1 and what was 6.8 is 7.8.
+Why:        no feed reaches the network. Every provider implementation is a recorded double, and
+            three of the fixture's names were captured by hand from endpoints no code has called.
+            Building the level work first means deriving every indicator, swing, profile and
+            level expectation from that fixture, and then calibrating the shelf threshold, the
+            merge distance and the profile window over it. 1.2 found a membership parser reading
+            a field the provider does not send, which the fixture had agreed with for two
+            checkpoints because the same session wrote both. That failure is available again
+            here, one layer down and across four stages at once.
+Why not 1A: `Reconciliation.Order` parses a phase with `int.Parse`, so a phase has to be an
+            integer and "1A" throws. `DuePoints.Built` recognises a landed checkpoint by a
+            leading digit, dot, digit, which never matches a heading beginning "1A.1", so such a
+            checkpoint could not register as landed and every claim due at it would stay out of
+            scope forever. Admitting it means changing `Order`, `PhaseOf`, `Compare` and `Built`,
+            which are the primitives deciding what landed and before mean, to accommodate a name.
+            Renumbering keeps every phase an integer and the order total, and its failures are
+            loud: `InThePlan` refuses a due point the plan does not have, `HasLanded` refuses one
+            already recorded, and the reconciliation runs both directions.
+Stale:      every forward reference in an entry above this one was stale rather than wrong when
+            written. Each was correct under the numbering in force on its own date, and this
+            remap is what made it point elsewhere. So a reference to phase 2 in an entry dated
+            before today means the level work, and the same words in an entry dated after today
+            mean the feeds. An entry's own date is what says which side of the remap it came
+            from, and nothing else does.
+Moved:      89 checkpoint tokens and every phase word in `BUILD_PLAN.md`. 40 due points, every
+            phase word and one prose range in `Scope.cs`. Four roster rows in `CLAUDE.md`. Two
+            checkpoint references and five phase rows in `ARCHITECTURE.html`.
+Not moved:  the eight tokens in `ARCHITECTURE.html` that look like checkpoints and are not.
+            Figure 5.1 is named twice and sections 6.1 through 6.6 are headings, so a blanket
+            shift would have renumbered all eight silently and left the document referring to
+            sections that do not exist. They were found by reading every token in context rather
+            than by trusting the pattern, which is the only reason they survived. Ten tokens
+            matched the shape and two of them were the ones meant.
+            And `CLAUDE.md`'s commit-subject example, which reads `Phase 2 / 2.0` for the pass
+            that writes phase 2's section. It is an illustration rather than a due point and it
+            is still true, because that is the subject this commit carries.
+Gap:        `BUILD_PLAN.md` and section 20 now run 0, 1, 3, 4, 5, 6, 7 with nothing at 2. The
+            commit after this one writes phase 2 into that gap. Nothing is due at a bare phase 2
+            today, so no check asks for it in between.
+Tests:      257, unchanged by a pass that renames due points and builds nothing.
+
+### Correction to the remap entry above - the sweep was scoped by hand         2026-09-09
+Not a checkpoint entry. It belongs to 2.0, like the entry it corrects, and it is written as a
+            new dated entry rather than as an edit because `PROGRESS.md` is append only.
+Corrects:   two sentences in the entry above. "Moved" lists four files and the remap touched
+            four files, which was true and was not the same thing as complete. And "its failures
+            are loud: `InThePlan` refuses a due point the plan does not have" is wrong as a
+            general claim, for the reason below. The rest of that entry stands.
+Found:      46 stale references across 18 files, none of them in the four the first pass swept.
+            The first pass chose its files by reading the remap and listing what it thought
+            carried numbers. This one derived them: every tracked text file except the two
+            append-only records, scanned for a checkpoint token or a phase word, 349 matches in
+            26 files read in context. The difference between the two counts is the whole
+            finding, and it is the same shape as the shape this corpus has now met five times:
+            a population chosen by hand is a population whose gaps are invisible.
+Quiet:      five of the misses were live due points in `PhaseReport.Placed`, which is where a
+            table too broad to be one claim is placed with the checkpoint that ends it. Section
+            11 was owed at 4.1, the lane table at 5.0, and sections 13.2, 13.3 and 19.2 at 6.1.
+            Every one of those still exists after the remap and none of them has landed, so
+            `InThePlan` had nothing to refuse and `HasLanded` had nothing to catch: the report
+            stayed green at 143 out of scope while five claims pointed at checkpoints doing
+            different work. A renumber goes loud only where it produces a due point the plan
+            does not have. Where the plan has a checkpoint at every number, it goes quiet, and
+            that is every renumber of a contiguous range. They are now 5.1, 6.0 and 7.1.
+Not moved:  a dated record keeps the numbering in force on its date. That was applied to
+            `PROGRESS.md` in the entry above and not to the two other places the corpus keeps
+            one, so the first pass rewrote two rows of `ARCHITECTURE.html`'s section 23, which
+            is the dated record of what each version of that document said. A row dated
+            2026-09-05 now says something that version did not say. Both are reverted, and the
+            same rule leaves the superseded entry in `DECISIONS.md` under "Previously decided"
+            alone: it carries the date it was superseded, which is what tells a reader which
+            numbering it used. Live text shifts, a dated record does not.
+Also:       `docs/DECISIONS.md`, `fixtures/README.md` and `source-lists.json` are none of them
+            specs, so none is in `CHANGELOG.md`, and each carried a reference nothing else
+            would have caught. `source-lists.json`'s was a review owed at 5.0, which is now
+            6.0, and it sits in a JSON string that no grep over the documents would reach.
+Constructed: the fabricated `PROGRESS.md` fragments inside `ArchitectureConformance` were moved
+            too, though their numbers are the test's own data and no assertion depends on which
+            they are. One of them read "### 2.1 - the indicator engine and the averages on the
+            chart", which is a statement about the plan whatever the code around it does with
+            it, and a reader has no way to tell a constructed number from a cited one.
+Claims:     180, 37 pass, 143 out of scope, 0 unexamined, all unchanged. Predicted before the
+            run and for a stated reason: every due point this repair moved went from an unlanded
+            checkpoint to another unlanded checkpoint, so no claim crosses the scope boundary in
+            either direction. A change in the figures would have meant the repair moved
+            something it was not meant to.
+Tests:      257, unchanged.
+
+### 2.0 planning - phase 2 written into the gap                              2026-09-09
+Not a checkpoint entry. It belongs to 2.0, which has not landed. This is the second half of the
+            planning pass: the remap left `BUILD_PLAN.md` and section 20 running 0, 1, 3, 4, 5,
+            6, 7 with nothing at 2, and this writes phase 2 into that gap.
+Built:      eight checkpoints, 2.0 to 2.7, in `BUILD_PLAN.md`. Six holes added to the holes
+            table, all settled at 2.0. Three contradictions added, K, L and M. A phase row in
+            section 20. Contradiction M resolved in the same pass, since it is one sentence.
+Visible:    2.1. The chart from 1.3 drawing a bar the provider sent tonight rather than one a
+            capture holds. Every phase opens with something to look at and this one can, because
+            the surface already exists and only the source of the bar changes.
+K:          section 16's matrix puts eight components' write one column to the right of the store
+            their catalogue row names. The plan that opened this pass said three rows and named
+            the indicator engine, the swing finder and the volume profile builder. Parsing the
+            table against the catalogue rather than reading it found eight: those three plus the
+            move annotator, the shortlist builder, the facts assembler, the forward return filler
+            and the news pulse counter. Level builder, ladder builder and fundamentals fetcher
+            are correct, which is what makes it a displacement rather than a convention somebody
+            meant. It is invisible today because `component-access` reaches a matrix row only
+            when its component exists in code, and none of the eight does.
+            All eight are repaired at 3.1 rather than three there and five in phase 5. One defect
+            with one cause, and the alternative leaves four cells known wrong in a spec across
+            two phases while the check that would catch them grows toward them.
+L:          found with K and kept apart from it. The shortlist builder's row disagrees with its
+            catalogue row in its reads as well as its write: the row reads fundamentals and news
+            pulse, the catalogue names levels, indicators, ladders, calendar and facts. K has one
+            answer per row, read straight off the Writes cell. This one does not, because what
+            the component reads is decided by section 11's six reasons, so it waits for 5.4.
+M:          section 14 closed by scheduling the night with Task Scheduler after the US close.
+            That is a Windows-only mechanism against one hard rule and a local time against
+            another, in one sentence, in the section the nightly run is specified in. The
+            sentence now states a UTC instant set after the provider posts the day's bulk file
+            and names no scheduler, because scheduling lives outside the application.
+Shadowed:   the suite refused the first version of this pass, which is the outcome it exists for.
+            Writing a checkpoint whose text names "Bulk price feed unavailable" gave the plan a
+            derivation for a subject `Scope.cs` also answered by hand, and
+            `EveryDuePointThePlanSuppliesIsReadFromThePlan` failed on the shadowing. The row is
+            now a declared exception under `DerivedIsEarly`, carrying the same 5.4 and the same
+            reason: the plan derives 2.3 because 2.3 decomposes the row, and the claim is owed at
+            5.4 because the row's "What you see" cell promises a banner and tonight's list.
+Prediction: 187 claims and 44 PASS at the end of phase 2, from 180 and 37 today. It is derived
+            rather than estimated, because section 18's gap row already shows what a
+            decomposition does to the count: 19 rows in that table produce 20 claims, the gap row
+            being two.
+            Seven new claims, named rather than counted, because a prediction of "seven" cannot
+            be missed legibly. An eighth found at 2.0 reads as a number that drifted and so does
+            one of the seven turning out unnecessary; named, both are visible as what they are.
+            Four new rows in section 18, in two kinds. Absence: the provider refuses the request
+            rate, and a feed answers past the night's deadline. Wrong content: a feed answers
+            with a truncated payload, and a feed answers with a session other than the one asked
+            for. The second kind is the one that reports green today, since a night answered with
+            yesterday's bulk file logs one request and no error.
+            One more from decomposing "Bulk price feed unavailable" per surface, exactly as the
+            gap row was decomposed at 1.5: the behaviour half passes at 2.3 and the banner half
+            stays out of scope until 5.4.
+            Two new rows in section 17: the per-request timeout with the night's deadline, and
+            the weighted-call budget, which `RUNBOOK.md` states as 100,000 and no code reads.
+            Six of the seven pass in the phase that creates them. The seventh is the banner half.
+Range:      185 to 188, and the rulings pass reports which end and why rather than restating the
+            number. Upward is a failure mode the sign-off inventory did not catch: that inventory
+            was built by reading the feed surface and section 18 together, and a mode that
+            appears only once the retry policy and the deadline are actually specified would
+            surface at 2.0 and not before. A credential rejected mid-night, and a partial answer
+            that parses cleanly and holds fewer names than the index, are the shapes to look for.
+            Downward is the two absence rows collapsing into one, or into the decomposed
+            unavailable row, because they share a behaviour: a refused rate and an answer past
+            the deadline both end as the feed did not answer, and section 18 already promises
+            what the system does then. If the definition of unavailable covers both, they are one
+            row or none. The two wrong-content rows cannot collapse the same way, because an
+            answer that arrives and is wrong is refused rather than treated as an absence, which
+            is a different behaviour and the whole reason the wrong-session row exists.
+Not built:  no code. This pass writes a plan and repairs one sentence. The rulings phase 2 needs
+            are the other half of 2.0 and land in the commit after this one, so a reader can see
+            the plan and the decisions as two diffs rather than one.
+Claims:     180, 37 pass, 143 out of scope, 0 unexamined, unchanged. Predicted before the run:
+            section 20 is placed as a whole rather than claimed row by row, so the phase row adds
+            none, and section 14's amended sentence sits in a note rather than in the ordered
+            list. Nothing is due at phase 2 yet, so no claim moved.
+Tests:      257, unchanged.
+
+### 2.0 planning - the feed rulings                                          2026-09-09
+Not a checkpoint entry. It belongs to 2.0, and it is the other half of it. The commit before this
+            one wrote the plan; this settles the six holes that plan assigns to 2.0, each as a
+            `DECISIONS.md` entry under a new heading, Feeds and the wire.
+Settled:    what unavailable means, and what wrong means beside it. The retry count, the backoff,
+            the per-request timeout and the night's deadline. The schedule as a UTC instant. What
+            a paged answer does to the request count. The weighted-call budget. And the shape of
+            the `nightly-cost` carve-out.
+Range:      the prediction stated 185 to 188 and named what would move it. It is 185, the bottom,
+            and it is the downward cause named in advance rather than a different one.
+            Two of the four failure rows collapse. A rejected request rate and an answer past the
+            deadline are both unavailable under the definition settled here, and section 18
+            already carries a row promising what the system does when a feed is unavailable:
+            keep last night's bars, mark every name stale, still serve the app, banner with the
+            data date. Two more rows would have repeated that row in all four of its cells, which
+            is the two-statements defect this corpus refuses everywhere else. They are induced as
+            two of that row's cases instead, so nothing goes untested and nothing is said twice.
+            The two wrong-content rows do not collapse, and the reason is sharper than the one
+            the prediction gave. It is not only that a wrong answer is refused rather than
+            treated as an absence. It is that the two are refused in different places: only the
+            feed can see the session date a payload declares, and only the fetcher knows how many
+            members the index holds. One is refused before parsing and the other after it, which
+            is two behaviours in two components and cannot be one row.
+Count:      185 claims and 42 PASS at the end of phase 2, from 180 and 37. Two new section 18
+            rows, one more from decomposing the unavailable row per surface, two new section 17
+            rows. 42 plus 143 out of scope is 185, which is the arithmetic checked at 2.7.
+Hour:       the schedule decision fixes the form and not the hour. A UTC instant, registered with
+            whatever scheduler the machine has, set at the provider's posting hour plus a margin.
+            The hour itself is measured at 2.1 from live fetches rather than taken from
+            documentation, and it is recorded as an obligation rather than left in this entry,
+            because a number nobody has measured written into a decision is the shape that gets
+            cited later as though it were settled.
+Carve-out:  the `nightly-cost` decision is about a check rather than about cost, and it is the
+            one of the six most likely to be got wrong quietly. The check scans every shipped
+            file for the outward-request types and reports zero, which is true only while no feed
+            reaches the network. Deleting the patterns would leave a check reporting the absence
+            of a scan as the absence of a client, inside the check that carries the nightly
+            path's own claim. The exemption is named instead, one file per live feed, and the
+            list is asserted to hold exactly the feed implementations.
+Not built:  still no code. 2.0 settles and builds none of it, which is why a planning checkpoint
+            can never be the answer to a due point.
+Claims:     180, 37 pass, 143 out of scope, 0 unexamined, unchanged. Predicted before the run:
+            a decision record carries no claim, and the plan amendments name checkpoints that
+            already existed. The 185 above is what phase 2 ends at, not what it stands at now.
+Tests:      257, unchanged.

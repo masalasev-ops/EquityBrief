@@ -7,7 +7,7 @@ namespace EquityBrief.Core.Providers;
 // the network.
 //
 // It ships rather than living in the suite because the fixture replay the corpus
-// asks for at 2.1 runs the pipeline, not the tests, and a double the shipped code
+// asks for at 3.1 runs the pipeline, not the tests, and a double the shipped code
 // cannot be pointed at is one the pipeline cannot replay through. It reaches no
 // network by construction: there is no HTTP client here to misconfigure, so a
 // test using it cannot fall back to the live provider when a path is wrong.

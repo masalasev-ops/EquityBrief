@@ -150,10 +150,10 @@ public class FixtureManifestTests
     {
         // The distinction, asserted rather than described.
         //
-        // fixtures/README.md says a fixture counts two things and that phase 2's
+        // fixtures/README.md says a fixture counts two things and that phase 3's
         // "widens to four names" means the second. A distinction that lives only
         // in prose is one a later session reads past, and this one is positioned
-        // to be misread: the phase 2 sentence says four and this fixture holds
+        // to be misread: the phase 3 sentence says four and this fixture holds
         // five constituents, so a reader who has not been told they are
         // different populations sees an obligation already met.
         var status = Fixtures.Of(Repository.Root);

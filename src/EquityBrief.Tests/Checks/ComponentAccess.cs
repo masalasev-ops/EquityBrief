@@ -103,11 +103,11 @@ public class ComponentAccess
 
         // The calendar is the known one and it is named, not swallowed. Four
         // components read a store SCHEMA does not declare and nothing writes,
-        // which is contradiction E, settled at 3.0.
+        // which is contradiction E, settled at 4.0.
         var known = unresolved.Where(term => term.Contains("calendar", StringComparison.OrdinalIgnoreCase)).ToArray();
 
         Assert.Equal(known.Length, unresolved.Length);
-        Assert.True(known.Length is > 0 and <= 6, $"{known.Length} calendar reads, expected between 1 and 6 until 3.0 settles it.");
+        Assert.True(known.Length is > 0 and <= 6, $"{known.Length} calendar reads, expected between 1 and 6 until 4.0 settles it.");
 
         // The other direction. A phrase the lexicon carries that no cell uses is
         // a translation nobody keeps current.
