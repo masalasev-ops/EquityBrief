@@ -160,6 +160,30 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The volume profile, one row per ticker, as-of date and price band.
+    //
+    // `band_low` and `band_high` are TEXT because they are prices, and
+    // `share_of_period` is REAL because it is a fraction of a count rather than
+    // a price. Both storage forms sit in one row here, which is the clearest
+    // statement in this store of what the money rule actually divides: the edges
+    // are money and the share is not.
+    //
+    // `share_count` is INTEGER and the arithmetic that fills it is a division, so
+    // the builder apportions rather than rounds. The primary key is the as-of
+    // date and the low edge, so a night recomputing its own date replaces its
+    // rows and a later night adds a set of its own.
+    const string CreateVolumeProfile = @"
+        CREATE TABLE volume_profile (
+            ticker          TEXT NOT NULL,
+            as_of           TEXT NOT NULL,
+            band_low        TEXT NOT NULL,
+            band_high       TEXT NOT NULL,
+            share_count     INTEGER NOT NULL,
+            share_of_period REAL NOT NULL,
+            PRIMARY KEY (ticker, as_of, band_low)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -170,6 +194,7 @@ public static class SchemaMigrations
         new Migration(6, "membership.joined admits an unknown", JoinedMayBeUnknown),
         new Migration(7, "create indicator", CreateIndicator),
         new Migration(8, "create swing", CreateSwing),
+        new Migration(9, "create volume_profile", CreateVolumeProfile),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

@@ -210,6 +210,22 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key(FixtureTable, "volume profile")] = new Scoped(
+            Verdict.Pass,
+            "the whole profile is diffed against bands found outside this repository, the shares in them are asserted to sum to the window's total read back off the bar table, and one session's spreading is checked against the overlaps its own range makes with the bands it covers",
+            ByExpectations),
+        [CheckReach.Key("15.5 The mark vocabulary", "Volume profile")] = new Scoped(
+            Verdict.Pass,
+            "the profile is drawn against the price axis the chart computed, asserted by the two marks declaring the same axis, by the topmost band sitting where the chart puts that price rather than at the top of its own pane, and by the same bands moving when a different axis is given",
+            ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Volume profile builder")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bar store it reads and the profile it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Volume profile builder")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(CatalogueTable, "Bar fetcher")] = new Scoped(
             Verdict.Pass,
             "the class declares the bulk feed it reads and the stores it touches, including the retention delete SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
@@ -546,6 +562,7 @@ internal static class Scope
     {
         ["fundamentals"] = "6.1",
         ["indicators"] = "3.1",
+        ["swings"] = "3.2",
         ["volume profile"] = "3.3",
         ["levels"] = "3.4",
         ["ladder"] = "4.2",
@@ -616,6 +633,7 @@ internal static class Scope
         // and it lands with the fetcher at 1.4.
         ["Bar history kept"] = "1.4",
         ["Level window"] = "3.4",
+        ["Swing lookback"] = "3.2",
         ["Band merge distance"] = "3.4",
         ["Tranches, exits"] = "phase 4",
         ["Tranche eligibility"] = "phase 4",

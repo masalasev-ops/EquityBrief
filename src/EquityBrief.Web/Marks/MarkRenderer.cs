@@ -27,6 +27,29 @@ public sealed record ChartBar(
 // the two worlds do not mix. It arrives already across that boundary.
 public sealed record ChartAverage(string Name, IReadOnlyList<double?> Values);
 
+// One band of the volume profile, as a mark is given it.
+//
+// Edges decimal because they are prices, shares long, and the share of the
+// period double because it is a fraction of a count. The mark draws the count
+// and states the share, which is the pair the report reads out loud.
+public sealed record ProfileBand(decimal Low, decimal High, long Shares, double ShareOfPeriod);
+
+// The price scale a chart drew, so another mark can draw against it.
+//
+// Section 15.5 says the volume profile is drawn against the same price axis as
+// the chart beside it. That is a claim about two pictures agreeing, and the only
+// way to make it hold by construction rather than by coincidence is to compute
+// the scale once and hand it to both. A profile that took its own low and high
+// from its own bands would be a picture whose rows line up with nothing, and it
+// would look entirely reasonable on its own.
+public sealed record PriceAxis(double Low, double High)
+{
+    // The span the scale is drawn over. A flat series has none and is drawn
+    // through the middle rather than refused, which is the rule the chart
+    // already applies to its candles.
+    public double Range => High - Low > 0 ? High - Low : 1;
+}
+
 // The marks, as SVG strings written server side.
 //
 // This is the level chart mark with one of its four elements absent. Section
@@ -59,6 +82,7 @@ public sealed class MarkRenderer : IComponent
     public const int FewestBars = 2;
 
     const int Width = 960;
+    const int ProfileWidth = 150;
     const int PriceHeight = 340;
     const int VolumeHeight = 90;
     const int Gap = 18;
@@ -77,6 +101,100 @@ public sealed class MarkRenderer : IComponent
     static double PlotValue(decimal price) => (double)price;
 
     static string Number(double value) => value.ToString("0.##", Invariant);
+
+    // The price scale the chart draws, computed here so the profile beside it
+    // can be given the same one.
+    //
+    // It takes in the averages as well as the candles, for the reason stated
+    // below: a 200-day average sits well under the price after a year of rising,
+    // and a scale drawn from the candles alone pushes it off the bottom of the
+    // pane where it reads as absent rather than as low. The profile does not
+    // widen it. A profile band lies inside the window's own high and low by
+    // construction, and a scale that stretched to fit a mark would make the two
+    // pictures disagree about where a price is, which is the whole thing this
+    // method exists to prevent.
+    public PriceAxis AxisFor(IReadOnlyList<ChartBar> bars, IReadOnlyList<ChartAverage>? averages = null)
+    {
+        var high = bars.Max(bar => PlotValue(bar.High));
+        var low = bars.Min(bar => PlotValue(bar.Low));
+
+        var drawn = (averages ?? []).SelectMany(line => line.Values).Where(value => value is not null).ToArray();
+
+        if (drawn.Length > 0)
+        {
+            high = Math.Max(high, drawn.Max()!.Value);
+            low = Math.Min(low, drawn.Min()!.Value);
+        }
+
+        return new PriceAxis(low, high);
+    }
+
+    // Where a price sits in the price pane, given the axis. One definition, used
+    // by the candles, the averages and the profile, because two mappings on one
+    // scale is a picture that lies about where the price is.
+    static double At(PriceAxis axis, double value) =>
+        PriceHeight - Margin - ((value - axis.Low) / axis.Range * (PriceHeight - (2 * Margin)));
+
+    // The volume profile, drawn horizontally against a price axis it is given.
+    //
+    // The width of a row is its share of the busiest band rather than of the
+    // period, because a profile whose rows were scaled to the period would be
+    // twenty short stubs on a name whose volume is evenly spread. The share of
+    // the period is on the row as a number instead, which is the figure the
+    // report quotes and the one the shelf threshold is read against.
+    public string VolumeProfile(string ticker, IReadOnlyList<ProfileBand> bands, PriceAxis axis)
+    {
+        if (bands.Count == 0)
+        {
+            return $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-bands=\"0\">" +
+                $"{Escaped(ticker)} has no volume profile, which is what a name with fewer than " +
+                $"sixty stored sessions gets.</p>";
+        }
+
+        foreach (var band in bands)
+        {
+            if (band.High <= band.Low)
+            {
+                throw new ArgumentException(
+                    $"A profile band runs from {band.Low} to {band.High}, which is not a band. A row " +
+                    "of no height would draw nothing and would take its share of the period with it.",
+                    nameof(bands));
+            }
+        }
+
+        var loudest = bands.Max(band => band.Shares);
+        var busiest = loudest > 0 ? loudest : 1;
+
+        var svg = new StringBuilder();
+
+        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {ProfileWidth} {PriceHeight}\" ");
+        svg.Append(Invariant, $"role=\"img\" class=\"volume-profile\" data-ticker=\"{Escaped(ticker)}\" ");
+        svg.Append(Invariant, $"data-bands=\"{bands.Count}\" data-axis-low=\"{Number(axis.Low)}\" data-axis-high=\"{Number(axis.High)}\">");
+        svg.Append(Invariant, $"<title>{Escaped(ticker)}, shares traded in {bands.Count} price bands</title>");
+        svg.Append("<desc>Shares traded in each price band, drawn against the price axis of the chart beside it.</desc>");
+
+        foreach (var band in bands)
+        {
+            var top = At(axis, PlotValue(band.High));
+            var bottom = At(axis, PlotValue(band.Low));
+            var width = (double)band.Shares / busiest * (ProfileWidth - (2 * Margin));
+
+            // A band whose whole span sits outside the axis draws nothing rather
+            // than being clamped to an edge, where it would read as a band at a
+            // price it is not at.
+            var height = bottom - top;
+
+            svg.Append(Invariant, $"<rect class=\"band\" data-band-low=\"{band.Low.ToString(Invariant)}\" ");
+            svg.Append(Invariant, $"data-band-high=\"{band.High.ToString(Invariant)}\" data-shares=\"{band.Shares}\" ");
+            svg.Append(Invariant, $"data-share-of-period=\"{band.ShareOfPeriod.ToString("0.#####", Invariant)}\" ");
+            svg.Append(Invariant, $"x=\"{Margin}\" y=\"{Number(top)}\" width=\"{Number(Math.Max(0, width))}\" ");
+            svg.Append(Invariant, $"height=\"{Number(Math.Max(0, height))}\" fill=\"var(--muted, #6a6a6a)\"/>");
+        }
+
+        svg.Append("</svg>");
+
+        return svg.ToString();
+    }
 
     public string LevelChart(
         string ticker,
@@ -106,27 +224,10 @@ public sealed class MarkRenderer : IComponent
             }
         }
 
-        var high = bars.Max(bar => PlotValue(bar.High));
-        var low = bars.Min(bar => PlotValue(bar.Low));
-
-        // The price scale takes in the averages as well as the candles. A 200
-        // day average sits well below the price after a year of rising, and a
-        // scale drawn from the candles alone would push it off the bottom of
-        // the pane where it reads as absent rather than as low.
-        var drawnValues = lines.SelectMany(line => line.Values).Where(value => value is not null).ToArray();
-
-        if (drawnValues.Length > 0)
-        {
-            high = Math.Max(high, drawnValues.Max()!.Value);
-            low = Math.Min(low, drawnValues.Min()!.Value);
-        }
-
-        var span = high - low;
-
-        // A flat series would divide by zero and is a real series: a name can
-        // trade at one price for every session in a short window. It is drawn
-        // as a line through the middle rather than refused.
-        var range = span > 0 ? span : 1;
+        // The one scale, computed by the method the profile beside this chart is
+        // given. A flat series has no span and is drawn through the middle
+        // rather than refused, which PriceAxis.Range carries.
+        var axis = AxisFor(bars, lines);
         var loudest = bars.Max(bar => bar.Volume);
         var busiest = loudest > 0 ? loudest : 1;
 
@@ -136,7 +237,8 @@ public sealed class MarkRenderer : IComponent
         var svg = new StringBuilder();
 
         svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {Width} {PriceHeight + Gap + VolumeHeight}\" ");
-        svg.Append(Invariant, $"width=\"100%\" role=\"img\" class=\"level-chart\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{bars.Count}\">");
+        svg.Append(Invariant, $"width=\"100%\" role=\"img\" class=\"level-chart\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{bars.Count}\" ");
+        svg.Append(Invariant, $"data-axis-low=\"{Number(axis.Low)}\" data-axis-high=\"{Number(axis.High)}\">");
         svg.Append(Invariant, $"<title>{Escaped(ticker)}, {bars.Count} sessions from {bars[0].SessionDate:yyyy-MM-dd} to {bars[^1].SessionDate:yyyy-MM-dd}</title>");
 
         // Stated for a reader who cannot see the picture, and it says which
@@ -146,12 +248,6 @@ public sealed class MarkRenderer : IComponent
             : "with no moving average given ";
 
         svg.Append(Invariant, $"<desc>Daily candles {drawn}over a volume pane on a shared time axis. The level bands are not drawn yet.</desc>");
-
-        // Where a value sits in the price pane. Defined once here rather than
-        // per bar, because the averages and the candles have to share it: two
-        // scales on one pane is a picture that lies about where the price is.
-        double At(double value) => PriceHeight - Margin
-            - ((value - low) / range * (PriceHeight - (2 * Margin)));
 
         double Centre(int index) => Margin + (slot * index) + (slot / 2);
 
@@ -188,7 +284,7 @@ public sealed class MarkRenderer : IComponent
                     run.Append(run.Length == 0 ? 'M' : 'L')
                         .Append(Number(Centre(index)))
                         .Append(' ')
-                        .Append(Number(At(point)))
+                        .Append(Number(At(axis, point)))
                         .Append(' ');
 
                     continue;
@@ -210,8 +306,7 @@ public sealed class MarkRenderer : IComponent
             var bar = bars[index];
             var centre = Margin + (slot * index) + (slot / 2);
 
-            double Y(decimal price) => PriceHeight - Margin
-                - ((PlotValue(price) - low) / range * (PriceHeight - (2 * Margin)));
+            double Y(decimal price) => At(axis, PlotValue(price));
 
             var top = Y(bar.High);
             var bottom = Y(bar.Low);

@@ -1117,3 +1117,18 @@ Corrects: two things owed at 1.8.
 **19.1.** The table was placed whole, owed at 1.8. It is now a claim source, so each of its 13 rows carries its own due point. Nothing in the document changed for this; what changed is the harness's reading of it.
 
 Why the second: read whole at 1.8 the table would have been asserted with eleven of its thirteen rows describing artefacts that do not exist, seven expected outputs arriving across phases 2 to 4, three rejections at phase 5 and a fundamentals input at 5.1. That is the same defect as reading a failure row whole, and it takes the same repair. `bars` and `news` pass now; the rest are owed where the artefact they describe arrives.
+
+### 2026-09-09 - ARCHITECTURE.html - the volume profile's bands, and the number the shelf threshold rests on
+Corrects: a hole 3.0 did not find. Section 9.1 settled the window the profile accumulates over and never said how many bands it is divided into, and section 17's shelf threshold is stated as a multiple of an even share, which means a fifth with five bands and a fortieth with forty. The threshold rested on a number no document held, and 3.3 could not be built without it.
+
+Was, in section 9.1:
+> One window and not two: a shelf drawn from a different span would put a band on volume no other member of the level table can see, and its share of the period would be a share of a different period. (see: The volume profile accumulates over the same sixty sessions as the level window) Moving averages are computed from the full stored year
+
+Was, in section 17's Volume shelf threshold row:
+> derived from the worked example, where the main support band held about a fifth of the period's volume in a twentieth of its price range. One chart is not enough to fix a threshold, so phase 3 widens the fixture to four names of different character and the number is whatever makes all four agree with where their volume visibly clusters
+
+Now: the same two passages, each stating the band count and citing the decision that settles it, with the spreading rule and the short-history rule added beside the window they belong to.
+
+Why the band count is stated in that row rather than in a row of its own: a new row in section 17 is a new claim, and the count is read by nothing except this threshold. Stating it where the threshold is stated puts the two numbers a reader has to hold together in one cell, and it is the same move 3.0 made when it put the profile's window into the level window row rather than writing a second window row.
+
+Why twenty: section 15.5 already describes a support band holding a fifth of the period's volume in a twentieth of its price range, so the figure was read out of the document rather than invented beside it. A fixed count rather than a fixed price width, because the threshold is one number for all five hundred names and a width in money puts three bands on a forty dollar name and three hundred on a four thousand dollar one.
