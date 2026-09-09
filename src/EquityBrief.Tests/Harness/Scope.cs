@@ -226,6 +226,30 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key(FixtureTable, "levels")] = new Scoped(
+            Verdict.Pass,
+            "every band, every member and every score is diffed against a band set built outside this repository from figure 9.1's five steps, with the edges asserted to be the anchors alone so a touch cannot widen one",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Level window")] = new Scoped(
+            Verdict.Pass,
+            "the sixty sessions are the population the bands, the swings and the profile are all built over, asserted as the same window in the diff of each",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Band merge distance")] = new Scoped(
+            Verdict.Pass,
+            "half a typical day's move is read off the stored average true range per name, and no two stored bands are closer to each other than that",
+            ByExpectations),
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands")] = new Scoped(
+            Verdict.Pass,
+            "the bands are drawn behind the candles rather than over them, asserted by position in the markup, each carrying its role in words as well as in one of the two hues those roles own",
+            ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Level builder")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the four stores it reads and the levels it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Level builder")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(CatalogueTable, "Bar fetcher")] = new Scoped(
             Verdict.Pass,
             "the class declares the bulk feed it reads and the stores it touches, including the retention delete SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",

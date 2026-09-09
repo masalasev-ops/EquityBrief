@@ -34,6 +34,13 @@ public sealed record ChartAverage(string Name, IReadOnlyList<double?> Values);
 // and states the share, which is the pair the report reads out loud.
 public sealed record ProfileBand(decimal Low, decimal High, long Shares, double ShareOfPeriod);
 
+// One level band, as a mark is given it.
+//
+// The role is a word rather than a flag, because it is drawn as a word as well
+// as a hue: hue is never the only channel that carries a meaning, and a reader
+// who cannot separate green from orange still reads the band.
+public sealed record ChartBand(decimal LowEdge, decimal HighEdge, string Role, bool Immediate, int Strength);
+
 // The price scale a chart drew, so another mark can draw against it.
 //
 // Section 15.5 says the volume profile is drawn against the same price axis as
@@ -108,11 +115,13 @@ public sealed class MarkRenderer : IComponent
     // It takes in the averages as well as the candles, for the reason stated
     // below: a 200-day average sits well under the price after a year of rising,
     // and a scale drawn from the candles alone pushes it off the bottom of the
-    // pane where it reads as absent rather than as low. The profile does not
-    // widen it. A profile band lies inside the window's own high and low by
-    // construction, and a scale that stretched to fit a mark would make the two
-    // pictures disagree about where a price is, which is the whole thing this
-    // method exists to prevent.
+    // pane where it reads as absent rather than as low. Neither the profile nor
+    // the level bands widen it. A profile band lies inside the window's own high
+    // and low by construction, and every level candidate but the averages does
+    // too: a swing, a touch, a retracement and a shelf are all prices from
+    // inside the window, and the averages are already taken in here. A scale
+    // that stretched to fit a mark would make the two pictures disagree about
+    // where a price is, which is the whole thing this method exists to prevent.
     public PriceAxis AxisFor(IReadOnlyList<ChartBar> bars, IReadOnlyList<ChartAverage>? averages = null)
     {
         var high = bars.Max(bar => PlotValue(bar.High));
@@ -196,10 +205,18 @@ public sealed class MarkRenderer : IComponent
         return svg.ToString();
     }
 
+    // Support is green and resistance is orange, and this is the one place in
+    // the whole system those two hues are used. Every other mark is neutral ink
+    // or one hue in steps.
+    // see: Support and resistance own two hues and nothing else uses them
+    const string SupportHue = "var(--support, #2f7d4f)";
+    const string ResistanceHue = "var(--resistance, #b5651d)";
+
     public string LevelChart(
         string ticker,
         IReadOnlyList<ChartBar> bars,
-        IReadOnlyList<ChartAverage>? averages = null)
+        IReadOnlyList<ChartAverage>? averages = null,
+        IReadOnlyList<ChartBand>? bands = null)
     {
         if (bars.Count < FewestBars)
         {
@@ -211,6 +228,19 @@ public sealed class MarkRenderer : IComponent
         // draw every point one slot to the left and look entirely plausible,
         // which is the failure that reports green.
         var lines = averages ?? [];
+        var shading = bands ?? [];
+
+        foreach (var band in shading)
+        {
+            if (band.HighEdge < band.LowEdge)
+            {
+                throw new ArgumentException(
+                    $"A level band runs from {band.LowEdge} to {band.HighEdge}, which is inverted. Drawn " +
+                    "as given it would be a rectangle of negative height, which renders as nothing at " +
+                    "all rather than as a fault.",
+                    nameof(bands));
+            }
+        }
 
         foreach (var line in lines)
         {
@@ -247,7 +277,42 @@ public sealed class MarkRenderer : IComponent
             ? $"with {lines.Count} moving average(s) "
             : "with no moving average given ";
 
-        svg.Append(Invariant, $"<desc>Daily candles {drawn}over a volume pane on a shared time axis. The level bands are not drawn yet.</desc>");
+        var shaded = shading.Count > 0
+            ? $"{shading.Count} level band(s) shaded behind them, "
+            : "no level bands given, ";
+
+        svg.Append(Invariant, $"<desc>Daily candles {drawn}over a volume pane on a shared time axis, with {shaded}support below the price and resistance above it.</desc>");
+
+        // The bands first, so everything else reads on top of them. A band drawn
+        // over the candles hides the price it is a statement about, which is the
+        // one thing the picture exists to show.
+        //
+        // Full width, because a band is a price and not an event: it holds for
+        // the whole chart rather than for the sessions that happened to touch it.
+        if (shading.Count > 0)
+        {
+            svg.Append("<g class=\"level-bands\">");
+
+            foreach (var band in shading)
+            {
+                var top = At(axis, PlotValue(band.HighEdge));
+                var bottom = At(axis, PlotValue(band.LowEdge));
+                var hue = band.Role == "support" ? SupportHue : ResistanceHue;
+
+                // A zero-width band is a real band: a single price with one
+                // member. It becomes a rule rather than a rectangle nothing
+                // draws, the same repair a zero-height candle body gets.
+                var height = Math.Abs(bottom - top);
+
+                svg.Append(Invariant, $"<rect class=\"level-band\" data-role=\"{Escaped(band.Role)}\" ");
+                svg.Append(Invariant, $"data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" data-high-edge=\"{band.HighEdge.ToString(Invariant)}\" ");
+                svg.Append(Invariant, $"data-immediate=\"{(band.Immediate ? 1 : 0)}\" data-strength=\"{band.Strength}\" ");
+                svg.Append(Invariant, $"x=\"{Margin}\" y=\"{Number(Math.Min(top, bottom))}\" width=\"{Width - (2 * Margin)}\" ");
+                svg.Append(Invariant, $"height=\"{Number(Math.Max(height, 1))}\" fill=\"{hue}\" fill-opacity=\"{Number(band.Immediate ? 0.22 : 0.12)}\"/>");
+            }
+
+            svg.Append("</g>");
+        }
 
         double Centre(int index) => Margin + (slot * index) + (slot / 2);
 

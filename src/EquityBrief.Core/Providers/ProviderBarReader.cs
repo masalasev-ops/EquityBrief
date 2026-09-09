@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Core.Prices;
 
 namespace EquityBrief.Core.Providers;
 
@@ -90,13 +91,7 @@ public static class ProviderBarReader
     // a price never passes through double, and a ratio of two prices is not a
     // statistic, it is the same price expressed after a corporate action.
     static decimal Adjust(decimal value, decimal adjusted, decimal raw) =>
-        adjusted == raw ? value : Trim(Math.Round(value * adjusted / raw, Places, MidpointRounding.ToEven));
-
-    // Trailing zeros removed, because decimal carries its scale and the storage
-    // form is text: rounding 165.28 to four places would otherwise be written
-    // "165.2800" and read back as a different string for the same number.
-    static decimal Trim(decimal value) =>
-        decimal.Parse(value.ToString("0.####", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        adjusted == raw ? value : PriceForm.Round(value * adjusted / raw, Places);
 
     static DateOnly Date(JsonElement entry, string name, string ticker)
     {

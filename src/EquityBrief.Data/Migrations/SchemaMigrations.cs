@@ -184,6 +184,37 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The level bands, one row per ticker, as-of date and band.
+    //
+    // Every price column is TEXT and every flag is INTEGER, which is what STRICT
+    // gives instead of a boolean: SQLite has none, and SCHEMA declares the two
+    // flags as integers carrying 1 rather than as a type the store does not
+    // have.
+    //
+    // `members` is TEXT holding JSON, and it is a column rather than a table for
+    // one reason: a member has no identity of its own and nothing ever queries
+    // for one. It is read as a whole with the band it belongs to, by the level
+    // table and by the report, and a members table would be a join on every read
+    // for a list nothing indexes.
+    //
+    // `has_non_average_anchor` is stored rather than derived because the ladder
+    // builder reads it on every band, and a short average follows the price, so
+    // a band anchored only on one sits at the price about half the time.
+    const string CreateLevel = @"
+        CREATE TABLE level (
+            ticker                  TEXT NOT NULL,
+            as_of                   TEXT NOT NULL,
+            low_edge                TEXT NOT NULL,
+            high_edge               TEXT NOT NULL,
+            role                    TEXT NOT NULL,
+            immediate               INTEGER NOT NULL,
+            strength                INTEGER NOT NULL,
+            has_non_average_anchor  INTEGER NOT NULL,
+            members                 TEXT NOT NULL,
+            PRIMARY KEY (ticker, as_of, low_edge)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -195,6 +226,7 @@ public static class SchemaMigrations
         new Migration(7, "create indicator", CreateIndicator),
         new Migration(8, "create swing", CreateSwing),
         new Migration(9, "create volume_profile", CreateVolumeProfile),
+        new Migration(10, "create level", CreateLevel),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

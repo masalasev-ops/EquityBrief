@@ -3868,3 +3868,74 @@ Notes:      warnings as errors refused the first form of the spreading mutation,
             did at 3.1: replacing the guard with a constant produced CS0162 for unreachable
             code, so the loop was deleted outright, which is the sharper mutation anyway.
             The worktree was removed after each run and the working tree was never mutated.
+
+### 3.4 - the level builder and the bands                                   2026-09-09
+Built:      `LevelSeries` in Core, migration 10 creating `level`, `LevelBuilder` in the Worker,
+            and the bands drawn behind the candles in `MarkRenderer`. Figure 9.1's five steps
+            in order: collect the four candidate sources over the last sixty sessions, merge
+            what is closer than half a typical day's move, add every session that reached a
+            band, assign roles against the close, and score.
+Discharged: the obligation 3.4 carries (owes: Phase 3's expectations owed for 3.0's rulings).
+            All three rulings are in the levels expectation and one test reads them. The
+            profile window against the level window, which is observable rather than stated for
+            the first time because a band resting on a shelf holds a member that came from the
+            profile. The five retracements landing together on one band, which is what a set
+            drawn between one high and one low looks like. And MSFT's band at 386.6219, whose
+            only anchor is a volume shelf: it is a band on volume alone, it exists under the
+            ruling 3.0 took, and it does not exist under the one 3.0 rejected. A discharge that
+            pointed at the checkpoint rather than at that band would be one nobody could check.
+Crossed:    the money boundary back, for the first time. `Statistic` said in its own comment
+            that a statistic never becomes a price again, which was true of everything that
+            existed at 3.1 and stopped being true the moment a moving average had to be a band
+            edge. `CLAUDE.md`'s rule is that no conversion is implicit and that a helper
+            crossing the boundary is named for it, in either direction; the restriction to one
+            direction was that file's own. `Statistic.ToPrice` rounds to the store's four
+            places rather than casting, which is the whole safety argument: a double holding an
+            average may render as 287.33999999999997 and a price column holds four places, so
+            the rounding is what makes the crossing lossless in the direction that matters.
+Consolidated: the price form. `ProviderBarReader` had a private helper that rounded to four
+            places and trimmed trailing zeros, and the level builder needed the same rule for a
+            retracement and an average. It is now `PriceForm` in Core and the reader uses it,
+            because two implementations of one fact is the defect this corpus refuses
+            everywhere else. The trimming is not cosmetic: `low_edge` is a primary key column,
+            and 327.5740 and 327.574 are one price and two rows.
+Decided:    two entries in `DECISIONS.md`, both needed to build and both cited at the rule.
+            **A volume shelf enters the merge as one price, the midpoint of its band.** Section
+            9.1 collects a price band as a candidate and its key says a candidate is a single
+            price; SCHEMA settles it by giving a member one price. Not academic: two of the
+            three fixture names have a shelf narrower than half a typical day's move, where the
+            two readings agree, and MSFT has one twice that, where they do not.
+            **A member's date is the session its evidence occurred on, and a figure recomputed
+            nightly has none of its own.** The strength score adds a point for a member from
+            the last twenty sessions, and an average dated as-of is always from the last twenty
+            sessions, so awarding it on date alone would hand the point to every band holding an
+            average. A point every band scores ranks nothing.
+Derived:    two rules rather than decided, and both are worth naming because the derivation is
+            the cheaper move. A band whose low edge is below the close is support even where it
+            contains the close, which the tranche eligibility decision already settles with the
+            worked example's own numbers. And a retracement is measured from the end the move
+            finished at, which is what the retracement decision's "in whichever order they
+            occurred" means; the fractions are not symmetric, so the two ends produce different
+            sets, and the test exercises both directions over constructed prices.
+Removed:    a duplicated filter before it became one. The builder first read swings with its
+            own `confirmed_on <= as_of` clause, which is a second copy of the rule 3.2 built
+            with no test behind it: while the as-of date is the name's own last session the
+            filter can exclude nothing, because a swing exists only where three sessions follow
+            it. It now reads through `StoredSwings.AsOf`, so the rule lives in one place and
+            3.2's test is what fails on it.
+Measured:   20 bands over three names, 5, 4 and 11, with 177 members between them. AAPL's
+            immediate support runs 299.7415 to 320.28 and scores 57: 54 members and all three
+            bonuses. Its members are 39 touches, 6 swings, 5 retracements, 2 shelves and 2
+            averages, which is the consequence worth watching: touches are members and they
+            dominate the score, so the widest band is the strongest. That is the literal
+            reading of the document and it is defensible, a band the price has visited forty
+            times being genuinely well evidenced, but it is a ranking that four names will test
+            better than three and 3.6 is where that happens.
+Reached:    six claims move to PASS. Section 19.1's levels row, section 17's level window and
+            band merge distance by `fixture-expectations`, section 15.5's level bands by
+            `read-surface`, and the builder's catalogue and matrix rows by `component-access`.
+            The level chart now has all four of its elements drawn.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      374. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Carried:    nothing new. One obligation stands for the rest of phase 3, the volume shelf
+            threshold at 3.6.

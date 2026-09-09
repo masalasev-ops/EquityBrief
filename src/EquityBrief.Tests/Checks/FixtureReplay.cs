@@ -4,6 +4,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
@@ -74,6 +75,7 @@ public class FixtureReplay
         await new IndicatorEngine(night, store.DatabaseFile).RunAsync("replay-indicators");
         await new SwingFinder(night, store.DatabaseFile).RunAsync("replay-swings");
         await new VolumeProfileBuilder(night, store.DatabaseFile).RunAsync("replay-profile");
+        await new LevelBuilder(night, store.DatabaseFile).RunAsync("replay-levels");
 
         return store;
     }

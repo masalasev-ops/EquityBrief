@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Levels;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Swings;
 using EquityBrief.Core.Time;
@@ -10,6 +11,7 @@ using EquityBrief.Data.Swings;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
@@ -42,6 +44,9 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "indicators"),
             CheckReach.Key(Scope.FixtureTable, "swings"),
             CheckReach.Key(Scope.FixtureTable, "volume profile"),
+            CheckReach.Key(Scope.FixtureTable, "levels"),
+            CheckReach.Key(Scope.LimitsTable, "Level window"),
+            CheckReach.Key(Scope.LimitsTable, "Band merge distance"),
             CheckReach.Key(Scope.LimitsTable, "Swing lookback"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, 200-day average"),
         ]);
@@ -1079,6 +1084,385 @@ public class FixtureExpectations
         Assert.Equal(
             series.Sum(bar => bar.Volume),
             VolumeProfileSeries.For(series).Sum(band => band.Shares));
+    }
+
+    // ---- 3.4, the level bands ----
+
+    static async Task<TemporaryStore> WithLevels()
+    {
+        var store = await WithSwings();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new IndicatorEngine(clock, store.DatabaseFile).RunAsync("replay-indicators");
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("replay-profile");
+        await new LevelBuilder(clock, store.DatabaseFile).RunAsync("replay-levels");
+
+        return store;
+    }
+
+    [Fact]
+    public async Task TheLevelBandsMatchTheArithmeticOverTheCommittedBars()
+    {
+        var expected = Expected("levels");
+        var names = expected.GetProperty("namesComputed").EnumerateArray().Select(name => name.GetString()!).ToArray();
+        var rows = expected.GetProperty("rows");
+        var asOf = expected.GetProperty("asOf");
+        var counts = expected.GetProperty("counts");
+
+        using var store = await WithLevels();
+
+        foreach (var ticker in names)
+        {
+            Assert.Equal(
+                rows.GetProperty("byName").GetProperty(ticker).EnumerateArray().Select(row => row.GetString()!),
+                Query(store, $"SELECT low_edge, high_edge, role, immediate, strength, has_non_average_anchor FROM level WHERE ticker = '{ticker}' ORDER BY as_of, low_edge;"));
+
+            var count = counts.GetProperty(ticker);
+
+            Assert.Equal(
+                [$"{asOf.GetProperty(ticker).GetString()}|{count.GetProperty("bands").GetInt32()}|" +
+                 $"{count.GetProperty("support").GetInt32()}|{count.GetProperty("resistance").GetInt32()}|" +
+                 $"{count.GetProperty("immediate").GetInt32()}|{count.GetProperty("anchoredOnAnAverageAlone").GetInt32()}"],
+                Query(store, $"SELECT as_of, COUNT(*), SUM(role = 'support'), SUM(role = 'resistance'), SUM(immediate), SUM(has_non_average_anchor = 0) FROM level WHERE ticker = '{ticker}' GROUP BY as_of;"));
+        }
+
+        // The close roles were assigned against, read off the bar store rather
+        // than out of the expectation.
+        foreach (var entry in expected.GetProperty("close").GetProperty("byName").EnumerateObject())
+        {
+            Assert.Equal(
+                [entry.Value.GetString()!],
+                Query(store, $"SELECT close FROM bar WHERE ticker = '{entry.Name}' ORDER BY session_date DESC LIMIT 1;"));
+        }
+    }
+
+    [Fact]
+    public async Task EveryBandCarriesTheMembersTheRulesPutInIt()
+    {
+        // The members column is where the evidence lives, and it is what the
+        // level table in the report reads out. Diffed whole rather than counted,
+        // because a count agrees with a band holding the wrong forty touches.
+        var expected = Expected("levels");
+        var members = expected.GetProperty("members").GetProperty("byName");
+
+        using var store = await WithLevels();
+
+        foreach (var entry in members.EnumerateObject())
+        {
+            foreach (var band in entry.Value.EnumerateObject())
+            {
+                var stored = JsonDocument.Parse(
+                    Query(store, $"SELECT members FROM level WHERE ticker = '{entry.Name}' AND low_edge = '{band.Name}';").Single());
+
+                Assert.Equal(
+                    band.Value.EnumerateArray().Select(member => member.GetString()!),
+                    stored.RootElement.EnumerateArray().Select(member =>
+                        $"{member.GetProperty("kind").GetString()}|{member.GetProperty("price").GetString()}|{member.GetProperty("date").GetString()}"));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ATouchSitsInsideItsBandAndTheEdgesAreTheAnchorsAlone()
+    {
+        // Figure 9.1's third step, asserted over the store: a touch strengthens
+        // a band and can never create or widen one. So every band's edges are
+        // the lowest and highest of its non-touch members, and every touch sits
+        // between them.
+        // see: Touches strengthen a band and never create one
+        using var store = await WithLevels();
+
+        var rows = Query(store, "SELECT ticker, low_edge, high_edge, members FROM level ORDER BY ticker, low_edge;");
+
+        Assert.True(rows.Count >= 15, $"Read {rows.Count} bands, expected at least 15.");
+
+        var touches = 0;
+
+        foreach (var row in rows)
+        {
+            var parts = row.Split('|', 4);
+            var low = decimal.Parse(parts[1], CultureInfo.InvariantCulture);
+            var high = decimal.Parse(parts[2], CultureInfo.InvariantCulture);
+
+            var members = JsonDocument.Parse(parts[3]).RootElement
+                .EnumerateArray()
+                .Select(member => (
+                    Kind: member.GetProperty("kind").GetString()!,
+                    Price: decimal.Parse(member.GetProperty("price").GetString()!, CultureInfo.InvariantCulture)))
+                .ToArray();
+
+            var anchors = members.Where(member => member.Kind != "touch").ToArray();
+
+            Assert.NotEmpty(anchors);
+            Assert.Equal(low, anchors.Min(anchor => anchor.Price));
+            Assert.Equal(high, anchors.Max(anchor => anchor.Price));
+
+            foreach (var touch in members.Where(member => member.Kind == "touch"))
+            {
+                touches++;
+
+                Assert.InRange(touch.Price, low, high);
+            }
+        }
+
+        // Stated, because a run finding no touch would satisfy every assertion
+        // above by having nothing to check.
+        Assert.True(touches >= 50, $"Found {touches} touches across the bands, expected at least 50.");
+    }
+
+    [Fact]
+    public async Task TheWorkedBandsStrengthIsItsMembersPlusItsThreeBonuses()
+    {
+        // The strength score followed rather than trusted. One point per member,
+        // touches included, plus one for a member whose evidence occurred in the
+        // last twenty sessions, plus one where a retracement and a swing are
+        // both anchors, plus one where the band holds a shelf.
+        // see: A member's date is the session its evidence occurred on, and a figure recomputed nightly has none of its own
+        var worked = Expected("levels").GetProperty("workedBand");
+        var ticker = worked.GetProperty("name").GetString()!;
+        var lowEdge = worked.GetProperty("lowEdge").GetString()!;
+
+        using var store = await WithLevels();
+
+        var row = Query(store, $"SELECT high_edge, role, immediate, strength, members FROM level WHERE ticker = '{ticker}' AND low_edge = '{lowEdge}';").Single();
+        var parts = row.Split('|', 5);
+
+        Assert.Equal(worked.GetProperty("highEdge").GetString(), parts[0]);
+        Assert.Equal(worked.GetProperty("role").GetString(), parts[1]);
+        Assert.Equal(worked.GetProperty("immediate").GetInt32().ToString(), parts[2]);
+        Assert.Equal(worked.GetProperty("strength").GetInt32().ToString(), parts[3]);
+
+        var members = JsonDocument.Parse(parts[4]).RootElement
+            .EnumerateArray()
+            .Select(member => member.GetProperty("kind").GetString()!)
+            .ToArray();
+
+        Assert.Equal(worked.GetProperty("memberCount").GetInt32(), members.Length);
+
+        // The kinds the expectation names, counted off the stored members. A
+        // band whose swings became touches would keep its total and change this.
+        foreach (var kind in worked.GetProperty("membersByKind").EnumerateObject())
+        {
+            Assert.Equal(
+                kind.Value.GetInt32(),
+                members.Count(member => member.StartsWith(kind.Name, StringComparison.Ordinal)));
+        }
+
+        // And the score is the count plus the three bonuses, each of which this
+        // band earns: it holds a shelf, it holds a retracement and a swing, and
+        // it holds evidence from the last twenty sessions.
+        Assert.Equal(members.Length + 3, worked.GetProperty("strength").GetInt32());
+    }
+
+    [Fact]
+    public async Task ABandAnchoredOnlyByAMovingAverageIsFlaggedAndOneWithAnythingElseIsNot()
+    {
+        // 3.4's second done condition, asserted in both directions off the
+        // stored members rather than by counting flags. The ladder builder reads
+        // this on every band, and a flag that is right in one direction only is
+        // a flag that says nothing.
+        // see: A moving average is a level on the chart and never an anchor for a tranche
+        var expected = Expected("levels").GetProperty("counts");
+
+        using var store = await WithLevels();
+
+        var averageOnly = 0;
+
+        foreach (var row in Query(store, "SELECT ticker, has_non_average_anchor, members FROM level ORDER BY ticker, low_edge;"))
+        {
+            var parts = row.Split('|', 3);
+            var flag = parts[1] == "1";
+
+            var anchors = JsonDocument.Parse(parts[2]).RootElement
+                .EnumerateArray()
+                .Select(member => member.GetProperty("kind").GetString()!)
+                .Where(kind => kind != "touch")
+                .ToArray();
+
+            var somethingElse = anchors.Any(kind => !kind.StartsWith("sma", StringComparison.Ordinal));
+
+            Assert.Equal(somethingElse, flag);
+
+            if (!flag)
+            {
+                averageOnly++;
+
+                // The point of the flag: a touch is evidence and never an
+                // anchor, so a band held up by an average and forty sessions
+                // that reached it is still anchored on an average alone.
+                Assert.All(anchors, kind => Assert.StartsWith("sma", kind, StringComparison.Ordinal));
+            }
+        }
+
+        Assert.Equal(
+            expected.EnumerateObject().Sum(name => name.Value.GetProperty("anchoredOnAnAverageAlone").GetInt32()),
+            averageOnly);
+
+        // Stated, because a fixture where every band had a swing in it would
+        // pass the loop above having asserted the flag in one direction only.
+        Assert.True(averageOnly > 0, "No band is anchored on an average alone, so the flag is untested in that direction.");
+    }
+
+    [Fact]
+    public async Task TheImmediateBandIsTheNearestOnItsSideAndThereIsOnePerSide()
+    {
+        var expected = Expected("levels");
+        var mergeDistance = expected.GetProperty("mergeDistance").GetProperty("byName");
+
+        using var store = await WithLevels();
+
+        foreach (var entry in mergeDistance.EnumerateObject())
+        {
+            var ticker = entry.Name;
+
+            Assert.Equal(
+                ["1|1"],
+                Query(store, $"SELECT SUM(immediate AND role = 'support'), SUM(immediate AND role = 'resistance') FROM level WHERE ticker = '{ticker}';"));
+
+            // The nearest support is the one with the highest low edge, and the
+            // nearest resistance the one with the lowest.
+            Assert.Equal(
+                Query(store, $"SELECT MAX(low_edge + 0) FROM level WHERE ticker = '{ticker}' AND role = 'support';"),
+                Query(store, $"SELECT low_edge + 0 FROM level WHERE ticker = '{ticker}' AND role = 'support' AND immediate = 1;"));
+
+            Assert.Equal(
+                Query(store, $"SELECT MIN(low_edge + 0) FROM level WHERE ticker = '{ticker}' AND role = 'resistance';"),
+                Query(store, $"SELECT low_edge + 0 FROM level WHERE ticker = '{ticker}' AND role = 'resistance' AND immediate = 1;"));
+
+            // And no two bands are closer than the merge distance, which is what
+            // the merge step is for: two bands that close would be one band.
+            var merge = decimal.Parse(entry.Value.GetString()!, CultureInfo.InvariantCulture);
+
+            var edges = Query(store, $"SELECT low_edge, high_edge FROM level WHERE ticker = '{ticker}' ORDER BY low_edge;")
+                .Select(row => row.Split('|'))
+                .Select(row => (
+                    Low: decimal.Parse(row[0], CultureInfo.InvariantCulture),
+                    High: decimal.Parse(row[1], CultureInfo.InvariantCulture)))
+                .ToArray();
+
+            for (var band = 1; band < edges.Length; band++)
+            {
+                Assert.True(
+                    edges[band].Low - edges[band - 1].High >= merge,
+                    $"{ticker} has bands ending at {edges[band - 1].High} and starting at {edges[band].Low}, which is closer than {merge}.");
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ASecondLevelRunReplacesRatherThanDuplicating()
+    {
+        using var store = await WithLevels();
+
+        var before = Query(store, "SELECT COUNT(*), SUM(strength) FROM level;");
+
+        await new LevelBuilder(
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("replay-levels-again");
+
+        Assert.Equal(before, Query(store, "SELECT COUNT(*), SUM(strength) FROM level;"));
+    }
+
+    [Fact]
+    public async Task TheThreeRulingsTakenAtThreePointZeroAreObservableInTheBands()
+    {
+        // The obligation 3.4 carries, discharged.
+        // owes: Phase 3's expectations owed for 3.0's rulings
+        //
+        // 3.0 took three rulings and put their expectations at 3.1, where none
+        // of the three was assertable: the indicator engine reads no profile, no
+        // swing and no shelf. This is the first checkpoint where all three are
+        // observable in one artefact.
+        var rulings = Expected("levels").GetProperty("rulings");
+
+        using var store = await WithLevels();
+
+        // The window. A band resting on a shelf holds a member that came from
+        // the profile, so the two windows are the same window or the member is a
+        // price from a period no other member can see.
+        // see: The volume profile accumulates over the same sixty sessions as the level window
+        var sessions = rulings.GetProperty("profileWindow").GetProperty("sessions").GetInt32();
+
+        Assert.Equal(VolumeProfileSeries.Window, sessions);
+
+        // The retracement ends. All five land together on one band here, which
+        // is what a set drawn between one high and one low looks like; a set
+        // drawn between the last two swings of any kind would be a fraction of
+        // the distance between two highs.
+        // see: A retracement is drawn between the last swing high and the last swing low
+        var drawn = rulings.GetProperty("retracementEnds").GetProperty("band");
+        var kinds = drawn.GetProperty("kinds").EnumerateArray().Select(kind => kind.GetString()!).ToArray();
+
+        Assert.Equal(LevelSeries.Retracements.Count, kinds.Length);
+
+        var members = JsonDocument.Parse(
+            Query(store, $"SELECT members FROM level WHERE ticker = '{drawn.GetProperty("name").GetString()}' AND low_edge = '{drawn.GetProperty("lowEdge").GetString()}';").Single());
+
+        Assert.Equal(
+            kinds,
+            members.RootElement.EnumerateArray()
+                .Select(member => member.GetProperty("kind").GetString()!)
+                .Where(kind => kind.StartsWith("retracement", StringComparison.Ordinal))
+                .OrderBy(kind => kind, StringComparer.Ordinal));
+
+        // The shelf. A band whose only anchor is a shelf is a band on volume
+        // alone, which is what the ruling that a shelf creates a band produces
+        // and what the ruling that it only ranks would not.
+        // see: A heavy volume shelf creates a band of its own and also strengthens one it coincides with
+        var alone = rulings.GetProperty("shelfCreatesABand").GetProperty("bands");
+
+        Assert.True(alone.GetArrayLength() > 0, "No band in the fixture rests on volume alone, so the ruling is not observable here.");
+
+        foreach (var band in alone.EnumerateArray())
+        {
+            var anchors = JsonDocument.Parse(
+                Query(store, $"SELECT members FROM level WHERE ticker = '{band.GetProperty("name").GetString()}' AND low_edge = '{band.GetProperty("lowEdge").GetString()}';").Single());
+
+            var kindsOf = anchors.RootElement.EnumerateArray()
+                .Select(member => member.GetProperty("kind").GetString()!)
+                .Where(kind => kind != "touch")
+                .ToArray();
+
+            Assert.Equal(["shelf"], kindsOf);
+
+            Assert.Equal(
+                [$"{band.GetProperty("highEdge").GetString()}|{band.GetProperty("strength").GetInt32()}"],
+                Query(store, $"SELECT high_edge, strength FROM level WHERE ticker = '{band.GetProperty("name").GetString()}' AND low_edge = '{band.GetProperty("lowEdge").GetString()}';"));
+        }
+    }
+
+    [Fact]
+    public void ARetracementIsDrawnFromTheEndTheMoveFinishedAt()
+    {
+        // The ruling 3.0 took, exercised where the two readings differ. The
+        // fractions are not symmetric, so a move that ran up and a move that ran
+        // down between the same two prices produce different levels, and taking
+        // the wrong end is invisible in a band set.
+        // see: A retracement is drawn between the last swing high and the last swing low
+        var low = (Price: 100m, Date: new DateOnly(2026, 1, 5));
+        var high = (Price: 200m, Date: new DateOnly(2026, 2, 5));
+
+        var upward = LevelSeries.RetracementsBetween(high, low);
+        var downward = LevelSeries.RetracementsBetween(high, low with { Date = new DateOnly(2026, 3, 5) });
+
+        Assert.Equal(LevelSeries.Retracements.Count, upward.Count);
+
+        // Up from 100 to 200: the levels sit below the high by each fraction of
+        // the hundred point distance.
+        Assert.Equal([176.4m, 161.8m, 150m, 138.2m, 121.4m], upward.Select(member => member.Price));
+
+        // Down from 200 to 100: above the low by the same fractions, which is a
+        // different set because 23.6 and 78.6 do not sum to one.
+        Assert.Equal([123.6m, 138.2m, 150m, 161.8m, 178.6m], downward.Select(member => member.Price));
+
+        // The date is when the move ended, which is the later of the two swings.
+        Assert.All(upward, member => Assert.Equal(new DateOnly(2026, 2, 5), member.Date));
+        Assert.All(downward, member => Assert.Equal(new DateOnly(2026, 3, 5), member.Date));
+
+        // A window with only one kind of swing produces nothing rather than
+        // retracements drawn from a substitute end.
+        Assert.Empty(LevelSeries.RetracementsBetween(high, null));
+        Assert.Empty(LevelSeries.RetracementsBetween(null, low));
     }
 
     // ---- the expectation sweep, carried out of the phase 1 sign-off ----
