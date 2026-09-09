@@ -3506,3 +3506,48 @@ Predicted:  phase 3's new claims, named rather than counted, for the reason 2.7 
             finder, the volume profile builder and the level builder, which is 8 claims, plus
             the two level chart elements 1.3 left absent, the moving averages at 3.1 and the
             bands at 3.4. 10 claims, and the count is expected to stay at 185.
+
+### 3.1 - contradiction K, and the ninth row it did not name                 2026-09-09
+Not a checkpoint entry. It belongs to 3.1, which has not landed. `BUILD_PLAN.md` requires this
+            repair in its own commit before any component declares a write, because the moment
+            `IndicatorEngine` declares one, `component-access` produces a write nobody declared
+            and a declaration with no cell behind it, which is two faults for one displaced
+            letter. This session committed code and may not sign it off.
+Built:      nothing. This is a document repair.
+Repaired:   nine rows of section 16's read and write matrix, each now carrying the cells its
+            catalogue row names. Indicator engine, Swing finder, Volume profile builder and
+            Move annotator move their write from Listings to Computed tables; Shortlist builder
+            from Forward returns to Listings; Facts assembler from Fundamentals to Facts;
+            Forward return filler from Facts to Forward returns; News pulse counter from
+            Research and theme to News pulse; and Research runner from Series state to Sources.
+Found:      two things, and both because the repair reconciled every row against its catalogue
+            row rather than repairing the eight the contradiction named.
+            A ninth displaced row. The Research runner's write sat in **Series state** where its
+            catalogue says source documents, one column to the right, which is the same
+            displacement and was not in the contradiction's list.
+            And a displaced read. On the Facts assembler the shift moved a read as well as a
+            write: **News pulse** carried an R where the catalogue says fundamentals. A repair
+            confined to writes, which is what the contradiction described, would have left that
+            row failing on a read the moment the component landed at 5.3.
+            A repair that fixes the list it was handed cannot find what the list left out. That
+            is the reason to reconcile rather than to patch, and it is the same shape as the
+            sweep two commits ago, where measuring the class was what showed the known instance
+            was not the only one.
+Measured:   over the 27 rows of the matrix, 23 are reconcilable against a catalogue phrase and
+            all 23 now agree in both directions, cell by cell with the blanks included. The
+            4 excluded each name a reason: the Read API reads every store and has no phrase to
+            match; the Trend classifier writes none and returns its label to another component;
+            the Shortlist builder's reads are contradiction L and are settled at 5.4; and the
+            Ladder builder is contradiction E, below. Before the repair, 9 of the 23 disagreed.
+Carried:    nothing new, and one contradiction widened rather than created. The Ladder builder
+            carries a **Fundamentals** read that appears in no catalogue phrase, while its
+            catalogue names a calendar the matrix has no column for. The likeliest reading is
+            that the calendar read was written into the nearest column there was, which would
+            make it a third face of contradiction E rather than a tenth displacement. That is a
+            guess and it is recorded as one: E now carries it, and 4.0 settles it along with
+            whether the other three calendar readers carry the same substitution. It is not
+            repaired here because repairing a cell on a guess is how the displacement got in.
+Tests:      331, unchanged. No check reaches these rows yet: `component-access` matches a row
+            only when its component exists, and the four this phase builds land at 3.1 to 3.4.
+            That is what makes this repair invisible to the suite and is exactly why the corpus
+            requires it before the code rather than with it.
