@@ -149,13 +149,13 @@ public class NightlyRun
         // run before the close produced against the live provider: the payload
         // was full of symbols this index does not hold and carried nothing for
         // any of its five hundred members.
-        var none = new ShortBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), "AAPL", "MSFT", "KEYS");
+        var none = new ShortBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), "AAPL", "MSFT", "KEYS", "NFLX");
 
         var (code, _, error) = await NightAsync(store, runId: "night-none", bulk: none);
 
         Assert.Equal(1, code);
         Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
-        Assert.Contains("carries nothing for any of the 3 current member(s)", error, StringComparison.Ordinal);
+        Assert.Contains("carries nothing for any of the 4 current member(s)", error, StringComparison.Ordinal);
         Assert.Equal(before, Count(store));
     }
 
@@ -171,15 +171,15 @@ public class NightlyRun
         // from two to two hundred is visible without refusing anything.
         using var store = new TemporaryStore();
 
-        var short1 = new ShortBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), "MSFT");
+        var short1 = new ShortBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), "MSFT", "NFLX");
 
         var (code, output, error) = await NightAsync(store, runId: "night-short", bulk: short1);
 
         Assert.Equal(0, code);
         Assert.Equal(string.Empty, error);
-        Assert.Contains("1 member(s) the file carried nothing for", output, StringComparison.Ordinal);
+        Assert.Contains("2 member(s) the file carried nothing for", output, StringComparison.Ordinal);
 
-        // The two it did carry are stored, and the one it did not is absent
+        // The two it did carry are stored, and the two it did not are absent
         // rather than invented.
         var stored = Tickers(store, "2026-09-08");
 
@@ -356,8 +356,8 @@ public class NightlyRun
         Assert.Contains("1 request(s)", first, StringComparison.Ordinal);
 
         // Stated, because the two derivations above would agree at zero.
-        Assert.Equal(5, populations.Constituents);
-        Assert.Equal(3, current);
+        Assert.Equal(6, populations.Constituents);
+        Assert.Equal(4, current);
         Assert.True(backfilled > 700, $"The backfill wrote {backfilled} rows, expected more than 700.");
 
         // A second night over the same store backfills nothing, which is what

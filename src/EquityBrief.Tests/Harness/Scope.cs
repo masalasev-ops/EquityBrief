@@ -258,6 +258,10 @@ internal static class Scope
             Verdict.Pass,
             "an average with no value anchors no band, so the level summary table names it in its own row with the bar count that explains it, and the row is absent where nothing is absent rather than standing as a permanent caveat",
             ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Volume shelf threshold")] = new Scoped(
+            Verdict.Pass,
+            "the figure is measured against the candidates either side of it across all four fixture names: at one even share it names most of the chart, at three it leaves three of the four with no shelf at all, and at two every name has one and it is a small minority of bands holding a fifth to a half of the period",
+            ByExpectations),
         [CheckReach.Key(CatalogueTable, "Bar fetcher")] = new Scoped(
             Verdict.Pass,
             "the class declares the bulk feed it reads and the stores it touches, including the retention delete SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",

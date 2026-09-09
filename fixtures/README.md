@@ -18,7 +18,7 @@ One folder per fixture name and date. Committed, never regenerated, and the expe
       inadmissible/    one document per denied category
 ```
 
-**A fixture counts two different things and they are not the same number.** Constituents are the rows the membership payload carries, current and departed. Names are the tickers with a captured price series, which is a subset: a departed name is not owed history, so it has a membership row and no bars. `membership-2026-09-05` holds 5 constituents and 3 names. Where the corpus says a fixture widens to four names, as phase 3 does, it means the second figure, and adding a constituent does not discharge it.
+**A fixture counts two different things and they are not the same number.** Constituents are the rows the membership payload carries, current and departed. Names are the tickers with a captured price series, which is a subset: a departed name is not owed history, so it has a membership row and no bars. `membership-2026-09-05` holds 6 constituents and 4 names. Where the corpus says a fixture widens to four names, as phase 3 does, it means the second figure, and adding a constituent does not discharge it.
 
 **Every expectation records how it was produced.** An expectation derived independently from the rules verifies something. One frozen from a run detects regression and verifies nothing, and a checkpoint whose expectations are all frozen has added regression detection and called it verification.
 

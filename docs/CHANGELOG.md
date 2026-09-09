@@ -1142,3 +1142,13 @@ Was:
 Now: the same row marked discharged, with the three places each ruling is read in the levels expectation named.
 
 Why: the row's own rule is that a producer cell says what produces the evidence, and once the evidence exists the cell has to say where it is. The band it names, MSFT at 386.6219, is the one whose only anchor is a volume shelf, so it exists under the ruling 3.0 took and does not exist under the one it rejected. A discharge that pointed at the checkpoint rather than at the band would be a discharge nobody could check.
+
+### 2026-09-09 - BUILD_PLAN.md - the volume shelf threshold, checked against four names
+Corrects: the row's producer cell, which named the widening and could not yet say what the widening found.
+
+Was:
+> | **Volume shelf threshold checked against four names** | authored with the architecture | 3.6 | 3.6 widens the fixture to four names of different character, and the widening is the evidence |
+
+Now: the same row marked discharged, with the measurement and the two candidates either side of the figure.
+
+Why: the obligation was that one chart cannot fix a threshold, so a discharge that said the fixture is now four names wide would be a discharge that did not do the thing. The figure is asserted against its neighbours instead. At one even share, seven to ten of every name's twenty bands are shelves, which names most of the chart and discriminates nothing. At three, three of the four names have no shelf at all. At two, every name has one and it is a small minority of bands holding a fifth to a half of the period's volume. A threshold asserted alone agrees with itself; one asserted against its neighbours has to beat them.

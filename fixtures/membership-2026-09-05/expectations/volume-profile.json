@@ -8,7 +8,7 @@
   "sessions": 60,
   "from": "2026-06-11",
   "to": "2026-09-04",
-  "note": "the last sixty sessions of the stored year, which is the level window and not a span of its own. All three names share a trading calendar so all three windows open on the same date."
+  "note": "the last sixty sessions of the stored year, which is the level window and not a span of its own. All four names share a trading calendar so all four windows open on the same date."
  },
  "bands": {
   "count": 20,
@@ -30,27 +30,34 @@
    "MSFT": [
     "365.4674",
     "373.9292",
-    "382.3910",
+    "382.391",
     "390.8528"
+   ],
+   "NFLX": [
+    "72.488",
+    "73.414"
    ]
   },
-  "note": "section 17's shelf threshold is twice an even share, and an even share is a twentieth because there are twenty bands. Listed per name so the number the threshold rests on is tied to the fixture rather than left as arithmetic: each of the three names has at least one band over a tenth of the period's volume, which is what 3.6 widens to four names to check."
+  "note": "section 17's shelf threshold is twice an even share, and an even share is a twentieth because there are twenty bands. Listed per name so the number the threshold rests on is tied to the fixture rather than left as arithmetic: each of the four names has at least one band over a tenth of the period's volume, which is what 3.6 widened the fixture to check, and every one of them cleared it."
  },
  "namesComputed": [
   "AAPL",
   "KEYS",
-  "MSFT"
+  "MSFT",
+  "NFLX"
  ],
  "asOf": {
   "AAPL": "2026-09-04",
   "KEYS": "2026-09-04",
-  "MSFT": "2026-09-04"
+  "MSFT": "2026-09-04",
+  "NFLX": "2026-09-04"
  },
  "totals": {
   "byName": {
    "AAPL": 3210909800,
    "KEYS": 84923400,
-   "MSFT": 2217390000
+   "MSFT": 2217390000,
+   "NFLX": 2505562762
   },
   "note": "the window's total volume, which the shares in the bands sum to exactly. Apportioning by the largest remainder is what makes that exact: flooring twenty fractions loses up to nineteen shares, and a profile that lost them would still look right."
  },
@@ -66,6 +73,10 @@
   "MSFT": {
    "low": "348.5438",
    "high": "517.78"
+  },
+  "NFLX": {
+   "low": "65.08",
+   "high": "83.6"
   }
  },
  "workedDay": {
@@ -104,10 +115,10 @@
   "note": "the whole profile for each name, in the order the primary key sorts them, with the share of the period rounded to nine places for comparison. The full diff rather than a sample, because a sample agrees with a builder that spread half the days.",
   "byName": {
    "AAPL": [
-    "273.5141|277.0520|93876388|0.029236694",
-    "277.0520|280.5900|112722177|0.035105993",
-    "280.5900|284.1280|156692706|0.048800096",
-    "284.1280|287.6659|112895741|0.035160047",
+    "273.5141|277.052|93876388|0.029236694",
+    "277.052|280.59|112722177|0.035105993",
+    "280.59|284.128|156692706|0.048800096",
+    "284.128|287.6659|112895741|0.035160047",
     "287.6659|291.2038|59604323|0.018563064",
     "291.2038|294.7418|125360888|0.039042171",
     "294.7418|298.2798|229835485|0.071579552",
@@ -128,8 +139,8 @@
    "KEYS": [
     "293.55|297.6206|557119|0.006560253",
     "297.6206|301.6913|853680|0.010052353",
-    "301.6913|305.7620|1245936|0.014671292",
-    "305.7620|309.8326|3483057|0.041014102",
+    "301.6913|305.762|1245936|0.014671292",
+    "305.762|309.8326|3483057|0.041014102",
     "309.8326|313.9032|4695122|0.055286552",
     "313.9032|317.9739|6872129|0.080921501",
     "317.9739|322.0446|10811958|0.127314238",
@@ -142,8 +153,8 @@
     "346.4684|350.5391|3558955|0.041907825",
     "350.5391|354.6098|4855283|0.057172499",
     "354.6098|358.6804|4002713|0.047133217",
-    "358.6804|362.7510|3412658|0.040185132",
-    "362.7510|366.8217|2424029|0.028543711",
+    "358.6804|362.751|3412658|0.040185132",
+    "362.751|366.8217|2424029|0.028543711",
     "366.8217|370.8924|953396|0.011226541",
     "370.8924|374.963|822599|0.009686364"
    ],
@@ -151,8 +162,8 @@
     "348.5438|357.0056|57088149|0.025745651",
     "357.0056|365.4674|123279684|0.055596753",
     "365.4674|373.9292|228897155|0.103228189",
-    "373.9292|382.3910|263041595|0.118626671",
-    "382.3910|390.8528|363138460|0.163768421",
+    "373.9292|382.391|263041595|0.118626671",
+    "382.391|390.8528|363138460|0.163768421",
     "390.8528|399.3147|293022164|0.132147328",
     "399.3147|407.7765|42093993|0.018983577",
     "407.7765|416.2383|0|0.000000000",
@@ -162,13 +173,95 @@
     "441.6237|450.0855|41147383|0.018556674",
     "450.0855|458.5473|62013347|0.027966820",
     "458.5473|467.0091|25816841|0.011642896",
-    "467.0091|475.4710|5477572|0.002470279",
-    "475.4710|483.9328|135256892|0.060998242",
+    "467.0091|475.471|5477572|0.002470279",
+    "475.471|483.9328|135256892|0.060998242",
     "483.9328|492.3946|168450185|0.075967775",
     "492.3946|500.8564|188481900|0.085001691",
     "500.8564|509.3182|123238621|0.055578234",
     "509.3182|517.78|54916930|0.024766473"
+   ],
+   "NFLX": [
+    "65.08|66.006|29822911|0.011902680",
+    "66.006|66.932|44167019|0.017627584",
+    "66.932|67.858|94005083|0.037518550",
+    "67.858|68.784|118292352|0.047211889",
+    "68.784|69.71|69678641|0.027809577",
+    "69.71|70.636|48888883|0.019512137",
+    "70.636|71.562|80758279|0.032231593",
+    "71.562|72.488|181137060|0.072293962",
+    "72.488|73.414|309308315|0.123448640",
+    "73.414|74.34|291883217|0.116494075",
+    "74.34|75.266|195402742|0.077987566",
+    "75.266|76.192|131298020|0.052402607",
+    "76.192|77.118|164329322|0.065585794",
+    "77.118|78.044|159671931|0.063726973",
+    "78.044|78.97|99921229|0.039879755",
+    "78.97|79.896|88213344|0.035206998",
+    "79.896|80.822|153634920|0.061317530",
+    "80.822|81.748|160411798|0.064022263",
+    "81.748|82.674|69817997|0.027865196",
+    "82.674|83.6|14919699|0.005954630"
    ]
   }
+ },
+ "thresholdAcrossFourNames": {
+  "chosen": 2,
+  "sweep": {
+   "x1": {
+    "AAPL": {
+     "shelves": 7,
+     "shareOfPeriod": 0.553037
+    },
+    "KEYS": {
+     "shelves": 10,
+     "shareOfPeriod": 0.749019
+    },
+    "MSFT": {
+     "shelves": 9,
+     "shareOfPeriod": 0.850913
+    },
+    "NFLX": {
+     "shelves": 9,
+     "shareOfPeriod": 0.697279
+    }
+   },
+   "x2": {
+    "AAPL": {
+     "shelves": 2,
+     "shareOfPeriod": 0.216389
+    },
+    "KEYS": {
+     "shelves": 2,
+     "shareOfPeriod": 0.236473
+    },
+    "MSFT": {
+     "shelves": 4,
+     "shareOfPeriod": 0.517771
+    },
+    "NFLX": {
+     "shelves": 2,
+     "shareOfPeriod": 0.239943
+    }
+   },
+   "x3": {
+    "AAPL": {
+     "shelves": 0,
+     "shareOfPeriod": 0
+    },
+    "KEYS": {
+     "shelves": 0,
+     "shareOfPeriod": 0
+    },
+    "MSFT": {
+     "shelves": 1,
+     "shareOfPeriod": 0.163768
+    },
+    "NFLX": {
+     "shelves": 0,
+     "shareOfPeriod": 0
+    }
+   }
+  },
+  "note": "the obligation 3.6 carries, measured rather than argued. Section 17 set the shelf threshold at twice an even share from one chart, and the figure had to be checked against four of different character before anything depended on it. The three multiples of an even share are the candidates either side of it, and they fail in opposite directions. At one, between a third and a half of every name's twenty bands is a shelf, which names most of the chart and discriminates nothing. At three, three of the four names have no shelf at all, so the level builder loses its fourth source for them and the range where almost nothing traded becomes something the report cannot state. At two, every name has one and it is a small minority of bands holding a fifth to a half of the period's volume, which is a cluster. The figure derived from one chart survives four."
  }
 }

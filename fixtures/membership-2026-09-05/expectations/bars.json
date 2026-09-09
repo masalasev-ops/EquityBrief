@@ -25,9 +25,10 @@
  "namesBackfilled": [
   "AAPL",
   "KEYS",
-  "MSFT"
+  "MSFT",
+  "NFLX"
  ],
- "rowsExpected": 756,
+ "rowsExpected": 1008,
  "firstSession": "2025-09-05",
  "lastSession": "2026-09-04",
  "properties": {

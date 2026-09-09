@@ -5,10 +5,10 @@
   "date": "2026-09-08",
   "open": 12.94,
   "high": 13.16,
-  "low": 12.875,
+  "low": 12.88,
   "close": 12.91,
   "adjusted_close": 12.91,
-  "volume": 54703207
+  "volume": 55002300
  },
  {
   "code": "A",
@@ -16,7 +16,7 @@
   "date": "2026-09-08",
   "open": 148.02,
   "high": 149.215,
-  "low": 145.985,
+  "low": 145.97,
   "close": 146.85,
   "adjusted_close": 146.85,
   "volume": 1603102
@@ -25,12 +25,12 @@
   "code": "AA",
   "exchange_short_name": "US",
   "date": "2026-09-08",
-  "open": 52.195,
+  "open": 51.36,
   "high": 52.78,
   "low": 51.36,
   "close": 51.74,
   "adjusted_close": 51.74,
-  "volume": 3471681
+  "volume": 3499224
  },
  {
   "code": "AAPL",
@@ -38,10 +38,10 @@
   "date": "2026-09-08",
   "open": 317.1,
   "high": 320.7,
-  "low": 314.92,
+  "low": 314.9,
   "close": 316.22,
   "adjusted_close": 316.22,
-  "volume": 34916247
+  "volume": 35423000
  },
  {
   "code": "MSFT",
@@ -52,7 +52,7 @@
   "low": 490.15,
   "close": 493.95,
   "adjusted_close": 493.95,
-  "volume": 18453485
+  "volume": 18882338
  },
  {
   "code": "XRAY",
@@ -63,7 +63,18 @@
   "low": 10.935,
   "close": 10.99,
   "adjusted_close": 10.99,
-  "volume": 3156221
+  "volume": 3158049
+ },
+ {
+  "code": "NFLX",
+  "exchange_short_name": "US",
+  "date": "2026-09-08",
+  "open": 77.55,
+  "high": 77.73,
+  "low": 75.92,
+  "close": 76.77,
+  "adjusted_close": 76.77,
+  "volume": 33865470
  },
  {
   "code": "KEYS",

@@ -1,3 +1,5 @@
+using EquityBrief.Core.Prices;
+
 namespace EquityBrief.Core.Volume;
 
 // One session's range and the shares that traded in it.
@@ -37,8 +39,17 @@ public static class VolumeProfileSeries
     // see: The volume profile is twenty bands across the window's own range
     public const int Bands = 20;
 
-    // Band edges are rounded to the precision the stored prices carry, so the
-    // edges a reader sees are prices of the same shape as the ones beside them.
+    // Band edges are put in the form every price in this store carries, which is
+    // four places with trailing zeros removed, so the edges a reader sees are
+    // prices of the same shape as the ones beside them.
+    //
+    // Through PriceForm rather than through decimal.Round, and the difference is
+    // not cosmetic. decimal.Round trims a scale longer than four places and
+    // leaves a shorter one alone, so an edge that lands on three places is
+    // written "66.006" and one that needs four is written "382.3910", from the
+    // same expression. `band_low` is a primary key column. Two renderings of one
+    // price are two rows, and 3.6 found this by adding a fourth name whose
+    // narrower range put edges on both sides of that line.
     // The twenty-one edges are computed once and each band takes two adjacent
     // members of that array, which is what makes the bands tile: band k's high
     // is band k+1's low by construction rather than by two roundings agreeing.
@@ -106,7 +117,7 @@ public static class VolumeProfileSeries
         {
             var edge = band == Bands
                 ? high
-                : decimal.Round(low + (band * range / Bands), Places, MidpointRounding.ToEven);
+                : PriceForm.Round(low + (band * range / Bands), Places);
 
             if (edge > edges[^1])
             {

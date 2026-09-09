@@ -19,7 +19,7 @@
    "Name": "Apple Inc.",
    "Sector": "Technology",
    "Industry": "Consumer Electronics",
-   "Weight": 0.0708
+   "Weight": 0.0704
   },
   "234": {
    "Code": "MSFT",
@@ -27,7 +27,15 @@
    "Name": "Microsoft Corporation",
    "Sector": "Technology",
    "Industry": "Software - Infrastructure",
-   "Weight": 0.0559
+   "Weight": 0.0556
+  },
+  "310": {
+   "Code": "NFLX",
+   "Exchange": "US",
+   "Name": "Netflix Inc",
+   "Sector": "Communication Services",
+   "Industry": "Entertainment",
+   "Weight": 0.0049
   },
   "417": {
    "Code": "KEYS",
@@ -35,7 +43,7 @@
    "Name": "Keysight Technologies Inc",
    "Sector": "Technology",
    "Industry": "Scientific & Technical Instruments",
-   "Weight": 0.0008
+   "Weight": 0.0009
   }
  },
  "HistoricalTickerComponents": {
@@ -67,6 +75,14 @@
    "Code": "MSFT",
    "Name": "Microsoft Corporation",
    "StartDate": "1994-06-01",
+   "EndDate": null,
+   "IsActiveNow": 1,
+   "IsDelisted": 0
+  },
+  "531": {
+   "Code": "NFLX",
+   "Name": "Netflix Inc",
+   "StartDate": "2010-12-17",
    "EndDate": null,
    "IsActiveNow": 1,
    "IsDelisted": 0
