@@ -41,6 +41,44 @@ public sealed record ProfileBand(decimal Low, decimal High, long Shares, double 
 // who cannot separate green from orange still reads the band.
 public sealed record ChartBand(decimal LowEdge, decimal HighEdge, string Role, bool Immediate, int Strength);
 
+// One momentum reading, as a mark is given it.
+//
+// Neutral is the value the reading means nothing without. An RSI of 53 is a
+// number; an RSI of 53 against a rule at 50 is a statement. Floor and Ceiling
+// bound the axis where the reading has a fixed range and are absent where it
+// does not: an RSI runs 0 to 100 whatever the stock does, and a MACD is in the
+// stock's own money and has no bounds but its own.
+public sealed record MomentumReading(
+    string Name,
+    IReadOnlyList<double?> Values,
+    double Neutral,
+    double? Floor,
+    double? Ceiling);
+
+// One row of the level summary table, as the surface is given it.
+//
+// Members arrive parsed, because the table's whole content is each band's
+// members and their dates and a string would have to be read to draw them.
+public sealed record SummaryMember(string Kind, decimal Price, DateOnly Date);
+
+public sealed record SummaryBand(
+    decimal LowEdge,
+    decimal HighEdge,
+    string Role,
+    bool Immediate,
+    int Strength,
+    bool HasNonAverageAnchor,
+    IReadOnlyList<SummaryMember> Members);
+
+// An average that anchors no band, with the count that explains it.
+//
+// Section 18's row says a name with fewer than two hundred bars records its long
+// average as not available with the bar count, and that what a reader sees is
+// "not available, nn bars". An average with no value cannot be a band member, so
+// without this the table would simply not mention it, and an absence with no
+// statement beside it is the failure that row describes.
+public sealed record AbsentAverage(string Name, int BarCount);
+
 // The price scale a chart drew, so another mark can draw against it.
 //
 // Section 15.5 says the volume profile is drawn against the same price axis as
@@ -211,6 +249,174 @@ public sealed class MarkRenderer : IComponent
     // see: Support and resistance own two hues and nothing else uses them
     const string SupportHue = "var(--support, #2f7d4f)";
     const string ResistanceHue = "var(--resistance, #b5651d)";
+
+    const int ReadingHeight = 64;
+    const int ReadingGap = 10;
+
+    // The momentum panel. One small axis per reading, each with its neutral rule
+    // drawn across it.
+    //
+    // The rule is the point of the mark rather than decoration. Section 5 says
+    // an RSI near 50 is balanced and above 70 is stretched, so a reading drawn
+    // without its rule is a line whose height means nothing, and the panel would
+    // be four squiggles a reader has to bring their own conventions to.
+    //
+    // Each reading is scaled on its own axis. A MACD is in the stock's money and
+    // an RSI is a score out of a hundred, so one shared scale would flatten
+    // whichever of them has the smaller numbers into a straight line.
+    public string MomentumPanel(string ticker, IReadOnlyList<MomentumReading> readings)
+    {
+        if (readings.Count == 0)
+        {
+            return $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-readings=\"0\">" +
+                $"{Escaped(ticker)} has no momentum readings stored.</p>";
+        }
+
+        var height = (readings.Count * ReadingHeight) + ((readings.Count - 1) * ReadingGap);
+        var svg = new StringBuilder();
+
+        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {Width} {height}\" ");
+        svg.Append(Invariant, $"width=\"100%\" role=\"img\" class=\"momentum-panel\" data-ticker=\"{Escaped(ticker)}\" ");
+        svg.Append(Invariant, $"data-readings=\"{readings.Count}\">");
+        svg.Append(Invariant, $"<title>{Escaped(ticker)}, {readings.Count} momentum reading(s)</title>");
+        svg.Append(Invariant, $"<desc>Each reading on its own small axis with its neutral rule drawn across it.</desc>");
+
+        for (var index = 0; index < readings.Count; index++)
+        {
+            var reading = readings[index];
+            var top = index * (ReadingHeight + ReadingGap);
+            var drawn = reading.Values.Where(value => value is not null).Select(value => value!.Value).ToArray();
+
+            // The axis takes in the neutral rule as well as the values, because
+            // a rule outside the scale is a rule drawn off the pane, and a
+            // reading that never crossed its rule is exactly the case a reader
+            // most wants to see.
+            var low = reading.Floor ?? Math.Min(drawn.Length > 0 ? drawn.Min() : reading.Neutral, reading.Neutral);
+            var high = reading.Ceiling ?? Math.Max(drawn.Length > 0 ? drawn.Max() : reading.Neutral, reading.Neutral);
+            var span = high - low > 0 ? high - low : 1;
+
+            double Y(double value) => top + ReadingHeight - 2 - ((value - low) / span * (ReadingHeight - 4));
+
+            var slot = (double)(Width - (2 * Margin)) / reading.Values.Count;
+
+            svg.Append(Invariant, $"<g class=\"reading\" data-name=\"{Escaped(reading.Name)}\" ");
+            svg.Append(Invariant, $"data-neutral=\"{Number(reading.Neutral)}\" data-values=\"{drawn.Length}\">");
+
+            // The rule first, so the reading is drawn over it.
+            svg.Append(Invariant, $"<line class=\"neutral-rule\" x1=\"{Margin}\" y1=\"{Number(Y(reading.Neutral))}\" ");
+            svg.Append(Invariant, $"x2=\"{Width - Margin}\" y2=\"{Number(Y(reading.Neutral))}\" ");
+            svg.Append(Invariant, $"stroke=\"var(--rule, #d8d8d8)\" stroke-width=\"1\" stroke-dasharray=\"3 3\"/>");
+            svg.Append(Invariant, $"<text x=\"{Margin}\" y=\"{Number(top + 10)}\" fill=\"var(--muted, #6a6a6a)\" font-size=\"10\">");
+            svg.Append(Invariant, $"{Escaped(reading.Name)}, neutral at {Number(reading.Neutral)}</text>");
+
+            // One path per unbroken run, for the reason the averages break: a
+            // reading has no value until its warm-up ends.
+            var run = new StringBuilder();
+
+            for (var at = 0; at <= reading.Values.Count; at++)
+            {
+                var value = at < reading.Values.Count ? reading.Values[at] : null;
+
+                if (value is { } point)
+                {
+                    run.Append(run.Length == 0 ? 'M' : 'L')
+                        .Append(Number(Margin + (slot * at) + (slot / 2)))
+                        .Append(' ')
+                        .Append(Number(Y(point)))
+                        .Append(' ');
+
+                    continue;
+                }
+
+                if (run.Length > 0)
+                {
+                    svg.Append(Invariant, $"<path d=\"{run.ToString().Trim()}\" fill=\"none\" ");
+                    svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1.2\"/>");
+                    run.Clear();
+                }
+            }
+
+            svg.Append("</g>");
+        }
+
+        svg.Append("</svg>");
+
+        return svg.ToString();
+    }
+
+    // The level summary table. Each band with its members and their dates.
+    //
+    // A table rather than a mark, and that is section 15.5's own arithmetic: it
+    // states seven marks and this is not one of them. It is a region of the name
+    // screen, listed in 15.9 beside the chart, and it is written here because
+    // the marks and the regions that read them are drawn by the same server.
+    public string LevelSummary(
+        string ticker,
+        IReadOnlyList<SummaryBand> bands,
+        IReadOnlyList<AbsentAverage>? absent = null)
+    {
+        var missing = absent ?? [];
+
+        if (bands.Count == 0)
+        {
+            return $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-bands=\"0\">" +
+                $"{Escaped(ticker)} has no level bands stored.</p>";
+        }
+
+        var table = new StringBuilder();
+
+        table.Append(Invariant, $"<table class=\"level-summary\" data-ticker=\"{Escaped(ticker)}\" data-bands=\"{bands.Count}\">");
+        table.Append("<caption>Level summary, each band with its members and their dates</caption>");
+        table.Append("<thead><tr><th>Band</th><th>Role</th><th>Strength</th><th>Members</th></tr></thead><tbody>");
+
+        foreach (var band in bands)
+        {
+            // A band of one price is written as one price rather than as a range
+            // from a number to itself, because the second reads as a mistake.
+            var edges = band.LowEdge == band.HighEdge
+                ? band.LowEdge.ToString(Invariant)
+                : $"{band.LowEdge.ToString(Invariant)} to {band.HighEdge.ToString(Invariant)}";
+
+            var role = band.Immediate ? $"{band.Role}, immediate" : band.Role;
+
+            table.Append(Invariant, $"<tr class=\"band\" data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" ");
+            table.Append(Invariant, $"data-role=\"{Escaped(band.Role)}\" data-immediate=\"{(band.Immediate ? 1 : 0)}\" ");
+            table.Append(Invariant, $"data-members=\"{band.Members.Count}\" data-anchored=\"{(band.HasNonAverageAnchor ? 1 : 0)}\">");
+            table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td><td>{band.Strength}</td><td><ul>");
+
+            foreach (var member in band.Members)
+            {
+                table.Append(Invariant, $"<li class=\"member\" data-kind=\"{Escaped(member.Kind)}\" data-date=\"{member.Date:yyyy-MM-dd}\">");
+                table.Append(Invariant, $"{Escaped(member.Kind)} at {member.Price.ToString(Invariant)} on {member.Date:yyyy-MM-dd}</li>");
+            }
+
+            table.Append("</ul></td></tr>");
+        }
+
+        table.Append("</tbody>");
+
+        // The averages that anchor nothing, each saying why. Section 18's row
+        // asks for the string and this is the surface it is read on: an average
+        // with no value cannot be a member of any band above, so without this
+        // row it would be absent from the table with nothing saying so.
+        if (missing.Count > 0)
+        {
+            table.Append(Invariant, $"<tfoot data-absent=\"{missing.Count}\">");
+
+            foreach (var average in missing)
+            {
+                table.Append(Invariant, $"<tr class=\"absent-average\" data-name=\"{Escaped(average.Name)}\" ");
+                table.Append(Invariant, $"data-bar-count=\"{average.BarCount}\"><td>{Escaped(average.Name)}</td>");
+                table.Append(Invariant, $"<td colspan=\"3\">not available, {average.BarCount} bars</td></tr>");
+            }
+
+            table.Append("</tfoot>");
+        }
+
+        table.Append("</table>");
+
+        return table.ToString();
+    }
 
     public string LevelChart(
         string ticker,

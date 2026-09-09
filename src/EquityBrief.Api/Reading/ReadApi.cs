@@ -33,6 +33,23 @@ public sealed record IndicatorRow(
     double? Value,
     int BarCount);
 
+// One stored level band, handed over exactly as the store holds it.
+//
+// The members arrive as the JSON string the column holds rather than parsed
+// into a shape of this project's own. Parsing here would put a second reading of
+// that column beside the level builder's writing of it, and the surface that
+// draws the summary table is the one that has to understand it.
+public sealed record LevelRow(
+    string Ticker,
+    DateOnly AsOf,
+    decimal LowEdge,
+    decimal HighEdge,
+    string Role,
+    bool Immediate,
+    int Strength,
+    bool HasNonAverageAnchor,
+    string Members);
+
 // The read surface. Serves what the nightly run stored, and nothing else.
 //
 // It computes nothing and fetches nothing, which section 7's row states and
@@ -104,6 +121,18 @@ public sealed class ReadApi : IComponent
     // ordered: the caller does not have to sort and ordering says nothing about
     // what a row holds. The null value is served as a null and never as a zero,
     // because a zero is a reading and an absent indicator is not one.
+    // Every band for one name at its latest as-of date. The latest rather than
+    // all of them, because the level table on the name page is tonight's map and
+    // a page holding two nights of bands would be a page holding two maps.
+    const string LevelsForName = @"
+        SELECT ticker, as_of, low_edge, high_edge, role, immediate, strength,
+               has_non_average_anchor, members
+        FROM level
+        WHERE ticker = $ticker
+              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker)
+        ORDER BY low_edge;
+    ";
+
     const string IndicatorsForName = @"
         SELECT ticker, session_date, name, value, bar_count
         FROM indicator
@@ -183,6 +212,35 @@ public sealed class ReadApi : IComponent
                 reader.GetString(2),
                 await reader.IsDBNullAsync(3) ? null : reader.GetDouble(3),
                 reader.GetInt32(4)));
+        }
+
+        return rows;
+    }
+
+    public async Task<IReadOnlyList<LevelRow>> LevelsAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LevelsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var rows = new List<LevelRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new LevelRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(2)),
+                Money.FromStorage(reader.GetString(3)),
+                reader.GetString(4),
+                reader.GetInt32(5) == 1,
+                reader.GetInt32(6),
+                reader.GetInt32(7) == 1,
+                reader.GetString(8)));
         }
 
         return rows;
