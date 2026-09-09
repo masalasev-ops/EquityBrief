@@ -30,6 +30,7 @@ public class CoverageReported
         ["architecture-conformance"] = "ArchitectureConformance",
         ["decision-resolves"] = "DecisionCitations",
         ["no-superseded-citation"] = "DecisionCitations",
+        ["obligation-reconciles"] = "ObligationReconciles",
         ["changelog-reconciles"] = "ChangelogReconciles",
         ["pinned-constants"] = "PinnedConstants",
         ["stated-counts"] = "StatedCounts",

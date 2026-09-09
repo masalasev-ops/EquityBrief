@@ -8,16 +8,19 @@ namespace EquityBrief.Tests.Checks;
 // notice.
 public class DecisionCitations
 {
-    // The placeholder in BUILD_PLAN.md's carried obligations table writes the
-    // citation form out in full to describe it, so it looks like a citation and
-    // names no decision. Exempted here by its exact text rather than by
-    // loosening the pattern, which would exempt real mistakes too.
-    const string ThePlaceholder = "<name>";
-
+    // This carried an exemption for a placeholder in BUILD_PLAN.md's carried
+    // obligations table, which wrote the citation form out in full to describe
+    // it and so looked like a citation naming no decision. The placeholder is
+    // gone from the corpus and the filter matched nothing, which is drift of
+    // exactly the class this harness refuses. It is removed here rather than
+    // later because this is the file the obligation citation reader is modelled
+    // on, and copying it forward would have copied the exemption's shape.
+    //
+    // The passages describing a citation form now name a real decision and a
+    // real obligation instead, so they resolve rather than needing exempting.
     static IReadOnlyList<CorpusFinding> Cited() =>
         Corpus.SourceAndDocuments()
             .SelectMany(file => Corpus.Citations(File.ReadAllText(file), file))
-            .Where(citation => citation.Detail != ThePlaceholder)
             .ToArray();
 
     [Fact]

@@ -3215,3 +3215,78 @@ Noted:      the carried obligations table gives `Absolute path matching anywhere
 Tests:      312, unchanged from 2.7. Windows for this run; the matrix carries macOS and the Linux
             case-sensitivity job, and no live feed runs on either.
 Signed:     phase 2 is signed off at 71328b5. Phase 3's plan is not opened by this session.
+
+### 3.0 planning - a deferral names what produces the evidence      2026-09-09
+Not a checkpoint entry. It belongs to 3.0, which has not landed. `BUILD_PLAN.md` places the
+            phase planning pass here and this is the first of its commits. This session
+            committed code and may not sign it off.
+Built:      the rule, and an instrument for it. `CLAUDE.md` gains **A deferral names what
+            produces the evidence, not a phase** and the citation convention beside the
+            decision one, and the roster gains `obligation-reconciles`. The carried
+            obligations table gains a name on every row and a fourth column stating what
+            produces the evidence, and every row is now one of two forms read from its cells:
+            a checkpoint that produces the evidence and cites the obligation back, or the
+            literal `operating` carrying a numeric trigger, the surface it is read on and the
+            checkpoint that builds that surface.
+Re-pointed: the nine the phase 2 sign-off found, each stating a producer rather than when
+            somebody will look. Five had their evidence in hand and now say so and where it
+            came from: the source lists against 1.7's coverage measurement, the bulk
+            fundamentals probe against a key held since 2.1, the news window against 2.5's
+            live request, and the refetch atomicity and fixture sweep, which wait on no
+            evidence at all and are grouped with 3.1's expectations. One moved: the posting
+            hour leaves 3.7, which is the phase 3 report and produces no evenings, for 5.7,
+            whose done condition is a week of unattended nights and which now says so. Three
+            take the operating form, because no checkpoint accumulates nights or resolved
+            setups: the six reason thresholds at 60 nights of listings, the reason records at
+            the 250 resolved setups section 17 already states, and the calibration decision,
+            which is the same obligation and now cites it rather than naming no point at all.
+            Two are confirmed rather than moved, the volume shelf threshold at 3.6 and the
+            research lane boundary, which had no row anywhere and now has one at 6.5.
+Measured:   over the carried obligations table, 13 rows before and 20 after, 7 added and 0
+            removed. Over those 20, 20 distinct names, 0 carrying terminal punctuation, 0
+            that are neither form and 0 carrying parts of both. Over the corpus, 20 obligation
+            citations and 20 resolve, and every one of the 20 rows is cited back by a
+            checkpoint that owes it, reconciled against a floor of 13. Over the 33 roster
+            rows, 29 are carried by an implementation, up from 32 and 28. The phase report is
+            unchanged at 185 claims, 42 pass, 0 fail, 143 out of scope, 0 unexamined, 48
+            placements and verdicts reconciled against a floor of 34, which is the expected
+            result because this pass adds no claim to the architecture.
+Proved:     the reconciliation refuses the defect it was built for, on this corpus rather than
+            only on constructed input, in both directions. Removing 3.6's citation of the
+            volume shelf threshold failed the forward direction naming that row; adding a
+            citation of a row nobody wrote failed the reverse direction naming the file and
+            the line. Both mutations were reverted and the tree is clean. Six permanent
+            proofs stand behind them, one per assertion that can fail, plus the control: a
+            partition that refuses everything proves nothing, so a well-formed row of each
+            form is asserted to produce no fault.
+Found:      one defect, in the harness rather than in the corpus, and the first sentence added
+            to the obligations table exposed it. `PlanCheckpoints.In` ended the last
+            checkpoint's text at the end of the file, so 7.8 silently owned the carried
+            obligations table and every word after it. Writing "the level window" into a
+            producer cell moved that limits row's due point from 3.4 to 7.8, and only the
+            shadowing assertion caught it. The same fault ran the other way at every phase
+            boundary, where a checkpoint's text ran on through the next phase's opening
+            paragraph. A checkpoint's text now ends at the next checkpoint or the next
+            section, whichever comes first, and never at the end of the file. This is the
+            prefix-matcher shape `CLAUDE.md` says to sweep for, arriving a fifth time.
+Also:       two passages describing the new citation form contained one, which is the exact
+            shape of the exemption this commit deletes. `DecisionCitations` had carried an
+            exemption for a `<name>` placeholder that no longer exists anywhere in the corpus
+            and whose filter matched nothing. Rather than write a second exemption, both
+            passages now name a real obligation, so they resolve. The exemption is removed in
+            this commit rather than a later one because this is the file the obligation
+            citation reader is modelled on, and copying it forward would have copied the
+            exemption's shape. One reader now serves both markers, with the marker passed in,
+            so `Corpus.cs` still never contains either form.
+Tests:      325, up from 312. 13 of the new ones are `obligation-reconciles` and its proofs;
+            the rest are the reader shared with `decision-resolves`.
+Carried:    nothing new. Two rows opened here fall due later in this pass: the citation
+            residue at 3.0 and phase 3's expectations at 3.1.
+Notes:      the stale row the sign-off recorded is repaired here with its prior text in
+            `CHANGELOG.md`, which is what a sign-off could not do and 3.0 can.
+
+            `obligation-reconciles` declares no reach. It reconciles `BUILD_PLAN.md` against
+            itself and reaches no claim in the architecture, so no placement and no verdict
+            names it, and a reach declaration nothing uses is a declaration nothing keeps
+            current. Its floor sits on the rows, which carry the property; files opened is
+            context and carries none.
