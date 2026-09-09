@@ -3766,3 +3766,75 @@ Proved:     the lookback. With `SwingSeries.Lookback` set to 2, five of the six 
             which is the whole argument for having written it: a filter on the wrong column
             returns rows, the arithmetic downstream runs, and the number looks like a number.
 Notes:      the worktree was removed after each run and the working tree was never mutated.
+
+### 3.3 - the volume profile builder and the profile mark                   2026-09-09
+Found:      a hole the plan did not name, before anything could be built. `BUILD_PLAN.md`
+            sends 3.3 to "the window settled at 3.0" and nothing in the corpus says how many
+            price bands the profile is divided into. Section 17's shelf threshold is stated as
+            "at least twice its even share of the period's volume", which is a fifth with five
+            bands and a fortieth with forty, so the threshold rested on a number no document
+            held. 3.0 settled the window and did not notice that the bands were the other half
+            of the same question.
+Decided:    two entries in `DECISIONS.md`, both cited from the code and from the document at
+            the point each rule is stated.
+            **The volume profile is twenty bands across the window's own range.** A fixed count
+            rather than a fixed price width, because the threshold is one number for all five
+            hundred names and a width in money puts three bands on a forty dollar name and
+            three hundred on a four thousand dollar one. Twenty because section 15.5 already
+            describes a support band holding a fifth of the period's volume in a twentieth of
+            its price range, so the figure was read out of the document rather than invented
+            beside it.
+            **A name with fewer than sixty sessions gets no volume profile.** `share_of_period`
+            carries no denominator on its row, so a profile over twenty sessions sits in the
+            same table as one over sixty and reads identically. That is a figure over a mixed
+            population, which `CLAUDE.md` already forbids stating at all.
+Stated:     the band count in section 17's shelf threshold row rather than in a row of its own.
+            A new limits row is a new claim, the count is read by nothing except this
+            threshold, and a threshold written as a multiple of an even share means nothing
+            without the number of shares it is even over. That is the move 3.0 made when it put
+            the profile's window into the level window row instead of writing a second one.
+            Prior text of both passages to `CHANGELOG.md`.
+Built:      `VolumeProfileSeries` in Core, migration 9 creating `volume_profile`,
+            `VolumeProfileBuilder` in the Worker, and the profile mark in `MarkRenderer`.
+Spread:     each day's volume across the bands its own range covers, in proportion to the
+            overlap, rather than placed at that day's close. A day that opened at 300 and
+            closed at 320 did not trade every share at 320, and the level builder is looking
+            for the prices holders actually paid. The close version is what most charting
+            packages ship and it is the wrong figure for this use.
+Apportioned: rather than rounded. The done condition is that the shares in the bands sum to the
+            window's total volume, and flooring twenty fractions loses up to nineteen shares in
+            a way nothing would show. The floors are taken and the shares left over go to the
+            bands with the largest fractions, ties to the lower band so the answer does not
+            depend on a sort being stable. The test reads the total off the bar table over the
+            window rather than out of the expectation, so the profile is checked against the
+            store it was computed from.
+Derived:    the expectation outside this repository from the rules, in a second implementation
+            over the committed bar files. It agrees with the builder exactly: sixty bands over
+            three names, every band edge, every share count and every share of the period to
+            nine places. Two implementations in two languages agreeing on an apportionment is a
+            stronger statement than one agreeing with itself.
+Axis:       the mark is drawn against the price axis the chart computed, which is 3.3's third
+            done condition and the part that could have been drawn correctly and been wrong.
+            `AxisFor` computes the scale once and both marks are given it. The test asserts
+            three things: the two marks declare the same axis in their markup, the topmost band
+            sits where the chart puts that price rather than at the top of its own pane, and
+            the same bands drawn against a different axis move. Without the second, a profile
+            that recomputed its own scale would pass the first.
+Reached:    four claims move to PASS. Section 19.1's volume profile row by
+            `fixture-expectations`, section 15.5's volume profile mark by `read-surface`, and
+            the builder's catalogue and matrix rows by `component-access`.
+Measured:   131 swings and 60 profile bands over three names. Every one of the three has a band
+            holding at or above a tenth of the period's volume, which is twice an even share,
+            so the shelf threshold has something to be true about in this fixture rather than
+            waiting for 3.6 to give it one.
+Corrects:   the residual due points 3.2 removed. `Scope.FixtureRows["swings"]` and
+            `LimitDuePoints["Swing lookback"]` were deleted when their claims were reached, and
+            the established shape keeps them: `indicators` at 3.1 and the two nightly-cost
+            limits at 1.4 all stand in their maps with their checkpoints landed, because
+            `Reached` answers first and the map is the record of where a row would be owed. The
+            screens map made the same point loudly, refusing the run until section 15.5's
+            volume profile row had an entry of its own. Both were restored in this pass.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      362. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Carried:    nothing new. Two obligations stand for the rest of phase 3: the expectations owed
+            for 3.0's rulings at 3.4, and the volume shelf threshold at 3.6.

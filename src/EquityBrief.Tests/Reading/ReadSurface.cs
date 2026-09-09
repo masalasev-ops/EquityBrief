@@ -31,6 +31,7 @@ public class ReadSurface
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles"),
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane"),
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, the moving averages"),
+            CheckReach.Key("15.5 The mark vocabulary", "Volume profile"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -408,6 +409,118 @@ public class ReadSurface
         Assert.Contains("/marks/level-chart/", shell, StringComparison.Ordinal);
         Assert.DoesNotContain("<svg", shell, StringComparison.Ordinal);
         Assert.DoesNotContain("<rect", shell, StringComparison.Ordinal);
+    }
+
+    // ---- 3.3, the volume profile mark ----
+
+    // Bands well inside the chart's own range, so the two scales are
+    // distinguishable. A profile whose bands spanned the chart's whole range
+    // would sit correctly under either rule and prove nothing.
+    static ProfileBand[] Bands() =>
+    [
+        new(20m, 22m, 300, 0.3),
+        new(22m, 24m, 500, 0.5),
+        new(24m, 26m, 200, 0.2),
+    ];
+
+    static ChartBar[] Wide() =>
+    [
+        new(new DateOnly(2026, 9, 1), 12m, 40m, 10m, 30m, 100),
+        new(new DateOnly(2026, 9, 2), 30m, 38m, 11m, 20m, 120),
+    ];
+
+    [Fact]
+    public void TheVolumeProfileIsDrawnAgainstTheChartsPriceAxisAndNotItsOwn()
+    {
+        // Section 15.5 says the profile is drawn against the same price axis as
+        // the chart beside it. That is a claim about two pictures agreeing, and
+        // it is asserted three ways: the two marks declare the same axis, the
+        // topmost band is not flush to the top of the pane where its own scale
+        // would put it, and handing the mark a different axis moves it.
+        var renderer = new MarkRenderer();
+        var bars = Wide();
+        var axis = renderer.AxisFor(bars);
+
+        var chart = renderer.LevelChart("TEST", bars);
+        var profile = renderer.VolumeProfile("TEST", Bands(), axis);
+
+        var chartAxis = Regex.Match(chart, @"data-axis-low=""([^""]+)"" data-axis-high=""([^""]+)""");
+        var profileAxis = Regex.Match(profile, @"data-axis-low=""([^""]+)"" data-axis-high=""([^""]+)""");
+
+        Assert.True(chartAxis.Success && profileAxis.Success);
+        Assert.Equal(chartAxis.Groups[1].Value, profileAxis.Groups[1].Value);
+        Assert.Equal(chartAxis.Groups[2].Value, profileAxis.Groups[2].Value);
+
+        // The chart's range is 10 to 40 and the bands run 20 to 26, so the top
+        // band sits around the middle of the pane. Its own scale would put it at
+        // the top margin, which is the picture this is written to refuse.
+        var tops = Regex.Matches(profile, @"y=""([0-9.]+)""")
+            .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(3, tops.Length);
+        Assert.True(tops.Min() > 100, $"The topmost band sits at y={tops.Min()}, which is where its own axis would put it.");
+
+        // And the same bands against a different axis are drawn somewhere else,
+        // so the axis is used rather than carried.
+        var elsewhere = renderer.VolumeProfile("TEST", Bands(), new PriceAxis(19, 27));
+        var moved = Regex.Matches(elsewhere, @"y=""([0-9.]+)""")
+            .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.NotEqual(tops, moved);
+    }
+
+    [Fact]
+    public void EveryBandIsDrawnWithItsSharesAndItsShareOfThePeriod()
+    {
+        // The mark carries both numbers, because the count alone says nothing
+        // without the period it is a share of, and the share is what section
+        // 17's shelf threshold is read against.
+        var renderer = new MarkRenderer();
+        var profile = renderer.VolumeProfile("TEST", Bands(), renderer.AxisFor(Wide()));
+
+        Assert.Equal(3, Regex.Matches(profile, "class=\"band\"").Count);
+        Assert.Contains("data-shares=\"500\"", profile, StringComparison.Ordinal);
+        Assert.Contains("data-share-of-period=\"0.5\"", profile, StringComparison.Ordinal);
+        Assert.Contains("data-band-low=\"22\" data-band-high=\"24\"", profile, StringComparison.Ordinal);
+
+        // Widths are relative to the busiest band rather than to the period, so
+        // a name whose volume is evenly spread draws twenty full rows rather
+        // than twenty stubs. The busiest is the full width less the margins.
+        var widths = Regex.Matches(profile, @"width=""([0-9.]+)""")
+            .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(widths.Max(), widths[1]);
+        Assert.True(widths[0] / widths[1] is > 0.59 and < 0.61, $"The 300 share band is {widths[0] / widths[1]:0.###} of the 500 share band.");
+
+        // Neutral ink. The two hues belong to support and resistance, and a
+        // volume band is a magnitude.
+        // see: Support and resistance own two hues and nothing else uses them
+        Assert.DoesNotContain("green", profile, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("orange", profile, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AProfileWithNoBandsSaysSoAndABandWithNoHeightIsRefused()
+    {
+        var renderer = new MarkRenderer();
+
+        // The degradation, which is what a name with fewer than sixty sessions
+        // gets. It states the case rather than drawing an empty box.
+        var none = renderer.VolumeProfile("TEST", [], new PriceAxis(10, 40));
+
+        Assert.DoesNotContain("<svg", none, StringComparison.Ordinal);
+        Assert.Contains("no volume profile", none, StringComparison.Ordinal);
+
+        // And a band that is not a band. A row of no height draws nothing and
+        // takes its share of the period with it, which is a band silently
+        // missing from a picture whose whole point is where the volume is.
+        var refusal = Assert.Throws<ArgumentException>(() =>
+            renderer.VolumeProfile("TEST", [new ProfileBand(22m, 22m, 100, 0.1)], new PriceAxis(10, 40)));
+
+        Assert.Contains("which is not a band", refusal.Message, StringComparison.Ordinal);
     }
 
     static ChartBar[] Bars(IReadOnlyList<BarRow> served) =>

@@ -5,12 +5,14 @@ using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Swings;
 using EquityBrief.Core.Time;
+using EquityBrief.Core.Volume;
 using EquityBrief.Data.Swings;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.Swings;
+using EquityBrief.Worker.Volume;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
@@ -39,6 +41,7 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "news"),
             CheckReach.Key(Scope.FixtureTable, "indicators"),
             CheckReach.Key(Scope.FixtureTable, "swings"),
+            CheckReach.Key(Scope.FixtureTable, "volume profile"),
             CheckReach.Key(Scope.LimitsTable, "Swing lookback"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, 200-day average"),
         ]);
@@ -792,6 +795,251 @@ public class FixtureExpectations
             store.DatabaseFile).RunAsync("replay-swings-again");
 
         Assert.Equal(before, Query(store, "SELECT COUNT(*), COUNT(DISTINCT confirmed_on) FROM swing;"));
+    }
+
+    // ---- 3.3, the volume profile ----
+
+    static async Task<TemporaryStore> WithProfile()
+    {
+        var store = await Replayed();
+
+        await new VolumeProfileBuilder(
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("replay-profile");
+
+        return store;
+    }
+
+    [Fact]
+    public async Task TheVolumeProfileMatchesTheArithmeticOverTheCommittedBars()
+    {
+        var expected = Expected("volume-profile");
+        var names = expected.GetProperty("namesComputed").EnumerateArray().Select(name => name.GetString()!).ToArray();
+        var asOf = expected.GetProperty("asOf");
+        var rows = expected.GetProperty("rows");
+
+        using var store = await WithProfile();
+
+        foreach (var ticker in names)
+        {
+            // The share of the period is REAL, so it is compared at the nine
+            // places the expectation states rather than as a string. Everything
+            // else in the row is exact: two prices and a count.
+            Assert.Equal(
+                rows.GetProperty("byName").GetProperty(ticker).EnumerateArray().Select(row => row.GetString()!),
+                Query(store, $"SELECT band_low, band_high, share_count, printf('%.9f', share_of_period) FROM volume_profile WHERE ticker = '{ticker}' ORDER BY as_of, band_low;"));
+
+            Assert.Equal(
+                [$"{asOf.GetProperty(ticker).GetString()}|{expected.GetProperty("bands").GetProperty("count").GetInt32()}"],
+                Query(store, $"SELECT as_of, COUNT(*) FROM volume_profile WHERE ticker = '{ticker}' GROUP BY as_of;"));
+        }
+    }
+
+    [Fact]
+    public async Task TheSharesInTheBandsSumToTheWindowsTotalVolume()
+    {
+        // 3.3's second done condition, and the reason the builder apportions
+        // rather than rounds. The total is read out of the bar table over the
+        // window rather than out of the expectation, so this compares the
+        // profile against the store it was computed from and not against a
+        // figure that travelled beside it.
+        var expected = Expected("volume-profile");
+        var window = expected.GetProperty("window").GetProperty("sessions").GetInt32();
+        var totals = expected.GetProperty("totals").GetProperty("byName");
+
+        using var store = await WithProfile();
+
+        foreach (var entry in totals.EnumerateObject())
+        {
+            var stored = Query(
+                store,
+                $"SELECT SUM(volume) FROM (SELECT volume FROM bar WHERE ticker = '{entry.Name}' ORDER BY session_date DESC LIMIT {window});").Single();
+
+            Assert.Equal(entry.Value.GetInt64().ToString(), stored);
+
+            Assert.Equal(
+                [stored],
+                Query(store, $"SELECT SUM(share_count) FROM volume_profile WHERE ticker = '{entry.Name}';"));
+        }
+
+        // And the shares of the period sum to one, which is the same statement
+        // read off the other column. Not exactly one: it is a sum of twenty
+        // doubles and the tolerance is on the last digits rather than on the
+        // figure.
+        foreach (var entry in totals.EnumerateObject())
+        {
+            var summed = double.Parse(
+                Query(store, $"SELECT SUM(share_of_period) FROM volume_profile WHERE ticker = '{entry.Name}';").Single(),
+                CultureInfo.InvariantCulture);
+
+            Assert.True(Math.Abs(summed - 1) < 1e-12, $"{entry.Name}'s shares of the period sum to {summed}.");
+        }
+    }
+
+    [Fact]
+    public async Task TheBandsTileTheWindowsOwnHighAndLow()
+    {
+        // Every band's high edge is the next band's low edge, the lowest edge is
+        // the window's low and the highest is the window's high. A gap between
+        // two bands is volume that went nowhere, and an overlap is volume
+        // counted twice, and neither shows in a total that was apportioned to
+        // match anyway.
+        var expected = Expected("volume-profile");
+        var extremes = expected.GetProperty("extremes");
+
+        using var store = await WithProfile();
+
+        foreach (var entry in extremes.EnumerateObject())
+        {
+            var edges = Query(store, $"SELECT band_low, band_high FROM volume_profile WHERE ticker = '{entry.Name}' ORDER BY band_low;")
+                .Select(row => row.Split('|'))
+                .ToArray();
+
+            Assert.Equal(entry.Value.GetProperty("low").GetString(), edges[0][0]);
+            Assert.Equal(entry.Value.GetProperty("high").GetString(), edges[^1][1]);
+
+            for (var band = 1; band < edges.Length; band++)
+            {
+                Assert.Equal(edges[band - 1][1], edges[band][0]);
+            }
+
+            // And the extremes are the window's, read from the bars rather than
+            // from the expectation.
+            var window = expected.GetProperty("window").GetProperty("sessions").GetInt32();
+
+            Assert.Equal(
+                [$"{entry.Value.GetProperty("low").GetString()}|{entry.Value.GetProperty("high").GetString()}"],
+                Query(store, $"SELECT MIN(low), MAX(high) FROM (SELECT low, high FROM bar WHERE ticker = '{entry.Name}' ORDER BY session_date DESC LIMIT {window});"));
+        }
+    }
+
+    [Fact]
+    public async Task ASessionsVolumeIsSpreadAcrossTheBandsItsRangeCovers()
+    {
+        // The spreading rule, checkable by hand. The expectation names one
+        // session and the width of the overlap its range makes with each band it
+        // touches, and those widths sum to the session's own range. A builder
+        // placing the whole day at its close would touch one band, and the sum
+        // would be the range only by accident.
+        var worked = Expected("volume-profile").GetProperty("workedDay");
+        var ticker = worked.GetProperty("name").GetString()!;
+        var session = worked.GetProperty("session").GetString()!;
+
+        using var store = await WithProfile();
+
+        // The session as the store holds it, so the numbers below are the ones
+        // the builder spread rather than the ones the fixture file carries.
+        Assert.Equal(
+            [$"{worked.GetProperty("high").GetString()}|{worked.GetProperty("low").GetString()}|{worked.GetProperty("volume").GetInt64()}"],
+            Query(store, $"SELECT high, low, volume FROM bar WHERE ticker = '{ticker}' AND session_date = '{session}';"));
+
+        var high = decimal.Parse(worked.GetProperty("high").GetString()!, CultureInfo.InvariantCulture);
+        var low = decimal.Parse(worked.GetProperty("low").GetString()!, CultureInfo.InvariantCulture);
+
+        var touched = worked.GetProperty("touches")
+            .EnumerateArray()
+            .Select(touch => (
+                Low: decimal.Parse(touch.GetProperty("bandLow").GetString()!, CultureInfo.InvariantCulture),
+                High: decimal.Parse(touch.GetProperty("bandHigh").GetString()!, CultureInfo.InvariantCulture),
+                Overlap: decimal.Parse(touch.GetProperty("overlap").GetString()!, CultureInfo.InvariantCulture)))
+            .ToArray();
+
+        Assert.Equal(high - low, touched.Sum(touch => touch.Overlap));
+        Assert.Equal(worked.GetProperty("range").GetString(), (high - low).ToString(CultureInfo.InvariantCulture));
+
+        // Recomputed against the band edges the store holds, so the stated
+        // overlaps are asserted against the bands the builder actually wrote.
+        var bands = Query(store, $"SELECT band_low, band_high FROM volume_profile WHERE ticker = '{ticker}' ORDER BY band_low;")
+            .Select(row => row.Split('|'))
+            .Select(row => (
+                Low: decimal.Parse(row[0], CultureInfo.InvariantCulture),
+                High: decimal.Parse(row[1], CultureInfo.InvariantCulture)))
+            .ToArray();
+
+        var overlapping = bands
+            .Select(band => (band.Low, band.High, Overlap: Math.Min(band.High, high) - Math.Max(band.Low, low)))
+            .Where(band => band.Overlap > 0)
+            .ToArray();
+
+        Assert.Equal(touched, overlapping);
+
+        // The population that makes this worth asserting: the session's range
+        // covers more than one band. A worked day inside a single band would
+        // hold for a builder that placed the whole day at its close.
+        Assert.True(touched.Length > 1, $"{session} touches {touched.Length} band(s), which cannot show a spread.");
+    }
+
+    [Fact]
+    public async Task AnEvenShareIsATwentiethAndTheFixturesShelvesClearTwiceIt()
+    {
+        // Section 17's shelf threshold read against the fixture. The threshold
+        // is a multiple of an even share and an even share is one over the band
+        // count, so the two numbers are asserted together: a band count changed
+        // in code without the threshold being reread would move what "twice an
+        // even share" means and nothing else would notice.
+        var expected = Expected("volume-profile");
+        var even = expected.GetProperty("evenShare");
+
+        Assert.Equal(1d / expected.GetProperty("bands").GetProperty("count").GetInt32(), even.GetProperty("value").GetDouble());
+        Assert.Equal(2 * even.GetProperty("value").GetDouble(), even.GetProperty("twice").GetDouble());
+        Assert.Equal(VolumeProfileSeries.Bands, expected.GetProperty("bands").GetProperty("count").GetInt32());
+
+        using var store = await WithProfile();
+
+        var threshold = even.GetProperty("twice").GetDouble().ToString(CultureInfo.InvariantCulture);
+
+        foreach (var entry in even.GetProperty("bandsAtOrAboveTwice").EnumerateObject())
+        {
+            var clearing = entry.Value.EnumerateArray().Select(band => band.GetString()!).ToArray();
+
+            Assert.Equal(
+                clearing,
+                Query(store, $"SELECT band_low FROM volume_profile WHERE ticker = '{entry.Name}' AND share_of_period >= {threshold} ORDER BY band_low;"));
+
+            // Each name has one, which is what makes the threshold assertable at
+            // all. A fixture where nothing cleared it would agree with any
+            // threshold above the largest band.
+            Assert.NotEmpty(clearing);
+        }
+    }
+
+    [Fact]
+    public async Task ASecondProfileRunReplacesRatherThanDuplicating()
+    {
+        using var store = await WithProfile();
+
+        var before = Query(store, "SELECT COUNT(*), SUM(share_count) FROM volume_profile;");
+
+        await new VolumeProfileBuilder(
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("replay-profile-again");
+
+        Assert.Equal(before, Query(store, "SELECT COUNT(*), SUM(share_count) FROM volume_profile;"));
+    }
+
+    [Fact]
+    public void ANameWithFewerThanSixtySessionsGetsNoProfile()
+    {
+        // The rule at its source, over constructed input rather than by
+        // shortening the fixture. A share of the period carries no denominator
+        // on the row it is written on, so a profile over twenty sessions sits in
+        // the same table as one over sixty and reads identically.
+        var series = Enumerable.Range(0, VolumeProfileSeries.Window)
+            .Select(day => new ProfileBar(
+                new DateOnly(2026, 1, 1).AddDays(day),
+                100m + day,
+                90m + day,
+                1_000))
+            .ToArray();
+
+        Assert.Empty(VolumeProfileSeries.For(series[..^1]));
+        Assert.NotEmpty(VolumeProfileSeries.For(series));
+
+        // And at the boundary the shares still sum, which is the property that
+        // would otherwise be asserted only over the fixture's three names.
+        Assert.Equal(
+            series.Sum(bar => bar.Volume),
+            VolumeProfileSeries.For(series).Sum(band => band.Shares));
     }
 
     // ---- the expectation sweep, carried out of the phase 1 sign-off ----

@@ -44,6 +44,8 @@ public class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Corporate action checker"),
             CheckReach.Key(Scope.CatalogueTable, "Swing finder"),
             CheckReach.Key(Scope.MatrixTable, "Swing finder"),
+            CheckReach.Key(Scope.CatalogueTable, "Volume profile builder"),
+            CheckReach.Key(Scope.MatrixTable, "Volume profile builder"),
         ]);
 
     static IReadOnlyList<ArchitectureTable> Tables() =>

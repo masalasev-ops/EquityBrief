@@ -6,6 +6,7 @@ using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.Swings;
+using EquityBrief.Worker.Volume;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
@@ -72,6 +73,7 @@ public class FixtureReplay
 
         await new IndicatorEngine(night, store.DatabaseFile).RunAsync("replay-indicators");
         await new SwingFinder(night, store.DatabaseFile).RunAsync("replay-swings");
+        await new VolumeProfileBuilder(night, store.DatabaseFile).RunAsync("replay-profile");
 
         return store;
     }

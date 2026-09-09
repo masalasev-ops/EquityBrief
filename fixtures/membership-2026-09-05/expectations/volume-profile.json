@@ -1,0 +1,174 @@
+{
+ "stage": "volume-profile",
+ "derivedFrom": "section 9.1's window paragraph and the two decisions 3.3 takes, applied to the committed bar files outside this repository and without running the builder. The last sixty sessions of each name's adjusted series, its own high and low divided into twenty bands, each day's volume spread across the bands its own range covers in proportion to the overlap, and the fractions apportioned to whole shares by the largest remainder so they sum to the window's total. A builder that placed each day's volume at its close would still agree with a total taken from itself, which is what makes this an expectation rather than a regression baseline.",
+ "tables": [
+  "volume_profile"
+ ],
+ "window": {
+  "sessions": 60,
+  "from": "2026-06-11",
+  "to": "2026-09-04",
+  "note": "the last sixty sessions of the stored year, which is the level window and not a span of its own. All three names share a trading calendar so all three windows open on the same date."
+ },
+ "bands": {
+  "count": 20,
+  "places": 4,
+  "note": "twenty bands across the window's own high and low, with the twenty-one edges rounded to the four places the stored prices carry and each band taking two adjacent members of that array, so the bands tile rather than two roundings agreeing."
+ },
+ "evenShare": {
+  "value": 0.05,
+  "twice": 0.1,
+  "bandsAtOrAboveTwice": {
+   "AAPL": [
+    "305.3556",
+    "308.8936"
+   ],
+   "KEYS": [
+    "317.9739",
+    "322.0446"
+   ],
+   "MSFT": [
+    "365.4674",
+    "373.9292",
+    "382.3910",
+    "390.8528"
+   ]
+  },
+  "note": "section 17's shelf threshold is twice an even share, and an even share is a twentieth because there are twenty bands. Listed per name so the number the threshold rests on is tied to the fixture rather than left as arithmetic: each of the three names has at least one band over a tenth of the period's volume, which is what 3.6 widens to four names to check."
+ },
+ "namesComputed": [
+  "AAPL",
+  "KEYS",
+  "MSFT"
+ ],
+ "asOf": {
+  "AAPL": "2026-09-04",
+  "KEYS": "2026-09-04",
+  "MSFT": "2026-09-04"
+ },
+ "totals": {
+  "byName": {
+   "AAPL": 3210909800,
+   "KEYS": 84923400,
+   "MSFT": 2217390000
+  },
+  "note": "the window's total volume, which the shares in the bands sum to exactly. Apportioning by the largest remainder is what makes that exact: flooring twenty fractions loses up to nineteen shares, and a profile that lost them would still look right."
+ },
+ "extremes": {
+  "AAPL": {
+   "low": "273.5141",
+   "high": "344.2731"
+  },
+  "KEYS": {
+   "low": "293.55",
+   "high": "374.963"
+  },
+  "MSFT": {
+   "low": "348.5438",
+   "high": "517.78"
+  }
+ },
+ "workedDay": {
+  "name": "AAPL",
+  "session": "2026-09-04",
+  "high": "328.93",
+  "low": "317.86",
+  "volume": 39551800,
+  "range": "11.07",
+  "touches": [
+   {
+    "bandLow": "315.9695",
+    "bandHigh": "319.5074",
+    "overlap": "1.6474"
+   },
+   {
+    "bandLow": "319.5074",
+    "bandHigh": "323.0454",
+    "overlap": "3.5380"
+   },
+   {
+    "bandLow": "323.0454",
+    "bandHigh": "326.5834",
+    "overlap": "3.5380"
+   },
+   {
+    "bandLow": "326.5834",
+    "bandHigh": "330.1213",
+    "overlap": "2.3466"
+   }
+  ],
+  "note": "one session's range against the bands it covers. The overlaps sum to the session's own range, which is what makes the spreading a division of that day's volume rather than a scattering of it, and each band takes the volume in proportion to its overlap. A builder placing the whole day at its close would touch one band and the overlaps would not sum to anything."
+ },
+ "rows": {
+  "format": "band_low|band_high|share_count|share_of_period",
+  "note": "the whole profile for each name, in the order the primary key sorts them, with the share of the period rounded to nine places for comparison. The full diff rather than a sample, because a sample agrees with a builder that spread half the days.",
+  "byName": {
+   "AAPL": [
+    "273.5141|277.0520|93876388|0.029236694",
+    "277.0520|280.5900|112722177|0.035105993",
+    "280.5900|284.1280|156692706|0.048800096",
+    "284.1280|287.6659|112895741|0.035160047",
+    "287.6659|291.2038|59604323|0.018563064",
+    "291.2038|294.7418|125360888|0.039042171",
+    "294.7418|298.2798|229835485|0.071579552",
+    "298.2798|301.8177|184216769|0.057372141",
+    "301.8177|305.3556|228999024|0.071319046",
+    "305.3556|308.8936|327910197|0.102123765",
+    "308.8936|312.4316|366896880|0.114265707",
+    "312.4316|315.9695|267279522|0.083241056",
+    "315.9695|319.5074|134603520|0.041920679",
+    "319.5074|323.0454|143130344|0.044576258",
+    "323.0454|326.5834|156893446|0.048862614",
+    "326.5834|330.1213|170613570|0.053135585",
+    "330.1213|333.6592|151713832|0.047249484",
+    "333.6592|337.1972|75610029|0.023547852",
+    "337.1972|340.7352|71308092|0.022208065",
+    "340.7352|344.2731|40746867|0.012690131"
+   ],
+   "KEYS": [
+    "293.55|297.6206|557119|0.006560253",
+    "297.6206|301.6913|853680|0.010052353",
+    "301.6913|305.7620|1245936|0.014671292",
+    "305.7620|309.8326|3483057|0.041014102",
+    "309.8326|313.9032|4695122|0.055286552",
+    "313.9032|317.9739|6872129|0.080921501",
+    "317.9739|322.0446|10811958|0.127314238",
+    "322.0446|326.1152|9270164|0.109159125",
+    "326.1152|330.1858|6576061|0.077435206",
+    "330.1858|334.2565|4441944|0.052305301",
+    "334.2565|338.3272|5367886|0.063208562",
+    "338.3272|342.3978|6246834|0.073558454",
+    "342.3978|346.4684|4471877|0.052657772",
+    "346.4684|350.5391|3558955|0.041907825",
+    "350.5391|354.6098|4855283|0.057172499",
+    "354.6098|358.6804|4002713|0.047133217",
+    "358.6804|362.7510|3412658|0.040185132",
+    "362.7510|366.8217|2424029|0.028543711",
+    "366.8217|370.8924|953396|0.011226541",
+    "370.8924|374.963|822599|0.009686364"
+   ],
+   "MSFT": [
+    "348.5438|357.0056|57088149|0.025745651",
+    "357.0056|365.4674|123279684|0.055596753",
+    "365.4674|373.9292|228897155|0.103228189",
+    "373.9292|382.3910|263041595|0.118626671",
+    "382.3910|390.8528|363138460|0.163768421",
+    "390.8528|399.3147|293022164|0.132147328",
+    "399.3147|407.7765|42093993|0.018983577",
+    "407.7765|416.2383|0|0.000000000",
+    "416.2383|424.7001|0|0.000000000",
+    "424.7001|433.1619|6451401|0.002909457",
+    "433.1619|441.6237|35577728|0.016044867",
+    "441.6237|450.0855|41147383|0.018556674",
+    "450.0855|458.5473|62013347|0.027966820",
+    "458.5473|467.0091|25816841|0.011642896",
+    "467.0091|475.4710|5477572|0.002470279",
+    "475.4710|483.9328|135256892|0.060998242",
+    "483.9328|492.3946|168450185|0.075967775",
+    "492.3946|500.8564|188481900|0.085001691",
+    "500.8564|509.3182|123238621|0.055578234",
+    "509.3182|517.78|54916930|0.024766473"
+   ]
+  }
+ }
+}
