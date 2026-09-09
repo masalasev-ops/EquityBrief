@@ -18,11 +18,19 @@ internal static class PhaseReportCommand
 
         var document = File.ReadAllText(Path.Combine(root, "docs", "ARCHITECTURE.html"));
 
+        // The suite's own result for this run, written by tools/verify-phase
+        // before it gets here. Absent means nothing ran, which leaves every
+        // claim a check would have reached unexamined rather than passing it.
+        var outcomes = args.Length > 1
+            ? SuiteOutcomes.FromTrx(args[1])
+            : SuiteOutcomes.NothingRan;
+
         var report = PhaseReport.Build(
             ArchitectureTables.In(document),
             NightlyRunSteps.In(document),
             Fixtures.Of(root),
-            CoverageReported.Coverage());
+            CoverageReported.Coverage(),
+            outcomes);
 
         // The clock, because nothing else in the system may read the machine.
         PhaseReportWriter.Write(report, root, SystemClock.ForUnitedStatesSessions().UtcNow);
@@ -37,15 +45,25 @@ internal static class PhaseReportCommand
         Console.WriteLine(
             $"fixture      {report.Fixture.State}, {report.Fixture.Folders} captured, " +
             $"{report.Fixture.Constituents} constituents and {report.Fixture.Names} names");
-        Console.WriteLine($"checks       {report.Coverage.Count} on the roster, {report.Coverage.Count(check => check.Carrier != "not due yet")} carried");
+        Console.WriteLine($"checks       {report.Coverage.Count} on the roster, {report.Coverage.Count(check => check.Carrier != CoverageReported.NotDueYet)} carried");
+        Console.WriteLine(
+            $"suite        {outcomes.Count(CheckRun.Passed)} checks passed, "
+            + $"{outcomes.Count(CheckRun.Failed)} failed, "
+            + $"{outcomes.Count(CheckRun.DidNotRun)} did not run");
         Console.WriteLine(PhaseReportWriter.HtmlPath(root));
         Console.WriteLine(PhaseReportWriter.JsonPath(root));
 
         var green = report.Count(Verdict.Fail) == 0 && report.Count(Verdict.Unexamined) == 0;
 
+        // Naming both counts, because they are different faults and the line
+        // said only one of them. Until 0.7's repair that was harmless in the way
+        // a dead branch is harmless: fail could not be above zero, so the only
+        // reason the report could be red was the one the message gave.
         Console.WriteLine(green
             ? "verify-phase: green"
-            : "verify-phase: not green. A phase is not done while anything is unexamined.");
+            : $"verify-phase: not green. {report.Count(Verdict.Fail)} claim(s) were checked and "
+                + $"did not hold, and {report.Count(Verdict.Unexamined)} were not checked. "
+                + "A phase is not done while either is above zero.");
 
         return green ? 0 : 1;
     }

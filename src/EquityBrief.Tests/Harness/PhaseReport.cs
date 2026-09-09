@@ -128,6 +128,11 @@ internal static class PhaseReport
             "a record, not a claim about code"),
     };
 
+    // Which instrument reaches this claim, and what it would assert. This is a
+    // statement about the corpus and not about any run, which is why the
+    // reconciliation reads it: whether a declaration is used by a verdict is a
+    // question about the map, and it has to answer the same on a run where
+    // every check failed as on one where every check passed.
     static Claim Scoped(string table, string subject)
     {
         var scope = Scope.For(table, subject);
@@ -135,12 +140,55 @@ internal static class PhaseReport
         return new Claim(table, subject, scope.Verdict, scope.Note, scope.By);
     }
 
+    // And what that instrument actually did. Section 19.3 gives the three
+    // verdicts: PASS is the claim was checked and held, FAIL is checked and did
+    // not hold with the diff beside it, UNEXAMINED is not checked and never
+    // counts as a pass.
+    //
+    // Applying this is the whole of the 0.7 repair, and applying it after the
+    // reconciliation rather than before is what keeps the two questions apart.
+    // Before the repair nothing applied it at all: a PASS asserted that a check
+    // declared reach over the subject and never that the check had run, so
+    // Verdict.Fail was reachable from nowhere and the "fail 0" line was
+    // structural rather than measured.
+    static Claim WithOutcome(Claim claim, SuiteOutcomes outcomes)
+    {
+        if (claim.Verdict != Verdict.Pass)
+        {
+            return claim;
+        }
+
+        var result = outcomes.For(claim.By);
+
+        return result.Run switch
+        {
+            CheckRun.Passed => claim,
+            CheckRun.Failed => claim with
+            {
+                Verdict = Verdict.Fail,
+                Note = $"`{claim.By}` ran and did not hold, at {result.Test}: {result.Message}",
+            },
+            _ => claim with
+            {
+                Verdict = Verdict.Unexamined,
+                Note = $"`{claim.By}` did not run in the run this report reads, so the claim was "
+                    + $"not checked. It would otherwise assert that {claim.Note}",
+            },
+        };
+    }
+
     internal static PhaseReportModel Build(
         IReadOnlyList<ArchitectureTable> tables,
         IReadOnlyList<string>? nightlySteps = null,
         FixtureStatus? fixture = null,
-        IReadOnlyList<CheckCoverage>? coverage = null)
+        IReadOnlyList<CheckCoverage>? coverage = null,
+        SuiteOutcomes? outcomes = null)
     {
+        // Absent means nothing ran, which leaves every claim a check would have
+        // reached unexamined and the report not green. The default is the safe
+        // direction rather than a convenience.
+        outcomes ??= SuiteOutcomes.NothingRan;
+
         var unplaced = tables
             .Where(table => !ClaimSources.Contains(table.Heading, StringComparer.Ordinal)
                 && !Placed.ContainsKey(table.Heading))
@@ -247,9 +295,13 @@ internal static class PhaseReport
                 ". One table doing that is a shape the harness knows; two is a shape nobody has read.");
         }
 
+        // The outcomes are applied here, after the reconciliation has read the
+        // claims as the corpus states them. A claim whose check failed or did
+        // not run keeps the instrument it names, because which instrument
+        // reaches it does not change with the run.
         return new PhaseReportModel(
             placed,
-            claims,
+            [.. claims.Select(claim => WithOutcome(claim, outcomes))],
             fixture ?? new FixtureStatus(0, "ABSENT", "not looked for", []),
             coverage ?? [],
             reconciled)

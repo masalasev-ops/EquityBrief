@@ -2245,3 +2245,83 @@ Verdict:    phase 1 is signed off. Eight checkpoints landed, `tools/ci` is green
             derived, and the night does what section 14 says it does. What each of them
             falsifies is a claim about how well that is known, and keeping those two apart is
             the thing this corpus exists to do.
+
+### Repairs to 0.7 - verify-phase had no failing branch                      2026-09-08
+Not a checkpoint entry. It belongs to 0.7, which built the harness and has landed. This is a
+            defect in phase 0's instrument found at phase 1's sign-off, and it lands on its own
+            branch before phase 2's planning pass opens rather than waiting for 2.0, because
+            2.0's own verification would otherwise be signed off by an instrument known to have
+            no failing branch.
+Defect:     `Verdict.Fail` was assigned nowhere in the report path. Every verdict came from
+            `Harness/Scope.cs`, a map naming the instrument that reaches each claim, and the
+            report printed PASS from the naming without asking whether that instrument had run.
+            So the "fail 0" line was structural rather than measured and could not take another
+            value, and green meant no claim was unexamined rather than that any claim held.
+            Unchecked from 0.5, where the harness first read the architecture, through 1.8.
+Proof:      on record from the sign-off two entries above rather than constructed for this
+            entry. Deleting the membership filter from the bar fetcher left five tests failing,
+            and `tools/verify-phase` printed an identical block, 180 claims, 37 pass, 0 fail,
+            143 out of scope, 0 unexamined, exit 0, with the claim about storing bars for
+            current members still reading PASS by `nightly-run` and its note about current
+            members intact.
+Repaired:   three changes, in the order the defect needs them.
+
+            The tool reads a run. `tools/verify-phase` now runs the suite first with a trx
+            logger and hands the result to the report, and the report gives a claim PASS only
+            where the check reaching it ran and held, FAIL where that check ran and did not
+            hold, and UNEXAMINED where it did not run. That is section 19.3's own table, which
+            has said exactly this since it was written; what was missing was any code reading
+            it. The result file is deleted before the suite runs rather than overwritten by it,
+            because a result left from an earlier run is worse than none: the report would read
+            it, find every check passing, and print green over a tree whose suite had failed to
+            build.
+
+            The outcome is applied after the reconciliation and not before. Whether a
+            declaration is used by a verdict is a question about the map and has to answer the
+            same on a run where every check failed as on one where every check passed. Applying
+            outcomes first made the reconciliation refuse every declaration the moment a check
+            went red, which is the first version of this repair failing on its own first test.
+
+            And the not-green line names both counts. It said a phase is not done while anything
+            is unexamined, which was the only reason the report could be red while fail could
+            not be above zero. A dead branch made a wrong message harmless.
+Proved:     five new tests, and the two that carry the property are asserted over the written
+            file rather than over the model, because the surface was the defect the last time
+            this class appeared. A constructed run in which one check fails writes a report
+            whose JSON reads fail equal to the number of claims that check reaches, green false,
+            and pass reduced by the same number. A run that produced no result writes pass 0,
+            fail 0, unexamined above zero and green false, with out of scope unmoved, since out
+            of scope is a statement about the plan rather than about a run. The trx reader is
+            asserted over a constructed file for all three outcomes. The carrier of every check
+            is asserted to own its tests and no others, in both directions, because the match is
+            on a type's full name and a prefix key answers about everything sharing it: on the
+            class name alone "Store" would answer for "StoreWrites" and two checks would share
+            one result. And every check a passing claim names is one the result can answer for.
+Measured:   over the 180 claims of the report at this commit, before the repair and after it.
+            Stated before the run: 37 read PASS before. 37 read PASS after, and no verdict
+            changed. That is the outcome to expect rather than a disappointment: every carried
+            check passes on this tree, so a report that reads the run agrees with one that
+            assumed it. The repair is not visible in the verdicts and is visible in what happens
+            when a check fails.
+            The new line the report prints: 28 checks passed, 0 failed, 0 did not run, over the
+            28 the roster carries of 32.
+            Against a constructed run with `nightly-run` failing: 34 pass, 3 fail, 143 out of
+            scope, 0 unexamined, green false, exit 1, each FAIL row naming the failing test.
+            Before the repair the same input produced 37 pass and 0 fail.
+Tests:      256, up from 251. `tools/ci.ps1` green end to end, all 6 steps.
+Sign-offs:  what this does to the two already written, which is less than it looks and worth
+            stating rather than leaving to be worked out. It reverses neither. The suite carried
+            the assertions in both cases and the suite was green in both, so the properties held
+            when each was signed and hold now. What it does mean is that every phase report's
+            fail count was uninformative, phase 0's and phase 1's alike, and that a reader who
+            took "0 fail" as a measurement was reading a constant. Both sign-offs carry a
+            paragraph on what green does not mean, and both were true for a reason neither of
+            them gave: phase 0's said the report was green because 154 of 158 claims were out of
+            scope, and phase 1's said every figure was computed from the corpus and the fixture
+            rather than from a store. Neither said the fail count could not have been anything
+            else.
+Notes:      the table this repair satisfies was placed against `architecture-conformance` from
+            0.5, and that check asserted the three verdict names matched the document and never
+            that the harness could produce the second of them. A table can be covered by an
+            instrument that reads its vocabulary and not its content, and this is what that
+            looks like.
