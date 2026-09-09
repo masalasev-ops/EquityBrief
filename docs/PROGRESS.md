@@ -3835,6 +3835,36 @@ Corrects:   the residual due points 3.2 removed. `Scope.FixtureRows["swings"]` a
             screens map made the same point loudly, refusing the run until section 15.5's
             volume profile row had an entry of its own. Both were restored in this pass.
 Amended:    nothing. This checkpoint amends no done condition.
-Tests:      362. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Tests:      362, and 363 after the addendum below. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Carried:    nothing new. Two obligations stand for the rest of phase 3: the expectations owed
             for 3.0's rulings at 3.4, and the volume shelf threshold at 3.6.
+
+### Addendum to 3.3 - three mutations, and the test one of them found wanting  2026-09-09
+Adds:       the mutation evidence for 3.3, run after the commit above in an isolated worktree,
+            and one test written because a mutation found a hole rather than confirmed a
+            guard. The suite is 363 rather than 362 for that reason.
+Proved:     the axis. With the profile mark computing its own low and high from its own bands,
+            one test goes red, 361 of 362 passing, and it is the axis test. Nothing else in the
+            suite can see that change, which is what a picture drawn correctly against the
+            wrong scale looks like from the inside.
+            The apportionment. With the largest remainder loop deleted so the shares are the
+            floors alone, two go red: the sum test and the diff.
+Found:      the spreading, and this is the one worth reading. Deleting the spread outright, so
+            each session's whole volume lands in the band holding its low, turned the diff and
+            the shelf test red and left
+            `ASessionsVolumeIsSpreadAcrossTheBandsItsRangeCovers` green. That test asserts the
+            expectation's stated overlaps against the band edges the builder wrote and asserts
+            they sum to the session's range, and both are facts about the edges rather than
+            about what the builder did with them. The test named for the spreading could not
+            fail on the spreading being gone.
+            So a second test was written where the answer is computable by hand: sixty sessions
+            from 100 to 120 at a thousand shares each, twenty bands one wide, every session
+            covering all of them, so every band holds exactly three thousand shares and exactly
+            an even share of the period. A builder placing the day at one price puts all sixty
+            thousand in one band. It carries the counter-case for the shelf threshold as well,
+            a name whose volume is evenly spread having no shelf at all, which is what the
+            four-sources decision says such a name loses nothing by.
+Notes:      warnings as errors refused the first form of the spreading mutation, exactly as it
+            did at 3.1: replacing the guard with a constant produced CS0162 for unreachable
+            code, so the loop was deleted outright, which is the sharper mutation anyway.
+            The worktree was removed after each run and the working tree was never mutated.

@@ -1018,6 +1018,45 @@ public class FixtureExpectations
     }
 
     [Fact]
+    public void ADaysVolumeReachesEveryBandItsRangeCoversAndNotOnlyOne()
+    {
+        // Written after a mutation found the test above wanting.
+        //
+        // Deleting the spreading outright, so every session's whole volume lands
+        // in the band holding its low, left ASessionsVolumeIsSpreadAcross...
+        // green. That test asserts the expectation's stated overlaps against the
+        // band edges the builder wrote and asserts they sum to the session's
+        // range, which are facts about the edges and the arithmetic on them, and
+        // neither says the builder used them. The diff caught the mutation, but
+        // the test named for the spreading did not, and a test that cannot fail
+        // on the thing it is named for is the shape this corpus refuses.
+        //
+        // So the spreading is asserted where the answer can be computed by hand.
+        // Sixty sessions from 100 to 120, one thousand shares each. The window's
+        // range is twenty, twenty bands are one wide, every session covers all of
+        // them, so each band takes a twentieth of each day: fifty a day, three
+        // thousand over sixty days, every band the same. A builder placing the
+        // day at one price puts all sixty thousand in one band.
+        var series = Enumerable.Range(0, VolumeProfileSeries.Window)
+            .Select(day => new ProfileBar(new DateOnly(2026, 1, 1).AddDays(day), 120m, 100m, 1_000))
+            .ToArray();
+
+        var bands = VolumeProfileSeries.For(series);
+
+        Assert.Equal(VolumeProfileSeries.Bands, bands.Count);
+        Assert.All(bands, band => Assert.Equal(3_000, band.Shares));
+        Assert.All(bands, band => Assert.Equal(1m, band.High - band.Low));
+        Assert.Equal(60_000, bands.Sum(band => band.Shares));
+
+        // And the counter-case the shelf threshold needs. A name whose volume is
+        // evenly spread has every band at exactly an even share and no shelf at
+        // all, which is what the decision says it should lose nothing by.
+        // see: A heavy volume shelf creates a band of its own and also strengthens one it coincides with
+        Assert.All(bands, band => Assert.Equal(1d / VolumeProfileSeries.Bands, band.ShareOfPeriod, 12));
+        Assert.DoesNotContain(bands, band => band.ShareOfPeriod >= 2d / VolumeProfileSeries.Bands);
+    }
+
+    [Fact]
     public void ANameWithFewerThanSixtySessionsGetsNoProfile()
     {
         // The rule at its source, over constructed input rather than by
