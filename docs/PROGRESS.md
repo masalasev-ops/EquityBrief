@@ -3398,3 +3398,50 @@ Measured:   over the 42 PASS claims, the Weighted-call budget note's 3 clauses a
             to `NightlyCost` and 3 removed from the two classes they backed nothing from.
             `nightly-cost` carries 11 tests, up from 8.
 Carried:    the four rows 3.0's sweep opened stand, all due 3.1. This discharges the fifth.
+
+### 3.1 - the membership index constraints asserted                          2026-09-09
+Not a checkpoint entry. It belongs to 3.1, which has not landed, and the work is committed
+            ahead of the checkpoint that owes it. This session committed code and may not
+            sign it off.
+Built:      five tests in `SchemaColumns`, which is `schema-columns`'s carrier and therefore
+            the only class whose tests back the `Stores :: Membership` claim its reach already
+            declared. Four are the sign-off's own proofs made permanent: a second span for a
+            constituent with no join date refused, a second span for a dated one refused, two
+            rows for one ticker both carrying no join date refused, and the control, three
+            distinct spans for one ticker accepted. The fifth asserts the index's form off
+            `sqlite_master` in the built store, that it is UNIQUE and folds the unknown, and
+            against the sentence `SCHEMA.md` states.
+            The inserts are direct rather than through `MembershipLoader`, because the loader's
+            statement carries `ON CONFLICT` against the same expression, so a legitimate re-run
+            upserts and never reaches the refusal. What is under test is the constraint.
+Found:      the first version asserted `membership_span` in the refusal message, and the two
+            mutations then failed the same three tests for two different reasons. SQLite names
+            the index in the message for an expression index and names the columns for a plain
+            one, so a message assertion made every refusal test fail the moment the index
+            changed form, whether or not the row was still refused. Three tests that all go red
+            for one reason are three tests saying one thing. The refusals now assert the codes,
+            19 and 2067, and the form is asserted once on its own.
+Proved:     two mutations against a migrated store, each reverted, the tree clean afterwards.
+            Dropping `UNIQUE` fails 4 of 12: all three refusals and the form. Dropping only the
+            `IFNULL` fold, keeping the index unique, fails 3 of 12: the two cases whose join
+            date is unknown, and the form. The dated case stays green under that mutation,
+            which is correct and is what shows the fold's own contribution rather than the
+            index's. The control stayed green under both, which is what stops a refusal that
+            refuses everything reading as a proof.
+Not guarded: the empty-string edge, deliberately. A literal empty string in `joined` collides
+            with the unknown and was confirmed to at the sign-off. `MembershipLoader` is the
+            sole declared writer, and what it binds comes from `IndexConstituent.Joined`, a
+            `DateOnly?` whose present values either parse as yyyy-MM-dd or throw, so the bound
+            value is DBNull or exactly ten characters and no path produces an empty string. A
+            guard would be code for a case the writer cannot reach. The reasoning rests
+            entirely on that type, so the type is asserted rather than described: the day it
+            becomes a string the test fails and the reader is told to reconsider the guard,
+            instead of finding the collision in a store. The declared-writer half is asserted
+            against SCHEMA's ownership row in the same test.
+Measured:   `schema-columns` carries 12 tests, up from 6. Tests 331, up from 325. Over the
+            migrated store, 1 index on `membership` and it is `membership_span`.
+Widened:    `schema-columns`'s roster row, which said columns and types and now says what the
+            check does, with prior text in `CHANGELOG.md`. A row saying less than its check
+            does is the same defect as one saying more, read from the other end.
+Carried:    the four rows 3.0's sweep opened stand, all due 3.1. This discharges the sixth of
+            the seven obligations that were due there.

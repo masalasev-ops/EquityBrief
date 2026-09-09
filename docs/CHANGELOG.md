@@ -25,6 +25,29 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - CLAUDE.md, BUILD_PLAN.md - schema-columns reads the index it always claimed
+Corrects: `schema-columns`'s roster row said less than the check now does. Migration 6 replaced
+membership's primary key with a unique expression index, and nothing in the suite asserted it:
+the check reads tables and columns and does not read indexes, and no test named
+`membership_span`. The phase 2 sign-off proved three refusals and the control by hand from
+outside the repository and recorded that a key changed under time pressure was examined once
+and never again.
+Was:
+> | `schema-columns` | every CI run | Every table in a migrated store has the columns and
+> storage types `SCHEMA.md` declares for it, in that order, and every table in the store is
+> one the file describes |
+>
+> and the obligations table carried `The membership uniqueness asserted by a permanent test`
+> as due at 3.1 and open
+Now:
+> the row adds that where the file declares a uniqueness the columns cannot carry, the built
+> index is asserted to have the form the file states and the duplicates it forbids are refused
+> against a migrated store, with the domain it must still admit accepted; and the obligation
+> reads `3.1, discharged`
+Why: a row that says less than its check does is the same defect as one that says more, read
+from the other end, and the next session writing against the row would take the index
+assertion for something nobody had built.
+
 ### 2026-09-09 - BUILD_PLAN.md - the weighted-call stop is discharged
 Authorised by: The night's cost is counted in weighted calls against the stated daily allowance
 Was:

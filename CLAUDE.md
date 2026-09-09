@@ -159,7 +159,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, no schedule is expressed in local time, and no date is parsed against the machine's locale. Comments are stripped first, because a sentence naming a pattern is not a use of it |
 | `path-casing` | every CI run | Every file path appearing as a string literal in source matches the on-disk path exactly, byte for byte |
 | `store-portability` | every CI run | No row in a populated store carries an absolute path |
-| `schema-columns` | every CI run | Every table in a migrated store has the columns and storage types `SCHEMA.md` declares for it, in that order, and every table in the store is one the file describes |
+| `schema-columns` | every CI run | Every table in a migrated store has the columns and storage types `SCHEMA.md` declares for it, in that order, and every table in the store is one the file describes. Where the file declares a uniqueness the columns cannot carry, the built index is asserted to have the form the file states and the duplicates it forbids are refused against a migrated store, with the domain it must still admit accepted |
 | `price-storage-form` | every CI run | No migration declares a price or money column `REAL` |
 | `build-properties-central` | every CI run | No project file states a target framework or a warning setting of its own, and `src/Directory.Build.props` states both |
 | `api-isolation` | every CI run | `EquityBrief.Api` has no transitive reference to `EquityBrief.Worker`, read from the compiled dependency file |
