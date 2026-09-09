@@ -54,6 +54,7 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "ladder"),
             CheckReach.Key(Scope.FixtureTable, "calendar"),
             CheckReach.Key(Scope.FailureTable, "Earnings date missing, the calendar"),
+            CheckReach.Key(Scope.LimitsTable, "Earnings horizon"),
             CheckReach.Key(Scope.LimitsTable, "Tranches, exits"),
             CheckReach.Key(Scope.LimitsTable, "Tranche eligibility"),
             CheckReach.Key(Scope.FailureTable, "No band is eligible to carry a tranche"),
@@ -2096,6 +2097,14 @@ public class FixtureExpectations
         var store = await WithLevels();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
 
+        // The calendar first, because the second book is keyed to a dated event
+        // and a ladder built before it would carry none. The night runs them in
+        // that order for the same reason.
+        await new CalendarFetcher(
+            RecordedEarningsCalendarFeed.FromFolder(Folder()),
+            clock,
+            store.DatabaseFile).RunAsync(Index, CalendarSession, "replay-calendar-for-ladders");
+
         await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-ladders");
 
         return store;
@@ -2461,6 +2470,160 @@ public class FixtureExpectations
             Assert.Single(traded.Select(exit => exit.GetProperty("fraction").GetString()).Distinct());
             Assert.Equal($"1/{traded.Length}", traded[0].GetProperty("fraction").GetString());
         }
+    }
+
+    // ---- 4.7, the event book ----
+
+    [Fact]
+    public async Task TheEventSetupsMatchTheRulesAndANameWithNoDateGetsNone()
+    {
+        var expected = Expected("ladder").GetProperty("events");
+        var byName = expected.GetProperty("byName");
+        var counts = Expected("ladder").GetProperty("counts").GetProperty("events");
+
+        using var store = await WithLadders();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var plan = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            var events = plan.GetProperty("events").EnumerateArray()
+                .Select(setup => string.Join(
+                    "|",
+                    setup.GetProperty("name").GetString(),
+                    setup.GetProperty("eventDate").GetString(),
+                    setup.GetProperty("entry").GetString(),
+                    setup.GetProperty("stop").GetString(),
+                    setup.GetProperty("target").GetString()))
+                .ToArray();
+
+            Assert.Equal(
+                byName.GetProperty(name).EnumerateArray().Select(row => row.GetString()).ToArray(),
+                events);
+
+            Assert.Equal(counts.GetProperty(name).GetInt32(), events.Length);
+
+            // Every figure in the book is a proposal and every setup says so,
+            // which is what keeps twelve invented numbers from later reading as
+            // measured ones.
+            Assert.All(events.Length == 0 ? [] : plan.GetProperty("events").EnumerateArray(),
+                setup => Assert.True(setup.GetProperty("proposal").GetBoolean()));
+
+            // And each carries all four of trigger, entry, stop and target,
+            // which is the shape figure 10.1 states and the one thing about
+            // these setups that is not a proposal.
+            Assert.All(plan.GetProperty("events").EnumerateArray(), setup =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(setup.GetProperty("trigger").GetString()));
+                Assert.False(string.IsNullOrWhiteSpace(setup.GetProperty("entry").GetString()));
+                Assert.False(string.IsNullOrWhiteSpace(setup.GetProperty("stop").GetString()));
+                Assert.False(string.IsNullOrWhiteSpace(setup.GetProperty("target").GetString()));
+            });
+        }
+
+        // The two names with no dated event get no setups and the plan says why,
+        // rather than producing them from a guessed date. This is the population
+        // that makes the rule assertable: two of four have a date and two do not.
+        foreach (var name in expected.GetProperty("absent").EnumerateObject().Select(entry => entry.Name))
+        {
+            var plan = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            Assert.Empty(plan.GetProperty("events").EnumerateArray());
+            Assert.Contains("no dated event", plan.GetProperty("reason").GetString()!, StringComparison.Ordinal);
+        }
+
+        // The second book never merges with the position book, and what that
+        // means is structural rather than a matter of prices: a setup carries
+        // its own stop and its own target and takes no part in the position's
+        // invalidation. Sharing a price with a tranche is expected, because both
+        // read the same band, and AAPL's flush enters at the low edge its first
+        // tranche sits on.
+        var apple = JsonDocument
+            .Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'AAPL';").Single())
+            .RootElement;
+
+        var invalidation = apple.GetProperty("invalidation").GetString();
+
+        Assert.All(apple.GetProperty("events").EnumerateArray(), setup =>
+        {
+            // A setup's own stop, which is not the position's invalidation.
+            Assert.NotEqual(invalidation, setup.GetProperty("stop").GetString());
+
+            // And a target, which no tranche has: a tranche is bought and held
+            // to the exits, and a setup is a trade with an end.
+            Assert.False(string.IsNullOrWhiteSpace(setup.GetProperty("target").GetString()));
+        });
+
+        Assert.All(
+            apple.GetProperty("tranches").EnumerateArray(),
+            tranche => Assert.False(tranche.TryGetProperty("target", out _)));
+    }
+
+    [Fact]
+    public void EverySetupHasAPositiveRewardAndAStopOutsideTheNoise()
+    {
+        // Two arrangements of these rules did not manage this, and both were
+        // found by deriving the figures before running the code rather than by
+        // freezing what the code produced.
+        //
+        // A stop at a zero-width band's low edge is the entry, so the setup
+        // could never win and would stop out on the session that triggered it.
+        // And a target taken as the next band can sit below a gap-up entry,
+        // which is a target the setup starts past.
+        var asOf = new DateOnly(2026, 9, 4);
+
+        // A single-price resistance band, which is what most of them are, and a
+        // second one close above it.
+        List<Level> bands =
+        [
+            new(90m, 92m, LevelSeries.Support, false, 1, true, []),
+            new(101m, 101m, LevelSeries.Resistance, true, 1, true, []),
+            new(102m, 102m, LevelSeries.Resistance, false, 1, true, []),
+        ];
+
+        var recent = Enumerable.Range(0, 10)
+            .Select(day => new LadderBar(asOf.AddDays(day - 9), 100m, 99m, 99.5m))
+            .ToArray();
+
+        var setups = LadderSeries.EventsFor(bands, close: 99.5m, typicalMove: 2m, asOf.AddDays(30), recent);
+
+        Assert.Equal(3, setups.Count);
+
+        foreach (var setup in setups)
+        {
+            Assert.True(
+                setup.Target > setup.Entry,
+                $"{setup.Name} targets {setup.Target} from an entry of {setup.Entry}, which is a setup that starts past its own target.");
+
+            Assert.True(
+                setup.Stop < setup.Entry,
+                $"{setup.Name} stops at {setup.Stop} from an entry of {setup.Entry}.");
+
+            // And the stop is outside a typical day, which is the rule the
+            // position book's stops already follow.
+            Assert.True(
+                setup.Entry - setup.Stop >= 2m,
+                $"{setup.Name} risks {setup.Entry - setup.Stop} against a typical day of 2, which is inside the noise.");
+        }
+
+        // The gap up is the one whose target has to be looked for rather than
+        // taken: its entry is above the band it cleared, so the band immediately
+        // above that band is below its entry.
+        var gap = setups.Single(setup => setup.Name.Contains("gap up", StringComparison.Ordinal));
+
+        Assert.Equal(103m, gap.Entry);
+
+        // No band sits above the gap entry, so the target is two typical days
+        // above it rather than the band at 102, which is below the entry.
+        Assert.Equal(107m, gap.Target);
+
+        // A name with no date gets none of them, over the same bands, so the
+        // absence is the date deciding rather than the bands.
+        Assert.Empty(LadderSeries.EventsFor(bands, 99.5m, 2m, null, recent));
     }
 
     [Fact]

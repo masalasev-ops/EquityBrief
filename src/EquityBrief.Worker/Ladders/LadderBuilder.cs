@@ -115,6 +115,17 @@ public sealed class LadderBuilder : IComponent
         ORDER BY session_date;
     ";
 
+    // The next dated event on or after the as-of session. The calendar holds a
+    // quarter ahead, so a name that reports inside that window has a row and one
+    // that does not has none, which is the explicit blank rather than a guess.
+    const string NextEventFor = @"
+        SELECT event_date
+        FROM calendar
+        WHERE ticker = $ticker AND event_date >= $as_of
+        ORDER BY event_date
+        LIMIT 1;
+    ";
+
     const string Upsert = @"
         INSERT INTO ladder (ticker, as_of, trend_state, plan)
         VALUES ($ticker, $as_of, $trend_state, $plan)
@@ -175,7 +186,7 @@ public sealed class LadderBuilder : IComponent
 
             var plan = session is { } priced
                 ? await PlanAsync(connection, ticker, priced.SessionDate, priced.Close, trend, cancellation)
-                : new Ladder([], [], null, trend.Reason);
+                : new Ladder([], [], null, trend.Reason, []);
 
             if (session is null)
             {
@@ -235,21 +246,21 @@ public sealed class LadderBuilder : IComponent
     {
         if (!trend.Classified)
         {
-            return new Ladder([], [], null, trend.Reason);
+            return new Ladder([], [], null, trend.Reason, []);
         }
 
         var bands = await BandsAsync(connection, ticker, cancellation);
 
         if (bands.Count == 0)
         {
-            return new Ladder([], [], null, "no bands are stored for this name");
+            return new Ladder([], [], null, "no bands are stored for this name", []);
         }
 
         var typicalMove = await TypicalMoveAsync(connection, ticker, asOf, cancellation);
 
         if (typicalMove is not { } move)
         {
-            return new Ladder([], [], null, "no typical daily move is stored for this name");
+            return new Ladder([], [], null, "no typical daily move is stored for this name", []);
         }
 
         var recent = await RecentAsync(connection, ticker, cancellation);
@@ -263,7 +274,12 @@ public sealed class LadderBuilder : IComponent
             .Select(swing => swing.Price)
             .ToArray();
 
-        return LadderSeries.For(bands, close, move, recent, trend.State, lows);
+        // The next dated event on file, which is what the second book is keyed
+        // to. A name with none gets no setups rather than setups built from a
+        // guessed date.
+        var nextEvent = await NextEventAsync(connection, ticker, asOf, cancellation);
+
+        return LadderSeries.For(bands, close, move, recent, trend.State, lows, nextEvent);
     }
 
     // The plan, as SCHEMA's column describes it. Prices are written in the
@@ -293,10 +309,21 @@ public sealed class LadderBuilder : IComponent
                 reason = exit.Reason,
             }),
             invalidation = plan.Invalidation is { } price ? Money.ToStorage(price) : null,
-            events = Array.Empty<object>(),
+            events = plan.Events.Select(setup => new
+            {
+                name = setup.Name,
+                eventDate = setup.EventDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                trigger = setup.Trigger,
+                entry = Money.ToStorage(setup.Entry),
+                stop = Money.ToStorage(setup.Stop),
+                target = Money.ToStorage(setup.Target),
+                proposal = true,
+            }),
             reason = plan.Reason ?? (plan.Tranches.Count == 0
                 ? "no tranche is placed"
-                : "the event setups are built from 4.7"),
+                : plan.Events.Count == 0
+                    ? "no dated event is on file, so the second book is empty"
+                    : "every figure in the second book is a proposal"),
         });
 
     static async Task<IReadOnlyList<Level>> BandsAsync(
@@ -347,6 +374,25 @@ public sealed class LadderBuilder : IComponent
         var value = await command.ExecuteScalarAsync(cancellation);
 
         return value is null or DBNull ? null : Statistic.ToPrice((double)value);
+    }
+
+    static async Task<DateOnly?> NextEventAsync(
+        SqliteConnection connection,
+        string ticker,
+        DateOnly asOf,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NextEventFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var value = await command.ExecuteScalarAsync(cancellation);
+
+        return value is null or DBNull
+            ? null
+            : DateOnly.ParseExact((string)value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
     }
 
     static async Task<IReadOnlyList<LadderBar>> RecentAsync(
