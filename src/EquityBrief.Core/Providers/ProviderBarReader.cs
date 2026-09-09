@@ -18,6 +18,32 @@ public static class ProviderBarReader
     // precisely than the number the factor came from.
     const int Places = 4;
 
+    // A row that is a session, or nothing.
+    //
+    // The bulk file is the whole exchange rather than the index, so it carries
+    // symbols that are listed and did not trade. On the first live night that
+    // was 62 rows of 44,362, and `Read` refusing one of them stopped the night
+    // for five hundred names on account of a penny stock. The fixture could not
+    // have shown this: seven rows were captured by hand and every one of them
+    // traded.
+    //
+    // Only the not-a-session case answers false. A row missing a field, or
+    // carrying a date that will not parse, still throws, because a payload that
+    // cannot be read must fail rather than answer with fewer bars.
+    public static bool TryRead(JsonElement entry, string ticker, out ProviderBar? bar)
+    {
+        bar = null;
+
+        if (Price(entry, "close", ticker) <= 0)
+        {
+            return false;
+        }
+
+        bar = Read(entry, ticker);
+
+        return true;
+    }
+
     public static ProviderBar Read(JsonElement entry, string ticker)
     {
         // Both closes. The adjusted one is what the store holds

@@ -87,10 +87,13 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
             throw new FormatException("A constituent carries no Code.");
         }
 
+        // A missing StartDate is absent rather than a fault. A present one that
+        // will not parse still throws, which is the distinction `Date` already
+        // draws and the reason it draws it: a value that is present and
+        // unreadable is not an absent one.
         return new IndexConstituent(
             ticker,
-            Date(entry, "StartDate", ticker)
-                ?? throw new FormatException($"{ticker} carries no StartDate."),
+            Date(entry, "StartDate", ticker),
             Date(entry, "EndDate", ticker));
     }
 

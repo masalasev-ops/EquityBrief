@@ -194,6 +194,54 @@ public class StoreWrites
     // run log is the one store every stage writes its own row to. Read from the
     // document rather than hardcoded, so the exemption disappears the day the
     // cell is changed to name an owner.
+    // A migration that rebuilds a table rather than dropping one.
+    //
+    // SQLite cannot change a primary key in place, so a column that has to admit
+    // null is changed by creating a replacement, copying into it, dropping the
+    // original and renaming. The drop is half of a rename and not a removal, and
+    // the signature that says so is the rename back to the dropped name in the
+    // same source. Without this the only way to make `membership.joined` admit
+    // the unknown the provider carries for 145 of its 822 spans would have been
+    // to stop asserting that nothing drops a declared table.
+    //
+    // Narrow on purpose, and in three ways: only the migration runner, only a
+    // drop, and only where the same source renames something back to the name it
+    // dropped. A drop with no rename is still reported, which the proof below
+    // exercises rather than describes.
+    internal static bool RebuildsInPlace((string Type, string Operation, string Table, string Statement) write) =>
+        write.Operation == SourceStatements.Drop
+        && write.Type == nameof(EquityBrief.Data.Migrations.SchemaMigrations)
+        && Regex.IsMatch(write.Statement, @"\bDROP\s+TABLE\b", RegexOptions.IgnoreCase)
+        && RenamesBackTo(write.Table);
+
+    internal static bool RenamesBackTo(string table) =>
+        EquityBrief.Data.Migrations.SchemaMigrations.All.Any(migration =>
+            Regex.IsMatch(
+                migration.Sql,
+                @"\bDROP\s+TABLE\s+" + Regex.Escape(table) + @"\b",
+                RegexOptions.IgnoreCase)
+            && Regex.IsMatch(
+                migration.Sql,
+                @"\bALTER\s+TABLE\s+\w+\s+RENAME\s+TO\s+" + Regex.Escape(table) + @"\b",
+                RegexOptions.IgnoreCase));
+
+    [Fact]
+    public void ADropIsForgivenOnlyWhereTheSameMigrationRenamesSomethingBackToIt()
+    {
+        // The permanent proof. A rebuild is permitted and a removal is not, and
+        // the difference is read out of the migration rather than taken on the
+        // word "rebuild" appearing in a comment.
+        Assert.True(RenamesBackTo("membership"));
+
+        // Every other declared table, none of which any migration drops. This is
+        // the direction that would quietly widen: a helper that answered yes to
+        // everything would pass the assertion above and forgive every drop.
+        foreach (var table in new[] { "bar", "run_log", "series_state" })
+        {
+            Assert.False(RenamesBackTo(table), $"Nothing renames a table back to {table}, so a drop of it is a removal.");
+        }
+    }
+
     internal static bool AnyComponentMay(string table, string operation)
     {
         var schema = Corpus.Read("docs/SCHEMA.md");
@@ -250,6 +298,7 @@ public class StoreWrites
 
         var undeclared = found
             .Where(write => !AnyComponentMay(write.Table, write.Operation))
+            .Where(write => !RebuildsInPlace(write))
             .Where(write => !declared.Any(row =>
                 row.Table.Equals(write.Table, StringComparison.OrdinalIgnoreCase)
                 && row.Operation == write.Operation

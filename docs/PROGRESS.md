@@ -2625,3 +2625,423 @@ Claims:     180, 37 pass, 143 out of scope, 0 unexamined, unchanged. Predicted b
             a decision record carries no claim, and the plan amendments name checkpoints that
             already existed. The 185 above is what phase 2 ends at, not what it stands at now.
 Tests:      257, unchanged.
+
+### 2.1 The credential path and the bulk price feed                          2026-09-09
+Built:      the first feed in this tree that reaches a provider. `EodhdBulkPriceFeed`, the
+            credential path from configuration with the startup refusal `RUNBOOK.md` promised and
+            no startup path performed, and `NightFeeds`, which is the seam the live-against-
+            fixture choice will go through at 2.6.
+Two commits: the `nightly-cost` carve-out landed first and alone, before any feed existed. A
+            commit that removes a guard and adds the thing the guard forbade authorises itself
+            whichever half is read first, which is done condition 8's ordering applied to a guard
+            rather than to a record. `BUILD_PLAN.md` asks for it in those words, and this entry
+            says it happened because "a checkpoint lands as its own commit" is the rule it bends.
+Carve-out:  the scan is now written over its inputs rather than over the checkout, so the
+            exemption can be exercised on constructed sources. It was proved in both directions
+            while it still carried nothing, which was the point of landing it early: an assertion
+            over an empty list is one that has never run. Verified against the real tree as well:
+            a client field added to `Backfill.cs` fails the scan naming the file by its path, and
+            the same file added to the exemption passes the scan and fails the other test,
+            because a file earns the exemption by being a feed. Both edits reverted.
+Redaction:  the key travels in this provider's query string, so it is one substring away from
+            every message a failed request produces. The scrub takes the address as well as the
+            key, and the second half is the one that matters: a message quoting a URL this
+            process did not build would carry a live key past a scrub that only looked for the
+            value it happens to hold. The inner exception is not attached at all, so a logger
+            expanding the chain cannot reach a message this code never scrubbed. The stack trace
+            of the transport is what that costs.
+Live:       a night ran against the provider at 06:16:17 UTC on 2026-09-09, over the fixture for
+            everything except the fetch. One request. 44,362 rows, 6,676,343 bytes, 4.21 seconds
+            to fetch. Three bars stored for the three current members, AAPL at 316.22, MSFT at
+            493.95 and KEYS at 333.42, each matching the provider's payload. The run log records
+            the fetch stage as 0 model calls and 1 network request, and the whole store was
+            scanned afterwards for anything holding a scheme separator, the parameter name or the
+            provider's domain: none.
+Found:      the live run failed on its first attempt, and it failed on real data the fixture
+            could not hold. `ProviderBarReader.Read` refuses a row whose close is not positive,
+            because the adjustment factor divides by it, and 62 of the 44,362 rows carry one.
+            The night stopped on DEWM. The bulk file is the whole exchange rather than the index,
+            so it carries symbols that are listed and did not trade, and refusing the file for
+            one of them lets a penny stock stop the night for five hundred names.
+            This is the failure 1.2 found one layer up, arriving exactly where 2.0's plan said it
+            would. All seven rows of the captured bulk file were hand-picked at 1.4 and every one
+            of them traded, so no suite that read only the fixture could have found it. What
+            fixed it is that the run was live rather than that the code was read again.
+Skipped:    a row with no positive close is now skipped and named rather than throwing, and the
+            count reaches the operator on the fetch step's own line. Named rather than counted,
+            because the same skip at scale is a night that stores almost nothing and reports
+            success. Three guards hold the shape: a row from another exchange is dropped without
+            being counted, since it is not this night's at all; a row missing a field still
+            throws, since a payload that cannot be read is not a payload with fewer bars; and a
+            file where every row is a symbol that did not trade is refused outright, since
+            answering with no bars would be stored as an exchange that did not trade.
+Measured:   the payload was fetched once more, on its own, so the design was made against the
+            real distribution rather than against the one row that happened to fail first. 62
+            rows carry no usable close. 27,540 of 44,362 carry zero volume, which is a session
+            with no trades rather than a fault and is stored as one. Zero rows produce an
+            adjusted bar that could not have traded, so 1.2's guard finds nothing to refuse on
+            live data. Every row carries every field the parser reads.
+Note:       the manifest records the 1.4 capture as seven of 10,670 rows. Today's file holds
+            44,362. The manifest is a dated record of what that capture held and is left as it
+            is; the two figures are four days and one endpoint apart, and which of them is the
+            steady state is not something one fetch each can say.
+Hour:       the obligation created at 2.0 is bounded rather than discharged. The file for the
+            2026-09-08 session was already being served at 06:13:42 UTC on 2026-09-09, which is
+            an upper bound on the posting hour and not the hour. Measuring the hour means asking
+            repeatedly across an evening, which is a live night's work rather than a checkpoint's,
+            so the remainder is re-pointed to 2.6 and the bound is recorded here.
+Selection:  `--live` is a flag on the command line and not yet a setting. That is the state 2.6
+            improves, and it is deliberate: a half-built configuration path is what lets a
+            mistyped fixture folder resolve to the network, so the choice stays loud until the
+            checkpoint that asserts both directions of it.
+Fixture:    `expectations/fetch.json`, derived from the two committed inputs rather than frozen
+            from a run: the membership filter applied to the captured bulk file gives three bars
+            stored, two rows for departed constituents and two for names the index does not hold.
+            It states `notSessionsExpected` as 0 and says why the zero is a property of the
+            capture rather than of the exchange, so the figure reads as a gap in the fixture and
+            not as a fact about the world.
+Claims:     180, 37 pass, 143 out of scope, 0 unexamined. Predicted before the run: 2.1 adds no
+            row to any table this harness parses. The two limits rows and the two failure rows
+            phase 2 owes arrive at 2.2 and 2.3, so the count moves there and not here.
+Tests:      275, from 257. Four with the carve-out and fourteen with the feed.
+Platform:   Windows for the by-hand live run. The suite runs on both runners through the matrix,
+            and the live run is not part of it: no runner holds a key, and one that did would
+            spend the operator's allowance on every push.
+
+### 2.2 Retry, backoff and the night's deadline                              2026-09-09
+Built:      `RetryPolicy`, `ProviderRequest` and a cancellation source the night owns. Three
+            attempts per request, waiting two seconds and then four, each attempt bounded by
+            thirty seconds, inside a night bounded by fifteen minutes.
+Why here:   every feed interface has accepted a cancellation token since 1.1 and nothing supplied
+            one, so a night that hung on a socket hung until somebody looked. `BarFetcher` and
+            `CorporateActionChecker` took no token at all; both do now, and every step of the
+            night runs under the same source.
+Shape:      the retry knows nothing about HTTP. A feed converts what its transport did into a
+            `ProviderRefusal` carrying whether asking again would help, and `ProviderRequest`
+            decides how many times. That seam is not tidiness: naming a transport exception in
+            the retry would put a file in `nightly-cost`'s exemption list that is not a feed, and
+            the carve-out would have to widen to cover code that holds no client.
+Told apart: a per-request timeout and the night's deadline arrive as the same exception type and
+            only the token says which. The deadline is checked first and never retried, because
+            retrying it is this class overruling the caller's decision that there is no time
+            left, which is how a night with a fifteen-minute bound runs for forty-five.
+Counted:    one request costs one request however many attempts it took. The limit that figure is
+            read against is one request for the night whatever the universe is, and three
+            attempts at one request is still one request: what grows with retries is time, and
+            the deadline is what bounds that. Attempts are reported separately.
+Waited:     the wait is injected and the schedule is read off what the request asked for rather
+            than off a clock. A backoff proved by waiting six seconds is a backoff nobody runs
+            twice, and a test nobody runs twice is one that gets a Skip attribute the first time
+            it is inconvenient.
+Refetch:    the third done condition, and it is a real risk rather than a formality. The refetch
+            is the only non-idempotent write on the nightly path, deleting a name's year and
+            reinserting it, so a second attempt made after the delete would leave two years or
+            half of one. A feed that refuses its first attempt is run through the real retry into
+            a real refetch, and the stored series is compared against a clean refetch rather than
+            against the count before it: the refetch asks for the year ending on the action night
+            rather than on the backfill date, so the count legitimately moves and the first
+            version of this test failed on the answer to a question it had not meant to ask.
+            The retry is asserted to have happened, because a flaky feed that never refused would
+            leave every other assertion true and the property untested.
+Limits:     section 17 gains **Per-request timeout and the night's deadline**. The figures are
+            read off that row and asserted against `RetryPolicy.Standard`, so a number changed in
+            either place fails: a limit stated in a document and again in code is two places
+            holding one fact.
+Derived:    thirty seconds because the bulk file for a whole exchange is the largest thing the
+            night fetches and arrived in 4.21 seconds at 6,676,343 bytes on 2.1's live run, which
+            is far outside a healthy fetch and far inside the night. Fifteen minutes because it
+            is three times the wall clock section 17 already states for five hundred names, so
+            the deadline stops a night that has hung rather than one that is merely slow. Three
+            attempts because the failure a retry is for is a transient one and a fourth attempt
+            is a slower way of learning what the third said. None of the three is a round number
+            chosen for looking like one.
+Claims:     181, 38 pass, 143 out of scope, 0 unexamined, from 180 and 37. Predicted before the
+            run: one new limits row, passing in the checkpoint that creates it, and no claim
+            leaves the out-of-scope set because nothing was owed at 2.2.
+Tests:      286, from 275.
+
+### 2.3 Failure behaviour at the wire                                        2026-09-09
+Built:      unavailable implemented to the definition settled at 2.0, and section 18 given the
+            two rows that definition leaves it short of.
+Rows:       **A feed answers with a session other than the one asked for** and **A feed answers
+            with fewer names than the index holds**. Both are answers that arrive, which is the
+            half of the definition that had no row at all: section 18 promised what the system
+            does when a feed is unavailable and said nothing about a feed that answered.
+Two, not one: they are refused in different places, and that is the reason rather than a
+            preference. Only the feed knows the session it asked for, and only the fetcher knows
+            how many names the index holds. One is refused inside the feed and the other after
+            it, so folding them would put one of the two checks somewhere it cannot see what it
+            needs.
+Asked for:  the bulk feed is now told which session to fetch rather than asked for the last day.
+            That was left open at 2.1 and this checkpoint closes it, because a request with no
+            date has nothing to compare its answer against: yesterday's file arrives making one
+            request, logging no error, and storing bars the store already holds. The live feed
+            sends the date and the recorded feed checks it, and the recorded feed checks rather
+            than filters, because a double that quietly returned only the matching rows could
+            never answer with the wrong session and the fixture would be structurally unable to
+            induce the failure this checkpoint exists to induce.
+Short:      a current member that appears neither as a bar nor as a symbol that did not trade is
+            a member the file does not carry. The bulk file is the whole exchange and every
+            member of a US index is listed on it, so that is a truncation rather than a quiet
+            night. The refusal names how many of how many, and the first five by ticker.
+            Refused before the transaction opens, so the names it did carry are not stored
+            either. That is deliberate and it is the strict reading: a partial store leaves most
+            of the index silently stale beside names that look current. The behaviour for an
+            unusable feed already exists and is safe, being to keep last night's bars and say so.
+            If it turns out to fire on ordinary nights that is a measurement phase 5 will have,
+            and the row can be revisited with data rather than with a guess now.
+No threshold: neither refusal carries a fraction, a proportion or a tolerance. The first compares
+            two dates and the second compares a set against a set, and both are derived from the
+            structure of the data rather than from a number somebody chose. That was the point of
+            looking: a truncation rule written as "fewer than ninety per cent of members" would
+            have been a round number with nothing behind it.
+Decomposed: **Bulk price feed unavailable** is read per surface the way the gap row was at 1.5.
+            Its run log half is asserted here, being that a night whose feed does not answer
+            stores nothing, leaves the bars it held exactly as they were, names the step and
+            exits non-zero. Its banner half is a phase 5 surface and stays out of scope until
+            5.4. The row's own text was amended to name both, because a decomposition the
+            document does not carry is a second statement of the row's content and the check
+            reads each element back out of the row.
+Retention:  the boundary was read back out of the rows the provider sent and is now the session
+            the night asked for. A payload for an older session would have moved it backwards and
+            kept sessions the night should have dropped, which is a second defect the dated
+            request removes rather than a third thing to check.
+Induced:    every one of the three is induced against the fixture rather than described, and each
+            runs a clean night first so there is a stored series for the refusal to leave alone.
+            A test that induced these against an empty store would prove that nothing was written
+            where nothing could have been.
+Roster:     `nightly-run`'s row in `CLAUDE.md` is widened to what it now asserts. A check whose
+            declared reach grows past its roster description is a property nobody wrote down.
+Claims:     184, 41 pass, 143 out of scope, 0 unexamined, from 181 and 38. Predicted before the
+            run: two new rows and one more claim from the decomposition, all three passing in the
+            checkpoint that creates them, and the banner half staying out of scope.
+Tests:      289, from 286.
+
+### 2.4 The remaining price and membership feeds                             2026-09-09
+Built:      `EodhdIndexMembershipFeed`, `EodhdHistoricalBarFeed` and `EodhdCorporateActionFeed`,
+            each reading its answer through the parser the double already uses. The weighted-call
+            budget, which `RUNBOOK.md` has stated since the architecture was written and no code
+            had read. `--session`, so a night can be run by hand for a session the operator names.
+Live:       a night ran end to end against the provider for the 2026-09-08 session. 822 membership
+            rows, 125,742 bars over 503 tickers backfilled at one request per name, 501 bars for
+            the session, 182 corporate actions of which 7 fell on current members and each
+            triggered a full-year refetch. 11 network requests, 317 weighted calls of 100,000, 0
+            model calls. The store was scanned afterwards: no URL and no key anywhere in it.
+Found:      the live payload broke the membership parser on its first attempt, and the fixture
+            could not have shown it. `IndexConstituent.Joined` was not nullable and the parser
+            threw on a constituent with no StartDate. The provider carries 822 spans and 145 have
+            none, two of those being current members: IR and WAB are in tonight's snapshot of 503
+            and the provider will not say since when. The fixture's five constituents all carried
+            one.
+            Dropping such a name takes a real member out of the index and out of everything
+            computed from it. Writing a date nobody has is the guess this corpus refuses
+            everywhere else. So the column admits null, which needed migration 6.
+Rebuilt:    the unknown cannot sit in a primary key. SQLite treats nulls as distinct, so a second
+            night would insert a second row for the same name rather than conflicting with the
+            first, and the uniqueness moved to an expression index that folds the unknown to a
+            value. That is the one place a sentinel belongs: inside the index that enforces
+            uniqueness, and never in the column a query reads. A row whose join date is unknown
+            answers no to a past-date query, because a comparison against null is null, and yes
+            to members now, which is `left IS NULL`. Both are true rather than convenient.
+Rebuild:    `writer-ownership` reported the migration's `DROP TABLE membership` as a write nobody
+            declared, which it was reading correctly: SCHEMA gives membership no deleter. The
+            drop is half of a rename rather than a removal, and the permission is narrow in three
+            ways, being only the migration runner, only a drop, and only where the same migration
+            renames something back to the name it dropped. Its proof runs both directions over
+            the real migrations rather than over a description.
+Corrected:  2.3's truncation rule, by the first live night over five hundred names. It refused a
+            payload carrying nothing for any current member, and two of 503 are absent from an
+            ordinary day's file: EQR and PSTG are not in the 2026-09-08 bulk file at all, neither
+            as a bar nor as a symbol that did not trade. A rule that refused on any absence would
+            refuse every night.
+            The 2.3 entry said that if it fired on ordinary nights the row could be revisited with
+            data rather than with a guess, and phase 5 would have the data. Phase 5 was three
+            checkpoints too late: the data arrived the moment a night ran over the whole index.
+            The row is now **A feed answers with none of the index in it**, which is the wrong
+            file or a session the exchange has not traded and is not the same as a file with no
+            rows: a night run before the close produced exactly that, a payload full of symbols
+            this index does not hold and carrying nothing for any of its five hundred members.
+            A file short of some members but not all is stored for the rest, the names it carried
+            nothing for leave the stage as a count, and the fetch line reports them. The count is
+            what stops the correction from becoming silence: a rise from two to two hundred is a
+            fact about the provider that nothing else would show.
+Session:    a night run this morning asked the provider for 2026-09-09, which the exchange has not
+            traded, and every one of 503 members came back unaccounted for. That is the schedule
+            decision doing its work rather than a defect, and it is why `--session` exists: the
+            run RUNBOOK asks for by hand, and the catch-up night after a machine was off. It
+            resolves to a fixed instant in that session's evening so the same derivation runs as
+            on any other night. Its run id carries the real instant as well, because a clock fixed
+            to a session gives the same id every time and the second by-hand run for one session
+            collided on the run log's key.
+Weights:    the budget is composed from the feeds' roles rather than declared on each feed, and
+            every figure is read back out of `RUNBOOK.md` rather than repeated in code. A request
+            is not a request: the live night made 11 and spent 317. The local stop exists because
+            the provider's own stop is a rejected rate, which arrives as an unavailable feed and
+            loses the reason.
+Claims:     185, 42 pass, 143 out of scope, 0 unexamined, from 184 and 41. That is the figure
+            2.0 predicted for the end of the phase, reached at 2.4: the prediction named seven new
+            claims and all seven now exist. 2.5 and 2.6 add none, which 2.7 checks.
+Tests:      298, from 289.
+
+### 2.5 The news feed                                                        2026-09-09
+Built:      `INewsFeed`, which news has never had, and `EodhdNewsFeed` behind it.
+            `RecordedNewsFeed` now implements the same interface, and `NewsAttribution.ByName` is
+            the fan-out done in code.
+Why it mattered: news was the only feed without an interface, which made it the only one whose
+            request count no contract forced. The 1.7 measurement ran through a class the nightly
+            path does not reach, so a live implementation could have made one request per name and
+            nothing in the harness would have said so. `Requests` is now on the interface for the
+            same reason it is on the other four, and the test reads it through the interface rather
+            than off either implementation.
+Live:       one dated request with no ticker, for the 2026-09-08 window. 1,000 articles, 4,753,520
+            bytes, and 3,232 distinct symbols attributed from that single request. The fan-out is
+            not a design intention: it is what the payload carries, and one request reached three
+            thousand names.
+Found:      the request came back holding exactly the limit. The provider caps one request at
+            1,000 articles and a single day of market-wide news reaches it, so one dated request
+            does not carry a whole day. The decision that news arrives in one dated feed request
+            still holds for the shape of the cost, and what it does not yet settle is the window.
+            Recorded as an obligation due at 5.5, which is the checkpoint that counts articles per
+            name and the first that can measure what a night actually needs.
+            The limit is asked for in full and never paged around, which is why this was visible at
+            all. A feed that paged quietly would have turned one request into ten and reported the
+            truth in a count nobody was reading, and the paging decision at 2.0 is what says the
+            count includes every page rather than the feed hiding them.
+Not built:  nothing calls the news feed on the nightly path yet. The news pulse counter is a phase
+            5 component and section 14's step seven is one of the five that do not exist, so the
+            feed is built, asserted and unused, which is the same state every other feed was in at
+            the checkpoint that built it.
+Compared:   the live feed and the double are asserted to read one payload the same way, field by
+            field rather than as records. `NewsArticle` carries its attribution as a list and a
+            record compares a list by reference, so two parses of one payload are never equal
+            however identical their contents. Asserting the records would have been an assertion
+            that could not hold, which is a different failure from one that does not.
+Claims:     185, 42 pass, 143 out of scope, 0 unexamined, unchanged. Predicted before the run:
+            2.5 adds no row to any table the harness parses, and the seven claims 2.0 named all
+            arrived by 2.4.
+Tests:      304, from 298.
+
+### 2.6 The selection point and a live night                                 2026-09-09
+Built:      `NightFeeds.Resolve`, which decides where tonight's feeds come from, and
+            `EquityBrief:Providers:Source` with `EquityBrief:Providers:Fixture` beside it.
+            `tools/nightly` takes no fixture argument of its own any more, which is what its own
+            text has promised since 1.4: the argument was there because the live feeds did not
+            exist, and it said it would become optional when they did.
+Why a setting: until now the choice lived in whichever overload the caller happened to call, so a
+            scheduled night's source was a property of a shell script. The flags remain for the
+            run RUNBOOK asks for by hand, and giving both is refused, because a command that said
+            live and fixture at once has no right answer and picking one would be this code
+            deciding what the operator meant.
+Neither falls back: that is the property, not a courtesy, and both directions are failures that
+            look like successes. A fixture folder that does not exist is refused rather than
+            resolved to the provider, because a mistyped path would otherwise spend the allowance
+            and store live bars where a replay was meant. A live source with no key is refused
+            rather than falling back to a capture, because a night that quietly replayed yesterday
+            would look exactly like a night that ran. Each is asserted with the other side present
+            and working, so a fall-back would have succeeded: the key is valid when the path is
+            wrong, and the capture is readable when the key is blank.
+Live:        a night ran end to end against the provider for the 2026-09-08 session with no
+            fixture folder given and no source set. 822 membership rows, 126,235 bars over 503
+            tickers, 501 bars for the session, 182 actions with 7 refetches. 514 network requests,
+            820 weighted calls of 100,000, 0 model calls, green.
+Fixture:     the same night over the capture makes no request: 5 membership rows, 753 bars, and
+            feeds that hold no client at all.
+Refused:     three refusals run by hand, each exiting non-zero. A fixture path that does not
+            exist, both flags at once, and a live source with a blank key.
+Found:       the night's own summary said "network request(s)" over a capture, on a night that
+            touched no network. A recorded feed counts the calls a live one would have made, which
+            is deliberate and is how a replay measures the cost shape, but printing it that way on
+            a fixture night is a figure that means one thing and reads as another. The line now
+            says which source the night ran against, read off the feeds rather than off the
+            setting that chose them, so a fall-back that got past both refusals would still be
+            visible on the line the operator reads.
+Reaches:     `NightFeeds.ReachesTheNetwork` asks the objects rather than the setting. The recorded
+            doubles are named, so a sixth feed added live and forgotten there reads as one that
+            can reach the network rather than one that cannot, which is the direction that is safe
+            to be wrong in.
+Hour:        the posting-hour obligation is bounded twice and discharged neither time. The file for
+            2026-09-08 was being served at 06:13 UTC on the 9th and again at 12:03, which are two
+            upper bounds and not an hour. Measuring when it first appears needs observations across
+            several evenings, which a running installation accumulates and a checkpoint cannot, so
+            it is re-pointed to 3.7 with both bounds recorded. A night run before the close is
+            already refused loudly by the fetch, so nothing waits on this figure.
+Claims:      185, 42 pass, 143 out of scope, 0 unexamined, unchanged and predicted. 2.6 changes
+            where the feeds come from and adds no row to any table the harness parses.
+Tests:       312, from 304.
+
+### 2.7 Phase 2 report                                                       2026-09-09
+Report:     185 claims, 42 pass, 0 fail, 143 out of scope, 0 unexamined, 48 placements and
+            verdicts reconciled against a floor of 34. 32 checks on the roster, 28 carried, 28 ran
+            and passed and none did not run. 312 of 312 tests ran, 0 failed and 0 did not run.
+Prediction: 2.0 predicted 185 claims and 42 pass, with a range of 185 to 188 and a named cause at
+            each end. It is 185 and 42, which is the bottom of the range, and it is there for the
+            downward cause the prediction named rather than a different one.
+            Named rather than counted, which is what made the check possible. Four section 18 rows
+            were predicted and two exist: a rejected request rate and an answer past the deadline
+            both collapsed into the unavailable row, because the definition settled at 2.0 makes
+            both of them unavailable and section 18 already promised what the system does then.
+            Two more would have repeated that row in all four of its cells. The two wrong-content
+            rows survived, and the reason turned out to be sharper than the prediction gave: they
+            are refused in different components, not merely for different reasons.
+            A prediction of seven could not have reported this. It would have read as a number
+            that drifted by two, where what actually happened is that two named rows turned out to
+            be one row's cases and two others were confirmed for a better reason than the one
+            written down.
+Claims by source: two section 17 rows, being the per-request timeout with the night's deadline at
+            2.2 and the weighted-call budget at 2.4. Two section 18 rows at 2.3. One more from
+            decomposing the unavailable row per surface, whose run log half passes at 2.3 and
+            whose banner half is out of scope until 5.4. Five new claims, five new passes, and the
+            out-of-scope count unchanged at 143 because nothing was owed at phase 2 before it.
+Instruments: every passing claim names a check whose declared reach includes it, reconciled in
+            both directions. The phase's own claims are carried by `nightly-run` and
+            `nightly-cost`, and `nightly-run`'s roster row in `CLAUDE.md` was widened at 2.3 to
+            what it now asserts rather than left describing a narrower check.
+Fixture:    `expectations/fetch.json`, added at 2.1 and derived from the two committed inputs
+            rather than frozen from a run: the membership filter applied to the captured bulk file
+            gives three bars stored, two rows for departed constituents and two for names the
+            index does not hold. It states `notSessionsExpected` as 0 and says why that zero is a
+            property of the capture rather than of the exchange, which is the sentence that made
+            the 2.1 defect legible after the live run found it.
+Live:       every feed reached the provider during this phase and each run is recorded at its own
+            checkpoint. The last of them, at 2.6, ran end to end with nothing on the command line
+            but a session: 822 membership rows, 126,235 bars over 503 tickers, 501 bars for the
+            session, 182 corporate actions with 7 refetches, 514 requests, 820 weighted calls of
+            100,000, 0 model calls.
+Found live: three defects the fixture could not have shown, each found by running rather than by
+            reading. A row with no positive close stopped the night, and 62 of 44,362 rows carry
+            one. A constituent with no join date threw in the parser, and 145 of 822 spans have
+            none with two of those current members. A truncation rule that refused any absence
+            would have refused every night, because two of 503 members are absent from an ordinary
+            day's file. All three were written against a fixture of five names and all three were
+            refuted within hours of the first live run.
+What green does not mean: it does not mean a night will run tonight. Every figure above is a
+            statement about the build and about runs made by hand today, and the schedule that
+            would make them nightly is a setting on a machine rather than anything this report
+            reads. It does not mean the feeds are complete: the news feed is built, asserted and
+            called by nothing, because the component that would call it is a phase 5 one. It does
+            not mean the numbers are right, only that they are the numbers the rules produce over
+            one captured fixture of three names and whatever the provider sent today. And 143 of
+            the 185 claims are out of scope, which is to say unchecked: the report says nothing
+            about them and is not meant to.
+Not signed off: this session committed code to phase 2, so it may not sign phase 2 off. The
+            report is written here and the sign-off is a separate activity with its own record,
+            owed before phase 3's plan and not gating the merge.
+Tests:      312, from 257 at the start of the phase.
+
+### Correction to 2.7 - the deadline test raced on a runner and not here        2026-09-09
+Corrects:   nothing in the report's figures. The suite was green on this machine and red on the
+            windows runner at the first push, on `ANightThatPassesItsDeadlineStopsAndSaysSo`.
+Found:      the test gave a fresh store a 250 millisecond deadline and a feed that never answers,
+            and asserted the night stopped on the fetch. On a warm machine the migrate, membership
+            and backfill steps finish inside that; on a cold runner they do not, so the deadline
+            fired on an earlier step and the assertion about which step was named failed.
+            The property was right and the arrangement was a race. A test whose answer depends on
+            how fast the machine is has no answer, and this one passed locally on every run.
+Repaired:   a clean night runs first, so every step but the fetch is a no-op against a warm store,
+            and the bound is three seconds rather than a quarter of one. A runner ten times slower
+            still reaches the deadline inside the fetch and nowhere else. The assertion is
+            unchanged, which is the point: what moved is the arrangement, not what is claimed.
+Why here:   `two-platform` is the check that made this visible, and it is the reason the matrix
+            exists. Both runners ran the same suite and disagreed, which is exactly the class of
+            fault a single-machine green cannot see.
+Tests:      312, unchanged.

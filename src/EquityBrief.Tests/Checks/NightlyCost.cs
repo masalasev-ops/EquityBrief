@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
@@ -28,6 +29,7 @@ public class NightlyCost
             CheckReach.Key(Scope.LimitsTable, "Per-name network calls in the nightly run"),
             CheckReach.Key(Scope.LimitsTable, "Bar history kept"),
             CheckReach.Key(Scope.LimitsTable, "Backfill"),
+            CheckReach.Key(Scope.LimitsTable, "Weighted-call budget"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -38,9 +40,9 @@ public class NightlyCost
 
     static string FixtureFolder() => Path.Combine(Repository.Root, "fixtures", Fixture);
 
-    // The names a model reaches through, and the types an outward request goes
-    // out on. Neither exists in the shipped source today, and the scan says so
-    // in numbers rather than reporting an empty result as a pass.
+    // The types an outward request goes out on, and the names a model is
+    // reached through. Two lists rather than one, because the exemption below
+    // applies to the first and never to the second.
     static readonly string[] Outward =
     [
         "System.Net.Http",
@@ -58,35 +60,240 @@ public class NightlyCost
         "IModelClient",
     ];
 
+    // The shipped files permitted to hold an outward-request type, each by its
+    // repository-relative path.
+    //
+    // Empty until the first live feed lands, and it grows one file at a time.
+    // The other shape available was to delete the patterns when a client first
+    // arrived, which leaves a check reporting the absence of a scan as the
+    // absence of a client: the under-reporting failure `coverage-reported`
+    // exists to catch, arriving inside the check that carries the nightly path's
+    // own claim.
+    //
+    // The list is empty today and the two proofs below are constructed for that
+    // reason. An assertion over an empty list is one that has never run, and the
+    // day it stops being empty is the day it stops being tested for the first
+    // time. Both directions are proved now, while the exemption carries nothing.
+    // see: The outward-request scan names the files that may hold a client rather than dropping the patterns
+    internal static readonly string[] MayHoldAClient =
+    [
+        "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
+    ];
+
+    // Which of the scanned files carries something it is not permitted to.
+    //
+    // Written over its inputs rather than over the checkout, so the exemption
+    // can be exercised on constructed sources. A scan that can only run against
+    // the tree is one whose carve-out cannot be tested until the carve-out is
+    // already load-bearing, which is the wrong order for a guard.
+    internal static IReadOnlyList<string> Offences(
+        IReadOnlyDictionary<string, string> sources,
+        IReadOnlyCollection<string> mayHoldAClient)
+    {
+        var offences = new List<string>();
+
+        foreach (var (name, source) in sources)
+        {
+            // Comments stripped first, because this file names every pattern it
+            // looks for and a sentence naming one is not a use of it.
+            var text = SourceStatements.WithoutComments(source);
+            var permitted = mayHoldAClient.Contains(name, StringComparer.Ordinal);
+
+            if (!permitted)
+            {
+                offences.AddRange(Outward
+                    .Where(pattern => text.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                    .Select(pattern => $"{name} carries {pattern}"));
+            }
+
+            // The model half takes no exemption at all. A feed holds a client by
+            // definition and nothing on this path holds a model, so an exemption
+            // covering both would let the first live feed authorise the one
+            // figure the limits table puts at zero and never carves out.
+            offences.AddRange(Model
+                .Where(pattern => text.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                .Select(pattern => $"{name} carries {pattern}"));
+        }
+
+        return offences;
+    }
+
+    // The feed interfaces, read out of the source rather than listed here, so a
+    // feed added later is one this check already knows about and a feed renamed
+    // does not leave a literal behind describing the old name.
+    internal static IReadOnlyList<string> FeedInterfaces(IReadOnlyDictionary<string, string> sources) =>
+    [
+        .. sources.Values
+            .SelectMany(source => Regex.Matches(source, @"public interface (I\w*Feed)\b")
+                .Select(match => match.Groups[1].Value))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(name => name, StringComparer.Ordinal),
+    ];
+
+    // A file earns its exemption by implementing a feed, and the list is read
+    // against that rather than taken. Anything else on it is a file somebody
+    // wanted to stop failing, which is the way a carve-out turns into a hole.
+    internal static IReadOnlyList<string> NotFeeds(
+        IReadOnlyDictionary<string, string> sources,
+        IReadOnlyCollection<string> mayHoldAClient)
+    {
+        var feeds = FeedInterfaces(sources);
+        var wrong = new List<string>();
+
+        foreach (var name in mayHoldAClient)
+        {
+            if (!sources.TryGetValue(name, out var source))
+            {
+                wrong.Add($"{name} is permitted to hold a client and no such shipped file was scanned.");
+
+                continue;
+            }
+
+            var implements = feeds.Any(feed =>
+                Regex.IsMatch(source, @"\b(class|record|struct)\s+\w+[^{;]*:\s*[^{;]*\b" + Regex.Escape(feed) + @"\b"));
+
+            if (!implements)
+            {
+                wrong.Add(
+                    $"{name} is permitted to hold a client and implements none of " +
+                    $"{string.Join(", ", feeds)}. A client belongs in a feed.");
+            }
+        }
+
+        return wrong;
+    }
+
+    // The shipped source, keyed by repository-relative path. The suite is
+    // excluded because it is not shipped and references everything by design.
+    //
+    // The path and not the file name. Two projects carry a `Program.cs`, so a
+    // list keyed on the name would exempt both by naming one, and the first
+    // version of this keyed on the name and threw on the collision rather than
+    // exempting the wrong file, which was luck rather than design.
+    static IReadOnlyDictionary<string, string> ShippedSource() =>
+        Repository.SourceFiles()
+            .Where(file => !file.Contains(
+                Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar,
+                StringComparison.Ordinal))
+            .ToDictionary(
+                file => Path.GetRelativePath(Repository.Root, file).Replace(Path.DirectorySeparatorChar, '/'),
+                File.ReadAllText,
+                StringComparer.Ordinal);
+
     [Fact]
     public void NothingOnTheNightlyPathReachesAModelOrOpensARequest()
     {
         // The coverage half. Its scope is a fact about the corpus rather than
         // about the property, so the file count carries a floor only far enough
         // below to catch a scan that read nothing.
-        var sources = Repository.SourceFiles()
-            .Where(file => !file.Contains(
-                Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar,
-                StringComparison.Ordinal))
-            .ToArray();
+        var sources = ShippedSource();
 
-        Assert.True(sources.Length >= 10, $"Scanned {sources.Length} shipped source files, expected at least 10.");
+        Assert.True(sources.Count >= 10, $"Scanned {sources.Count} shipped source files, expected at least 10.");
 
-        var offences = new List<string>();
+        // The exempt count is stated rather than left to be inferred from an
+        // empty result. A carve-out that grew without anyone noticing reads
+        // exactly like a scan that found nothing.
+        Assert.True(
+            MayHoldAClient.Length <= 5,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are five feeds. " +
+            "A sixth is a file that is not a feed, or a feed nobody declared.");
 
-        foreach (var file in sources)
+        Assert.Empty(Offences(sources, MayHoldAClient));
+    }
+
+    [Fact]
+    public void TheExemptionCoversTheFileItNamesAndNothingElse()
+    {
+        // Both directions, on constructed sources, because the real list is
+        // empty and an empty list proves neither.
+        var sources = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            // Comments stripped first, because this file names every pattern it
-            // looks for and a sentence naming one is not a use of it.
-            var text = SourceStatements.WithoutComments(File.ReadAllText(file));
+            ["src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs"] =
+                "public sealed class EodhdBulkPriceFeed(HttpClient http) : IBulkPriceFeed { }",
+            ["src/EquityBrief.Worker/Bars/Backfill.cs"] =
+                "public sealed class Backfill { readonly HttpClient http = new(); }",
+        };
 
-            offences.AddRange(Outward
-                .Concat(Model)
-                .Where(pattern => text.Contains(pattern, StringComparison.OrdinalIgnoreCase))
-                .Select(pattern => $"{Path.GetFileName(file)} carries {pattern}"));
-        }
+        // Named, and the offence goes away. Not named, and it does not.
+        Assert.Empty(Offences(sources, [.. sources.Keys]));
 
-        Assert.Empty(offences);
+        var unnamed = Offences(sources, ["src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs"]);
+
+        Assert.Contains(unnamed, offence => offence.Contains("Backfill.cs", StringComparison.Ordinal));
+        Assert.DoesNotContain(unnamed, offence => offence.Contains("EodhdBulkPriceFeed.cs", StringComparison.Ordinal));
+
+        // And with nothing named, the check is the one that stood before the
+        // carve-out. This is the assertion that fails if the exemption is ever
+        // widened into a scan that stopped looking.
+        Assert.Equal(2, Offences(sources, []).Count(offence => offence.Contains("HttpClient", StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public void AModelCallIsNeverExemptHoweverTheFileIsNamed()
+    {
+        // The half that must not follow the other. The limits table puts model
+        // calls at zero with no carve-out anywhere, so a file on the client list
+        // reaching a model is still an offence.
+        var sources = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs"] =
+                "public sealed class EodhdBulkPriceFeed(HttpClient http) : IBulkPriceFeed { const string M = \"deepseek\"; }",
+        };
+
+        var offences = Offences(sources, [.. sources.Keys]);
+
+        Assert.Single(offences);
+        Assert.Contains("deepseek", offences[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AFileMayHoldAClientOnlyByBeingAFeed()
+    {
+        var sources = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["src/EquityBrief.Core/Providers/IBulkPriceFeed.cs"] =
+                "public interface IBulkPriceFeed { int Requests { get; } }",
+            ["src/EquityBrief.Core/Providers/INewsFeed.cs"] =
+                "public interface INewsFeed { int Requests { get; } }",
+            ["src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs"] =
+                "public sealed class EodhdBulkPriceFeed(HttpClient http) : IBulkPriceFeed { }",
+            ["src/EquityBrief.Worker/Bars/Backfill.cs"] =
+                "public sealed class Backfill { }",
+        };
+
+        // The interfaces are read rather than listed, so this is what the check
+        // knows about feeds and not a second statement of it.
+        Assert.Equal(["IBulkPriceFeed", "INewsFeed"], FeedInterfaces(sources));
+
+        Assert.Empty(NotFeeds(sources, ["src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs"]));
+
+        var wrong = NotFeeds(sources, ["src/EquityBrief.Worker/Bars/Backfill.cs"]);
+
+        Assert.Single(wrong);
+        Assert.Contains("A client belongs in a feed", wrong[0], StringComparison.Ordinal);
+
+        // A name on the list that no scan reached is the quieter failure of the
+        // two: it reads as an exemption that is simply not being used.
+        var missing = NotFeeds(sources, ["src/EquityBrief.Core/Providers/Absent.cs"]);
+
+        Assert.Single(missing);
+        Assert.Contains("no such shipped file was scanned", missing[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EveryFilePermittedToHoldAClientIsAFeedInTheShippedSource()
+    {
+        var sources = ShippedSource();
+
+        Assert.True(
+            FeedInterfaces(sources).Count >= 4,
+            $"Read {FeedInterfaces(sources).Count} feed interfaces from the shipped source, expected at least 4.");
+
+        Assert.Empty(NotFeeds(sources, MayHoldAClient));
     }
 
     [Fact]

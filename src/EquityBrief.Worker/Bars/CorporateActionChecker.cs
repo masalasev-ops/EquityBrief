@@ -108,7 +108,10 @@ public sealed class CorporateActionChecker : IComponent
             $rows_written, 0, $network_requests, '0', $detail);
     ";
 
-    public async Task<ActionCheckOutcome> RunAsync(string indexCode, string runId)
+    public async Task<ActionCheckOutcome> RunAsync(
+        string indexCode,
+        string runId,
+        CancellationToken cancellationToken = default)
     {
         var started = clock.UtcNow;
         var session = clock.SessionDateAt(started);
@@ -120,7 +123,7 @@ public sealed class CorporateActionChecker : IComponent
         var members = await MembersAsync(connection, indexCode);
         var before = await CountAsync(connection);
 
-        var today = await actions.ActionsAsync(Exchange, session);
+        var today = await actions.ActionsAsync(Exchange, session, cancellationToken);
 
         // Current members only. An action on a name the index does not hold is
         // not this system's concern, and the fixture carries three of them so
@@ -145,7 +148,7 @@ public sealed class CorporateActionChecker : IComponent
 
             try
             {
-                var year = await history.BarsAsync(ticker, session.AddYears(-1), session);
+                var year = await history.BarsAsync(ticker, session.AddYears(-1), session, cancellationToken);
 
                 if (year.Count == 0)
                 {

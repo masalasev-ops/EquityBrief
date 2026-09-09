@@ -12,7 +12,13 @@ public sealed record FetchOutcome(
     int MembersStored,
     int RowsDropped,
     DateOnly Session,
-    DateOnly Oldest);
+    DateOnly Oldest,
+    // Current members the file carried nothing for. Two of 503 on an ordinary
+    // night, and carried out of the fetch rather than swallowed: the count no
+    // longer refuses the file, so it has to be somewhere a person reads it. A
+    // rise from two to two hundred is a fact about the provider that nothing
+    // else would show.
+    IReadOnlyList<string> Unaccounted);
 
 // The nightly bar fetch. One bulk request, stored for current members only,
 // then the sessions that have fallen out of the retention window are dropped.
@@ -87,6 +93,11 @@ public sealed class BarFetcher : IComponent
 
     const string BarCount = "SELECT COUNT(*) FROM bar;";
 
+    // How many missing names a refusal names before it stops listing them.
+    // Enough to recognise the shape of the absence, short of printing five
+    // hundred tickers into a run log row.
+    const int FirstNamed = 5;
+
     const string AppendRun = @"
         INSERT INTO run_log (
             run_id, stage, started_at, ended_at, outcome,
@@ -96,7 +107,10 @@ public sealed class BarFetcher : IComponent
             $rows_written, 0, $network_requests, '0', $detail);
     ";
 
-    public async Task<FetchOutcome> RunAsync(string indexCode, string runId)
+    public async Task<FetchOutcome> RunAsync(
+        string indexCode,
+        string runId,
+        CancellationToken cancellationToken = default)
     {
         var started = clock.UtcNow;
 
@@ -106,14 +120,68 @@ public sealed class BarFetcher : IComponent
         var members = await MembersAsync(connection, indexCode);
         var before = await CountAsync(connection);
 
+        // The session this night is for, decided here and asked for by name.
+        //
+        // The feed is told which session rather than asked for the last day,
+        // because a request with no date has nothing to compare its answer
+        // against. A night is scheduled after the close, so the session is the
+        // date the run's own instant falls on in the exchange's zone
+        // (see: The night runs at a fixed UTC instant set after the provider posts the day's bulk file).
+        var session = clock.SessionDateAt(started);
+
         // One request. Counted by the feed rather than asserted by the caller,
         // because a caller that looped would still report one.
-        var rows = await feed.RowsAsync(Exchange);
+        var rows = await feed.RowsAsync(Exchange, session, cancellationToken);
 
         var wanted = rows
             .Where(row => members.Contains(row.Ticker))
             .OrderBy(row => row.Ticker, StringComparer.Ordinal)
             .ToArray();
+
+        // Every current member accounted for, before anything is stored.
+        //
+        // The bulk file is the whole exchange and every member of a US index is
+        // listed on it, so a member that appears neither as a bar nor as a
+        // symbol that did not trade is a member the file does not carry. A file
+        // short of names stored as a whole one leaves most of the index
+        // silently stale with no gap to find, which is the failure that looks
+        // current and is false.
+        //
+        // Only the fetcher can ask this. The feed does not know how many names
+        // the index holds, which is why this is a different row from the wrong
+        // session and is refused in a different place.
+        // see: A feed is unavailable when it does not answer, and wrong when it answers with something else
+        var accounted = wanted
+            .Select(row => row.Ticker)
+            .Concat(feed.NotSessions)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var missing = members.Where(member => !accounted.Contains(member))
+            .OrderBy(member => member, StringComparer.Ordinal)
+            .ToArray();
+
+        // Every one, and not merely some. Corrected at 2.4 by the first live
+        // night over the whole index: two of 503 current members, EQR and PSTG,
+        // are absent from an ordinary day's file, so refusing on any absence
+        // refuses every night. A name the file carries nothing for has no bar
+        // tonight, which is that name's own shorter history and is what the gap
+        // machinery already reads.
+        //
+        // What is unambiguous is a file carrying nothing for any of them. That
+        // is the wrong file or a session the exchange has not traded, and it is
+        // not the same as a file with no rows at all: the payload can be full of
+        // symbols this index does not hold. A night run before the close
+        // produced exactly that, which is how this rule was measured rather than
+        // chosen.
+        if (missing.Length == members.Count && members.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"The bulk file for {session:yyyy-MM-dd} carries nothing for any of the " +
+                $"{members.Count} current member(s), the first being " +
+                $"{string.Join(", ", missing.Take(FirstNamed))}. A payload holding none of the " +
+                "index is the wrong file or a session the exchange has not traded, and storing " +
+                "nothing from it would read as a night that ran.");
+        }
 
         await using var transaction = await connection.BeginTransactionAsync();
 
@@ -124,13 +192,11 @@ public sealed class BarFetcher : IComponent
 
         var stored = await CountAsync(connection);
 
-        // The retention boundary, taken from the session the file is for rather
-        // than from the machine clock, so replaying a fixture drops what that
-        // night would have dropped.
-        var session = wanted.Length > 0
-            ? wanted.Max(row => row.Bar.SessionDate)
-            : clock.SessionDateAt(started);
-
+        // The retention boundary, taken from the session the night asked for.
+        // Before 2.3 it was read back out of the rows, which made the boundary a
+        // property of what the provider happened to send: a payload for an older
+        // session would have moved it backwards and kept sessions the night
+        // should have dropped.
         var oldest = session.AddYears(-RetentionYears);
 
         await using (var drop = connection.CreateCommand())
@@ -154,7 +220,8 @@ public sealed class BarFetcher : IComponent
             wanted.Length,
             stored - after,
             session,
-            oldest);
+            oldest,
+            missing);
 
         await AppendAsync(connection, runId, started, outcome);
 

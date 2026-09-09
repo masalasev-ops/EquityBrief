@@ -63,6 +63,78 @@ public class CorporateActions
             FixedClock.At(ActionNight, SessionZones.UnitedStates),
             store.DatabaseFile);
 
+    // A feed whose first attempt fails, wrapped in the real retry.
+    //
+    // 2.2's third done condition. A retry over a non-idempotent write is a
+    // defect that only appears once both exist, and the refetch is the only
+    // non-idempotent write on the nightly path: it deletes a name's year and
+    // reinserts it. If a second attempt were made after the delete, the name
+    // would hold two years or half of one.
+    sealed class FlakyHistoricalFeed(IHistoricalBarFeed inner, RetryPolicy policy) : IHistoricalBarFeed
+    {
+        readonly ProviderRequest request = new(policy, (_, _) => Task.CompletedTask);
+        readonly HashSet<string> refused = [];
+
+        public int Requests => inner.Requests;
+
+        public int Attempts => request.Attempts;
+
+        public Task<IReadOnlyList<ProviderBar>> BarsAsync(
+            string ticker,
+            DateOnly from,
+            DateOnly to,
+            CancellationToken cancellationToken = default) =>
+            request.SendAsync(
+                token => refused.Add(ticker)
+                    ? throw new ProviderRefusal($"the feed refused {ticker} once", transient: true)
+                    : inner.BarsAsync(ticker, from, to, token),
+                cancellationToken);
+    }
+
+    [Fact]
+    public async Task ARetriedRefetchLeavesTheYearOnceRatherThanTwice()
+    {
+        // Two stores and one difference between them. The refetch asks for the
+        // year ending on the action night rather than on the backfill date, so
+        // the row count legitimately moves; what must not move is whether a
+        // retry happened. Comparing the flaky run against a clean one asks that
+        // question directly, where comparing against the count before the
+        // refetch would have asked a different one and failed on the answer.
+        using var clean = await Stored();
+        using var store = await Stored();
+
+        var cleanOutcome = await Checker(clean).RunAsync(Index, "run-clean");
+
+        var flaky = new FlakyHistoricalFeed(
+            RecordedHistoricalBarFeed.FromFolder(FixtureFolder()),
+            RetryPolicy.Standard);
+
+        var outcome = await Checker(store, flaky).RunAsync(Index, "run-retry");
+
+        // The retry happened, so this is not a test that passed by not
+        // exercising the path. Stated rather than inferred, because a flaky feed
+        // that never refused would leave every assertion below true and the
+        // property untested.
+        Assert.Equal(2, flaky.Attempts);
+        Assert.Equal(1, outcome.Refetched);
+        Assert.Equal(cleanOutcome.Refetched, outcome.Refetched);
+
+        // And the series is what one refetch produces. Not twice that, and not
+        // half of it.
+        Assert.Equal(Rows(clean, "AAPL"), Rows(store, "AAPL"));
+        Assert.True(Rows(store, "AAPL") > 200, $"AAPL holds {Rows(store, "AAPL")} bars, expected a year.");
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var duplicates = connection.CreateCommand();
+        duplicates.CommandText =
+            "SELECT COUNT(*) FROM (SELECT session_date FROM bar WHERE ticker = 'AAPL' " +
+            "GROUP BY session_date HAVING COUNT(*) > 1);";
+
+        Assert.Equal(0, Convert.ToInt32(duplicates.ExecuteScalar()));
+    }
+
     static (string State, string? Reason) StateOf(TemporaryStore store, string ticker)
     {
         using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");

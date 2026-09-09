@@ -43,7 +43,7 @@ public sealed class MembershipLoader(
     const string Upsert = @"
         INSERT INTO membership (index_code, ticker, joined, ""left"", observed_at)
         VALUES ($index_code, $ticker, $joined, $left, $observed_at)
-        ON CONFLICT (index_code, ticker, joined) DO UPDATE SET
+        ON CONFLICT (index_code, ticker, IFNULL(joined, '')) DO UPDATE SET
             ""left"" = excluded.""left"",
             observed_at = excluded.observed_at;
     ";
@@ -54,6 +54,13 @@ public sealed class MembershipLoader(
     // either has not left or left after it. So `joined` compares with <= and
     // `left` with >, the leave date being the day the name stopped being a
     // member rather than the last day it was one.
+    //
+    // A row whose join date is unknown answers no to this, because a comparison
+    // against null is null. That is the truthful answer and not an oversight:
+    // the provider does not say when the name joined, so nothing here can say
+    // whether it was a member in June. What such a row does answer is whether
+    // the name is a member now, which is `left IS NULL` and is the query the
+    // fetch uses.
     const string MembersOn = @"
         SELECT ticker
         FROM membership
@@ -105,7 +112,7 @@ public sealed class MembershipLoader(
             command.CommandText = Upsert;
             command.Parameters.AddWithValue("$index_code", indexCode);
             command.Parameters.AddWithValue("$ticker", constituent.Ticker);
-            command.Parameters.AddWithValue("$joined", Text(constituent.Joined));
+            command.Parameters.AddWithValue("$joined", Text(constituent.Joined) ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("$left", Text(constituent.Left) ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("$observed_at", observedAt);
 

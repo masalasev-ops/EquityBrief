@@ -75,13 +75,17 @@ Grain: one row per index, ticker and membership span.
 |---|---|---|
 | `index_code` | TEXT | the index this membership is in |
 | `ticker` | TEXT | |
-| `joined` | TEXT | date |
+| `joined` | TEXT | date, null when the provider carries none |
 | `left` | TEXT | date, null while a member |
 | `observed_at` | TEXT | UTC instant of the fetch that recorded this |
 
-Primary key: `index_code`, `ticker`, `joined`.
+Unique on `index_code`, `ticker` and `joined` with the unknown folded to a value, which is an expression index rather than a primary key.
 
 Kept forever. Without the spans, a name added last month would appear in a sixty-evening window it was never part of.
+
+**`joined` admits an unknown, and that was forced by the provider rather than chosen.** The live payload carries 822 spans and 145 have no start date, two of them current members: IR and WAB are in tonight's snapshot of 503 and the provider will not say since when. Dropping such a name takes a real member out of the index and out of everything computed from it, and writing a date nobody has is the guess this file refuses elsewhere. The unknown cannot sit in a primary key, because SQLite treats nulls as distinct and a second night would insert a second row rather than conflicting with the first, so the uniqueness moved to an index that folds it. That is the one place a sentinel belongs: inside the index that enforces uniqueness, never in the column a query reads.
+
+**A row whose join date is unknown answers no to a past-date query and yes to members now.** A comparison against null is null, so such a name is absent from the set for any past date, which is the truthful answer: nothing here can say whether it was a member in June. Whether it is a member tonight is `left IS NULL`, which the row answers exactly.
 
 ### bar
 Grain: one row per ticker per session.

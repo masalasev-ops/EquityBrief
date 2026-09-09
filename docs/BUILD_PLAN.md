@@ -191,10 +191,12 @@ The provider's posting hour for the day's bulk file is measured here from live f
 ### 2.2 Retry, backoff and the night's deadline
 To the policy settled at 2.0 (see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move). A cancellation source threaded into `Nightly.RunAsync`, which takes none today while every feed interface accepts one, so a night that hangs on a socket has no deadline and nothing to cancel it.
 
+Section 17 gains the row **Per-request timeout and the night's deadline**, carrying the three attempts, the doubling wait, the thirty-second bound on an attempt and the fifteen-minute bound on the night. The figures are read off that row and asserted against the code's own policy, because a limit stated in a document and again in code is two places holding one fact.
+
 **Done when** a transient refusal is retried to the stated policy and a persistent one is not, a night exceeding its deadline stops with the step named and exits non-zero, and the retry is proved not to double-write over the delete-and-reinsert refetch path SCHEMA declares. That last condition is why this checkpoint is not folded into 2.1: a retry over a non-idempotent write is a defect that only appears once both exist.
 
 ### 2.3 Failure behaviour at the wire
-"Unavailable" implemented to the definition settled at 2.0 (see: A feed is unavailable when it does not answer, and wrong when it answers with something else), and section 18 given the two rows that definition leaves it short of. Both are answers that arrive: a payload holding fewer names than the index, and a payload holding a session other than the one asked for. They are two rows rather than one because they are refused in different places. Only the feed can see the date the payload declares, and only the fetcher knows how many members the index has, so one is refused before parsing and the other after it.
+"Unavailable" implemented to the definition settled at 2.0 (see: A feed is unavailable when it does not answer, and wrong when it answers with something else), and section 18 given the two rows that definition leaves it short of. Both are answers that arrive: **A feed answers with a session other than the one asked for**, and **A feed answers with none of the index in it**. They are two rows rather than one because they are refused in different places. Only the feed can see the session the payload declares, against the session it asked for; only the fetcher knows how many members the index has. One is refused inside the feed and the other after it, which also settles a question 2.1 left open: the feed is told which session to fetch rather than asked for the last day, because a request with no date has nothing to compare its answer against.
 
 A rejected request rate and an answer past the night's deadline add no row. The definition settled at 2.0 makes both of them unavailable, and the row that promises what the system does when a feed is unavailable already exists; a second row saying the same thing in all four cells is the two-statements defect this corpus refuses everywhere else. They are induced as two of that row's cases instead.
 
@@ -204,6 +206,8 @@ The existing "Bulk price feed unavailable" row is decomposed per surface the way
 
 ### 2.4 The remaining price and membership feeds
 Live implementations of `IIndexMembershipFeed`, `IHistoricalBarFeed` and `ICorporateActionFeed`, each answering the `Requests` member its interface already mandates rather than a count the caller states.
+
+Section 17 gains the row **Weighted-call budget**, which is the figure `RUNBOOK.md` has stated since the architecture was written and no code has read. Each endpoint's weight is known here because this is the checkpoint at which four different endpoints exist, and a night counted in requests alone says four where the provider says two hundred and twelve.
 
 **Done when** a night loads membership, backfills a new joiner and checks actions against the provider, the per-name limit still holds over the live path with both carve-outs measured rather than asserted, and each feed's captured response and its live response are read by the same parser.
 
@@ -486,7 +490,8 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 6.1 |
 | The refetch's atomicity asserted as a property rather than as a construct | 1.8 | 3.1 |
 | Every file under `fixtures/` named as an expectation swept for whether a test reads it | 1.8 | 3.1 |
-| The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 |
+| The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 bounded, 2.6 bounded again; the hour needs observations across several evenings and is carried to 3.7 |
+| One day of news exceeds one request at the provider's limit, so the pulse count needs a window or a page | 2.5 | 5.5 |
 
 **Carried out of the phase 1 sign-off.** Two defects found by breaking a passing claim and
 watching the suite stay green. Neither falsifies shipped behaviour, so under the stopping rules

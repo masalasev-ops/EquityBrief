@@ -115,7 +115,39 @@ public static class SchemaMigrations
         new Migration(3, "create bar", CreateBar),
         new Migration(4, "add bar.raw_close", AddRawClose),
         new Migration(5, "create series_state", CreateSeriesState),
+        new Migration(6, "membership.joined admits an unknown", JoinedMayBeUnknown),
     ];
+
+    // The provider carries no join date for 145 of the 822 spans it returns,
+    // and two of those are current members. Dropping them takes two real names
+    // out of the index and out of everything computed from it; writing a date
+    // nobody has is the guess this corpus refuses. So the column admits null.
+    //
+    // A rebuild rather than an alter, because the unknown cannot sit in a
+    // primary key: SQLite treats NULLs as distinct, so a second night would
+    // insert a second row for the same name rather than conflicting with the
+    // first. The uniqueness moves to an expression index that folds the unknown
+    // to a value, which is the one place a sentinel belongs: inside the index
+    // that enforces uniqueness, and never in the column a query reads.
+    const string JoinedMayBeUnknown = @"
+        CREATE TABLE membership_rebuilt (
+            index_code   TEXT NOT NULL,
+            ticker       TEXT NOT NULL,
+            joined       TEXT,
+            ""left""     TEXT,
+            observed_at  TEXT NOT NULL
+        ) STRICT;
+
+        INSERT INTO membership_rebuilt (index_code, ticker, joined, ""left"", observed_at)
+        SELECT index_code, ticker, joined, ""left"", observed_at FROM membership;
+
+        DROP TABLE membership;
+
+        ALTER TABLE membership_rebuilt RENAME TO membership;
+
+        CREATE UNIQUE INDEX membership_span
+            ON membership (index_code, ticker, IFNULL(joined, ''));
+    ";
 
     public static int LatestVersion => All.Max(migration => migration.Version);
 }

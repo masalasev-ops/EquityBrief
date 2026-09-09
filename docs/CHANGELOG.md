@@ -25,6 +25,100 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - tools/nightly, BUILD_PLAN.md - the fixture argument becomes a setting
+Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
+Was:
+> `tools/nightly` took a fixture folder as its first argument, defaulting to
+> `fixtures/membership-2026-09-05`, with a note saying the argument was there because the live
+> feeds were not built yet and would become optional when they landed; and the obligations table
+> carried the posting hour as due at 2.6
+Now:
+> the script passes its arguments through and takes none of its own, with the source read from
+> `EquityBrief:Providers:Source` and a fixture folder from `EquityBrief:Providers:Fixture`; and the
+> posting hour is carried to 3.7 with both bounds recorded
+Why: a scheduled night's source should not be a property of a shell script. The flags remain for a
+run by hand and giving both is refused. The posting hour needs observations across several
+evenings, which a running installation accumulates and a checkpoint cannot, and nothing waits on
+it because a night run before the close is already refused by the fetch.
+
+
+### 2026-09-09 - BUILD_PLAN.md - one day of news is wider than one request
+Corrects: nothing. An obligation recorded when it was created rather than remembered.
+Was:
+> the obligations table carried nothing about the news window
+Now:
+> | One day of news exceeds one request at the provider's limit, so the pulse count needs a window
+> or a page | 2.5 | 5.5 |
+Why: the first dated request with no ticker came back holding exactly the provider's limit of
+1,000 articles, so a single day of market-wide news does not fit in one request. What that means
+for the pulse count cannot be settled until 5.5 counts articles per name, and an obligation filed
+now is the difference between a later session finding it and a later session inheriting it.
+
+
+### 2026-09-09 - ARCHITECTURE.html, SCHEMA.md, CLAUDE.md, BUILD_PLAN.md - what a live index taught the two rules
+Corrects: two rules written against a five-name fixture and refuted by the first night over five
+hundred, found by running rather than by reading.
+Was:
+> SCHEMA declared `membership.joined` as "date" with a primary key of `index_code`, `ticker`,
+> `joined`; and section 18 carried the row "A feed answers with fewer names than the index holds",
+> which refused a payload carrying nothing for any current member
+Now:
+> `joined` is "date, null when the provider carries none", unique on the three columns with the
+> unknown folded to a value by an expression index rather than a primary key; and the row is
+> "A feed answers with none of the index in it", which refuses only a payload carrying nothing for
+> every member and stores one short of some for the rest
+Why: the provider carries 822 spans for this index and 145 have no start date, two of them current
+members, so a non-null column drops two real names or writes a date nobody has. And two of 503
+current members are absent from an ordinary day's bulk file, so refusing on any absence refuses
+every night. Both figures are measurements from the live payloads rather than estimates, and both
+rules were written when the only evidence available was a fixture of five names.
+
+
+### 2026-09-09 - ARCHITECTURE.html, CLAUDE.md, BUILD_PLAN.md - the two rows for an answer that arrives
+Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
+Was:
+> section 18's unavailable row read "keeps last night's bars, marks every name stale, still
+> serves the app" against "a banner giving the data date, and tonight's list absent rather than
+> wrong", with no row anywhere for a payload that arrives and is wrong; and `nightly-run`'s
+> roster row claimed only that the night runs the steps in order and that a failure names the
+> step and exits non-zero
+Now:
+> the unavailable row names the run log and the banner as the two surfaces it promises and says
+> what unavailable covers; two rows follow it for a payload carrying another session and a
+> payload short of a current member; and the roster row claims the deadline and both refusals
+Why: the definition settled at 2.0 splits a feed that did not answer from a feed that answered
+with something else, and section 18 carried a row for the first and nothing for the second. The
+unavailable row is read per surface because its banner is a phase 5 surface and its run log is
+not, which is the shape the gap row took at 1.5. The roster row is widened because a check whose
+declared reach grows past its description is a property nobody wrote down.
+
+
+### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - the timeout and the night's deadline
+Authorised by: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+Was:
+> section 17 had no row for either bound, so the only statement of the retry policy was the
+> decision, and 2.2's text named the policy without naming the row that would carry it
+Now:
+> section 17 carries **Per-request timeout and the night's deadline** with the three attempts,
+> the doubling wait and both bounds, and 2.2 names that row so the claim's due point derives from
+> the plan rather than being written into the harness
+Why: the decision settles the figures and the limits table is where a figure the harness asserts
+lives. Written only in `DECISIONS.md` the numbers would have had no instrument: the row is what
+`nightly-run` now reaches, and the test reads the row against the code's own policy so the two
+cannot drift.
+
+
+### 2026-09-09 - BUILD_PLAN.md - the posting hour is bounded rather than measured
+Corrects: an obligation written at 2.0 as though one fetch could answer it.
+Was:
+> | The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 |
+Now:
+> | The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 bounded at 06:13 UTC the following day; the hour itself carried to 2.6 |
+Why: a single fetch gives an upper bound and not an hour. Measuring when the file first appears
+means asking repeatedly across an evening, which is a live night's work rather than a
+checkpoint's. The bound is recorded in `PROGRESS.md` with the instant it was taken.
+
+
 ### 2026-09-09 - BUILD_PLAN.md - the feed rulings, and what they do to 2.1, 2.2 and 2.3
 Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
 Was:

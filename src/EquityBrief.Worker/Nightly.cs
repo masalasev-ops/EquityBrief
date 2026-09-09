@@ -24,6 +24,13 @@ public static class Nightly
     // the script can print them and nightly-cost can read them back.
     public sealed record NightOutcome(string RunId, int ModelCalls, int NetworkRequests, IReadOnlyList<string> Steps);
 
+    // What the command line calls: resolve the feeds from a fixture folder,
+    // optionally replace one of them with a live feed, then run.
+    //
+    // `bulk` is how 2.1 puts one live feed on the night while the other three
+    // stay recorded. It is a parameter rather than a setting because the setting
+    // is 2.6's work, and a half-built configuration path is the thing that lets
+    // a mistyped fixture folder resolve to the network.
     public static async Task<int> RunAsync(
         StoreLocation store,
         string fixtureFolder,
@@ -31,16 +38,55 @@ public static class Nightly
         IClock clock,
         TextWriter output,
         TextWriter error,
-        string? runId = null)
+        string? runId = null,
+        IBulkPriceFeed? bulk = null,
+        TimeSpan? deadline = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
             error.WriteLine(
-                $"nightly: no fixture at '{fixtureFolder}'. The live feeds are not built yet, so a " +
-                "night runs over a captured one and needs to be told which.");
+                $"nightly: no fixture at '{fixtureFolder}'. Only the bulk price feed reaches the " +
+                "provider so far, so the rest of a night runs over a captured one and needs to be " +
+                "told which.");
 
             return 1;
         }
+
+        var feeds = NightFeeds.FromFixture(fixtureFolder);
+
+        return await RunAsync(
+            store,
+            bulk is null ? feeds : feeds with { Bulk = bulk },
+            indexCode,
+            clock,
+            output,
+            error,
+            runId,
+            deadline);
+    }
+
+    public static async Task<int> RunAsync(
+        StoreLocation store,
+        NightFeeds feeds,
+        string indexCode,
+        IClock clock,
+        TextWriter output,
+        TextWriter error,
+        string? runId = null,
+        TimeSpan? deadline = null)
+    {
+        // The night's deadline, and the thing that can cancel it.
+        //
+        // Every feed interface has accepted a cancellation token since 1.1 and
+        // nothing supplied one, so a night that hung on a socket hung until
+        // somebody looked. This is the source, and it is the night's rather than
+        // a request's: a per-request timeout bounds one attempt, and three
+        // attempts on nine steps is a bound nobody would recognise as an
+        // evening.
+        // see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+        var limit = deadline ?? RetryPolicy.Standard.Deadline;
+
+        using var night = new CancellationTokenSource(limit);
 
         // The instant and not only the date. A night that fails halfway and is
         // re-run is a second run, and SCHEMA's grain is one row per run per
@@ -50,11 +96,7 @@ public static class Nightly
         // records under an id it chose.
         runId ??= $"night-{clock.UtcNow:yyyyMMddTHHmmssZ}";
 
-        var membership = RecordedIndexMembershipFeed.FromFile(
-            Path.Combine(fixtureFolder, "index-constituents.json"));
-        var historical = RecordedHistoricalBarFeed.FromFolder(fixtureFolder);
-        var bulk = RecordedBulkPriceFeed.FromFolder(fixtureFolder);
-        var corporate = RecordedCorporateActionFeed.FromFolder(fixtureFolder);
+        var (membership, historical, bulkFeed, corporate, _) = feeds;
 
         // The order is section 14's, for the steps that exist. Migrate is not
         // one of its steps: it is what makes the store able to hold the night,
@@ -73,30 +115,32 @@ public static class Nightly
             new("membership", async () =>
             {
                 var rows = await new MembershipLoader(membership, clock, store.DatabaseFile)
-                    .LoadAsync(indexCode, runId);
+                    .LoadAsync(indexCode, runId, night.Token);
 
                 return $"{rows} rows written";
             }),
             new("backfill", async () =>
             {
                 var outcome = await new Backfill(historical, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId);
+                    .RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.RowsWritten} rows written over {outcome.Requests} request(s)";
             }),
             new("fetch", async () =>
             {
-                var outcome = await new BarFetcher(bulk, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId);
+                var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile)
+                    .RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
                     $"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, " +
+                    $"{bulkFeed.NotSessions.Count} row(s) listed and not traded, " +
+                    $"{outcome.Unaccounted.Count} member(s) the file carried nothing for, " +
                     $"{outcome.Requests} request(s)";
             }),
             new("actions", async () =>
             {
                 var outcome = await new CorporateActionChecker(corporate, historical, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId);
+                    .RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
                     $"{outcome.Suspect.Count} suspect, {outcome.Requests} request(s)";
@@ -107,9 +151,38 @@ public static class Nightly
 
         foreach (var step in steps)
         {
+            // The local stop, before the provider's own. Exceeding the daily
+            // allowance arrives from the provider as a rejected rate, which is
+            // an unavailable feed and loses the reason; stopping here says what
+            // actually happened.
+            // see: The night's cost is counted in weighted calls against the stated daily allowance
+            if (feeds.WeightedCalls >= ProviderWeights.DailyAllowance)
+            {
+                error.WriteLine(
+                    $"nightly: stopped before step '{step.Name}'. The night has spent " +
+                    $"{feeds.WeightedCalls} weighted call(s) against an allowance of " +
+                    $"{ProviderWeights.DailyAllowance}. Last night's bars are kept and every name " +
+                    "is stale.");
+
+                return 1;
+            }
+
             try
             {
                 output.WriteLine($"  {step.Name}: {await step.Run()}");
+            }
+            catch (OperationCanceledException) when (night.IsCancellationRequested)
+            {
+                // The deadline, named as itself rather than as a step that
+                // failed. A night that ran out of time and a night whose
+                // provider refused are different mornings, and a cancellation
+                // reported as a failure reads as the second.
+                error.WriteLine(
+                    $"nightly: step '{step.Name}' passed the night's deadline of " +
+                    $"{limit.TotalMinutes:0.###} minute(s) and was stopped. Last night's bars are " +
+                    "kept and every name is stale.");
+
+                return 1;
             }
             catch (Exception failure)
             {
@@ -123,10 +196,21 @@ public static class Nightly
 
         // The nightly claim, printed where the operator reads it rather than
         // only stored. Zero model calls because nothing on this path calls one,
-        // and the request count is what the two feeds counted.
-        var requests = historical.Requests + bulk.Requests + corporate.Requests;
+        // and the request count is what the five feeds counted, live or recorded
+        // alike, because the count is on the interface.
+        //
+        // Which source it ran against is on the same line, and it is read off
+        // the feeds rather than off the setting that chose them. Before 2.6 this
+        // said "network request(s)" on a night that touched no network, because
+        // a recorded feed counts the calls a live one would have made: that is
+        // deliberate, since it is how a replay measures the cost shape, and it
+        // is exactly why the line has to say which kind of night this was.
+        var live = feeds.ReachesTheNetwork;
 
-        output.WriteLine($"nightly: green, 0 model calls, {requests} network request(s)");
+        output.WriteLine(
+            $"nightly: green over {(live ? "the provider" : "a capture")}, 0 model calls, " +
+            $"{feeds.Requests} {(live ? "network request(s)" : "request(s), none of them to a network")}, " +
+            $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
 
         return 0;
     }
