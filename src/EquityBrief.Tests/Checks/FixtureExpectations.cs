@@ -54,6 +54,7 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "ladder"),
             CheckReach.Key(Scope.FixtureTable, "calendar"),
             CheckReach.Key(Scope.FailureTable, "Earnings date missing, the calendar"),
+            CheckReach.Key(Scope.LimitsTable, "Tranches, exits"),
             CheckReach.Key(Scope.LimitsTable, "Tranche eligibility"),
             CheckReach.Key(Scope.FailureTable, "No band is eligible to carry a tranche"),
             CheckReach.Key(Scope.FailureTable, "A name whose trend state cannot be classified"),
@@ -2353,6 +2354,150 @@ public class FixtureExpectations
         Assert.All(
             FixtureExpectation.Names,
             name => Assert.True(counts.GetProperty(name).GetInt32() <= LadderSeries.MostTranches));
+    }
+
+    // ---- 4.5, the exits, the near-exit skip and the trailing stop ----
+
+    [Fact]
+    public async Task TheExitsAndTheNearExitSkipMatchTheRulesOverTheCommittedBands()
+    {
+        var expected = Expected("ladder").GetProperty("exits");
+        var byName = expected.GetProperty("byName");
+        var counts = Expected("ladder").GetProperty("counts");
+
+        using var store = await WithLadders();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var plan = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            var exits = plan.GetProperty("exits").EnumerateArray()
+                .Select(exit => string.Join(
+                    "|",
+                    exit.GetProperty("lowEdge").GetString(),
+                    exit.GetProperty("highEdge").GetString(),
+                    exit.GetProperty("traded").GetBoolean() ? "true" : "false",
+                    exit.GetProperty("trailing").GetBoolean() ? "true" : "false",
+                    exit.GetProperty("fraction").GetString()))
+                .ToArray();
+
+            Assert.Equal(
+                byName.GetProperty(name).EnumerateArray().Select(row => row.GetString()).ToArray(),
+                exits);
+
+            Assert.Equal(counts.GetProperty("exits").GetProperty(name).GetInt32(), exits.Length);
+            Assert.True(exits.Length <= LadderSeries.MostExits);
+        }
+
+        // Where the trailing rule bites, named per name in the expectation and
+        // read back off the store. KEYS is the only tranche in this fixture
+        // whose stop the trailing rule moves, and stating that is what keeps a
+        // rule that changed nothing from reading as a rule that works.
+        var stops = Expected("ladder").GetProperty("stops").GetProperty("whereTheTrailingRuleBites");
+
+        Assert.Contains("293.55", stops.GetProperty("KEYS").GetString()!, StringComparison.Ordinal);
+
+        var keys = JsonDocument
+            .Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'KEYS';").Single())
+            .RootElement;
+
+        Assert.Equal(
+            "293.55",
+            keys.GetProperty("tranches").EnumerateArray().First().GetProperty("stop").GetString());
+
+        // A skipped exit is listed with its reason rather than omitted, which is
+        // the half a rule that only filtered would lose.
+        foreach (var name in new[] { "MSFT", "NFLX" })
+        {
+            var plan = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            var skipped = plan.GetProperty("exits").EnumerateArray()
+                .Where(exit => !exit.GetProperty("traded").GetBoolean())
+                .ToArray();
+
+            Assert.NotEmpty(skipped);
+            Assert.All(skipped, exit => Assert.Contains(
+                "typical days",
+                exit.GetProperty("reason").GetString()!,
+                StringComparison.Ordinal));
+
+            // And it takes none of the position, which is what listed and not
+            // traded means: a row that carried a fraction would be an exit.
+            Assert.All(skipped, exit => Assert.Equal("0", exit.GetProperty("fraction").GetString()));
+        }
+
+        // MSFT trades none of its exits at all, so it has no top of the ladder.
+        // A plan saying take nothing here is a different object from one with a
+        // trailing rule attached to nothing.
+        var msft = JsonDocument
+            .Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'MSFT';").Single())
+            .RootElement;
+
+        Assert.Equal(0, counts.GetProperty("tradedExits").GetProperty("MSFT").GetInt32());
+        Assert.DoesNotContain(
+            msft.GetProperty("exits").EnumerateArray(),
+            exit => exit.GetProperty("trailing").GetBoolean());
+
+        // Exactly one trailing rule where anything is traded, and it is the
+        // highest traded exit rather than the highest exit.
+        foreach (var name in new[] { "AAPL", "KEYS", "NFLX" })
+        {
+            var plan = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            var traded = plan.GetProperty("exits").EnumerateArray()
+                .Where(exit => exit.GetProperty("traded").GetBoolean())
+                .ToArray();
+
+            Assert.Single(traded, exit => exit.GetProperty("trailing").GetBoolean());
+            Assert.True(traded[^1].GetProperty("trailing").GetBoolean());
+
+            // The fractions are equal and sum to the whole of what is held.
+            Assert.Single(traded.Select(exit => exit.GetProperty("fraction").GetString()).Distinct());
+            Assert.Equal($"1/{traded.Length}", traded[0].GetProperty("fraction").GetString());
+        }
+    }
+
+    [Fact]
+    public void TheTrailingStopRisesWithTheStructureAndIsNeverLooserThanTheRangeRule()
+    {
+        // owes: The trend-dependent stop, which trails in an uptrend rather than sitting at the next band
+        //
+        // The rule read literally puts the stop wherever the last swing low
+        // happens to be, which on a name that has run a long way is far below
+        // the band beneath and is looser protection than the range rule gives.
+        // A trailing stop that can sit below the range floor is not trailing
+        // anything, so the stop is the higher of the two.
+        // see: The stop rule depends on the trend state
+        var band = new Level(90m, 95m, LevelSeries.Support, false, 1, true, []);
+
+        // A higher low has formed above the band beneath, so the stop rises to
+        // it. This is KEYS's case in the fixture and the only one there.
+        Assert.Equal(88m, LadderSeries.StopFor(band, beneath: 85m, TrendState.Uptrend, [70m, 88m]));
+
+        // The last swing low is below the band beneath, so the band wins. This
+        // is MSFT's third tranche, whose last swing low is a hundred points down.
+        Assert.Equal(85m, LadderSeries.StopFor(band, beneath: 85m, TrendState.Uptrend, [70m]));
+
+        // No band beneath at all, so the trailing rule gives a stop where the
+        // range rule gives none. This is what AAPL's and KEYS's lowest tranches
+        // take.
+        Assert.Equal(70m, LadderSeries.StopFor(band, beneath: null, TrendState.Uptrend, [70m]));
+
+        // A range takes the band whatever the swings did, which is the rule the
+        // trend is deciding between.
+        Assert.Equal(85m, LadderSeries.StopFor(band, beneath: 85m, TrendState.Range, [88m]));
+        Assert.Null(LadderSeries.StopFor(band, beneath: null, TrendState.Range, [88m]));
+
+        // A swing low inside the band is not beneath it and cannot be the stop:
+        // a stop inside the zone being bought is not a stop, which is why this
+        // was carried out of 4.4 rather than written as a line.
+        Assert.Equal(85m, LadderSeries.StopFor(band, beneath: 85m, TrendState.Uptrend, [92m]));
     }
 
     [Fact]

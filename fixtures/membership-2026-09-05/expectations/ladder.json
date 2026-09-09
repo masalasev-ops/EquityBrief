@@ -1,6 +1,6 @@
 {
   "stage": "ladders",
-  "derivedFrom": "the trend rule and the tranche rules settled at 4.0, applied to the committed bar files and the levels expectation outside this repository and without running the ladder builder. The bars are adjusted first, the factor being the provider's adjusted close over its raw close with the high and low scaled by the same figure. The averages are the arithmetic mean of the last 50 and the last 200 adjusted closes. The swings are sessions whose high is strictly above all six neighbours or whose low is strictly below all six. The tranches are the support bands whose low edge is below the close, nearest first, at most three, skipping any band with no anchor other than a moving average; each stop is the low edge of the next support band beneath it whatever anchors that one; the invalidation is the lowest of those stops, or a tranche's own low edge where no band sits beneath it. The typical day's move is twice the merge distance the levels expectation states, the merge distance being half of it. Nothing here was read back from a run.",
+  "derivedFrom": "the trend rule and the tranche rules settled at 4.0, applied to the committed bar files and the levels expectation outside this repository and without running the ladder builder. The bars are adjusted first, the factor being the provider's adjusted close over its raw close with the high and low scaled by the same figure. The averages are the arithmetic mean of the last 50 and the last 200 adjusted closes. The swings are sessions whose high is strictly above all six neighbours or whose low is strictly below all six. The tranches are the support bands whose low edge is below the close, nearest first, at most three, skipping any band with no anchor other than a moving average; each stop is the low edge of the next support band beneath it whatever anchors that one in a range, and in an uptrend the higher of that band and the most recent swing low beneath the tranche; the invalidation is the lowest of those stops, or a tranche's own low edge where no band sits beneath it. The typical day's move is twice the merge distance the levels expectation states, the merge distance being half of it. Nothing here was read back from a run.",
   "tables": [
     "ladder"
   ],
@@ -146,6 +146,18 @@
       "KEYS": 2,
       "MSFT": 3,
       "NFLX": 3
+    },
+    "exits": {
+      "AAPL": 2,
+      "KEYS": 2,
+      "MSFT": 1,
+      "NFLX": 4
+    },
+    "tradedExits": {
+      "AAPL": 2,
+      "KEYS": 2,
+      "MSFT": 0,
+      "NFLX": 3
     }
   },
   "properties": {
@@ -156,7 +168,10 @@
     "noNotClassifiedInThisFixture": "all four hold a full year, so all four have a 200-day average and two swings of each kind. The fourth state is asserted over constructed input for the same reason",
     "atMostThreeTranches": "MSFT and NFLX each have more eligible bands than three and take the three nearest, which is section 17's count",
     "aStraddlingBandKeepsItsFullWidth": "AAPL's first tranche runs 299.7415 to 320.28 with the close at 319.97 inside it, and the band is not trimmed to the close",
-    "theStopIsTheBandBeneathAndNotTheTrancheBelow": "AAPL's first tranche stops at 283.439, which is the average-only band beneath it and not the 273.5141 band that carries the second tranche"
+    "theStopIsTheBandBeneathAndNotTheTrancheBelow": "AAPL's first tranche stops at 283.439, which is the average-only band beneath it and not the 273.5141 band that carries the second tranche",
+    "theTrailingStopIsNeverLooserThanTheRangeRule": "every uptrend stop is the higher of the band beneath and the swing low beneath, so no stop in this fixture sits below the band the range rule would have given it",
+    "theFractionsSumToTheWhole": "each name's traded exits carry one over their count, so they sum to one over the position that exists rather than to a capital figure",
+    "aSkippedExitIsListedRatherThanOmitted": "MSFT and NFLX each carry a row for the exit they do not trade, with the reason on it"
   },
   "tranches": {
     "note": "at most three per name, nearest first. The condition is the pattern the price has made at that band, tested in the stated order so exactly one applies, and ReachesTheZone is the absence of any of the four rather than a fifth pattern: a tranche where none has occurred is not actionable yet and says so.",
@@ -164,11 +179,11 @@
     "byName": {
       "AAPL": [
         "299.7415|320.28|AvailableNow|283.439",
-        "273.5141|273.5141|ReachesTheZone|"
+        "273.5141|273.5141|ReachesTheZone|264.5978"
       ],
       "KEYS": [
-        "300.87|332.78|AvailableNow|288.5134",
-        "288.5134|293.55|ReachesTheZone|"
+        "300.87|332.78|AvailableNow|293.55",
+        "288.5134|293.55|ReachesTheZone|266.47"
       ],
       "MSFT": [
         "492.1166|501.9168|AvailableNow|485.1401",
@@ -183,10 +198,10 @@
     }
   },
   "invalidation": {
-    "note": "the lowest price the structure depends on, which is the lowest stop the tranches carry. Where a tranche has no band beneath it the structure ends at that tranche's own low edge, which is AAPL's and KEYS's case: their second tranche is the lowest support band the name has.",
+    "note": "the lowest price the structure depends on, which is the lowest stop the tranches carry. AAPL and KEYS take theirs from the trailing rule, which is what gives their lowest tranche a stop at all: under the range rule alone the structure would end at that tranche's own low edge.",
     "byName": {
-      "AAPL": "273.5141",
-      "KEYS": "288.5134",
+      "AAPL": "264.5978",
+      "KEYS": "266.47",
       "MSFT": "443.5621",
       "NFLX": "68.7982"
     }
@@ -205,6 +220,53 @@
       "NFLX": [
         "86.8835 is resistance and not a candidate"
       ]
+    }
+  },
+  "stops": {
+    "note": "the trend decides the stop. NFLX is the range and its three stops are the bands beneath, which is the range floor. The three uptrends take the higher of the band beneath and the most recent swing low beneath the tranche, so the stop rises as the structure makes higher lows and is never looser than the range rule.",
+    "whereTheTrailingRuleBites": {
+      "KEYS": "its first tranche's stop moves from the band at 288.5134 to the swing low at 293.55, which is the only tranche in this fixture where the trailing rule is tighter than the band beneath",
+      "AAPL and KEYS second tranches": "each is the lowest support band its name has, so the range rule gives them no stop at all and the trailing rule gives them one: 264.5978 and 266.47",
+      "MSFT": "every one of its three takes the band, because its swing lows beneath each tranche are further away than the band is. Its third tranche is the case that shows why the rule takes the higher of the two: the last swing low beneath 476.2534 is 376.6809, a hundred points down, and a trailing stop there would be looser protection than the range rule gives"
+    }
+  },
+  "exits": {
+    "note": "one per resistance band above the price, nearest first, at most five. An exit closer than two typical days' moves to the blended entry is listed and not traded, the blended entry being the mean of the first two tranche zones' midpoints. Each traded exit sells an equal fraction of what is held, and the highest traded one is a trailing rule rather than a price.",
+    "format": "lowEdge|highEdge|traded|trailing|fraction",
+    "blendedEntry": {
+      "AAPL": "291.762425",
+      "KEYS": "303.92835",
+      "MSFT": "491.0784",
+      "NFLX": "74.5215"
+    },
+    "twoTypicalDays": {
+      "AAPL": "15.2678",
+      "KEYS": "22.553",
+      "MSFT": "23.6486",
+      "NFLX": "4.7916"
+    },
+    "byName": {
+      "AAPL": [
+        "334.7013|334.7013|true|false|1/2",
+        "344.2731|344.2731|true|true|1/2"
+      ],
+      "KEYS": [
+        "366.41|366.41|true|false|1/2",
+        "374.963|374.963|true|true|1/2"
+      ],
+      "MSFT": [
+        "507.9797|517.78|false|false|0"
+      ],
+      "NFLX": [
+        "78.3545|79.31|false|false|0",
+        "81.16|81.16|true|false|1/3",
+        "82.455|82.455|true|false|1/3",
+        "86.8835|86.8835|true|true|1/3"
+      ]
+    },
+    "skipped": {
+      "MSFT": "its only resistance band sits 16.90 above the blended entry against a bar of 23.65, so every exit it has is listed and not traded and it has no top of the ladder at all. A plan that says take nothing here is a different object from one with a trailing rule attached to nothing.",
+      "NFLX": "its immediate resistance sits 3.83 above the blended entry against a bar of 4.79, so it is listed and not traded while the three above it are"
     }
   }
 }

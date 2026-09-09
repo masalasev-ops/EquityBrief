@@ -273,6 +273,10 @@ internal static class Scope
             Verdict.Pass,
             "the trend state and the tranches of all four names are diffed against a set derived from the rules outside this repository, with the averages, the last two swings of each kind and the band each stop comes from stated beside the answer so a disagreement is traceable to an input",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "Tranches, exits")] = new Scoped(
+            Verdict.Pass,
+            "at most three tranches and at most five exits over four names, and an exit within two typical days' moves of the blended entry is listed and not traded with its reason on the row rather than omitted",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Tranche eligibility")] = new Scoped(
             Verdict.Pass,
             "a support band whose low edge is below the close carries a tranche and keeps its full width where it straddles, and a band anchored on an average alone carries none and is still the stop of the tranche above it, asserted over the fixture and over a constructed band",
