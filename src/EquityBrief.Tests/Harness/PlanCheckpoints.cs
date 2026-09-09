@@ -29,14 +29,35 @@ internal static class PlanCheckpoints
     internal static IReadOnlyList<PlanCheckpoint> In(string plan, int floor = 30)
     {
         var headings = Regex.Matches(plan, @"^### (\d+\.\d+) (.*)$", RegexOptions.Multiline);
+
+        // A checkpoint's text ends at the next checkpoint or at the next
+        // section, whichever comes first, and never at the end of the file.
+        // Taking the remainder gave the last checkpoint in the document every
+        // word after it: the carried obligations table, its prose, and every
+        // subject either happens to name. 7.8 was silently the due point for
+        // anything named down there, and the first sentence added to that table
+        // that used the words "level window" moved a limits row's due point from
+        // 3.4 to 7.8 with nothing but a shadowing assertion to say so. The same
+        // fault ran the other way at every phase boundary, where a checkpoint's
+        // text ran on through the next phase's opening paragraph.
+        var sections = Regex.Matches(plan, @"^## ", RegexOptions.Multiline);
         var found = new List<PlanCheckpoint>();
 
         for (var index = 0; index < headings.Count; index++)
         {
             var start = headings[index].Index;
-            var end = index + 1 < headings.Count ? headings[index + 1].Index : plan.Length;
 
-            found.Add(new PlanCheckpoint(headings[index].Groups[1].Value, plan[start..end]));
+            var nextCheckpoint = index + 1 < headings.Count ? headings[index + 1].Index : plan.Length;
+
+            var nextSection = sections
+                .Select(section => section.Index)
+                .Where(at => at > start)
+                .DefaultIfEmpty(plan.Length)
+                .Min();
+
+            found.Add(new PlanCheckpoint(
+                headings[index].Groups[1].Value,
+                plan[start..Math.Min(nextCheckpoint, nextSection)]));
         }
 
         // Phase 0's checkpoints are a summary rather than eight sections, so the

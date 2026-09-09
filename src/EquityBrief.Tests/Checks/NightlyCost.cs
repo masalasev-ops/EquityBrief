@@ -1,7 +1,9 @@
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Worker;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Membership;
 using Microsoft.Data.Sqlite;
@@ -387,7 +389,161 @@ public class NightlyCost
         Assert.Contains("bounded by the day's actions rather than by the universe", limits, StringComparison.Ordinal);
     }
 
+    // ---- the weighted-call budget, all three clauses of its note ----
+    //
+    // The note asserts three things and only one of them had ever been in this
+    // class. The first two were asserted in LiveFeedTests and NewsFeedTests,
+    // which run and pass and back no verdict, because a check's tests are the
+    // ones its carrier declares; the third was asserted nowhere, which the
+    // phase 2 sign-off proved by deleting the stop and watching the suite stay
+    // green at 312 of 312. They are moved here rather than copied, because a
+    // number asserted in two places is two places holding one fact.
+
+    [Fact]
+    public void EveryWeightAndTheAllowanceAreTheOnesTheRunbookStates()
+    {
+        // The figures have been in RUNBOOK since the architecture was written
+        // and no code read either. Read back rather than repeated, because a
+        // number stated in a document and again in code is two places holding
+        // one fact.
+        var runbook = Corpus.Read("docs/RUNBOOK.md");
+
+        Assert.Contains("100,000 weighted calls", runbook, StringComparison.Ordinal);
+        Assert.Contains($"entire exchange costs {ProviderWeights.BulkEndOfDay}", runbook, StringComparison.Ordinal);
+        Assert.Contains(
+            $"single-ticker historical request costs {ProviderWeights.HistoricalPerTicker}",
+            runbook,
+            StringComparison.Ordinal);
+        Assert.Contains($"Fundamentals cost {ProviderWeights.Fundamentals} per ticker", runbook, StringComparison.Ordinal);
+        Assert.Contains($"News costs {ProviderWeights.News}", runbook, StringComparison.Ordinal);
+        Assert.Contains($"cost {ProviderWeights.Fundamentals}.", runbook, StringComparison.Ordinal);
+        Assert.Equal(100_000, ProviderWeights.DailyAllowance);
+    }
+
+    [Fact]
+    public async Task ANightsWeightedTotalIsCountedInTheUnitsTheProviderBillsIn()
+    {
+        // A night counted in requests alone says five where the provider says
+        // three hundred and sixteen, which is the whole reason the allowance
+        // could not be read against anything before this. Every one of the five
+        // feed roles is exercised, news included, so the total is the night's
+        // and not one feed's.
+        var feeds = NightFeeds.FromFixture(FixtureFolder());
+
+        Assert.Equal(0, feeds.WeightedCalls);
+
+        await feeds.Membership.ConstituentsAsync(Index);
+        await feeds.Bulk.RowsAsync("US", new DateOnly(2026, 9, 8));
+        await feeds.Corporate.ActionsAsync("US", new DateOnly(2026, 9, 8));
+        await feeds.Historical.BarsAsync("AAPL", new DateOnly(2025, 9, 4), new DateOnly(2026, 9, 4));
+        await feeds.News.ArticlesAsync(new DateOnly(2026, 8, 25), new DateOnly(2026, 9, 8));
+
+        // One membership at 10, one bulk at 100, two action requests at 100
+        // each, one ticker's history at 1 and one news request at 5. Six
+        // requests, 316 weighted calls.
+        Assert.Equal(6, feeds.Requests);
+        Assert.Equal(
+            ProviderWeights.Fundamentals
+            + ProviderWeights.BulkEndOfDay
+            + (2 * ProviderWeights.BulkEndOfDay)
+            + ProviderWeights.HistoricalPerTicker
+            + ProviderWeights.News,
+            feeds.WeightedCalls);
+        Assert.Equal(316, feeds.WeightedCalls);
+    }
+
+    [Fact]
+    public async Task ANightAlreadyAtItsAllowanceStopsBeforeItsNextStepAndSaysWhy()
+    {
+        // The third clause, over a recorded run rather than a source scan. The
+        // night arrives already at the allowance, which is what a second run on
+        // a day the budget was spent looks like, and the stop is before the
+        // first step rather than after some of them.
+        using var store = new TemporaryStore().Migrated();
+
+        var spent = new SpentBulkFeed(ProviderWeights.DailyAllowance / ProviderWeights.BulkEndOfDay);
+        var feeds = NightFeeds.FromFixture(FixtureFolder()) with { Bulk = spent };
+
+        Assert.Equal(ProviderWeights.DailyAllowance, feeds.WeightedCalls);
+
+        var output = new StringWriter();
+        var error = new StringWriter();
+
+        var code = await Nightly.RunAsync(
+            new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
+            feeds,
+            Index,
+            FixedClock.At(Night, SessionZones.UnitedStates),
+            output,
+            error,
+            "run-spent");
+
+        Assert.Equal(1, code);
+
+        // It says which step it stopped before, and what it had spent against
+        // what it was allowed. A night that stopped without saying why is a
+        // morning spent guessing whether the provider or the budget did it.
+        var said = error.ToString();
+
+        // Named against the night's first step, which is what makes the stop
+        // precede every step rather than some of them. A run that stopped part
+        // way through would name a later step and would have left run log rows
+        // behind it, and the assertion below is the other half of that.
+        Assert.Contains("stopped before step 'migrate'", said, StringComparison.Ordinal);
+        Assert.Contains($"{ProviderWeights.DailyAllowance} weighted call(s)", said, StringComparison.Ordinal);
+        Assert.Contains("Last night's bars are kept", said, StringComparison.Ordinal);
+
+        // And it made no call. The feed was never asked, and no stage reached
+        // the run log, which is the surface the operator reads it on.
+        Assert.False(spent.Asked);
+        Assert.Empty(Stages(store, "run-spent"));
+    }
+
+    static IReadOnlyList<string> Stages(TemporaryStore store, string runId)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT stage FROM run_log WHERE run_id = $run;";
+        command.Parameters.AddWithValue("$run", runId);
+
+        var stages = new List<string>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            stages.Add(reader.GetString(0));
+        }
+
+        return stages;
+    }
+
     sealed record NightCost(int Requests, int ModelCalls);
+
+    // A feed that has already spent the day's allowance and has not been asked
+    // for anything. It reports the requests a night earlier in the day made,
+    // which is what the counter carries when a second night runs.
+    sealed class SpentBulkFeed(int requests) : IBulkPriceFeed
+    {
+        internal bool Asked { get; private set; }
+
+        public int Requests => requests;
+
+        public IReadOnlyList<string> NotSessions => [];
+
+        public Task<IReadOnlyList<BulkBar>> RowsAsync(
+            string exchange,
+            DateOnly session,
+            CancellationToken cancellation = default)
+        {
+            Asked = true;
+
+            throw new InvalidOperationException(
+                "the night asked a feed for rows after it had reached the allowance, which is the " +
+                "call the stop exists to prevent.");
+        }
+    }
 
     // A store holding the fixture's year. `members` names one ticker to leave
     // as the only member besides the departed, so the second run has a smaller

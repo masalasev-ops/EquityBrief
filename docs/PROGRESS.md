@@ -3215,3 +3215,294 @@ Noted:      the carried obligations table gives `Absolute path matching anywhere
 Tests:      312, unchanged from 2.7. Windows for this run; the matrix carries macOS and the Linux
             case-sensitivity job, and no live feed runs on either.
 Signed:     phase 2 is signed off at 71328b5. Phase 3's plan is not opened by this session.
+
+### 3.0 planning - a deferral names what produces the evidence      2026-09-09
+Not a checkpoint entry. It belongs to 3.0, which has not landed. `BUILD_PLAN.md` places the
+            phase planning pass here and this is the first of its commits. This session
+            committed code and may not sign it off.
+Built:      the rule, and an instrument for it. `CLAUDE.md` gains **A deferral names what
+            produces the evidence, not a phase** and the citation convention beside the
+            decision one, and the roster gains `obligation-reconciles`. The carried
+            obligations table gains a name on every row and a fourth column stating what
+            produces the evidence, and every row is now one of two forms read from its cells:
+            a checkpoint that produces the evidence and cites the obligation back, or the
+            literal `operating` carrying a numeric trigger, the surface it is read on and the
+            checkpoint that builds that surface.
+Re-pointed: the nine the phase 2 sign-off found, each stating a producer rather than when
+            somebody will look. Five had their evidence in hand and now say so and where it
+            came from: the source lists against 1.7's coverage measurement, the bulk
+            fundamentals probe against a key held since 2.1, the news window against 2.5's
+            live request, and the refetch atomicity and fixture sweep, which wait on no
+            evidence at all and are grouped with 3.1's expectations. One moved: the posting
+            hour leaves 3.7, which is the phase 3 report and produces no evenings, for 5.7,
+            whose done condition is a week of unattended nights and which now says so. Three
+            take the operating form, because no checkpoint accumulates nights or resolved
+            setups: the six reason thresholds at 60 nights of listings, the reason records at
+            the 250 resolved setups section 17 already states, and the calibration decision,
+            which is the same obligation and now cites it rather than naming no point at all.
+            Two are confirmed rather than moved, the volume shelf threshold at 3.6 and the
+            research lane boundary, which had no row anywhere and now has one at 6.5.
+Measured:   over the carried obligations table, 13 rows before and 20 after, 7 added and 0
+            removed. Over those 20, 20 distinct names, 0 carrying terminal punctuation, 0
+            that are neither form and 0 carrying parts of both. Over the corpus, 20 obligation
+            citations and 20 resolve, and every one of the 20 rows is cited back by a
+            checkpoint that owes it, reconciled against a floor of 13. Over the 33 roster
+            rows, 29 are carried by an implementation, up from 32 and 28. The phase report is
+            unchanged at 185 claims, 42 pass, 0 fail, 143 out of scope, 0 unexamined, 48
+            placements and verdicts reconciled against a floor of 34, which is the expected
+            result because this pass adds no claim to the architecture.
+Proved:     the reconciliation refuses the defect it was built for, on this corpus rather than
+            only on constructed input, in both directions. Removing 3.6's citation of the
+            volume shelf threshold failed the forward direction naming that row; adding a
+            citation of a row nobody wrote failed the reverse direction naming the file and
+            the line. Both mutations were reverted and the tree is clean. Six permanent
+            proofs stand behind them, one per assertion that can fail, plus the control: a
+            partition that refuses everything proves nothing, so a well-formed row of each
+            form is asserted to produce no fault.
+Found:      one defect, in the harness rather than in the corpus, and the first sentence added
+            to the obligations table exposed it. `PlanCheckpoints.In` ended the last
+            checkpoint's text at the end of the file, so 7.8 silently owned the carried
+            obligations table and every word after it. Writing "the level window" into a
+            producer cell moved that limits row's due point from 3.4 to 7.8, and only the
+            shadowing assertion caught it. The same fault ran the other way at every phase
+            boundary, where a checkpoint's text ran on through the next phase's opening
+            paragraph. A checkpoint's text now ends at the next checkpoint or the next
+            section, whichever comes first, and never at the end of the file. This is the
+            prefix-matcher shape `CLAUDE.md` says to sweep for, arriving a fifth time.
+Also:       two passages describing the new citation form contained one, which is the exact
+            shape of the exemption this commit deletes. `DecisionCitations` had carried an
+            exemption for a `<name>` placeholder that no longer exists anywhere in the corpus
+            and whose filter matched nothing. Rather than write a second exemption, both
+            passages now name a real obligation, so they resolve. The exemption is removed in
+            this commit rather than a later one because this is the file the obligation
+            citation reader is modelled on, and copying it forward would have copied the
+            exemption's shape. One reader now serves both markers, with the marker passed in,
+            so `Corpus.cs` still never contains either form.
+Tests:      325, up from 312. 13 of the new ones are `obligation-reconciles` and its proofs;
+            the rest are the reader shared with `decision-resolves`.
+Carried:    nothing new. Two rows opened here fall due later in this pass: the citation
+            residue at 3.0 and phase 3's expectations at 3.1.
+Notes:      the stale row the sign-off recorded is repaired here with its prior text in
+            `CHANGELOG.md`, which is what a sign-off could not do and 3.0 can.
+
+            `obligation-reconciles` declares no reach. It reconciles `BUILD_PLAN.md` against
+            itself and reaches no claim in the architecture, so no placement and no verdict
+            names it, and a reach declaration nothing uses is a declaration nothing keeps
+            current. Its floor sits on the rows, which carry the property; files opened is
+            context and carries none.
+
+### 3.0 planning - the multi-part note sweep                                 2026-09-09
+Not a checkpoint entry. It belongs to 3.0, which has not landed. The second commit of the
+            planning pass. This session committed code and may not sign it off.
+Why first:  this runs before the weighted-call budget is repaired rather than after it.
+            Repairing the budget first repairs one instance of a class whose size is unknown,
+            and a sweep run afterwards can only report how much was left. The budget is the
+            first and worst instance and it is repaired at the next commit, with the
+            population it belongs to already measured.
+Unit:       a note asserts more than one thing when it joins two or more clauses naming
+            different behaviours, artefacts or files, such that a mutation could falsify one
+            and leave the others true. Two attributes of one comparison, "columns and types
+            asserted against SCHEMA.md", are one thing measured two ways and are not counted.
+Predicted:  stated before the sweep ran and named rather than only counted. 25 multi-part
+            notes, range 20 to 30, the downward cause being that the component-access family
+            reads as one reconciliation stated four ways and the upward cause being that it
+            does not, because the four sources are four separate files and a reconciliation
+            could be dropped against one alone. And 4 notes carrying at least one clause
+            unreached by a test in the check's carrier class, range 2 to 8, of which one was
+            known: the weighted-call budget, whose third clause the phase 2 sign-off proved
+            unreached and whose first two sit in `LiveFeedTests` and `NewsFeedTests`, outside
+            the `NightlyCost` carrier. The other three were expected to be notes whose clauses
+            span two checks.
+Measured:   over the 42 PASS claims in `artifacts/phase-report.json` at 9f12d66, 29 notes are
+            multi-part and 13 are not. That is the top of the predicted range and it is there
+            for the upward cause named in advance: the component-access family is five notes
+            asserting a declaration against four separate documents, and each of the four is
+            separately breakable.
+            6 of the 29 carry at least one clause unreached by a test in the carrier class,
+            against a prediction of 4 in a range of 2 to 8. A seventh finding sits outside the
+            multi-part set and is the same fault in a single-clause note.
+Found:      seven, in two classes, and both have the same consequence: deleting the behaviour
+            leaves the named check green and the claim reading PASS.
+            The first class is a clause nothing asserts anywhere. **Weighted-call budget**,
+            third clause, that a night at the allowance stops before making a call. And **A
+            split or dividend not caught**, the atomicity clause, which is the obligation the
+            phase 1 sign-off already carried to 3.1 and which this sweep reaches independently.
+            The second class is a clause asserted outside the carrier, which runs, passes and
+            backs no verdict. **Weighted-call budget**, first two clauses, in `LiveFeedTests`
+            and `NewsFeedTests`. **Bar history kept**, both clauses, in `Bars/BarFetcherTests.cs`.
+            **Per-request timeout and the night's deadline**, first clause, in
+            `Providers/ProviderRequestTests.cs` and `Providers/EodhdBulkPriceFeedTests.cs`; its
+            second clause is reached. **Series state**, second clause, which is the corporate
+            action checker's property and sits in that check's carrier. And the seventh, the
+            single-clause one: **Corporate action checker** in the catalogue and again in the
+            read and write matrix, whose notes describe a declaration reconciled against the
+            row, the matrix row, SCHEMA's ownership and its own source, which is
+            `component-access`'s property and which `corporate-actions` does not perform at
+            all. Its reach declares both rows, so the reconciliation is satisfied and the
+            content is another check's.
+Sharper than the sign-off: the sign-off proved one clause unasserted by mutation. What the
+            carrier rule adds is that the budget's other two clauses back no verdict either,
+            and that four more claims have the same fault. The mutation the sign-off ran
+            understated the finding rather than describing it, and it understated it in the
+            direction the corpus says these faults always run: under-reporting.
+No instrument: this stays a measurement and does not become a check. A note is prose and
+            whether a clause is reached is a judgment about what a test asserts, not a parse.
+            `TheCarrierOfEveryCheckOwnsItsTestsAndNoOthers` already asserts the mechanism the
+            fault runs through; what it cannot say is whether the tests a carrier owns cover
+            what its notes claim. The findings become obligations instead, which is what the
+            rule this pass landed is for.
+Carried:    four new rows, all due 3.1 and all cited by 3.1's own text, being the four
+            second-class findings. The budget is repaired at the next commit and the atomicity
+            clause was already carried. 24 rows in the table, up from 20.
+Tests:      325, unchanged. This commit measures and records and changes no code.
+
+### 3.1 - the weighted-call stop asserted where nightly-cost reaches it      2026-09-09
+Not a checkpoint entry. It belongs to 3.1, which has not landed. The work is committed ahead
+            of the checkpoint that owes it, which `CLAUDE.md` permits and which is why the
+            commit subject names 3.1 rather than 3.0. Nothing here records 3.1 as landed: a
+            `.0` is not a due point and a checkpoint is landed by its own entry, not by an
+            obligation discharged early. This session committed code and may not sign it off.
+Built:      all three clauses of the **Weighted-call budget** note asserted inside
+            `NightlyCost`, which is `nightly-cost`'s carrier and therefore the only class
+            whose tests can back that claim. The third clause is new: a night is constructed
+            already at the allowance, with a bulk feed reporting the requests an earlier run
+            spent and throwing if it is ever asked for rows, and the night is asserted to exit
+            non-zero, to name the step it stopped before, to state what it had spent against
+            what it was allowed, to have asked the feed for nothing, and to have written no
+            run log row at all.
+Moved:      the first two clauses, rather than copied. They were asserted in `LiveFeedTests`
+            and `NewsFeedTests`, where they ran, passed and backed no verdict. Copying would
+            have left a number asserted in two places, which is the two-statements defect this
+            corpus refuses everywhere else, so each site now carries a comment saying where
+            the assertion went and why. The news leg is folded into the weighted-total
+            assertion, which now exercises all five feed roles at once: six requests and 316
+            weighted calls, up from five and 311, because news was counted in a separate class.
+Proved:     the mutation the phase 2 sign-off ran, repeated against this tree. Deleting the
+            stop in `Nightly.cs` now fails `nightly-cost` at
+            `ANightAlreadyAtItsAllowanceStopsBeforeItsNextStepAndSaysWhy`, 10 of 11 passing,
+            where at the sign-off it left the check green at 8 of 8 and the suite green at 312
+            of 312. The mutation was reverted and `Nightly.cs` is byte identical to the commit
+            before this one.
+Found:      warnings as errors refused the first form of the mutation. Replacing the condition
+            with a constant false produced CS0162 for unreachable code, so the branch was
+            deleted outright, which is what the sign-off did and is the sharper mutation in any
+            case. Worth writing down because it means this class of mutation cannot be made by
+            disabling a condition in this tree and has to be made by removing the code.
+            And the stop fires before `migrate`, not before `membership`. The first version of
+            the test asserted the wrong step name and failed, which is the test finding the
+            night's real first step rather than the step section 14 opens with. The assertion
+            names `migrate` and says why: the property is that the stop precedes every step,
+            and the empty run log is the other half of it.
+Measured:   over the 42 PASS claims, the Weighted-call budget note's 3 clauses are now 3 of 3
+            reached by the carrier, against 0 of 3 before. Tests 325, unchanged, being 3 added
+            to `NightlyCost` and 3 removed from the two classes they backed nothing from.
+            `nightly-cost` carries 11 tests, up from 8.
+Carried:    the four rows 3.0's sweep opened stand, all due 3.1. This discharges the fifth.
+
+### 3.1 - the membership index constraints asserted                          2026-09-09
+Not a checkpoint entry. It belongs to 3.1, which has not landed, and the work is committed
+            ahead of the checkpoint that owes it. This session committed code and may not
+            sign it off.
+Built:      five tests in `SchemaColumns`, which is `schema-columns`'s carrier and therefore
+            the only class whose tests back the `Stores :: Membership` claim its reach already
+            declared. Four are the sign-off's own proofs made permanent: a second span for a
+            constituent with no join date refused, a second span for a dated one refused, two
+            rows for one ticker both carrying no join date refused, and the control, three
+            distinct spans for one ticker accepted. The fifth asserts the index's form off
+            `sqlite_master` in the built store, that it is UNIQUE and folds the unknown, and
+            against the sentence `SCHEMA.md` states.
+            The inserts are direct rather than through `MembershipLoader`, because the loader's
+            statement carries `ON CONFLICT` against the same expression, so a legitimate re-run
+            upserts and never reaches the refusal. What is under test is the constraint.
+Found:      the first version asserted `membership_span` in the refusal message, and the two
+            mutations then failed the same three tests for two different reasons. SQLite names
+            the index in the message for an expression index and names the columns for a plain
+            one, so a message assertion made every refusal test fail the moment the index
+            changed form, whether or not the row was still refused. Three tests that all go red
+            for one reason are three tests saying one thing. The refusals now assert the codes,
+            19 and 2067, and the form is asserted once on its own.
+Proved:     two mutations against a migrated store, each reverted, the tree clean afterwards.
+            Dropping `UNIQUE` fails 4 of 12: all three refusals and the form. Dropping only the
+            `IFNULL` fold, keeping the index unique, fails 3 of 12: the two cases whose join
+            date is unknown, and the form. The dated case stays green under that mutation,
+            which is correct and is what shows the fold's own contribution rather than the
+            index's. The control stayed green under both, which is what stops a refusal that
+            refuses everything reading as a proof.
+Not guarded: the empty-string edge, deliberately. A literal empty string in `joined` collides
+            with the unknown and was confirmed to at the sign-off. `MembershipLoader` is the
+            sole declared writer, and what it binds comes from `IndexConstituent.Joined`, a
+            `DateOnly?` whose present values either parse as yyyy-MM-dd or throw, so the bound
+            value is DBNull or exactly ten characters and no path produces an empty string. A
+            guard would be code for a case the writer cannot reach. The reasoning rests
+            entirely on that type, so the type is asserted rather than described: the day it
+            becomes a string the test fails and the reader is told to reconsider the guard,
+            instead of finding the collision in a store. The declared-writer half is asserted
+            against SCHEMA's ownership row in the same test.
+Measured:   `schema-columns` carries 12 tests, up from 6. Tests 331, up from 325. Over the
+            migrated store, 1 index on `membership` and it is `membership_span`.
+Widened:    `schema-columns`'s roster row, which said columns and types and now says what the
+            check does, with prior text in `CHANGELOG.md`. A row saying less than its check
+            does is the same defect as one saying more, read from the other end.
+Carried:    the four rows 3.0's sweep opened stand, all due 3.1. This discharges the sixth of
+            the seven obligations that were due there.
+
+### 3.0 planning - the holes settled and phase 3's detail confirmed          2026-09-09
+Not a checkpoint entry. It belongs to 3.0, which has not landed. The last commit of the
+            planning pass. This session committed code and may not sign it off.
+Decided:    three entries in `DECISIONS.md`, one per hole the holes table assigns to 3.0.
+            **A heavy volume shelf creates a band of its own and also strengthens one it
+            coincides with**, which is what figure 9.1 says in its first step and its last step
+            separately, and which the four-sources decision already required: a source of
+            levels that could only rank would be three sources and a modifier. It is also the
+            reading the volume argument needs, because a range where almost nothing traded is
+            a statement only a band existing on volume alone can carry.
+            **The volume profile accumulates over the same sixty sessions as the level window**,
+            one window and not two, because a shelf drawn from a different span puts a band on
+            volume no other member of the level table can see and its share of the period
+            becomes a share of a different period. The moving averages stay the stated
+            exception, reading the full year, because an average is a price rather than a share.
+            **A retracement is drawn between the last swing high and the last swing low**. The
+            phrase "the retracements of the last two swings" reads equally as two swings of any
+            kind, which allows a retracement between two highs, and a fraction of the distance
+            between two highs retraces nothing. A window holding no swing of one kind produces
+            no retracements rather than retracements drawn from a substitute end.
+Citation pass: discharged, and the 1.8 judgement behind it was wrong. That entry said the 52
+            uncited decisions were mostly things the architecture states no rule about. Reading
+            the remaining sections found the opposite: nearly every one had a rule to sit at.
+Measured:   111 citations in `ARCHITECTURE.html` covering 85 of the 90 current decisions, from
+            39 covering 29 of 81 at 1.8. Placed across sections 1, 2, 4, 6, 9, 10, 11, 12, 13,
+            14, 15, 17, 18, 19 and 20. Five stand uncited and each is named in the obligations
+            table with the reason: the seam for a second universe, which is a data model
+            `SCHEMA.md` carries; the outward-request scan's carve-out, which is about a check's
+            internals; and three about how the build is run. A citation cannot be placed at a
+            rule that does not exist, and writing spec text to give a citation a home would be
+            moving the count rather than the coverage.
+Found:      the citation reader could not carry a decision name containing an ampersand from
+            `ARCHITECTURE.html` at all. Written properly as an entity it resolved to nothing;
+            written raw it would have put invalid markup in the document to satisfy a reader.
+            One decision has such a name and it had never been cited, which is why nothing had
+            met this. The document form is now decoded before matching, which is a no-op for
+            every name carrying no entity. This is the same class as the placeholder exemption
+            deleted at the first commit of this pass: a reader that cannot express what the
+            corpus contains, met by writing around it rather than by fixing the reader.
+Carried:    two rows discharged here, the citation pass and its residue. Four stand at 3.1 from
+            the sweep, plus the atomicity test, the fixture expectation sweep and 3.0's own
+            expectations. 24 rows in the table, 8 of them open.
+Tests:      331, unchanged. This commit settles rules and places citations and adds no test;
+            the reader repair is covered by `decision-resolves`, which would have gone red on
+            the first ampersand citation and did.
+Phase 3:    the checkpoint split from 3.1 to 3.7 is confirmed against the size the work turns
+            out to be and is unchanged. Nothing in the three rulings moves work between
+            checkpoints: the shelf ruling makes the level builder at 3.4 collect four candidate
+            kinds rather than three, which was already its shape; the window ruling ties 3.3's
+            profile to a number 3.4 already reads; and the retracement ruling is a rule 3.4
+            applies to swings 3.2 produces.
+Predicted:  phase 3's new claims, named rather than counted, for the reason 2.7 gives. No new
+            row in section 17: the level window row now states that the profile shares the
+            window rather than a second row stating a second window, so the phase adds no
+            limits claim. No new section 18 row: none of the three rulings describes a failure
+            the document does not already carry. The phase's claims are the catalogue and
+            matrix rows of the four components it builds, being the indicator engine, the swing
+            finder, the volume profile builder and the level builder, which is 8 claims, plus
+            the two level chart elements 1.3 left absent, the moving averages at 3.1 and the
+            bands at 3.4. 10 claims, and the count is expected to stay at 185.

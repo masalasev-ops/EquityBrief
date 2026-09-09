@@ -184,15 +184,7 @@ public class NewsFeedTests
         Assert.Null(failure.InnerException);
     }
 
-    [Fact]
-    public async Task TheNightsWeightedTotalCountsNewsAtWhatTheRunbookSays()
-    {
-        var feeds = NightFeeds.FromFixture(Folder());
-
-        await feeds.News.ArticlesAsync(From, To);
-
-        Assert.Equal(1, feeds.Requests);
-        Assert.Equal(ProviderWeights.News, feeds.WeightedCalls);
-        Assert.Equal(5, feeds.WeightedCalls);
-    }
+    // The news leg of the night's weighted total is in NightlyCost, folded into
+    // the assertion that exercises all five feed roles at once. It stood here
+    // and backed no verdict, for the reason the note in LiveFeedTests gives.
 }

@@ -44,7 +44,7 @@ Each is a place the architecture names something without saying what it is. They
 | The share of size per tranche | The plan places a position and never sizes one, yet the tranches carry shares that fall with distance, and no rule produces them | 4.0 |
 | The earnings setups' triggers | Three setups are named, each said to carry a trigger, an entry, a stop and a target; none of the four is specified | 4.0 |
 | The base rate's population and window | Stated as the universe figure for the same window, without saying whether it is every name-night, every index member, or every listing | 5.0 |
-| The six reason thresholds | Stated as proposals and known to flood, with calibration deliberately left to the run page's own record | 5.0, revisited from 5.6's data |
+| The six reason thresholds | Stated as proposals and known to flood, with calibration deliberately left to the run page's own record | 5.0 settles the proposals. The calibration is an operating obligation and not a checkpoint's (owes: The six reason thresholds calibrated from the nights they fired on), because 5.6 displays a record that nights accumulate and no checkpoint accumulates nights |
 | Which local model, and the section-to-lane assignment | The lane split is configuration by decision, and nothing says what the configuration's shape is | 6.0 |
 | How a research pass is recorded for a fixture | A pass must be reproducible without a network, which needs a recorded endpoint with a defined record format | 6.0 |
 
@@ -115,7 +115,7 @@ Contradiction D resolved: `Scope.Screens` keyed on table and subject as `Scope.F
 
 Contradiction F resolved per element rather than per mark, and each element named at the checkpoint that draws it: candles and the volume pane are asserted at 1.3, the moving averages at 3.1 and the bands at 3.4. The whole mark waiting for phase 3 would leave what exists unasserted for a phase and a half.
 
-One carried obligation re-pointed here from 1.5 and discharged: absolute path matching anywhere in a value rather than at position zero, which matters because `run_log.detail` is where exception text lands and exception text carries absolute paths mid-string.
+One carried obligation re-pointed here from 1.5 and discharged (owes: Absolute path matching anywhere in a value, not position zero), which matters because `run_log.detail` is where exception text lands and exception text carries absolute paths mid-string.
 
 **Done when** the page draws the fixture's sessions, the drawn candle count is asserted against the stored row count rather than eyeballed, and the API is proved to compute nothing.
 
@@ -126,7 +126,7 @@ One bulk request per night, storing bars for current members only. Retention dro
 
 `nightly-cost` implemented over both the shipped source and a recorded run, promoted on the roster, with the pending floor lowered in the same commit. `bar-append-only` given its owner exemption, with the negative proof asserting an undeclared file still fails.
 
-The `two-platform` widening falls due here, since this is the checkpoint that first depends on both shells behaving the same.
+The `two-platform` widening falls due here (owes: `two-platform` widened to what its roster row claims), since this is the checkpoint that first depends on both shells behaving the same.
 
 **Done when** a night runs end to end over the fixture, the cost check reports zero model calls and zero per-name requests, and the nightly script exits non-zero with a named step on any failure.
 
@@ -135,21 +135,21 @@ Refusal to the definition settled at 1.1: per name per night, that name's bar no
 
 The fixture-absent test inverted to assert present with the manifest checked, keeping a test that absence is still never a pass. The placement whose due point is this checkpoint converted to a check naming an instrument with declared reach, in this commit, because once `PROGRESS.md` records this checkpoint the reconciliation refuses a due point that has landed.
 
-One carried obligation discharged: the news feed probed for whether it is queryable by date without a ticker. The three manifest and path obligations that stood here are re-pointed to 1.1 and 1.3, because the first captured fixture arrives with 1.1's recorded-response double and an obligation owed at 1.5 would go unfixed across every manifest written from 1.1 onward.
+One carried obligation discharged (owes: News feed queryable by date without a ticker): the news feed probed for whether it answers by date at all. The three manifest and path obligations that stood here are re-pointed to 1.1 and 1.3, because the first captured fixture arrives with 1.1's recorded-response double and an obligation owed at 1.5 would go unfixed across every manifest written from 1.1 onward.
 
 **Done when** the gap fixture is refused with its date named, the clean fixture is unaffected, and the induced failure produces what the failure table promises.
 
 ### 1.6 The corporate action checker
 Splits and dividends feed, full-year refetch replacing the old series in one transaction. Contradiction C resolved: a column for the suspect state with its grain and owner declared in SCHEMA, so a failed check marks the name rather than passing silently.
 
-**The feed is captured before the parser is written, not after.** One request settles the payload's shape, and the checkpoint opens by spending it. 1.2 found a membership parser reading a field the provider does not send, which the fixture had agreed with for two checkpoints because the same session wrote both. A parser written first and given a fixture afterwards is a parser whose fixture is a transcript of what it already expects.
+**The feed is captured before the parser is written, not after** (owes: Splits and dividends parser checked against itself). One request settles the payload's shape, and the checkpoint opens by spending it. 1.2 found a membership parser reading a field the provider does not send, which the fixture had agreed with for two checkpoints because the same session wrote both. A parser written first and given a fixture afterwards is a parser whose fixture is a transcript of what it already expects.
 
 **Done when** an action in the fixture triggers a refetch, the replacement is atomic, a failure of the check itself marks the name rather than passing, and the action is read from a captured provider response rather than a constructed one.
 
 ### 1.7 The coverage measurement
 Two weeks of news across thirty names spread deliberately across the market-capitalisation range and not chosen from a watch list. Distinct publishers counted by frequency, each checked for whether its text can be retrieved.
 
-**The feed is captured before the parser is written, for the reason 1.6 states.** The measurement itself needs live responses, so this checkpoint spends the request first in any case; what it must not do is write the parser against a payload composed to suit it and keep the captured responses only as measurement input.
+**The feed is captured before the parser is written, for the reason 1.6 states** (owes: News parser checked against itself). The measurement itself needs live responses, so this checkpoint spends the request first in any case; what it must not do is write the parser against a payload composed to suit it and keep the captured responses only as measurement input.
 
 **Done when** the measurement is recorded with its sample named, the first draft of the company-news and industry source lists exists with a review date, and the news parser's fixture is a captured provider response rather than a constructed one. This is a measurement rather than an assumption: a large-company index guarantees coverage at the top and much less further down, and tuning the lists on the largest names alone starves the rest of the index invisibly.
 
@@ -239,12 +239,20 @@ Settles every hole this document's holes table assigns to 3.0, and takes a decis
 
 The holes are named there rather than repeated here. A checkpoint listing its own subset is a second statement of the table's contents, and it is the statement that goes stale: this one named two of the three it is now assigned, so a hole filed against 3.0 would have been settled at 3.0 only if somebody happened to read both.
 
+Carries out the citation pass re-pointed here from 1.8 (owes: Architecture cites its decisions by name at each rule), reading the remaining sections and deciding, decision by decision, whether the document states a rule that rests on each. Whatever residue stands afterwards is an open state rather than a closed one and is recorded as such (owes: The decisions the architecture states no rule about, named as such), because a figure carried from 0.5 to 1.8 to here without ever becoming a row is a figure nothing reads back.
+
+Also settles the three carries and the record inconsistency the phase 2 sign-off left, which is where the rule above this table came from: a deferral names what produces the evidence, and the reconciliation that asserts it in both directions.
+
 ### 3.1 The indicator engine and the averages on the chart
 Contradiction K repaired in `ARCHITECTURE.html` first, in its own commit, for all eight rows rather than the three this checkpoint would otherwise force. The moment `IndicatorEngine` declares its write, `component-access` produces a write nobody declared and a declaration with no cell behind it, which is two faults for one displaced letter.
 
 Migration creating `indicator`. The averages, the momentum readings, the typical daily move and the volume ratios, each row carrying the bar count it was computed from.
 
 The chart from 1.3 extended in place with the average lines drawn.
+
+Five obligations fall due here, and they fall due together because this is the first checkpoint after 2.7 that writes code and the first that writes fixture expectations. Two carried out of the phase 1 sign-off (owes: The refetch's atomicity asserted as a property rather than as a construct) and (owes: Every fixture expectation swept for whether a test reads it). Two carried out of the phase 2 sign-off (owes: The weighted-call stop asserted where `nightly-cost` reaches it) and (owes: The membership uniqueness asserted by a permanent test). And the expectations 3.0's rulings owe the fixture (owes: Phase 3's expectations owed for 3.0's rulings), which cannot be written before there is a stage to write them against.
+
+Four more come from 3.0's sweep of the claim notes, and they are one shape rather than four: a clause asserted by a test outside the check's carrier class backs no verdict, because a check's tests are the ones its carrier declares. Each is repaired by moving the assertion into the carrier or by naming the check that already holds it, and the second is sometimes the right answer. (owes: The retention clause asserted where `nightly-cost` reaches it), (owes: The retry policy figures asserted where `nightly-run` reaches them), (owes: The suspect marking asserted where `schema-columns` reaches it) and (owes: The corporate action checker's declaration claims named for the check that reaches them).
 
 **Done when** the indicator values match the fixture, a name with fewer than two hundred bars records its long average as not available with its bar count rather than as a number, and the chart draws the averages.
 
@@ -273,7 +281,7 @@ The level table with each band's members and dates, and the momentum readings on
 ### 3.6 The fixture widens to four names
 A mega-cap in a tight range, a mid-cap in a wide one, and a name that gapped, beside the existing name.
 
-**Done when** every phase 3 expectation holds for all four names, and the carried obligation on the volume shelf threshold is discharged: the threshold is whatever makes all four charts agree with where their volume visibly clusters, rather than the figure derived from one chart.
+**Done when** every phase 3 expectation holds for all four names, and the carried obligation on the volume shelf threshold is discharged (owes: Volume shelf threshold checked against four names): the threshold is whatever makes all four charts agree with where their volume visibly clusters, rather than the figure derived from one chart.
 
 ### 3.7 Phase 3 report
 **Done when** every phase 3 claim is PASS across four fixture names, and the predicted claim total is checked against the actual.
@@ -362,15 +370,21 @@ The plan-at-listing column is the one thing in this phase that cannot be added l
 ### 5.5 The forward return filler and the news pulse counter
 Migration creating `forward_return` and `news_pulse`. The five and twenty-one session outcomes filled as they mature, the base rate computed to the definition settled at 5.0, and the article count per name from one feed request.
 
+The pulse count answers the obligation 2.5 created (owes: One day of news exceeds one request at the provider's limit), whose evidence is already in hand: one live dated request returned a thousand articles over more than three thousand symbols and reached the provider's cap, so a count taken from one request is a count over whatever the cap happened to include. The counter carries a window or a page.
+
 **Done when** an immature row reads as not yet matured rather than as a blank or a zero, and the news pulse costs one request rather than one per name.
 
 ### 5.6 The run page
 The operational header, and each reason's record with the base rate pinned as the first row.
 
+This checkpoint builds the surface two operating obligations are read on (owes: The six reason thresholds calibrated from the nights they fired on) and (owes: The three reason records that need resolved setups). Neither is due at a checkpoint, because no checkpoint accumulates nights or resolved setups; what 5.6 owes is that each trigger is legible on the page when it fires, which is the count of nights beside the reason record and the resolved count against its minimum.
+
 **Done when** no forward-return figure is shown without the base rate beside it, and a reason below the minimum shows a dashed outline carrying its count rather than a rate.
 
 ### 5.7 Phase 5 report
-**Done when** every phase 5 claim is PASS, and a week of unattended nights has run with the list current each morning.
+The week of unattended nights is what produces the posting hour (owes: The provider's posting hour for the day's bulk file, measured from live fetches). It stood at 3.7, which is the phase 3 report and produces no evenings; a week of nights that ran on a schedule is a week of observations of when the file actually appeared, and it is the first thing in the plan that yields several.
+
+**Done when** every phase 5 claim is PASS, a week of unattended nights has run with the list current each morning, and the posting hour is recorded from those nights rather than from documentation.
 
 ---
 
@@ -379,12 +393,12 @@ The operational header, and each reason's record with the base rate pinned as th
 **Visible output at 6.1.** The numbers section fills from real filings.
 
 ### 6.0 Planning
-Settles which local model, the section-to-lane configuration shape, and how a research pass is recorded so a fixture can replay it without a network. Discharges the source-lists obligation from 1.7 against the coverage measurement.
+Settles which local model, the section-to-lane configuration shape, and how a research pass is recorded so a fixture can replay it without a network. Discharges the source-lists obligation from 1.7 against the coverage measurement (owes: Source lists reviewed against measured coverage), whose evidence has been in hand since 1.7 and which sits here because 6.0 is where the lists are next used rather than because anything is waited on.
 
 ### 6.1 The fundamentals fetcher and the numbers section
 Migration creating `fundamentals`, one row per filing date, never updated. The quarters, balance sheet, segments and guidance, each with the filing date it came from.
 
-**Done when** the numbers section renders, a stored copy predating a filing triggers a fetch and one that does not triggers nothing, and the bulk fundamentals probe is recorded either way.
+**Done when** the numbers section renders, a stored copy predating a filing triggers a fetch and one that does not triggers nothing, and the bulk fundamentals probe is recorded either way (owes: Bulk fundamentals endpoint probed on the operator's key). The probe is one live call on a key the credential path has held since 2.1, so nothing here waits on evidence.
 
 ### 6.2 The source store and admissibility
 Migration creating `source_document`. The admissibility test running after the fetch and before storage: denied categories, a publish date inside the window, and a preference for primary sources. A document that fails is kept as a row with its refusal reason and no body.
@@ -403,6 +417,8 @@ The local model writing the short version and the figure keys from numbers, at n
 
 ### 6.5 The research runner
 Filings and news read by ticker, the theme record read, the narrative sections written, every document stored as it is fetched.
+
+A pass that reproduces byte for byte from a recording is what makes the lane boundary measurable rather than asserted (owes: The research lane boundary measured against the fixture both ways), so each section can be run on both models against the same evidence and compared.
 
 **Done when** every claim in a written section names a stored source, and a pass over the fixture reproduces byte for byte from the recorded endpoint.
 
@@ -475,23 +491,36 @@ The model's own entry and exit proposal stored beside the computed one and score
 
 ## Carried obligations
 
-Recorded when created, not remembered. An obligation names a due point this document has.
+Recorded when created, not remembered. Every row is named, and the name is what a document or a comment cites, in the form `owes:` followed by the exact name and nothing else.
 
-| Obligation | Created at | Due at |
-|---|---|---|
-| Architecture cites its decisions by name at each rule | 0.5 | 1.8, discharged for the rules phase 1 reaches; the remainder carried to 3.0 |
-| Splits and dividends parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.6, discharged |
-| News parser checked against itself, its only fixture written by the session writing the parser | 1.2 | 1.7, discharged |
-| `two-platform` widened to what its roster row claims | 0.7 review | 1.4, discharged |
-| Absolute path matching anywhere in a value, not position zero | 0.7 review | 1.3 |
-| News feed queryable by date without a ticker | authored with the architecture | 1.5, discharged |
-| Volume shelf threshold checked against four names | authored with the architecture | 3.6 |
-| Source lists reviewed against measured coverage | 1.7 | 6.0 |
-| Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 6.1 |
-| The refetch's atomicity asserted as a property rather than as a construct | 1.8 | 3.1 |
-| Every file under `fixtures/` named as an expectation swept for whether a test reads it | 1.8 | 3.1 |
-| The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 bounded, 2.6 bounded again; the hour needs observations across several evenings and is carried to 3.7 |
-| One day of news exceeds one request at the provider's limit, so the pulse count needs a window or a page | 2.5 | 5.5 |
+**Each row is one of two forms and never neither, and `obligation-reconciles` reads the form off the cells rather than off what the row calls itself.** A checkpoint row names in `Due at` a checkpoint that produces the evidence, and that checkpoint's own text cites the obligation back. An operating row carries the literal `operating` and states in the last column a numeric trigger, the surface the trigger is read on, and the checkpoint that builds that surface, whose text carries the citation. Its last column opens with the trigger and names the surface after the words `read on the`, so the check reads the trigger from a position rather than guessing which of several numbers in a sentence is the one that fires. A row carrying a checkpoint due point and a trigger with a surface is neither form: it reads as tracked from either end and is chased from neither.
+
+| Obligation | Created at | Due at | What produces the evidence |
+|---|---|---|---|
+| **Architecture cites its decisions by name at each rule** | 0.5 | 3.0, discharged | 3.0 read the remaining sections and decided, decision by decision, whether the document states a rule that rests on each. 111 citations covering 85 of the 90 current decisions, from 39 covering 29 of 81. Discharged at 1.8 for the rules phase 1 reaches and here for the rest |
+| **Splits and dividends parser checked against itself** | 1.2 | 1.6, discharged | 1.6 captures the feed before the parser is written, which is what makes a fixture the parser did not author |
+| **News parser checked against itself** | 1.2 | 1.7, discharged | 1.7 captures the feed before the parser is written, for the reason 1.6 states |
+| **`two-platform` widened to what its roster row claims** | 0.7 review | 1.4, discharged | 1.4 is the first checkpoint that depends on both shells behaving the same |
+| **Absolute path matching anywhere in a value, not position zero** | 0.7 review | 1.3, discharged | 1.3 is where exception text first reaches `run_log.detail`, and exception text carries absolute paths mid-string |
+| **News feed queryable by date without a ticker** | authored with the architecture | 1.5, discharged | 1.5 puts the question to the feed |
+| **Volume shelf threshold checked against four names** | authored with the architecture | 3.6 | 3.6 widens the fixture to four names of different character, and the widening is the evidence |
+| **Source lists reviewed against measured coverage** | 1.7 | 6.0 | evidence in hand: the coverage measurement taken at 1.7 across thirty names spread over the capitalisation range. Nothing waits on evidence; 6.0 is where the lists are next used |
+| **Bulk fundamentals endpoint probed on the operator's key** | authored with the architecture | 6.1 | one live call on the key the credential path has held since 2.1. Nothing waits on evidence, and 6.1's done condition records the probe either way |
+| **The refetch's atomicity asserted as a property rather than as a construct** | 1.8 | 3.1 | no evidence is waited on; the test is the evidence, and 3.1 is where the next expectations are written |
+| **Every fixture expectation swept for whether a test reads it** | 1.8 | 3.1 | as above. Grouped with the next expectations rather than deferred for want of evidence |
+| **The provider's posting hour for the day's bulk file, measured from live fetches** | 2.0 | 5.7 | 5.7's done condition is a week of unattended nights, which is what produces evenings of observation. Bounded at 2.1 and again at 2.6. It stood at 3.7, which is the phase 3 report and produces no evenings |
+| **One day of news exceeds one request at the provider's limit** | 2.5 | 5.5 | evidence in hand: 2.5's live request returned 1,000 articles over 3,232 symbols and reached the provider's cap. 5.5 builds the counter that has to answer it |
+| **The weighted-call stop asserted where `nightly-cost` reaches it** | 2.7 sign-off | 3.1, discharged | 3.1 constructs a night at the allowance, which is what makes the stop observable rather than read. All three clauses of the note now sit in the carrier, and deleting the stop turns `nightly-cost` red |
+| **The membership uniqueness asserted by a permanent test** | 2.7 sign-off | 3.1, discharged | 3.1 puts the three refusals and the control against a store the shipped runner migrated, and asserts the index's form off the built store, so dropping the uniqueness and dropping the fold fail different sets |
+| **The decisions the architecture states no rule about, named as such** | 3.0 | 3.0, discharged | closed on the reading. Five stand uncited and each is a decision the document states no rule about: the seam for a second universe, which is a data model SCHEMA carries and no rule here rests on; the outward-request scan's carve-out, which is about a check's internals; and three about how the build is run, being clean spec edits, a rule never blocking a fix, and the solution file format. A citation cannot be placed at a rule that does not exist, and adding one to create a home for a citation would be writing spec text to satisfy a count |
+| **Phase 3's expectations owed for 3.0's rulings** | 3.0 | 3.1 | 3.1 writes the next fixture expectations, which is the first point at which a ruling 3.0 took is assertable against the fixture |
+| **The retention clause asserted where `nightly-cost` reaches it** | 3.0 sweep | 3.1 | 3.1 moves the assertion into the carrier, or the claim names the check that holds it. Retention is asserted in `Bars/BarFetcherTests.cs`, which is not `nightly-cost`'s carrier, so the clause backs no verdict |
+| **The retry policy figures asserted where `nightly-run` reaches them** | 3.0 sweep | 3.1 | as above. The three attempts, the doubling wait and both bounds are asserted in `Providers/ProviderRequestTests.cs` and `Providers/EodhdBulkPriceFeedTests.cs`, and the claim names `nightly-run` |
+| **The suspect marking asserted where `schema-columns` reaches it** | 3.0 sweep | 3.1 | as above. The series state claim's second clause is the corporate action checker's property and sits in that check's carrier |
+| **The corporate action checker's declaration claims named for the check that reaches them** | 3.0 sweep | 3.1 | 3.1 either moves the two claims to `component-access`, with both reach declarations moved with them, or `corporate-actions` asserts the declaration itself. Its catalogue and matrix notes describe a reconciliation its own tests do not perform |
+| **The research lane boundary measured against the fixture both ways** | authored with the architecture | 6.5 | 6.5 is where a pass over the fixture reproduces byte for byte from the recorded endpoint, which is what lets each section be run both ways and compared. The decision named phase 6 and this names the checkpoint inside it that produces the recording, which sharpens the point rather than moving it |
+| **The six reason thresholds calibrated from the nights they fired on** | 5.0 | operating | 60 nights of listings, read on the run page, which 5.6 builds. 60 because it is the quarter of trading the level window already uses, long enough that a distribution of fired counts is not one week's weather. No checkpoint accumulates nights, so 5.6 makes the trigger readable rather than producing it |
+| **The three reason records that need resolved setups** | authored with the architecture | operating | 250 resolved setups, which is the minimum section 17 already states, read on the run page, which 5.6 builds and 7.5 fills with verdicts. Phase 7 arriving does not supply months of accumulation; phase 5's storage obligation is the mitigation |
 
 **Carried out of the phase 1 sign-off.** Two defects found by breaking a passing claim and
 watching the suite stay green. Neither falsifies shipped behaviour, so under the stopping rules
