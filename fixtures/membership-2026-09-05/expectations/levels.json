@@ -1,0 +1,370 @@
+{
+ "stage": "levels",
+ "derivedFrom": "figure 9.1's five steps and the decisions they cite, applied to the committed bar files outside this repository and without running the level builder. The four candidate sources collected over the last sixty sessions, merged where two are closer than half a typical day's move, every session that reached a band added as a touch, roles assigned against the last close and the nearest on each side marked, and the strength scored. A builder merging on the wrong distance would still agree with a band set taken from itself.",
+ "tables": [
+  "level"
+ ],
+ "window": {
+  "sessions": 60,
+  "note": "the level window, the same sixty sessions the volume profile accumulates over. Swings are taken from inside it and only where confirmed on or before the as-of date, which is what stops a band resting on a peak nobody could have seen."
+ },
+ "namesComputed": [
+  "AAPL",
+  "KEYS",
+  "MSFT"
+ ],
+ "asOf": {
+  "AAPL": "2026-09-04",
+  "KEYS": "2026-09-04",
+  "MSFT": "2026-09-04"
+ },
+ "close": {
+  "byName": {
+   "AAPL": "319.97",
+   "KEYS": "327.21",
+   "MSFT": "499.7"
+  },
+  "note": "the last session's close, which is what roles are assigned against."
+ },
+ "mergeDistance": {
+  "byName": {
+   "AAPL": "3.81695",
+   "KEYS": "5.63825",
+   "MSFT": "5.91215"
+  },
+  "note": "half a typical day's move, being the average true range at the as-of session rounded to the store's four places and halved. Stated per name because it is the number the merge turns on and it differs by name, which is what makes it a distance rather than a threshold."
+ },
+ "counts": {
+  "AAPL": {
+   "bands": 5,
+   "support": 3,
+   "resistance": 2,
+   "immediate": 2,
+   "anchoredOnAnAverageAlone": 1
+  },
+  "KEYS": {
+   "bands": 4,
+   "support": 2,
+   "resistance": 2,
+   "immediate": 2,
+   "anchoredOnAnAverageAlone": 0
+  },
+  "MSFT": {
+   "bands": 11,
+   "support": 10,
+   "resistance": 1,
+   "immediate": 2,
+   "anchoredOnAnAverageAlone": 2
+  }
+ },
+ "rows": {
+  "format": "low_edge|high_edge|role|immediate|strength|has_non_average_anchor",
+  "note": "every band for every name, in the order the primary key sorts them. A zero width band is a real band: a single candidate with nothing within half a typical day's move of it is a level at one price, which is how the worked example states a resistance at 996 and another at 1057.",
+  "byName": {
+   "AAPL": [
+    "273.5141|273.5141|support|0|2|1",
+    "283.439|283.439|support|0|1|0",
+    "299.7415|320.28|support|1|57|1",
+    "334.7013|334.7013|resistance|1|2|1",
+    "344.2731|344.2731|resistance|0|2|1"
+   ],
+   "KEYS": [
+    "288.5134|293.55|support|0|3|1",
+    "300.87|332.78|support|1|59|1",
+    "366.41|366.41|resistance|1|3|1",
+    "374.963|374.963|resistance|0|2|1"
+   ],
+   "MSFT": [
+    "348.5438|348.5438|support|0|2|1",
+    "369.6983|378.1601|support|0|14|1",
+    "386.6219|386.6219|support|0|2|1",
+    "394.8268|395.0838|support|0|4|1",
+    "405.2271|405.2271|support|0|2|1",
+    "429.3729|429.3729|support|0|1|0",
+    "443.5621|443.5621|support|0|1|0",
+    "476.2534|476.2534|support|0|3|1",
+    "485.1401|485.1401|support|0|2|1",
+    "492.1166|501.9168|support|1|20|1",
+    "507.9797|517.78|resistance|1|10|1"
+   ]
+  }
+ },
+ "members": {
+  "format": "kind|price|date",
+  "note": "every member of every band, keyed by the band's low edge, in the order the stored JSON carries them. Touches are members and they are the bulk of them, because a band the price has visited forty times has forty pieces of evidence for it.",
+  "byName": {
+   "AAPL": {
+    "273.5141": [
+     "swing low|273.5141|2026-06-25",
+     "touch|273.5141|2026-06-25"
+    ],
+    "283.439": [
+     "sma200|283.439|2026-09-04"
+    ],
+    "299.7415": [
+     "touch|300.221|2026-06-16",
+     "touch|301.8097|2026-06-17",
+     "touch|300.311|2026-06-18",
+     "swing high|302.1594|2026-06-22",
+     "touch|302.1594|2026-06-22",
+     "touch|301.3801|2026-06-23",
+     "touch|309.1534|2026-07-02",
+     "touch|306.7355|2026-07-06",
+     "touch|309.8827|2026-07-07",
+     "touch|306.7854|2026-07-08",
+     "touch|307.8944|2026-07-09",
+     "touch|311.901|2026-07-10",
+     "touch|315.5079|2026-07-13",
+     "touch|311.6412|2026-07-14",
+     "touch|317.0466|2026-07-15",
+     "swing low|319.0748|2026-07-23",
+     "touch|319.0748|2026-07-23",
+     "swing low|299.7415|2026-07-31",
+     "touch|299.7415|2026-07-31",
+     "touch|302.2992|2026-08-03",
+     "touch|301.0603|2026-08-04",
+     "touch|305.4066|2026-08-05",
+     "touch|308.9635|2026-08-06",
+     "swing high|316.0175|2026-08-06",
+     "touch|310.4722|2026-08-07",
+     "touch|304.61|2026-08-10",
+     "touch|302.79|2026-08-11",
+     "swing low|300.57|2026-08-12",
+     "touch|300.57|2026-08-12",
+     "touch|302.05|2026-08-13",
+     "touch|304.3|2026-08-14",
+     "touch|302.94|2026-08-17",
+     "touch|305.74|2026-08-18",
+     "touch|309.6|2026-08-19",
+     "retracement 78.6|304.7879|2026-08-20",
+     "retracement 61.8|308.0992|2026-08-20",
+     "retracement 50|310.425|2026-08-20",
+     "touch|310.65|2026-08-20",
+     "retracement 38.2|312.7508|2026-08-20",
+     "retracement 23.6|315.6284|2026-08-20",
+     "swing high|320.28|2026-08-20",
+     "touch|307.01|2026-08-21",
+     "touch|309.97|2026-08-24",
+     "touch|308.21|2026-08-25",
+     "touch|308.8|2026-08-26",
+     "touch|309.4|2026-08-27",
+     "touch|315.45|2026-08-28",
+     "touch|312.8|2026-08-31",
+     "touch|314.73|2026-09-01",
+     "shelf|307.1246|2026-09-04",
+     "shelf|310.6626|2026-09-04",
+     "sma20|313.14|2026-09-04",
+     "sma50|314.9878|2026-09-04",
+     "touch|317.86|2026-09-04"
+    ],
+    "334.7013": [
+     "swing high|334.7013|2026-07-17",
+     "touch|334.7013|2026-07-17"
+    ],
+    "344.2731": [
+     "swing high|344.2731|2026-07-29",
+     "touch|344.2731|2026-07-29"
+    ]
+   },
+   "KEYS": {
+    "288.5134": [
+     "swing low|293.55|2026-07-29",
+     "touch|293.55|2026-07-29",
+     "sma200|288.5134|2026-09-04"
+    ],
+    "300.87": [
+     "touch|328.72|2026-06-11",
+     "touch|328.66|2026-06-26",
+     "touch|327.039|2026-06-29",
+     "touch|311.32|2026-07-02",
+     "touch|316.565|2026-07-06",
+     "touch|306.01|2026-07-07",
+     "swing low|305.42|2026-07-08",
+     "touch|305.42|2026-07-08",
+     "touch|321.3|2026-07-09",
+     "touch|318.1|2026-07-10",
+     "touch|318.52|2026-07-13",
+     "swing high|332.35|2026-07-13",
+     "touch|322.57|2026-07-14",
+     "touch|316.11|2026-07-15",
+     "touch|310.3|2026-07-16",
+     "swing low|300.87|2026-07-17",
+     "touch|300.87|2026-07-17",
+     "touch|313.2|2026-07-20",
+     "touch|319.09|2026-07-21",
+     "touch|323.11|2026-07-22",
+     "touch|324.62|2026-07-23",
+     "swing high|332.78|2026-07-23",
+     "touch|315.32|2026-07-24",
+     "touch|305.77|2026-07-27",
+     "touch|309.99|2026-07-28",
+     "touch|307.81|2026-07-29",
+     "touch|305.5|2026-07-30",
+     "touch|317.27|2026-07-31",
+     "touch|311.8|2026-08-03",
+     "touch|331.76|2026-08-04",
+     "touch|330.11|2026-08-06",
+     "touch|332.64|2026-08-18",
+     "touch|314.52|2026-08-19",
+     "touch|313.195|2026-08-20",
+     "touch|310.27|2026-08-21",
+     "swing low|306.852|2026-08-24",
+     "touch|306.852|2026-08-24",
+     "touch|313.865|2026-08-25",
+     "touch|321.03|2026-08-26",
+     "retracement 78.6|311.2696|2026-08-27",
+     "retracement 61.8|314.7376|2026-08-27",
+     "retracement 50|317.1735|2026-08-27",
+     "touch|319.41|2026-08-27",
+     "retracement 38.2|319.6094|2026-08-27",
+     "retracement 23.6|322.6233|2026-08-27",
+     "swing high|327.495|2026-08-27",
+     "touch|318.05|2026-08-28",
+     "touch|319.17|2026-08-31",
+     "touch|316.2|2026-09-01",
+     "touch|313.96|2026-09-02",
+     "touch|312|2026-09-03",
+     "shelf|320.0092|2026-09-04",
+     "shelf|324.0799|2026-09-04",
+     "touch|324.2|2026-09-04",
+     "sma50|326.1178|2026-09-04",
+     "sma20|330.567|2026-09-04"
+    ],
+    "366.41": [
+     "swing high|366.41|2026-08-17",
+     "touch|366.41|2026-08-17"
+    ],
+    "374.963": [
+     "swing high|374.963|2026-06-22",
+     "touch|374.963|2026-06-22"
+    ]
+   },
+   "MSFT": {
+    "348.5438": [
+     "swing low|348.5438|2026-06-25",
+     "touch|348.5438|2026-06-25"
+    ],
+    "369.6983": [
+     "touch|376.611|2026-06-17",
+     "touch|372.5786|2026-06-18",
+     "touch|369.9735|2026-06-23",
+     "touch|375.9024|2026-06-26",
+     "touch|373.447|2026-06-30",
+     "touch|374.1856|2026-07-01",
+     "swing low|372.6485|2026-07-09",
+     "touch|372.6485|2026-07-09",
+     "touch|377.9385|2026-07-14",
+     "swing low|376.6809|2026-07-23",
+     "touch|376.6809|2026-07-23",
+     "shelf|369.6983|2026-09-04",
+     "shelf|378.1601|2026-09-04"
+    ],
+    "386.6219": [
+     "shelf|386.6219|2026-09-04"
+    ],
+    "394.8268": [
+     "swing high|394.8268|2026-07-07",
+     "touch|394.8268|2026-07-07",
+     "shelf|395.0838|2026-09-04"
+    ],
+    "405.2271": [
+     "swing high|405.2271|2026-07-16",
+     "touch|405.2271|2026-07-16"
+    ],
+    "429.3729": [
+     "sma200|429.3729|2026-09-04"
+    ],
+    "443.5621": [
+     "sma50|443.5621|2026-09-04"
+    ],
+    "476.2534": [
+     "swing low|476.2534|2026-08-18",
+     "touch|476.2534|2026-08-18"
+    ],
+    "485.1401": [
+     "retracement 78.6|485.1401|2026-08-28"
+    ],
+    "492.1166": [
+     "touch|498.5015|2026-08-04",
+     "touch|497.3038|2026-08-05",
+     "touch|500.6176|2026-08-06",
+     "touch|497.7929|2026-08-07",
+     "touch|501.3262|2026-08-10",
+     "touch|498.6114|2026-08-11",
+     "touch|500.5577|2026-08-12",
+     "touch|500.398|2026-08-13",
+     "touch|492.992|2026-08-14",
+     "touch|492.44|2026-08-25",
+     "touch|497.4|2026-08-26",
+     "retracement 61.8|492.1166|2026-08-28",
+     "retracement 50|497.0167|2026-08-28",
+     "retracement 38.2|501.9168|2026-08-28",
+     "touch|496.78|2026-09-01",
+     "touch|493.81|2026-09-02",
+     "touch|500.8|2026-09-03",
+     "sma20|495.3393|2026-09-04",
+     "touch|499.36|2026-09-04"
+    ],
+    "507.9797": [
+     "swing high|512.7647|2026-08-10",
+     "touch|512.7647|2026-08-10",
+     "retracement 23.6|507.9797|2026-08-28",
+     "swing high|517.78|2026-08-28",
+     "touch|517.78|2026-08-28",
+     "touch|512.19|2026-08-31",
+     "touch|515.65|2026-09-03",
+     "touch|511|2026-09-04"
+    ]
+   }
+  }
+ },
+ "workedBand": {
+  "name": "AAPL",
+  "lowEdge": "299.7415",
+  "highEdge": "320.28",
+  "role": "support",
+  "immediate": 1,
+  "strength": 57,
+  "memberCount": 54,
+  "membersByKind": {
+   "retracement": 5,
+   "shelf": 2,
+   "sma20": 1,
+   "sma50": 1,
+   "swing": 6,
+   "touch": 39
+  },
+  "note": "the immediate support band, and the one the strength score is worth following on. One point per member, touches included, plus one for a member whose evidence occurred in the last twenty sessions, plus one where a retracement and a swing are both anchors, plus one where the band holds a shelf. The band contains the close and its low edge is below it, which is what makes it support rather than resistance and what makes it the nearest support at no distance at all."
+ },
+ "rulings": {
+  "profileWindow": {
+   "sessions": 60,
+   "note": "the profile accumulates over the same sixty sessions the level window uses, and this is the first checkpoint where that is observable rather than stated: a band resting on a shelf is a band whose member came from the profile, and the two would disagree if the windows did."
+  },
+  "retracementEnds": {
+   "band": {
+    "name": "AAPL",
+    "lowEdge": "299.7415",
+    "kinds": [
+     "retracement 23.6",
+     "retracement 38.2",
+     "retracement 50",
+     "retracement 61.8",
+     "retracement 78.6"
+    ]
+   },
+   "note": "the five retracements are drawn between the window's last swing high and its last swing low, in whichever order they occurred, so all five land together and the set is the one that measures from the end the move finished at."
+  },
+  "shelfCreatesABand": {
+   "bands": [
+    {
+     "name": "MSFT",
+     "lowEdge": "386.6219",
+     "highEdge": "386.6219",
+     "strength": 2
+    }
+   ],
+   "note": "a band whose only anchor is a volume shelf, which is a band on volume alone. It is the case the ruling exists for: under the other reading, that a shelf only ranks, this band would not exist and the range would be something the report cannot state. One name in this fixture has one, which is why the ruling is assertable here rather than at 3.6."
+  }
+ }
+}

@@ -1132,3 +1132,13 @@ Now: the same two passages, each stating the band count and citing the decision 
 Why the band count is stated in that row rather than in a row of its own: a new row in section 17 is a new claim, and the count is read by nothing except this threshold. Stating it where the threshold is stated puts the two numbers a reader has to hold together in one cell, and it is the same move 3.0 made when it put the profile's window into the level window row rather than writing a second window row.
 
 Why twenty: section 15.5 already describes a support band holding a fifth of the period's volume in a twentieth of its price range, so the figure was read out of the document rather than invented beside it. A fixed count rather than a fixed price width, because the threshold is one number for all five hundred names and a width in money puts three bands on a forty dollar name and three hundred on a four thousand dollar one.
+
+### 2026-09-09 - BUILD_PLAN.md - the expectations owed for 3.0's rulings, discharged
+Corrects: the row's producer cell, which named what 3.4 would do and could not yet say what it did.
+
+Was:
+> | **Phase 3's expectations owed for 3.0's rulings** | 3.0 | 3.4 | 3.4 builds the level builder, which is the first point at which all three of 3.0's rulings are assertable against the fixture: the shelf ruling decides what the builder collects, the retracement ruling decides what it draws between, and the profile window ruling is only observable where a band is built from a shelf. It was written as 3.1 by the pass that landed the rule, and 3.1 can assert none of the three: the indicator engine reads no profile, no swing and no shelf |
+
+Now: the same row marked discharged, with the three places each ruling is read in the levels expectation named.
+
+Why: the row's own rule is that a producer cell says what produces the evidence, and once the evidence exists the cell has to say where it is. The band it names, MSFT at 386.6219, is the one whose only anchor is a volume shelf, so it exists under the ruling 3.0 took and does not exist under the one it rejected. A discharge that pointed at the checkpoint rather than at the band would be a discharge nobody could check.

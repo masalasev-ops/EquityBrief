@@ -46,6 +46,8 @@ public class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Swing finder"),
             CheckReach.Key(Scope.CatalogueTable, "Volume profile builder"),
             CheckReach.Key(Scope.MatrixTable, "Volume profile builder"),
+            CheckReach.Key(Scope.CatalogueTable, "Level builder"),
+            CheckReach.Key(Scope.MatrixTable, "Level builder"),
         ]);
 
     static IReadOnlyList<ArchitectureTable> Tables() =>

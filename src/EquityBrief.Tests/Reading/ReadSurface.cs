@@ -32,6 +32,7 @@ public class ReadSurface
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane"),
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, the moving averages"),
             CheckReach.Key("15.5 The mark vocabulary", "Volume profile"),
+            CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -521,6 +522,84 @@ public class ReadSurface
             renderer.VolumeProfile("TEST", [new ProfileBand(22m, 22m, 100, 0.1)], new PriceAxis(10, 40)));
 
         Assert.Contains("which is not a band", refusal.Message, StringComparison.Ordinal);
+    }
+
+    // ---- 3.4, the level bands on the chart ----
+
+    static ChartBand[] Shading() =>
+    [
+        new(20m, 22m, "support", false, 3),
+        new(26m, 26m, "support", true, 9),
+        new(34m, 36m, "resistance", true, 5),
+    ];
+
+    [Fact]
+    public void TheBandsAreDrawnBehindTheCandlesAndNotOverThem()
+    {
+        // Section 15.5's fourth level chart element, and the reason the bands
+        // are the point of the mark: a table of levels is a list of numbers, and
+        // the same levels drawn behind the price show which ones the price has
+        // respected.
+        //
+        // Behind is asserted by position in the markup, because SVG paints in
+        // document order and there is nowhere else the answer lives. A band
+        // drawn last covers the candles it is a statement about.
+        var svg = new MarkRenderer().LevelChart("TEST", Wide(), null, Shading());
+
+        var bands = svg.IndexOf("class=\"level-bands\"", StringComparison.Ordinal);
+        var candles = svg.IndexOf("class=\"candle\"", StringComparison.Ordinal);
+        var volume = svg.IndexOf("class=\"volume-pane\"", StringComparison.Ordinal);
+
+        Assert.True(bands > 0 && candles > 0);
+        Assert.True(bands < candles, "The level bands are drawn after the candles, so they cover the price.");
+        Assert.True(bands < volume);
+
+        Assert.Equal(3, Regex.Matches(svg, "class=\"level-band\"").Count);
+
+        // Each band carries its role in words as well as in hue, so a reader who
+        // cannot separate the two colours still reads it, and the drawn count is
+        // stated in the description a reader who cannot see the picture gets.
+        Assert.Contains("data-role=\"support\"", svg, StringComparison.Ordinal);
+        Assert.Contains("data-role=\"resistance\"", svg, StringComparison.Ordinal);
+        Assert.Contains("3 level band(s) shaded behind them", svg, StringComparison.Ordinal);
+        Assert.Contains("data-strength=\"9\"", svg, StringComparison.Ordinal);
+
+        // A band of one price is a real band and becomes a rule rather than a
+        // rectangle of no height, which draws nothing.
+        var heights = Regex.Matches(svg, "class=\"level-band\"[^/]*height=\"([0-9.]+)\"")
+            .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(3, heights.Length);
+        Assert.All(heights, height => Assert.True(height >= 1, $"A band was drawn {height} high, which is nothing."));
+    }
+
+    [Fact]
+    public void SupportAndResistanceAreTheOnlyTwoHuesAndTheImmediateBandIsStronger()
+    {
+        // The one place in the system those hues appear.
+        // see: Support and resistance own two hues and nothing else uses them
+        var svg = new MarkRenderer().LevelChart("TEST", Wide(), null, Shading());
+
+        var fills = Regex.Matches(svg, "class=\"level-band\"[^/]*fill=\"([^\"]+)\" fill-opacity=\"([0-9.]+)\"")
+            .Select(match => (Hue: match.Groups[1].Value, Opacity: double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture)))
+            .ToArray();
+
+        Assert.Equal(3, fills.Length);
+        Assert.Equal(2, fills.Select(fill => fill.Hue).Distinct(StringComparer.Ordinal).Count());
+        Assert.Contains(fills, fill => fill.Hue.Contains("--support", StringComparison.Ordinal));
+        Assert.Contains(fills, fill => fill.Hue.Contains("--resistance", StringComparison.Ordinal));
+
+        // The immediate band on each side reads stronger, and it is a second
+        // channel rather than a second hue.
+        Assert.True(fills[1].Opacity > fills[0].Opacity, "The immediate band is not drawn stronger than the one beyond it.");
+
+        // And a band given inverted edges is refused rather than drawn as a
+        // rectangle of negative height, which renders as nothing at all.
+        var refusal = Assert.Throws<ArgumentException>(() =>
+            new MarkRenderer().LevelChart("TEST", Wide(), null, [new ChartBand(30m, 20m, "support", false, 1)]));
+
+        Assert.Contains("which is inverted", refusal.Message, StringComparison.Ordinal);
     }
 
     static ChartBar[] Bars(IReadOnlyList<BarRow> served) =>
