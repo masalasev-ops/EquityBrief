@@ -4794,3 +4794,31 @@ Measured:   203 claims, 91 PASS from 88, 0 fail, 0 unexamined, 112 out of scope.
 Amended:    nothing. This checkpoint amends no done condition.
 Tests:      406, from 404. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      Windows for this run. The matrix carries macOS and the Linux case-sensitivity job.
+
+### Correction to 4.6 - the deadline test raced again, one order of magnitude up   2026-09-09
+Corrects:   nothing in 4.6's figures. The suite was green on this machine and on both other CI
+            legs, and red on one windows runner at the push, on
+            `ANightThatPassesItsDeadlineStopsAndSaysSo`. That runner took seven and a half
+            minutes over a suite the other windows leg ran in four.
+Found:      the same defect the 2.7 correction repaired, at ten times the scale. 2.7 gave the test
+            a quarter-second deadline and a cold runner beat it; the correction warmed the store
+            and raised the bound to three seconds, calling it generous. A runner twice as slow,
+            over a suite half again as large, beat three seconds too.
+            The shape is what matters rather than the figure. A bound written as an absolute
+            number assumes a machine speed, and this corpus states the rule already: a test whose
+            answer depends on how fast the machine is has no answer. Raising the number is the
+            habit; it passed for four checkpoints and then did what it did before.
+Repaired:   the deadline is measured rather than stated. The warm night is timed, and the bound is
+            twice that plus two seconds, so a runner ten times slower produces a warm night ten
+            times longer and a deadline ten times larger. The arrangement scales with the machine
+            instead of assuming one.
+            And the arrangement is now asserted rather than assumed: the feed's own request count
+            says whether the night reached the fetch at all, so a deadline that fired on an
+            earlier step fails with a message naming the arrangement rather than reporting on a
+            step the test did not mean to name.
+Why here:   `two-platform` made it visible again, which is the second time it has caught this and
+            the reason the matrix exists. Both windows legs ran the same commit and disagreed.
+            Under the stopping rules a finding that breaks a check is repaired rather than
+            carried, and this broke one.
+Tests:      407, unchanged. The repair changes an arrangement and asserts one more thing about it;
+            what is claimed is unchanged.
