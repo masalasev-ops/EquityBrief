@@ -19,7 +19,15 @@ namespace EquityBrief.Core.Providers;
 // round. Sharing it is what makes the double and the live feed the same reader:
 // a second parser would be a second opinion about what the provider sends, and
 // the fixture would only ever exercise one of them.
-public sealed class EodhdBulkPriceFeed(HttpClient client, ProviderCredentials credentials) : IBulkPriceFeed
+//
+// The retry is not here either. This file converts what the transport did into
+// a refusal that says whether asking again would help, and `ProviderRequest`
+// decides how many times. One request is what the limits row counts, however
+// many attempts it took.
+public sealed class EodhdBulkPriceFeed(
+    HttpClient client,
+    ProviderCredentials credentials,
+    ProviderRequest? request = null) : IBulkPriceFeed
 {
     // The endpoint, relative to the client's base address. The captured
     // response's manifest names the same one, which is how the double and this
@@ -28,6 +36,8 @@ public sealed class EodhdBulkPriceFeed(HttpClient client, ProviderCredentials cr
 
     public const string BaseAddressKey = "EquityBrief:Providers:Eodhd:BaseAddress";
     public const string DefaultBaseAddress = "https://eodhd.com/api/";
+
+    readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 
     public int Requests { get; private set; }
 
@@ -38,6 +48,10 @@ public sealed class EodhdBulkPriceFeed(HttpClient client, ProviderCredentials cr
     // request did.
     public IReadOnlyList<string> NotSessions => notSessions;
 
+    // What the retry actually did. One request may have cost three attempts and
+    // two waits, and the difference is a night worth reading about.
+    public int Attempts => request.Attempts;
+
     // The live feed, with its own client.
     //
     // The client is built here rather than handed in, so this stays the only
@@ -46,8 +60,28 @@ public sealed class EodhdBulkPriceFeed(HttpClient client, ProviderCredentials cr
     // constructed the client would need an exemption without being one, and the
     // carve-out would have to widen to cover composition code. That is the way a
     // named exemption turns back into a deleted pattern.
-    public static EodhdBulkPriceFeed Live(string baseAddress, ProviderCredentials credentials) =>
-        new(new HttpClient { BaseAddress = new Uri(WithTrailingSlash(baseAddress)) }, credentials);
+    //
+    // The client's own timeout is set past the policy's on purpose. The bound
+    // that matters is the linked token `ProviderRequest` cancels, because that
+    // one composes with the night's deadline; a client timeout firing first
+    // would produce the same exception type from a source nothing can reason
+    // about, and the retry could not tell it from the deadline.
+    public static EodhdBulkPriceFeed Live(
+        string baseAddress,
+        ProviderCredentials credentials,
+        ProviderRequest? request = null)
+    {
+        var policy = request?.Policy ?? RetryPolicy.Standard;
+
+        return new(
+            new HttpClient
+            {
+                BaseAddress = new Uri(WithTrailingSlash(baseAddress)),
+                Timeout = policy.Timeout + policy.Timeout,
+            },
+            credentials,
+            request);
+    }
 
     // A base address whose last segment survives.
     //
@@ -60,14 +94,20 @@ public sealed class EodhdBulkPriceFeed(HttpClient client, ProviderCredentials cr
 
     public async Task<IReadOnlyList<BulkBar>> RowsAsync(string exchange, CancellationToken cancellation = default)
     {
-        // Counted before the call and not after it, so a request that failed is
-        // still a request. Counting on success would report a night that tried
-        // three times and gave up as a night that made none, and the run log's
-        // figure is what the cost limit is read off.
+        // Counted once per call and not once per attempt. The limit this figure
+        // is read against is "one request for the night whatever the universe
+        // is", and three attempts at one request is still one request: what
+        // grows with retries is time, and the deadline is what bounds that.
         Requests++;
 
-        string body;
+        var body = await request.SendAsync(token => FetchAsync(exchange, token), cancellation)
+            .ConfigureAwait(false);
 
+        return RecordedBulkPriceFeed.Parse(body, exchange, notSessions);
+    }
+
+    async Task<string> FetchAsync(string exchange, CancellationToken cancellation)
+    {
         try
         {
             // The key travels in the query string on this provider, so this
@@ -79,27 +119,32 @@ public sealed class EodhdBulkPriceFeed(HttpClient client, ProviderCredentials cr
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException(
-                    $"The bulk price feed answered {(int)response.StatusCode} for {Endpoint}/{exchange}. " +
+                var status = (int)response.StatusCode;
+
+                throw new ProviderRefusal(
+                    $"The bulk price feed answered {status} for {Endpoint}/{exchange}. " +
                     "A night cannot be computed from a refusal, and storing nothing would read as an " +
-                    "exchange that did not trade.");
+                    "exchange that did not trade.",
+                    RetryPolicy.Transient(status));
             }
 
-            body = await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
+            return await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
-            // The night's deadline, once 2.2 supplies one. Rethrown as it is,
-            // because a cancellation is the caller's decision rather than a
-            // fault of this feed, and wrapping it would hide that.
+            // A per-request timeout or the night's deadline. Which of the two is
+            // a question about the tokens, and `ProviderRequest` holds both, so
+            // it is rethrown as it is rather than guessed at here.
             throw;
         }
-        catch (Exception failure) when (failure is not InvalidOperationException)
+        catch (Exception failure) when (failure is not ProviderRefusal)
         {
-            throw new InvalidOperationException(Failed(exchange, failure));
+            // The transport did not answer. Transient by construction: a socket
+            // that refused, a name that would not resolve or a connection that
+            // dropped are all worth asking again, and a provider that means no
+            // says so with a status.
+            throw new ProviderRefusal(Failed(exchange, failure), transient: true);
         }
-
-        return RecordedBulkPriceFeed.Parse(body, exchange, notSessions);
     }
 
     // What a transport failure says, with the key taken out of it.

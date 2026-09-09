@@ -2707,3 +2707,55 @@ Tests:      275, from 257. Four with the carve-out and fourteen with the feed.
 Platform:   Windows for the by-hand live run. The suite runs on both runners through the matrix,
             and the live run is not part of it: no runner holds a key, and one that did would
             spend the operator's allowance on every push.
+
+### 2.2 Retry, backoff and the night's deadline                              2026-09-09
+Built:      `RetryPolicy`, `ProviderRequest` and a cancellation source the night owns. Three
+            attempts per request, waiting two seconds and then four, each attempt bounded by
+            thirty seconds, inside a night bounded by fifteen minutes.
+Why here:   every feed interface has accepted a cancellation token since 1.1 and nothing supplied
+            one, so a night that hung on a socket hung until somebody looked. `BarFetcher` and
+            `CorporateActionChecker` took no token at all; both do now, and every step of the
+            night runs under the same source.
+Shape:      the retry knows nothing about HTTP. A feed converts what its transport did into a
+            `ProviderRefusal` carrying whether asking again would help, and `ProviderRequest`
+            decides how many times. That seam is not tidiness: naming a transport exception in
+            the retry would put a file in `nightly-cost`'s exemption list that is not a feed, and
+            the carve-out would have to widen to cover code that holds no client.
+Told apart: a per-request timeout and the night's deadline arrive as the same exception type and
+            only the token says which. The deadline is checked first and never retried, because
+            retrying it is this class overruling the caller's decision that there is no time
+            left, which is how a night with a fifteen-minute bound runs for forty-five.
+Counted:    one request costs one request however many attempts it took. The limit that figure is
+            read against is one request for the night whatever the universe is, and three
+            attempts at one request is still one request: what grows with retries is time, and
+            the deadline is what bounds that. Attempts are reported separately.
+Waited:     the wait is injected and the schedule is read off what the request asked for rather
+            than off a clock. A backoff proved by waiting six seconds is a backoff nobody runs
+            twice, and a test nobody runs twice is one that gets a Skip attribute the first time
+            it is inconvenient.
+Refetch:    the third done condition, and it is a real risk rather than a formality. The refetch
+            is the only non-idempotent write on the nightly path, deleting a name's year and
+            reinserting it, so a second attempt made after the delete would leave two years or
+            half of one. A feed that refuses its first attempt is run through the real retry into
+            a real refetch, and the stored series is compared against a clean refetch rather than
+            against the count before it: the refetch asks for the year ending on the action night
+            rather than on the backfill date, so the count legitimately moves and the first
+            version of this test failed on the answer to a question it had not meant to ask.
+            The retry is asserted to have happened, because a flaky feed that never refused would
+            leave every other assertion true and the property untested.
+Limits:     section 17 gains **Per-request timeout and the night's deadline**. The figures are
+            read off that row and asserted against `RetryPolicy.Standard`, so a number changed in
+            either place fails: a limit stated in a document and again in code is two places
+            holding one fact.
+Derived:    thirty seconds because the bulk file for a whole exchange is the largest thing the
+            night fetches and arrived in 4.21 seconds at 6,676,343 bytes on 2.1's live run, which
+            is far outside a healthy fetch and far inside the night. Fifteen minutes because it
+            is three times the wall clock section 17 already states for five hundred names, so
+            the deadline stops a night that has hung rather than one that is merely slow. Three
+            attempts because the failure a retry is for is a transient one and a fourth attempt
+            is a slower way of learning what the third said. None of the three is a round number
+            chosen for looking like one.
+Claims:     181, 38 pass, 143 out of scope, 0 unexamined, from 180 and 37. Predicted before the
+            run: one new limits row, passing in the checkpoint that creates it, and no claim
+            leaves the out-of-scope set because nothing was owed at 2.2.
+Tests:      286, from 275.

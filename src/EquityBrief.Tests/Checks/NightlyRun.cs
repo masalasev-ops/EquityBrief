@@ -1,4 +1,5 @@
 using EquityBrief.Core.Configuration;
+using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
@@ -28,6 +29,7 @@ public class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Load index membership and record any joins and leaves."),
             CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members."),
+            CheckReach.Key(Scope.LimitsTable, "Per-request timeout and the night's deadline"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -39,7 +41,9 @@ public class NightlyRun
     static async Task<(int Code, string Output, string Error)> NightAsync(
         TemporaryStore store,
         string? fixture = null,
-        string? runId = null)
+        string? runId = null,
+        IBulkPriceFeed? bulk = null,
+        TimeSpan? deadline = null)
     {
         var output = new StringWriter();
         var error = new StringWriter();
@@ -51,9 +55,50 @@ public class NightlyRun
             FixedClock.At(Night, SessionZones.UnitedStates),
             output,
             error,
-            runId);
+            runId,
+            bulk,
+            deadline);
 
         return (code, output.ToString(), error.ToString());
+    }
+
+    [Fact]
+    public async Task ANightThatPassesItsDeadlineStopsAndSaysSo()
+    {
+        // The bound the night has never had. Every feed interface has accepted a
+        // cancellation token since 1.1 and nothing supplied one, so a night that
+        // hung on a socket hung until somebody looked.
+        //
+        // Named as a deadline rather than as a step that failed, because a night
+        // that ran out of time and a night whose provider refused are different
+        // mornings and the operator reads one line to tell them apart.
+        using var store = new TemporaryStore();
+
+        var (code, _, error) = await NightAsync(
+            store,
+            bulk: new SlowBulkFeed(),
+            deadline: TimeSpan.FromMilliseconds(250));
+
+        Assert.Equal(1, code);
+        Assert.Contains("passed the night's deadline", error, StringComparison.Ordinal);
+        Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
+
+        // And the promise section 18 makes about a feed that did not answer.
+        Assert.Contains("Last night's bars are kept", error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ANightInsideItsDeadlineIsUnaffectedByHavingOne()
+    {
+        // The counter-test. A deadline that stopped a night that was doing fine
+        // would be a worse fault than no deadline at all.
+        using var store = new TemporaryStore();
+
+        var (code, output, error) = await NightAsync(store, deadline: TimeSpan.FromMinutes(5));
+
+        Assert.Equal(0, code);
+        Assert.Equal(string.Empty, error);
+        Assert.Contains("nightly: green", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -197,6 +242,25 @@ public class NightlyRun
 // A feed that fails the way the provider does. Named for what it stands in for,
 // so the test reads as the failure row rather than as an exception.
 public sealed class HttpRequestFailure(string message) : Exception(message);
+
+// A feed that never answers, which is what a hung socket looks like from here.
+sealed class SlowBulkFeed : EquityBrief.Core.Providers.IBulkPriceFeed
+{
+    public int Requests { get; private set; }
+
+    public IReadOnlyList<string> NotSessions => [];
+
+    public async Task<IReadOnlyList<EquityBrief.Core.Providers.BulkBar>> RowsAsync(
+        string exchange,
+        CancellationToken cancellation = default)
+    {
+        Requests++;
+
+        await Task.Delay(TimeSpan.FromMinutes(5), cancellation);
+
+        return [];
+    }
+}
 
 sealed class FailingBulkFeed : EquityBrief.Core.Providers.IBulkPriceFeed
 {

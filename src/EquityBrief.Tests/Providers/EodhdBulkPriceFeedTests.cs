@@ -38,12 +38,18 @@ public class EodhdBulkPriceFeedTests
         }
     }
 
+    // The retry runs to the real policy and the waits are not taken. A test that
+    // spent six seconds proving the backoff is one that gets a Skip attribute
+    // the first time it is inconvenient, and a skipped test is a check that
+    // stopped running.
+    static ProviderRequest Patient() => new(RetryPolicy.Standard, (_, _) => Task.CompletedTask);
+
     static (EodhdBulkPriceFeed Feed, Answering Handler) Feed(Func<Uri, HttpResponseMessage> answer)
     {
         var handler = new Answering(answer);
         var client = new HttpClient(handler) { BaseAddress = new Uri(Base) };
 
-        return (new EodhdBulkPriceFeed(client, new ProviderCredentials(Key)), handler);
+        return (new EodhdBulkPriceFeed(client, new ProviderCredentials(Key), Patient()), handler);
     }
 
     static HttpResponseMessage Ok(string body) =>
@@ -102,7 +108,7 @@ public class EodhdBulkPriceFeedTests
         // run log's figure is what the cost limit is read off.
         var (refused, _) = Feed(_ => new HttpResponseMessage(HttpStatusCode.TooManyRequests));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => refused.RowsAsync("US"));
+        await Assert.ThrowsAsync<ProviderRefusal>(() => refused.RowsAsync("US"));
 
         Assert.Equal(1, refused.Requests);
 
@@ -120,11 +126,16 @@ public class EodhdBulkPriceFeedTests
         {
             var (feed, _) = Feed(_ => new HttpResponseMessage(status));
 
-            var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => feed.RowsAsync("US"));
+            var failure = await Assert.ThrowsAsync<ProviderRefusal>(() => feed.RowsAsync("US"));
 
             // The status is named, because "the feed did not answer" and "the
             // feed refused the key" are different mornings for the operator.
             Assert.Contains(((int)status).ToString(), failure.Message, StringComparison.Ordinal);
+
+            // And whether it was worth asking again, which is what decides how
+            // many attempts one request costs.
+            Assert.Equal(RetryPolicy.Transient((int)status), failure.Transient);
+            Assert.Equal(failure.Transient ? RetryPolicy.Standard.Attempts : 1, feed.Attempts);
         }
     }
 
@@ -141,7 +152,7 @@ public class EodhdBulkPriceFeedTests
         var (thrown, _) = Feed(_ => throw new HttpRequestException(
             $"Connection refused for {Base}eod-bulk-last-day/US?api_token={Key}&fmt=json"));
 
-        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => thrown.RowsAsync("US"));
+        var failure = await Assert.ThrowsAsync<ProviderRefusal>(() => thrown.RowsAsync("US"));
 
         foreach (var text in new[] { failure.Message, failure.ToString() })
         {
@@ -160,6 +171,12 @@ public class EodhdBulkPriceFeedTests
         // And the inner exception is not attached, so a logger expanding the
         // chain cannot reach a message this code never scrubbed.
         Assert.Null(failure.InnerException);
+
+        // A transport that did not answer is worth asking again, which is why
+        // this one cost three attempts and still one request.
+        Assert.True(failure.Transient);
+        Assert.Equal(RetryPolicy.Standard.Attempts, thrown.Attempts);
+        Assert.Equal(1, thrown.Requests);
     }
 
     [Fact]

@@ -25,6 +25,21 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - the timeout and the night's deadline
+Authorised by: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+Was:
+> section 17 had no row for either bound, so the only statement of the retry policy was the
+> decision, and 2.2's text named the policy without naming the row that would carry it
+Now:
+> section 17 carries **Per-request timeout and the night's deadline** with the three attempts,
+> the doubling wait and both bounds, and 2.2 names that row so the claim's due point derives from
+> the plan rather than being written into the harness
+Why: the decision settles the figures and the limits table is where a figure the harness asserts
+lives. Written only in `DECISIONS.md` the numbers would have had no instrument: the row is what
+`nightly-run` now reaches, and the test reads the row against the code's own policy so the two
+cannot drift.
+
+
 ### 2026-09-09 - BUILD_PLAN.md - the posting hour is bounded rather than measured
 Corrects: an obligation written at 2.0 as though one fetch could answer it.
 Was:

@@ -190,6 +190,10 @@ internal static class Scope
             Verdict.Pass,
             "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once",
             ByCost),
+        [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
+            Verdict.Pass,
+            "the three attempts, the doubling wait and both bounds are read off the row and asserted against the policy the code uses, and a night given a deadline it cannot meet stops on the step it was on and says so",
+            ByNight),
         [CheckReach.Key(LimitsTable, "Bar history kept")] = new Scoped(
             Verdict.Pass,
             "the retention boundary is the fetched session less one year, and every session below it is gone from the store while none inside it is",

@@ -96,7 +96,10 @@ public sealed class BarFetcher : IComponent
             $rows_written, 0, $network_requests, '0', $detail);
     ";
 
-    public async Task<FetchOutcome> RunAsync(string indexCode, string runId)
+    public async Task<FetchOutcome> RunAsync(
+        string indexCode,
+        string runId,
+        CancellationToken cancellationToken = default)
     {
         var started = clock.UtcNow;
 
@@ -108,7 +111,7 @@ public sealed class BarFetcher : IComponent
 
         // One request. Counted by the feed rather than asserted by the caller,
         // because a caller that looped would still report one.
-        var rows = await feed.RowsAsync(Exchange);
+        var rows = await feed.RowsAsync(Exchange, cancellationToken);
 
         var wanted = rows
             .Where(row => members.Contains(row.Ticker))

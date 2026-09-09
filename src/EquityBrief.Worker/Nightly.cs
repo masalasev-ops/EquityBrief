@@ -39,7 +39,8 @@ public static class Nightly
         TextWriter output,
         TextWriter error,
         string? runId = null,
-        IBulkPriceFeed? bulk = null)
+        IBulkPriceFeed? bulk = null,
+        TimeSpan? deadline = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
@@ -60,7 +61,8 @@ public static class Nightly
             clock,
             output,
             error,
-            runId);
+            runId,
+            deadline);
     }
 
     public static async Task<int> RunAsync(
@@ -70,8 +72,22 @@ public static class Nightly
         IClock clock,
         TextWriter output,
         TextWriter error,
-        string? runId = null)
+        string? runId = null,
+        TimeSpan? deadline = null)
     {
+        // The night's deadline, and the thing that can cancel it.
+        //
+        // Every feed interface has accepted a cancellation token since 1.1 and
+        // nothing supplied one, so a night that hung on a socket hung until
+        // somebody looked. This is the source, and it is the night's rather than
+        // a request's: a per-request timeout bounds one attempt, and three
+        // attempts on nine steps is a bound nobody would recognise as an
+        // evening.
+        // see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+        var limit = deadline ?? RetryPolicy.Standard.Deadline;
+
+        using var night = new CancellationTokenSource(limit);
+
         // The instant and not only the date. A night that fails halfway and is
         // re-run is a second run, and SCHEMA's grain is one row per run per
         // stage: keyed on the date alone the re-run collides on the primary key
@@ -99,21 +115,21 @@ public static class Nightly
             new("membership", async () =>
             {
                 var rows = await new MembershipLoader(membership, clock, store.DatabaseFile)
-                    .LoadAsync(indexCode, runId);
+                    .LoadAsync(indexCode, runId, night.Token);
 
                 return $"{rows} rows written";
             }),
             new("backfill", async () =>
             {
                 var outcome = await new Backfill(historical, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId);
+                    .RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.RowsWritten} rows written over {outcome.Requests} request(s)";
             }),
             new("fetch", async () =>
             {
                 var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId);
+                    .RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
                     $"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, " +
@@ -123,7 +139,7 @@ public static class Nightly
             new("actions", async () =>
             {
                 var outcome = await new CorporateActionChecker(corporate, historical, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId);
+                    .RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
                     $"{outcome.Suspect.Count} suspect, {outcome.Requests} request(s)";
@@ -137,6 +153,19 @@ public static class Nightly
             try
             {
                 output.WriteLine($"  {step.Name}: {await step.Run()}");
+            }
+            catch (OperationCanceledException) when (night.IsCancellationRequested)
+            {
+                // The deadline, named as itself rather than as a step that
+                // failed. A night that ran out of time and a night whose
+                // provider refused are different mornings, and a cancellation
+                // reported as a failure reads as the second.
+                error.WriteLine(
+                    $"nightly: step '{step.Name}' passed the night's deadline of " +
+                    $"{limit.TotalMinutes:0.###} minute(s) and was stopped. Last night's bars are " +
+                    "kept and every name is stale.");
+
+                return 1;
             }
             catch (Exception failure)
             {
