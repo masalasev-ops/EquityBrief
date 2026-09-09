@@ -2920,3 +2920,51 @@ Claims:     185, 42 pass, 143 out of scope, 0 unexamined, unchanged. Predicted b
             2.5 adds no row to any table the harness parses, and the seven claims 2.0 named all
             arrived by 2.4.
 Tests:      304, from 298.
+
+### 2.6 The selection point and a live night                                 2026-09-09
+Built:      `NightFeeds.Resolve`, which decides where tonight's feeds come from, and
+            `EquityBrief:Providers:Source` with `EquityBrief:Providers:Fixture` beside it.
+            `tools/nightly` takes no fixture argument of its own any more, which is what its own
+            text has promised since 1.4: the argument was there because the live feeds did not
+            exist, and it said it would become optional when they did.
+Why a setting: until now the choice lived in whichever overload the caller happened to call, so a
+            scheduled night's source was a property of a shell script. The flags remain for the
+            run RUNBOOK asks for by hand, and giving both is refused, because a command that said
+            live and fixture at once has no right answer and picking one would be this code
+            deciding what the operator meant.
+Neither falls back: that is the property, not a courtesy, and both directions are failures that
+            look like successes. A fixture folder that does not exist is refused rather than
+            resolved to the provider, because a mistyped path would otherwise spend the allowance
+            and store live bars where a replay was meant. A live source with no key is refused
+            rather than falling back to a capture, because a night that quietly replayed yesterday
+            would look exactly like a night that ran. Each is asserted with the other side present
+            and working, so a fall-back would have succeeded: the key is valid when the path is
+            wrong, and the capture is readable when the key is blank.
+Live:        a night ran end to end against the provider for the 2026-09-08 session with no
+            fixture folder given and no source set. 822 membership rows, 126,235 bars over 503
+            tickers, 501 bars for the session, 182 actions with 7 refetches. 514 network requests,
+            820 weighted calls of 100,000, 0 model calls, green.
+Fixture:     the same night over the capture makes no request: 5 membership rows, 753 bars, and
+            feeds that hold no client at all.
+Refused:     three refusals run by hand, each exiting non-zero. A fixture path that does not
+            exist, both flags at once, and a live source with a blank key.
+Found:       the night's own summary said "network request(s)" over a capture, on a night that
+            touched no network. A recorded feed counts the calls a live one would have made, which
+            is deliberate and is how a replay measures the cost shape, but printing it that way on
+            a fixture night is a figure that means one thing and reads as another. The line now
+            says which source the night ran against, read off the feeds rather than off the
+            setting that chose them, so a fall-back that got past both refusals would still be
+            visible on the line the operator reads.
+Reaches:     `NightFeeds.ReachesTheNetwork` asks the objects rather than the setting. The recorded
+            doubles are named, so a sixth feed added live and forgotten there reads as one that
+            can reach the network rather than one that cannot, which is the direction that is safe
+            to be wrong in.
+Hour:        the posting-hour obligation is bounded twice and discharged neither time. The file for
+            2026-09-08 was being served at 06:13 UTC on the 9th and again at 12:03, which are two
+            upper bounds and not an hour. Measuring when it first appears needs observations across
+            several evenings, which a running installation accumulates and a checkpoint cannot, so
+            it is re-pointed to 3.7 with both bounds recorded. A night run before the close is
+            already refused loudly by the fetch, so nothing waits on this figure.
+Claims:      185, 42 pass, 143 out of scope, 0 unexamined, unchanged and predicted. 2.6 changes
+            where the feeds come from and adds no row to any table the harness parses.
+Tests:       312, from 304.

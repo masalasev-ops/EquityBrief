@@ -490,7 +490,7 @@ Recorded when created, not remembered. An obligation names a due point this docu
 | Bulk fundamentals endpoint probed on the operator's key | authored with the architecture | 6.1 |
 | The refetch's atomicity asserted as a property rather than as a construct | 1.8 | 3.1 |
 | Every file under `fixtures/` named as an expectation swept for whether a test reads it | 1.8 | 3.1 |
-| The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 bounded at 06:13 UTC the following day; the hour itself carried to 2.6 |
+| The provider's posting hour for the day's bulk file, measured from live fetches | 2.0 | 2.1 bounded, 2.6 bounded again; the hour needs observations across several evenings and is carried to 3.7 |
 | One day of news exceeds one request at the provider's limit, so the pulse count needs a window or a page | 2.5 | 5.5 |
 
 **Carried out of the phase 1 sign-off.** Two defects found by breaking a passing claim and

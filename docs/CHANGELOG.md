@@ -25,6 +25,23 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - tools/nightly, BUILD_PLAN.md - the fixture argument becomes a setting
+Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
+Was:
+> `tools/nightly` took a fixture folder as its first argument, defaulting to
+> `fixtures/membership-2026-09-05`, with a note saying the argument was there because the live
+> feeds were not built yet and would become optional when they landed; and the obligations table
+> carried the posting hour as due at 2.6
+Now:
+> the script passes its arguments through and takes none of its own, with the source read from
+> `EquityBrief:Providers:Source` and a fixture folder from `EquityBrief:Providers:Fixture`; and the
+> posting hour is carried to 3.7 with both bounds recorded
+Why: a scheduled night's source should not be a property of a shell script. The flags remain for a
+run by hand and giving both is refused. The posting hour needs observations across several
+evenings, which a running installation accumulates and a checkpoint cannot, and nothing waits on
+it because a night run before the close is already refused by the fetch.
+
+
 ### 2026-09-09 - BUILD_PLAN.md - one day of news is wider than one request
 Corrects: nothing. An obligation recorded when it was created rather than remembered.
 Was:

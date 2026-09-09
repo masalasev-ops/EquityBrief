@@ -90,4 +90,78 @@ public sealed record NightFeeds(
         string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress;
 
     static ProviderCredentials Key(string? apiKey) => new(apiKey ?? string.Empty);
+
+    public const string SourceKey = "EquityBrief:Providers:Source";
+
+    public const string FixtureKey = "EquityBrief:Providers:Fixture";
+
+    public const string LiveSource = "live";
+
+    public const string FixtureSource = "fixture";
+
+    // Where tonight's feeds come from, decided before the night starts.
+    //
+    // A setting rather than an argument, which is the whole of this checkpoint.
+    // Until now the choice lived in whichever overload the caller happened to
+    // call, so a scheduled night's source was a property of a shell script.
+    //
+    // Both directions refuse and neither falls back, and that is the property
+    // rather than a courtesy. A fixture folder that does not exist must not
+    // resolve to the provider, because a mistyped path would then spend the
+    // allowance and store live bars where a replay was meant. A live source with
+    // no key must not resolve to a capture, because a night that quietly
+    // replayed yesterday would look exactly like a night that ran.
+    public static NightFeeds Resolve(
+        string? source,
+        string? fixtureFolder,
+        string? baseAddress,
+        string? apiKey)
+    {
+        source = string.IsNullOrWhiteSpace(source) ? LiveSource : source.Trim();
+
+        if (string.Equals(source, LiveSource, StringComparison.OrdinalIgnoreCase))
+        {
+            // `Live` builds the credentials, which refuse a blank key by name.
+            // Nothing here catches that and reaches for a fixture.
+            return Live(baseAddress, apiKey);
+        }
+
+        if (!string.Equals(source, FixtureSource, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"'{SourceKey}' is '{source}', and the two it may be are '{LiveSource}' and " +
+                $"'{FixtureSource}'. A source that is neither is refused rather than guessed at, " +
+                "because either guess is a night that ran against something the operator did not " +
+                "ask for.");
+        }
+
+        if (string.IsNullOrWhiteSpace(fixtureFolder))
+        {
+            throw new InvalidOperationException(
+                $"'{SourceKey}' is '{FixtureSource}' and '{FixtureKey}' names no folder. A night " +
+                "over a capture has to be told which, and falling back to the provider would spend " +
+                "the allowance on a run that asked for a replay.");
+        }
+
+        return Directory.Exists(fixtureFolder)
+            ? FromFixture(fixtureFolder)
+            : throw new DirectoryNotFoundException(
+                $"'{FixtureKey}' names '{fixtureFolder}' and no such folder exists. A mistyped path " +
+                "is refused rather than resolved to the provider: the failure a fall-back would " +
+                "produce is a night that reached the network when a replay was meant, and it would " +
+                "look like a night that ran.");
+    }
+
+    // Whether a set of feeds can reach the network at all, asked of the objects
+    // rather than of the setting that produced them.
+    //
+    // A fixture night makes no request because the recorded feeds hold no
+    // client, and this is what says so: the recorded doubles are named, so a
+    // sixth feed added live and forgotten here reads as one that can.
+    public bool ReachesTheNetwork =>
+        Membership is not RecordedIndexMembershipFeed
+        || Historical is not RecordedHistoricalBarFeed
+        || Bulk is not RecordedBulkPriceFeed
+        || Corporate is not RecordedCorporateActionFeed
+        || News is not RecordedNewsFeed;
 }

@@ -6,15 +6,18 @@
 # resolves against the working directory and the store must land in the same
 # place whoever calls this and from wherever.
 #
-# The fixture argument is here because the live feeds are not built yet. A night
-# reads recorded responses, so it has to be told which. When the HTTP feeds land
-# this argument becomes optional and the default is the provider.
+# No arguments. Where the feeds come from is a setting rather than an argument
+# from 2.6: `EquityBrief:Providers:Source` is `live` or `fixture`, and a fixture
+# night names its folder in `EquityBrief:Providers:Fixture`. A scheduled night's
+# source should not be a property of this file.
+#
+# Anything given is passed through, which is how the run RUNBOOK asks for by hand
+# is made: `--fixture <folder>` and `--live` override the setting for one run and
+# refuse if both are given, and `--session <yyyy-MM-dd>` runs the night for a
+# session the operator names rather than the one the clock falls on.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
-fixture="${1:-fixtures/membership-2026-09-05}"
-shift || true
-
-exec dotnet run --project src/EquityBrief.Worker -- nightly --fixture "$fixture" "$@"
+exec dotnet run --project src/EquityBrief.Worker -- nightly "$@"

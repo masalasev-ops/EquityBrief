@@ -71,41 +71,51 @@ static async Task<int> NightlyRun(string[] args)
         return 1;
     }
 
-    // A fixture night takes no key at all, and that is the point of resolving
-    // here rather than at the request. A night over a capture makes no request,
-    // so demanding a key for one would stop CI on a machine that has no business
-    // holding a key; RUNBOOK's promise is about not reaching the provider
-    // anonymously rather than about holding a key to replay a capture. The
-    // refusal names the setting, because a rejection from the provider names
-    // nothing.
-    if (!args.Contains("--live"))
+    // Where tonight's feeds come from, taken from configuration and overridable
+    // for the run RUNBOOK asks for by hand.
+    //
+    // Configuration rather than an argument, because a scheduled night's source
+    // should not be a property of a shell script. The two flags remain for a
+    // by-hand run and giving both is refused: a command that said live and
+    // fixture at once has no right answer, and picking one would be this code
+    // deciding what the operator meant.
+    var wantsLive = args.Contains("--live");
+    var wantsFixture = Argument(args, "--fixture") is not null;
+
+    if (wantsLive && wantsFixture)
     {
-        return await Nightly.RunAsync(
-            store,
-            Argument(args, "--fixture") ?? string.Empty,
-            index,
-            clock,
-            Console.Out,
-            Console.Error,
-            RunId(named));
+        Console.Error.WriteLine(
+            "nightly: '--live' and '--fixture' were both given. A night runs against one source, " +
+            "and choosing between them here would be this command deciding what was meant.");
+
+        return 1;
     }
 
-    NightFeeds live;
+    NightFeeds feeds;
 
     try
     {
-        live = NightFeeds.Live(
+        // A fixture night takes no key at all, which is why the source is
+        // resolved before anything asks for one. A night over a capture makes no
+        // request, so demanding a key for one would stop CI on a machine that
+        // has no business holding a key; RUNBOOK's promise is about not reaching
+        // the provider anonymously rather than about holding a key to replay.
+        feeds = NightFeeds.Resolve(
+            wantsLive ? NightFeeds.LiveSource
+                : wantsFixture ? NightFeeds.FixtureSource
+                : configuration[NightFeeds.SourceKey],
+            Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey],
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName]);
     }
-    catch (InvalidOperationException refusal)
+    catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
     {
         Console.Error.WriteLine($"nightly: {refusal.Message}");
 
         return 1;
     }
 
-    return await Nightly.RunAsync(store, live, index, clock, Console.Out, Console.Error, RunId(named));
+    return await Nightly.RunAsync(store, feeds, index, clock, Console.Out, Console.Error, RunId(named));
 }
 
 // The run id, which a named session cannot take from its own clock.

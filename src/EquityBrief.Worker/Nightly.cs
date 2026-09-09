@@ -196,12 +196,20 @@ public static class Nightly
 
         // The nightly claim, printed where the operator reads it rather than
         // only stored. Zero model calls because nothing on this path calls one,
-        // and the request count is what the four feeds counted, live or
-        // recorded alike, because the count is on the interface.
-        var requests = feeds.Requests;
+        // and the request count is what the five feeds counted, live or recorded
+        // alike, because the count is on the interface.
+        //
+        // Which source it ran against is on the same line, and it is read off
+        // the feeds rather than off the setting that chose them. Before 2.6 this
+        // said "network request(s)" on a night that touched no network, because
+        // a recorded feed counts the calls a live one would have made: that is
+        // deliberate, since it is how a replay measures the cost shape, and it
+        // is exactly why the line has to say which kind of night this was.
+        var live = feeds.ReachesTheNetwork;
 
         output.WriteLine(
-            $"nightly: green, 0 model calls, {requests} network request(s), " +
+            $"nightly: green over {(live ? "the provider" : "a capture")}, 0 model calls, " +
+            $"{feeds.Requests} {(live ? "network request(s)" : "request(s), none of them to a network")}, " +
             $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
 
         return 0;

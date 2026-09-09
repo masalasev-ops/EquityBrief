@@ -249,7 +249,13 @@ public class NightlyRun
 
         Assert.Equal(0, code);
         Assert.Equal(string.Empty, error);
-        Assert.Contains("nightly: green, 0 model calls", output, StringComparison.Ordinal);
+        Assert.Contains("nightly: green over a capture, 0 model calls", output, StringComparison.Ordinal);
+
+        // And the request count says what it is. A recorded feed counts the
+        // calls a live one would have made, which is how a replay measures
+        // the cost shape, so the line has to say which kind of night this
+        // was rather than print "network request(s)" over a capture.
+        Assert.Contains("none of them to a network", output, StringComparison.Ordinal);
     }
 
     [Fact]
