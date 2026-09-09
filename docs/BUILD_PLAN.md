@@ -2,7 +2,7 @@
 
 Checkpoints, their deliverables and their done conditions, for every phase.
 
-The seven general done conditions in `CLAUDE.md` apply to every checkpoint. What follows adds the deliverable and any condition particular to it.
+The nine general done conditions in `CLAUDE.md` apply to every checkpoint. What follows adds the deliverable and any condition particular to it.
 
 ---
 
@@ -41,7 +41,7 @@ Each is a place the architecture names something without saying what it is. They
 | The trend classifier's rule | Stated as "from the averages and the last two swings", which is a description rather than a rule, and it selects which ladder shape applies | 4.0 |
 | The tranche condition, and which applies when | A fixed list of four patterns is named and nothing says which one a given tranche gets | 4.0 |
 | A tranche condition that depends on a researched fact | A tranche can reasonably be conditional on something no compute component can see, such as a guide not implying a revenue decline. The ladder builder's matrix row gives it levels, indicators and the calendar, and a researched fact reaches it through none of those. The shape that fits the design is that the ladder emits the tranche with its price condition and a research pass may attach a fundamental precondition carrying its own source, which the claim checker treats like any other claim. Decide it at 4.0 rather than inventing a fifth condition kind at 4.2 | 4.0 |
-| The share of size per tranche | The plan places a position and never sizes one, yet the tranches carry shares that fall with distance, and no rule produces them | 4.0 |
+| The share of size per tranche | There is no hole. The shares that fall with distance came from the hand-made report the worked example is drawn from, where a person decided how much to commit, and that is exactly what **The plan places a position and never sizes one** reserves to the reader. A share of an intended position is a sizing rule written as a fraction, and calling it a display convention does not change what a reader does with it. Exits are a different thing and stand: a fraction of what is already held is scaling out of a position that exists. **Settled at 4.0**, by amending this row rather than by superseding the decision | 4.0, settled |
 | The earnings setups' triggers | Three setups are named, each said to carry a trigger, an entry, a stop and a target; none of the four is specified | 4.0 |
 | The base rate's population and window | Stated as the universe figure for the same window, without saying whether it is every name-night, every index member, or every listing | 5.0 |
 | The six reason thresholds | Stated as proposals and known to flood, with calibration deliberately left to the run page's own record | 5.0 settles the proposals. The calibration is an operating obligation and not a checkpoint's (owes: The six reason thresholds calibrated from the nights they fired on), because 5.6 displays a record that nights accumulate and no checkpoint accumulates nights |
@@ -105,7 +105,7 @@ Three carried obligations discharged: reconcile the money column list against SC
 **Done when** the fixture name holds a full year with no gaps, a second run backfills nothing, and the request count matches the number of names lacking history. The population is stated explicitly, because a claim about roughly five hundred live names is not something the harness can assert.
 
 ### 1.3 The read surface and the chart
-The read API serving bars for a name and a date range, computing nothing and fetching nothing, asserted over the shipped source. The mark renderer as its own component, declaring an empty access across all eleven stores, so the seam section 15.4 describes is a claim the harness asserts rather than a definition it trusts. The chart drawn as server-rendered SVG: candles and a volume pane on a shared time axis, at the hash route for a name.
+The read API serving bars for a name and a date range, computing nothing and fetching nothing, asserted over the shipped source. The mark renderer as its own component, declaring an empty access across every store in the matrix, so the seam section 15.4 describes is a claim the harness asserts rather than a definition it trusts. The chart drawn as server-rendered SVG: candles and a volume pane on a shared time axis, at the hash route for a name.
 
 **This is the level chart mark with two of its four elements absent**, written in the file that mark will live in for the life of the project and extended in place at 3.4. It is not a temporary chart, because a temporary chart becomes the second renderer the marks decision exists to prevent. The checkpoint entry states which elements are present and which are absent.
 
@@ -294,7 +294,9 @@ A mega-cap in a tight range, a mid-cap in a wide one, and a name that gapped, be
 
 ## Phase 4: the plan
 
-**Visible output at 4.1.** The trend state is one word on a page that already exists.
+**Visible output at 4.1.** The trend state is one word on a page that already exists, drawn from a store the night wrote.
+
+Nine build checkpoints rather than seven, decided at 4.0 against the size the work turns out to be. 4.1 as this document first wrote it carried a new feed, a new table, a contradiction, a matrix column, a new component and a new nightly chain at once, and done condition 9 raises the cost of every checkpoint, which argues for smaller ones. The phase 3 evidence is that the checkpoints which did not mutate their own work are where the holes were found a phase later.
 
 ### 4.0 Planning
 The heaviest planning pass in the project, because more holes settle here than at any other point and one of them is a missing component.
@@ -305,44 +307,70 @@ Re-points every claim whose due point is a phase rather than a checkpoint (owes:
 
 Turns the fixture's populations into readings of the membership expectation rather than literals in each test (owes: The suite's fixture populations read from the expectation rather than written into each test). Phase 4 adds components whose tests will state the same counts again, so the repair is cheaper before them than after.
 
-**Contradiction E and the calendar.** Four components read a store that nothing declares and nothing writes. The resolution needs a calendar fetcher on the nightly path, a `calendar` table in SCHEMA with its grain and owner, a column in the read and write matrix, and a catalogue row. The earnings date is needed nightly by the ladder builder and the shortlist builder, so it cannot wait for the on-demand fundamentals fetcher in phase 5.
+Constructs the band the fixture does not hold and asserts the column that reads it (owes: `has_non_average_anchor` asserted over a band anchored on an average alone that a session reached). A band anchored only by a moving average and carrying touches is the case `SCHEMA.md` calls common and the committed fixture has none of, which is worse than a gap because it looks like coverage. It is done here rather than at 4.4, because 4.4's tranche eligibility rests on that column and cannot be built over a test that cannot see the case it exists to decide.
 
-Settles every hole this document's holes table assigns to 4.0, and takes a decision for each. None of them is inferable from what is written, and each decides what the plan section says. Two of them arrive together: the second book is keyed to dated events rather than to prints alone, and a tranche can carry a precondition no compute component can see, so the pass that settles where non-earnings events come from is the pass that settles how a researched fact reaches a tranche.
+Discharges the four other rows the phase 3 sign-off left at this checkpoint (owes: The momentum panel's reading set asserted independently of the constant it is drawn from), (owes: The band hue mapping asserted, and not only the two hues), (owes: The level read surface asserted over two stored as-of dates) and (owes: The volume profile boundaries the committed fixture cannot reach). The last is four constructed-input tests whose evidence is in hand and which no later checkpoint produces, since nothing after phase 3 reads the profile.
+
+Takes the retention ruling (owes: A deleter for the computed tables, or a retention cell that says what is true), which section 16 states over six tables and `SCHEMA.md` gives to nobody.
+
+**Contradiction E and the calendar.** Four components read a store that nothing declares and nothing writes. The resolution needs a calendar fetcher on the nightly path, a `calendar` table in SCHEMA with its grain and owner, a column in the read and write matrix, and a catalogue row. The earnings date is needed nightly by the ladder builder and the shortlist builder, so it cannot wait for the on-demand fundamentals fetcher in phase 6.
+
+Settles every hole this document's holes table assigns to 4.0, and takes a decision for each. None of them is inferable from what is written, and each decides what the plan section says.
 
 The holes are named in the table rather than counted or repeated here. This checkpoint said "four holes settle here" and then listed four, which was two statements of one fact and both went stale the day two more were filed against it.
 
-### 4.1 The calendar fetcher and the trend state
-Migration creating `calendar`. The fetcher on the nightly path, one request for the calendar rather than one per name. The trend classifier to the rule settled at 4.0, with the state shown on the name page.
+**Predicts the phase's claims by naming them,** in two disjoint lists with the arithmetic between them, and 4.9 checks the sum. 3.7 derived the rule this restores: a prediction is over the rows that become assertable, not over the rows that get written, and phase 4 carried the practice nowhere until this pass put it back.
 
-**Done when** the calendar table holds dated events for the fixture names, the trend state matches the fixture, and the classifier's rule is a stated rule rather than a description.
+### 4.1 The nightly chain and the trend state
+The swing finder, the volume profile builder and the level builder join the night as steps in the order section 14 states. They have shipped since phase 3 and no night has ever run one, so a production store holds no swing, no profile and no band; their only callers are in the suite.
 
-### 4.2 Tranches and stops
-Migration creating `ladder`. Tranches placed on support bands whose low edge is below the price, skipping any band anchored only by a moving average. Each stop a daily close below the low edge of the next band beneath it.
+The trend classifier to the rule settled at 4.0, reading swings as of the date through the reader the level builder already uses rather than a second copy of the clause, and carrying the constructed-input tests for the swing cases four names of committed bars cannot reach (owes: The swing boundaries the committed fixture cannot reach). Migration creating `ladder`, one row per index member per night carrying the trend state and a plan that states why it is empty. The name page composing the chart region it has marks for and drawing the trend state, served from the store the night wrote rather than one a test built.
 
-**Done when** the tranches and stops match the fixture, a band anchored only by an average carries no tranche, a band straddling the price keeps its full width, and a name with no eligible band produces no ladder and says why.
+Nothing is deleted here. This is the first checkpoint at which three of the five computed tables are written by a night at all, and their row counts are the population 4.2's deleter is built against.
 
-### 4.3 Exits, the invalidation and the near-exit skip
-Exits on the resistance bands above price, an exit closer than two typical days' moves listed but not traded, the top of the ladder a trailing rule rather than a price, and the invalidation at the lowest band the structure depends on.
+**Done when** the ladder row count equals the index size on a completed night, the trend state matches the fixture across four names, a name whose inputs are absent is recorded as not classified with its reason rather than as a range, the page draws the label and the chart region from the night's own store, and each of the five computed tables' row counts after a completed night matches what its own grain predicts, stated per table rather than in one figure over a mixed population.
 
-**Done when** the exits match the fixture and the skipped exit is listed with its reason rather than omitted.
+### 4.2 Retention on the computed tables
+The ruling settled at 4.0, implemented for `indicator`, `swing`, `volume_profile`, `level` and `ladder` together: each builder drops the rows that fall out of the window on the night they fall out, declared in `SCHEMA.md`'s ownership table and in each component's access. `move` waits for 5.2, because its component does not exist until then.
 
-### 4.4 The plan column mark and the tables
-One vertical price axis with the current price marked in it, stops as horizontal rules, the invalidation the lowest. The tranche table with conditions and stops, the exit table with actions.
+Its own checkpoint rather than folded into the calendar, because a deleter built in the checkpoint that first populates the tables is a delete path whose first real exercise is a night nobody has watched, over the tables whose growth is the argument for the ruling.
 
-**Done when** the figure renders from the ladder with no value drawn that the ladder does not carry, which is the containment property applied to pictures.
+**Done when** rows past the window are gone from all five tables and rows inside it are untouched, asserted per table rather than in one loop over a mixed population, `writer-ownership` reconciles five new Delete owners in both directions, and the mutation is the window boundary moved by one session.
 
-### 4.5 The earnings trade
-The three setups to the triggers settled at 4.0, each with its entry, stop and target, kept as a second book that never merges with the position book.
+### 4.3 The calendar fetcher and the earnings date
+**The endpoint is probed and captured before the parser is written**, for the reason 1.6 and 1.7 state, and because nothing has yet asked whether this provider answers the calendar over a date range without a ticker. `IEarningsCalendarFeed` with its live implementation and its recorded double, a slot on `NightFeeds`, and the `nightly-cost` carve-out list extended by exactly one file and still asserted to hold exactly the feed implementations.
 
-**Done when** the setups match the fixture, and a name with no earnings date on file produces no setups and says so rather than producing them from a guessed date.
+Migration creating `calendar`. The fetcher on the nightly path, one request for the horizon whatever the universe size, with the endpoint's weight measured and written into section 17's weighted-call row and `RUNBOOK.md` together. The next earnings date on the fact strip.
 
-### 4.6 The arithmetic and the earnings rule
-Risk per tranche at the zone midpoint, reward to risk from the first tranche and from the blended first two, the worked sizing example from a risk budget, and the statement of the last prints' one-day moves against the stop distance.
+**Done when** the calendar holds dated events for the fixture names read from a captured provider response, a night fetches them in one request measured off the live feed, a name with no date on file shows an explicit blank, and `component-access` reconciles the four calendar readers in both directions.
 
-**Done when** every figure is derived rather than stored, the reward-to-risk arithmetic is asserted, and the earnings rule fires inside the horizon and not outside it.
+### 4.4 Tranches, stops and the invalidation
+Tranches on support bands whose low edge is below the close, nearest first, at most three, skipping any band without a non-average anchor. Each stop a daily close below the low edge of the next band beneath it. The invalidation at the lowest band the structure depends on. The condition attached by the rule settled at 4.0. The constructed-input tests for the band cases the fixture cannot reach land here, since this is what reads band edges and roles (owes: The level boundaries the committed fixture cannot reach).
 
-### 4.7 Phase 4 report
-**Done when** every phase 4 claim is PASS across four fixture names, and the plan section renders whole.
+**Done when** the tranches and stops match the fixture across four names, a band anchored only by an average carries no tranche asserted against the band 4.0 constructed, a band straddling the close keeps its full width, exactly one condition matches each tranche asserted in both directions, and a name with no eligible band produces a ladder row whose plan states why.
+
+### 4.5 Exits and the near-exit skip
+Exits on the resistance bands above the close, at most five, one closer than two typical days' moves from the blended entry listed and not traded, equal fractions per traded exit, the top of the ladder a trailing rule rather than a price.
+
+**Done when** the exits match the fixture, the skipped exit is listed with its reason rather than omitted, and the fractions sum to the whole of what is held.
+
+### 4.6 The plan column mark and the tables
+One vertical price axis with the current price marked in it, stops as horizontal rules, the invalidation the lowest. The tranche table with conditions and stops, the exit table with actions, drawn into the marks file beside the others and served by the app.
+
+**Done when** the figure renders from the ladder with no value drawn that the ladder does not carry, which is the containment property applied to pictures, asserted by reading the mark's own data attributes back against the store rather than by eye.
+
+### 4.7 The event book
+The three setups to the proposals settled at 4.0, each with its trigger, entry, stop and target, keyed to a dated event from the calendar and never merging with the position book (owes: The event setups' triggers calibrated from resolved setups).
+
+**Done when** the setups match the fixture, a name with no date on file produces none and says so rather than producing them from a guessed date, and the page states that the triggers are proposals and names the record that will calibrate them.
+
+### 4.8 The arithmetic and the earnings rule
+Risk per tranche at the zone midpoint, reward to risk from the first tranche and from the blended first two, the worked sizing example from a risk budget the reader chooses, and the statement of the last prints' one-day moves against the stop distance.
+
+**Done when** every figure is derived rather than stored, the reward-to-risk arithmetic is asserted against cases computed by hand rather than against the code's own output, and the earnings rule fires inside the twenty-session horizon and not outside it.
+
+### 4.9 Phase 4 report
+**Done when** every phase 4 claim is PASS across four fixture names naming an instrument whose declared reach includes it, unexamined is zero, the plan section renders whole, and the claims 4.0 named are checked against the actual with every claim that arrived unpredicted named and placed in the list it belonged in.
 
 ---
 
@@ -371,7 +399,7 @@ Migration creating `facts`. Every number the computed sections may use, each wit
 ### 5.4 The shortlist builder and tonight's list
 Migration creating `listing`. **A row for every index member every night**, whether or not a reason fired, carrying the reasons with their values and the plan as it stood that night.
 
-Tonight's list: the header with the true fired count, the watch list above it, twenty rows drawn, the reasons on each row.
+Tonight's list: the header with the true fired count, the watch list above it, twenty rows drawn, the reasons on each row. The list orders on band strength as its tiebreaker, so the ruling on what that score is dominated by falls due here (owes: The strength score read against four names).
 
 **Done when** the listing row count equals the index size on every completed night, the fired count in the header matches the reasons, and a night with more than twenty fired names draws twenty and states the true count.
 
@@ -387,7 +415,7 @@ The pulse count answers the obligation 2.5 created (owes: One day of news exceed
 ### 5.6 The run page
 The operational header, and each reason's record with the base rate pinned as the first row.
 
-This checkpoint builds the surface two operating obligations are read on (owes: The six reason thresholds calibrated from the nights they fired on) and (owes: The three reason records that need resolved setups). Neither is due at a checkpoint, because no checkpoint accumulates nights or resolved setups; what 5.6 owes is that each trigger is legible on the page when it fires, which is the count of nights beside the reason record and the resolved count against its minimum.
+This checkpoint builds the surface three operating obligations are read on (owes: The six reason thresholds calibrated from the nights they fired on), (owes: The three reason records that need resolved setups) and (owes: The event setups' triggers calibrated from resolved setups). None is due at a checkpoint, because no checkpoint accumulates nights or resolved setups; what 5.6 owes is that each trigger is legible on the page when it fires, which is the count of nights beside the reason record, the resolved count against its minimum, and the same count for the event book's own setups.
 
 **Done when** no forward-return figure is shown without the base rate beside it, and a reason below the minimum shows a dashed outline carrying its count rather than a rate.
 
@@ -528,11 +556,21 @@ Recorded when created, not remembered. Every row is named, and the name is what 
 | **The retry policy figures asserted where `nightly-run` reaches them** | 3.0 sweep | 3.1, discharged | moved into `NightlyRun` rather than copied. A limit stated in a document and again in code is two places holding one fact, and the same assertion in two test classes is a third |
 | **The suspect marking asserted where `schema-columns` reaches it** | 3.0 sweep | 3.1, discharged | resolved the other way the obligation permits: the claim stops saying what its check does not do. `schema-columns` asserts the columns and types, and the marking is the corporate action checker's, claimed by its own failure row |
 | **The corporate action checker's declaration claims named for the check that reaches them** | 3.0 sweep | 3.1, discharged | both claims moved to `component-access`, with the reach declarations moved with them, because the notes describe a reconciliation only that check performs |
-| **Claims due at a phase rather than at a checkpoint** | 3.1 | 4.0 | 4.0 is the next planning pass and the one before phase 4's first checkpoint lands, which is when the next of these fails. A claim whose due point is a phase becomes invalid the moment that phase's first checkpoint is recorded, because `HasLanded` reads a phase as landed from any checkpoint in it. Phase 3's eight were repaired at 3.1 because 3.1 landing is what made them fail; 66 remain, being 5 at phase 4, 20 at phase 5, 29 at phase 6 and 12 at phase 7, and every one of them will fail on its phase's first checkpoint exactly as these did |
-| **The suite's fixture populations read from the expectation rather than written into each test** | 3.6 | 4.0 | evidence in hand: 3.6 measured it. Widening the fixture from three names to four turned 28 tests red, and repairing them touched twenty-five assertion sites across six test classes. One of the twenty-five was a named constant covering six assertions, which is the shape the other twenty-four should have had. 4.0 is the pass before phase 4 writes more of them, and turning a literal into a reading of the membership expectation is a change to how the suite is written rather than to what any one checkpoint builds, so it belongs to a pass that can make it across the whole suite at once |
-| **Section 19.1's fixture table reconciled against the expectations that exist** | 3.1 | 4.0 | 4.0 is the next planning pass, which is where a change to a claim-bearing table can be made with its effect on the claim count understood. The table lists ten expected files and the fixture holds three it does not name, being membership, fetch and series state, each written by a checkpoint that needed one. `fixture-replay` found the third by reporting a populated table nothing expected; the first two have been unlisted since 1.1 and 2.1 |
+| **Claims due at a phase rather than at a checkpoint** | 3.1 | 4.0, discharged | 4.0 is the next planning pass and the one before phase 4's first checkpoint lands, which is when the next of these fails. A claim whose due point is a phase becomes invalid the moment that phase's first checkpoint is recorded, because `HasLanded` reads a phase as landed from any checkpoint in it. Phase 3's eight were repaired at 3.1 because 3.1 landing is what made them fail; 66 remain, being 5 at phase 4, 20 at phase 5, 29 at phase 6 and 12 at phase 7, and every one of them will fail on its phase's first checkpoint exactly as these did |
+| **The suite's fixture populations read from the expectation rather than written into each test** | 3.6 | 4.0, discharged | evidence in hand: 3.6 measured it. Widening the fixture from three names to four turned 28 tests red, and repairing them touched twenty-five assertion sites across six test classes. One of the twenty-five was a named constant covering six assertions, which is the shape the other twenty-four should have had. 4.0 is the pass before phase 4 writes more of them, and turning a literal into a reading of the membership expectation is a change to how the suite is written rather than to what any one checkpoint builds, so it belongs to a pass that can make it across the whole suite at once |
+| **Section 19.1's fixture table reconciled against the expectations that exist** | 3.1 | 4.0, discharged | 4.0 is the next planning pass, which is where a change to a claim-bearing table can be made with its effect on the claim count understood. The table lists ten expected files and the fixture holds three it does not name, being membership, fetch and series state, each written by a checkpoint that needed one. `fixture-replay` found the third by reporting a populated table nothing expected; the first two have been unlisted since 1.1 and 2.1 |
 | **The research lane boundary measured against the fixture both ways** | authored with the architecture | 6.5 | 6.5 is where a pass over the fixture reproduces byte for byte from the recorded endpoint, which is what lets each section be run both ways and compared. The decision named phase 6 and this names the checkpoint inside it that produces the recording, which sharpens the point rather than moving it |
 | **The six reason thresholds calibrated from the nights they fired on** | 5.0 | operating | 60 nights of listings, read on the run page, which 5.6 builds. 60 because it is the quarter of trading the level window already uses, long enough that a distribution of fired counts is not one week's weather. No checkpoint accumulates nights, so 5.6 makes the trigger readable rather than producing it |
+| **The momentum panel's reading set asserted independently of the constant it is drawn from** | 3.7 sign-off | 4.0, discharged | 4.0 states the four readings where a test can read them rather than asserting the drawn names back against the set they were drawn from. The hole was asymmetric, which is what identified it: dropping `macd_hist` drew three readings and left the suite green, while adding `atr14` turned it red only because `NeutralOf` throws on a reading with no neutral rule, so the test was sensitive to the set through an exception and never through membership |
+| **The band hue mapping asserted, and not only the two hues** | 3.7 sign-off | 4.0, discharged | 4.0 asserts which band got which hue. The test asserted that three fills carry exactly two distinct hues and that one contains the support token and one the resistance token, and never which was which, so swapping the two constants drew every support band in the resistance hue and left the suite green |
+| **`has_non_average_anchor` asserted over a band anchored on an average alone that a session reached** | 3.7 sign-off | 4.0, discharged | 4.0 constructs the band, because the committed fixture holds none: every band in it anchored on an average alone happens to carry no touch, so computing the column over the whole band rather than over the anchors leaves the suite green. `SCHEMA.md` says the case is common. Moved here from 4.4 by the operator, because 4.4 reads this column to decide whether a tranche exists and cannot be built over a test that cannot see the case it exists to decide |
+| **The level read surface asserted over two stored as-of dates** | 3.7 sign-off | 4.0, discharged | 4.0 stores one name on two nights and asserts the page holds the later night's bands alone. Deleting the clause that binds `as_of` to the maximum leaves the suite green, because the fixture holds one as-of date per name and the two queries cannot differ over it. The constructed store is also what 4.2's retention test is asserted against |
+| **The volume profile boundaries the committed fixture cannot reach** | 3.7 sign-off | 4.0, discharged | 4.0 writes four constructed-input tests, for the largest remainder tie order, the one price session, the collapsing edge guard and the top edge taking the window's own high. Nothing after phase 3 reads the profile, so no later checkpoint produces this evidence and a due point naming one would name a point that produces nothing |
+| **The swing boundaries the committed fixture cannot reach** | 3.7 sign-off | 4.1 | 4.1 builds the trend classifier, which is the next component to read swings and the next to write constructed-input tests over them. The plateau rule and the outside day that is a peak and a trough at once are both unreachable from four names of committed bars |
+| **The level boundaries the committed fixture cannot reach** | 3.7 sign-off | 4.4 | 4.4 places tranches on band edges and roles, which is what the merge distance boundary, the role boundary at the close and the retracement zero span guard are about, and it is the next checkpoint to write constructed-input tests over them |
+| **A deleter for the computed tables, or a retention cell that says what is true** | 3.7 sign-off | 4.0, discharged | 4.0 rules that every computed table's writer is its own deleter, and 4.2 implements it. The row stood at 5.2, which is where the last of the six tables arrives rather than where a deleter is built, so it named a point that produces no evidence. `SCHEMA.md`'s ownership rows stay as they are until 4.2, because a deleter declared before the component deletes is a declaration with nothing behind it |
+| **The strength score read against four names** | 3.7 sign-off | 5.4 | 5.4 builds tonight's list, which orders on band strength as its tiebreaker over at most twenty drawn rows. The evidence is in the phase 3 sign-off and needs no checkpoint to produce it: touches are 72 to 79 per cent of the members of each name's strongest band, anchor counts are bunched at 4 to 15 while touch counts run 0 to 41, and MSFT's top two bands carry the same 4 anchors with the ranking decided by 15 touches against 9 |
+| **The event setups' triggers calibrated from resolved setups** | 4.0 | operating | 250 resolved event-book setups, read on the run page, which 5.6 builds and 7.5 fills with verdicts. 250 because it is the minimum section 17 already states before a verdict is reported at all, and the same clustering argument applies: event setups fire around prints, so they cluster by date harder than the reasons do. No checkpoint accumulates resolved setups, and 4.0 has no basis to correct a figure nothing has scored, so every trigger, entry, stop and target in the three setups is stated on the page as a proposal until this fires |
 | **The three reason records that need resolved setups** | authored with the architecture | operating | 250 resolved setups, which is the minimum section 17 already states, read on the run page, which 5.6 builds and 7.5 fills with verdicts. Phase 7 arriving does not supply months of accumulation; phase 5's storage obligation is the mitigation |
 
 **Carried out of the phase 1 sign-off.** Two defects found by breaking a passing claim and

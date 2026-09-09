@@ -111,13 +111,21 @@ public class ComponentAccess
                 .Select(term => $"{row.Component}: '{term}'"))
             .ToArray();
 
-        // The calendar is the known one and it is named, not swallowed. Four
-        // components read a store SCHEMA does not declare and nothing writes,
-        // which is contradiction E, settled at 4.0.
-        var known = unresolved.Where(term => term.Contains("calendar", StringComparison.OrdinalIgnoreCase)).ToArray();
-
-        Assert.Equal(known.Length, unresolved.Length);
-        Assert.True(known.Length is > 0 and <= 6, $"{known.Length} calendar reads, expected between 1 and 6 until 4.0 settles it.");
+        // Nothing is unresolved. Until 4.0 this assertion permitted between one
+        // and six unresolved calendar reads and asserted that every unresolved
+        // term was one of them, because four components read a store SCHEMA did
+        // not declare and nothing wrote, which is contradiction E. 4.0 gave the
+        // calendar a table, an owner, a column and a fetcher, so the exemption
+        // went with the contradiction rather than outliving it.
+        //
+        // The calendar is still named here, in the other direction: it now has
+        // to resolve, so deleting the table or the alias fails this rather than
+        // returning the check to the state it was allowed to be in.
+        Assert.Empty(unresolved);
+        Assert.Contains(
+            catalogue,
+            row => row.Reads.Contains("calendar", StringComparison.OrdinalIgnoreCase)
+                && ComponentVocabulary.Read(row.Reads).Stores.Contains(DataStore.Calendar));
 
         // The other direction. A phrase the lexicon carries that no cell uses is
         // a translation nobody keeps current.
@@ -355,7 +363,7 @@ public class ComponentAccess
         Assert.Equal([Feed.IndexMembership], feed.Feeds);
 
         // An empty declaration is a claim: it says the component touches nothing,
-        // which is what the mark renderer's eleven blank cells assert.
+        // which is what the mark renderer's blank cells assert.
         Assert.Empty(Core.Components.ComponentAccess.Nothing.Stores);
         Assert.Equal(Touch.None, Core.Components.ComponentAccess.Nothing.On(DataStore.Bar));
 

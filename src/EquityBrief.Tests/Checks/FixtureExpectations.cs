@@ -41,6 +41,9 @@ public class FixtureExpectations
         [
             CheckReach.Key(Scope.FixtureTable, "bars"),
             CheckReach.Key(Scope.FixtureTable, "news"),
+            CheckReach.Key(Scope.FixtureTable, "membership"),
+            CheckReach.Key(Scope.FixtureTable, "fetch"),
+            CheckReach.Key(Scope.FixtureTable, "series state"),
             CheckReach.Key(Scope.FixtureTable, "indicators"),
             CheckReach.Key(Scope.FixtureTable, "swings"),
             CheckReach.Key(Scope.FixtureTable, "volume profile"),
@@ -1028,7 +1031,7 @@ public class FixtureExpectations
         var names = expected.GetProperty("namesComputed").EnumerateArray().Select(name => name.GetString()!).ToArray();
         var bands = expected.GetProperty("bands").GetProperty("count").GetInt32();
 
-        Assert.Equal(4, names.Length);
+        Assert.Equal(FixtureExpectation.Names.Length, names.Length);
         Assert.Equal(2, across.GetProperty("chosen").GetInt32());
         Assert.Equal(2d / bands, LevelBuilder.ShelfThreshold);
 
@@ -1160,6 +1163,160 @@ public class FixtureExpectations
         Assert.Equal(
             series.Sum(bar => bar.Volume),
             VolumeProfileSeries.For(series).Sum(band => band.Shares));
+    }
+
+    [Fact]
+    public void TheProfileBoundariesTheCommittedFixtureCannotReach()
+    {
+        // owes: The volume profile boundaries the committed fixture cannot reach
+        //
+        // Four cases the phase 3 sign-off mutated and found green, each
+        // unreachable from four names of committed bars and each documented at
+        // length in the source with no test able to fail on it. They are here
+        // rather than at a later checkpoint because nothing after phase 3 reads
+        // the profile, so no checkpoint produces this evidence and a due point
+        // naming one would name a point that produces nothing.
+
+        // One. A session that traded at one price. Its range is zero, so the
+        // spreading has no width to divide by and the whole day belongs to the
+        // band that holds that price. A builder dividing by the range throws or
+        // silently drops the day.
+        var flat = Enumerable.Range(0, VolumeProfileSeries.Window)
+            .Select(day => new ProfileBar(new DateOnly(2026, 1, 1).AddDays(day), 120m, 100m, 1_000))
+            .ToArray();
+
+        flat[30] = new ProfileBar(flat[30].SessionDate, 110m, 110m, 5_000);
+
+        var withFlat = VolumeProfileSeries.For(flat);
+
+        Assert.Equal(VolumeProfileSeries.Bands, withFlat.Count);
+        Assert.Equal(flat.Sum(bar => bar.Volume), withFlat.Sum(band => band.Shares));
+
+        var holding = withFlat.Single(band => band.Low <= 110m && 110m < band.High);
+
+        Assert.True(
+            holding.Shares > withFlat.Where(band => band != holding).Max(band => band.Shares),
+            "the one-price session's volume did not land in the band holding its price.");
+
+        // Two. The top edge takes the window's own high, so the highest session
+        // is inside the top band rather than past it. Without this the last
+        // band's high is short of the window's high and the day's top slice is
+        // lost, which shows up as shares that do not sum.
+        Assert.Equal(120m, withFlat[^1].High);
+        Assert.Equal(100m, withFlat[0].Low);
+
+        // Three. The largest remainder tie order. Spreading gives fractional
+        // shares and the whole must be preserved, so the remainders are ranked
+        // and the spare shares handed out in a stated order. With every band
+        // owed the same fraction every remainder ties, and the property is that
+        // the total is exact rather than that any band wins.
+        var odd = Enumerable.Range(0, VolumeProfileSeries.Window)
+            .Select(day => new ProfileBar(new DateOnly(2026, 1, 1).AddDays(day), 120m, 100m, 1_003))
+            .ToArray();
+
+        var spread = VolumeProfileSeries.For(odd);
+
+        Assert.Equal(odd.Sum(bar => bar.Volume), spread.Sum(band => band.Shares));
+        Assert.All(spread, band => Assert.True(band.Shares > 0, "a band took no shares from a full-range day."));
+
+        // Four. The collapsing edge guard. Consecutive edges that round to one
+        // price collapse, so a window narrower than twenty times the storage
+        // precision produces fewer than twenty bands rather than bands with no
+        // width. At the limit, a window that traded at one price for sixty
+        // sessions produces one band holding the whole period rather than twenty
+        // of zero width or none at all.
+        var collapsed = Enumerable.Range(0, VolumeProfileSeries.Window)
+            .Select(day => new ProfileBar(new DateOnly(2026, 1, 1).AddDays(day), 100m, 100m, 1_000))
+            .ToArray();
+
+        var single = VolumeProfileSeries.For(collapsed);
+
+        Assert.Single(single);
+        Assert.Equal(100m, single[0].Low);
+        Assert.Equal(100m, single[0].High);
+        Assert.Equal(collapsed.Sum(bar => bar.Volume), single[0].Shares);
+        Assert.Equal(1d, single[0].ShareOfPeriod, 12);
+
+        // And between the two, a window narrow enough for some edges to collapse
+        // and not all. Fewer bands than twenty, every band a real width, and the
+        // shares still summing to the period, which is the property the whole
+        // guard exists to keep.
+        var narrow = Enumerable.Range(0, VolumeProfileSeries.Window)
+            .Select(day => new ProfileBar(new DateOnly(2026, 1, 1).AddDays(day), 100.0005m, 100m, 1_000))
+            .ToArray();
+
+        var few = VolumeProfileSeries.For(narrow);
+
+        Assert.True(
+            few.Count is > 1 and < VolumeProfileSeries.Bands,
+            $"a window of half a thousandth produced {few.Count} bands, expected between 2 and {VolumeProfileSeries.Bands - 1}.");
+
+        Assert.All(few, band => Assert.True(band.High > band.Low, "a band with no width survived the collapse."));
+        Assert.Equal(narrow.Sum(bar => bar.Volume), few.Sum(band => band.Shares));
+    }
+
+    [Fact]
+    public void ABandAnchoredOnAnAverageAloneStaysSoWhenSessionsReachIt()
+    {
+        // owes: `has_non_average_anchor` asserted over a band anchored on an average alone that a session reached
+        //
+        // The case the committed fixture does not hold and SCHEMA calls common:
+        // a short moving average follows the price, so a band anchored on one
+        // sits at the price about half the time and is reached constantly. Every
+        // band in this fixture anchored on an average alone happens to carry no
+        // touch, so computing the column over the whole band rather than over
+        // the anchors leaves the whole suite green. That is not a gap in the
+        // fixture, it is a population unrepresentative in the one way that
+        // matters, which is worse because it looks like coverage.
+        //
+        // 4.4 reads this column to decide whether a band carries a tranche, so
+        // the value decides whether a purchase is placed. Constructed rather
+        // than fixtured, because a band like this cannot be asked for from
+        // captured bars.
+        var asOf = new DateOnly(2026, 9, 4);
+
+        // Sixty sessions whose low is the average itself, so the band is reached
+        // over and over. A touch is a session high or low inside the band rather
+        // than a session that traded through it, which is why the low sits on
+        // the price rather than beneath it.
+        var window = Enumerable.Range(0, 60)
+            .Select(day => new LevelBar(asOf.AddDays(day - 59), 101m, 100m, 100.5m))
+            .ToArray();
+
+        // One candidate, and it is an average.
+        LevelMember[] candidates = [new(MemberSource.Average, "sma20", 100m, asOf)];
+
+        var bands = LevelSeries.For(window, candidates, close: 105m, mergeDistance: 1m, asOf);
+        var band = Assert.Single(bands);
+
+        // The touches arrived. This is what makes the case the one it is: a band
+        // computed over its whole membership would now see sixty non-average
+        // members and call itself anchored.
+        var touches = band.Members.Count(member => member.Source == MemberSource.Touch);
+
+        Assert.True(touches >= 55, $"the constructed band carries {touches} touches, expected at least 55.");
+        Assert.Contains(band.Members, member => member.Source == MemberSource.Average);
+
+        // The property. An anchor is what creates a band and a touch is not one,
+        // so a band held up by an average and sixty sessions that reached it is
+        // still anchored on an average alone.
+        Assert.False(
+            band.HasNonAverageAnchor,
+            "a band whose only anchor is a moving average reported a non-average anchor because " +
+            "sessions reached it. 4.4 reads this column to decide whether a tranche is placed.");
+
+        // The counter-reading, so this is not a test that says no to everything.
+        // One swing among the candidates and the same sixty sessions, and the
+        // band is anchored.
+        LevelMember[] withASwing =
+        [
+            new(MemberSource.Average, "sma20", 100m, asOf),
+            new(MemberSource.Swing, "swing low", 100.2m, asOf.AddDays(-30)),
+        ];
+
+        var anchored = Assert.Single(LevelSeries.For(window, withASwing, close: 105m, mergeDistance: 1m, asOf));
+
+        Assert.True(anchored.HasNonAverageAnchor);
     }
 
     // ---- 3.4, the level bands ----

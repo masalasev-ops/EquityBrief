@@ -25,6 +25,206 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - BUILD_PLAN.md - phase 4 becomes ten checkpoints, and fifteen obligations are entered
+Authorised by: Every computed table's writer is its own deleter
+Was:
+> phase 4 carried 4.0 through 4.7, with 4.1 as "The calendar fetcher and the trend state", 4.2
+> "Tranches and stops", 4.3 "Exits, the invalidation and the near-exit skip", 4.4 "The plan column
+> mark and the tables", 4.5 "The earnings trade", 4.6 "The arithmetic and the earnings rule" and
+> 4.7 "Phase 4 report"; and the carried obligations table held 28 rows
+Now:
+> 4.0 through 4.9. The nightly chain and the trend state at 4.1, retention on the computed tables
+> at 4.2, the calendar fetcher at 4.3, and the rest renumbered behind them. 4.0 gains the work
+> the phase 3 sign-off left it and the clause restoring the claim prediction. The obligations
+> table holds 43 rows
+Why: 4.1 as written carried a new feed, a new table, a contradiction, a matrix column, a new
+component and a new nightly chain at once, and done condition 9 raises the cost of every
+checkpoint. Retention is its own checkpoint rather than folded into 4.1 because a deleter built in
+the checkpoint that first populates the tables is a delete path whose first real exercise is a
+night nobody has watched, over the tables whose growth is the argument for the ruling. The fifteen
+new obligations are the six the phase 3 sign-off named and the nine mutations that survived it,
+each with the checkpoint that produces its evidence rather than a phase.
+
+### 2026-09-09 - ARCHITECTURE.html - section 14's per-name step becomes nine, and the calendar joins the night
+Corrects: three components have shipped since phase 3 and no night has ever run one. `SwingFinder`,
+`VolumeProfileBuilder` and `LevelBuilder` are called only from the suite, so a production store
+holds no swing, no profile and no band. Nothing failed, because section 14 carried the nine
+computations as one step whose due point was a phase, and a claim due at a phase cannot fail until
+that phase's first checkpoint lands. Found at 4.0 while re-pointing the claims due at a phase.
+Was:
+> <li>For every name: indicators, swings, volume profile, levels, trend state, ladder, moves,
+> list reasons, facts file.</li>
+Now:
+> a step fetching the index's dated events, then nine steps, one per computation, each naming the
+> stage and the population it runs over, with the ladder step stating that a row is written
+> whether or not it carries a tranche; and a note recording what the one step hid
+Why: split rather than read as nine claims inside one step, which is where this differs from
+contradiction F. Section 15.5 states seven marks and has seven rows, so splitting the Level chart
+row would make that document disagree with itself. Section 14 states no count, the night runs
+these stage by stage over the whole universe rather than name by name, which is what the
+components do, and the order inside them is load bearing: the levels cannot be built before the
+swings and the ladder cannot be built before the levels. Written as one step none of that was
+visible, and neither was the absence the split now makes assertable.
+
+### 2026-09-09 - ARCHITECTURE.html - a failure row for a name that cannot be classified
+Authorised by: The trend state is read from the averages and the last two swings, and a name that cannot be classified says so
+Was:
+> section 18 carried no row between "Earnings date missing" and "Fewer than 200 bars for a new
+> index member"
+Now:
+> a row for a name whose trend state cannot be classified: the ladder row is still written, the
+> state is recorded as not classified with the input that was missing, and no tranche is placed
+Why: the fourth trend state needs a failure row or it is a value nothing induces. The row also
+carries why the ladder row is written rather than withheld, which is the same argument the
+every-name listings row rests on.
+
+### 2026-09-09 - ARCHITECTURE.html - section 19.1 lists the expectations that exist
+Corrects: the fixture table listed ten files and the fixture holds three it does not name. The
+membership expectation has been there since 1.1, the fetch expectation since 2.1 and the series
+state expectation since 1.6. `fixture-replay` found the third by reporting a populated table
+nothing expected; the first two had been unlisted for two phases.
+Was:
+> the table listed bars, fundamentals and news as inputs, then indicators, swings, volume
+> profile, levels, ladder, listings and facts as expected outputs
+Now:
+> a calendar input, and membership, fetch and series state added to the expected outputs, each
+> naming the component that produces it
+Why: a claim-bearing table that does not name what the fixture holds is a set of expectations
+nothing reads back, which is the same object as a check that runs nothing. The three arrive as
+PASS on the day they are written, because what they describe has existed all along.
+
+### 2026-09-09 - SCHEMA.md - the ladder row is written for every name, and the trend state has a fourth value
+Authorised by: A ladder row is written for every index member every night
+Was:
+> Grain: one row per ticker per as-of date; `trend_state` TEXT `uptrend`, `downtrend`, `range`;
+> `plan` TEXT JSON: tranches, stops, invalidation, exits, earnings setups, arithmetic; and the
+> ownership summary carried no note on the six computed tables
+Now:
+> the grain says for every index member and not only the names carrying a plan, `trend_state`
+> admits `not_classified`, `plan` carries the reason where there is nothing to carry, and a note
+> records that the six computed tables have no deleter, what 4.0 ruled, and that the rows still
+> read none because this file describes the code rather than the intention
+Why: the ownership rows stay as they are until 4.2 writes the deletes, because a deleter declared
+before the component deletes is a declaration with nothing behind it and `writer-ownership`
+refuses it in that direction as well. Recording the ruling and its due point in the file is what
+keeps the reader from finding a contradiction between the note and the table.
+
+### 2026-09-09 - ARCHITECTURE.html - the ladder's rules, and the second book's name
+Authorised by: The second book is keyed to a dated event, and an earnings print is the only kind on file
+Was:
+> section 10's key ended "The second book is keyed to dated events, of which an earnings print
+> is one, and it never merges with the position book. (see: The earnings trade is a second book)
+> Whether it carries events that are not prints, and where those come from, is settled at 4.0.";
+> figure 10.1's first box named three trend states; the Trend classifier's catalogue row wrote
+> "none, returns the label to the facts assembler" and labelled the chart "uptrend, downtrend or
+> range"; the Ladder builder's row said it "places tranches, stops, the invalidation and the
+> exits, computes reward to risk, and builds the earnings-trade setups"
+Now:
+> the citation resolves to the superseding decision and the deferral to 4.0 is replaced by its
+> answer; the box carries a fourth state, not classified; the classifier returns its label to the
+> ladder builder and labels a fourth state; the ladder builder writes a row for every index
+> member every night and builds the event setups. The key gains the tranche condition rule, the
+> exit fractions, the researched precondition and a flag stating that every figure in the three
+> setups is a proposal
+Why: 4.0 settles the holes the document deferred to it, and a deferral answered is a sentence
+replaced rather than a sentence kept beside its answer. The fourth trend state exists because the
+label decides whether a plan exists at all, and a name whose long average or second swing is
+missing has not been measured rather than measured as a range.
+
+### 2026-09-09 - ARCHITECTURE.html - the calendar gets a producer, a store and a column
+Authorised by: A calendar event is fetched once for the whole index, and the calendar holds provider events only
+Was:
+> section 5 carried no earnings calendar feed box and no calendar fetcher box; section 7 had no
+> Calendar fetcher row; section 16's data stores table had no Calendar row and its matrix had
+> twelve columns, none of them a calendar; the Ladder builder's matrix row carried R under
+> Fundamentals; and the matrix key read "The verification harness reads none of the eleven stores"
+Now:
+> both boxes are drawn, the catalogue row is written, the store row and a Calendar column are
+> added with the four calendar readers carrying R and the fetcher R W, the Ladder builder's
+> Fundamentals R is gone, and the key names no count
+Why: contradiction E, resolved across all four readers together rather than for the rows the
+contradiction happened to name. The Ladder builder was the row where the substitution is
+confirmed: its catalogue phrase names the calendar and nothing in it names fundamentals, so the
+read had been written into the nearest column there was. The Facts assembler and the Staleness
+judge both name fundamentals in their own catalogue rows, so their Fundamentals cells stand and
+only the calendar cell is added. The Shortlist builder's row is contradiction L and stays open to
+5.4. The count in the key went rather than being raised, because the table beneath it already
+states how many columns there are and a second statement is the one that goes stale: it read
+eleven over a table of twelve before this edit.
+
+### 2026-09-09 - SCHEMA.md - the calendar table
+Authorised by: A calendar event is fetched once for the whole index, and the calendar holds provider events only
+Was:
+> no `calendar` section, and no `calendar` row in the ownership summary
+Now:
+> a table at the grain of one row per ticker, event date and kind, with `status` carrying whether
+> the provider has confirmed the date, and one writer for all three operations
+Why: four components declared a read against a table this file did not describe. `kind` carries
+provider event kinds only and the reason is written into the file rather than left implied: a
+researched date here would be a claim the claim checker cannot reach and a second inserter on a
+nightly store. `status` is stored because a booked print and an estimated one are different
+things, and a name with no row at all is the third state the failure table promises.
+
+### 2026-09-09 - BUILD_PLAN.md - the tranche share was not a hole
+Corrects: the holes table said the tranches carry shares that fall with distance and no rule
+produces them, which reads as a gap in the specification. It is not one. The shares came from the
+hand-made report the worked example is drawn from, where a person decided how much to commit, and
+**The plan places a position and never sizes one** reserves exactly that to the reader.
+Was:
+> | The share of size per tranche | The plan places a position and never sizes one, yet the
+> tranches carry shares that fall with distance, and no rule produces them | 4.0 |
+Now:
+> a row saying there is no hole, naming the worked example as where the shares came from, keeping
+> the exits as they are because a fraction of what is already held is scaling out of a position
+> that exists, and marking the row settled
+Why: the row was the defect rather than the decision, so it is amended rather than the decision
+superseded. A share of an intended position is a sizing rule written as a fraction, and calling
+it a display convention does not change what a reader does with it, which is multiply it by a
+capital figure the ladder does not have.
+
+### 2026-09-09 - CLAUDE.md, BUILD_PLAN.md - a ninth done condition, and the count two documents disagreed on
+Corrects: a checkpoint could satisfy every done condition without ever showing that an assertion
+it wrote can fail, and three phases of evidence now say what that costs. Found by the phase 3
+sign-off's mutation sweep, which ran 34 mutations over 32 distinct changes and left 13 green at
+380 of 380. The pattern is not that some checkpoints write weaker tests: every checkpoint that
+mutated its own work found its own holes, and of the two that recorded no mutation evidence, one
+carries two of the three group one findings and one of the two group two findings.
+Was:
+> CLAUDE.md: "All eight, or it is not done:", a list of eight, and "satisfies all eight done
+> conditions on its own"; BUILD_PLAN.md: "The seven general done conditions in `CLAUDE.md` apply
+> to every checkpoint."
+Now:
+> "All nine", a ninth condition requiring one added assertion to be mutated and shown to go red
+> with the mutation chosen before the run by a stated rule and recorded in the PROGRESS entry, a
+> paragraph stating what the condition costs and what the evidence for it is, "all nine done
+> conditions", and "The nine general done conditions".
+Why: the seven against eight disagreement was already live and is repaired in the same edit
+rather than left to be found again. It is named here as a defect the ninth exposed rather than
+one it created: `stated-counts` reads CLAUDE.md's own sentence and the list beneath it, and the
+count in BUILD_PLAN was outside what any check reads. The ninth condition binds from 4.1, and it
+raises the cost of every checkpoint, which is stated in the rules beside it rather than left for
+a later session to discover as an unexplained expense.
+
+### 2026-09-09 - CLAUDE.md - a guard behind the record's append-only rule
+Corrects: `PROGRESS.md` is declared append only in the document lifecycle table and nothing
+asserted it. `changelog-reconciles` reads the five specs, `PROGRESS.md` is a record, and no check
+covered a deletion from one. The gap is known because PR #37 deleted 70 lines from the record at
+the operator's direction and CI stayed green, which the phase 3 sign-off recorded as a stated
+property with no instrument behind it.
+Was:
+> the Checks table carried no row between `changelog-reconciles` and `pinned-constants`
+Now:
+> a `record-append-only` row, running every CI run, asserting that every entry heading ever
+> present in `PROGRESS.md` is still present, read from the history as a high-water mark over the
+> set of headings, with the one removal this repository has made named in the check with its
+> commit and its reason
+Why: beside `changelog-reconciles` rather than folded into it, because a check named for the
+changelog that also guarded a record would be a name that stopped describing its scope. Headings
+rather than a line count, because an entry's body can be reflowed without anything being lost and
+a count would read that as a removal. The exemption is asserted in both directions: a removal
+that is not the named one fails, and the named one being restored fails too, because an exemption
+for a removal that is no longer there is an exemption nothing reads.
+
 ### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - the averages are drawn, and one due point was wrong
 Authorised by: The volume profile accumulates over the same sixty sessions as the level window
 Was:

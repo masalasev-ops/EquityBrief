@@ -108,7 +108,7 @@ public sealed record PriceAxis(double Low, double High)
 // is what makes the two carry the same pictures from the same numbers.
 // see: Marks are defined once and every screen draws from that list
 //
-// It touches no store and computes no figure, which is what its eleven blank
+// It touches no store and computes no figure, which is what its blank
 // matrix cells claim. Geometry is not a figure: nothing here is reported to a
 // reader as a number, and every price drawn arrives already computed.
 public sealed class MarkRenderer : IComponent

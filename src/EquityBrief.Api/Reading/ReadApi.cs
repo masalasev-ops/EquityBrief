@@ -78,6 +78,7 @@ public sealed class ReadApi : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Swing, Touch.Read),
             new StoreTouch(Store.VolumeProfile, Touch.Read),

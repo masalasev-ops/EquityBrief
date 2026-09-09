@@ -34,6 +34,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 |---|---|---|---|
 | `membership` | MembershipLoader | MembershipLoader | none |
 | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
+| `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `indicator` | IndicatorEngine | IndicatorEngine | none |
 | `swing` | SwingFinder | SwingFinder | none |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | none |
@@ -57,6 +58,12 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 **Two removals are sanctioned, and neither takes a bar out of a series it leaves standing.** Retention removes every session below a date boundary, for every name at once, and what remains is still a contiguous series ending tonight. A refetch removes one name's whole year and writes it back inside the same transaction, so the series is replaced rather than shortened. The hard rule that bars are append-only is about the third thing, a bar inside a stored series being deleted or edited while the rest stands, and that is what stays forbidden: no update to a bar by anything, and no delete by any component this table does not name. `bar-append-only` asserts it over the shipped source and over every migration, permitting a delete only in the file of a component declared here as a deleter of `bar`, and its negative proof plants one in a file that is not.
 
 This was a three-way contradiction until 1.4 and not a two-way one. The `bar` note said the fetcher drops old sessions, this row gave Delete to the corporate action checker alone, and the paragraph above said twice that a refetch was the only sanctioned removal. Any two of the three could be read as agreeing, which is why it survived a review.
+
+**The six computed tables have no deleter, and 4.0 ruled that each will be deleted by its own writer** (see: Every computed table's writer is its own deleter). Section 16 states one year, recomputed nightly and kept for the harness, over indicators, swings, volume profile, levels, ladders and moves, and this table gives Delete to nobody for any of the six. It is the same defect as `bar`'s before 1.4 and `news_pulse`'s before 1.4, in a third place: a retention window nobody owns is a table that grows forever while the document says it does not.
+
+The grain is what makes it urgent rather than tidy. `indicator` and `swing` key on a session, so both replace with the series and grow only as it does. `volume_profile`, `level` and `ladder` key on an as-of date, so each writes a new set every night and replaces nothing. At the band counts the fixture averages, five hundred names put something of the order of three and a half million rows a year into a store nothing can reduce.
+
+**The rows above still read `none`, and that is the file describing the code rather than the intention.** This file is reconciled against the shipped source in both directions, so a deleter declared here before the component deletes is a declaration with nothing behind it, which `writer-ownership` refuses and should. Five rows change at 4.2, which is the checkpoint that writes the deletes: `indicator`, `swing`, `volume_profile`, `level` and `ladder`. `move` waits for 5.2, because `MoveAnnotator` does not exist until then. Each writer will drop the rows that fall out of the window on the night they fall out, which is what `BarFetcher` does for `bar` and `NewsPulseCounter` for `news_pulse`, removing whole as-of sets or whole sessions and never a row from inside a set that stands.
 
 **`facts` is inserted by one component and updated by another, on disjoint columns.** FactsAssembler writes the facts file and its hash. ChangeDetector writes only the material-change list, on a row that already exists. A split is permitted where two components own disjoint declared column sets on the same grain, and the declared sets are below.
 
@@ -109,6 +116,26 @@ Primary key: `ticker`, `session_date`.
 It sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
 
 One year retained. The fetcher drops sessions older than the retention window on the night they fall out of it, and is declared above as a deleter of this table because it does.
+
+### calendar
+Grain: one row per ticker, event date and kind.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `event_date` | TEXT | date the event falls on |
+| `kind` | TEXT | a provider event kind, `earnings` today |
+| `status` | TEXT | `confirmed` or `estimated`, as the provider files it |
+| `detail` | TEXT | JSON: what the provider carries about the event beyond its date |
+| `observed_at` | TEXT | UTC instant of the fetch that recorded this |
+
+Primary key: `ticker`, `event_date`, `kind`.
+
+**This table holds what the provider files and nothing else** (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only). `kind` carries provider event kinds only. A dated item a research pass found is a claim resting on a source document, so it lives in `research_section` and reaches the report's Dates section from there. Writing one here would put a claim where the claim checker cannot reach it and would give this table a second inserter.
+
+`status` is a column because the provider files a date it has not confirmed, and a name whose next print is an estimate is a different thing from one whose print is booked. The failure table's explicit blank is a name with no row at all, which is a third state and is legible only because the other two are stored apart.
+
+One writer for all three operations. The fetcher inserts tonight's events, updates a date the provider has moved or confirmed, and drops rows for events that have fallen out of the window it fetches, which is the same shape `BarFetcher` and `NewsPulseCounter` carry for their own tables.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.
@@ -172,16 +199,20 @@ Primary key: `ticker`, `as_of`, `low_edge`.
 `has_non_average_anchor` is a stored column rather than a derived one because the ladder builder reads it on every band and a short moving average follows the price, so a band anchored only on one sits at the price about half the time.
 
 ### ladder
-Grain: one row per ticker per as-of date.
+Grain: one row per ticker per as-of date, **for every index member and not only the names carrying a plan**.
 
 | Column | Type | Notes |
 |---|---|---|
 | `ticker` | TEXT | |
 | `as_of` | TEXT | date |
-| `trend_state` | TEXT | `uptrend`, `downtrend`, `range` |
-| `plan` | TEXT | JSON: tranches, stops, invalidation, exits, earnings setups, arithmetic |
+| `trend_state` | TEXT | `uptrend`, `downtrend`, `range`, or `not_classified` |
+| `plan` | TEXT | JSON: tranches, stops, invalidation, exits, event setups, arithmetic, and where there are none, the reason there are none |
 
 Primary key: `ticker`, `as_of`.
+
+**A row is written for every member every night** (see: A ladder row is written for every index member every night). A name in a downtrend, a name whose only support band is anchored on a moving average, and a name whose trend could not be classified all get a row whose `plan` states why it is empty. An absent row says nothing, and the trend-changed condition compares tonight's label against last night's, so a name with no row on the night its band went ineligible has no yesterday for the transition that changes the whole plan.
+
+**`trend_state` carries a fourth value** (see: The trend state is read from the averages and the last two swings, and a name that cannot be classified says so). `not_classified` is a name with fewer than 200 bars, so no long average, or with fewer than two swings of the kind the rule reads. It is a stored value rather than a default to `range` for the reason `indicator.bar_count` exists: a label decides whether a plan exists, and a label over inputs nobody had is a figure over a population that was not measured. The reason sits in `plan` beside the reason a plan is empty, because both answer the same question a reader asks of an empty plan section.
 
 ### move
 Grain: one row per ticker and session selected as a large move.

@@ -8,7 +8,7 @@ namespace EquityBrief.Tests.Harness;
 // collapse into one.
 //
 // The catalogue names stores in prose, "membership", "bar store", "every store".
-// The read and write matrix names them in eleven column headings, some of which
+// The read and write matrix names them in column headings, some of which
 // aggregate several. SCHEMA names them as tables, in snake case. Declaring in the
 // finest vocabulary all three share, the SCHEMA table, means the other two are
 // derived rather than tabulated, and only the residue needs a lexicon.
@@ -23,7 +23,7 @@ internal static class ComponentVocabulary
     internal static string TableName(DataStore store) =>
         Regex.Replace(store.ToString(), "(?<!^)([A-Z])", "_$1").ToLowerInvariant();
 
-    // The twelve columns of the read and write matrix, and what each holds. Three
+    // The columns of the read and write matrix, and what each holds. Three
     // aggregate, which section 16 states of itself: computed tables is the row
     // naming six stores, research and theme is the two research rows, and
     // sources is source documents.
@@ -31,6 +31,7 @@ internal static class ComponentVocabulary
     [
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar]),
+        ("Calendar", [DataStore.Calendar]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move]),
         ("Listings", [DataStore.Listing]),
         ("Forward returns", [DataStore.ForwardReturn]),
@@ -69,7 +70,7 @@ internal static class ComponentVocabulary
         return match.Stores
             ?? throw new InvalidOperationException(
                 $"The read and write matrix carries a column '{columnHeading}' that maps to no " +
-                "store. A column nobody mapped is eleven claims a row makes against nothing.");
+                "store. A column nobody mapped is one claim per row made against nothing.");
     }
 
     // Whole-cell phrases, matched before the cell is split on commas, because
@@ -84,8 +85,11 @@ internal static class ComponentVocabulary
         ["the store's schema"] = [],
         ["the store's schema version"] = [],
         // Prose describing a hand-off rather than a store. The trend classifier
-        // returns its label to a caller; nothing is written.
-        ["returns the label to the facts assembler"] = [],
+        // returns its label to a caller; nothing is written. The caller is the
+        // ladder builder rather than the facts assembler, settled at 4.0,
+        // because the facts assembler is built a phase after the screen that
+        // draws the label and the ladder row is where the label is stored.
+        ["returns the label to the ladder builder"] = [],
         // The harness writes files, not stores, which is the distinction the
         // section 16 key draws for it in so many words.
         ["artifacts/phase-report.html"] = [],
@@ -101,6 +105,7 @@ internal static class ComponentVocabulary
         ["bulk price feed"] = Feed.BulkPrice,
         ["historical price feed"] = Feed.HistoricalPrice,
         ["splits and dividends feed"] = Feed.SplitsAndDividends,
+        ["earnings calendar feed"] = Feed.EarningsCalendar,
         ["news feed"] = Feed.News,
         ["company financials"] = Feed.CompanyFinancials,
         ["company financials feed"] = Feed.CompanyFinancials,
@@ -130,6 +135,7 @@ internal static class ComponentVocabulary
         ["facts"] = DataStore.Facts,
         ["fundamentals"] = DataStore.Fundamentals,
         ["membership"] = DataStore.Membership,
+        ["calendar"] = DataStore.Calendar,
     };
 
     internal sealed record CellReading(DataStore[] Stores, Feed[] Feeds, string[] Unresolved);

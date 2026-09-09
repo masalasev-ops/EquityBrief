@@ -706,7 +706,7 @@ public class ArchitectureConformance
         // being argued for fails here. It moved from eight at 3.1, where the
         // two-hundred-bar row was split because its behaviour half is the stored
         // indicator and its other half is a string on a page nothing draws yet.
-        Assert.Equal(10, checkedElements);
+        Assert.Equal(12, checkedElements);
     }
 
     [Fact]

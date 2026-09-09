@@ -146,6 +146,50 @@ public class FixtureManifestTests
     }
 
     [Fact]
+    public void TheFolderAndTheExpectationAgreeAboutThePopulations()
+    {
+        // owes: The suite's fixture populations read from the expectation rather than written into each test
+        //
+        // The suite now reads its populations from the membership expectation
+        // rather than restating them. Two derivations remain and that is
+        // deliberate: `Fixtures.Populations` counts what is on disk and the
+        // expectation states what the rules produce over it. They are
+        // reconciled here, once, so a disagreement is a finding in one place
+        // rather than a literal that quietly stopped matching in twenty-five.
+        //
+        // 3.6 priced the alternative. Widening the fixture from three names to
+        // four turned 28 tests red and the repair touched twenty-five assertion
+        // sites across six test classes, one of which was a named constant
+        // covering six of them.
+        var folder = Fixtures.Of(Repository.Root).Populations.Single(one => one.Constituents > 0);
+
+        Assert.Equal(FixtureExpectation.Constituents, folder.Constituents);
+        Assert.Equal(FixtureExpectation.Names.Length, folder.Names);
+        Assert.Equal([.. FixtureExpectation.Departed.Order(StringComparer.Ordinal)], [.. folder.Departed.Order(StringComparer.Ordinal)]);
+
+        // The populations carry the property and are floored. A reader that
+        // returned nothing would agree with an expectation that stated nothing.
+        Assert.True(
+            FixtureExpectation.Constituents >= 5,
+            $"The membership expectation states {FixtureExpectation.Constituents} constituents, expected at least 5.");
+
+        Assert.True(
+            FixtureExpectation.Names.Length >= 4,
+            $"The bars expectation names {FixtureExpectation.Names.Length} names, expected at least 4.");
+
+        // Current members and names are the same set in this fixture and are
+        // not the same idea. A departed name could carry a series, so the two
+        // are asserted apart rather than one being read for the other.
+        Assert.Equal(
+            [.. FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal)],
+            [.. FixtureExpectation.Names.Order(StringComparer.Ordinal)]);
+
+        Assert.Equal(
+            FixtureExpectation.Constituents,
+            FixtureExpectation.CurrentMembers.Length + FixtureExpectation.Departed.Length);
+    }
+
+    [Fact]
     public void ConstituentsAndNamesAreCountedSeparatelyAndAreNotTheSamePopulation()
     {
         // The distinction, asserted rather than described.

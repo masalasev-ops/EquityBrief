@@ -158,7 +158,7 @@ public class GapRefusal
         var outcome = await BackfillAsync(store, RecordedHistoricalBarFeed.FromFolder(FixtureFolder()));
 
         Assert.Empty(outcome.Refused);
-        Assert.Equal(4, outcome.Owed);
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, outcome.Owed);
         Assert.True(Rows(store, "KEYS") > 250, "KEYS was refused over a clean series.");
     }
 

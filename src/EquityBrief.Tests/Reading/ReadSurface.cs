@@ -588,14 +588,35 @@ public class ReadSurface
         // see: Support and resistance own two hues and nothing else uses them
         var svg = new MarkRenderer().LevelChart("TEST", Wide(), null, Shading());
 
-        var fills = Regex.Matches(svg, "class=\"level-band\"[^/]*fill=\"([^\"]+)\" fill-opacity=\"([0-9.]+)\"")
-            .Select(match => (Hue: match.Groups[1].Value, Opacity: double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture)))
+        var fills = Regex.Matches(svg, "class=\"level-band\" data-role=\"([a-z]+)\"[^/]*fill=\"([^\"]+)\" fill-opacity=\"([0-9.]+)\"")
+            .Select(match => (
+                Role: match.Groups[1].Value,
+                Hue: match.Groups[2].Value,
+                Opacity: double.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture)))
             .ToArray();
 
         Assert.Equal(3, fills.Length);
         Assert.Equal(2, fills.Select(fill => fill.Hue).Distinct(StringComparer.Ordinal).Count());
-        Assert.Contains(fills, fill => fill.Hue.Contains("--support", StringComparison.Ordinal));
-        Assert.Contains(fills, fill => fill.Hue.Contains("--resistance", StringComparison.Ordinal));
+
+        // owes: The band hue mapping asserted, and not only the two hues
+        //
+        // Which band got which hue, and not only that both hues appear. The test
+        // asserted that three fills carry exactly two distinct hues and that one
+        // contains the support token and one the resistance token, and never
+        // that a support band got the support hue: swapping the two constants
+        // drew every support band in the resistance hue and left the suite
+        // green. Green is a level below the price and orange is one above it, so
+        // the mapping is the claim rather than the palette.
+        // see: Support and resistance own two hues and nothing else uses them
+        Assert.All(fills, fill => Assert.Contains(
+            "--" + fill.Role,
+            fill.Hue,
+            StringComparison.Ordinal));
+
+        // Both roles are present, so the assertion above is over a population
+        // that can fail rather than over three bands of one kind.
+        Assert.Contains(fills, fill => fill.Role == "support");
+        Assert.Contains(fills, fill => fill.Role == "resistance");
 
         // The immediate band on each side reads stronger, and it is a second
         // channel rather than a second hue.
@@ -621,6 +642,81 @@ public class ReadSurface
         await new LevelBuilder(clock, store.DatabaseFile).RunAsync("run-levels");
 
         return store;
+    }
+
+    [Fact]
+    public async Task TheLevelSurfaceServesTheLatestNightAloneWhenTwoAreStored()
+    {
+        // owes: The level read surface asserted over two stored as-of dates
+        //
+        // The query binds as_of to the maximum and the comment beside it says
+        // why: a page holding two nights of bands is a page holding two maps.
+        // Deleting that clause left the whole suite green, because the fixture
+        // holds one as-of date per name and the two queries cannot differ over
+        // it. The fault first appears on the second night rather than in any
+        // fixture, which is what makes a constructed second night the only way
+        // to assert it.
+        //
+        // The two-date store is also what 4.2's retention test is asserted
+        // against, so it is built once here rather than twice.
+        using var store = await WithBands();
+
+        var api = Api(store);
+        var tonight = await api.LevelsAsync(Name);
+
+        Assert.NotEmpty(tonight);
+
+        var asOf = tonight[0].AsOf;
+        var yesterday = asOf.AddDays(-1);
+
+        // Yesterday's night, at prices nothing tonight carries, so a row from it
+        // is unmistakable in the answer.
+        await using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            await connection.OpenAsync();
+
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = @"
+                INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members)
+                VALUES ($ticker, $as_of, '1.0000', '2.0000', 'support', 0, 1, 1, '[]');
+            ";
+
+            command.Parameters.AddWithValue("$ticker", Name);
+            command.Parameters.AddWithValue("$as_of", yesterday.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        // The store now holds two nights, which is the population that makes the
+        // clause observable. Stated rather than assumed, because an insert that
+        // silently did nothing would leave this asserting over one night again.
+        var stored = new List<string>();
+
+        await using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            await connection.OpenAsync();
+
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "SELECT DISTINCT as_of FROM level WHERE ticker = $ticker ORDER BY as_of;";
+            command.Parameters.AddWithValue("$ticker", Name);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                stored.Add(reader.GetString(0));
+            }
+        }
+
+        Assert.Equal(2, stored.Count);
+
+        var served = await api.LevelsAsync(Name);
+
+        Assert.Equal(tonight.Count, served.Count);
+        Assert.All(served, row => Assert.Equal(asOf, row.AsOf));
+        Assert.DoesNotContain(served, row => row.LowEdge == 1.0000m);
     }
 
     static MomentumReading[] Readings(IReadOnlyList<IndicatorRow> rows, int sessions) =>
@@ -656,8 +752,27 @@ public class ReadSurface
             .Select(match => (Name: match.Groups[1].Value, Neutral: match.Groups[2].Value))
             .ToArray();
 
+        // owes: The momentum panel's reading set asserted independently of the constant it is drawn from
+        //
+        // The four are named here rather than read back out of the constant the
+        // panel is drawn from. Asserted against `IndicatorSeries.Momentum` alone,
+        // both sides of the comparison were the same value: dropping macd_hist
+        // drew three readings and left the suite green, while adding atr14
+        // turned it red only because NeutralOf throws on a reading with no
+        // neutral rule. The test was sensitive to the set through an exception
+        // and never through membership, which is the asymmetry that identified
+        // it as a tautology in the phase 3 sign-off's sweep.
+        //
+        // The document enumerates the four nowhere, so a literal here is the
+        // independent statement rather than a second copy of one.
+        string[] theFourReadings = ["rsi14", "macd", "macd_signal", "macd_hist"];
+
+        Assert.Equal(theFourReadings, groups.Select(group => group.Name).ToArray());
+
+        // And the constant agrees with the literal, so the two are reconciled
+        // once rather than the panel being free to drift from what is drawn.
+        Assert.Equal(theFourReadings, IndicatorSeries.Momentum.ToArray());
         Assert.Equal(IndicatorSeries.Momentum.Count, groups.Length);
-        Assert.Equal(IndicatorSeries.Momentum, groups.Select(group => group.Name).ToArray());
 
         // One rule per reading, and its value is the one the arithmetic states
         // rather than one the mark chose.
