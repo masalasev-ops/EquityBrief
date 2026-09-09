@@ -34,21 +34,29 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
                 "leave the night's session date decided by whichever file was listed first.");
     }
 
+    readonly List<string> notSessions = [];
+
+    public IReadOnlyList<string> NotSessions => notSessions;
+
     // Every row the file holds, for every name, unfiltered.
     //
     // Counted once per call rather than once per name, because that count is
     // the whole claim the nightly path rests on: one request for the night
     // whatever the universe is, and nightly-cost reads the figure back off the
     // run log.
-    readonly List<string> notSessions = [];
-
-    public IReadOnlyList<string> NotSessions => notSessions;
-
-    public Task<IReadOnlyList<BulkBar>> RowsAsync(string exchange, CancellationToken cancellation = default)
+    //
+    // The session is checked and not filtered on. A recorded feed that quietly
+    // returned only the rows matching what was asked for could never answer with
+    // the wrong session, and the failure this checkpoint exists to induce would
+    // be one the fixture is structurally unable to produce.
+    public Task<IReadOnlyList<BulkBar>> RowsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default)
     {
         Requests++;
 
-        return Task.FromResult(Parse(response, exchange, notSessions));
+        return Task.FromResult(Parse(response, exchange, session, notSessions));
     }
 
     // Shared by this and the live feed, which is what makes the double and the
@@ -57,6 +65,7 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
     public static IReadOnlyList<BulkBar> Parse(
         string json,
         string exchange,
+        DateOnly? session = null,
         ICollection<string>? notSessions = null)
     {
         using var document = JsonDocument.Parse(json);
@@ -86,6 +95,28 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
                 // file rather than a broken payload.
                 skipped++;
                 notSessions?.Add(ticker);
+            }
+        }
+
+        // The session the answer is for, against the session that was asked
+        // for. A bulk file is one exchange's day, so the rows share a date and
+        // one that is not the requested one is an answer to a different
+        // question. Yesterday's file arrives looking exactly like a night that
+        // ran: one request, no error, and bars the store already holds.
+        // see: A feed is unavailable when it does not answer, and wrong when it answers with something else
+        if (session is { } wanted)
+        {
+            var answered = rows.Select(row => row.Bar.SessionDate).Distinct().OrderBy(date => date).ToArray();
+            var wrong = answered.Where(date => date != wanted).ToArray();
+
+            if (wrong.Length > 0)
+            {
+                throw new FormatException(
+                    $"The bulk response for {exchange} carries " +
+                    string.Join(", ", wrong.Select(date => date.ToString("yyyy-MM-dd"))) +
+                    $" and {wanted:yyyy-MM-dd} was asked for. A payload for another session is " +
+                    "refused rather than stored, because bars the store already holds arrive " +
+                    "looking exactly like a night that ran.");
             }
         }
 

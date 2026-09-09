@@ -2759,3 +2759,60 @@ Claims:     181, 38 pass, 143 out of scope, 0 unexamined, from 180 and 37. Predi
             run: one new limits row, passing in the checkpoint that creates it, and no claim
             leaves the out-of-scope set because nothing was owed at 2.2.
 Tests:      286, from 275.
+
+### 2.3 Failure behaviour at the wire                                        2026-09-09
+Built:      unavailable implemented to the definition settled at 2.0, and section 18 given the
+            two rows that definition leaves it short of.
+Rows:       **A feed answers with a session other than the one asked for** and **A feed answers
+            with fewer names than the index holds**. Both are answers that arrive, which is the
+            half of the definition that had no row at all: section 18 promised what the system
+            does when a feed is unavailable and said nothing about a feed that answered.
+Two, not one: they are refused in different places, and that is the reason rather than a
+            preference. Only the feed knows the session it asked for, and only the fetcher knows
+            how many names the index holds. One is refused inside the feed and the other after
+            it, so folding them would put one of the two checks somewhere it cannot see what it
+            needs.
+Asked for:  the bulk feed is now told which session to fetch rather than asked for the last day.
+            That was left open at 2.1 and this checkpoint closes it, because a request with no
+            date has nothing to compare its answer against: yesterday's file arrives making one
+            request, logging no error, and storing bars the store already holds. The live feed
+            sends the date and the recorded feed checks it, and the recorded feed checks rather
+            than filters, because a double that quietly returned only the matching rows could
+            never answer with the wrong session and the fixture would be structurally unable to
+            induce the failure this checkpoint exists to induce.
+Short:      a current member that appears neither as a bar nor as a symbol that did not trade is
+            a member the file does not carry. The bulk file is the whole exchange and every
+            member of a US index is listed on it, so that is a truncation rather than a quiet
+            night. The refusal names how many of how many, and the first five by ticker.
+            Refused before the transaction opens, so the names it did carry are not stored
+            either. That is deliberate and it is the strict reading: a partial store leaves most
+            of the index silently stale beside names that look current. The behaviour for an
+            unusable feed already exists and is safe, being to keep last night's bars and say so.
+            If it turns out to fire on ordinary nights that is a measurement phase 5 will have,
+            and the row can be revisited with data rather than with a guess now.
+No threshold: neither refusal carries a fraction, a proportion or a tolerance. The first compares
+            two dates and the second compares a set against a set, and both are derived from the
+            structure of the data rather than from a number somebody chose. That was the point of
+            looking: a truncation rule written as "fewer than ninety per cent of members" would
+            have been a round number with nothing behind it.
+Decomposed: **Bulk price feed unavailable** is read per surface the way the gap row was at 1.5.
+            Its run log half is asserted here, being that a night whose feed does not answer
+            stores nothing, leaves the bars it held exactly as they were, names the step and
+            exits non-zero. Its banner half is a phase 5 surface and stays out of scope until
+            5.4. The row's own text was amended to name both, because a decomposition the
+            document does not carry is a second statement of the row's content and the check
+            reads each element back out of the row.
+Retention:  the boundary was read back out of the rows the provider sent and is now the session
+            the night asked for. A payload for an older session would have moved it backwards and
+            kept sessions the night should have dropped, which is a second defect the dated
+            request removes rather than a third thing to check.
+Induced:    every one of the three is induced against the fixture rather than described, and each
+            runs a clean night first so there is a stored series for the refusal to leave alone.
+            A test that induced these against an empty store would prove that nothing was written
+            where nothing could have been.
+Roster:     `nightly-run`'s row in `CLAUDE.md` is widened to what it now asserts. A check whose
+            declared reach grows past its roster description is a property nobody wrote down.
+Claims:     184, 41 pass, 143 out of scope, 0 unexamined, from 181 and 38. Predicted before the
+            run: two new rows and one more claim from the decomposition, all three passing in the
+            checkpoint that creates them, and the banner half staying out of scope.
+Tests:      289, from 286.

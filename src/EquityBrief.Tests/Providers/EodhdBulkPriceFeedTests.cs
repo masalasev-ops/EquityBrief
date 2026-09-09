@@ -23,6 +23,11 @@ public class EodhdBulkPriceFeedTests
     const string Key = "demo-key-not-a-real-one";
     const string Base = "https://eodhd.example/api/";
 
+    // The session the captured bulk file is for, and the one every request
+    // below asks for. Named once, because a request that asks for a session
+    // and a payload that carries another is the failure 2.3 induces.
+    static readonly DateOnly Session = new(2026, 9, 8);
+
     // A handler that answers from a script and remembers what it was asked.
     sealed class Answering(Func<Uri, HttpResponseMessage> answer) : HttpMessageHandler
     {
@@ -67,7 +72,7 @@ public class EodhdBulkPriceFeedTests
     {
         var (feed, handler) = Feed(_ => Ok(Captured()));
 
-        await feed.RowsAsync("US");
+        await feed.RowsAsync("US", Session);
 
         var asked = Assert.Single(handler.Asked);
 
@@ -93,8 +98,8 @@ public class EodhdBulkPriceFeedTests
         // the fixture would only ever exercise one of them.
         var (feed, _) = Feed(_ => Ok(Captured()));
 
-        var live = await feed.RowsAsync("US");
-        var recorded = await new RecordedBulkPriceFeed(Captured()).RowsAsync("US");
+        var live = await feed.RowsAsync("US", Session);
+        var recorded = await new RecordedBulkPriceFeed(Captured()).RowsAsync("US", Session);
 
         Assert.NotEmpty(live);
         Assert.Equal(recorded, live);
@@ -108,13 +113,13 @@ public class EodhdBulkPriceFeedTests
         // run log's figure is what the cost limit is read off.
         var (refused, _) = Feed(_ => new HttpResponseMessage(HttpStatusCode.TooManyRequests));
 
-        await Assert.ThrowsAsync<ProviderRefusal>(() => refused.RowsAsync("US"));
+        await Assert.ThrowsAsync<ProviderRefusal>(() => refused.RowsAsync("US", Session));
 
         Assert.Equal(1, refused.Requests);
 
         var (answered, _) = Feed(_ => Ok(Captured()));
 
-        await answered.RowsAsync("US");
+        await answered.RowsAsync("US", Session);
 
         Assert.Equal(1, answered.Requests);
     }
@@ -126,7 +131,7 @@ public class EodhdBulkPriceFeedTests
         {
             var (feed, _) = Feed(_ => new HttpResponseMessage(status));
 
-            var failure = await Assert.ThrowsAsync<ProviderRefusal>(() => feed.RowsAsync("US"));
+            var failure = await Assert.ThrowsAsync<ProviderRefusal>(() => feed.RowsAsync("US", Session));
 
             // The status is named, because "the feed did not answer" and "the
             // feed refused the key" are different mornings for the operator.
@@ -152,7 +157,7 @@ public class EodhdBulkPriceFeedTests
         var (thrown, _) = Feed(_ => throw new HttpRequestException(
             $"Connection refused for {Base}eod-bulk-last-day/US?api_token={Key}&fmt=json"));
 
-        var failure = await Assert.ThrowsAsync<ProviderRefusal>(() => thrown.RowsAsync("US"));
+        var failure = await Assert.ThrowsAsync<ProviderRefusal>(() => thrown.RowsAsync("US", Session));
 
         foreach (var text in new[] { failure.Message, failure.ToString() })
         {
@@ -184,7 +189,7 @@ public class EodhdBulkPriceFeedTests
     {
         var (feed, _) = Feed(_ => Ok("{\"message\":\"not an array\"}"));
 
-        await Assert.ThrowsAsync<FormatException>(() => feed.RowsAsync("US"));
+        await Assert.ThrowsAsync<FormatException>(() => feed.RowsAsync("US", Session));
     }
 
     // One row that traded, one listed symbol that did not, and one row from
@@ -204,7 +209,7 @@ public class EodhdBulkPriceFeedTests
     {
         var (feed, _) = Feed(_ => Ok(Mixed));
 
-        var rows = await feed.RowsAsync("US");
+        var rows = await feed.RowsAsync("US", Session);
 
         // The night survives a penny stock. Before this, one row with no
         // positive close threw out of the parser and the fetch step failed for
@@ -227,7 +232,7 @@ public class EodhdBulkPriceFeedTests
         // not trade is this night's and is a fact worth reading.
         var (feed, _) = Feed(_ => Ok(Mixed));
 
-        await feed.RowsAsync("US");
+        await feed.RowsAsync("US", Session);
 
         Assert.DoesNotContain("VOD", feed.NotSessions);
     }
@@ -242,7 +247,7 @@ public class EodhdBulkPriceFeedTests
             [{"code":"DEWM","exchange_short_name":"US","date":"2026-09-08","open":0,"high":0,"low":0,"close":0,"adjusted_close":0,"volume":0}]
             """));
 
-        var failure = await Assert.ThrowsAsync<FormatException>(() => feed.RowsAsync("US"));
+        var failure = await Assert.ThrowsAsync<FormatException>(() => feed.RowsAsync("US", Session));
 
         Assert.Contains("did not trade", failure.Message, StringComparison.Ordinal);
     }
@@ -258,7 +263,7 @@ public class EodhdBulkPriceFeedTests
             [{"code":"AAPL","exchange_short_name":"US","open":1,"high":2,"low":1,"close":2,"adjusted_close":2,"volume":10}]
             """));
 
-        await Assert.ThrowsAsync<FormatException>(() => feed.RowsAsync("US"));
+        await Assert.ThrowsAsync<FormatException>(() => feed.RowsAsync("US", Session));
     }
 
     [Fact]

@@ -25,6 +25,25 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html, CLAUDE.md, BUILD_PLAN.md - the two rows for an answer that arrives
+Authorised by: A feed is unavailable when it does not answer, and wrong when it answers with something else
+Was:
+> section 18's unavailable row read "keeps last night's bars, marks every name stale, still
+> serves the app" against "a banner giving the data date, and tonight's list absent rather than
+> wrong", with no row anywhere for a payload that arrives and is wrong; and `nightly-run`'s
+> roster row claimed only that the night runs the steps in order and that a failure names the
+> step and exits non-zero
+Now:
+> the unavailable row names the run log and the banner as the two surfaces it promises and says
+> what unavailable covers; two rows follow it for a payload carrying another session and a
+> payload short of a current member; and the roster row claims the deadline and both refusals
+Why: the definition settled at 2.0 splits a feed that did not answer from a feed that answered
+with something else, and section 18 carried a row for the first and nothing for the second. The
+unavailable row is read per surface because its banner is a phase 5 surface and its run log is
+not, which is the shape the gap row took at 1.5. The roster row is widened because a check whose
+declared reach grows past its description is a property nobody wrote down.
+
+
 ### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - the timeout and the night's deadline
 Authorised by: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
 Was:

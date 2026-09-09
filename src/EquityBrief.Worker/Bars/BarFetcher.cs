@@ -87,6 +87,11 @@ public sealed class BarFetcher : IComponent
 
     const string BarCount = "SELECT COUNT(*) FROM bar;";
 
+    // How many missing names a refusal names before it stops listing them.
+    // Enough to recognise the shape of the absence, short of printing five
+    // hundred tickers into a run log row.
+    const int FirstNamed = 5;
+
     const string AppendRun = @"
         INSERT INTO run_log (
             run_id, stage, started_at, ended_at, outcome,
@@ -109,14 +114,55 @@ public sealed class BarFetcher : IComponent
         var members = await MembersAsync(connection, indexCode);
         var before = await CountAsync(connection);
 
+        // The session this night is for, decided here and asked for by name.
+        //
+        // The feed is told which session rather than asked for the last day,
+        // because a request with no date has nothing to compare its answer
+        // against. A night is scheduled after the close, so the session is the
+        // date the run's own instant falls on in the exchange's zone
+        // (see: The night runs at a fixed UTC instant set after the provider posts the day's bulk file).
+        var session = clock.SessionDateAt(started);
+
         // One request. Counted by the feed rather than asserted by the caller,
         // because a caller that looped would still report one.
-        var rows = await feed.RowsAsync(Exchange, cancellationToken);
+        var rows = await feed.RowsAsync(Exchange, session, cancellationToken);
 
         var wanted = rows
             .Where(row => members.Contains(row.Ticker))
             .OrderBy(row => row.Ticker, StringComparer.Ordinal)
             .ToArray();
+
+        // Every current member accounted for, before anything is stored.
+        //
+        // The bulk file is the whole exchange and every member of a US index is
+        // listed on it, so a member that appears neither as a bar nor as a
+        // symbol that did not trade is a member the file does not carry. A file
+        // short of names stored as a whole one leaves most of the index
+        // silently stale with no gap to find, which is the failure that looks
+        // current and is false.
+        //
+        // Only the fetcher can ask this. The feed does not know how many names
+        // the index holds, which is why this is a different row from the wrong
+        // session and is refused in a different place.
+        // see: A feed is unavailable when it does not answer, and wrong when it answers with something else
+        var accounted = wanted
+            .Select(row => row.Ticker)
+            .Concat(feed.NotSessions)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var missing = members.Where(member => !accounted.Contains(member))
+            .OrderBy(member => member, StringComparer.Ordinal)
+            .ToArray();
+
+        if (missing.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"The bulk file for {session:yyyy-MM-dd} carries nothing for {missing.Length} of " +
+                $"{members.Count} current member(s): {string.Join(", ", missing.Take(FirstNamed))}" +
+                (missing.Length > FirstNamed ? ", and others" : string.Empty) +
+                ". A payload short of names is refused rather than stored, because the names it " +
+                "does carry would look current beside the ones it does not.");
+        }
 
         await using var transaction = await connection.BeginTransactionAsync();
 
@@ -127,13 +173,11 @@ public sealed class BarFetcher : IComponent
 
         var stored = await CountAsync(connection);
 
-        // The retention boundary, taken from the session the file is for rather
-        // than from the machine clock, so replaying a fixture drops what that
-        // night would have dropped.
-        var session = wanted.Length > 0
-            ? wanted.Max(row => row.Bar.SessionDate)
-            : clock.SessionDateAt(started);
-
+        // The retention boundary, taken from the session the night asked for.
+        // Before 2.3 it was read back out of the rows, which made the boundary a
+        // property of what the provider happened to send: a payload for an older
+        // session would have moved it backwards and kept sessions the night
+        // should have dropped.
         var oldest = session.AddYears(-RetentionYears);
 
         await using (var drop = connection.CreateCommand())

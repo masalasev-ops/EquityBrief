@@ -90,7 +90,9 @@ public class FixtureExpectations
         // it from the same inputs rather than comparing a run against itself.
         var expected = Expected("fetch");
         var bulk = RecordedBulkPriceFeed.FromFolder(Folder());
-        var rows = await bulk.RowsAsync(expected.GetProperty("exchange").GetString()!);
+        var rows = await bulk.RowsAsync(
+            expected.GetProperty("exchange").GetString()!,
+            DateOnly.ParseExact(expected.GetProperty("session").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = Expected("membership").GetProperty("currentMembers")
             .EnumerateArray().Select(one => one.GetString()!).ToArray();

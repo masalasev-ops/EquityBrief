@@ -30,6 +30,9 @@ public class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members."),
             CheckReach.Key(Scope.LimitsTable, "Per-request timeout and the night's deadline"),
+            CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
+            CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
+            CheckReach.Key(Scope.FailureTable, "A feed answers with fewer names than the index holds"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -43,7 +46,8 @@ public class NightlyRun
         string? fixture = null,
         string? runId = null,
         IBulkPriceFeed? bulk = null,
-        TimeSpan? deadline = null)
+        TimeSpan? deadline = null,
+        IClock? clock = null)
     {
         var output = new StringWriter();
         var error = new StringWriter();
@@ -52,7 +56,7 @@ public class NightlyRun
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
             fixture ?? FixtureFolder(),
             "GSPC",
-            FixedClock.At(Night, SessionZones.UnitedStates),
+            clock ?? FixedClock.At(Night, SessionZones.UnitedStates),
             output,
             error,
             runId,
@@ -60,6 +64,100 @@ public class NightlyRun
             deadline);
 
         return (code, output.ToString(), error.ToString());
+    }
+
+    // A payload that arrives and is wrong, in the two shapes section 18 now
+    // carries. Both are induced against the fixture rather than described.
+    //
+    // A feed that did not answer and a feed that answered with something else
+    // are different behaviours, and only the second can be mistaken for a night
+    // that ran. That is the whole reason "unavailable" needed a definition
+    // before these rows could be written.
+    // see: A feed is unavailable when it does not answer, and wrong when it answers with something else
+
+    [Fact]
+    public async Task APayloadForAnotherSessionIsRefusedAndTheStoredBarsAreUnchanged()
+    {
+        using var store = new TemporaryStore();
+
+        // A clean night first, so there is a stored series for the refusal to
+        // leave alone. A test that induced the failure against an empty store
+        // would prove that nothing was written where nothing could have been.
+        var (clean, _, _) = await NightAsync(store, runId: "night-one");
+
+        Assert.Equal(0, clean);
+
+        var before = Count(store);
+
+        Assert.True(before > 700, $"The store held {before} bars before the refusal, expected a year.");
+
+        // The fixture's file is for 2026-09-08. This night asks for the session
+        // after it, which is what a night run a day later against a stale file
+        // looks like from here.
+        var (code, _, error) = await NightAsync(
+            store,
+            runId: "night-stale",
+            clock: FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+
+        Assert.Equal(1, code);
+        Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
+        Assert.Contains("2026-09-08", error, StringComparison.Ordinal);
+        Assert.Contains("2026-09-09 was asked for", error, StringComparison.Ordinal);
+
+        // The stored series is exactly as it was. Not shortened, not added to.
+        Assert.Equal(before, Count(store));
+    }
+
+    [Fact]
+    public async Task APayloadMissingACurrentMemberIsRefusedBeforeAnythingIsStored()
+    {
+        using var store = new TemporaryStore();
+
+        var (clean, _, _) = await NightAsync(store, runId: "night-one");
+
+        Assert.Equal(0, clean);
+
+        var before = Count(store);
+
+        // A payload holding two of the three current members. The third is
+        // absent from the file entirely, which is what a truncated bulk file
+        // looks like: not a symbol that did not trade, but a name the exchange's
+        // own day does not carry.
+        var short2 = new ShortBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), "MSFT");
+
+        var (code, _, error) = await NightAsync(store, runId: "night-short", bulk: short2);
+
+        Assert.Equal(1, code);
+        Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
+        Assert.Contains("carries nothing for 1 of 3 current member(s)", error, StringComparison.Ordinal);
+        Assert.Contains("MSFT", error, StringComparison.Ordinal);
+
+        // Refused before the transaction opens, so the two names it did carry
+        // are not stored either. A partial store is the failure the row exists
+        // to prevent, not a smaller version of a good night.
+        Assert.Equal(before, Count(store));
+    }
+
+    [Fact]
+    public async Task AFeedThatDoesNotAnswerKeepsLastNightsBarsAndSaysSoOnTheRunLog()
+    {
+        // The behaviour half of the decomposed unavailable row. Its banner and
+        // tonight's list are phase 5 surfaces and are owed at 5.4; what is owed
+        // here is that the store is left as it was and the night says why.
+        using var store = new TemporaryStore();
+
+        var (clean, _, _) = await NightAsync(store, runId: "night-one");
+
+        Assert.Equal(0, clean);
+
+        var before = Count(store);
+
+        var (code, _, error) = await NightAsync(store, runId: "night-down", bulk: new FailingBulkFeed());
+
+        Assert.Equal(1, code);
+        Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
+        Assert.Contains("did not answer", error, StringComparison.Ordinal);
+        Assert.Equal(before, Count(store));
     }
 
     [Fact]
@@ -243,6 +341,24 @@ public class NightlyRun
 // so the test reads as the failure row rather than as an exception.
 public sealed class HttpRequestFailure(string message) : Exception(message);
 
+// A feed that answers with the file minus one name, which is what a truncated
+// bulk payload looks like: the name is absent altogether rather than present and
+// not traded.
+sealed class ShortBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, string drop)
+    : EquityBrief.Core.Providers.IBulkPriceFeed
+{
+    public int Requests => inner.Requests;
+
+    public IReadOnlyList<string> NotSessions => inner.NotSessions;
+
+    public async Task<IReadOnlyList<EquityBrief.Core.Providers.BulkBar>> RowsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default) =>
+        [.. (await inner.RowsAsync(exchange, session, cancellation))
+            .Where(row => !string.Equals(row.Ticker, drop, StringComparison.Ordinal))];
+}
+
 // A feed that never answers, which is what a hung socket looks like from here.
 sealed class SlowBulkFeed : EquityBrief.Core.Providers.IBulkPriceFeed
 {
@@ -252,6 +368,7 @@ sealed class SlowBulkFeed : EquityBrief.Core.Providers.IBulkPriceFeed
 
     public async Task<IReadOnlyList<EquityBrief.Core.Providers.BulkBar>> RowsAsync(
         string exchange,
+        DateOnly session,
         CancellationToken cancellation = default)
     {
         Requests++;
@@ -272,6 +389,7 @@ sealed class FailingBulkFeed : EquityBrief.Core.Providers.IBulkPriceFeed
 
     public Task<IReadOnlyList<EquityBrief.Core.Providers.BulkBar>> RowsAsync(
         string exchange,
+        DateOnly session,
         CancellationToken cancellation = default)
     {
         Requests++;

@@ -11,11 +11,24 @@ public sealed record BulkBar(string Ticker, ProviderBar Bar);
 // see: The nightly run is arithmetic only
 public interface IBulkPriceFeed
 {
-    // Every row the exchange returned, unfiltered. Filtering by membership is
-    // the fetcher's work and not the feed's, because a feed that filtered would
-    // be deciding which names are in the index from something other than the
-    // membership store.
-    Task<IReadOnlyList<BulkBar>> RowsAsync(string exchange, CancellationToken cancellation = default);
+    // Every row the exchange returned for the session asked for, unfiltered.
+    // Filtering by membership is the fetcher's work and not the feed's, because
+    // a feed that filtered would be deciding which names are in the index from
+    // something other than the membership store.
+    //
+    // The session is named rather than left as "the last day".
+    //
+    // A feed that asked for the last day has nothing to compare the answer
+    // against, and a night answered with yesterday's file logs one request and
+    // no error. Naming the session is what turns that into a question with a
+    // right answer, and the feed can ask it because it knows what it asked for
+    // and the payload declares what it is. How many names the answer should
+    // hold is a different question and only the fetcher can ask it.
+    // see: A feed is unavailable when it does not answer, and wrong when it answers with something else
+    Task<IReadOnlyList<BulkBar>> RowsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default);
 
     // How many requests this feed has made. The nightly claim is a number, so
     // the feed counts rather than the caller asserting it did not loop.

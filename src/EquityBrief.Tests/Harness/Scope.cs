@@ -190,6 +190,18 @@ internal static class Scope
             Verdict.Pass,
             "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once",
             ByCost),
+        [CheckReach.Key(FailureTable, "Bulk price feed unavailable, run log")] = new Scoped(
+            Verdict.Pass,
+            "a night whose feed does not answer stores nothing, leaves the bars it already held exactly as they were, names the step and exits non-zero",
+            ByNight),
+        [CheckReach.Key(FailureTable, "A feed answers with a session other than the one asked for")] = new Scoped(
+            Verdict.Pass,
+            "a payload carrying a session other than the requested one is refused inside the feed, naming both dates, and the stored series is unchanged",
+            ByNight),
+        [CheckReach.Key(FailureTable, "A feed answers with fewer names than the index holds")] = new Scoped(
+            Verdict.Pass,
+            "a payload carrying nothing for a current member is refused by the fetcher before the transaction opens, naming how many and the first of them",
+            ByNight),
         [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
             Verdict.Pass,
             "the three attempts, the doubling wait and both bounds are read off the row and asserted against the policy the code uses, and a night given a deadline it cannot meet stops on the step it was on and says so",
@@ -272,20 +284,6 @@ internal static class Scope
         // a recorded run, and that arrives at 1.4.
         ["Backfill"] = "1.4",
 
-        // 2.3 names this row because it decomposes it per surface and asserts
-        // the behaviour half there, which is what the gap row got at 1.5. The
-        // claim the row makes is not the behaviour: its "What you see" cell
-        // promises a banner giving the data date and tonight's list absent
-        // rather than wrong, and both are surfaces phase 5 builds. A claim that
-        // something is visible is a claim about a surface, so the row is owed
-        // where the surface is.
-        //
-        // It moved here from the written failures map when the plan first named
-        // it. The value did not change and the reason did not change; what
-        // changed is that the plan can now derive a point for it, so leaving it
-        // written would have been a second statement of one fact with the wrong
-        // answer in it.
-        ["Bulk price feed unavailable"] = "5.4",
     };
 
     // Components the plan does not name. The catalogue and the matrix share it.
@@ -431,6 +429,18 @@ internal static class Scope
         // rule.
         [CheckReach.Key(FailureTable, "A gap in one name's series")] =
             ["chart", "level and plan sections"],
+
+        // The second row to be read per surface, and for the same reason. Its
+        // behaviour half is what the night does with the store and the run log,
+        // and that is assertable the moment a feed can fail. Its other half is a
+        // banner giving the data date and tonight's list absent rather than
+        // wrong, and both of those are surfaces phase 5 builds.
+        //
+        // Read as one claim it would be owed at 5.4 and the half that works
+        // would sit unasserted for two phases, which is the argument that
+        // resolved contradiction F and the shape 1.5 gave the gap row.
+        [CheckReach.Key(FailureTable, "Bulk price feed unavailable")] =
+            ["run log", "banner"],
     };
 
     // The claim subjects a row yields. One, itself, unless the row decomposes.
@@ -493,11 +503,12 @@ internal static class Scope
 
     static readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal)
     {
-        // "Bulk price feed unavailable" stood here until 2.0 wrote a phase that
-        // names it. It is now a declared exception above, keeping the same value
-        // and the same reason, because the plan derives 2.3 for it and a written
-        // value beside a derivable one is the drift this file exists to stop.
-        //
+        // The unavailable row's other half. Its behaviour half is asserted at
+        // 2.3 by nightly-run, which induces a feed that does not answer and
+        // reads the stored bars and the run log back. The banner giving the data
+        // date and tonight's list absent rather than wrong are phase 5 surfaces,
+        // and a claim that something is visible is a claim about a surface.
+        ["Bulk price feed unavailable, banner"] = "5.4",
         // The chart half is reached at 1.5 by gap-refusal, so only the other
         // element is owed. The level sections arrive at 3.5 and the plan
         // section's tables at 4.4, which is the last surface the cell names.

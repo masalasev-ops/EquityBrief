@@ -92,7 +92,10 @@ public sealed class EodhdBulkPriceFeed(
     static string WithTrailingSlash(string baseAddress) =>
         baseAddress.EndsWith('/') ? baseAddress : baseAddress + "/";
 
-    public async Task<IReadOnlyList<BulkBar>> RowsAsync(string exchange, CancellationToken cancellation = default)
+    public async Task<IReadOnlyList<BulkBar>> RowsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default)
     {
         // Counted once per call and not once per attempt. The limit this figure
         // is read against is "one request for the night whatever the universe
@@ -100,13 +103,13 @@ public sealed class EodhdBulkPriceFeed(
         // grows with retries is time, and the deadline is what bounds that.
         Requests++;
 
-        var body = await request.SendAsync(token => FetchAsync(exchange, token), cancellation)
+        var body = await request.SendAsync(token => FetchAsync(exchange, session, token), cancellation)
             .ConfigureAwait(false);
 
-        return RecordedBulkPriceFeed.Parse(body, exchange, notSessions);
+        return RecordedBulkPriceFeed.Parse(body, exchange, session, notSessions);
     }
 
-    async Task<string> FetchAsync(string exchange, CancellationToken cancellation)
+    async Task<string> FetchAsync(string exchange, DateOnly session, CancellationToken cancellation)
     {
         try
         {
@@ -114,7 +117,10 @@ public sealed class EodhdBulkPriceFeed(
             // string is the one thing in the process that must not be written
             // down. It is built here, used once, and never held.
             using var response = await client
-                .GetAsync($"{Endpoint}/{exchange}?api_token={credentials.ApiKey}&fmt=json", cancellation)
+                .GetAsync(
+                    $"{Endpoint}/{exchange}?api_token={credentials.ApiKey}&fmt=json" +
+                    $"&date={session:yyyy-MM-dd}",
+                    cancellation)
                 .ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
