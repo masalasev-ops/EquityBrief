@@ -1,24 +1,27 @@
 {
-  "stage": "fetch",
-  "derivedFrom": "the membership rows and the captured bulk file read through the rules in section 14, not from a run. The bulk file is one exchange's day for every listed symbol, and the fetch stores a bar only for a name membership says is a current member tonight, so every figure below is the result of applying that filter to the two committed inputs rather than a count taken from what the fetcher happened to write.",
-  "session": "2026-09-08",
-  "exchange": "US",
-  "rowsInFile": 7,
-  "rowsForThisExchange": 7,
-  "rowsForCurrentMembers": 3,
-  "rowsForDepartedConstituents": 2,
-  "rowsForNamesTheIndexDoesNotHold": 2,
-  "notSessionsExpected": 0,
-  "barsStoredExpected": 3,
-  "namesStored": [
-    "AAPL",
-    "KEYS",
-    "MSFT"
-  ],
-  "properties": {
-    "oneRequestWhateverTheUniverse": "the count is read off the feed rather than stated by the caller, and it is one for this file whether the index holds three names or five hundred",
-    "aDepartedConstituentIsNotStored": "AAL and XRAY have membership rows and leave dates, and the fetch writes no bar for either",
-    "aNameTheIndexDoesNotHoldIsNotStored": "A and AA are in the exchange's file and in no membership row",
-    "aSymbolThatDidNotTradeIsSkippedAndNamed": "none in this file, which is why the figure is stated: every one of the seven rows was hand-picked at 1.4 and every one of them traded. The first live night found 62 such rows in 44,362, so zero here is a property of the capture rather than of the exchange, and a fixture that never exercises the path is what let the live run fail on it"
-  }
+ "stage": "fetch",
+ "derivedFrom": "the membership rows and the captured bulk file read through the rules in section 14, not from a run. The bulk file is one exchange's day for every listed symbol, and the fetch stores a bar only for a name membership says is a current member tonight, so every figure below is the result of applying that filter to the two committed inputs rather than a count taken from what the fetcher happened to write.",
+ "tables": [
+  "bar"
+ ],
+ "session": "2026-09-08",
+ "exchange": "US",
+ "rowsInFile": 7,
+ "rowsForThisExchange": 7,
+ "rowsForCurrentMembers": 3,
+ "rowsForDepartedConstituents": 2,
+ "rowsForNamesTheIndexDoesNotHold": 2,
+ "notSessionsExpected": 0,
+ "barsStoredExpected": 3,
+ "namesStored": [
+  "AAPL",
+  "KEYS",
+  "MSFT"
+ ],
+ "properties": {
+  "oneRequestWhateverTheUniverse": "the count is read off the feed rather than stated by the caller, and it is one for this file whether the index holds three names or five hundred",
+  "aDepartedConstituentIsNotStored": "AAL and XRAY have membership rows and leave dates, and the fetch writes no bar for either",
+  "aNameTheIndexDoesNotHoldIsNotStored": "A and AA are in the exchange's file and in no membership row",
+  "aSymbolThatDidNotTradeIsSkippedAndNamed": "none in this file, which is why the figure is stated: every one of the seven rows was hand-picked at 1.4 and every one of them traded. The first live night found 62 such rows in 44,362, so zero here is a property of the capture rather than of the exchange, and a fixture that never exercises the path is what let the live run fail on it"
+ }
 }

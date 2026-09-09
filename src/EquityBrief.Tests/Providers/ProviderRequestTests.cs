@@ -155,25 +155,11 @@ public class ProviderRequestTests
         Assert.Empty(request.Waited);
     }
 
-    [Fact]
-    public void TheLimitsRowStatesTheFiguresTheCodeUses()
-    {
-        // A limit stated in a document and again in code is two places holding
-        // one fact. The row is read rather than repeated, so a figure changed in
-        // either place fails here.
-        var row = Corpus.Read("docs/ARCHITECTURE.html");
-        var at = row.IndexOf("Per-request timeout and the night's deadline", StringComparison.Ordinal);
-
-        Assert.True(at >= 0, "Section 17 no longer carries the timeout and deadline row.");
-
-        var cell = row[at..row.IndexOf("</tr>", at, StringComparison.Ordinal)];
-        var policy = RetryPolicy.Standard;
-
-        Assert.Contains($"at most {policy.Attempts} attempts", cell, StringComparison.Ordinal);
-        Assert.Contains($"{policy.FirstWait.TotalSeconds:0} seconds and then {policy.FirstWait.TotalSeconds * 2:0}", cell, StringComparison.Ordinal);
-        Assert.Contains($"bounded by {policy.Timeout.TotalSeconds:0} seconds", cell, StringComparison.Ordinal);
-        Assert.Contains($"bounded by {policy.Deadline.TotalMinutes:0} minutes", cell, StringComparison.Ordinal);
-    }
+    // The assertion that read section 17's row against this policy is in
+    // NightlyRun, which is nightly-run's carrier and therefore the only class
+    // whose tests can back the Per-request timeout and the night's deadline
+    // claim. It ran here, passed here, and the claim would have read PASS with
+    // it deleted. Found by 3.0's sweep of the claim notes.
 
     [Fact]
     public void OnlyTheAnswersWorthAskingAgainAreTransient()

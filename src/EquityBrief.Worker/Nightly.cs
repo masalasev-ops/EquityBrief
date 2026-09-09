@@ -3,6 +3,7 @@ using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Membership;
 
 namespace EquityBrief.Worker;
@@ -144,6 +145,24 @@ public static class Nightly
 
                 return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
                     $"{outcome.Suspect.Count} suspect, {outcome.Requests} request(s)";
+            }),
+            // The first of the nine things section 14's fourth item lists. It is
+            // one step here rather than nine because the others do not exist,
+            // and the item's own claim stays out of scope until they do: a step
+            // named "for every name: indicators, swings, volume profile, levels,
+            // trend state, ladder, moves, list reasons, facts file" that did one
+            // of them would be a step a reader counts as run.
+            //
+            // It is on the night rather than left to a test because phase 3's
+            // visible output is the averages on the chart, and a chart draws
+            // what a night computed. It makes no request and calls no model.
+            new("indicators", async () =>
+            {
+                var outcome = await new IndicatorEngine(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return $"{outcome.RowsWritten} rows written for {outcome.NamesComputed} name(s), " +
+                    $"{outcome.NotAvailable} not available";
             }),
         ];
 

@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - the averages are drawn, and one due point was wrong
+Authorised by: The volume profile accumulates over the same sixty sessions as the level window
+Was:
+> section 15.5's Level chart mark said the moving averages arrive at 3.1 and were not drawn;
+> section 17's Level window row said the window is the last 60 sessions without saying what
+> else reads it; and the obligations table put `Phase 3's expectations owed for 3.0's rulings`
+> at 3.1, with 3.1's own text citing it
+Now:
+> the averages are drawn, so the mark has one of its four elements absent rather than two; the
+> Level window row states that the volume profile accumulates over the same window; and the
+> expectations row is due at 3.4, cited by 3.4's text, because none of 3.0's three rulings is
+> assertable against a stage 3.1 builds
+Why: the due point was written by the pass that landed the rule requiring a due point to name
+what produces the evidence, and it named a checkpoint that produces none of it. The indicator
+engine reads no profile, no swing and no shelf, so a ruling about any of the three could not
+have been asserted there. It is recorded rather than quietly moved, because the rule catching
+its own author is the evidence that it works on something other than old text.
+
 ### 2026-09-09 - ARCHITECTURE.html, BUILD_PLAN.md - contradiction K, and the ninth row it did not name
 Corrects: contradiction K, which said eight components' write sat one column to the right of the
 store their catalogue row names. Repairing by reconciling every row against its catalogue row

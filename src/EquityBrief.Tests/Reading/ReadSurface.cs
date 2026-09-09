@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Providers;
@@ -7,6 +8,7 @@ using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Membership;
 using Microsoft.Data.Sqlite;
 
@@ -28,6 +30,7 @@ public class ReadSurface
             CheckReach.Key("15.4 The two surfaces", "The app"),
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles"),
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane"),
+            CheckReach.Key("15.5 The mark vocabulary", "Level chart, the moving averages"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -199,6 +202,142 @@ public class ReadSurface
             .ToArray();
 
         Assert.Equal(served.Select(bar => bar.SessionDate.ToString("yyyy-MM-dd")), drawn);
+    }
+
+    // ---- the moving averages, the third of the level chart's four elements ----
+
+    static async Task<TemporaryStore> WithIndicators()
+    {
+        var store = await Populated();
+
+        await new IndicatorEngine(
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("run-2");
+
+        return store;
+    }
+
+    // The averages as the endpoint assembles them: aligned to the drawn bars by
+    // session, so a line is one value per candle and a session the store has no
+    // indicator for is a break rather than a shift.
+    static ChartAverage[] Averages(IReadOnlyList<IndicatorRow> rows, ChartBar[] bars, params string[] names)
+    {
+        var bySession = rows
+            .GroupBy(row => row.Name)
+            .ToDictionary(group => group.Key, group => group.ToDictionary(row => row.SessionDate, row => row.Value));
+
+        return [.. names
+            .Where(bySession.ContainsKey)
+            .Select(name => new ChartAverage(
+                name,
+                bars.Select(bar => bySession[name].GetValueOrDefault(bar.SessionDate)).ToArray()))];
+    }
+
+    [Fact]
+    public async Task TheChartDrawsTheAveragesOnTheCandlesOwnScale()
+    {
+        // 3.1's done condition. Counted off the rendered markup rather than off
+        // the values handed to the renderer, for the reason the candle count is:
+        // a renderer that took the averages and drew nothing would pass a count
+        // of its input.
+        using var store = await WithIndicators();
+
+        var api = Api(store);
+        var served = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        var bars = Bars(served);
+        var rows = await api.IndicatorsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+
+        var averages = Averages(rows, bars, "sma20", "sma50", "sma200");
+
+        Assert.Equal(3, averages.Length);
+
+        var svg = new MarkRenderer().LevelChart(Name, bars, averages);
+
+        var groups = Regex.Matches(svg, "<g class=\"moving-average\" data-average=\"([a-z0-9_]+)\" data-values=\"([0-9]+)\"")
+            .Select(match => (Name: match.Groups[1].Value, Values: int.Parse(match.Groups[2].Value)))
+            .ToArray();
+
+        Assert.Equal(["sma20", "sma50", "sma200"], groups.Select(group => group.Name));
+
+        // Each line draws as many points as the store has values for it, and
+        // the counts are the store's rather than a figure written here.
+        foreach (var group in groups)
+        {
+            var stored = rows.Count(row => row.Name == group.Name && row.Value is not null);
+
+            Assert.Equal(stored, group.Values);
+            Assert.True(stored > 0, $"{group.Name} has no stored value, so the line would be vacuously right.");
+        }
+
+        // The long average is the one the done condition is about: it has fewer
+        // drawn points than the short one, because it has no value until two
+        // hundred bars sit behind the session.
+        Assert.True(
+            groups.Single(group => group.Name == "sma200").Values
+                < groups.Single(group => group.Name == "sma20").Values,
+            "The 200-day average drew as many points as the 20-day one, so its warm-up was not honoured.");
+
+        // Drawn on the candles' own scale. Every path coordinate sits inside the
+        // price pane, which is what a second scale would break.
+        var points = Regex.Matches(svg, "<path d=\"([^\"]+)\"")
+            .SelectMany(match => Regex.Matches(match.Groups[1].Value, @"[ML]([0-9.]+) ([0-9.]+)"))
+            .Select(match => double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.NotEmpty(points);
+        Assert.All(points, y => Assert.InRange(y, 0, 340));
+    }
+
+    [Fact]
+    public async Task AnAverageIsBrokenWhereItHasNoValueRatherThanJoinedAcrossIt()
+    {
+        // A 200-day average has no value for the first 199 sessions of a stored
+        // year. A single path from the first value it does have would claim the
+        // average was flat over sessions it did not exist for, which is a
+        // drawing of something that never happened.
+        using var store = await WithIndicators();
+
+        var api = Api(store);
+        var bars = Bars(await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue));
+        var rows = await api.IndicatorsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+
+        var svg = new MarkRenderer().LevelChart(Name, bars, Averages(rows, bars, "sma200"));
+
+        var group = Regex.Match(svg, "<g class=\"moving-average\"[^>]*>(.*?)</g>", RegexOptions.Singleline).Groups[1].Value;
+        var paths = Regex.Matches(group, "<path ").Count;
+
+        // One run of values, so one path, and the run starts where the warm-up
+        // ends rather than at the first session.
+        Assert.Equal(1, paths);
+
+        var first = Regex.Match(group, @"d=""M([0-9.]+) ").Groups[1].Value;
+
+        Assert.True(
+            double.Parse(first, CultureInfo.InvariantCulture) > 700,
+            $"The 200-day average starts at x={first}, which is near the left edge, so it was drawn from a session it has no value for.");
+    }
+
+    [Fact]
+    public void AnAverageOfTheWrongLengthIsRefusedRatherThanDrawnAgainstTheWrongDates()
+    {
+        // The failure that would report green. A line one session short draws
+        // every point one slot to the left and looks entirely plausible, so it
+        // is refused at the door rather than checked by eye.
+        var bars = new ChartBar[]
+        {
+            new(new DateOnly(2026, 9, 1), 10m, 12m, 9m, 11m, 100),
+            new(new DateOnly(2026, 9, 2), 11m, 12m, 8m, 9m, 120),
+        };
+
+        var refusal = Assert.Throws<ArgumentException>(() =>
+            new MarkRenderer().LevelChart("TEST", bars, [new ChartAverage("sma20", [10.5])]));
+
+        Assert.Contains("1 values against 2 sessions", refusal.Message, StringComparison.Ordinal);
+
+        // And the control: the right length draws.
+        var svg = new MarkRenderer().LevelChart("TEST", bars, [new ChartAverage("sma20", [10.5, 10.0])]);
+
+        Assert.Contains("class=\"moving-average\"", svg, StringComparison.Ordinal);
     }
 
     [Fact]

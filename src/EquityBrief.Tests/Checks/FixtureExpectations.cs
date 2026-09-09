@@ -1,9 +1,12 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Membership;
 using Microsoft.Data.Sqlite;
 
@@ -31,6 +34,8 @@ public class FixtureExpectations
         [
             CheckReach.Key(Scope.FixtureTable, "bars"),
             CheckReach.Key(Scope.FixtureTable, "news"),
+            CheckReach.Key(Scope.FixtureTable, "indicators"),
+            CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, 200-day average"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -265,6 +270,404 @@ public class FixtureExpectations
         Assert.NotEmpty(articles);
         Assert.All(articles, article => Assert.True(article.Published.Year >= 2020, "An article carries no usable publish date."));
         Assert.All(articles, article => Assert.False(string.IsNullOrWhiteSpace(article.Text)));
+    }
+
+    // ---- the indicators, 3.1's row of section 19.1 ----
+    //
+    // The expectation is derived from the committed bar files by arithmetic done
+    // outside this repository, not frozen from a run. An engine that averaged
+    // the wrong window would agree with a figure taken from itself, which is the
+    // whole difference between an expectation and a regression baseline.
+
+    static async Task<TemporaryStore> WithIndicators()
+    {
+        var store = await Replayed();
+
+        await new IndicatorEngine(
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("replay-2");
+
+        return store;
+    }
+
+    // A statistic crosses from decimal to double, and the sum of twenty doubles
+    // is not the sum of twenty decimals. The tolerance is on the last few digits
+    // of a double rather than on the figure, so a wrong window or a wrong price
+    // fails and the crossing does not.
+    const double Rounding = 1e-9;
+
+    static double Stored(TemporaryStore store, string ticker, string session, string name) =>
+        double.Parse(
+            Query(store, $"SELECT value FROM indicator WHERE ticker = '{ticker}' AND session_date = '{session}' AND name = '{name}';").Single(),
+            CultureInfo.InvariantCulture);
+
+    [Fact]
+    public async Task EveryNameAndSessionCarriesEveryIndicator()
+    {
+        var expected = Expected("indicators");
+        var names = expected.GetProperty("namesComputed").EnumerateArray().Select(name => name.GetString()!).ToArray();
+        var sessions = expected.GetProperty("sessionsPerName").GetInt32();
+        var indicators = expected.GetProperty("indicatorNames").EnumerateArray().Select(name => name.GetString()!).ToArray();
+
+        using var store = await WithIndicators();
+
+        // A row for every name, every session and every indicator, whether or
+        // not there is a value. An absence is a stored fact here, not a missing
+        // row a reader has to interpret.
+        Assert.Equal(
+            [expected.GetProperty("rowsExpected").GetInt32().ToString()],
+            Query(store, "SELECT COUNT(*) FROM indicator;"));
+
+        Assert.Equal(
+            [.. names.Select(name => $"{name}|{expected.GetProperty("rowsPerName").GetInt32()}")],
+            Query(store, "SELECT ticker, COUNT(*) FROM indicator GROUP BY ticker ORDER BY ticker;"));
+
+        // The ten SCHEMA's name column enumerates and no eleventh, which is what
+        // stops a name being added in code and going unstated.
+        Assert.Equal(
+            [.. indicators.OrderBy(name => name, StringComparer.Ordinal)],
+            Query(store, "SELECT DISTINCT name FROM indicator ORDER BY name;"));
+
+        Assert.Equal(
+            indicators.OrderBy(name => name, StringComparer.Ordinal),
+            IndicatorSeries.Names.OrderBy(name => name, StringComparer.Ordinal));
+
+        Assert.Equal(
+            sessions.ToString(),
+            Query(store, "SELECT COUNT(DISTINCT session_date) FROM indicator;").Single());
+    }
+
+    [Fact]
+    public async Task TheAveragesMatchTheArithmeticDoneOverTheCommittedBars()
+    {
+        var expected = Expected("indicators");
+
+        using var store = await WithIndicators();
+
+        foreach (var entry in expected.GetProperty("lastSession").EnumerateObject())
+        {
+            var ticker = entry.Name;
+            var session = entry.Value.GetProperty("lastSession").GetString()!;
+
+            foreach (var pair in new[]
+            {
+                (Name: IndicatorSeries.Sma20, Key: "sma20"),
+                (Name: IndicatorSeries.Sma50, Key: "sma50"),
+                (Name: IndicatorSeries.Sma200, Key: "sma200"),
+                (Name: IndicatorSeries.VolAvg20, Key: "volAvg20"),
+            })
+            {
+                var stored = Stored(store, ticker, session, pair.Name);
+                var derived = entry.Value.GetProperty(pair.Key).GetDouble();
+
+                Assert.True(
+                    Math.Abs(stored - derived) < Math.Abs(derived) * Rounding,
+                    $"{ticker} {pair.Name} at {session} is {stored} and the arithmetic over the committed bars gives {derived}.");
+            }
+        }
+    }
+
+    [Fact]
+    public void TheWorkedExampleAddsUpFromTheClosesItNames()
+    {
+        // The expectation lists the twenty closes its average is the mean of, so
+        // the figure can be checked by adding them up rather than trusted. This
+        // asserts the expectation against itself, which is what stops a wrong
+        // number being carried in the file and agreed with by the engine.
+        var worked = Expected("indicators").GetProperty("workedExample");
+        var closes = worked.GetProperty("closes").EnumerateArray().Select(value => value.GetDouble()).ToArray();
+
+        Assert.Equal(20, closes.Length);
+
+        var mean = closes.Sum() / closes.Length;
+        var stated = worked.GetProperty("sma20").GetDouble();
+
+        Assert.True(
+            Math.Abs(mean - stated) < Math.Abs(stated) * Rounding,
+            $"The worked example states {stated} and its own closes average {mean}.");
+
+        // And those closes are the fixture's, not numbers written into the
+        // expectation. Read back from the committed bar file for the twenty
+        // sessions ending at the named one.
+        var file = JsonDocument.Parse(
+            File.ReadAllText(Path.Combine(Folder(), $"bars-{worked.GetProperty("name").GetString()}.json"))).RootElement;
+
+        var session = worked.GetProperty("session").GetString();
+
+        var captured = file.EnumerateArray()
+            .Where(bar => string.CompareOrdinal(bar.GetProperty("date").GetString(), session) <= 0)
+            .TakeLast(20)
+            .Select(bar => bar.GetProperty("adjusted_close").GetDouble())
+            .ToArray();
+
+        Assert.Equal(closes, captured);
+    }
+
+    [Fact]
+    public async Task AnIndicatorWithoutItsWindowIsNotAvailableWithItsBarCount()
+    {
+        // 3.1's done condition, and the reason bar_count is a column. A name
+        // with fewer than two hundred bars behind a session records its long
+        // average as absent with the count that explains it, never as a number
+        // computed over whatever it had.
+        var expected = Expected("indicators");
+        var absent = expected.GetProperty("notAvailable");
+
+        using var store = await WithIndicators();
+
+        Assert.Equal(
+            [absent.GetProperty("total").GetInt32().ToString()],
+            Query(store, "SELECT COUNT(*) FROM indicator WHERE value IS NULL;"));
+
+        foreach (var entry in absent.GetProperty("perIndicatorPerName").EnumerateObject())
+        {
+            var perName = entry.Value.GetInt32();
+
+            Assert.Equal(
+                [$"{entry.Name}|{perName * expected.GetProperty("namesComputed").GetArrayLength()}"],
+                Query(store, $"SELECT name, COUNT(*) FROM indicator WHERE name = '{entry.Name}' AND value IS NULL;"));
+        }
+
+        // Every null carries a bar count below its window and every value one at
+        // it. That is the property; the counts above are the population it holds
+        // over.
+        Assert.Equal(
+            ["0"],
+            Query(store, "SELECT COUNT(*) FROM indicator WHERE value IS NULL AND bar_count >= 200 AND name = 'sma200';"));
+
+        Assert.Equal(
+            ["0"],
+            Query(store, "SELECT COUNT(*) FROM indicator WHERE value IS NOT NULL AND bar_count < 200 AND name = 'sma200';"));
+
+        // At the first session every indicator has one bar behind it, whatever
+        // its window, which is what makes bar_count the history and not the
+        // window.
+        Assert.Equal(
+            [expected.GetProperty("barCount").GetProperty("atFirstSession").GetInt32().ToString()],
+            Query(store, "SELECT DISTINCT bar_count FROM indicator WHERE session_date = (SELECT MIN(session_date) FROM indicator);"));
+
+        Assert.Equal(
+            [expected.GetProperty("barCount").GetProperty("sma200SessionsWithAValue").GetInt32().ToString()],
+            Query(store, "SELECT COUNT(*) FROM indicator WHERE name = 'sma200' AND value IS NOT NULL AND ticker = 'AAPL';"));
+    }
+
+    [Fact]
+    public async Task ASecondRunReplacesRatherThanDuplicating()
+    {
+        // Recomputed nightly, so the night is idempotent in what it records: two
+        // runs over one session leave one row saying the same thing. Without the
+        // upsert the primary key would refuse the second night rather than the
+        // night updating.
+        using var store = await WithIndicators();
+
+        var before = Query(store, "SELECT COUNT(*), SUM(bar_count) FROM indicator;");
+
+        await new IndicatorEngine(
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("replay-3");
+
+        Assert.Equal(before, Query(store, "SELECT COUNT(*), SUM(bar_count) FROM indicator;"));
+    }
+
+    [Fact]
+    public async Task TheSeriesStateIsWhatTheCapturedActionsIntersectedWithMembershipGive()
+    {
+        // Written at 3.1 because fixture-replay found the table populated and no
+        // expectation naming it. The corporate action checker has written it
+        // since 1.6 and nothing said what it should hold, which is a figure the
+        // pipeline produces that nothing expected.
+        //
+        // Derived rather than frozen: the two captured action files carry seven
+        // actions over seven distinct names, and the expectation is their
+        // intersection with the membership expectation's current members. That
+        // is arithmetic over two committed inputs, not a reading of the store.
+        var expected = Expected("series-state");
+
+        var refetched = expected.GetProperty("namesRefetched")
+            .EnumerateArray().Select(name => name.GetString()!).ToArray();
+
+        var members = Expected("membership").GetProperty("currentMembers")
+            .EnumerateArray().Select(name => name.GetString()!).ToArray();
+
+        var inFiles = expected.GetProperty("distinctNamesInFiles")
+            .EnumerateArray().Select(name => name.GetString()!).ToArray();
+
+        // The action count, read back off the captured files rather than taken
+        // on the expectation's word. Seven actions over seven distinct names is
+        // what makes the intersection below one name rather than an accident.
+        var actions = new[] { "actions-dividends-2026-08-10", "actions-splits-2026-08-10" }
+            .Sum(file => JsonDocument.Parse(File.ReadAllText(Path.Combine(Folder(), file + ".json")))
+                .RootElement.GetArrayLength());
+
+        Assert.Equal(expected.GetProperty("actionsInFiles").GetInt32(), actions);
+        Assert.Equal(inFiles.Length, actions);
+
+        // The intersection, recomputed here from the two files rather than read
+        // out of the one that states it.
+        Assert.Equal(refetched, inFiles.Intersect(members, StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal));
+
+        using var store = await Replayed();
+
+        await new CorporateActionChecker(
+            RecordedCorporateActionFeed.FromFolder(Folder()),
+            RecordedHistoricalBarFeed.FromFolder(Folder()),
+            FixedClock.At(new DateTimeOffset(2026, 8, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync(Index, "replay-actions");
+
+        Assert.Equal(
+            [expected.GetProperty("rowsExpected").GetInt32().ToString()],
+            Query(store, "SELECT COUNT(*) FROM series_state;"));
+
+        foreach (var state in expected.GetProperty("states").EnumerateObject())
+        {
+            Assert.Equal(
+                [$"{state.Name}|{state.Value.GetString()}|null"],
+                Query(store, $"SELECT ticker, state, reason FROM series_state WHERE ticker = '{state.Name}';"));
+        }
+
+        // And nothing is suspect, which is the figure that would move first if a
+        // captured action stopped parsing.
+        Assert.Equal(
+            [expected.GetProperty("suspectExpected").GetInt32().ToString()],
+            Query(store, $"SELECT COUNT(*) FROM series_state WHERE state = '{CorporateActionChecker.Suspect}';"));
+    }
+
+    // ---- the expectation sweep, carried out of the phase 1 sign-off ----
+
+    [Fact]
+    public void EveryKeyInEveryExpectationIsReadBySomeTest()
+    {
+        // The obligation: an expectation nobody reads is the same object as a
+        // check that runs nothing, so every file under fixtures named as an
+        // expectation is swept for whether a test consults it.
+        //
+        // Per key rather than per file. A file-level sweep reports four of four
+        // and misses the defect it was filed for, because the finding was that
+        // the bars expectation is read and something in it is not.
+        //
+        // A source scan, deliberately. Whether a test consults a key is a fact
+        // about the tests rather than about a run, and this reports coverage
+        // where the assertions above carry the property.
+        var sources = Directory
+            .EnumerateFiles(Path.Combine(Repository.Root, "src", "EquityBrief.Tests"), "*.cs", SearchOption.AllDirectories)
+            .Where(file => !file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(file => !file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.True(sources.Length >= 40, $"Read {sources.Length} test sources, expected at least 40.");
+
+        var text = string.Join("\n", sources.Select(File.ReadAllText));
+
+        var consulted = Regex.Matches(text, @"(?:Try)?GetProperty\(""([^""]+)""")
+            .Select(match => match.Groups[1].Value)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var files = Directory.GetFiles(Path.Combine(Folder(), "expectations"), "*.json").OrderBy(file => file).ToArray();
+
+        Assert.True(files.Length >= 5, $"The fixture holds {files.Length} expectation files, expected at least 5.");
+
+        var unread = new List<string>();
+        var keys = 0;
+
+        foreach (var file in files)
+        {
+            var stage = Path.GetFileNameWithoutExtension(file);
+
+            // Opened at all. A file no test names is unread whatever its keys.
+            Assert.Contains($"Expected(\"{stage}\")", text, StringComparison.Ordinal);
+
+            foreach (var property in JsonDocument.Parse(File.ReadAllText(file)).RootElement.EnumerateObject())
+            {
+                keys++;
+
+                if (!consulted.Contains(property.Name))
+                {
+                    unread.Add($"{stage}.{property.Name}");
+                }
+            }
+        }
+
+        // The scope carrying the property is the keys, and it is floored. The
+        // file count above is context: it is a fact about how many stages exist
+        // rather than about whether anything reads them.
+        Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
+
+        // Four stand unread and each is named rather than counted, because a
+        // number here would drift silently as keys are added. `rowsInFile` is
+        // the count of rows in the captured bulk payload, which the fetch
+        // expectation states so a reader can see what the membership filter cut
+        // from; `index` is the index code; and the two notes are sentences.
+        // None is a figure the pipeline produces, which is why nothing asserts
+        // them. The series state file added two keys when it landed and this
+        // assertion caught both on the same run, which is what it is for.
+        Assert.Equal(
+            ["fetch.rowsInFile", "membership.index", "membership.note", "series-state.note"],
+            unread.OrderBy(name => name, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public async Task EveryNamedClosureIsAbsentFromTheStoredSessionsAndEveryOtherWeekdayIsPresent()
+    {
+        // What the sweep found, and it is sharper than the sweep.
+        //
+        // `closures` is read, so a per-key sweep reports it covered. It is read
+        // only through a count: the derived session figure is the weekdays in
+        // the window less the closures, and any weekday substituted for another
+        // leaves that arithmetic unmoved. That is why renaming a traded session
+        // as a market closure left the whole suite green at the phase 1 sign-off,
+        // and it is the defect a coverage report cannot see.
+        //
+        // So the named dates are tied to the store rather than to a count. Each
+        // one has no stored bar, and every other weekday in the window has one.
+        var expected = Expected("bars");
+
+        var from = DateOnly.ParseExact(expected.GetProperty("window").GetProperty("from").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var to = DateOnly.ParseExact(expected.GetProperty("window").GetProperty("to").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        var closures = expected.GetProperty("closures")
+            .EnumerateArray()
+            .Select(day => DateOnly.ParseExact(day.GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture))
+            .ToHashSet();
+
+        using var store = await Replayed();
+
+        var stored = Query(store, "SELECT DISTINCT session_date FROM bar WHERE ticker = 'AAPL';")
+            .Select(day => DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture))
+            .ToHashSet();
+
+        var traded = new List<DateOnly>();
+        var missing = new List<DateOnly>();
+
+        for (var day = from; day <= to; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
+            // The last session of the window is the day after the stored series
+            // ends, because the backfill asks for a year up to the fixture date
+            // and the exchange had not traded it. It is excluded rather than
+            // asserted either way.
+            if (day > stored.Max())
+            {
+                continue;
+            }
+
+            if (closures.Contains(day) && stored.Contains(day))
+            {
+                traded.Add(day);
+            }
+
+            if (!closures.Contains(day) && !stored.Contains(day))
+            {
+                missing.Add(day);
+            }
+        }
+
+        Assert.True(closures.Count >= 9, $"The expectation names {closures.Count} closures, expected at least 9.");
+        Assert.DoesNotContain(traded, _ => true);
+        Assert.DoesNotContain(missing, _ => true);
     }
 
     [Fact]

@@ -1,6 +1,9 @@
 {
  "stage": "backfill",
  "derivedFrom": "the trading calendar, not a run. Sessions are the weekdays in the window less the nine United States market closures that fall inside it, each named below. This figure is computed from the rules rather than frozen from what the backfill happened to write, which is what makes it an expectation rather than a regression baseline: a backfill that stored the wrong window would still agree with a frozen count taken from itself.",
+ "tables": [
+  "bar"
+ ],
  "window": {
   "from": "2025-09-05",
   "to": "2026-09-05",

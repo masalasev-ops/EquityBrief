@@ -38,6 +38,10 @@ public class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Single page app"),
             CheckReach.Key(Scope.CatalogueTable, "Bar fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Bar fetcher"),
+            CheckReach.Key(Scope.CatalogueTable, "Indicator engine"),
+            CheckReach.Key(Scope.MatrixTable, "Indicator engine"),
+            CheckReach.Key(Scope.CatalogueTable, "Corporate action checker"),
+            CheckReach.Key(Scope.MatrixTable, "Corporate action checker"),
         ]);
 
     static IReadOnlyList<ArchitectureTable> Tables() =>

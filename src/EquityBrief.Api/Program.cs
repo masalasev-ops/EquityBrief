@@ -45,7 +45,30 @@ app.MapGet("/marks/level-chart/{ticker}", async (
         .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
         .ToArray();
 
-    return Results.Content(marks.LevelChart(ticker, drawn), "image/svg+xml; charset=utf-8");
+    // The averages the chart draws, aligned to the bars session by session
+    // rather than by position. The two queries are ordered the same way and
+    // over the same window, so the sequences agree today; aligning on the date
+    // is what keeps them agreeing when one of them does not, and a line drawn
+    // one slot out would look entirely plausible.
+    var indicators = await read.IndicatorsAsync(
+        ticker,
+        from ?? DateOnly.MinValue,
+        to ?? DateOnly.MaxValue);
+
+    var bySession = indicators
+        .GroupBy(row => row.Name)
+        .ToDictionary(
+            group => group.Key,
+            group => group.ToDictionary(row => row.SessionDate, row => row.Value));
+
+    var averages = new[] { "sma20", "sma50", "sma200" }
+        .Where(bySession.ContainsKey)
+        .Select(name => new ChartAverage(
+            name,
+            drawn.Select(bar => bySession[name].GetValueOrDefault(bar.SessionDate)).ToArray()))
+        .ToArray();
+
+    return Results.Content(marks.LevelChart(ticker, drawn, averages), "image/svg+xml; charset=utf-8");
 });
 
 // One run log row for the surface coming up, which is the grain SCHEMA declares

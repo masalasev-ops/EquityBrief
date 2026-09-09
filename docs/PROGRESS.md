@@ -3551,3 +3551,139 @@ Tests:      331, unchanged. No check reaches these rows yet: `component-access` 
             only when its component exists, and the four this phase builds land at 3.1 to 3.4.
             That is what makes this repair invisible to the suite and is exactly why the corpus
             requires it before the code rather than with it.
+
+### 3.1 - the indicator engine and the averages on the chart                 2026-09-09
+Built:      migration 7 creating `indicator`, the **Indicator engine**, and the level chart's
+            third element. The ten values SCHEMA's name column enumerates, per name per
+            session, each row carrying the bar count it was computed from: the three averages,
+            the RSI, the three MACD readings, the ATR and the two volume averages. The
+            arithmetic is in `IndicatorSeries` as pure functions of a session-ordered series,
+            separate from the component that reads and writes, so the numbers can be asserted
+            against arithmetic done by hand with no store in the way. Every definition is
+            written out rather than named, because RSI names a family whose members disagree
+            and the seeding is the whole difference.
+            `Statistic`, the second money-boundary helper. `Money` is the storage crossing and
+            this is the crossing from a price to a statistic, one way only: a statistic never
+            becomes a price again, because an average of closes is not a price anything can be
+            bought at. The rule asked for a helper named for the crossing and there had not
+            been one, because nothing had needed it.
+            The chart from 1.3 extended in place with the average lines, and the engine on the
+            night as its own step. It is on the night because phase 3's visible output is the
+            averages on the chart and a chart draws what a night computed.
+Measured:   over the committed fixture, 7,560 indicator rows for 3 names over 252 sessions and
+            10 indicators, of which 1,362 are not available, being 454 per name. The last
+            session's 20-day average for AAPL is 313.14 by arithmetic done outside this
+            repository over the captured adjusted closes, and the engine agrees to within a
+            billionth. `sma200` carries a value on 53 of the 252 sessions per name, being the
+            252 less the 199 the window has not filled. Tests 346, up from 331. The phase report
+            is 186 claims, 47 pass, 0 fail, 139 out of scope, 0 unexamined, 53 reconciled
+            against a floor of 34, and 33 checks on the roster of which 30 are carried.
+Discharged: six of the seven obligations due here, and one re-pointed.
+            The refetch's atomicity, as a property. The first version fell into the trap the
+            obligation names: it dated its constructed bars outside the window the refetch asks
+            for, the feed filtered them all away, and the empty-refetch guard refused upstream
+            of the delete. It passed with the transaction removed, which is how it was caught,
+            and the assertion that now keeps it where it has to be is that the refusal
+            reason names the unique constraint rather than the empty year. With the bars inside the window the
+            insert fails partway, and the stored series is asserted to be the old one entire,
+            session by session and price by price. Removing the transaction turns it red and
+            leaves the other eight corporate-action tests green, which is exactly what the
+            phase 1 sign-off recorded.
+            The fixture expectation sweep, per key rather than per file. 44 top-level keys over
+            4 files, 3 unread and each named. It found something sharper than itself, below.
+            The four carrier findings from 3.0's sweep. Retention and the retry policy figures
+            moved into `NightlyCost` and `NightlyRun`, the carriers whose tests back those
+            claims, rather than copied: the same assertion in two classes is the two-statements
+            defect one layer along. The series state note stops claiming a marking
+            `schema-columns` does not assert, which is the other resolution the obligation
+            allowed. The corporate action checker's catalogue and matrix claims moved to
+            `component-access`, with the reach declarations moved with them.
+Found:      three things.
+            Contradiction K was nine rows and not eight, and on one of them a read was
+            displaced as well as a write. That is the previous commit and it is recorded there.
+            The expectation sweep's own finding, which is sharper than the sweep. `closures` in
+            the bars expectation is read, so a per-key sweep reports it covered, and it is read
+            only through a count: the derived session figure is the weekdays in the window less
+            the closures, and any weekday substituted for another leaves that arithmetic
+            unmoved. That is why renaming a traded session as a market closure left the suite
+            green at the phase 1 sign-off. The named dates are now tied to the store, each
+            closure having no stored bar and every other weekday having one, and repeating the
+            sign-off's mutation now turns it red. A coverage report cannot see this: the key
+            was covered and the values were not.
+            And a due point of this pass's own was wrong. **Phase 3's expectations owed for
+            3.0's rulings** was written at 3.1 by the pass that landed the rule requiring a due
+            point to name what produces the evidence, and 3.1 produces none of it: the
+            indicator engine reads no profile, no swing and no shelf, so none of 3.0's three
+            rulings is assertable here. Re-pointed to 3.4, cited by 3.4's text. The rule
+            catching its own author within a day is the evidence that it works on something
+            other than old text.
+Corrects:   the claim prediction in the 3.0 entry two above, in both halves.
+            It named 10 new claims for phase 3, being 8 catalogue and matrix rows for four
+            components and the 2 level chart elements 1.3 left absent, and omitted the four
+            fixture rows section 19.1 carries for indicators, swings, volume profile and levels.
+            The figure is 14 and 5 of them landed here.
+            And it said the total would stay at 185. It is 186, because the two-hundred-bar
+            failure row was decomposed into two elements and a decomposition turns one claim
+            into two. That was not foreseeable when the prediction was written and it is
+            recorded rather than absorbed: the prediction was about claims the phase adds by
+            building, and this one was added by reading a row more finely.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      346. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Carried:    nothing new. Two obligations stand for phase 3: the expectations at 3.4 and the
+            volume shelf threshold at 3.6.
+Notes:      section 14's fourth item lists nine things and one exists, so its claim stays out
+            of scope until phase 5. The night's step is named `indicators` rather than for that
+            item, because a step named "for every name: indicators, swings, volume profile,
+            levels, trend state, ladder, moves, list reasons, facts file" that did one of them
+            would be a step a reader counts as run.
+
+            `value` is REAL and every other computed number in this store is TEXT. That is
+            SCHEMA's declaration and it is the one place a number computed from prices is not
+            money: an average of a price is a statistic about prices rather than a price,
+            nothing quotes it as money, and `price-storage-form`'s money column list does not
+            name it.
+
+            A row is written for every name, session and indicator whether or not there is a
+            value, so an absence is a stored fact rather than a missing row a reader has to
+            interpret. That is what makes 1,362 a figure the run log carries and a jump in it
+            visible.
+
+### Addendum to 3.1 - what writing the entry before the run found      2026-09-09
+Adds:       four things the entry above does not name, each surfaced by done condition 8. The
+            suite was green before the entry was written and red after it, which is the whole
+            of what that condition is for: the record is what the reconciliation reads, and a
+            run against a tree whose entry is missing is a run that never asked the question.
+Found:      the banned string, written by this session into the entry itself and caught by
+            `banned-prose` on the next run.
+            Eight claims due at "phase 3" rather than at a checkpoint. `HasLanded` reads a
+            phase as landed from any checkpoint in it, so recording 3.1 made all eight name a
+            point the record shows as reached. Each now names a checkpoint: the volume profile
+            mark at 3.3, the momentum panel at 3.5, the distance row at 5.1, the six-table
+            store row at 5.2 where the last of its tables arrives, the level window and band
+            merge distance at 3.4, and the swing lookback at 3.2.
+            The two-hundred-bar failure row, which this checkpoint half satisfies. It names a
+            stored behaviour and a string on a page, and the page does not exist, so it is
+            decomposed the way the gap row and the unavailable row were: the stored half passes
+            at 3.1 and the displayed half is owed at 3.5. That is the third row read per
+            surface and the element count moves from eight to ten.
+            `fixture-replay`, rostered from 3.1 and implemented here because 3.1 landing is
+            what made it due. It asserts the direction nothing else does: every table the
+            replay of the whole pipeline populates is named by an expectation. On its first run
+            it reported `series_state`, which the corporate action checker has written since
+            1.6 with no expectation naming it, so the expectation was written and derived from
+            the two captured action files intersected with the current members.
+Carried:    two obligations, both due at 4.0 and both cited by its text.
+            Section 19.1's fixture table lists ten expected files and the fixture holds three it
+            does not name, being membership, fetch and series state. Adding a row to a
+            claim-bearing table changes the claim count, which belongs in a planning pass.
+            And 66 claims still name a phase rather than a checkpoint. Phase 3's eight failed
+            the moment 3.1 landed; the other four phases hold 5, 20, 29 and 12, and each set
+            fails on its own phase's first checkpoint in exactly the same way. It is due at 4.0
+            because that is the last pass before phase 4's first checkpoint lands.
+Measured:   over the 5 expectation files, 51 top-level keys and 4 unread, each named. The
+            series state expectation added two keys when it landed and the per-key sweep
+            reported both on the same run, which is the sweep working on something written
+            after it rather than on the corpus it was built against.
+Notes:      the entry above is left as it was written apart from its figures, which were filled
+            in from the run that verified it as done condition 8 requires. What it says about
+            the work is what was true when it was written.

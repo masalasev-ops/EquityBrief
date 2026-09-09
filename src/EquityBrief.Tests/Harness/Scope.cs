@@ -149,14 +149,14 @@ internal static class Scope
         [CheckReach.Key(CatalogueTable, "Corporate action checker")] = new Scoped(
             Verdict.Pass,
             "the class declares the two feeds it reads and the stores it touches, including the refetch delete and the series state SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
-            ByActions),
+            ByAccess),
         [CheckReach.Key(MatrixTable, "Corporate action checker")] = new Scoped(
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
-            ByActions),
+            ByAccess),
         [CheckReach.Key(StoresTable, "Series state")] = new Scoped(
             Verdict.Pass,
-            "the table's columns and types are asserted against SCHEMA.md, and a name whose check failed is marked in it rather than passing",
+            "the table's columns and types are asserted against SCHEMA.md. The marking itself is the corporate action checker's and is claimed by its own failure row, not here",
             ByMigration),
         [CheckReach.Key(FailureTable, "A split or dividend not caught")] = new Scoped(
             Verdict.Pass,
@@ -174,6 +174,26 @@ internal static class Scope
             Verdict.Pass,
             "one volume bar is drawn per candle on the same time axis, counted off the rendered markup",
             ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the moving averages")] = new Scoped(
+            Verdict.Pass,
+            "the three averages are drawn as paths on the candles' own price scale, counted off the rendered markup, broken where the average has no value rather than joined across it, and a line whose length does not match the sessions is refused",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "Fewer than 200 bars for a new index member, 200-day average")] = new Scoped(
+            Verdict.Pass,
+            "every session with fewer than two hundred bars behind it records its long average as absent with the bar count that explains it, and no session with two hundred records it absent, asserted over the committed fixture",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "indicators")] = new Scoped(
+            Verdict.Pass,
+            "every name, session and indicator carries a row, the averages match arithmetic done over the committed bars outside this repository, and an indicator without its window is null with the bar count that explains it",
+            ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Indicator engine")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bar store it reads and the indicators it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Indicator engine")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, against the row contradiction K repaired at this checkpoint",
+            ByAccess),
         [CheckReach.Key(CatalogueTable, "Bar fetcher")] = new Scoped(
             Verdict.Pass,
             "the class declares the bulk feed it reads and the stores it touches, including the retention delete SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
@@ -300,7 +320,10 @@ internal static class Scope
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
     {
-        ["Indicators, swings, volume profile, levels, ladders, moves"] = "phase 3",
+        // One row over six tables, and it is owed where the last of them
+        // arrives rather than where the first does. The move annotator at 5.2
+        // is that point; indicators land at 3.1 and ladders at 4.2.
+        ["Indicators, swings, volume profile, levels, ladders, moves"] = "5.2",
         ["Research store"] = "phase 6",
         ["Theme store"] = "phase 6",
         ["Source documents"] = "phase 6",
@@ -347,12 +370,15 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the moving averages")] = "3.1",
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands")] = "3.4",
 
-        [CheckReach.Key("15.5 The mark vocabulary", "Volume profile")] = "phase 3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Volume profile")] = "3.3",
         // 4.4 is "The plan column mark and the tables", so this mark is owed a
         // phase later than the section it sits in.
         [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] = "4.4",
-        [CheckReach.Key("15.5 The mark vocabulary", "Momentum panel")] = "phase 3",
-        [CheckReach.Key("15.5 The mark vocabulary", "Distance row")] = "phase 3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Momentum panel")] = "3.5",
+        // Drawn from levels, which arrive at 3.4, and used by the universe
+        // and tonight screens. 5.1 is where the first of those exists, and a
+        // mark with no screen to sit on is a mark nothing can be asserted about.
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row")] = "5.1",
         // Both need a listing and a reason behind them, which phase 5 is the
         // first to write.
         [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] = "phase 5",
@@ -445,6 +471,16 @@ internal static class Scope
         // resolved contradiction F and the shape 1.5 gave the gap row.
         [CheckReach.Key(FailureTable, "Bulk price feed unavailable")] =
             ["run log", "banner"],
+
+        // The third, and the same argument a third time. This row's behaviour
+        // is the stored indicator, which exists from 3.1 and records the long
+        // average as absent with the bar count that explains it. Its other half
+        // is the string "not available, nn bars" on the name page, which is a
+        // surface, and no page shows an average yet. Read as one claim it would
+        // be owed where the page is and the half that works would sit
+        // unasserted for the rest of the phase.
+        [CheckReach.Key(FailureTable, "Fewer than 200 bars for a new index member")] =
+            ["200-day average", "nn bars"],
     };
 
     // The claim subjects a row yields. One, itself, unless the row decomposes.
@@ -526,7 +562,11 @@ internal static class Scope
         ["Filing not yet parsed for a name"] = "phase 6",
         ["No band is eligible to carry a tranche"] = "phase 4",
         ["Earnings date missing"] = "phase 4",
-        ["Fewer than 200 bars for a new index member"] = "phase 3",
+        // The store half is reached at 3.1 by fixture-expectations, so only the
+        // other element is owed. The name page's fact strip is where
+        // "not available, nn bars" is read, and 3.5 is the checkpoint that first
+        // draws an indicator-derived region of that page.
+        ["Fewer than 200 bars for a new index member, nn bars"] = "3.5",
         // The row's "What you see" cell claims the name disappears from the
         // universe screen, which is 5.1. 1.1 records the leave date and asserts
         // nothing a reader looks at.
@@ -560,9 +600,9 @@ internal static class Scope
         // Retention is what makes the year a limit rather than a description,
         // and it lands with the fetcher at 1.4.
         ["Bar history kept"] = "1.4",
-        ["Level window"] = "phase 3",
-        ["Swing lookback"] = "phase 3",
-        ["Band merge distance"] = "phase 3",
+        ["Level window"] = "3.4",
+        ["Swing lookback"] = "3.2",
+        ["Band merge distance"] = "3.4",
         ["Tranches, exits"] = "phase 4",
         ["Tranche eligibility"] = "phase 4",
         ["Earnings horizon"] = "phase 4",

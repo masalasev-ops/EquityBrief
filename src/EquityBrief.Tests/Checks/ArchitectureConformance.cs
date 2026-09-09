@@ -697,11 +697,16 @@ public class ArchitectureConformance
             string.Join("; ", unnamed) +
             ". A decomposition the document does not carry is a second statement of the row's content.");
 
-        // Stated in advance, and it is the scope carrying the property: eight
-        // elements over three rows, four on the level chart, two on the gap
-        // failure and two on the unavailable feed. Zero would pass every
-        // assertion above.
-        Assert.Equal(8, checkedElements);
+        // Stated in advance, and it is the scope carrying the property: ten
+        // elements over four rows, four on the level chart, two on the gap
+        // failure, two on the unavailable feed and two on the two-hundred-bar
+        // row 3.1 decomposed. Zero would pass every assertion above.
+        //
+        // An exact count rather than a floor, so a decomposition added without
+        // being argued for fails here. It moved from eight at 3.1, where the
+        // two-hundred-bar row was split because its behaviour half is the stored
+        // indicator and its other half is a string on a page nothing draws yet.
+        Assert.Equal(10, checkedElements);
     }
 
     [Fact]

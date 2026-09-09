@@ -389,6 +389,57 @@ public class NightlyCost
         Assert.Contains("bounded by the day's actions rather than by the universe", limits, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task RetentionDropsWhatFellOutOfTheWindowAndNothingInside()
+    {
+        // The Bar history kept note, both clauses. It stood in BarFetcherTests,
+        // where it ran, passed and backed no verdict, because a check's tests
+        // are the ones its carrier declares. Moved rather than copied.
+        //
+        // The boundary is the session the file is for, less a year, so a replay
+        // drops what that night would have dropped rather than what tonight
+        // would. 2026-09-08 less a year is 2025-09-08, and the stored year
+        // starts on 2025-09-05, so three sessions fall out per name.
+        using var store = await StoredAsync(null);
+
+        var outcome = await new BarFetcher(
+            RecordedBulkPriceFeed.FromFolder(FixtureFolder()),
+            FixedClock.At(Night, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync(Index, "run-retention");
+
+        Assert.Equal(new DateOnly(2025, 9, 8), outcome.Oldest);
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var oldest = connection.CreateCommand();
+        oldest.CommandText = "SELECT MIN(session_date) FROM bar;";
+
+        var kept = (string)oldest.ExecuteScalar()!;
+
+        Assert.True(
+            string.CompareOrdinal(kept, "2025-09-08") >= 0,
+            $"The oldest stored session is {kept}, which is inside the window the drop should have cleared.");
+
+        using var below = connection.CreateCommand();
+        below.CommandText = "SELECT COUNT(*) FROM bar WHERE session_date < '2025-09-08';";
+
+        Assert.Equal(0L, (long)below.ExecuteScalar()!);
+
+        // And none inside it went. The row states two things and this is the
+        // second: everything below the boundary is gone and nothing above it is.
+        using var inside = connection.CreateCommand();
+        inside.CommandText = "SELECT COUNT(*) FROM bar WHERE session_date >= '2025-09-08' AND ticker = 'AAPL';";
+
+        Assert.True(
+            (long)inside.ExecuteScalar()! > 200,
+            "AAPL holds fewer than 200 sessions inside the window, so the drop took more than it should have.");
+
+        // And the drop is measured rather than reported: it is the difference
+        // in the table's own row count across the transaction.
+        Assert.True(outcome.RowsDropped > 0, "Nothing was dropped, so the retention path never ran.");
+    }
+
     // ---- the weighted-call budget, all three clauses of its note ----
     //
     // The note asserts three things and only one of them had ever been in this
