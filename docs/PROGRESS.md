@@ -3751,3 +3751,18 @@ Amended:    nothing. This checkpoint amends no done condition.
 Tests:      352. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Carried:    nothing new. Two obligations stand for the rest of phase 3: the expectations owed
             for 3.0's rulings at 3.4, and the volume shelf threshold at 3.6.
+
+### Addendum to 3.2 - the two mutations                                     2026-09-09
+Adds:       the mutation evidence for the two assertions this checkpoint turns on, run after
+            the commit above and in an isolated worktree, so the tree that was verified is the
+            tree that was committed.
+Proved:     the lookback. With `SwingSeries.Lookback` set to 2, five of the six swing tests go
+            red, 347 of 352 passing. The one that stays green is the second-run test, which is
+            about the upsert and not about the lookback, so the split is the shape it should
+            be rather than everything failing at once.
+            The reader's filter. With `confirmed_on <= $as_of` changed to
+            `session_date <= $as_of` in `StoredSwings`, exactly one test goes red, 351 of 352
+            passing, and it is the as-of test. Nothing else in the suite can see that change,
+            which is the whole argument for having written it: a filter on the wrong column
+            returns rows, the arithmetic downstream runs, and the number looks like a number.
+Notes:      the worktree was removed after each run and the working tree was never mutated.
