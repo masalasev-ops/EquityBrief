@@ -25,6 +25,79 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html - the ladder's rules, and the second book's name
+Authorised by: The second book is keyed to a dated event, and an earnings print is the only kind on file
+Was:
+> section 10's key ended "The second book is keyed to dated events, of which an earnings print
+> is one, and it never merges with the position book. (see: The earnings trade is a second book)
+> Whether it carries events that are not prints, and where those come from, is settled at 4.0.";
+> figure 10.1's first box named three trend states; the Trend classifier's catalogue row wrote
+> "none, returns the label to the facts assembler" and labelled the chart "uptrend, downtrend or
+> range"; the Ladder builder's row said it "places tranches, stops, the invalidation and the
+> exits, computes reward to risk, and builds the earnings-trade setups"
+Now:
+> the citation resolves to the superseding decision and the deferral to 4.0 is replaced by its
+> answer; the box carries a fourth state, not classified; the classifier returns its label to the
+> ladder builder and labels a fourth state; the ladder builder writes a row for every index
+> member every night and builds the event setups. The key gains the tranche condition rule, the
+> exit fractions, the researched precondition and a flag stating that every figure in the three
+> setups is a proposal
+Why: 4.0 settles the holes the document deferred to it, and a deferral answered is a sentence
+replaced rather than a sentence kept beside its answer. The fourth trend state exists because the
+label decides whether a plan exists at all, and a name whose long average or second swing is
+missing has not been measured rather than measured as a range.
+
+### 2026-09-09 - ARCHITECTURE.html - the calendar gets a producer, a store and a column
+Authorised by: A calendar event is fetched once for the whole index, and the calendar holds provider events only
+Was:
+> section 5 carried no earnings calendar feed box and no calendar fetcher box; section 7 had no
+> Calendar fetcher row; section 16's data stores table had no Calendar row and its matrix had
+> twelve columns, none of them a calendar; the Ladder builder's matrix row carried R under
+> Fundamentals; and the matrix key read "The verification harness reads none of the eleven stores"
+Now:
+> both boxes are drawn, the catalogue row is written, the store row and a Calendar column are
+> added with the four calendar readers carrying R and the fetcher R W, the Ladder builder's
+> Fundamentals R is gone, and the key names no count
+Why: contradiction E, resolved across all four readers together rather than for the rows the
+contradiction happened to name. The Ladder builder was the row where the substitution is
+confirmed: its catalogue phrase names the calendar and nothing in it names fundamentals, so the
+read had been written into the nearest column there was. The Facts assembler and the Staleness
+judge both name fundamentals in their own catalogue rows, so their Fundamentals cells stand and
+only the calendar cell is added. The Shortlist builder's row is contradiction L and stays open to
+5.4. The count in the key went rather than being raised, because the table beneath it already
+states how many columns there are and a second statement is the one that goes stale: it read
+eleven over a table of twelve before this edit.
+
+### 2026-09-09 - SCHEMA.md - the calendar table
+Authorised by: A calendar event is fetched once for the whole index, and the calendar holds provider events only
+Was:
+> no `calendar` section, and no `calendar` row in the ownership summary
+Now:
+> a table at the grain of one row per ticker, event date and kind, with `status` carrying whether
+> the provider has confirmed the date, and one writer for all three operations
+Why: four components declared a read against a table this file did not describe. `kind` carries
+provider event kinds only and the reason is written into the file rather than left implied: a
+researched date here would be a claim the claim checker cannot reach and a second inserter on a
+nightly store. `status` is stored because a booked print and an estimated one are different
+things, and a name with no row at all is the third state the failure table promises.
+
+### 2026-09-09 - BUILD_PLAN.md - the tranche share was not a hole
+Corrects: the holes table said the tranches carry shares that fall with distance and no rule
+produces them, which reads as a gap in the specification. It is not one. The shares came from the
+hand-made report the worked example is drawn from, where a person decided how much to commit, and
+**The plan places a position and never sizes one** reserves exactly that to the reader.
+Was:
+> | The share of size per tranche | The plan places a position and never sizes one, yet the
+> tranches carry shares that fall with distance, and no rule produces them | 4.0 |
+Now:
+> a row saying there is no hole, naming the worked example as where the shares came from, keeping
+> the exits as they are because a fraction of what is already held is scaling out of a position
+> that exists, and marking the row settled
+Why: the row was the defect rather than the decision, so it is amended rather than the decision
+superseded. A share of an intended position is a sizing rule written as a fraction, and calling
+it a display convention does not change what a reader does with it, which is multiply it by a
+capital figure the ladder does not have.
+
 ### 2026-09-09 - CLAUDE.md, BUILD_PLAN.md - a ninth done condition, and the count two documents disagreed on
 Corrects: a checkpoint could satisfy every done condition without ever showing that an assertion
 it wrote can fail, and three phases of evidence now say what that costs. Found by the phase 3

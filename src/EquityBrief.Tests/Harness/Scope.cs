@@ -100,7 +100,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(MatrixTable, "Migration runner")] = new Scoped(
             Verdict.Pass,
-            "the row is eleven blanks, the runner declares no store, and no statement against a declared table appears in its source",
+            "the row is blank throughout, the runner declares no store, and no statement against a declared table appears in its source",
             ByAccess),
         [CheckReach.Key(FailureTable, "The harness cannot parse this document")] = new Scoped(
             Verdict.Pass,
@@ -648,8 +648,8 @@ internal static class Scope
 
     // The two rows of the read and write matrix whose component already exists.
     // Every other row resolves through Components, which the catalogue shares.
-    // A matrix row claims what its component touches across eleven stores, and
-    // eight of those stores are not built, so the row is not assertable until
+    // A matrix row claims what its component touches across every store, and
+    // most of those stores are not built, so the row is not assertable until
     // the last of them is.
     static readonly Dictionary<string, string> MatrixRows = new(StringComparer.Ordinal)
     {

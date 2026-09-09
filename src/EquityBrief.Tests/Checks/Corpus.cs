@@ -62,8 +62,26 @@ internal static class Corpus
         var found = new List<CorpusFinding>();
         var lines = text.Split((char)10);
 
+        // A quoted line in CHANGELOG.md is prior text, which that file's own
+        // format section declares it to be. It is a record of what a document
+        // said and not a statement this corpus makes, so a citation inside one
+        // is a citation being reported rather than made.
+        //
+        // Without this, superseding a decision whose citation sits in a passage
+        // the changelog has to quote makes no-superseded-citation red, and the
+        // only ways out are worse than the fault: paraphrasing prior text that
+        // the format requires verbatim, or editing a record that is append only.
+        // The reader is what was wrong, and it was wrong in the direction this
+        // harness names, reading a record of a thing as the thing.
+        var record = file.Replace('\\', '/').EndsWith("docs/CHANGELOG.md", StringComparison.Ordinal);
+
         for (var index = 0; index < lines.Length; index++)
         {
+            if (record && Regex.IsMatch(lines[index], @"^\s*>"))
+            {
+                continue;
+            }
+
             foreach (Match match in Regex.Matches(lines[index], InADocument(marker)))
             {
                 // Decoded, because a citation inside ARCHITECTURE.html is HTML.

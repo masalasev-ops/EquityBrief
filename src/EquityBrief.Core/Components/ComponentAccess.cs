@@ -25,6 +25,7 @@ public enum Store
 {
     Membership,
     Bar,
+    Calendar,
     Indicator,
     Swing,
     VolumeProfile,
@@ -55,6 +56,7 @@ public enum Feed
     BulkPrice,
     HistoricalPrice,
     SplitsAndDividends,
+    EarningsCalendar,
     News,
     CompanyFinancials,
     FilingsArchive,
@@ -69,7 +71,7 @@ public sealed record ComponentAccess(
     IReadOnlyList<Feed> Feeds)
 {
     // The empty declaration. A component that touches no store says so, which is
-    // a claim and not an omission: the mark renderer's eleven blank matrix cells
+    // a claim and not an omission: the mark renderer's blank matrix cells
     // are asserted as much as any filled one.
     public static ComponentAccess Nothing { get; } = new([], []);
 

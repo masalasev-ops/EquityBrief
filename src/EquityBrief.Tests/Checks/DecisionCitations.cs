@@ -79,4 +79,26 @@ public class DecisionCitations
 
         Assert.DoesNotContain("A decision nobody ever wrote", names);
     }
+
+    [Fact]
+    public void QuotedPriorTextInTheChangelogIsNotACitation()
+    {
+        // The permanent proof for the reader's one file-dependent rule, over
+        // constructed input. A changelog entry quotes what a document said, and
+        // a citation inside that quotation is being reported rather than made.
+        // Superseding a decision whose citation the changelog has to quote would
+        // otherwise force either a paraphrase of text the format requires
+        // verbatim or an edit to an append-only record.
+        const string line = "> the paragraph ended (" + "see" + ": The earnings trade is a second book)";
+
+        Assert.Empty(Corpus.Citations(line, "docs/CHANGELOG.md"));
+
+        // Three counter-readings, so the rule is as narrow as it says it is. The
+        // same line in any other document is a citation; an unquoted line in the
+        // changelog is a citation; and a backslash path reaches the same rule,
+        // because Repository hands paths over in the platform's own form.
+        Assert.Single(Corpus.Citations(line, "docs/ARCHITECTURE.html"));
+        Assert.Single(Corpus.Citations(line[2..], "docs/CHANGELOG.md"));
+        Assert.Empty(Corpus.Citations(line, @"E:\a\docs\CHANGELOG.md"));
+    }
 }

@@ -34,6 +34,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 |---|---|---|---|
 | `membership` | MembershipLoader | MembershipLoader | none |
 | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
+| `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `indicator` | IndicatorEngine | IndicatorEngine | none |
 | `swing` | SwingFinder | SwingFinder | none |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | none |
@@ -109,6 +110,26 @@ Primary key: `ticker`, `session_date`.
 It sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
 
 One year retained. The fetcher drops sessions older than the retention window on the night they fall out of it, and is declared above as a deleter of this table because it does.
+
+### calendar
+Grain: one row per ticker, event date and kind.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `event_date` | TEXT | date the event falls on |
+| `kind` | TEXT | a provider event kind, `earnings` today |
+| `status` | TEXT | `confirmed` or `estimated`, as the provider files it |
+| `detail` | TEXT | JSON: what the provider carries about the event beyond its date |
+| `observed_at` | TEXT | UTC instant of the fetch that recorded this |
+
+Primary key: `ticker`, `event_date`, `kind`.
+
+**This table holds what the provider files and nothing else** (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only). `kind` carries provider event kinds only. A dated item a research pass found is a claim resting on a source document, so it lives in `research_section` and reaches the report's Dates section from there. Writing one here would put a claim where the claim checker cannot reach it and would give this table a second inserter.
+
+`status` is a column because the provider files a date it has not confirmed, and a name whose next print is an estimate is a different thing from one whose print is booked. The failure table's explicit blank is a name with no row at all, which is a third state and is legible only because the other two are stored apart.
+
+One writer for all three operations. The fetcher inserts tonight's events, updates a date the provider has moved or confirmed, and drops rows for events that have fallen out of the window it fetches, which is the same shape `BarFetcher` and `NewsPulseCounter` carry for their own tables.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

@@ -17,7 +17,7 @@ namespace EquityBrief.Web.App;
 public sealed class SinglePageApp : IComponent
 {
     // It reads the read API and touches no store, which is its catalogue row
-    // and its eleven blank matrix cells.
+    // and its blank matrix cells.
     public static ComponentAccess Access => ComponentAccess.Nothing;
 
     public const string NameRoute = "#/name/";
