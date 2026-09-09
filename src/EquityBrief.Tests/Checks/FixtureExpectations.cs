@@ -41,6 +41,9 @@ public class FixtureExpectations
         [
             CheckReach.Key(Scope.FixtureTable, "bars"),
             CheckReach.Key(Scope.FixtureTable, "news"),
+            CheckReach.Key(Scope.FixtureTable, "membership"),
+            CheckReach.Key(Scope.FixtureTable, "fetch"),
+            CheckReach.Key(Scope.FixtureTable, "series state"),
             CheckReach.Key(Scope.FixtureTable, "indicators"),
             CheckReach.Key(Scope.FixtureTable, "swings"),
             CheckReach.Key(Scope.FixtureTable, "volume profile"),

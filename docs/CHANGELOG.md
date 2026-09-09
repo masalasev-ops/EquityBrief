@@ -25,6 +25,70 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - ARCHITECTURE.html - section 14's per-name step becomes nine, and the calendar joins the night
+Corrects: three components have shipped since phase 3 and no night has ever run one. `SwingFinder`,
+`VolumeProfileBuilder` and `LevelBuilder` are called only from the suite, so a production store
+holds no swing, no profile and no band. Nothing failed, because section 14 carried the nine
+computations as one step whose due point was a phase, and a claim due at a phase cannot fail until
+that phase's first checkpoint lands. Found at 4.0 while re-pointing the claims due at a phase.
+Was:
+> <li>For every name: indicators, swings, volume profile, levels, trend state, ladder, moves,
+> list reasons, facts file.</li>
+Now:
+> a step fetching the index's dated events, then nine steps, one per computation, each naming the
+> stage and the population it runs over, with the ladder step stating that a row is written
+> whether or not it carries a tranche; and a note recording what the one step hid
+Why: split rather than read as nine claims inside one step, which is where this differs from
+contradiction F. Section 15.5 states seven marks and has seven rows, so splitting the Level chart
+row would make that document disagree with itself. Section 14 states no count, the night runs
+these stage by stage over the whole universe rather than name by name, which is what the
+components do, and the order inside them is load bearing: the levels cannot be built before the
+swings and the ladder cannot be built before the levels. Written as one step none of that was
+visible, and neither was the absence the split now makes assertable.
+
+### 2026-09-09 - ARCHITECTURE.html - a failure row for a name that cannot be classified
+Authorised by: The trend state is read from the averages and the last two swings, and a name that cannot be classified says so
+Was:
+> section 18 carried no row between "Earnings date missing" and "Fewer than 200 bars for a new
+> index member"
+Now:
+> a row for a name whose trend state cannot be classified: the ladder row is still written, the
+> state is recorded as not classified with the input that was missing, and no tranche is placed
+Why: the fourth trend state needs a failure row or it is a value nothing induces. The row also
+carries why the ladder row is written rather than withheld, which is the same argument the
+every-name listings row rests on.
+
+### 2026-09-09 - ARCHITECTURE.html - section 19.1 lists the expectations that exist
+Corrects: the fixture table listed ten files and the fixture holds three it does not name. The
+membership expectation has been there since 1.1, the fetch expectation since 2.1 and the series
+state expectation since 1.6. `fixture-replay` found the third by reporting a populated table
+nothing expected; the first two had been unlisted for two phases.
+Was:
+> the table listed bars, fundamentals and news as inputs, then indicators, swings, volume
+> profile, levels, ladder, listings and facts as expected outputs
+Now:
+> a calendar input, and membership, fetch and series state added to the expected outputs, each
+> naming the component that produces it
+Why: a claim-bearing table that does not name what the fixture holds is a set of expectations
+nothing reads back, which is the same object as a check that runs nothing. The three arrive as
+PASS on the day they are written, because what they describe has existed all along.
+
+### 2026-09-09 - SCHEMA.md - the ladder row is written for every name, and the trend state has a fourth value
+Authorised by: A ladder row is written for every index member every night
+Was:
+> Grain: one row per ticker per as-of date; `trend_state` TEXT `uptrend`, `downtrend`, `range`;
+> `plan` TEXT JSON: tranches, stops, invalidation, exits, earnings setups, arithmetic; and the
+> ownership summary carried no note on the six computed tables
+Now:
+> the grain says for every index member and not only the names carrying a plan, `trend_state`
+> admits `not_classified`, `plan` carries the reason where there is nothing to carry, and a note
+> records that the six computed tables have no deleter, what 4.0 ruled, and that the rows still
+> read none because this file describes the code rather than the intention
+Why: the ownership rows stay as they are until 4.2 writes the deletes, because a deleter declared
+before the component deletes is a declaration with nothing behind it and `writer-ownership`
+refuses it in that direction as well. Recording the ruling and its due point in the file is what
+keeps the reader from finding a contradiction between the note and the table.
+
 ### 2026-09-09 - ARCHITECTURE.html - the ladder's rules, and the second book's name
 Authorised by: The second book is keyed to a dated event, and an earnings print is the only kind on file
 Was:

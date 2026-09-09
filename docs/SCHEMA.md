@@ -59,6 +59,12 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 
 This was a three-way contradiction until 1.4 and not a two-way one. The `bar` note said the fetcher drops old sessions, this row gave Delete to the corporate action checker alone, and the paragraph above said twice that a refetch was the only sanctioned removal. Any two of the three could be read as agreeing, which is why it survived a review.
 
+**The six computed tables have no deleter, and 4.0 ruled that each will be deleted by its own writer** (see: Every computed table's writer is its own deleter). Section 16 states one year, recomputed nightly and kept for the harness, over indicators, swings, volume profile, levels, ladders and moves, and this table gives Delete to nobody for any of the six. It is the same defect as `bar`'s before 1.4 and `news_pulse`'s before 1.4, in a third place: a retention window nobody owns is a table that grows forever while the document says it does not.
+
+The grain is what makes it urgent rather than tidy. `indicator` and `swing` key on a session, so both replace with the series and grow only as it does. `volume_profile`, `level` and `ladder` key on an as-of date, so each writes a new set every night and replaces nothing. At the band counts the fixture averages, five hundred names put something of the order of three and a half million rows a year into a store nothing can reduce.
+
+**The rows above still read `none`, and that is the file describing the code rather than the intention.** This file is reconciled against the shipped source in both directions, so a deleter declared here before the component deletes is a declaration with nothing behind it, which `writer-ownership` refuses and should. Five rows change at 4.2, which is the checkpoint that writes the deletes: `indicator`, `swing`, `volume_profile`, `level` and `ladder`. `move` waits for 5.2, because `MoveAnnotator` does not exist until then. Each writer will drop the rows that fall out of the window on the night they fall out, which is what `BarFetcher` does for `bar` and `NewsPulseCounter` for `news_pulse`, removing whole as-of sets or whole sessions and never a row from inside a set that stands.
+
 **`facts` is inserted by one component and updated by another, on disjoint columns.** FactsAssembler writes the facts file and its hash. ChangeDetector writes only the material-change list, on a row that already exists. A split is permitted where two components own disjoint declared column sets on the same grain, and the declared sets are below.
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
@@ -193,16 +199,20 @@ Primary key: `ticker`, `as_of`, `low_edge`.
 `has_non_average_anchor` is a stored column rather than a derived one because the ladder builder reads it on every band and a short moving average follows the price, so a band anchored only on one sits at the price about half the time.
 
 ### ladder
-Grain: one row per ticker per as-of date.
+Grain: one row per ticker per as-of date, **for every index member and not only the names carrying a plan**.
 
 | Column | Type | Notes |
 |---|---|---|
 | `ticker` | TEXT | |
 | `as_of` | TEXT | date |
-| `trend_state` | TEXT | `uptrend`, `downtrend`, `range` |
-| `plan` | TEXT | JSON: tranches, stops, invalidation, exits, earnings setups, arithmetic |
+| `trend_state` | TEXT | `uptrend`, `downtrend`, `range`, or `not_classified` |
+| `plan` | TEXT | JSON: tranches, stops, invalidation, exits, event setups, arithmetic, and where there are none, the reason there are none |
 
 Primary key: `ticker`, `as_of`.
+
+**A row is written for every member every night** (see: A ladder row is written for every index member every night). A name in a downtrend, a name whose only support band is anchored on a moving average, and a name whose trend could not be classified all get a row whose `plan` states why it is empty. An absent row says nothing, and the trend-changed condition compares tonight's label against last night's, so a name with no row on the night its band went ineligible has no yesterday for the transition that changes the whole plan.
+
+**`trend_state` carries a fourth value** (see: The trend state is read from the averages and the last two swings, and a name that cannot be classified says so). `not_classified` is a name with fewer than 200 bars, so no long average, or with fewer than two swings of the kind the rule reads. It is a stored value rather than a default to `range` for the reason `indicator.bar_count` exists: a label decides whether a plan exists, and a label over inputs nobody had is a figure over a population that was not measured. The reason sits in `plan` beside the reason a plan is empty, because both answer the same question a reader asks of an empty plan section.
 
 ### move
 Grain: one row per ticker and session selected as a large move.

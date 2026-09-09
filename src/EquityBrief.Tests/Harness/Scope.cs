@@ -182,6 +182,26 @@ internal static class Scope
             Verdict.Pass,
             "every session with fewer than two hundred bars behind it records its long average as absent with the bar count that explains it, and no session with two hundred records it absent, asserted over the committed fixture",
             ByExpectations),
+        // The three rows section 19.1 never named. The fixture has held a
+        // membership expectation since 1.1, a fetch expectation since 2.1 and a
+        // series state expectation since 1.6, and the table listed none of
+        // them: it listed ten files and the fixture holds three it does not
+        // name. `fixture-replay` found the third by reporting a populated table
+        // nothing expected, and the first two had been unlisted for two phases.
+        // The rows are written at 4.0 and they pass on the day they are
+        // written, because what they describe has existed all along.
+        [CheckReach.Key(FixtureTable, "membership")] = new Scoped(
+            Verdict.Pass,
+            "the constituents the fixture's captured payload carries are diffed against the stored spans, with the unknown join date kept as unknown rather than folded to a value outside the index that enforces uniqueness",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "fetch")] = new Scoped(
+            Verdict.Pass,
+            "the bars a night stored from the bulk file are diffed against the file's own rows, and the names it carried nothing for are counted rather than inferred from an absence",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "series state")] = new Scoped(
+            Verdict.Pass,
+            "every name the corporate action check reached carries a state, and a name whose own check failed is suspect with its reason rather than absent",
+            ByExpectations),
         [CheckReach.Key(FixtureTable, "indicators")] = new Scoped(
             Verdict.Pass,
             "every name, session and indicator carries a row, the averages match arithmetic done over the committed bars outside this repository, and an indicator without its window is null with the bar count that explains it",
@@ -597,6 +617,10 @@ internal static class Scope
     static readonly Dictionary<string, string> FixtureRows = new(StringComparer.Ordinal)
     {
         ["fundamentals"] = "6.1",
+        ["calendar"] = "4.2",
+        ["membership"] = "1.1",
+        ["fetch"] = "2.1",
+        ["series state"] = "1.6",
         ["indicators"] = "3.1",
         ["swings"] = "3.2",
         ["volume profile"] = "3.3",
@@ -628,6 +652,7 @@ internal static class Scope
         ["Claim checker rejects twice"] = "phase 6",
         ["Spend cap reached"] = "phase 6",
         ["Filing not yet parsed for a name"] = "phase 6",
+        ["A name whose trend state cannot be classified"] = "4.1",
         ["No band is eligible to carry a tranche"] = "phase 4",
         ["Earnings date missing"] = "phase 4",
         // The store half is reached at 3.1 by fixture-expectations, so only the
@@ -697,7 +722,27 @@ internal static class Scope
         ["Backfill one year"] = "1.4",
         ["Fetch the day"] = "1.4",
         ["Check splits and dividends"] = "1.6",
-        ["For every name"] = "phase 5",
+        ["Fetch the index's dated events"] = "4.2",
+
+        // The nine that were one step until 4.0. Written as "For every name:
+        // indicators, swings, volume profile, levels, trend state, ladder,
+        // moves, list reasons, facts file" they carried one due point, phase 5,
+        // and a claim whose due point is a phase cannot fail until that phase's
+        // first checkpoint lands. What that hid is that the swing finder, the
+        // volume profile builder and the level builder have shipped since phase
+        // 3 and no night has ever run one: their only callers are in this
+        // suite. Nine claims, each owed at the checkpoint that puts its stage
+        // into the night's own order.
+        ["Compute the indicators"] = "4.1",
+        ["Mark the swings"] = "4.1",
+        ["Build the volume profile"] = "4.1",
+        ["Build the levels"] = "4.1",
+        ["Classify the trend state"] = "4.1",
+        ["Build the ladder"] = "4.1",
+        ["Annotate the largest moves"] = "5.2",
+        ["Evaluate the list reasons"] = "5.4",
+        ["Write the facts file"] = "5.3",
+
         ["Fill forward returns"] = "phase 5",
         ["Count today"] = "phase 5",
         ["Close the arithmetic"] = "phase 5",
