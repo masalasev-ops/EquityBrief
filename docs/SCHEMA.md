@@ -129,7 +129,7 @@ Grain: one row per ticker, event date and kind.
 | `ticker` | TEXT | |
 | `event_date` | TEXT | date the event falls on |
 | `kind` | TEXT | a provider event kind, `earnings` today |
-| `status` | TEXT | `confirmed` or `estimated`, as the provider files it |
+| `timing` | TEXT | `before`, `after`, or `unstated`, which is when in the session the provider says it falls |
 | `detail` | TEXT | JSON: what the provider carries about the event beyond its date |
 | `observed_at` | TEXT | UTC instant of the fetch that recorded this |
 
@@ -137,9 +137,13 @@ Primary key: `ticker`, `event_date`, `kind`.
 
 **This table holds what the provider files and nothing else** (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only). `kind` carries provider event kinds only. A dated item a research pass found is a claim resting on a source document, so it lives in `research_section` and reaches the report's Dates section from there. Writing one here would put a claim where the claim checker cannot reach it and would give this table a second inserter.
 
-`status` is a column because the provider files a date it has not confirmed, and a name whose next print is an estimate is a different thing from one whose print is booked. The failure table's explicit blank is a name with no row at all, which is a third state and is legible only because the other two are stored apart.
+**`timing` is what the provider actually files, and `status` was not.** 4.0 gave this table a `status` column carrying `confirmed` or `estimated`, on the reasoning that a booked print and an unconfirmed one are different things. They are, and the provider does not say which: its payload carries no such field. What it does carry is whether the report falls before the session, after it, or at a time it does not state, which decides whether the print lands on the date itself or on the session after it, and that is worth a column of its own for the same reason. Found at 4.3 by capturing the endpoint before writing the parser, which is why that rule exists: 1.2 stored a membership parser reading a field the provider does not send, and the fixture agreed with it for two checkpoints because the same session wrote both.
 
-One writer for all three operations. The fetcher inserts tonight's events, updates a date the provider has moved or confirmed, and drops rows for events that have fallen out of the window it fetches, which is the same shape `BarFetcher` and `NewsPulseCounter` carry for their own tables.
+The failure table's explicit blank is a name with no row at all. That is legible without a status column: the row exists or it does not.
+
+One writer for all three operations. The fetcher inserts tonight's events, updates a date the provider has moved, and drops rows for events that have fallen out of the window it fetches, which is the same shape `BarFetcher` and `NewsPulseCounter` carry for their own tables.
+
+**The window is a quarter and not the earnings horizon.** Every name reports once a quarter, so ninety days ahead holds every member's next print, and a window equal to the twenty-session horizon would mean a date arrives already inside it: the earnings-soon condition would fire on the day the provider published the date rather than on the name approaching it. Measured on the fixture's own capture, the four names' next prints fall six to eight weeks out, which is outside a horizon-sized window and inside this one.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

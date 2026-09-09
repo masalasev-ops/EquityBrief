@@ -1,0 +1,85 @@
+{
+ "type": "Earnings",
+ "description": "Historical and upcoming Earnings",
+ "from": "2026-09-05",
+ "to": "2026-12-05",
+ "earnings": [
+  {
+   "code": "A1B.STU",
+   "report_date": "2026-09-07",
+   "date": "2026-06-30",
+   "before_after_market": "AfterMarket",
+   "currency": null,
+   "actual": null,
+   "estimate": null,
+   "difference": 0,
+   "percent": null
+  },
+  {
+   "code": "IDEXY.US",
+   "report_date": "2026-09-07",
+   "date": "2026-07-31",
+   "before_after_market": "BeforeMarket",
+   "currency": null,
+   "actual": null,
+   "estimate": null,
+   "difference": 0,
+   "percent": null
+  },
+  {
+   "code": "IXD2.F",
+   "report_date": "2026-09-07",
+   "date": "2026-07-31",
+   "before_after_market": "BeforeMarket",
+   "currency": null,
+   "actual": null,
+   "estimate": null,
+   "difference": 0,
+   "percent": null
+  },
+  {
+   "code": "NEX.SG",
+   "report_date": "2026-09-07",
+   "date": "2026-07-31",
+   "before_after_market": "BeforeMarket",
+   "currency": null,
+   "actual": null,
+   "estimate": null,
+   "difference": 0,
+   "percent": null
+  },
+  {
+   "code": "NFLX.US",
+   "report_date": "2026-10-20",
+   "date": "2026-09-30",
+   "before_after_market": "AfterMarket",
+   "currency": null,
+   "actual": null,
+   "estimate": 0.82,
+   "difference": 0,
+   "percent": null
+  },
+  {
+   "code": "AAL.US",
+   "report_date": "2026-10-22",
+   "date": "2026-09-30",
+   "before_after_market": "BeforeMarket",
+   "currency": null,
+   "actual": null,
+   "estimate": -0.32,
+   "difference": 0,
+   "percent": null
+  },
+  {
+   "code": "AAPL.US",
+   "report_date": "2026-10-29",
+   "date": "2026-09-30",
+   "before_after_market": "AfterMarket",
+   "currency": null,
+   "actual": null,
+   "estimate": 1.98,
+   "difference": 0,
+   "percent": null
+  }
+ ]
+}

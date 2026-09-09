@@ -59,6 +59,9 @@ public sealed record ProfileRow(
     long Shares,
     double ShareOfPeriod);
 
+// One dated event the calendar holds for a name, as stored.
+public sealed record CalendarRow(string Ticker, DateOnly EventDate, string Kind, string Timing, string Detail);
+
 // A name's ladder row for one night: the trend state and the plan as stored.
 // The plan is handed over as the stored JSON rather than parsed, because
 // parsing it here would make this surface the second place the plan's shape is
@@ -158,6 +161,17 @@ public sealed class ReadApi : IComponent
         WHERE ticker = $ticker
               AND as_of = (SELECT MAX(as_of) FROM volume_profile WHERE ticker = $ticker)
         ORDER BY band_low;
+    ";
+
+    // The next event on or after a date, which is what the fact strip states and
+    // what the earnings-soon condition reads. A name with no row answers with
+    // nothing, and nothing is what the strip says rather than a guessed date.
+    const string NextEventForName = @"
+        SELECT ticker, event_date, kind, timing, detail
+        FROM calendar
+        WHERE ticker = $ticker AND event_date >= $on_or_after
+        ORDER BY event_date
+        LIMIT 1;
     ";
 
     const string LadderForName = @"
@@ -305,6 +319,27 @@ public sealed class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    public async Task<CalendarRow?> NextEventAsync(string ticker, DateOnly onOrAfter)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NextEventForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on_or_after", onOrAfter.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync()
+            ? new CalendarRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4))
+            : null;
     }
 
     public async Task<LadderRow?> LadderAsync(string ticker)

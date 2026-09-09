@@ -200,6 +200,31 @@ public static class SchemaMigrations
     // `has_non_average_anchor` is stored rather than derived because the ladder
     // builder reads it on every band, and a short average follows the price, so
     // a band anchored only on one sits at the price about half the time.
+    // The calendar, one row per ticker, event date and kind.
+    //
+    // It holds what the provider files and nothing else. A dated item a research
+    // pass found is a claim resting on a source document, so it lives in
+    // `research_section` and reaches the report's Dates section from there:
+    // writing one here would put a claim where the claim checker cannot reach it
+    // and would give a nightly store a second inserter.
+    //
+    // `timing` is what the provider carries and `status` was not. 4.0 gave this
+    // table a `status` column for whether the print was confirmed, and the
+    // payload has no such field. What it does carry is whether the report falls
+    // before the session or after it, which decides which bar prices the print.
+    // Found at 4.3 by capturing the endpoint before writing the parser.
+    const string CreateCalendar = @"
+        CREATE TABLE calendar (
+            ticker       TEXT NOT NULL,
+            event_date   TEXT NOT NULL,
+            kind         TEXT NOT NULL,
+            timing       TEXT NOT NULL,
+            detail       TEXT NOT NULL,
+            observed_at  TEXT NOT NULL,
+            PRIMARY KEY (ticker, event_date, kind)
+        ) STRICT;
+    ";
+
     // The ladder, one row per ticker per as-of date, for every index member and
     // not only the names carrying a plan.
     //
@@ -258,6 +283,7 @@ public static class SchemaMigrations
         new Migration(9, "create volume_profile", CreateVolumeProfile),
         new Migration(10, "create level", CreateLevel),
         new Migration(11, "create ladder", CreateLadder),
+        new Migration(12, "create calendar", CreateCalendar),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

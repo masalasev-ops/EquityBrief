@@ -2,7 +2,7 @@ using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Worker;
 
-// The four feeds a night runs against, resolved before the night starts.
+// The feeds a night runs against, resolved before the night starts.
 //
 // Resolution is the caller's and not the run's. Until now `Nightly.RunAsync`
 // constructed the doubles inline, which meant there was no choice to make: a
@@ -20,12 +20,14 @@ public sealed record NightFeeds(
     IHistoricalBarFeed Historical,
     IBulkPriceFeed Bulk,
     ICorporateActionFeed Corporate,
+    IEarningsCalendarFeed Calendar,
     INewsFeed News)
 {
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
-        Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests + News.Requests;
+        Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests
+        + Calendar.Requests + News.Requests;
 
     // The same night in the units the provider bills in.
     //
@@ -44,6 +46,7 @@ public sealed record NightFeeds(
         + (Historical.Requests * ProviderWeights.HistoricalPerTicker)
         + (Bulk.Requests * ProviderWeights.BulkEndOfDay)
         + (Corporate.Requests * ProviderWeights.BulkEndOfDay)
+        + (Calendar.Requests * ProviderWeights.EarningsCalendar)
         + (News.Requests * ProviderWeights.News);
 
     public const string ConstituentsFile = "index-constituents.json";
@@ -54,6 +57,7 @@ public sealed record NightFeeds(
             RecordedHistoricalBarFeed.FromFolder(folder),
             RecordedBulkPriceFeed.FromFolder(folder),
             RecordedCorporateActionFeed.FromFolder(folder),
+            RecordedEarningsCalendarFeed.FromFolder(folder),
             RecordedNewsFeed.FromFolder(folder));
 
     // The live bulk feed, from the two settings, or a refusal naming the one
@@ -79,6 +83,7 @@ public sealed record NightFeeds(
             EodhdHistoricalBarFeed.Live(address, key),
             EodhdBulkPriceFeed.Live(address, key),
             EodhdCorporateActionFeed.Live(address, key),
+            EodhdEarningsCalendarFeed.Live(address, key),
             EodhdNewsFeed.Live(address, key));
     }
 

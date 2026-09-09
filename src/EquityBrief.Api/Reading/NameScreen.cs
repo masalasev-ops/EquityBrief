@@ -31,7 +31,8 @@ public static class NameScreen
         IReadOnlyList<IndicatorRow> indicators,
         IReadOnlyList<LevelRow> levels,
         IReadOnlyList<ProfileRow> profile,
-        LadderRow? ladder)
+        LadderRow? ladder,
+        CalendarRow? nextEvent)
     {
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
@@ -97,7 +98,8 @@ public static class NameScreen
                 Members(level.Members)))],
             absent,
             ladder?.TrendState,
-            ladder?.AsOf);
+            ladder?.AsOf,
+            nextEvent?.EventDate);
     }
 
     // The members column, as the mark needs it. SCHEMA stores each member's

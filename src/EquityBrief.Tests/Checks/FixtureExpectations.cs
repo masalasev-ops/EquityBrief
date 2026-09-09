@@ -11,6 +11,7 @@ using EquityBrief.Core.Volume;
 using EquityBrief.Data.Swings;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Levels;
@@ -51,6 +52,8 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "volume profile"),
             CheckReach.Key(Scope.FixtureTable, "levels"),
             CheckReach.Key(Scope.FixtureTable, "ladder"),
+            CheckReach.Key(Scope.FixtureTable, "calendar"),
+            CheckReach.Key(Scope.FailureTable, "Earnings date missing, the calendar"),
             CheckReach.Key(Scope.FailureTable, "A name whose trend state cannot be classified"),
             CheckReach.Key(Scope.LimitsTable, "Level window"),
             CheckReach.Key(Scope.LimitsTable, "Band merge distance"),
@@ -1909,6 +1912,178 @@ public class FixtureExpectations
         await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("retention-profile");
         await new LevelBuilder(clock, store.DatabaseFile).RunAsync("retention-levels");
         await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "retention-ladders");
+    }
+
+    // ---- 4.3, the calendar ----
+
+    static readonly DateOnly CalendarSession = new(2026, 9, 8);
+
+    static async Task<TemporaryStore> WithCalendar()
+    {
+        var store = await Replayed();
+
+        await new CalendarFetcher(
+            RecordedEarningsCalendarFeed.FromFolder(Folder()),
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync(Index, CalendarSession, "replay-calendar");
+
+        return store;
+    }
+
+    [Fact]
+    public async Task TheCalendarHoldsWhatTheProviderFilesForMembersAndNothingElse()
+    {
+        var expected = Expected("calendar");
+        var counts = expected.GetProperty("counts");
+
+        using var store = await WithCalendar();
+
+        var stored = Query(store, "SELECT ticker, event_date, kind, timing FROM calendar ORDER BY ticker;");
+
+        var rows = expected.GetProperty("rows").GetProperty("stored")
+            .EnumerateArray().Select(row => row.GetString()!).OrderBy(row => row, StringComparer.Ordinal);
+
+        Assert.Equal(rows, stored.OrderBy(row => row, StringComparer.Ordinal));
+        Assert.Equal(counts.GetProperty("rowsWritten").GetInt32(), stored.Count);
+
+        // The departed constituent is the one the filter has to refuse, and its
+        // print is inside the window, so its absence is the filter working
+        // rather than the window doing the work.
+        Assert.DoesNotContain(stored, row => row.StartsWith("AAL|", StringComparison.Ordinal));
+
+        // Two of the four names have no row at all, which is the explicit blank
+        // section 18 promises, reached from the fixture rather than constructed.
+        foreach (var name in expected.GetProperty("absent").EnumerateObject()
+                     .Where(entry => entry.Name != "note")
+                     .Select(entry => entry.Name))
+        {
+            Assert.DoesNotContain(stored, row => row.StartsWith(name + "|", StringComparison.Ordinal));
+        }
+
+        // What the provider carries beyond the date, read back as stored.
+        var detail = expected.GetProperty("detail").GetProperty("byName");
+
+        foreach (var name in detail.EnumerateObject().Select(entry => entry.Name))
+        {
+            var written = JsonDocument
+                .Parse(Query(store, $"SELECT detail FROM calendar WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            Assert.Equal(
+                detail.GetProperty(name).GetProperty("periodEnd").GetString(),
+                written.GetProperty("periodEnd").GetString());
+
+            Assert.Equal(
+                detail.GetProperty(name).GetProperty("estimate").GetString(),
+                written.GetProperty("estimate").GetString());
+
+            Assert.Equal(JsonValueKind.Null, written.GetProperty("actual").ValueKind);
+        }
+    }
+
+    [Fact]
+    public async Task TheCalendarCostsOneRequestWhateverTheUniverseSize()
+    {
+        // The rule the whole design rests on, asserted on the feed's own count
+        // rather than on the caller's. A fetcher that looped over members would
+        // still report one if the caller wrote the figure.
+        var feed = RecordedEarningsCalendarFeed.FromFolder(Folder());
+
+        using var store = await Replayed();
+
+        var outcome = await new CalendarFetcher(
+            feed,
+            FixedClock.At(Instant, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync(Index, CalendarSession, "one-request");
+
+        Assert.Equal(1, feed.Requests);
+        Assert.Equal(1, outcome.Requests);
+
+        // And the count does not move with the population. The same feed asked
+        // again over a store holding one member answers once more, not once per
+        // name, which is the property a per-name path would break.
+        Assert.Equal(
+            Expected("calendar").GetProperty("counts").GetProperty("notMembers").GetInt32(),
+            outcome.NotMembers);
+    }
+
+    [Fact]
+    public void TheParserReadsTheCaptureAsTheProviderSendsIt()
+    {
+        // The three things a parser written from the endpoint's name would have
+        // got wrong, each asserted against the captured bytes.
+        var response = File.ReadAllText(
+            Directory.GetFiles(Folder(), RecordedEarningsCalendarFeed.Prefix + "*.json").Single());
+
+        var window = Expected("calendar").GetProperty("window");
+        var from = DateOnly.ParseExact(window.GetProperty("from").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var to = DateOnly.ParseExact(window.GetProperty("to").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        var expected = Expected("calendar");
+        var events = RecordedEarningsCalendarFeed.Parse(response, from, to);
+
+        Assert.Equal(expected.GetProperty("counts").GetProperty("eventsReturned").GetInt32(), events.Count);
+
+        // The capture's own size, so the window is doing work rather than the
+        // file happening to hold only what is wanted.
+        Assert.Equal(
+            expected.GetProperty("capture").GetProperty("rows").GetInt32(),
+            JsonDocument.Parse(response).RootElement.GetProperty("earnings").GetArrayLength());
+
+        // The rows the window refuses, named in the expectation and asserted
+        // both ways: each is in the capture and none is in the parsed events.
+        var refused = expected.GetProperty("refused");
+
+        foreach (var row in refused.GetProperty("outsideTheWindow").EnumerateArray().Select(entry => entry.GetString()!))
+        {
+            var code = row.Split(' ')[0];
+
+            Assert.Contains($"\"code\": \"{code}\"", response, StringComparison.Ordinal);
+            Assert.DoesNotContain(events, entry => entry.Ticker == code.Split('.')[0]);
+        }
+
+        Assert.Equal(
+            expected.GetProperty("counts").GetProperty("outsideTheWindow").GetInt32(),
+            refused.GetProperty("outsideTheWindow").GetArrayLength());
+
+        // And the departed constituent, which the window admits and the member
+        // filter refuses, so the two refusals are told apart rather than one
+        // standing for the other.
+        Assert.Contains(events, entry => entry.Ticker == "AAL");
+        Assert.False(string.IsNullOrWhiteSpace(refused.GetProperty("AAL").GetString()));
+
+        // One. The ticker loses its exchange, because the store holds AAPL and
+        // the provider sends AAPL.US.
+        Assert.All(events, entry => Assert.DoesNotContain('.', entry.Ticker));
+        Assert.Contains(events, entry => entry.Ticker == "AAPL");
+
+        // Two. The event date is report_date and never date, which is the
+        // fiscal period the report covers. They are a month apart on this
+        // capture, so a parser reading the wrong one puts every print early.
+        var apple = events.Single(entry => entry.Ticker == "AAPL");
+
+        Assert.Equal(new DateOnly(2026, 10, 29), apple.EventDate);
+        Assert.Equal(new DateOnly(2026, 9, 30), apple.PeriodEnd);
+        Assert.NotEqual(apple.EventDate, apple.PeriodEnd!.Value);
+
+        // Three. The rows sit under an `earnings` key rather than at the top
+        // level, and a payload without it is a different answer rather than a
+        // day on which nobody reports.
+        Assert.Throws<InvalidOperationException>(
+            () => RecordedEarningsCalendarFeed.Parse("{\"type\":\"Earnings\"}", from, to));
+
+        // The timing, which is what the provider files where 4.0 expected a
+        // confirmed flag. Both values the capture carries are read, and the
+        // absent third is what an unstated row becomes.
+        Assert.Equal(EventTiming.After, apple.Timing);
+        Assert.Contains(events, entry => entry.Timing == EventTiming.Before);
+
+        Assert.Equal(
+            EventTiming.Unstated,
+            RecordedEarningsCalendarFeed.Parse(
+                "{\"earnings\":[{\"code\":\"ZZ.US\",\"report_date\":\"2026-10-01\",\"before_after_market\":null}]}",
+                from,
+                to).Single().Timing);
     }
 
     // ---- 4.1, the trend state and the ladder row ----

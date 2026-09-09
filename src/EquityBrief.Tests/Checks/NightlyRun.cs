@@ -29,6 +29,7 @@ public class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Load index membership and record any joins and leaves."),
             CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the index's dated events for the horizon, one request, and store what the provider files (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Compute the indicators for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Mark the swings for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Build the volume profile for every name."),
