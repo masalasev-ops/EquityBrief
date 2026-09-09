@@ -4078,3 +4078,66 @@ Amended:    nothing. This checkpoint amends no done condition.
 Tests:      380. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green,
             and its fixture line now reads 6 constituents and 4 names.
 Carried:    nothing new. No obligation remains open for phase 3.
+
+### 3.7 - the phase 3 report                                                2026-09-09
+Built:      nothing. This checkpoint reports, and its done condition is that every phase 3
+            claim is PASS across four fixture names and that the predicted claim total is
+            checked against the actual.
+Claims:     186, 64 pass, 122 out of scope, 0 fail, 0 unexamined, from 185 and 42 at the phase
+            2 sign-off. 70 placements and verdicts reconciled against a floor of 34. All four
+            names, since the fixture widened at 3.6 and every expectation was re-derived over
+            it.
+Predicted:  14 new claims, and 22 arrived. The prediction is checked here rather than quietly
+            superseded, and the eight it missed are one shape rather than eight surprises.
+            It named 8 catalogue and matrix rows for the four components phase 3 builds, the 2
+            level chart elements 1.3 left absent, and, after 3.1's correction, the 4 fixture
+            rows section 19.1 carries. Every one of those 14 arrived.
+            The 8 it missed are: four section 17 limit rows, being the swing lookback, the
+            level window, the band merge distance and the volume shelf threshold; two more
+            marks in section 15.5, being the volume profile and the momentum panel; and the two
+            elements of section 18's two hundred bar row.
+Found:      the shape of that miss, which is worth more than the number. The prediction reasoned
+            about what phase 3 adds to the document: it said in so many words that there would
+            be no new row in section 17 and no new row in section 18, and both were true. What
+            it did not follow is that a phase makes rows assertable that the document already
+            had. Every one of the eight is a row that existed before phase 3 opened, and became
+            a PASS because the component it constrains or the surface it describes was built.
+            So the rule for 4.0 is: a claim prediction is over the rows that become assertable,
+            not over the rows that get written. The second is a prediction about editing and
+            the first is a prediction about building, and only one of them is what a phase does.
+Total:      186, and the prediction of 185 was corrected to 186 at 3.1 when the two hundred bar
+            failure row was decomposed into two elements. The phase added no claim by writing
+            one: every one of the 22 was a row the document already carried.
+Measured:   over the phase. 68 new tests, 312 to 380. Four migrations, 6 to 10, creating
+            `indicator`, `swing`, `volume_profile` and `level`. Four components, and every one
+            of them declares its access and is reconciled against its catalogue row, its matrix
+            row and SCHEMA in both directions. Four new decisions. Five expectation files to
+            eight. The fixture from three names to four and from five constituents to six. One
+            new check, `obligation-reconciles`, and one that became due and was implemented,
+            `fixture-replay`.
+Verified:   every claim in scope, by 30 carried checks, none of which failed or went unrun. The
+            marks: section 15.5 now has five of its seven drawn, the two outstanding being the
+            plan column at 4.4 and the marks phase 5 builds. The level chart has all four of
+            its elements.
+Noted:      a pattern rather than a defect, twice in two checkpoints and found the same way
+            both times. At 3.3 the test named for the volume spreading asserted the
+            expectation's stated overlaps against the stored band edges, and deleting the
+            spreading left it green. At 3.4 the test named for touches not widening a band
+            asserted the edges against the anchors, and widening the band to all its members
+            left it green. Both were true statements and empty assertions, and in both cases
+            the property lived in the shape of the code rather than in the line under test.
+            Both were repaired in their own checkpoints by a test that computes the answer by
+            hand over constructed input, so no hole stands open. It is recorded here because a
+            pattern that arrives twice arrives again, and because both were found by mutation
+            and neither by reading.
+Carried:    three obligations to 4.0, each cited by its text. Section 19.1's fixture table
+            reconciled against the expectations that exist, and the claims still due at a phase
+            rather than at a checkpoint, both from 3.1. And new from 3.6, the suite's fixture
+            populations read from the expectation rather than written into each test: widening
+            to four names turned 28 tests red and touched twenty-five assertion sites, one of
+            which was a named constant covering six of them, which is the shape the other
+            twenty-four should have had.
+Amended:    nothing. This checkpoint amends no done condition.
+Tests:      380. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
+Notes:      this session has committed code to phase 3 and may not sign it off. The sign-off is
+            owed on the phase as a whole, by a fresh session, before phase 4's plan.
