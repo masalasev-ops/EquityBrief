@@ -213,10 +213,25 @@ public class NightlyRun
         // mornings and the operator reads one line to tell them apart.
         using var store = new TemporaryStore();
 
+        // A clean night first, so the deadline below has only the fetch left to
+        // spend itself on. Without it the migrate, membership and backfill steps
+        // are doing real work and a slow runner reaches the deadline before the
+        // fetch, which is a test whose answer depends on the machine: it passed
+        // on this one and failed on the windows runner at the first push.
+        //
+        // The bound is then generous rather than tight. Every step but the fetch
+        // is a no-op against a warm store and takes milliseconds; the fetch
+        // waits five minutes. A runner ten times slower still reaches the
+        // deadline in the fetch and nowhere else.
+        var (warm, _, _) = await NightAsync(store, runId: "night-one");
+
+        Assert.Equal(0, warm);
+
         var (code, _, error) = await NightAsync(
             store,
+            runId: "night-slow",
             bulk: new SlowBulkFeed(),
-            deadline: TimeSpan.FromMilliseconds(250));
+            deadline: TimeSpan.FromSeconds(3));
 
         Assert.Equal(1, code);
         Assert.Contains("passed the night's deadline", error, StringComparison.Ordinal);

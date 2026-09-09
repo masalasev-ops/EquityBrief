@@ -3027,3 +3027,21 @@ Not signed off: this session committed code to phase 2, so it may not sign phase
             report is written here and the sign-off is a separate activity with its own record,
             owed before phase 3's plan and not gating the merge.
 Tests:      312, from 257 at the start of the phase.
+
+### Correction to 2.7 - the deadline test raced on a runner and not here        2026-09-09
+Corrects:   nothing in the report's figures. The suite was green on this machine and red on the
+            windows runner at the first push, on `ANightThatPassesItsDeadlineStopsAndSaysSo`.
+Found:      the test gave a fresh store a 250 millisecond deadline and a feed that never answers,
+            and asserted the night stopped on the fetch. On a warm machine the migrate, membership
+            and backfill steps finish inside that; on a cold runner they do not, so the deadline
+            fired on an earlier step and the assertion about which step was named failed.
+            The property was right and the arrangement was a race. A test whose answer depends on
+            how fast the machine is has no answer, and this one passed locally on every run.
+Repaired:   a clean night runs first, so every step but the fetch is a no-op against a warm store,
+            and the bound is three seconds rather than a quarter of one. A runner ten times slower
+            still reaches the deadline inside the fetch and nowhere else. The assertion is
+            unchanged, which is the point: what moved is the arrangement, not what is claimed.
+Why here:   `two-platform` is the check that made this visible, and it is the reason the matrix
+            exists. Both runners ran the same suite and disagreed, which is exactly the class of
+            fault a single-machine green cannot see.
+Tests:      312, unchanged.
