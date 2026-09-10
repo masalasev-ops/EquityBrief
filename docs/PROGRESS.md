@@ -5266,3 +5266,84 @@ Notes:      no-superseded-citation now reads the specs and the code and excludes
             were the class the pass had just finished naming: a bar whose close sat outside its
             own range, and a window whose ordinary bars were themselves shocks. Repaired rather
             than worked around.
+
+### 5.1 - the full universe and the universe screen                          2026-09-10
+Built:      the sector on the membership row, migration 13, and the universe screen's three
+            regions with the distance row mark beneath them. `UniverseScreen`, a projection
+            beside `NameScreen` and in the seam that file names.
+Decided:    nothing new. 5.0 ruled the sector's home and what a departed name carries, and this
+            checkpoint declares the column and writes it, because a column declared before the
+            migration creates it is a declaration with nothing behind it.
+Measured:   the sector comes from the `Components` object of the constituents response the
+            loader already fetches, at no extra request. 4 of the fixture's 6 constituents carry
+            one, being the 4 current members, and the 2 departed carry none. The population is
+            the membership rows in the committed capture, and the two counts are different
+            populations: a constituent is a membership row and a current member is a row with no
+            leave date.
+            The universe answers with 4 rows against 6 constituents, which is the index rather
+            than every name the store has ever held.
+Found:      two holes in this checkpoint's own work, both by its own mutation sweep, and both
+            are classes 5.0 had just finished naming.
+            Sorting a name with no distance first left the suite green. The partition assertion
+            had nothing on the other side of it: every name in the committed fixture has bands
+            and bars, so there is no absent distance to sort and the comparison was vacuous.
+            That is the unreachable boundary. The case is constructed now, and the constructed
+            input also pins the name whose typical daily move is zero, which has no distance
+            rather than an infinite one.
+            Assigning the incoming sector rather than coalescing it left the suite green. The
+            fixture's two departed names were never in the snapshot object, so they have no
+            sector to lose and the two readings cannot be told apart by any payload this fixture
+            holds. That is the unproducible shape, whose remedy is the invariant written down
+            and asserted rather than a stronger assertion at the site. A name is now loaded
+            while it is a member and again after it has left, and what it was last seen with
+            survives.
+            And two limits were owed at this checkpoint and neither could be produced here. The
+            row coverage claim is about a listings row for every name every night and `listing`
+            arrives at 5.4, which is the same fault as the `listings-coverage` roster row 5.0
+            moved and which was missed beside it. The wall clock at index size needs a night that
+            ran on a schedule; what this checkpoint produces is one night run by hand, which is
+            an observation and not a bound. Both moved, to 5.4 and 5.7, and 5.7's done condition
+            already produces the week of nights a distribution needs.
+            Writing this entry before the run found two more of the same family, which is what
+            done condition 8 is for. Recording 5.1 turned 15 tests red at once, all of them the
+            reconciliation refusing a due point the record now shows as landed. Section 11's
+            table placement was owed at 5.1 and its own reason names the fixture's listings
+            expectations, which arrive at 5.4. And section 16's Listings store row derived to
+            5.1 from the plan, because 5.1's text names the store in order to say it is absent
+            there and the derivation reads the first checkpoint whose text carries the word.
+            That is the prefix shape the verification rules name as having arrived four times,
+            and it is declared as a late derivation rather than written into the map, which is
+            the form that dictionary exists for. Four rows of one family, then: the roster row
+            and the row coverage limit 5.0 moved, and these two.
+Mutated:    four mutations, in a worktree under the session scratchpad outside the repository,
+            reverted, and the worktree removed. The rule was stated before the sweep and follows
+            5.0's own: each mutation names the property it is trying to break, not the line it
+            edits, and the properties this checkpoint added are named below whether they were
+            mutated or not.
+            The properties added: the universe is every current index member and no other name;
+            a name with no distance sorts last; the sector is read from the snapshot object of
+            the payload the loader already fetches; and a name that leaves keeps the sector it
+            was last seen with.
+            All four were mutated and all four now turn a test red. Two were green on the first
+            sweep and are the holes recorded above; the two tests that close them were written
+            before the second sweep and the mutations were re-run against them.
+            None of the four went unmutated. The mark's geometry was not mutated and is named
+            here as not mutated: a scale drawn wrong is a picture that looks wrong, and the
+            assertion over it reads the drawn attributes back rather than the shape.
+Tests:      433, from 426. `tools/ci.sh` green end to end, all 6 steps, migrations 0 to 13, exit
+            0. `tools/verify-phase` green at 234 claims, 112 PASS, 0 FAIL, 122 out of scope, 0
+            unexamined, 119 placements and verdicts reconciled against a floor of 34. Windows on
+            this machine; the matrix carries macOS and the Linux case-sensitivity job.
+Carried:    nothing new.
+Notes:      the read API still derives nothing, which `read-surface` asserts over the shipped
+            source, so the distance the screen sorts on is worked out in the projection. That is
+            the one place the universe screen differs from the name screen and the file says so:
+            the name page draws stored columns, and a distance to a band edge in typical days is
+            stored nowhere and changes with every session.
+            The sector column is last in `SCHEMA.md`'s column list because `ALTER TABLE` appends
+            and the file states the order the store has rather than the order that reads best.
+            `schema-columns` asserts that order and refused the declaration when 5.0 wrote it
+            ahead of the migration.
+            The regions the listings store feeds are absent and say so rather than being drawn
+            as zero: how many of a sector are on tonight's list, the evening a name was last on
+            it, and the listing strip. A zero there would read as nothing having fired.

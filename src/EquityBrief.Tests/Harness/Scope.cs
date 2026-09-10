@@ -597,6 +597,15 @@ internal static class Scope
         // a recorded run, and that arrives at 1.4.
         ["Backfill"] = "1.4",
 
+        // 5.1 names the listings store to say it is absent there: its universe
+        // screen draws every region except the ones that store feeds, and its
+        // text has to name what it is not drawing. The store itself is created
+        // at 5.4. Read from the plan alone the subject resolves to the first
+        // checkpoint whose text carries the word, which is the prefix shape the
+        // verification rules name as having arrived four times and which this
+        // dictionary exists to declare rather than to hide.
+        ["Listings"] = "5.4",
+
     };
 
     // Components the plan does not name. The catalogue and the matrix share it.
