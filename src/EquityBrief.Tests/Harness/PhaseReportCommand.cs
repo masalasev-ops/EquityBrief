@@ -27,6 +27,7 @@ internal static class PhaseReportCommand
 
         var report = PhaseReport.Build(
             ArchitectureTables.In(document),
+            ArchitectureFigures.In(document),
             NightlyRunSteps.In(document),
             Fixtures.Of(root),
             CoverageReported.Coverage(),

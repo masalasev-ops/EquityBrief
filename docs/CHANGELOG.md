@@ -25,6 +25,29 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - CLAUDE.md, ARCHITECTURE.html - the figures are read, and one names a store the tables do not carry
+Corrects: no figure in the document was read by anything. The phase 4 sign-off found that figure
+10.1's rows were reached by nothing, which is how the trailing stop rule drifted from the corpus for
+a phase with no instrument asking. The cause is wider than the one figure: `ArchitectureTables.In`
+matches table elements, every figure is a `div.fig`, and `EveryTableInTheDocumentIsPlaced` asserted
+that every table the reader returned was placed. Its completeness was defined by the thing it was
+checking, so four figures and fifty-nine boxes were unread and nothing could say so.
+Was:
+> the roster row read "in a table or in the nightly run's ordered list" and "every table in the
+> document is placed so none can go unread"; and figure 5.1's nightly store box read "facts,
+> levels, ladders, list reasons, forward returns"
+Now:
+> "in a table, in a figure, or in the nightly run's ordered list", with every table and every
+> figure placed against a population read from the document rather than from the reader; and the
+> box reads "listings", which is the name section 16 carries
+Why: this is the shrinking-population defect in its third form, after a floor set to what a run
+produced and a reader whose population was its own output, so the population is now the document's
+own count of figure openings asserted against the number parsed. Figures 9.1 and 10.1 become claim
+sources reached by `fixture-expectations`, figure 12.1's eight boxes are out of scope until phase 6,
+and figure 5.1 is placed as the system diagram with every box asserted to name a component or store
+sections 7 and 16 carry. That last assertion found the wording on its first run: the diagram named
+a store called "list reasons" and the store is Listings.
+
 ### 2026-09-10 - ARCHITECTURE.html - the trailing stop and the fifth condition, as the code runs them
 Authorised by: The trailing stop is the higher of the band beneath and the last swing low
 Was:

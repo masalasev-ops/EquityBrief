@@ -138,6 +138,75 @@ internal static class Scope
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
+        // Figure 9.1's five steps and the store they write, added at 5.0 when
+        // the figures were first read at all. Each is asserted over the
+        // committed fixture by the level expectations, which is the same
+        // instrument that reaches the levels row of section 19.1.
+        [CheckReach.Key("Figure 9.1", "Collect candidates")] = new Scoped(
+            Verdict.Pass,
+            "the four sources are collected over the fixture and the members of every band name their kind and date, swings, averages, retracements and shelves alike",
+            ByExpectations),
+        [CheckReach.Key("Figure 9.1", "Merge into bands")] = new Scoped(
+            Verdict.Pass,
+            "candidates closer than half a typical day's move join one band whose edges are its lowest and highest member, asserted against the expectation and at the merge distance either side",
+            ByExpectations),
+        [CheckReach.Key("Figure 9.1", "Add touches")] = new Scoped(
+            Verdict.Pass,
+            "a session reaching a band joins it as evidence and no band exists that only touches created, asserted over the fixture's own touch counts",
+            ByExpectations),
+        [CheckReach.Key("Figure 9.1", "Assign roles")] = new Scoped(
+            Verdict.Pass,
+            "bands above the close are resistance and below are support, with the nearest on each side marked immediate, asserted band by band against the expectation",
+            ByExpectations),
+        [CheckReach.Key("Figure 9.1", "Score strength")] = new Scoped(
+            Verdict.Pass,
+            "the strength of every band over the fixture matches the score the rule produces, member by member",
+            ByExpectations),
+        [CheckReach.Key("Figure 9.1", "Levels")] = new Scoped(
+            Verdict.Pass,
+            "the stored row carries the edges, the role, the strength and every member with its date and kind, diffed against the levels expectation",
+            ByExpectations),
+
+        // Figure 10.1's eight steps and the store they write. The figure the
+        // phase 4 sign-off found unreachable, which is how the trailing stop
+        // rule ran for a phase against a corpus that said something else.
+        [CheckReach.Key("Figure 10.1", "Read the trend state")] = new Scoped(
+            Verdict.Pass,
+            "each of the four labels produces the shape this box states, the range and uptrend placing tranches and the downtrend and unclassified placing none with the reason named",
+            ByExpectations),
+        [CheckReach.Key("Figure 10.1", "Place tranches")] = new Scoped(
+            Verdict.Pass,
+            "at most three, one per support band whose low edge is below the close, nearest first, average-only bands skipped and a straddling band keeping its full width, with the eligibility boundary asserted at the close itself",
+            ByExpectations),
+        [CheckReach.Key("Figure 10.1", "Place stops")] = new Scoped(
+            Verdict.Pass,
+            "each stop is the low edge of the next band beneath in a range and the higher of that and the last swing low in an uptrend, the stops are strictly decreasing, and the invalidation is the lowest of them",
+            ByExpectations),
+        [CheckReach.Key("Figure 10.1", "Attach conditions")] = new Scoped(
+            Verdict.Pass,
+            "exactly one of the four patterns matches each tranche, the order asserted in both directions over the three pairs that can both hold, with the fifth answer being the absence of the four",
+            ByExpectations),
+        [CheckReach.Key("Figure 10.1", "Place exits")] = new Scoped(
+            Verdict.Pass,
+            "one per resistance band above the price, at most five, a band closer than two typical days' moves from the blended entry listed and not traded, and the top of the ladder a trailing rule",
+            ByExpectations),
+        [CheckReach.Key("Figure 10.1", "Arithmetic")] = new Scoped(
+            Verdict.Pass,
+            "risk per tranche at the zone midpoint and reward to risk from the first tranche and the blended first two, asserted against cases computed by hand rather than against the code's own output",
+            ByExpectations),
+        [CheckReach.Key("Figure 10.1", "Build the earnings trade")] = new Scoped(
+            Verdict.Pass,
+            "the three setups keyed to the print, each with its trigger, entry, stop and target, and none produced for a name with no date on file",
+            ByExpectations),
+        [CheckReach.Key("Figure 10.1", "Apply the earnings rule")] = new Scoped(
+            Verdict.Pass,
+            "the last two prints' one-day moves stated against the stop distance, with a print outside the stored bars producing no figure rather than a wrong one",
+            ByExpectations),
+        [CheckReach.Key("Figure 10.1", "Ladders")] = new Scoped(
+            Verdict.Pass,
+            "the stored plan carries both books with every number and the band each came from, diffed against the ladder expectation",
+            ByExpectations),
+
         [CheckReach.Key(FixtureTable, "bars")] = new Scoped(
             Verdict.Pass,
             "the fixture holds a year of daily bars per name, and the pipeline over them is asserted against a session count derived from the trading calendar rather than frozen from a run",
@@ -867,6 +936,28 @@ internal static class Scope
         ["Run the overnight queue"] = "6.8",
     };
 
+    // Figure 12.1's boxes, which are the research flow and land in phase 6.
+    //
+    // Keyed on the figure and the box together, as everything else here is keyed
+    // on the table and the subject: a box name is unique inside a figure and
+    // nowhere else, and a matcher keyed on the opening of a value answers about
+    // everything sharing it.
+    //
+    // Figures 9.1 and 10.1 are not here. Every one of their boxes has landed and
+    // names the check that reached it in Reached above, which is where a claim
+    // with a verdict belongs.
+    static readonly Dictionary<string, string> Figures = new(StringComparer.Ordinal)
+    {
+        [CheckReach.Key("Figure 12.1", "Computed sections appear")] = "6.1",
+        [CheckReach.Key("Figure 12.1", "Is there a research record?")] = "6.7",
+        [CheckReach.Key("Figure 12.1", "Does it still stand?")] = "6.7",
+        [CheckReach.Key("Figure 12.1", "All four no")] = "6.7",
+        [CheckReach.Key("Figure 12.1", "A pass is warranted")] = "6.5",
+        [CheckReach.Key("Figure 12.1", "Write the sections")] = "6.5",
+        [CheckReach.Key("Figure 12.1", "Check every claim")] = "6.3",
+        [CheckReach.Key("Figure 12.1", "Store it")] = "6.3",
+    };
+
     internal static Scoped For(string table, string subject)
     {
         // The ones that have landed. Each names the check that reached it,
@@ -891,7 +982,8 @@ internal static class Scope
     // here because the plan could not.
     internal static IReadOnlyList<string> ResidualSubjects() =>
         [.. DerivedIsLate.Keys, .. DerivedIsEarly.Keys, .. Components.Keys, .. Stores.Keys,
-            .. Failures.Keys, .. MatrixRows.Keys, .. LimitDuePoints.Keys, .. NightlySteps.Keys];
+            .. Failures.Keys, .. MatrixRows.Keys, .. LimitDuePoints.Keys, .. NightlySteps.Keys,
+            .. Figures.Keys];
 
     internal static IReadOnlyList<string> DeclaredExceptions() =>
         [.. DerivedIsLate.Keys, .. DerivedIsEarly.Keys];
@@ -931,6 +1023,11 @@ internal static class Scope
         if (Screens.TryGetValue(CheckReach.Key(table, subject), out var screen))
         {
             return (screen, DueOrigin.Screens);
+        }
+
+        if (Figures.TryGetValue(CheckReach.Key(table, subject), out var figure))
+        {
+            return (figure, DueOrigin.Residual);
         }
 
         if (table == LimitsTable && LimitDuePoints.TryGetValue(subject, out var limit))

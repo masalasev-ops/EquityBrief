@@ -23,6 +23,11 @@ public class ArchitectureConformance
             CheckReach.Key(Scope.CatalogueTable, "Verification harness"),
             CheckReach.Key(Scope.FailureTable, "The harness cannot parse this document"),
             "19.3 What it produces",
+
+            // The system diagram, whole. Its placement says its boxes are the
+            // components and stores sections 7 and 16 claim name for name, and
+            // this check is what holds that reason to being true.
+            "Figure 5.1",
         ]);
 
     static PhaseReportModel Report()
@@ -35,6 +40,7 @@ public class ArchitectureConformance
         // report from a constructed run and read the written file back.
         return PhaseReport.Build(
             ArchitectureTables.In(document),
+            ArchitectureFigures.In(document),
             NightlyRunSteps.In(document),
             Fixtures.Of(Repository.Root),
             CoverageReported.Coverage(),
@@ -57,6 +63,116 @@ public class ArchitectureConformance
         var placed = Report().Tables.Select(entry => entry.Heading).ToArray();
 
         Assert.DoesNotContain(tables, table => !placed.Contains(table.Heading, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void EveryFigureInTheDocumentIsPlaced()
+    {
+        // The other half of the check above, and the half that was missing.
+        //
+        // `EveryTableInTheDocumentIsPlaced` asserted that every table the reader
+        // returned was placed, and the reader matches table elements. Every
+        // figure in this document is a div, so four figures and fifty-nine boxes
+        // were unread and the completeness check could not say so: its
+        // population was defined by the thing it was checking. The phase 4
+        // sign-off found one consequence, figure 10.1's rows reached by nothing
+        // while the trailing stop rule the code ran drifted from the corpus for
+        // a phase.
+        var figures = ArchitectureFigures.In(File.ReadAllText(Repository.Architecture));
+
+        // Scope, stated in advance, with a floor far enough below the count that
+        // ordinary growth never moves it. The boxes carry the property and the
+        // figures are the context, so the floor sits on the boxes.
+        var boxes = figures.Sum(figure => figure.Boxes.Count);
+
+        Assert.True(figures.Count >= 4, $"Read {figures.Count} figures, expected at least 4.");
+        Assert.True(boxes >= 50, $"Read {boxes} figure boxes, expected at least 50.");
+
+        var placed = Report().Tables.Select(entry => entry.Heading).ToArray();
+
+        Assert.DoesNotContain(figures, figure => !placed.Contains(figure.Id, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void EveryBoxInTheSystemDiagramNamesAComponentOrAStoreTheTablesCarry()
+    {
+        // Figure 5.1's placement, asserted rather than asserted-by-reason.
+        //
+        // It is placed as making no claims because its boxes are the components
+        // and stores sections 7 and 16 already claim name for name, and a box
+        // claimed twice is a claim counted twice. That reason is only true while
+        // it holds, so it is checked: a component drawn in the diagram and
+        // absent from the catalogue is a component nothing claims, which is the
+        // hole the placement would otherwise open.
+        var document = File.ReadAllText(Repository.Architecture);
+        var figures = ArchitectureFigures.In(document);
+        var diagram = figures.Single(figure => figure.Id == "Figure 5.1");
+
+        var tables = ArchitectureTables.In(document);
+
+        string[] Subjects(string heading) =>
+        [
+            .. tables
+                .Where(table => table.Heading == heading)
+                .SelectMany(table => table.Body)
+                .Where(row => row.Count > 1 && row[0].Length > 0)
+                .Select(row => row[0]),
+        ];
+
+        var named = Subjects(Scope.CatalogueTable)
+            .Concat(Subjects(Scope.StoresTable))
+            .ToHashSet(StringComparer.Ordinal);
+
+        // The outside sources are the feeds and archives the system reads, and
+        // they are boxes in the diagram rather than rows in either table, which
+        // is what "outside the system" means in the band they sit in.
+        var inside = diagram.Boxes.Where(box => box.Kind != "src").ToArray();
+
+        Assert.True(inside.Length >= 25, $"Read {inside.Length} boxes inside the system, expected at least 25.");
+        Assert.True(named.Count >= 30, $"Read {named.Count} components and stores, expected at least 30.");
+
+        // One box is an aggregate the diagram draws for legibility rather than a
+        // store of its own: "Nightly store" groups the five the night writes and
+        // names them in its own text, and each of those has a row in section 16.
+        // Exempted by name with the reason, and the exemption is asserted to be
+        // doing work, because a filter that matches nothing reads as a rule and
+        // behaves as a comment.
+        const string Aggregate = "Nightly store";
+
+        Assert.Contains(inside, box => box.Name == Aggregate);
+        Assert.DoesNotContain(named, name => name == Aggregate);
+
+        var unnamed = inside
+            .Where(box => box.Name != Aggregate && !named.Contains(box.Name))
+            .Select(box => box.Name)
+            .ToArray();
+
+        Assert.DoesNotContain(unnamed, _ => true);
+
+        // And the aggregate is held to naming real stores rather than to being
+        // exempt: every store it lists appears in section 16, matched on the
+        // row's own words so the diagram cannot name a store the table lost.
+        var storeRows = string.Join(" ", Subjects(Scope.StoresTable)).ToLowerInvariant();
+
+        var grouped = inside
+            .Single(box => box.Name == Aggregate)
+            .Rule
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        Assert.True(grouped.Length >= 5, $"The aggregate names {grouped.Length} stores, expected at least 5.");
+
+        Assert.All(
+            grouped,
+            store => Assert.True(
+                storeRows.Contains(store.ToLowerInvariant(), StringComparison.Ordinal)
+                || storeRows.Contains(store.ToLowerInvariant().TrimEnd('s'), StringComparison.Ordinal),
+                $"the nightly store box names '{store}' and section 16 has no row carrying it."));
+
+        // The outside boxes are counted rather than passed over, so a source
+        // added to the diagram is visible in a figure a person reads.
+        Assert.True(
+            diagram.Boxes.Count - inside.Length >= 7,
+            $"Read {diagram.Boxes.Count - inside.Length} outside sources, expected at least 7.");
     }
 
     [Fact]
@@ -582,6 +698,7 @@ public class ArchitectureConformance
         var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
         var report = PhaseReport.Build(
             tables,
+            ArchitectureFigures.In(File.ReadAllText(Repository.Architecture)),
             NightlyRunSteps.In(File.ReadAllText(Repository.Architecture)),
             outcomes: SuiteOutcomes.EveryCarriedCheckPassed());
 
@@ -847,6 +964,7 @@ public class ArchitectureConformance
 
         return PhaseReport.Build(
             ArchitectureTables.In(document),
+            ArchitectureFigures.In(document),
             NightlyRunSteps.In(document),
             Fixtures.Of(Repository.Root),
             CoverageReported.Coverage(),

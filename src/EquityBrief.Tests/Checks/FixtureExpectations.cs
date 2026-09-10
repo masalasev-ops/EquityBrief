@@ -64,6 +64,27 @@ public class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Volume shelf threshold"),
             CheckReach.Key(Scope.LimitsTable, "Swing lookback"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, 200-day average"),
+
+            // The two flow figures, box by box. Each box is a stage this check
+            // replays over the committed fixture and diffs against what the
+            // rules produce. Declared per box rather than per figure because a
+            // whole-figure entry is only sent by a placement naming this check,
+            // and a claim source is sent by its verdicts.
+            CheckReach.Key("Figure 9.1", "Collect candidates"),
+            CheckReach.Key("Figure 9.1", "Merge into bands"),
+            CheckReach.Key("Figure 9.1", "Add touches"),
+            CheckReach.Key("Figure 9.1", "Assign roles"),
+            CheckReach.Key("Figure 9.1", "Score strength"),
+            CheckReach.Key("Figure 9.1", "Levels"),
+            CheckReach.Key("Figure 10.1", "Read the trend state"),
+            CheckReach.Key("Figure 10.1", "Place tranches"),
+            CheckReach.Key("Figure 10.1", "Place stops"),
+            CheckReach.Key("Figure 10.1", "Attach conditions"),
+            CheckReach.Key("Figure 10.1", "Place exits"),
+            CheckReach.Key("Figure 10.1", "Arithmetic"),
+            CheckReach.Key("Figure 10.1", "Build the earnings trade"),
+            CheckReach.Key("Figure 10.1", "Apply the earnings rule"),
+            CheckReach.Key("Figure 10.1", "Ladders"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
