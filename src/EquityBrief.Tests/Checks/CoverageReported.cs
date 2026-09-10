@@ -54,6 +54,7 @@ public class CoverageReported
         ["news-parse"] = "NewsCoverage",
         ["fixture-expectations"] = "FixtureExpectations",
         ["fixture-replay"] = "FixtureReplay",
+        ["listings-coverage"] = "ListingsCoverage",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };
@@ -165,7 +166,12 @@ public class CoverageReported
         // size is a fact about how much is built rather than about the
         // property, which is that every remaining row names a checkpoint that
         // has not landed. It was 5 until 1.4 promoted nightly-cost.
-        Assert.True(pending.Length >= 3, $"Read {pending.Length} checkpoint rows, expected at least 3.");
+        // Two, from three at 5.4 when listings-coverage was promoted. The floor
+        // is exact enough to say what is left rather than generous enough to
+        // survive anything: what remains is the admissibility check at 6.1 and
+        // the register at 7.1, and a run finding none would pass this half over
+        // an empty set.
+        Assert.True(pending.Length >= 2, $"Read {pending.Length} checkpoint rows, expected at least 2.");
 
         foreach (var row in pending)
         {

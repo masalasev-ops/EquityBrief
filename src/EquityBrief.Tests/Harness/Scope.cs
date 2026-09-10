@@ -48,6 +48,7 @@ internal static class Scope
     const string ByExpectations = "fixture-expectations";
     const string ByCost = "nightly-cost";
     const string ByNight = "nightly-run";
+    const string ByListings = "listings-coverage";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -138,6 +139,12 @@ internal static class Scope
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
+        // The shortlist builder and tonight's list, 5.4.
+        [CheckReach.Key(LimitsTable, "Nightly row coverage")] = new Scoped(
+            Verdict.Pass,
+            "a listings row exists for every index member on every night the store holds, with the fired and quiet rows partitioning the whole, and a member the night computed nothing for still getting one",
+            ByListings),
+
         // The facts assembler and the change detector, 5.3. Two components on one
         // table's disjoint columns, which is what permits an inserter and a
         // different updater under a rule that forbids two owners for one

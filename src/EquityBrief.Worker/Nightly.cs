@@ -9,6 +9,7 @@ using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
+using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
 using EquityBrief.Worker.Membership;
@@ -239,6 +240,17 @@ public static class Nightly
 
                 return $"{outcome.RowsWritten} move(s) written for {outcome.NamesExamined} name(s), " +
                     $"{outcome.RowsDropped} dropped";
+            }),
+            // Section 14's step 12. It runs before the facts file, which is the
+            // order section 14 states, and the facts assembler reads the
+            // listings from 5.4 onward for the same reason.
+            new("listings", async () =>
+            {
+                var outcome = await new ShortlistBuilder(clock, store.DatabaseFile)
+                    .RunAsync(indexCode, runId, night.Token);
+
+                return $"{outcome.RowsWritten} row(s) for {outcome.MembersConsidered} member(s), " +
+                    $"{outcome.Fired} fired, {outcome.ReasonsFired} reason(s) fired";
             }),
             // Section 14's step 13. The facts file and the change list are one
             // stage rather than two, because the detector compares tonight's

@@ -20,6 +20,7 @@ using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
 using Microsoft.Data.Sqlite;
@@ -2210,6 +2211,25 @@ public class FixtureExpectations
 
         await new FactsAssembler(clock, store.DatabaseFile).RunAsync("replay-facts");
         await new ChangeDetector(clock, store.DatabaseFile).RunAsync("replay-changes");
+
+        return store;
+    }
+
+    // The chain through the listings, which is the facts chain plus the builder
+    // that reads it. Internal because `listings-coverage` runs against the same
+    // chain rather than a copy of it: two replays of one pipeline disagree
+    // eventually, and the two checks would be the pair.
+    internal static async Task<TemporaryStore> WithListings()
+    {
+        var store = await WithFacts();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings");
+
+        // The detector again, because its retention reads the listings and there
+        // were none the first time it ran. This is the order the night takes as
+        // well: the shortlist is step 12 and the facts file is step 13.
+        await new ChangeDetector(clock, store.DatabaseFile).RunAsync("replay-changes-again");
 
         return store;
     }
