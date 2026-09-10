@@ -140,6 +140,76 @@ internal static class Scope
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
         // The shortlist builder and tonight's list, 5.4.
+        [CheckReach.Key(CatalogueTable, "Shortlist builder")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the seven stores it reads and the listings it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Shortlist builder")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, which is what refused contradiction L on the first run",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Listings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and it carries a row per member per night with no deleter",
+            ByMigration),
+        [CheckReach.Key(FixtureTable, "listings")] = new Scoped(
+            Verdict.Pass,
+            "each of the six reasons is recomputed in the suite from the tables it reads and compared against what the builder wrote, rather than diffed against a set frozen from that builder",
+            ByExpectations),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate the list reasons for every name.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs the stage in the order section 14 states, before the facts file, and its run log row records the members, the fired names and the reasons",
+            ByNight),
+        [CheckReach.Key(LimitsTable, "List display")] = new Scoped(
+            Verdict.Pass,
+            "at most twenty rows are drawn and the true fired count is stated whatever is drawn, asserted against a constructed night of forty",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Listing strip")] = new Scoped(
+            Verdict.Pass,
+            "one cell per evening over the window, a listed evening drawn differently in shape as well as in ink, and the count of listed evenings read off the markup",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Night header")] = new Scoped(
+            Verdict.Pass,
+            "the fired count over the whole index and the index size are read off the markup and matched against the store, and the quantities phase 6 supplies are stated as absent rather than drawn as zero",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Watch list")] = new Scoped(
+            Verdict.Pass,
+            "the region sits above the list rather than inside it and states that no watch list is on file, because no store holds one and none is invented",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list")] = new Scoped(
+            Verdict.Pass,
+            "one row per name that fired, ordered by how many fired then by band strength, at most twenty drawn, with the tiebreaker asserted over rows whose fired counts are equal",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Selected name")] = new Scoped(
+            Verdict.Pass,
+            "the plan column and its tables are composed for the first row of the list, so checking a plan needs no navigation",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list")] = new Scoped(
+            Verdict.Pass,
+            "the count is per sector rather than over the index, asserted over constructed rows where one sector has a listed name and the other does not",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = new Scoped(
+            Verdict.Pass,
+            "the evening a name was last on the list and the strip over the window are drawn from the stored listings, with a name never on it saying never rather than showing a date",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Why it is here")] = new Scoped(
+            Verdict.Pass,
+            "each reason that fired is a full sentence with the values beside it, a reason the mapping has no sentence for fails rather than rendering a default, and a name that fired nothing says it is not on tonight's list",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Walk")] = new Scoped(
+            Verdict.Pass,
+            "previous and next on tonight's list are links, and either end says so rather than wrapping, asserted at both ends",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "Bulk price feed unavailable, banner")] = new Scoped(
+            Verdict.Pass,
+            "a night with no list shows the data date the store does have and draws no list at all, which is the half a banner above a stale list would not satisfy",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "Earnings date missing, the earnings reason")] = new Scoped(
+            Verdict.Pass,
+            "the reason does not fire with no date on file and says not on file rather than a guessed date, with the horizon asserted either side of its boundary",
+            ByExpectations),
+
+        // The shortlist builder and tonight's list, 5.4.
         [CheckReach.Key(LimitsTable, "Nightly row coverage")] = new Scoped(
             Verdict.Pass,
             "a listings row exists for every index member on every night the store holds, with the fired and quiet rows partitioning the whole, and a member the night computed nothing for still getting one",

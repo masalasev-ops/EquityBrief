@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Ladders;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
@@ -246,13 +247,28 @@ public static class NameScreen
 
     // The condition in words. The enum's names are what the store holds and are
     // not what a reader reads, and this is the one place the two are paired.
+    //
+    // It ended in a catch-all arm until 5.4, so a sixth condition, a typo or an
+    // unset value rendered as the sentence for reaching the zone with nothing
+    // failing, and no test in the suite asserted any plan sentence at all. The
+    // phase 4 sign-off found it and 5.4 owes it.
+    //
+    // Every condition the enum carries has its own arm and anything else throws.
+    // A sentence a reader acts on that was produced by a value nobody wrote is
+    // exactly the failure a catch-all makes invisible: it looks like a plan and
+    // it is a default.
+    // see: Every figure carries a plain-language key
     static string Words(string? condition) => condition switch
     {
-        "AvailableNow" => "this price now",
-        "FailedBreakdown" => "a failed breakdown back into the zone",
-        "FirstCloseBackAbove" => "the first close back above the zone after a dip",
-        "SecondDayAfterAShock" => "the second day after a shock, once the first day's low has held",
-        _ => "the price reaching the zone",
+        nameof(TrancheCondition.AvailableNow) => "this price now",
+        nameof(TrancheCondition.FailedBreakdown) => "a failed breakdown back into the zone",
+        nameof(TrancheCondition.FirstCloseBackAbove) => "the first close back above the zone after a dip",
+        nameof(TrancheCondition.SecondDayAfterAShock) => "the second day after a shock, once the first day's low has held",
+        nameof(TrancheCondition.ReachesTheZone) => "the price reaching the zone",
+        _ => throw new InvalidOperationException(
+            $"The stored plan carries the condition '{condition ?? "null"}', which this mapping has no words for. " +
+            "A sentence a reader acts on that was produced by a value nobody wrote is what a catch-all arm " +
+            "makes invisible, so the page fails rather than rendering a default."),
     };
 
     public static string Region(
@@ -265,7 +281,10 @@ public static class NameScreen
         IReadOnlyList<ProfileRow> profile,
         LadderRow? ladder,
         CalendarRow? nextEvent,
-        IReadOnlyList<MoveRow> moves)
+        IReadOnlyList<MoveRow> moves,
+        ListingRow? listing = null,
+        string? previousOnTheList = null,
+        string? nextOnTheList = null)
     {
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
@@ -337,7 +356,52 @@ public static class NameScreen
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))]);
+            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))],
+            FiredReasons(listing),
+            previousOnTheList,
+            nextOnTheList);
+    }
+
+    // The plan region alone, which is what tonight's list shows for the selected
+    // name: the plan column and the two tables it is read beside. Section 15.7
+    // says the common case of checking a plan needs no navigation.
+    public static string PlanRegion(
+        SinglePageApp page,
+        MarkRenderer marks,
+        string ticker,
+        LadderRow? ladder,
+        decimal close)
+    {
+        var rows = PlanRows(ladder);
+
+        return $"<section class=\"selected-name\" data-ticker=\"{ticker}\" data-plan-rows=\"{rows.Count}\">"
+            + marks.PlanColumn(ticker, close, rows)
+            + marks.PlanTables(ticker, rows)
+            + "</section>";
+    }
+
+    // The reasons that fired for this name tonight, read back from the stored
+    // listing. A name with no listing row, or one that fired nothing, has none,
+    // and the region says the name is not on tonight's list rather than being
+    // absent.
+    static IReadOnlyList<FiredReason> FiredReasons(ListingRow? listing)
+    {
+        if (listing is null || listing.FiredCount == 0)
+        {
+            return [];
+        }
+
+        using var document = JsonDocument.Parse(listing.Reasons);
+
+        return
+        [
+            .. document.RootElement.EnumerateArray()
+                .Where(reason => reason.GetProperty("fired").GetBoolean())
+                .Select(reason => new FiredReason(
+                    reason.GetProperty("name").GetString()!,
+                    reason.GetProperty("values").EnumerateObject()
+                        .ToDictionary(value => value.Name, value => value.Value.GetString()!, StringComparer.Ordinal))),
+        ];
     }
 
     // The members column, as the mark needs it. SCHEMA stores each member's

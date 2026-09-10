@@ -31,6 +31,11 @@ public static class UniverseScreen
     // name with no sector must not answer yes to a filter for some sector.
     public const string SectorNotOnFile = "not on file";
 
+    // The window the listing strip is drawn over, which section 15.8 states as
+    // sixty sessions. The same figure the level window uses, and for the same
+    // reason: it is the quarter of trading this system reasons in.
+    public const int StripSessions = 60;
+
     // The rows, ordered as section 15.8 states: by distance to the nearest level
     // ascending, so the top is what nearly fired.
     //
@@ -38,19 +43,30 @@ public static class UniverseScreen
     // distance is absent, and an absent distance read as zero would put every
     // name with no chart at the top of a screen whose whole point is that the
     // top is what nearly fired.
-    public static IReadOnlyList<UniverseCell> Rows(IReadOnlyList<UniverseRow> rows) =>
+    public static IReadOnlyList<UniverseCell> Rows(
+        IReadOnlyList<UniverseRow> rows,
+        IReadOnlyDictionary<string, IReadOnlyList<ListingRow>>? history = null) =>
     [
         .. rows
-            .Select(Cell)
+            .Select(row => Cell(row, history))
             .OrderBy(cell => cell.Nearest is null)
             .ThenBy(cell => cell.Nearest ?? double.MaxValue)
             .ThenBy(cell => cell.Ticker, StringComparer.Ordinal),
     ];
 
-    static UniverseCell Cell(UniverseRow row)
+    static UniverseCell Cell(UniverseRow row, IReadOnlyDictionary<string, IReadOnlyList<ListingRow>>? history)
     {
         var toSupport = Distance(row.Close, row.NearestSupport, row.TypicalMove);
         var toResistance = Distance(row.Close, row.NearestResistance, row.TypicalMove);
+
+        // The evenings this name was on the list, and the last of them. A name
+        // that has never been on it has no date rather than one nobody has, and
+        // neither column says anything about index membership.
+        var listings = history is not null && history.TryGetValue(row.Ticker, out var found)
+            ? found
+            : [];
+
+        var listed = listings.Where(listing => listing.FiredCount > 0).ToArray();
 
         return new UniverseCell(
             row.Ticker,
@@ -61,7 +77,9 @@ public static class UniverseScreen
             row.NearestResistance,
             toSupport,
             toResistance,
-            Nearest(toSupport, toResistance));
+            Nearest(toSupport, toResistance),
+            listed.Length == 0 ? null : listed.Max(listing => listing.SessionDate),
+            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)]);
     }
 
     // The gap to a band edge, in typical days' moves, as a distance rather than
@@ -100,7 +118,8 @@ public static class UniverseScreen
             .Select(group => new SectorLine(
                 group.Key,
                 group.Count(),
-                group.Count(row => row.TrendState == "uptrend")))
+                group.Count(row => row.TrendState == "uptrend"),
+                group.Count(row => row.Evenings is { Count: > 0 } evenings && evenings[^1])))
             .OrderBy(line => line.Sector == SectorNotOnFile)
             .ThenBy(line => line.Sector, StringComparer.Ordinal),
     ];

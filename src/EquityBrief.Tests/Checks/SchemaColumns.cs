@@ -18,6 +18,9 @@ public class SchemaColumns
         "schema-columns",
         ["docs/SCHEMA.md"],
         [
+            // 5.4, tonight's list.
+            CheckReach.Key(Scope.StoresTable, "Listings"),
+
             // 5.3, the facts file.
             CheckReach.Key(Scope.StoresTable, "Facts"),
 

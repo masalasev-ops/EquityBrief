@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Shortlist;
+using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
@@ -37,6 +39,19 @@ public class ReadSurface
         "read-surface",
         ["fixtures/membership-2026-09-05"],
         [
+            // 5.4, tonight's list.
+            CheckReach.Key(Scope.LimitsTable, "List display"),
+            CheckReach.Key("15.5 The mark vocabulary", "Listing strip"),
+            CheckReach.Key("15.7 Tonight", "Night header"),
+            CheckReach.Key("15.7 Tonight", "Watch list"),
+            CheckReach.Key("15.7 Tonight", "The list"),
+            CheckReach.Key("15.7 Tonight", "Selected name"),
+            CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list"),
+            CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions"),
+            CheckReach.Key("15.9 Name", "Why it is here"),
+            CheckReach.Key("15.9 Name", "Walk"),
+            CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, banner"),
+
             // 5.2, the move annotator.
             CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves"),
 
@@ -1120,6 +1135,316 @@ public class ReadSurface
         Assert.Contains("no moves are stored", marks.MovesTable("NOSUCH", []), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task WhyItIsHereGivesEachReasonASentenceAndIsAbsentForANameNotOnTheList()
+    {
+        // Section 15.9's region, present only when the name is on tonight's
+        // list. Each reason in a full sentence rather than a label, because a
+        // label is what the list row shows and this is the page a reader acts
+        // from.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+        var listed = listings.First(listing => listing.FiredCount > 0);
+
+        var marks = new MarkRenderer();
+
+        var region = NameScreen.Region(
+            new SinglePageApp(),
+            marks,
+            listed.Ticker,
+            await api.BarsAsync(listed.Ticker, DateOnly.MinValue, DateOnly.MaxValue),
+            await api.IndicatorsAsync(listed.Ticker, DateOnly.MinValue, DateOnly.MaxValue),
+            await api.LevelsAsync(listed.Ticker),
+            await api.ProfileAsync(listed.Ticker),
+            await api.LadderAsync(listed.Ticker),
+            await api.NextEventAsync(listed.Ticker, DateOnly.MinValue),
+            await api.MovesAsync(listed.Ticker),
+            listed,
+            "PREV",
+            "NEXT");
+
+        Assert.Contains($"data-reasons=\"{listed.FiredCount}\"", region, StringComparison.Ordinal);
+
+        // Every reason that fired is a sentence rather than its stored label,
+        // and the values that made it true are beside it.
+        using var reasons = JsonDocument.Parse(listed.Reasons);
+
+        foreach (var reason in reasons.RootElement.EnumerateArray().Where(reason => reason.GetProperty("fired").GetBoolean()))
+        {
+            var name = reason.GetProperty("name").GetString()!;
+
+            Assert.Contains($"data-reason=\"{name}\"", region, StringComparison.Ordinal);
+            Assert.Contains("data-values=\"", region, StringComparison.Ordinal);
+        }
+
+        // A sentence rather than a label: the region carries prose the stored
+        // name does not contain.
+        Assert.Contains("so the plan's first step is available", region, StringComparison.Ordinal);
+
+        // A reason the mapping has no sentence for fails rather than rendering a
+        // default, which is the same rule the plan column's mapping now follows.
+        Assert.Throws<InvalidOperationException>(
+            () => marks.WhyItIsHere("ZZZZ", [new FiredReason("a seventh reason", new Dictionary<string, string>())]));
+
+        // And a name that fired nothing says it is not on tonight's list rather
+        // than drawing an empty region.
+        Assert.Contains("not on tonight's list", marks.WhyItIsHere("ZZZZ", []), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheWalkLinksBothNeighboursAndSaysSoAtEitherEnd()
+    {
+        // Section 15.9's last region, so an evening's reading is one pass
+        // through with no return to the list.
+        var marks = new MarkRenderer();
+        var middle = marks.Walk("BBBB", "AAAA", "CCCC");
+
+        Assert.Contains("data-previous=\"AAAA\"", middle, StringComparison.Ordinal);
+        Assert.Contains("data-next=\"CCCC\"", middle, StringComparison.Ordinal);
+        Assert.Contains("href=\"#/name/AAAA\"", middle, StringComparison.Ordinal);
+        Assert.Contains("href=\"#/name/CCCC\"", middle, StringComparison.Ordinal);
+
+        // Either end says so rather than linking to the other end of a list, and
+        // both ends are asserted rather than one: a walk that wrapped would
+        // satisfy an assertion over the first alone.
+        var first = marks.Walk("AAAA", null, "BBBB");
+        var last = marks.Walk("CCCC", "BBBB", null);
+
+        Assert.Contains("no previous name", first, StringComparison.Ordinal);
+        Assert.DoesNotContain("no next name", first, StringComparison.Ordinal);
+        Assert.Contains("no next name", last, StringComparison.Ordinal);
+        Assert.DoesNotContain("no previous name", last, StringComparison.Ordinal);
+
+        // A name that is not on the list has neither neighbour.
+        var alone = marks.Walk("ZZZZ", null, null);
+
+        Assert.Contains("data-previous=\"none\"", alone, StringComparison.Ordinal);
+        Assert.Contains("data-next=\"none\"", alone, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ANightWithNoListShowsTheDataDateRatherThanAListBuiltFromOlderBars()
+    {
+        // Section 18's banner half. The bulk price feed not answering keeps last
+        // night's bars, and what a reader must not be shown is tonight's list
+        // built from them.
+        var page = new SinglePageApp();
+        var banner = page.StaleBanner(new DateOnly(2026, 9, 9), new DateOnly(2026, 9, 8));
+
+        Assert.Contains("data-list=\"absent\"", banner, StringComparison.Ordinal);
+        Assert.Contains("data-data-date=\"2026-09-08\"", banner, StringComparison.Ordinal);
+        Assert.Contains("2026-09-08", banner, StringComparison.Ordinal);
+        Assert.Contains("absent rather than wrong", banner, StringComparison.Ordinal);
+
+        // No list is drawn at all, which is the half a banner above a stale list
+        // would not satisfy.
+        Assert.DoesNotContain("list-table", banner, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-fired=", banner, StringComparison.Ordinal);
+
+        // A store with no night at all says that rather than naming a date it
+        // does not have.
+        var empty = page.StaleBanner(new DateOnly(2026, 9, 9), null);
+
+        Assert.Contains("data-data-date=\"none\"", empty, StringComparison.Ordinal);
+        Assert.Contains("no night at all", empty, StringComparison.Ordinal);
+    }
+
+    // ---- 5.4, tonight's list ----
+
+    [Fact]
+    public async Task EveryPlanSentenceIsAssertedAndAnUnknownConditionFailsRatherThanRendering()
+    {
+        // The eleventh obligation the phase 4 sign-off created. `NameScreen`'s
+        // condition-to-words mapping ended in a catch-all arm, so a sixth
+        // condition, a typo or an unset value rendered as the sentence for
+        // reaching the zone with nothing failing, and no test in the suite
+        // asserted any plan sentence at all.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+
+        // Every condition the enum carries has its own sentence, asserted one at
+        // a time rather than as a set: a mapping with two arms swapped produces
+        // the same set of sentences over the same plans.
+        foreach (var (condition, words) in new[]
+        {
+            (TrancheCondition.AvailableNow, "this price now"),
+            (TrancheCondition.FailedBreakdown, "a failed breakdown back into the zone"),
+            (TrancheCondition.FirstCloseBackAbove, "the first close back above the zone after a dip"),
+            (TrancheCondition.SecondDayAfterAShock, "the second day after a shock, once the first day's low has held"),
+            (TrancheCondition.ReachesTheZone, "the price reaching the zone"),
+        })
+        {
+            var row = NameScreen.PlanRows(Ladder(Plan(condition))).First(row => row.Kind == PlanKind.Tranche);
+
+            Assert.Contains($"buy on {words}", row.Detail, StringComparison.Ordinal);
+        }
+
+        // And a value the mapping has no words for fails rather than rendering a
+        // default. A sentence a reader acts on that was produced by a value
+        // nobody wrote is what a catch-all makes invisible.
+        var unknown = Assert.Throws<InvalidOperationException>(
+            () => NameScreen.PlanRows(Ladder(Plan("ASixthCondition"))));
+
+        Assert.Contains("has no words for", unknown.Message, StringComparison.Ordinal);
+
+        Assert.Throws<InvalidOperationException>(() => NameScreen.PlanRows(Ladder(Plan(string.Empty))));
+
+        // The sentences reach the surface a person reads them on, which is what
+        // makes this a claim about a page rather than about a function.
+        var drawn = new MarkRenderer().PlanTables(Name, NameScreen.PlanRows(await api.LadderAsync(Name)));
+
+        Assert.Contains("buy on ", drawn, StringComparison.Ordinal);
+    }
+
+    static LadderRow Ladder(string plan) => new("ZZZZ", new DateOnly(2026, 9, 8), "range", plan);
+
+    static string Plan(TrancheCondition condition) => Plan(condition.ToString());
+
+    static string Plan(string condition) =>
+        $$"""
+        {"tranches":[{"lowEdge":"90.0000","highEdge":"92.0000","condition":"{{condition}}","stop":"88.0000"}],
+         "exits":[],"invalidation":"88.0000","events":[]}
+        """;
+
+    [Fact]
+    public async Task TheNightHeaderStatesTheTrueFiredCountAndTheListDrawsAtMostTwenty()
+    {
+        // Section 17's list display. A page that shows twenty every night cannot
+        // tell you how busy the night was, so the header carries the true count
+        // over the whole index and the list carries what it drew.
+        // see: The page shows twenty and states the true count
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var night = await api.NewestNightAsync();
+
+        Assert.NotNull(night);
+
+        var listings = await api.ListingsAsync(night!.Value);
+        var universe = await api.UniverseAsync("GSPC");
+        var fired = TonightScreen.Fired(listings);
+
+        // The header's count is the fired rows over the whole index, not the
+        // drawn rows, and the index size is the listing count rather than the
+        // names with bars.
+        Assert.Equal(listings.Count, universe.Count);
+        Assert.Equal(listings.Count(listing => listing.FiredCount > 0), fired);
+
+        var marks = new MarkRenderer();
+        var header = marks.NightHeader(night.Value, universe.Count, fired, "00:00:01");
+
+        Assert.Contains($"data-fired=\"{fired}\"", header, StringComparison.Ordinal);
+        Assert.Contains($"data-index=\"{universe.Count}\"", header, StringComparison.Ordinal);
+        Assert.Contains("data-prose=\"absent\"", header, StringComparison.Ordinal);
+
+        // A night with more than twenty fired names draws twenty and states the
+        // true count. The committed fixture holds four names, so the night of
+        // forty is constructed: this is section 17's own asserted-by cell.
+        var many = Enumerable.Range(0, 40)
+            .Select(at => new ListingCell($"N{at:00}", night.Value, 3 - (at % 3), 40 - at, 100m, ["at entry zone"]))
+            .ToArray();
+
+        var list = marks.TonightList(many, SinglePageApp.TonightDrawn);
+
+        Assert.Contains("data-fired=\"40\"", list, StringComparison.Ordinal);
+        Assert.Contains("data-drawn=\"20\"", list, StringComparison.Ordinal);
+        Assert.Contains("data-undrawn=\"20\"", list, StringComparison.Ordinal);
+        Assert.Equal(20, Regex.Matches(list, "<tr data-ticker=\"[^\"]+\"").Count);
+
+        // And a night where nothing fired says so rather than drawing an empty
+        // table, which a reader would read as a page that failed.
+        Assert.Contains("no name fired a reason tonight", marks.TonightList([], SinglePageApp.TonightDrawn), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheListOrdersOnHowManyFiredThenOnBandStrength()
+    {
+        // Section 15.7's order, and the strength score is the tiebreaker the
+        // phase 3 sign-off measured: touches are 72 to 79 per cent of the
+        // members of each name's strongest band, so the score is dominated by
+        // touches and a tiebreaker dominated by touches is one about how often a
+        // price has come back to a level.
+        // owes: The strength score read against four names
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+
+        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var listing in listings)
+        {
+            var bands = await api.LevelsAsync(listing.Ticker);
+
+            strengths[listing.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+        }
+
+        var rows = TonightScreen.Rows(listings, strengths, new Dictionary<string, decimal?>(StringComparer.Ordinal));
+
+        // Only the names that fired are drawn, which is what separates the list
+        // from the universe screen.
+        Assert.Equal(listings.Count(listing => listing.FiredCount > 0), rows.Count);
+        Assert.All(rows, row => Assert.True(row.FiredCount > 0));
+
+        Assert.Equal(
+            [.. rows.OrderByDescending(row => row.FiredCount).ThenByDescending(row => row.Strength).ThenBy(row => row.Ticker, StringComparer.Ordinal)],
+            rows);
+
+        // The tiebreaker is asserted where it decides, over constructed rows
+        // whose fired counts are equal, because four names of real bars are not
+        // guaranteed to tie.
+        var tied = TonightScreen.Rows(
+            [
+                new ListingRow("AAAA", night, Fired(1), 1, "{}"),
+                new ListingRow("BBBB", night, Fired(1), 1, "{}"),
+            ],
+            new Dictionary<string, int>(StringComparer.Ordinal) { ["AAAA"] = 3, ["BBBB"] = 9 },
+            new Dictionary<string, decimal?>(StringComparer.Ordinal));
+
+        Assert.Equal(["BBBB", "AAAA"], [.. tied.Select(row => row.Ticker)]);
+    }
+
+    static string Fired(int count) =>
+        "[" + string.Join(",", Enumerable.Range(0, count)
+            .Select(at => $"{{\"name\":\"reason {at}\",\"fired\":true,\"values\":{{}}}}")) + "]";
+
+    [Fact]
+    public async Task TheListingStripDrawsOneCellPerEveningAndSaysNothingAboutMembership()
+    {
+        // Section 15.5's strip. Its note in 15.8 says the columns say nothing
+        // about index membership, which every name in that table has by
+        // definition, and that sentence is there because they were misread that
+        // way once.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var history = await api.ListingsAsync(Name, 60);
+        var evenings = TonightScreen.Strip(history);
+
+        Assert.NotEmpty(evenings);
+
+        var strip = new MarkRenderer().ListingStrip(Name, evenings);
+
+        Assert.Contains($"data-evenings=\"{evenings.Count}\"", strip, StringComparison.Ordinal);
+        Assert.Contains($"data-listed=\"{evenings.Count(listed => listed)}\"", strip, StringComparison.Ordinal);
+        Assert.Equal(evenings.Count, Regex.Matches(strip, "<rect ").Count);
+
+        // A listed evening and a quiet one are drawn differently in shape as
+        // well as in ink, because hue is never the only channel that carries a
+        // meaning. Asserted over constructed evenings, since the fixture holds
+        // one night per name and cannot show both.
+        var both = new MarkRenderer().ListingStrip("ZZZZ", [true, false]);
+
+        Assert.Contains("data-listed=\"1\"", both, StringComparison.Ordinal);
+        Assert.Contains("height=\"10\"", both, StringComparison.Ordinal);
+        Assert.Contains("height=\"1\"", both, StringComparison.Ordinal);
+    }
+
     // ---- 5.1, the universe screen ----
 
     [Fact]
@@ -1297,18 +1622,26 @@ public class ReadSurface
         var strip = new MarkRenderer().SectorStrip(lines);
 
         Assert.Contains($"data-sectors=\"{lines.Count}\"", strip, StringComparison.Ordinal);
-        Assert.Contains("data-listed=\"absent\"", strip, StringComparison.Ordinal);
+
+        // The count of names on the list, which arrived at 5.4 with the store
+        // that feeds it and was absent and said so until then.
+        Assert.All(lines, line => Assert.Contains($"data-listed=\"{line.OnTheList}\"", strip, StringComparison.Ordinal));
 
         // A name with no sector never answers to a real sector's bucket,
         // asserted over a constructed row because every fixture name has one.
         var mixed = UniverseScreen.Sectors(
         [
-            new UniverseCell("AAAA", "Technology", null, "uptrend", null, null, null, null, null),
-            new UniverseCell("BBBB", UniverseScreen.SectorNotOnFile, null, "range", null, null, null, null, null),
+            new UniverseCell("AAAA", "Technology", null, "uptrend", null, null, null, null, null, null, [true]),
+            new UniverseCell("BBBB", UniverseScreen.SectorNotOnFile, null, "range", null, null, null, null, null, null, [false]),
         ]);
 
         Assert.Equal(1, mixed.Single(line => line.Sector == "Technology").Names);
         Assert.Equal(1, mixed.Single(line => line.Sector == UniverseScreen.SectorNotOnFile).Names);
+
+        // And the on-the-list count is per sector rather than over the whole
+        // index, which is the half a total would also satisfy.
+        Assert.Equal(1, mixed.Single(line => line.Sector == "Technology").OnTheList);
+        Assert.Equal(0, mixed.Single(line => line.Sector == UniverseScreen.SectorNotOnFile).OnTheList);
         Assert.Equal(UniverseScreen.SectorNotOnFile, mixed[^1].Sector);
     }
 

@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - ARCHITECTURE.html - the change detector's listings read, restored where the store exists
+Corrects: nothing new. 5.3 cleared the cell because `listing` did not exist and a component
+declaring a read of a table nothing has created is a declaration with nothing behind it. 5.4 creates
+the store, so the read and the payload retention it needs land together.
+Was:
+> the change detector's Listings cell was blank, and its catalogue row said the retention arrives
+> from 5.4
+Now:
+> the cell carries R and the row states the retention as one of the things it does
+Why: the retention is what section 16 states for `facts`, and it is the detector's because that
+component already owns Update on that table and a table may never have two owners for one operation.
+
 ### 2026-09-10 - ARCHITECTURE.html, CLAUDE.md - contradiction L repaired, and listings-coverage promoted
 Corrects: contradiction L, which is the shortlist builder's matrix row disagreeing with its
 catalogue row in its reads. The matrix gave it Fundamentals and News pulse, which the catalogue

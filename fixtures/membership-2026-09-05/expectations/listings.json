@@ -1,0 +1,29 @@
+{
+ "stage": "listings",
+ "derivedFrom": "the rules in section 11, not from a run. Each of the six reasons is recomputed in the suite from the tables it reads, being the bars, the indicators, the levels, the ladders and the calendar, and compared against what the builder wrote. A set frozen from the run would agree with a builder that evaluated the wrong rule, because it would have been taken from that builder.",
+ "tables": [
+  "listing"
+ ],
+ "rules": {
+  "reasons": [
+   "at entry zone",
+   "crossed a level",
+   "breakout on volume",
+   "trend state changed",
+   "unusual volume",
+   "earnings soon"
+  ],
+  "earningsHorizonSessions": 20,
+  "unusualVolumeMultiple": 2,
+  "rowPerMemberPerNight": "whether or not a reason fired, because a shadow candidate has to be evaluated on the nights it would have fired and most of those are nights no live reason surfaced that name",
+  "drawn": 20
+ },
+ "properties": {
+  "everyRowCarriesAllSixReasons": "a reason that never fires is still a reason a later session can score",
+  "theFiredCountIsTheReasonsThatFired": "counted from the reasons rather than stated beside them",
+  "aMemberWithNothingComputedStillGetsARow": "and its plan says why it is empty",
+  "trendChangedNeedsAYesterday": "a name with no ladder row last night has not changed, which is what the every-member ladder row is for",
+  "earningsSoonSaysNotOnFile": "rather than firing on a guessed date",
+  "planAtListingIsWrittenTonight": "bars can be replayed and the plan cannot, because by the time a verdict is possible the rules may have changed"
+ }
+}

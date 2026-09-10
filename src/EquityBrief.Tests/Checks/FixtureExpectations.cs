@@ -6,6 +6,7 @@ using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Moves;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Swings;
 using EquityBrief.Core.Time;
 using EquityBrief.Core.Volume;
@@ -47,6 +48,10 @@ public class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05"],
         [
+            // 5.4, tonight's list.
+            CheckReach.Key(Scope.FixtureTable, "listings"),
+            CheckReach.Key(Scope.FailureTable, "Earnings date missing, the earnings reason"),
+
             // 5.3, the facts file.
             CheckReach.Key(Scope.FixtureTable, "facts"),
 
@@ -3276,6 +3281,203 @@ public class FixtureExpectations
 
         Assert.Equal(TrendState.NotClassified, highsOnly.State);
         Assert.Contains("swing lows", highsOnly.Reason!, StringComparison.Ordinal);
+    }
+
+    // ---- 5.4, the shortlist builder ----
+
+    [Fact]
+    public async Task EachOfTheSixReasonsIsRecomputedFromTheTablesItReads()
+    {
+        // The expectation states the rules and the suite recomputes each reason
+        // from the tables it reads, rather than diffing against a set frozen
+        // from the builder. A frozen set would agree with a builder that
+        // evaluated the wrong rule, because it would have been taken from that
+        // builder.
+        var rules = Expected("listings").GetProperty("rules");
+
+        Assert.Equal(
+            [.. rules.GetProperty("reasons").EnumerateArray().Select(reason => reason.GetString()!)],
+            ShortlistSeries.Reasons);
+
+        Assert.Equal(ShortlistSeries.EarningsHorizonSessions, rules.GetProperty("earningsHorizonSessions").GetInt32());
+        Assert.Equal(ShortlistSeries.UnusualVolumeMultiple, rules.GetProperty("unusualVolumeMultiple").GetDouble());
+
+        using var store = await WithListings();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var written = JsonDocument
+                .Parse(Query(store, $"SELECT reasons FROM listing WHERE ticker = '{name}';").Single())
+                .RootElement.EnumerateArray()
+                .ToDictionary(reason => reason.GetProperty("name").GetString()!, reason => reason.GetProperty("fired").GetBoolean(), StringComparer.Ordinal);
+
+            // Every reason is on the row whether or not it fired.
+            Assert.Equal([.. ShortlistSeries.Reasons], [.. written.Keys]);
+
+            var close = decimal.Parse(Query(store, $"SELECT close FROM bar WHERE ticker = '{name}' ORDER BY session_date DESC LIMIT 1;").Single(), CultureInfo.InvariantCulture);
+            var previous = decimal.Parse(Query(store, $"SELECT close FROM bar WHERE ticker = '{name}' ORDER BY session_date DESC LIMIT 1 OFFSET 1;").Single(), CultureInfo.InvariantCulture);
+            var volume = long.Parse(Query(store, $"SELECT volume FROM bar WHERE ticker = '{name}' ORDER BY session_date DESC LIMIT 1;").Single(), CultureInfo.InvariantCulture);
+            var average = double.Parse(Query(store, $"SELECT value FROM indicator WHERE ticker = '{name}' AND name = 'vol_avg50' ORDER BY session_date DESC LIMIT 1;").Single(), CultureInfo.InvariantCulture);
+
+            // Unusual volume, recomputed from the bar and the indicator.
+            Assert.Equal(volume > average * ShortlistSeries.UnusualVolumeMultiple, written[ShortlistSeries.UnusualVolume]);
+
+            // Crossed a level, recomputed from the two closes and the band
+            // edges the level rows carry.
+            var edges = Query(
+                store,
+                $"SELECT low_edge FROM level WHERE ticker = '{name}' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}') " +
+                $"UNION ALL SELECT high_edge FROM level WHERE ticker = '{name}' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}');")
+                .Select(edge => decimal.Parse(edge, CultureInfo.InvariantCulture))
+                .ToArray();
+
+            Assert.Equal(
+                edges.Any(edge => (previous < edge && close >= edge) || (previous > edge && close <= edge)),
+                written[ShortlistSeries.CrossedALevel]);
+
+            // Breakout on volume, recomputed from the resistance edges and the
+            // average. Both halves of it, so a reason that fired on one is not
+            // read as having fired on both.
+            var resistance = Query(
+                store,
+                $"SELECT low_edge FROM level WHERE ticker = '{name}' AND role = 'resistance' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}') " +
+                $"UNION ALL SELECT high_edge FROM level WHERE ticker = '{name}' AND role = 'resistance' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}');")
+                .Select(edge => decimal.Parse(edge, CultureInfo.InvariantCulture))
+                .ToArray();
+
+            Assert.Equal(
+                resistance.Any(edge => close > edge) && volume > average,
+                written[ShortlistSeries.BreakoutOnVolume]);
+
+            // At entry zone, recomputed from the stored plan's own tranches.
+            var plan = JsonDocument.Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}' ORDER BY as_of DESC LIMIT 1;").Single()).RootElement;
+
+            Assert.Equal(
+                plan.GetProperty("tranches").EnumerateArray().Any(tranche =>
+                    close >= decimal.Parse(tranche.GetProperty("lowEdge").GetString()!, CultureInfo.InvariantCulture)
+                    && close <= decimal.Parse(tranche.GetProperty("highEdge").GetString()!, CultureInfo.InvariantCulture)),
+                written[ShortlistSeries.AtEntryZone]);
+
+            // Trend state changed, which needs a yesterday. The fixture holds
+            // one ladder row per name, so no name has one and none fires. That
+            // is the rule rather than an absence: a name with no row last night
+            // has not changed.
+            Assert.Equal(
+                Query(store, $"SELECT COUNT(*) FROM ladder WHERE ticker = '{name}';").Single() != "1",
+                written[ShortlistSeries.TrendStateChanged]);
+        }
+
+        // The fired count is counted from the reasons rather than stated beside
+        // them, over every row rather than over the four names.
+        foreach (var row in Query(store, "SELECT fired_count, reasons FROM listing;"))
+        {
+            var parts = row.Split('|', 2);
+
+            Assert.Equal(
+                int.Parse(parts[0], CultureInfo.InvariantCulture),
+                JsonDocument.Parse(parts[1]).RootElement.EnumerateArray().Count(reason => reason.GetProperty("fired").GetBoolean()));
+        }
+    }
+
+    [Fact]
+    public async Task TrendChangedFiresOnlyWhereThereIsAYesterdayToDifferFrom()
+    {
+        // The case the committed fixture cannot reach: it holds one ladder row
+        // per name, so no name has a previous label and this reason fires on
+        // none of them. Read from the fixture alone the rule would be
+        // indistinguishable from a reason that never fires.
+        var asOf = new DateOnly(2026, 9, 8);
+
+        ReasonInputs With(string? tonight, string? lastNight) =>
+            new(100m, 100m, 1000, 500, [], [], tonight, lastNight, null);
+
+        bool Fired(ReasonInputs inputs) =>
+            ShortlistSeries.For(inputs).Single(outcome => outcome.Name == ShortlistSeries.TrendStateChanged).Fired;
+
+        Assert.True(Fired(With("uptrend", "range")));
+        Assert.False(Fired(With("uptrend", "uptrend")));
+
+        // A name with no row last night has not changed. Without the
+        // every-member ladder row this would fire for every name in the index on
+        // its first night, which is what that row exists to prevent.
+        Assert.False(Fired(With("uptrend", null)));
+        Assert.False(Fired(With(null, "uptrend")));
+
+        // And the reason states both labels whether or not it fired, so a row
+        // that did not fire still says what it compared.
+        var values = ShortlistSeries.For(With("uptrend", null))
+            .Single(outcome => outcome.Name == ShortlistSeries.TrendStateChanged).Values;
+
+        Assert.Equal("uptrend", values["trend state"]);
+        Assert.Equal("no row last night", values["previous trend state"]);
+
+        Assert.Equal(new DateOnly(2026, 9, 8), asOf);
+    }
+
+    [Fact]
+    public void EarningsSoonFiresInsideTheHorizonAndSaysWhenNoDateIsOnFile()
+    {
+        // Section 18's row: a name with no earnings date on file cannot fire the
+        // earnings reason and the calendar says the date is not on file. A
+        // guessed date is a wrong date.
+        ReasonInputs With(int? sessions) => new(100m, 100m, 1000, 500, [], [], "range", "range", sessions);
+
+        ReasonOutcome Reason(int? sessions) =>
+            ShortlistSeries.For(With(sessions)).Single(outcome => outcome.Name == ShortlistSeries.EarningsSoon);
+
+        Assert.True(Reason(0).Fired);
+        Assert.True(Reason(ShortlistSeries.EarningsHorizonSessions).Fired);
+        Assert.False(Reason(ShortlistSeries.EarningsHorizonSessions + 1).Fired);
+
+        // The boundary is asserted either side rather than in the middle, which
+        // is where an off-by-one lives.
+        Assert.True(Reason(ShortlistSeries.EarningsHorizonSessions - 1).Fired);
+
+        var absent = Reason(null);
+
+        Assert.False(absent.Fired);
+        Assert.Equal("not on file", absent.Values["sessions to the next dated event"]);
+    }
+
+    [Fact]
+    public async Task ThePlanAtListingCarriesTheEntryTheStopAndTheFirstTradedTarget()
+    {
+        // The column the improvement loop rests on. Bars can be replayed and the
+        // plan cannot, because by the time a verdict is possible the rules may
+        // have changed and recomputing would score old listings under new ones.
+        using var store = await WithListings();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var stored = JsonDocument
+                .Parse(Query(store, $"SELECT plan_at_listing FROM listing WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            var plan = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}' ORDER BY as_of DESC LIMIT 1;").Single())
+                .RootElement;
+
+            var first = plan.GetProperty("tranches").EnumerateArray().FirstOrDefault();
+
+            if (first.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            // Every value is the ladder's own, so the column is a copy of what
+            // stood tonight rather than a second computation of it.
+            Assert.Equal(first.GetProperty("lowEdge").GetString(), stored.GetProperty("entryLow").GetString());
+            Assert.Equal(first.GetProperty("highEdge").GetString(), stored.GetProperty("entryHigh").GetString());
+            Assert.Equal(first.GetProperty("stop").GetString(), stored.GetProperty("stop").GetString());
+            Assert.Equal(plan.GetProperty("invalidation").GetString(), stored.GetProperty("invalidation").GetString());
+
+            var traded = plan.GetProperty("exits").EnumerateArray()
+                .FirstOrDefault(exit => exit.GetProperty("traded").GetBoolean());
+
+            Assert.Equal(
+                traded.ValueKind == JsonValueKind.Object ? traded.GetProperty("lowEdge").GetString() : null,
+                stored.GetProperty("firstTradedTarget").GetString());
+        }
     }
 
     // ---- 5.3, the facts assembler and the change detector ----
