@@ -2969,11 +2969,49 @@ public class FixtureExpectations
 
         Assert.Equal(TrancheCondition.ReachesTheZone, LadderSeries.ConditionFor(band, 119m, 1m, away));
 
-        // Exactly one, in both directions: every condition the enum carries is
-        // reachable, and no input produces two. The second half is structural,
-        // since the function returns one value, so what is asserted is that the
-        // set of reachable answers is the whole set rather than a subset the
-        // order happens to admit.
+        // The third pair that can both hold, added at 5.0: a window carrying
+        // both a close below the band and a shock whose low held. A failed
+        // breakdown is tested before a shock and wins, and it is the pair the
+        // committed fixture reaches from neither side, since `ladder.json`
+        // carries no tranche in either condition.
+        var breakdownAndShock = Enumerable.Range(0, 10)
+            .Select(day => day switch
+            {
+                2 => Bar(day, 89m, 87m, 88m),
+                5 => Bar(day, 110m, 94m, 100m),
+                _ => Bar(day, 101m, 99m, 100m),
+            })
+            .ToArray();
+
+        Assert.Equal(
+            TrancheCondition.FailedBreakdown,
+            LadderSeries.ConditionFor(band, 97m, 1m, breakdownAndShock));
+
+        // The same window without the breakdown is the shock, so the order is
+        // asserted in both directions rather than the shock being unreachable
+        // from this arrangement.
+        var shockAlone = breakdownAndShock
+            .Select((bar, day) => day == 2 ? Bar(day, 101m, 99m, 100m) : bar)
+            .ToArray();
+
+        Assert.Equal(
+            TrancheCondition.SecondDayAfterAShock,
+            LadderSeries.ConditionFor(band, 97m, 1m, shockAlone));
+
+        // Every condition the enum carries is reachable from the inputs above.
+        //
+        // This is a redundant assertion rather than a load-bearing one, and 5.0
+        // says so rather than removing it: both sides come from production, so
+        // swapping two condition kinds inside `ConditionFor` leaves the set over
+        // these inputs unchanged and this passes. What catches such a swap is
+        // the five assertions above, each against a literal. What this adds is
+        // that no member of the enum is unreachable, which is a different
+        // property and is worth keeping under its own description.
+        //
+        // The exclusivity the four branches rest on is asserted by the three
+        // overlap pairs above, in both directions, rather than here: the
+        // function returns one value, so a set of its answers can say nothing
+        // about whether two predicates held at once.
         var reached = new[]
         {
             LadderSeries.ConditionFor(band, 92m, 1m, both),
@@ -3133,6 +3171,363 @@ public class FixtureExpectations
 
         Assert.Equal(TrendState.NotClassified, highsOnly.State);
         Assert.Contains("swing lows", highsOnly.Reason!, StringComparison.Ordinal);
+    }
+
+    // ---- 5.0, the assertions the phase 4 sign-off's mutation sweep left ----
+    //
+    // Eleven mutations left the whole suite green at 415 of 415. Seven of the
+    // classes that let them survive are closed here, in the pass before phase 5
+    // writes anything, because the evidence is in hand and no phase 5 checkpoint
+    // reads this code.
+    //
+    // Each is written against the class it closes rather than against the line
+    // that was edited, which is what the mutation-choice rule now requires.
+
+    [Fact]
+    public void AnEarningsPrintOutsideTheStoredBarsProducesNoFigureRatherThanAWrongOne()
+    {
+        // Group B. Both of `EarningsRuleFor`'s fall-through guards produce a
+        // number rather than an absence when they are gone, and a number on the
+        // page is what a reader acts on.
+        //
+        // Without the earlier-session guard a print older than the stored bars
+        // reports a one-day move equal to the price itself, since the missing
+        // prior bar reads as a close of zero. Without the later-session guard a
+        // print after the last stored bar reports a zero move dated 0001-01-01.
+        // see: Code owns every number
+        var sessions = new LadderBar[]
+        {
+            new(new DateOnly(2026, 9, 1), 101m, 99m, 100m),
+            new(new DateOnly(2026, 9, 2), 112m, 108m, 110m),
+            new(new DateOnly(2026, 9, 3), 106m, 104m, 105m),
+        };
+
+        var older = new[] { (new DateOnly(2026, 8, 1), EventTiming.Unstated) };
+        var later = new[] { (new DateOnly(2026, 9, 10), EventTiming.Unstated) };
+
+        Assert.Empty(LadderSeries.EarningsRuleFor(older, sessions, 5m));
+        Assert.Empty(LadderSeries.EarningsRuleFor(later, sessions, 5m));
+
+        // The control, so the two absences are the guards deciding rather than
+        // the arithmetic being unreachable over these bars.
+        var inside = new[] { (new DateOnly(2026, 9, 2), EventTiming.Unstated) };
+        var stated = Assert.Single(LadderSeries.EarningsRuleFor(inside, sessions, 5m));
+
+        Assert.Equal(new DateOnly(2026, 9, 2), stated.Session);
+        Assert.Equal(10m, stated.Move);
+        Assert.Equal(2m, stated.ShareOfStop);
+
+        // And the number each guard would otherwise have produced, named so the
+        // assertion fails on the value rather than only on the count. The price
+        // itself for the older print, and a zero move for the later one.
+        Assert.DoesNotContain(
+            LadderSeries.EarningsRuleFor([.. older, .. inside], sessions, 5m),
+            print => print.Move == 100m || print.Session == default);
+
+        // The mixed case, which is what the night actually hands over: the last
+        // two prints by date, one of them unreachable, and one figure stated.
+        var mixed = LadderSeries.EarningsRuleFor([.. older, .. inside, .. later], sessions, 5m);
+
+        Assert.Equal(10m, Assert.Single(mixed).Move);
+    }
+
+    [Fact]
+    public void TheBlendedEntryIsTheMeanOfTheFirstTwoZonesAndTheSkipBoundaryIsMeasuredFromIt()
+    {
+        // Group B, and the boundary Group D named beside it. Section 17's row
+        // measures the near-exit skip from the blended entry, and taking the
+        // first tranche alone leaves the suite green because no fixture name has
+        // two tranches far enough apart for the two readings to differ.
+        //
+        // Constructed so they differ: the midpoints are 99 and 89, so the mean
+        // is 94 and the first alone is 99. The two resistance bands sit either
+        // side of exactly two typical days' moves from 94, which pins the
+        // blended entry and the boundary in one arrangement.
+        Level Support(decimal low, decimal high) => new(low, high, LevelSeries.Support, false, 1, true, []);
+        Level Resistance(decimal low, decimal high) => new(low, high, LevelSeries.Resistance, false, 1, true, []);
+
+        var tranches = new Tranche[]
+        {
+            new(98m, 100m, TrancheCondition.AvailableNow, 90m),
+            new(88m, 90m, TrancheCondition.ReachesTheZone, null),
+        };
+
+        List<Level> bands = [Support(88m, 90m), Support(98m, 100m), Resistance(95.9m, 96m), Resistance(96m, 97m)];
+
+        var exits = LadderSeries.ExitsFor(bands, tranches, typicalMove: 1m);
+
+        // 95.9 is 1.9 above the blended entry and is listed and not traded; 96
+        // is exactly two typical days' moves above it and is traded. Under the
+        // first-tranche-alone reading both are below the entry and neither is
+        // traded, and under a strict comparison at the boundary the second is
+        // skipped too.
+        var near = exits.Single(exit => exit.LowEdge == 95.9m);
+        var boundary = exits.Single(exit => exit.LowEdge == 96m);
+
+        Assert.False(near.Traded);
+        Assert.Contains("typical days", near.Reason!, StringComparison.Ordinal);
+        Assert.True(boundary.Traded);
+        Assert.Null(boundary.Reason);
+
+        // One tranche is the other half of the same rule, and the mean of one is
+        // that one. The bands move with it rather than the reading: 101 is two
+        // typical days above 99 and 100.9 is not.
+        var alone = LadderSeries.ExitsFor(
+            [Support(98m, 100m), Resistance(100.9m, 101m), Resistance(101m, 102m)],
+            [tranches[0]],
+            typicalMove: 1m);
+
+        Assert.False(alone.Single(exit => exit.LowEdge == 100.9m).Traded);
+        Assert.True(alone.Single(exit => exit.LowEdge == 101m).Traded);
+    }
+
+    [Fact]
+    public void ATrancheWithNoBandBeneathItInvalidatesAtItsOwnLowEdge()
+    {
+        // Group B. Every tranche in the committed fixture has a stop, the three
+        // uptrend names taking one from the trailing rule and the range name
+        // having a band beneath all three of its tranches, so the fallback is
+        // unreachable from these bars and the ladder expectation says as much in
+        // its own invalidation note.
+        var asOf = new DateOnly(2026, 9, 4);
+        var flat = Enumerable.Range(0, 10)
+            .Select(day => new LadderBar(asOf.AddDays(day - 9), 101m, 99m, 100m))
+            .ToArray();
+
+        var lowest = new Level(90m, 92m, LevelSeries.Support, false, 1, true, []);
+        var only = LadderSeries.For([lowest], 100m, 1m, flat, TrendState.Range);
+
+        var tranche = Assert.Single(only.Tranches);
+
+        Assert.Null(tranche.Stop);
+        Assert.Equal(90m, only.Invalidation);
+        Assert.Equal(tranche.LowEdge, only.Invalidation);
+
+        // The control, over the same lowest band with one beneath it: the
+        // invalidation is that band's low edge and not the tranche's own, so the
+        // fallback is the absent stop deciding rather than the two coinciding.
+        var beneath = new Level(80m, 82m, LevelSeries.Support, false, 1, true, []);
+        var pair = LadderSeries.For([lowest, beneath], 100m, 1m, flat, TrendState.Range);
+
+        Assert.Equal(80m, pair.Invalidation);
+        Assert.NotEqual(pair.Tranches[0].LowEdge, pair.Invalidation);
+    }
+
+    [Fact]
+    public async Task NoTwoTranchesShareAStopWhichIsWhatTheInvalidationRelabelRests()
+    {
+        // Group A, which is the class the sweep could not name until now: the
+        // test is well formed and the data cannot take the shape the mutation
+        // would change. `PlanRows` finds the stop row sitting at the
+        // invalidation price and relabels it, and replacing the first match with
+        // the last leaves the suite green because at most one stop can be there.
+        //
+        // The remedy for this class is not a stronger assertion at that site. It
+        // is the invariant written down and asserted where it holds, which is
+        // here: each stop is at or above the low edge of the band beneath its
+        // tranche, and the next tranche's stop is below that tranche's own low
+        // edge, so the stops are strictly decreasing.
+        var asOf = new DateOnly(2026, 9, 4);
+        var flat = Enumerable.Range(0, 10)
+            .Select(day => new LadderBar(asOf.AddDays(day - 9), 101m, 99m, 100m))
+            .ToArray();
+
+        Level Support(decimal low, decimal high) => new(low, high, LevelSeries.Support, false, 1, true, []);
+
+        List<Level> bands = [Support(96m, 98m), Support(90m, 92m), Support(84m, 86m), Support(78m, 80m)];
+
+        var plan = LadderSeries.For(bands, 100m, 1m, flat, TrendState.Range);
+
+        Assert.Equal(3, plan.Tranches.Count);
+
+        var stops = plan.Tranches.Select(tranche => tranche.Stop!.Value).ToArray();
+
+        Assert.Equal(stops.Length, stops.Distinct().Count());
+        Assert.Equal([.. stops.OrderByDescending(stop => stop)], stops);
+
+        for (var at = 0; at < plan.Tranches.Count; at++)
+        {
+            Assert.True(
+                stops[at] < plan.Tranches[at].LowEdge,
+                $"the stop at {stops[at]} is not below its own tranche's low edge of {plan.Tranches[at].LowEdge}.");
+        }
+
+        // The invalidation is the lowest of them and exactly one stop sits
+        // there, which is the property the relabel reads.
+        Assert.Equal(stops.Min(), plan.Invalidation);
+        Assert.Single(stops, stop => stop == plan.Invalidation);
+
+        // And over the population the fixture holds, so the invariant is
+        // asserted on real bands rather than only on constructed ones.
+        using var store = await WithLadders();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var stored = JsonDocument
+                .Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single())
+                .RootElement;
+
+            var written = stored.GetProperty("tranches").EnumerateArray()
+                .Select(tranche => tranche.GetProperty("stop").GetString())
+                .Where(stop => stop is not null)
+                .ToArray();
+
+            Assert.Equal(written.Length, written.Distinct(StringComparer.Ordinal).Count());
+
+            if (stored.GetProperty("invalidation").GetString() is { } price)
+            {
+                Assert.True(
+                    written.Count(stop => string.Equals(stop, price, StringComparison.Ordinal)) <= 1,
+                    $"{name} carries more than one stop at its invalidation price of {price}.");
+            }
+        }
+    }
+
+    [Fact]
+    public void TheShockMultipleAndItsNextDayHoldAreEachReachedOnTheirOwn()
+    {
+        // Group C. The pair is asymmetric: the lookback beside the multiple
+        // turns a test red and the multiple itself does not, because the
+        // constructed case uses a move large enough for either figure and the
+        // negative case a move small enough for either. Both are stated in one
+        // sentence in DECISIONS.md as proposals on the same terms, so one being
+        // reached and the other not is the thing to close.
+        // see: The event setups' triggers are proposals until resolved setups can score them
+        var asOf = new DateOnly(2026, 9, 4);
+        var band = new Level(90m, 95m, LevelSeries.Support, false, 1, true, []);
+
+        LadderBar Bar(int day, decimal high, decimal low, decimal close) =>
+            new(asOf.AddDays(day - 9), high, low, close);
+
+        // Every bar is well formed, its close inside its own range, because a
+        // window no provider could send is the class this pass has just finished
+        // naming. The day after the shock is given a range of two typical days'
+        // moves so it cannot be a shock itself whatever its low is.
+        LadderBar[] Window(decimal high, decimal low, decimal nextLow) =>
+        [
+            .. Enumerable.Range(0, 10).Select(day => day switch
+            {
+                5 => Bar(day, high, low, (high + low) / 2),
+                6 => Bar(day, nextLow + 2m, nextLow, nextLow + 1m),
+                _ => Bar(day, 101m, 99m, 100m),
+            }),
+        ];
+
+        // A range of exactly three typical days' moves is not a shock, and the
+        // same window one hundredth wider is. The multiple is what separates
+        // them, so a multiple of one would answer the first as a shock.
+        Assert.Equal(
+            TrancheCondition.FirstCloseBackAbove,
+            LadderSeries.ConditionFor(band, 100m, 1m, Window(97m, 94m, 94m)));
+
+        Assert.Equal(
+            TrancheCondition.SecondDayAfterAShock,
+            LadderSeries.ConditionFor(band, 100m, 1m, Window(97.01m, 94m, 94m)));
+
+        // A range of two typical days' moves is not a shock at three and is at
+        // one, which is the mutation the sweep left green.
+        Assert.Equal(
+            TrancheCondition.FirstCloseBackAbove,
+            LadderSeries.ConditionFor(band, 100m, 1m, Window(96m, 94m, 94m)));
+
+        // The next-day hold, over a window that does not hold its low. The shock
+        // is a shock and the day after undercut it, so the pattern is not the
+        // second day after a shock and the window falls to the condition beneath
+        // it.
+        Assert.Equal(
+            TrancheCondition.FirstCloseBackAbove,
+            LadderSeries.ConditionFor(band, 100m, 1m, Window(110m, 94m, 93.99m)));
+
+        // The day after at exactly the shock's own low holds, which is the edge
+        // the requirement is written on.
+        Assert.Equal(
+            TrancheCondition.SecondDayAfterAShock,
+            LadderSeries.ConditionFor(band, 100m, 1m, Window(110m, 94m, 94m)));
+    }
+
+    [Fact]
+    public void TheConditionWindowIsTheLastTenSessionsAndNotTheFirstTen()
+    {
+        // Group D, and the sharpest of the three: no test enters the branch at
+        // all, so taking the first ten instead of the last ten stays green
+        // because every constructed window in the suite is exactly ten sessions
+        // long. A name with more than ten stored sessions is every name.
+        var asOf = new DateOnly(2026, 9, 4);
+        var band = new Level(90m, 95m, LevelSeries.Support, false, 1, true, []);
+
+        LadderBar Bar(int day, decimal high, decimal low, decimal close) =>
+            new(asOf.AddDays(day - 14), high, low, close);
+
+        // Fifteen sessions. The breakdown sits in the first five, which the
+        // window does not reach, and the last ten dip into the band without
+        // closing below it.
+        var early = Enumerable.Range(0, 15)
+            .Select(day => day < 5 ? Bar(day, 89m, 87m, 88m) : Bar(day, 96.5m, 94m, 96m))
+            .ToArray();
+
+        Assert.Equal(
+            TrancheCondition.FirstCloseBackAbove,
+            LadderSeries.ConditionFor(band, 97m, 1m, early));
+
+        // The same fifteen sessions with the breakdown moved inside the window,
+        // which is the other direction: the slice is what decides, rather than
+        // the breakdown being unreachable from this arrangement.
+        var late = Enumerable.Range(0, 15)
+            .Select(day => day is 7 ? Bar(day, 89m, 87m, 88m) : Bar(day, 96.5m, 94m, 96m))
+            .ToArray();
+
+        Assert.Equal(
+            TrancheCondition.FailedBreakdown,
+            LadderSeries.ConditionFor(band, 97m, 1m, late));
+
+        // And the window's own boundary: a session eleven back is outside it and
+        // one ten back is inside.
+        var outside = Enumerable.Range(0, 15)
+            .Select(day => day is 4 ? Bar(day, 89m, 87m, 88m) : Bar(day, 96.5m, 94m, 96m))
+            .ToArray();
+
+        var inside = Enumerable.Range(0, 15)
+            .Select(day => day is 5 ? Bar(day, 89m, 87m, 88m) : Bar(day, 96.5m, 94m, 96m))
+            .ToArray();
+
+        Assert.Equal(TrancheCondition.FirstCloseBackAbove, LadderSeries.ConditionFor(band, 97m, 1m, outside));
+        Assert.Equal(TrancheCondition.FailedBreakdown, LadderSeries.ConditionFor(band, 97m, 1m, inside));
+    }
+
+    [Fact]
+    public void ABandWhoseLowEdgeEqualsTheCloseCarriesNoTranche()
+    {
+        // Group D. The eligibility test is a strict comparison and the fixture
+        // holds no band whose low edge lands exactly on the close, so admitting
+        // the equal case stays green.
+        //
+        // The rule is that the band is below the price, and a band whose floor
+        // is the price is not below it. The near-exit boundary at exactly two
+        // typical days' moves is the same class and is asserted beside the
+        // blended entry, which is the arrangement that pins both.
+        // see: A support band whose low edge is below the price carries a tranche, even when the band contains the price
+        var asOf = new DateOnly(2026, 9, 4);
+        var flat = Enumerable.Range(0, 10)
+            .Select(day => new LadderBar(asOf.AddDays(day - 9), 101m, 99m, 100m))
+            .ToArray();
+
+        var at = new Level(100m, 102m, LevelSeries.Support, false, 1, true, []);
+        var below = new Level(99.99m, 102m, LevelSeries.Support, false, 1, true, []);
+
+        var equal = LadderSeries.For([at], 100m, 1m, flat, TrendState.Range);
+
+        Assert.Empty(equal.Tranches);
+        Assert.Contains("no support band sits below the price", equal.Reason!, StringComparison.Ordinal);
+
+        // One hundredth lower and the same band carries a tranche, so the
+        // refusal above is the comparison deciding rather than the band being
+        // ineligible for another reason. It keeps its full width, which is the
+        // second half of the same rule.
+        var lower = LadderSeries.For([below], 100m, 1m, flat, TrendState.Range);
+        var tranche = Assert.Single(lower.Tranches);
+
+        Assert.Equal(99.99m, tranche.LowEdge);
+        Assert.Equal(102m, tranche.HighEdge);
     }
 
     [Fact]

@@ -877,6 +877,72 @@ public class ReadSurface
     }
 
     [Fact]
+    public async Task TheInvalidationRelabelsTheStopSittingAtItAndAddsARowWhereNoneDoes()
+    {
+        // The other half of the invariant 5.0 wrote down. The stops a plan
+        // carries are strictly decreasing, which `fixture-expectations` asserts
+        // over the arithmetic, so at most one stop row can sit at the
+        // invalidation price. This is what that buys the projection: the lowest
+        // stop is relabelled in place rather than a second rule being drawn on
+        // top of it, which is what section 15.5 says the figure shows.
+        //
+        // Both branches are asserted, because the second is the one the
+        // committed fixture cannot reach: every tranche in it has a stop.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+
+        foreach (var name in new[] { "AAPL", "MSFT", "NFLX", "KEYS" })
+        {
+            var ladder = await api.LadderAsync(name);
+            var rows = NameScreen.PlanRows(ladder);
+
+            using var plan = JsonDocument.Parse(ladder!.Plan);
+
+            if (plan.RootElement.GetProperty("invalidation").GetString() is not { } price)
+            {
+                continue;
+            }
+
+            var at = decimal.Parse(price, CultureInfo.InvariantCulture);
+
+            // Exactly one row carries the invalidation, and it is the stop that
+            // was already there rather than a row beside it.
+            var marked = Assert.Single(rows, row => row.Kind == PlanKind.Invalidation);
+
+            Assert.Equal(at, marked.LowEdge);
+            Assert.Contains("stop for the", marked.Detail, StringComparison.Ordinal);
+            Assert.Contains("the whole position is wrong below this", marked.Detail, StringComparison.Ordinal);
+
+            // And no stop row is left at that price, so the relabel moved the
+            // one that was there rather than adding a second.
+            Assert.DoesNotContain(rows, row => row.Kind == PlanKind.Stop && row.LowEdge == at);
+        }
+
+        // The branch the fixture holds no case for: a lowest tranche with no
+        // band beneath it invalidates at its own low edge, where no stop row
+        // sits, so the invalidation is a row of its own.
+        var alone = new LadderRow(
+            "ZZZZ",
+            new DateOnly(2026, 9, 8),
+            "range",
+            """
+            {"tranches":[{"lowEdge":"90.0000","highEdge":"92.0000","condition":"AvailableNow","stop":null}],
+             "exits":[],"invalidation":"90.0000","events":[]}
+            """);
+
+        var drawn = NameScreen.PlanRows(alone);
+
+        Assert.DoesNotContain(drawn, row => row.Kind == PlanKind.Stop);
+
+        var added = Assert.Single(drawn, row => row.Kind == PlanKind.Invalidation);
+
+        Assert.Equal(90m, added.LowEdge);
+        Assert.Equal("the whole position is wrong below this", added.Detail);
+        Assert.Contains("no stop beneath", Assert.Single(drawn, row => row.Kind == PlanKind.Tranche).Detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task TheEventBookSaysItsFiguresAreProposals()
     {
         // A figure on a screen gets acted on, and one that looks measured and is
