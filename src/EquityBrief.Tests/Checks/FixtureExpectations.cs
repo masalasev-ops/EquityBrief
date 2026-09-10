@@ -23,6 +23,7 @@ using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Core.Returns;
 using EquityBrief.Worker.News;
+using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Returns;
 using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
@@ -3356,7 +3357,7 @@ public class FixtureExpectations
     }
 
     [Fact]
-    public void AHorizonMaturesIntoAWinOrALossAndASetupResolvesOnWhicheverCameFirst()
+    public async Task AHorizonMaturesIntoAWinOrALossAndASetupResolvesOnWhicheverCameFirst()
     {
         // The arithmetic, over constructed series, because the committed fixture
         // has no session after its listings and cannot reach a matured horizon
@@ -3414,6 +3415,38 @@ public class FixtureExpectations
         // A listing with no plan has no setup to resolve, which is an absence
         // rather than an unresolved setup.
         Assert.Null(ForwardReturnSeries.OverSetup(flat, null, null).Outcome);
+
+        // The invariant the branch order rests on, asserted rather than assumed.
+        // 5.5's own mutation showed that swapping the stop and the target
+        // branches changes nothing any series can show: the test is on the
+        // close, and one close cannot be both below the stop and at or above the
+        // target while the stop is beneath the target. So what is asserted is
+        // the invariant, and a plan that breaks it refuses rather than being
+        // scored by whichever branch ran first.
+        var broken = Assert.Throws<InvalidOperationException>(
+            () => ForwardReturnSeries.OverSetup(flat, 110m, 90m));
+
+        Assert.Contains("not a plan", broken.Message, StringComparison.Ordinal);
+
+        Assert.Throws<InvalidOperationException>(() => ForwardReturnSeries.OverSetup(flat, 100m, 100m));
+
+        // And the invariant holds over every plan the store carries, which is
+        // where it has to hold rather than only over constructed input.
+        using var stored = await WithReturns();
+
+        foreach (var plan in Query(stored, "SELECT plan_at_listing FROM listing;"))
+        {
+            var root = JsonDocument.Parse(plan).RootElement;
+
+            if (root.TryGetProperty("stop", out var stop) && stop.ValueKind == JsonValueKind.String
+                && root.TryGetProperty("firstTradedTarget", out var target) && target.ValueKind == JsonValueKind.String)
+            {
+                Assert.True(
+                    decimal.Parse(stop.GetString()!, CultureInfo.InvariantCulture)
+                        < decimal.Parse(target.GetString()!, CultureInfo.InvariantCulture),
+                    $"a stored plan has its stop at {stop.GetString()} and its target at {target.GetString()}.");
+            }
+        }
     }
 
     [Fact]
@@ -3512,6 +3545,66 @@ public class FixtureExpectations
         await feed.ArticlesAsync(new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 8));
 
         Assert.Equal(2, feed.Requests);
+    }
+
+    [Fact]
+    public async Task TheClosingRowsCountsAreTakenOffTheStoreRatherThanReportedByTheStages()
+    {
+        // Section 14's last step. 5.5's own mutation found this unasserted: the
+        // closing row could report a count of zero for the names on the list and
+        // the suite stayed green.
+        //
+        // Every figure is recomputed here from the same tables the stage counts
+        // over, so a stage that reported its own opinion of what it wrote
+        // disagrees with the store rather than with a frozen number.
+        using var store = await WithReturns();
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+        var closed = await new NightClose(clock, store.DatabaseFile).RunAsync(Index, "close-check");
+
+        Assert.Equal(
+            int.Parse(Query(store, "SELECT COUNT(*) FROM ladder WHERE as_of = (SELECT MAX(as_of) FROM ladder);").Single(), CultureInfo.InvariantCulture),
+            closed.NamesComputed);
+
+        Assert.Equal(
+            int.Parse(Query(store, "SELECT COUNT(*) FROM listing WHERE fired_count > 0;").Single(), CultureInfo.InvariantCulture),
+            closed.NamesOnTheList);
+
+        Assert.Equal(
+            int.Parse(Query(store, "SELECT IFNULL(SUM(fired_count), 0) FROM listing;").Single(), CultureInfo.InvariantCulture),
+            closed.ReasonsFired);
+
+        // The counts are non-zero, so the agreement above is two figures meeting
+        // rather than two zeros.
+        Assert.True(closed.NamesComputed > 0, "the night computed no name, so the counts agree over nothing.");
+        Assert.True(closed.ReasonsFired > 0, "no reason fired, so the count agrees over nothing.");
+
+        // Stale is over the index rather than over the names with bars, because
+        // a member with none is stale in the way that matters. Every fixture
+        // name ends on the same session, so the constructed member is what
+        // reaches the case.
+        Assert.Equal(0, closed.NamesStale);
+
+        Insert(
+            store,
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
+            "VALUES ('GSPC', 'ZZZZ', '2026-01-02', NULL, '2026-09-08T00:00:00Z', 'Utilities');");
+
+        Assert.Equal(1, (await new NightClose(clock, store.DatabaseFile).RunAsync(Index, "close-stale")).NamesStale);
+
+        // A run with no rows of its own says so rather than reporting a duration
+        // of zero, because the two read the same on a page and only one is true.
+        // This run id has no stages behind it, so that is the branch it takes.
+        Assert.Equal("no duration recorded", closed.Duration);
+
+        // And a run whose stages did write rows reports the span they cover,
+        // which is the other half. Asserted over a run id the replay used, so
+        // the two branches are both reached rather than one of them being
+        // whatever the arrangement happened to give.
+        Assert.Contains(
+            "second(s)",
+            (await new NightClose(clock, store.DatabaseFile).RunAsync(Index, "replay-listings")).Duration,
+            StringComparison.Ordinal);
     }
 
     // ---- 5.4, the shortlist builder ----

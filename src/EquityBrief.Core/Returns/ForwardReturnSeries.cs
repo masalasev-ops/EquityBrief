@@ -84,6 +84,26 @@ public static class ForwardReturnSeries
             return new ForwardReturn(Setup, null, null, null);
         }
 
+        // The invariant the branch order below rests on, written down rather
+        // than assumed, because 5.5's own mutation showed it cannot be observed:
+        // the test is on the close, and one close cannot be both below the stop
+        // and at or above the target while the stop is beneath the target. So
+        // swapping the two branches changes nothing any series can show, which
+        // is the unproducible shape, and the remedy for that class is the
+        // invariant asserted where it holds rather than a stronger assertion at
+        // the site.
+        //
+        // A plan whose stop sits at or above its target is not a plan, and a
+        // setup scored against one would be scored against whichever branch ran
+        // first. It refuses rather than resolving.
+        if (floor >= ceiling)
+        {
+            throw new InvalidOperationException(
+                $"The stored plan has its stop at {floor} and its target at {ceiling}. A stop at or " +
+                "above the target is not a plan, and which of the two a session reached would be " +
+                "decided by the order the rules are written in rather than by the series.");
+        }
+
         foreach (var bar in after.Take(SetupSessionCap))
         {
             // The stop is tested first, because a session that closed through
