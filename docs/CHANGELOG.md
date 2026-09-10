@@ -36,6 +36,17 @@ Was:
 Now: section 20's phase 5 cell requires all phase-5 rows PASS, the stored plan on every listing, and the schedule registered as a command; and 5.1's two references point at the operating trigger and the surface it is read on rather than at a checkpoint that waits.
 Why: a done condition may not require calendar time, and the rule saying so was written at 5.7 in `CLAUDE.md` while three statements of the condition it forbids were left in place. An amendment that lands in one of two documents holding one fact leaves the other as the one a reader believes, and section 20 is the one a sign-off reads.
 
+### 2026-09-10 - ARCHITECTURE.html - section 13's phase column, against the plan it describes
+Corrects: every cell in 13.2's Phase column was wrong, and the sentence under the table contradicted three of them. 5.0 ruled the six reason thresholds an operating obligation triggered by sixty nights of listings, and repaired that row from 4 to 5 rather than off a phase altogether, so 13.2 and 13.4 both went on saying phase 5 tunes them while the obligation table said no checkpoint produces the evidence. The other three rows read 6 where the register is 7.3, the rule versions 7.6 and the model's proposal 7.7, and the table's own next sentence already said phase 7. Found while sweeping the stale phase 5 done condition, in the column beside it.
+Was:
+> 5, which is the phase that first records how many names fire each night, using that record rather than a backfill
+>
+> Only the first is cheap enough to do early, and it is the one that matters least. The other three need resolved setups, which take months to accumulate, which is why they sit in phase 7 and why phase 5 has an obligation described below.
+>
+> Beyond that the phases carry what their table already says. Phase 5 also tunes the thresholds, because it is the phase that first records how many names fire each night.
+Now: the thresholds row names no phase and says why, the other three name their phase 7 checkpoints, and both prose passages state that all four wait on the calendar rather than on a checkpoint.
+Why: the same defect as the entry above, from the other end. A ruling was taken in `BUILD_PLAN.md` and the document that describes the same thing was left saying what it said before, so the corpus held two answers and the check that would have caught it does not exist. Section 13 is not a claim source, which is why nothing failed and why it needed reading rather than running.
+
 ### 2026-09-10 - BUILD_PLAN.md - 6.0 gains the bulk payload refusal
 Corrects: nothing in the corpus covered a bulk payload that is not a price payload at all. Section 18 has a row for one that is for another session and one for a payload holding none of the index, and the provider returns neither of those for a session that is not the most recent: it returns something the parser meets and throws a `FormatException` on. Found by replaying sessions 2026-09-04 and 2026-09-08 while measuring a night at index size.
 Was:
