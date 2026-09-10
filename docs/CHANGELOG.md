@@ -25,6 +25,50 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - BUILD_PLAN.md - the two obligations 5.4 discharges, marked so
+Corrects: nothing in the figures. Both rows were still open at a checkpoint the record now shows as
+landed, which `obligation-reconciles` refuses: a row still owed at a checkpoint that has landed is a
+row whose due point has passed with nothing saying so.
+Was:
+> the strength score row and the plan column's condition sentences row both read `5.4` with no
+> discharge
+Now:
+> both read `5.4, discharged`
+Why: 5.4 orders tonight's list on band strength as its tiebreaker, with the phase 3 sign-off's
+measurement behind what that score is dominated by, and it makes the condition-to-words mapping's
+catch-all fail rather than render with every sentence asserted on the surface a person reads.
+
+### 2026-09-10 - ARCHITECTURE.html - the change detector's listings read, restored where the store exists
+Corrects: nothing new. 5.3 cleared the cell because `listing` did not exist and a component
+declaring a read of a table nothing has created is a declaration with nothing behind it. 5.4 creates
+the store, so the read and the payload retention it needs land together.
+Was:
+> the change detector's Listings cell was blank, and its catalogue row said the retention arrives
+> from 5.4
+Now:
+> the cell carries R and the row states the retention as one of the things it does
+Why: the retention is what section 16 states for `facts`, and it is the detector's because that
+component already owns Update on that table and a table may never have two owners for one operation.
+
+### 2026-09-10 - ARCHITECTURE.html, CLAUDE.md - contradiction L repaired, and listings-coverage promoted
+Corrects: contradiction L, which is the shortlist builder's matrix row disagreeing with its
+catalogue row in its reads. The matrix gave it Fundamentals and News pulse, which the catalogue
+names neither of, and blanked Membership, Bars and Facts, which four of the six reasons need. A
+blank cell is a claim as much as a filled one, so the row made five wrong statements. It was
+unreachable until the component existed and `component-access` refused it on the first run.
+Was:
+> the matrix row read Calendar, Computed tables, Fundamentals and News pulse and wrote Listings and
+> Run log; the catalogue row read `levels, indicators, ladders, calendar, facts`; and
+> `listings-coverage` was rostered `from 5.4`
+Now:
+> the matrix row reads Membership, Bars, Calendar, Computed tables and Facts and writes Listings and
+> Run log; the catalogue names them; and the roster row reads `every CI run` with what the check
+> asserts
+Why: 5.0 ruled it from section 11's six reasons and section 1's statement that the shortlist selects
+on chart state alone with no fundamentals and no model in the decision, which puts the Fundamentals
+read on the wrong side. The News pulse is a coverage measure rather than chart state and goes with
+it. What was missing is what tonight's close and today's volume come from, which neither side named.
+
 ### 2026-09-10 - ARCHITECTURE.html, BUILD_PLAN.md, SCHEMA.md - three reads move to the checkpoints that create the stores
 Corrects: three cells filled ahead of the code they claim. The facts assembler's matrix row read
 Listings and Fundamentals, and the change detector's read Listings, while `listing` is created at

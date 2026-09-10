@@ -10,6 +10,7 @@ using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
 using Microsoft.Data.Sqlite;
@@ -89,6 +90,12 @@ public class FixtureReplay
         await new MoveAnnotator(night, store.DatabaseFile).RunAsync("replay-moves");
         await new FactsAssembler(night, store.DatabaseFile).RunAsync("replay-facts");
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes");
+        await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings");
+
+        // The detector again, in the order the night takes: the shortlist is
+        // step 12 and the facts file is step 13, and the detector's retention
+        // reads the listings there were none of the first time it ran.
+        await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes-again");
 
         return store;
     }

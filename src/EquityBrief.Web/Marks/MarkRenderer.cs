@@ -115,14 +115,34 @@ public sealed record UniverseCell(
     decimal? NearestResistance,
     double? ToSupport,
     double? ToResistance,
-    double? Nearest);
+    double? Nearest,
+    // The listing halves, which arrived at 5.4 with the store that feeds them.
+    // `LastListed` is null for a name that has never been on the list, which is
+    // an absence rather than a date nobody has.
+    DateOnly? LastListed = null,
+    IReadOnlyList<bool>? Evenings = null);
 
 // One of a name's biggest moves, as the table is given it. No cause: it is a
 // researched claim and arrives with the pass that writes it.
 public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank);
 
+// One row of tonight's list, already projected.
+public sealed record ListingCell(
+    string Ticker,
+    DateOnly SessionDate,
+    int FiredCount,
+    int Strength,
+    decimal? Close,
+    IReadOnlyList<string> Reasons);
+
+// One reason that fired for a name, with the values that made it true.
+public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string> Values);
+
+// One reason and how many of tonight's names it fired on.
+public sealed record ReasonTotal(string Reason, int Names);
+
 // One line of the sector strip.
-public sealed record SectorLine(string Sector, int Names, int InUptrend);
+public sealed record SectorLine(string Sector, int Names, int InUptrend, int OnTheList);
 
 // The price scale a chart drew, so another mark can draw against it.
 //
@@ -826,6 +846,225 @@ public sealed class MarkRenderer : IComponent
 
     // What a mark returns instead of a drawing. It states the count rather than
     // apologising, because the reader's next question is how many there were.
+    // Why it is here, section 15.9's region that is present only when the name
+    // is on tonight's list.
+    //
+    // Each reason in a full sentence rather than a label, with the values that
+    // made it true. A label is what the list row shows; a sentence is what the
+    // name page owes, because this is the page a reader acts from.
+    // see: Every figure carries a plain-language key
+    public string WhyItIsHere(string ticker, IReadOnlyList<FiredReason> reasons)
+    {
+        var why = new StringBuilder();
+
+        why.Append(Invariant, $"<section class=\"why-it-is-here\" data-ticker=\"{Escaped(ticker)}\" data-reasons=\"{reasons.Count}\">");
+
+        if (reasons.Count == 0)
+        {
+            why.Append("<p class=\"degraded\" data-listed=\"false\">this name is not on tonight's list</p></section>");
+
+            return why.ToString();
+        }
+
+        foreach (var reason in reasons)
+        {
+            why.Append(Invariant, $"<p class=\"reason\" data-reason=\"{Escaped(reason.Name)}\">");
+            why.Append(Invariant, $"{Escaped(Sentence(reason.Name))}");
+            why.Append(Invariant, $" <span class=\"values\" data-values=\"{Escaped(string.Join(", ", reason.Values.Select(value => $"{value.Key} {value.Value}")))}\">");
+            why.Append(Invariant, $"{Escaped(string.Join(", ", reason.Values.Select(value => $"{value.Key} {value.Value}")))}</span></p>");
+        }
+
+        why.Append("</section>");
+
+        return why.ToString();
+    }
+
+    // Each reason as a sentence. Every reason the shortlist carries has its own
+    // arm and anything else throws, for the reason the plan column's mapping
+    // does: a sentence a reader acts on that was produced by a value nobody
+    // wrote is what a catch-all arm makes invisible.
+    static string Sentence(string reason) => reason switch
+    {
+        "at entry zone" => "tonight's close is inside a tranche zone, so the plan's first step is available at tonight's price.",
+        "crossed a level" => "the close moved through a band edge it was on the other side of yesterday, so the level either held or failed today.",
+        "breakout on volume" => "the close is above a resistance band on volume above the fifty-day average.",
+        "trend state changed" => "tonight's trend label differs from last night's, so the ladder changes shape and the whole plan is different from yesterday's.",
+        "unusual volume" => "volume is above twice the fifty-day average, so something happened the price may not have shown yet.",
+        "earnings soon" => "the next dated event is inside the twenty-session horizon, which is a calendar fact rather than a setup.",
+        _ => throw new InvalidOperationException(
+            $"The stored listing carries the reason '{reason}', which this mapping has no sentence for. " +
+            "A sentence a reader acts on that was produced by a value nobody wrote is what a catch-all arm " +
+            "makes invisible, so the page fails rather than rendering a default."),
+    };
+
+    // The walk, section 15.9's last region: previous and next on tonight's list,
+    // so an evening's reading is one pass through with no return to the list.
+    //
+    // A name that is not on the list has no neighbours and says so, rather than
+    // linking to the ends of a list it is not in.
+    public string Walk(string ticker, string? previous, string? next)
+    {
+        var walk = new StringBuilder();
+
+        walk.Append(Invariant, $"<nav class=\"walk\" data-ticker=\"{Escaped(ticker)}\" ");
+        walk.Append(Invariant, $"data-previous=\"{Escaped(previous ?? "none")}\" data-next=\"{Escaped(next ?? "none")}\">");
+
+        if (previous is null)
+        {
+            walk.Append("<span class=\"degraded\">no previous name on tonight's list</span>");
+        }
+        else
+        {
+            walk.Append(Invariant, $"<a href=\"#/name/{Escaped(previous)}\">previous: {Escaped(previous)}</a>");
+        }
+
+        if (next is null)
+        {
+            walk.Append("<span class=\"degraded\">no next name on tonight's list</span>");
+        }
+        else
+        {
+            walk.Append(Invariant, $"<a href=\"#/name/{Escaped(next)}\">next: {Escaped(next)}</a>");
+        }
+
+        walk.Append("</nav>");
+
+        return walk.ToString();
+    }
+
+    // The listing strip, section 15.5's mark: the evenings a name was on the
+    // list over a window.
+    //
+    // It says nothing about index membership, which every name in the table it
+    // sits in has by definition. That sentence is in section 15.8's note because
+    // the columns were misread that way once.
+    public string ListingStrip(string ticker, IReadOnlyList<bool> evenings)
+    {
+        const int Cell = 4;
+        const int Height = 14;
+
+        var strip = new StringBuilder();
+
+        strip.Append(Invariant, $"<svg class=\"listing-strip\" role=\"img\" viewBox=\"0 0 {Math.Max(evenings.Count, 1) * Cell} {Height}\" ");
+        strip.Append(Invariant, $"width=\"{Math.Max(evenings.Count, 1) * Cell}\" height=\"{Height}\" ");
+        strip.Append(Invariant, $"data-ticker=\"{Escaped(ticker)}\" data-evenings=\"{evenings.Count}\" ");
+        strip.Append(Invariant, $"data-listed=\"{evenings.Count(listed => listed)}\">");
+
+        for (var at = 0; at < evenings.Count; at++)
+        {
+            // A listed evening is inked and a quiet one is a rule, so the strip
+            // reads as a pattern rather than as two colours a reader has to
+            // learn. Hue is never the only channel that carries a meaning.
+            if (evenings[at])
+            {
+                strip.Append(Invariant, $"<rect x=\"{at * Cell}\" y=\"2\" width=\"{Cell - 1}\" height=\"{Height - 4}\" fill=\"var(--ink, #1c1c1c)\" />");
+            }
+            else
+            {
+                strip.Append(Invariant, $"<rect x=\"{at * Cell}\" y=\"{Height / 2}\" width=\"{Cell - 1}\" height=\"1\" fill=\"var(--rule, #d8d8d8)\" />");
+            }
+        }
+
+        strip.Append(Invariant, $"<title>{Escaped(ticker)}: on the list on {evenings.Count(listed => listed)} of {evenings.Count} evening(s)</title>");
+        strip.Append("</svg>");
+
+        return strip.ToString();
+    }
+
+    // Tonight's list, section 15.7's third region.
+    //
+    // One row per name that fired, ordered by how many fired then by band
+    // strength, at most twenty drawn. The true count is in the header rather
+    // than here, because a page that shows twenty every night cannot tell you
+    // how busy the night was.
+    // see: The page shows twenty and states the true count
+    public string TonightList(IReadOnlyList<ListingCell> rows, int drawn)
+    {
+        var shown = rows.Take(drawn).ToArray();
+        var list = new StringBuilder();
+
+        list.Append(Invariant, $"<section class=\"tonight-list\" data-fired=\"{rows.Count}\" data-drawn=\"{shown.Length}\">");
+
+        if (rows.Count == 0)
+        {
+            list.Append("<p class=\"degraded\" data-fired=\"0\">no name fired a reason tonight</p></section>");
+
+            return list.ToString();
+        }
+
+        list.Append(Invariant, $"<table class=\"list-table\" data-rows=\"{shown.Length}\">");
+        list.Append("<tr><th>Name</th><th>Close</th><th>Reasons</th></tr>");
+
+        foreach (var row in shown)
+        {
+            list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\">");
+            list.Append(Invariant, $"<td>{Escaped(row.Ticker)}</td>");
+            list.Append(Invariant, $"<td>{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
+            list.Append(Invariant, $"<td data-reasons=\"{Escaped(string.Join(", ", row.Reasons))}\">{Escaped(string.Join(", ", row.Reasons))}</td>");
+            list.Append("</tr>");
+        }
+
+        list.Append("</table>");
+
+        // What the drawn rows leave out, stated rather than left to arithmetic
+        // a reader would have to do.
+        if (rows.Count > shown.Length)
+        {
+            list.Append(Invariant, $"<p class=\"more\" data-undrawn=\"{rows.Count - shown.Length}\">{rows.Count} name(s) fired and {shown.Length} are drawn</p>");
+        }
+
+        list.Append("</section>");
+
+        return list.ToString();
+    }
+
+    // The night header, section 15.7's first region.
+    //
+    // The fired count is the headline, because it is the market's mood and it is
+    // the one number the twenty drawn rows cannot tell you. The quantities phase
+    // 6 supplies are absent and say so rather than being drawn as zero, which
+    // would read as a night that spent nothing because it did nothing.
+    public string NightHeader(DateOnly night, int index, int fired, string? duration)
+    {
+        var header = new StringBuilder();
+
+        header.Append(Invariant, $"<header class=\"night-header\" data-night=\"{night:yyyy-MM-dd}\" ");
+        header.Append(Invariant, $"data-index=\"{index}\" data-fired=\"{fired}\">");
+        header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} name(s) fired on {night:yyyy-MM-dd}</p>");
+        header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration ?? "a time the run log does not record")}</p>");
+        header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused, and spend, arrive with the research pass that produces them</p>");
+        header.Append("</header>");
+
+        return header.ToString();
+    }
+
+    // The watch list, section 15.7's second region: the two or three names shown
+    // every evening whether or not a reason fired, above the list rather than
+    // inside it.
+    //
+    // No store holds a watch list, and none is invented here. The region states
+    // that rather than being absent, because a region a reader cannot find is
+    // indistinguishable from one that is empty.
+    public string WatchList(IReadOnlyList<ListingCell> watched)
+    {
+        var watch = new StringBuilder();
+
+        watch.Append(Invariant, $"<section class=\"watch-list\" data-watched=\"{watched.Count}\">");
+
+        watch.Append(watched.Count == 0
+            ? "<p class=\"degraded\" data-watch=\"none\">no watch list is on file, so none is shown</p>"
+            : string.Empty);
+
+        foreach (var name in watched)
+        {
+            watch.Append(Invariant, $"<span class=\"watched\" data-ticker=\"{Escaped(name.Ticker)}\">{Escaped(name.Ticker)}</span>");
+        }
+
+        watch.Append("</section>");
+
+        return watch.ToString();
+    }
+
     // The how-it-got-here table's rows, section 15.9's second region.
     //
     // The biggest moves of the stored year, largest first, each saying how many
@@ -966,11 +1205,10 @@ public sealed class MarkRenderer : IComponent
         foreach (var line in lines)
         {
             strip.Append(Invariant, $"<div class=\"sector\" data-sector=\"{Escaped(line.Sector)}\" ");
-            strip.Append(Invariant, $"data-names=\"{line.Names}\" data-uptrend=\"{line.InUptrend}\">");
-            strip.Append(Invariant, $"{Escaped(line.Sector)}: {line.Names} name(s), {line.InUptrend} in an uptrend</div>");
+            strip.Append(Invariant, $"data-names=\"{line.Names}\" data-uptrend=\"{line.InUptrend}\" data-listed=\"{line.OnTheList}\">");
+            strip.Append(Invariant, $"{Escaped(line.Sector)}: {line.Names} name(s), {line.OnTheList} on the list, {line.InUptrend} in an uptrend</div>");
         }
 
-        strip.Append("<p class=\"degraded\" data-listed=\"absent\">how many are on the list arrives with the listings store</p>");
         strip.Append("</section>");
 
         return strip.ToString();
@@ -988,7 +1226,7 @@ public sealed class MarkRenderer : IComponent
         var table = new StringBuilder();
 
         table.Append(Formatted($"<table class=\"universe-table\" data-rows=\"{rows.Count}\">"));
-        table.Append("<tr><th>Name</th><th>Sector</th><th>Close</th><th>Trend</th><th>Distance</th></tr>");
+        table.Append("<tr><th>Name</th><th>Sector</th><th>Close</th><th>Trend</th><th>Distance</th><th>Last on the list</th><th>Sixty evenings</th></tr>");
 
         foreach (var row in rows)
         {
@@ -1005,11 +1243,17 @@ public sealed class MarkRenderer : IComponent
             table.Append(Formatted(
                 $"<td>{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>"));
             table.Append(Formatted($"<td>{DistanceRow(row)}</td>"));
+
+            // The two right-hand columns count evenings a name appeared on the
+            // list. They say nothing about index membership, which every name in
+            // this table has by definition.
+            table.Append(Invariant, $"<td data-last-listed=\"{(row.LastListed is { } listed ? listed.ToString("yyyy-MM-dd", Invariant) : "never")}\">");
+            table.Append(Invariant, $"{(row.LastListed is { } shown ? shown.ToString("yyyy-MM-dd", Invariant) : "never")}</td>");
+            table.Append(Formatted($"<td>{ListingStrip(row.Ticker, row.Evenings ?? [])}</td>"));
             table.Append("</tr>");
         }
 
         table.Append("</table>");
-        table.Append("<p class=\"degraded\" data-listing-columns=\"absent\">the evening last on the list and the listing strip arrive with the listings store</p>");
 
         return table.ToString();
     }

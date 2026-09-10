@@ -27,6 +27,9 @@ public class NightlyRun
         "nightly-run",
         ["docs/ARCHITECTURE.html", "fixtures/membership-2026-09-05"],
         [
+            // 5.4, tonight's list.
+            CheckReach.Key(NightlyRunSteps.Heading, "Evaluate the list reasons for every name."),
+
             // 5.3, the facts file.
             CheckReach.Key(NightlyRunSteps.Heading, "Write the facts file for every name."),
 

@@ -69,6 +69,18 @@ public sealed record CalendarRow(string Ticker, DateOnly EventDate, string Kind,
 // stated.
 public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, string Plan);
 
+// One listing row, as the store holds it.
+//
+// `Reasons` and `PlanAtListing` arrive as the JSON the builder wrote, because
+// the read surface hands back stored values unchanged and parsing one into a
+// shape would be deriving.
+public sealed record ListingRow(
+    string Ticker,
+    DateOnly SessionDate,
+    string Reasons,
+    int FiredCount,
+    string PlanAtListing);
+
 // One of a name's biggest moves, as the store holds it.
 //
 // No cause. It is a researched claim and lives in `research_section` with its
@@ -223,6 +235,30 @@ public sealed class ReadApi : IComponent
         FROM move
         WHERE ticker = $ticker
         ORDER BY rank;
+    ";
+
+    // The newest night the listings hold, so the front page resolves to it
+    // without a date being asked for.
+    const string NewestNight = "SELECT MAX(session_date) FROM listing;";
+
+    // Every listing for one night, fired and quiet alike, because the page's own
+    // header states the true fired count over the whole index and the twenty
+    // drawn rows cannot tell you it.
+    const string ListingsForNight = @"
+        SELECT ticker, session_date, reasons, fired_count, plan_at_listing
+        FROM listing
+        WHERE session_date = $session_date
+        ORDER BY ticker;
+    ";
+
+    // A name's own listing history, which is what the universe screen's two
+    // right-hand columns count and what the listing strip draws.
+    const string ListingsForName = @"
+        SELECT ticker, session_date, reasons, fired_count, plan_at_listing
+        FROM listing
+        WHERE ticker = $ticker
+        ORDER BY session_date DESC
+        LIMIT $sessions;
     ";
 
     // Every current member of the index, with what the night computed for it.
@@ -384,6 +420,89 @@ public sealed class ReadApi : IComponent
                 Money.FromStorage(reader.GetString(3)),
                 reader.GetInt64(4),
                 reader.GetDouble(5)));
+        }
+
+        return rows;
+    }
+
+    // How long the night took, read from the run log rather than measured here.
+    // A night the log does not carry says so rather than showing nothing, which
+    // is the same rule the fact strip follows for a date not on file.
+    const string NightDuration = @"
+        SELECT MIN(started_at), MAX(ended_at)
+        FROM run_log
+        WHERE run_id IN (SELECT run_id FROM run_log WHERE stage = 'listings');
+    ";
+
+    public async Task<string?> NightDurationAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NightDuration;
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync() || reader.IsDBNull(0) || reader.IsDBNull(1))
+        {
+            return null;
+        }
+
+        var started = DateTimeOffset.Parse(reader.GetString(0), CultureInfo.InvariantCulture);
+        var ended = DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture);
+
+        return (ended - started).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
+    }
+
+    public async Task<DateOnly?> NewestNightAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestNight;
+
+        return await command.ExecuteScalarAsync() is string newest
+            ? DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
+    }
+
+    public async Task<IReadOnlyList<ListingRow>> ListingsAsync(DateOnly sessionDate)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ListingsForNight;
+        command.Parameters.AddWithValue("$session_date", sessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await ListingsAsync(command);
+    }
+
+    public async Task<IReadOnlyList<ListingRow>> ListingsAsync(string ticker, int sessions)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ListingsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$sessions", sessions);
+
+        return await ListingsAsync(command);
+    }
+
+    static async Task<IReadOnlyList<ListingRow>> ListingsAsync(SqliteCommand command)
+    {
+        var rows = new List<ListingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new ListingRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetInt32(3),
+                reader.GetString(4)));
         }
 
         return rows;

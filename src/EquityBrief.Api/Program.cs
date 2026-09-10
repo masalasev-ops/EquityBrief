@@ -89,6 +89,32 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     var ladder = await read.LadderAsync(ticker);
     var moves = await read.MovesAsync(ticker);
 
+    // Tonight's listing for this name, and its neighbours on the list, so the
+    // page can say why it is here and the walk is one pass through.
+    var night = await read.NewestNightAsync();
+    var listings = night is { } dated ? await read.ListingsAsync(dated) : [];
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+    var universe = await read.UniverseAsync(index);
+
+    var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+    foreach (var member in universe)
+    {
+        var found = await read.LevelsAsync(member.Ticker);
+
+        strengths[member.Ticker] = found.Count == 0 ? 0 : found.Max(band => band.Strength);
+    }
+
+    var ordered = TonightScreen.Rows(
+        listings,
+        strengths,
+        universe.ToDictionary(member => member.Ticker, member => member.Close, StringComparer.Ordinal));
+
+    var at = ordered.Select((row, position) => (row.Ticker, position))
+        .Where(pair => pair.Ticker == ticker)
+        .Select(pair => (int?)pair.position)
+        .FirstOrDefault();
+
     // On or after the last stored session, so the strip states what is coming
     // rather than what has been. A night's own session is what the calendar
     // window starts at.
@@ -97,7 +123,81 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
         bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
 
     return Results.Content(
-        NameScreen.Region(page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves),
+        NameScreen.Region(
+            page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
+            listings.FirstOrDefault(listing => listing.Ticker == ticker),
+            at is > 0 ? ordered[at.Value - 1].Ticker : null,
+            at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null),
+        "text/html; charset=utf-8");
+});
+
+// Tonight's list, section 15.7, read here and composed by the app.
+//
+// `/screens/tonight` resolves to the newest night the listings hold and
+// `/screens/tonight/<date>` to an earlier one, which is the pair 15.3's routes
+// name.
+app.MapGet("/screens/tonight/{night?}", async (
+    string? night,
+    ReadApi read,
+    MarkRenderer marks,
+    SinglePageApp page) =>
+{
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+
+    var asOf = night is { Length: > 0 }
+        ? DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+        : await read.NewestNightAsync();
+
+    if (asOf is not { } dated)
+    {
+        return Results.Content(
+            "<p class=\"degraded\" data-night=\"none\">no night has been recorded yet</p>",
+            "text/html; charset=utf-8");
+    }
+
+    var listings = await read.ListingsAsync(dated);
+
+    // Section 18's banner. A night the store has no listings for shows the data
+    // date it does have rather than a list built from older bars.
+    if (listings.Count == 0)
+    {
+        return Results.Content(
+            page.StaleBanner(dated, await read.NewestNightAsync()),
+            "text/html; charset=utf-8");
+    }
+
+    var universe = await read.UniverseAsync(index);
+
+    // The band strength the ordering breaks ties on, and the close each row
+    // shows, both read from what the night stored rather than worked out here.
+    var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+    foreach (var row in universe)
+    {
+        var bands = await read.LevelsAsync(row.Ticker);
+
+        strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+    }
+
+    var rows = TonightScreen.Rows(
+        listings,
+        strengths,
+        universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal));
+
+    var selected = rows.Count > 0
+        ? NameScreen.PlanRegion(page, marks, rows[0].Ticker, await read.LadderAsync(rows[0].Ticker), universe.FirstOrDefault(row => row.Ticker == rows[0].Ticker)?.Close ?? 0m)
+        : string.Empty;
+
+    return Results.Content(
+        page.TonightRegion(
+            marks,
+            dated,
+            universe.Count,
+            TonightScreen.Fired(listings),
+            await read.NightDurationAsync(dated),
+            rows,
+            [],
+            selected),
         "text/html; charset=utf-8");
 });
 
@@ -117,7 +217,18 @@ app.MapGet("/screens/universe", async (
     // the screen and the night are over one universe rather than two.
     // see: One universe now, the seam for more built now
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
-    var cells = UniverseScreen.Rows(await read.UniverseAsync(index));
+    var members = await read.UniverseAsync(index);
+
+    // The listing history behind the two right-hand columns and the sector
+    // strip's count, over the window section 15.8 states.
+    var history = new Dictionary<string, IReadOnlyList<ListingRow>>(StringComparer.Ordinal);
+
+    foreach (var member in members)
+    {
+        history[member.Ticker] = await read.ListingsAsync(member.Ticker, UniverseScreen.StripSessions);
+    }
+
+    var cells = UniverseScreen.Rows(members, history);
 
     return Results.Content(
         page.UniverseRegion(

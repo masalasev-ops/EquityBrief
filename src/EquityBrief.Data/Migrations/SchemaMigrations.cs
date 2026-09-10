@@ -113,6 +113,36 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The listings, one row per ticker per night, for every index member and not
+    // only the listed ones.
+    //
+    // The every-name grain is the whole point of the table. A shadow candidate
+    // has to be evaluated on the nights it would have fired, and most of those
+    // are nights no live reason surfaced that name, so writing rows only for
+    // listed names would make section 13's shadow mechanism impossible without
+    // anything announcing it.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    //
+    // `plan_at_listing` is the column the improvement loop rests on. Bars can be
+    // replayed and the plan cannot, because by the time a verdict is possible
+    // the rules may have changed and recomputing would score old listings under
+    // new ones.
+    //
+    // No deleter. This is the operator's own record and no provider can sell it
+    // back, so it is kept forever.
+    // see: Your own listing history is kept forever
+    const string CreateListing = @"
+        CREATE TABLE listing (
+            ticker          TEXT NOT NULL,
+            session_date    TEXT NOT NULL,
+            reasons         TEXT NOT NULL,
+            fired_count     INTEGER NOT NULL,
+            plan_at_listing TEXT NOT NULL,
+            shadow_reasons  TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
+
     // The facts file, one row per ticker per night, written by two components on
     // disjoint columns of the same row.
     //
@@ -345,6 +375,7 @@ public static class SchemaMigrations
         new Migration(13, "add membership.sector", AddMembershipSector),
         new Migration(14, "create move", CreateMove),
         new Migration(15, "create facts", CreateFacts),
+        new Migration(16, "create listing", CreateListing),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

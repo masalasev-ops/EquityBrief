@@ -34,6 +34,11 @@ public sealed class SinglePageApp : IComponent
     // thing.
     public const string UniverseRoute = "#/universe";
 
+    // Tonight's list, section 15.3's first route. `#/` resolves to the newest
+    // night and `#/night/<date>` to an earlier one, which is the pair 15.7
+    // names and which 15.3's own list lacked until 5.0.
+    public const string NightRoute = "#/night/";
+
     // The hash route, so one document serves every screen and the browser never
     // asks the server for a page it already has.
     //
@@ -64,6 +69,12 @@ public sealed class SinglePageApp : IComponent
         async function show() {
           const hash = location.hash;
           const screen = document.getElementById('screen');
+          if (hash === '' || hash === '#/' || hash.startsWith('{{NightRoute}}')) {
+            const night = hash.startsWith('{{NightRoute}}') ? '/' + encodeURIComponent(hash.slice('{{NightRoute}}'.length)) : '';
+            const tonight = await fetch('/screens/tonight' + night);
+            screen.innerHTML = await tonight.text();
+            return;
+          }
           if (hash.startsWith('{{UniverseRoute}}')) {
             const query = hash.slice('{{UniverseRoute}}'.length);
             const universe = await fetch('/screens/universe' + query);
@@ -113,7 +124,10 @@ public sealed class SinglePageApp : IComponent
         decimal close,
         string eventBook,
         string arithmetic,
-        IReadOnlyList<MoveCell> moves)
+        IReadOnlyList<MoveCell> moves,
+        IReadOnlyList<FiredReason> firedReasons,
+        string? previousOnTheList,
+        string? nextOnTheList)
     {
         var region = new StringBuilder();
 
@@ -134,6 +148,10 @@ public sealed class SinglePageApp : IComponent
         region.Append(nextEvent is null
             ? "<p class=\"fact-strip\" data-next-event=\"none\">next dated event: not on file</p>"
             : Invariant($"<p class=\"fact-strip\" data-next-event=\"{nextEvent:yyyy-MM-dd}\">next dated event: {nextEvent:yyyy-MM-dd}</p>"));
+
+        // Why it is here, which section 15.9 puts above the chart and which is
+        // present only when the name is on tonight's list.
+        region.Append(marks.WhyItIsHere(ticker, firedReasons));
 
         region.Append(marks.LevelChart(ticker, bars, averages, bands));
 
@@ -164,6 +182,11 @@ public sealed class SinglePageApp : IComponent
         // last in the plan region. It arrives written for the same reason the
         // event book does.
         region.Append(arithmetic);
+
+        // The walk, which section 15.9 puts last: previous and next on tonight's
+        // list, so an evening's reading is one pass through with no return to
+        // the list.
+        region.Append(marks.Walk(ticker, previousOnTheList, nextOnTheList));
 
         region.Append("</section>");
 
@@ -206,6 +229,72 @@ public sealed class SinglePageApp : IComponent
         region.Append("</section>");
 
         return region.ToString();
+    }
+
+    // Tonight's list, section 15.7's four regions that the listings store feeds.
+    //
+    // The header states the true fired count over the whole index, the watch
+    // list sits above the list rather than inside it, the list draws at most
+    // twenty, and the selected name carries its plan column and level summary so
+    // the common case of checking a plan needs no navigation.
+    // see: The page shows twenty and states the true count
+    public string TonightRegion(
+        MarkRenderer marks,
+        DateOnly night,
+        int index,
+        int fired,
+        string? duration,
+        IReadOnlyList<ListingCell> rows,
+        IReadOnlyList<ListingCell> watched,
+        string selectedName)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\">"));
+
+        region.Append(marks.NightHeader(night, index, fired, duration));
+        region.Append(marks.WatchList(watched));
+        region.Append(marks.TonightList(rows, TonightDrawn));
+
+        // The selected name's plan and level summary, which is what section 15.7
+        // means by the common case needing no navigation. It arrives already
+        // composed, because the marks it holds are the name screen's.
+        region.Append(selectedName);
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // Section 17's list display count, held here so the app and the projection
+    // agree about it rather than each stating it.
+    public const int TonightDrawn = 20;
+
+    // Section 18's banner half. The bulk price feed not answering keeps last
+    // night's bars, and what a reader must not be shown is tonight's list built
+    // from them: the list is absent rather than wrong, and the banner gives the
+    // data date so the absence is legible rather than a page that failed.
+    //
+    // A night the store has no listings for is the same shape from the reader's
+    // side, whatever caused it, so this is the one branch and it names the date
+    // the store does have.
+    public string StaleBanner(DateOnly asked, DateOnly? held)
+    {
+        var banner = new StringBuilder();
+
+        banner.Append(Invariant($"<section class=\"tonight\" data-night=\"{asked:yyyy-MM-dd}\" data-list=\"absent\" "));
+        banner.Append(Invariant($"data-data-date=\"{(held is { } date ? date.ToString("yyyy-MM-dd") : "none")}\">"));
+
+        banner.Append(Invariant($"<p class=\"banner degraded\">no list was computed for {asked:yyyy-MM-dd}. "));
+
+        banner.Append(held is { } newest
+            ? Invariant($"The newest data the store holds is {newest:yyyy-MM-dd}.</p>")
+            : "The store holds no night at all.</p>");
+
+        banner.Append("<p class=\"banner-reason\">tonight's list is absent rather than wrong, because a list computed from last night's bars is a list about last night.</p>");
+        banner.Append("</section>");
+
+        return banner.ToString();
     }
 
     static string Invariant(FormattableString text) =>

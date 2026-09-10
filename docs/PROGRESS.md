@@ -5462,3 +5462,90 @@ Notes:      the change list is an empty list rather than a null where there is n
             between two others is one change rather than every fact after it changing. The
             constructed second night is what asserts it: the committed fixture holds one night
             per name, so a comparison against a previous night is unreachable from it.
+
+### 5.4 - the shortlist builder and tonight's list                           2026-09-10
+Built:      migration 16 and the `listing` table, `ShortlistSeries`, `ShortlistBuilder`, section
+            14's step 12, and the `listings-coverage` check promoted to every CI run. Tonight's
+            list with its night header, watch list, list and selected name; the universe screen's
+            two listing halves, deferred from 5.1; the name page's why-it-is-here and walk; and
+            section 18's banner. The change detector's payload retention, with the listings read
+            5.3 could not declare.
+Decided:    nothing new. The six reasons are section 11's and their thresholds are the proposals
+            5.0 confirmed, with nothing tuned in advance.
+Measured:   4 listing rows over 4 current members, one per member per night, and the fired and
+            quiet rows partition the whole. The population is the index rather than the names with
+            bars, which is the every-name grain the shadow column rests on.
+            235 claims, 143 PASS from 126, 92 out of scope, 0 unexamined. Seventeen claims became
+            PASS at once, which is the largest single move of the phase, and the out-of-scope
+            floor in `architecture-conformance` fell from 100 to 80 with the reason written beside
+            it: that number is a fact about how far the build has got and not about the property.
+Discharged: the strength score obligation. The list orders on how many reasons fired and then on
+            band strength, and the phase 3 sign-off's measurement is what settles what that score
+            is dominated by: touches are 72 to 79 per cent of the members of each name's strongest
+            band, anchor counts are bunched at 4 to 15 while touch counts run 0 to 41, and MSFT's
+            top two bands carry the same 4 anchors with the ranking decided by 15 touches against
+            9. A tiebreaker dominated by touches is one about how often a price has come back to a
+            level, which is what the ordering is for. The tiebreaker is asserted over constructed
+            rows whose fired counts are equal, because four names of real bars are not guaranteed
+            to tie.
+            And the eleventh obligation the phase 4 sign-off created. `NameScreen`'s
+            condition-to-words mapping ended in a catch-all arm, so a sixth condition, a typo or
+            an unset value rendered as the sentence for reaching the zone with nothing failing,
+            and no test in the suite asserted any plan sentence at all. Every condition has its
+            own arm now and anything else throws. Every sentence is asserted one at a time rather
+            than as a set, because a mapping with two arms swapped produces the same set of
+            sentences over the same plans, which is the tautology 5.0 recorded in a different
+            place.
+Found:      contradiction L, refused by `component-access` the moment the component landed. The
+            matrix gave the builder reads of Fundamentals and News pulse, which the catalogue
+            names neither of, and blanked Membership, Bars and Facts, which four of the six
+            reasons need. A blank cell is a claim as much as a filled one, so the row made five
+            wrong statements and none of them was reachable until the class existed.
+            The facts read is there for a reason rather than for a value, and it is worth stating
+            because a reader will look for the value: the builder compares the session the facts
+            file is dated with the session its bars end on and stops the night if they differ. A
+            listing written against a different session from the facts beside it is a row two
+            later readers disagree over.
+            Writing this entry before the run found three more things, which is what done condition
+            8 is for. Section 11's table placement was owed at 5.4 and its own reason names the
+            fixture's listings expectations, which now exist, so it is converted from a due point
+            to a check naming the instrument that reaches it, which is what 1.5 did with the gap
+            row. Covering a table means covering rows nobody enumerated, so that check now opens
+            the document and reads the six reason names and the two figures the cells state,
+            rather than restating them beside it. And section 16's Fundamentals store row derived
+            to 5.4 from the plan, because 5.4's text names the fundamentals in the sentence saying
+            the shortlist reads none of them. That is the prefix shape again and is declared as a
+            late derivation, which makes three of those across the phase.
+Mutated:    nine mutation runs over eight distinct mutations, in a worktree under the session
+            scratchpad outside the repository, reverted, and the worktree removed. The rule was
+            stated before the sweep: each names the property it is trying to break rather than the
+            line it edits. One was invalid, being a pattern that matched nothing, and was
+            corrected and re-run.
+            The properties added: unusual volume is above twice the fifty-day average and not
+            merely above it; earnings soon fires inside the horizon and not outside it; a name
+            with no ladder row last night has not changed; a row is written for every index member
+            and not only the ones with bars; band strength is the tiebreaker where fired counts
+            are equal; an unknown condition fails rather than rendering a default; the plan at
+            listing carries the entry, the stop and the first traded target; and at most twenty
+            rows are drawn with the true count stated.
+            All eight turn a test red. None went unmutated. The six reasons' own thresholds were
+            mutated in two of the eight and the other four reasons were not, and they are named
+            here as not mutated: each is recomputed in the suite from the tables it reads, so a
+            rule changed in the builder disagrees with the recomputation rather than with a
+            frozen set, and that is the assertion carrying them.
+Tests:      456, from 444. `tools/ci.sh` green end to end, all 6 steps, migrations 0 to 16, exit
+            0. `tools/verify-phase` green at 235 claims, 143 PASS, 0 FAIL, 92 out of scope, 0
+            unexamined, 150 placements and verdicts reconciled against a floor of 34. Windows on
+            this machine; the matrix carries macOS and the Linux case-sensitivity job.
+Carried:    nothing new.
+Notes:      the trend-changed reason cannot fire over the committed fixture, because it holds one
+            ladder row per name and the reason needs a yesterday. Read from the fixture alone the
+            rule is indistinguishable from a reason that never fires, so it is asserted over
+            constructed inputs at all four cases: a label that changed, one that did not, no row
+            last night, and no row tonight.
+            The watch list has no store anywhere in the corpus and none is invented. The region
+            states that rather than being absent, because a region a reader cannot find is
+            indistinguishable from one that is empty.
+            `listings-coverage` reads the same replay the fixture expectations read rather than a
+            second one. Two replays of one pipeline disagree eventually, and the two checks would
+            be the pair.

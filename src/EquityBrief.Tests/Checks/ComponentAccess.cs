@@ -25,6 +25,10 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 5.4, tonight's list.
+            CheckReach.Key(Scope.CatalogueTable, "Shortlist builder"),
+            CheckReach.Key(Scope.MatrixTable, "Shortlist builder"),
+
             // 5.3, the facts file.
             CheckReach.Key(Scope.CatalogueTable, "Facts assembler"),
             CheckReach.Key(Scope.CatalogueTable, "Change detector"),

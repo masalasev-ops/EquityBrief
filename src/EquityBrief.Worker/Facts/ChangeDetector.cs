@@ -7,7 +7,7 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Facts;
 
-public sealed record ChangeOutcome(int RowsExamined, int RowsWritten, int ChangesRecorded);
+public sealed record ChangeOutcome(int RowsExamined, int RowsWritten, int ChangesRecorded, int PayloadsEmptied);
 
 // The change detector. Compares tonight's facts against the last stored ones for
 // each name and writes only what changed, on its own column of the same row.
@@ -28,6 +28,7 @@ public sealed class ChangeDetector : IComponent
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -58,6 +59,31 @@ public sealed class ChangeDetector : IComponent
         UPDATE facts
         SET material_changes = $material_changes
         WHERE ticker = $ticker AND session_date = $session_date;
+    ";
+
+    // The retention section 16 states, which arrived here at 5.4 with the store
+    // it reads. A facts row is kept whole for a night the name fired; every
+    // other night keeps the hash and the material changes, with the payload
+    // emptied.
+    //
+    // An update rather than a delete, because what the hash is for is answering
+    // whether a later night's facts differ without holding the facts they differ
+    // from, and a deleted row answers nothing. Tonight's row is never emptied,
+    // whatever it fired: it is the row every reader is about to read.
+    //
+    // "or was opened" is not one of the conditions, because nothing in this
+    // store records that a name was read, and a cell promising a behaviour no
+    // test can induce is worse than a cell that says less.
+    const string EmptyUnlistedPayloads = @"
+        UPDATE facts
+        SET payload = ''
+        WHERE payload != ''
+          AND session_date < $tonight
+          AND NOT EXISTS (
+              SELECT 1 FROM listing l
+              WHERE l.ticker = facts.ticker
+                AND l.session_date = facts.session_date
+                AND l.fired_count > 0);
     ";
 
     const string AppendRun = @"
@@ -128,9 +154,32 @@ public sealed class ChangeDetector : IComponent
             changes += changed.Count;
         }
 
-        await RecordAsync(connection, runId, startedAt, pairs.Count, written, changes, cancellation);
+        var emptied = await EmptyAsync(connection, cancellation);
 
-        return new ChangeOutcome(pairs.Count, written, changes);
+        await RecordAsync(connection, runId, startedAt, pairs.Count, written, changes, emptied, cancellation);
+
+        return new ChangeOutcome(pairs.Count, written, changes, emptied);
+    }
+
+    // The newest facts session anywhere, read from the store so a component run
+    // on its own empties what a night would. Every row before it is a past
+    // night; tonight's is not touched.
+    static async Task<int> EmptyAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var newest = connection.CreateCommand();
+        newest.CommandText = "SELECT MAX(session_date) FROM facts;";
+
+        if (await newest.ExecuteScalarAsync(cancellation) is not string tonight)
+        {
+            return 0;
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = EmptyUnlistedPayloads;
+        command.Parameters.AddWithValue("$tonight", tonight);
+
+        return await command.ExecuteNonQueryAsync(cancellation);
     }
 
     async Task RecordAsync(
@@ -140,6 +189,7 @@ public sealed class ChangeDetector : IComponent
         int examined,
         int written,
         int changes,
+        int emptied,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -153,7 +203,7 @@ public sealed class ChangeDetector : IComponent
         command.Parameters.AddWithValue("$rows_written", written);
         command.Parameters.AddWithValue(
             "$detail",
-            $"{examined} row(s) examined, {written} written, {changes} material change(s)");
+            $"{examined} row(s) examined, {written} written, {changes} material change(s), {emptied} payload(s) emptied");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }
