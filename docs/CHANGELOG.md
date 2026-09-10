@@ -25,6 +25,55 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - ARCHITECTURE.html - the trailing stop and the fifth condition, as the code runs them
+Authorised by: The trailing stop is the higher of the band beneath and the last swing low
+Was:
+> figure 10.1's trend box read "uptrend: tranches on pullback bands, the stop trails the last
+> higher low", the key beneath it read "In a range the stop is the range floor. In an uptrend it
+> trails", and the conditions box called its list fixed and named four patterns
+Now:
+> the stop trails to the higher of the band beneath and the last swing low beneath the tranche,
+> with the reason a swing low alone is looser than the range rule; and the conditions box names
+> the fifth answer, a tranche reaching the zone, as the absence of the four rather than a fifth
+> pattern
+Why: the phase 4 sign-off read the code against the corpus and found the corpus held neither rule.
+The phrase "higher of" appeared in two records, a source comment and an expectation note, and the
+string `ReachesTheZone` appeared nowhere at all while reaching the store and the page. A decision is
+changed only by another decision, so the rule the code ran was a rule no spec stated.
+
+### 2026-09-10 - CLAUDE.md - no-superseded-citation reads the specs and the code, not the records
+Corrects: the check refused a superseded citation anywhere in the corpus, which forbids the corpus
+from ever superseding a decision a record has cited. `PROGRESS.md` is append only and a record is
+corrected by a new dated entry rather than by editing the old one, so the phase 4 sign-off's own
+citation of the trailing stop rule turned the check red the moment that rule was superseded. Found
+at 5.0 by superseding it.
+Was:
+> No cited name resolves to a decision under "Previously decided"
+Now:
+> the same for a spec or for code, with the three records excluded by name and the exclusion
+> asserted to be removing something
+Why: a superseded citation in a spec or in code is a live pointer to a dead rule; in a record it is
+a dated statement of what the corpus held on the day it was written. The exclusion is asserted to
+match at least one citation rather than left as a filter that reads as a rule and behaves as a
+comment, which is the drift that file already carries one story about.
+
+### 2026-09-10 - BUILD_PLAN.md - the eleven obligations the phase 4 sign-off left for 5.0 to enter
+Corrects: nothing. Obligations recorded when they were created rather than remembered. The sign-off
+edits no spec, so it named them and left their due points as proposals for this pass to place.
+Was:
+> the obligations table carried thirty-eight rows and none of the eleven; 5.0 read "Settles the
+> base rate's population and window. Confirms the six reason thresholds as the proposals they are,
+> and states that 5.6's own record is what calibrates them, so nothing is tuned in advance."; and
+> 5.4 opened with its migration
+Now:
+> forty-nine rows, ten of them due at 5.0 and one at 5.4, each cited back by the checkpoint that
+> owes it
+Why: seven of the eleven are tests over phase 4 code with the evidence in hand, and 4.0 took five
+such obligations in its own planning pass for the same reason. An obligation waiting for a
+checkpoint that will not look at its subject is waiting for nothing, and 5.1 is whole-index
+membership, backfill at scale, the universe screen and a live night, which is the checkpoint whose
+failure mode nobody has seen yet.
+
 ### 2026-09-09 - CLAUDE.md - three verification rules the corpus had paid for twice and never written
 Corrects: three defects the phase 4 sign-off found and left in a record, where a record is where a
 finding goes to be true and unread. First, the sign-off sorted eleven surviving mutations into four

@@ -2850,7 +2850,7 @@ public class FixtureExpectations
         // the band beneath and is looser protection than the range rule gives.
         // A trailing stop that can sit below the range floor is not trailing
         // anything, so the stop is the higher of the two.
-        // see: The stop rule depends on the trend state
+        // see: The trailing stop is the higher of the band beneath and the last swing low
         var band = new Level(90m, 95m, LevelSeries.Support, false, 1, true, []);
 
         // A higher low has formed above the band beneath, so the stop rises to
@@ -3032,7 +3032,7 @@ public class FixtureExpectations
         // The branch the fixture cannot reach: three of its four names are in an
         // uptrend and the fourth is a range, so the state that produces no plan
         // at all is unreachable from these bars.
-        // see: The stop rule depends on the trend state
+        // see: The trailing stop is the higher of the band beneath and the last swing low
         var asOf = new DateOnly(2026, 9, 4);
         var bands = new List<Level> { new(90m, 95m, LevelSeries.Support, false, 1, true, []) };
         var flat = Enumerable.Range(0, 10)
