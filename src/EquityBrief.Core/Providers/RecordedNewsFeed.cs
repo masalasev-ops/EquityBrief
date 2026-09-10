@@ -8,7 +8,7 @@ namespace EquityBrief.Core.Providers;
 // Symbols is the attribution and is why a night needs no per-name request: the
 // feed is queryable by date with no ticker, and every row names the tickers it
 // is about, so one request is fanned out in code.
-// see: News arrives in one dated feed request and is attributed to names locally
+// see: News is one dated query, paged to cover the day, and attributed to names locally
 //
 // Channel is the domain the link points at, and it is named Channel rather than
 // Publisher because the 1.7 measurement showed it is the aggregator that
@@ -35,7 +35,7 @@ public sealed record NewsArticle(
 // date with no ticker, which was probed on the operator's key at 1.5 rather than
 // assumed, and every row names the tickers it is about, so the fan-out is
 // arithmetic on a payload rather than a second request
-// (see: News arrives in one dated feed request and is attributed to names locally).
+// (see: News is one dated query, paged to cover the day, and attributed to names locally).
 public interface INewsFeed
 {
     int Requests { get; }

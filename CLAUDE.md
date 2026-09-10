@@ -176,7 +176,7 @@ Executable, named, run by `tools/ci.*`. Each is a property that should hold at e
 | `two-platform` | the matrix | The suite passes on both windows and macos runners |
 | `nightly-cost` | every CI run | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run, with the run measured over two universe sizes so the count is shown not to grow with the population |
 | `fixture-replay` | every CI run | Every table the replay of the whole pipeline populates is named by an expectation, and every table an expectation names is one the replay populates. The forward direction is the one nothing else asks: a stage producing a figure no expectation covers is an expectation nothing reads, seen from the other end. The run log is excluded by name, being the record of having produced the figures rather than one of them |
-| `listings-coverage` | from 5.1 | A listings row exists for every index member on every night the run completed |
+| `listings-coverage` | from 5.4 | A listings row exists for every index member on every night the run completed. From 5.4 and not 5.1, because 5.4 is the checkpoint that creates `listing`, and a roster row naming a checkpoint the record shows as landed fails `coverage-reported` |
 | `claim-admissibility` | from 6.1 | A poisoned paragraph, an unsourced claim, and each inadmissible document class are refused, and nothing resting on them is written |
 | `register-append-only` | from 7.1 | The candidate register refuses updates and deletes, and the correction divisor matches the rows registered before the window opened |
 

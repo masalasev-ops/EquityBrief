@@ -25,6 +25,65 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - ARCHITECTURE.html, RUNBOOK.md, BUILD_PLAN.md - one dated news query does not carry a day
+Authorised by: News is one dated query, paged to cover the day, and attributed to names locally
+Was:
+> section 14's step read "Count today's articles per name from one news feed request"; section 17's
+> weighted-call row priced "the news feed 5"; `RUNBOOK.md` read "News costs 5."; and the decision's
+> name said news arrives in one dated feed request
+Now:
+> one dated query paged until the day is covered with every page counted, priced per page, and a
+> decision whose name says so, with the page count named as a function of the day's news volume
+Why: 2.5 measured one dated request for a single session coming back at exactly 1,000 articles,
+which is the provider's cap, over 3,232 distinct symbols. One request does not carry a day, so a
+count taken from it is a count over whatever the cap happened to include, which is a figure over a
+mixed population and is not stated at all. The limits are restated rather than satisfied. The cost
+rule survives on the measurement rather than on a workaround: one request already reached 3,232
+symbols against an index of 503, so the feed is market-wide and adding names adds no articles, which
+is what makes a paged query something other than a per-name call.
+
+### 2026-09-10 - SCHEMA.md - the base rate's population, its null horizon and its grain
+Authorised by: The base rate is over every name-night, and never over the listed ones
+Was:
+> `base_rate` read "the universe figure for the same window and horizon", and the file said nothing
+> about which population, about the `setup` horizon, or about why one night's figure repeats across
+> the index
+Now:
+> the figure for this horizon over every name-night in the window rather than over the listed ones,
+> null for `setup`, and repeated per row by design because the row is what the run page reads
+Why: the corpus named the figure in six places and defined it in none. 15.10 was the only place a
+population appeared, and `CLAUDE.md` settles the rest on its own terms: a figure computed over listed
+names only is a figure over the wrong population, because a listings row exists for every name.
+
+### 2026-09-10 - ARCHITECTURE.html, SCHEMA.md, CLAUDE.md - fourteen faults the corpus carried into phase 5
+Corrects: fourteen, each of which would have failed a check or produced a wrong reading during the
+phase. `listings-coverage` was rostered from 5.1 and `listing` is created at 5.4, so the row would
+have failed `coverage-reported` the moment 5.1 landed. The universe screen reads listings and 5.1
+builds it three checkpoints before that store exists. The run page's reason record sat wholly at 7.5
+while three operating obligations name 5.6 as the surface their trigger is read on. `ChangeDetector`
+had a declared column set and no catalogue or matrix row. Section 16's calendar row still described
+the `status` column 4.3 removed. `facts` had a retention rule nobody owned and half of it named a
+condition nothing records. `news_pulse` had no updater and the night is declared idempotent. `move`'s
+grain could not express the multi-day moves its catalogue row claims. 13.2 and 13.4 disagreed about
+which phase tunes the thresholds. 15.3's route list lacked the route 15.7 uses. Every limit was
+written against 500 and the fetched index is 503. And 19.2 listed no row for the screens or the
+figures, so two claim sources had no declared check in the document.
+Was:
+> the calendar row read "whether the provider has confirmed it"; the facts row read "kept for every
+> night a name was on the list or was opened; other nights keep the hash only"; the wall clock row
+> read "Nightly wall clock, 500 names" and "under 5 minutes, proposed"; the threshold row read "4,
+> using its own nightly record"; the route list omitted `#/night/<date>`; and the catalogue, the
+> matrix and 19.2 carried no row for the change detector, the screens or the figures
+Now:
+> each corrected to what is true, with the change detector given both rows and a listings read, the
+> facts retention owned by the component that already owns Update on that table, and "or was opened"
+> dropped because nothing records that a name was read
+Why: a rule the store cannot answer is a rule no test can induce, and a cell that promises one is
+worse than a cell that says less. The wall clock is the sharpest of them: a limit set to the figure
+that measured it is passed by construction by the night that set it, so the row now states the
+measurement plus headroom with the headroom's reason, and the night's deadline follows at three
+times whatever the limit becomes.
+
 ### 2026-09-10 - CLAUDE.md, ARCHITECTURE.html - the figures are read, and one names a store the tables do not carry
 Corrects: no figure in the document was read by anything. The phase 4 sign-off found that figure
 10.1's rows were reached by nothing, which is how the trailing stop rule drifted from the corpus for

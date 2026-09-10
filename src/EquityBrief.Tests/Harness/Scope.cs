@@ -656,8 +656,10 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Selected name")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Reason totals")] = "5.6",
 
-        [CheckReach.Key("15.8 Universe", "Sector strip")] = "5.1",
-        [CheckReach.Key("15.8 Universe", "The table")] = "5.4",
+        [CheckReach.Key("15.8 Universe", "Sector strip, one line per sector")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list")] = "5.4",
+        [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = "5.4",
         [CheckReach.Key("15.8 Universe", "Filters")] = "5.1",
 
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",
@@ -674,7 +676,8 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Operational header")] = "5.6",
         // 7.5 is "Reason verdicts on the run page" and 7.4 is "The shadow
         // column", so two rows of this section are owed two phases after it.
-        [CheckReach.Key("15.10 Run", "Reason records")] = "7.5",
+        [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "7.5",
         [CheckReach.Key("15.10 Run", "Shadow candidates")] = "7.4",
         [CheckReach.Key("15.10 Run", "Stale and failed")] = "5.6",
         [CheckReach.Key("15.10 Run", "Harness")] = "5.6",
@@ -708,6 +711,30 @@ internal static class Scope
     {
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
             ["candles", "the level bands", "the moving averages", "a volume pane"],
+
+        // The universe screen, per region, and the reason is the one that
+        // resolved contradiction F. 15.8 reads the listings, and 5.1 builds
+        // this screen three checkpoints before 5.4 creates that table. Its
+        // sector strip counts how many names are on tonight's list and its
+        // table carries the evening a name was last on it and the listing strip
+        // over sixty sessions, none of which exists at 5.1. Read as one claim
+        // each, both rows would be owed at 5.4 and the halves that draw from
+        // membership, indicators, levels and ladders would sit unasserted for
+        // the whole of the phase's visible output.
+        [CheckReach.Key("15.8 Universe", "Sector strip")] =
+            ["one line per sector", "how many are on tonight's list"],
+        [CheckReach.Key("15.8 Universe", "The table")] =
+            ["every name in the index", "the listing strip over sixty sessions"],
+
+        // The run page's reason record, and the same argument again. Its counts
+        // and the base rate pinned above them are what 5.6 builds, and three
+        // operating obligations name that surface as where their trigger is
+        // read. Its verdicts need resolved setups and are 7.5's. Read as one
+        // claim it would be owed at 7.5, and the obligations would name a
+        // surface the harness says arrives two phases after the checkpoint the
+        // plan says builds it.
+        [CheckReach.Key("15.10 Run", "Reason records")] =
+            ["the resolved count", "the share that reached target before stop"],
 
         // The same shape in the failure table, and it arrived by the same
         // route. This row's "What you see" cell names two surfaces drawn a
@@ -877,7 +904,7 @@ internal static class Scope
         // recorded run, which is the first point either limit is asserted.
         ["Model calls in the nightly run"] = "1.4",
         ["Per-name network calls in the nightly run"] = "1.4",
-        ["Nightly wall clock, 500 names"] = "5.1",
+        ["Nightly wall clock, at index size"] = "5.1",
         // Retention is what makes the year a limit rather than a description,
         // and it lands with the fetcher at 1.4.
         ["Bar history kept"] = "1.4",
