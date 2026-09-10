@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
+using EquityBrief.Core.Moves;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Swings;
 using EquityBrief.Core.Time;
@@ -14,6 +15,7 @@ using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Ladders;
+using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.Swings;
@@ -42,6 +44,9 @@ public class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05"],
         [
+            // 5.2, the move annotator.
+            CheckReach.Key(Scope.FixtureTable, "moves"),
+
             CheckReach.Key(Scope.FixtureTable, "bars"),
             CheckReach.Key(Scope.FixtureTable, "news"),
             CheckReach.Key(Scope.FixtureTable, "membership"),
@@ -2172,6 +2177,7 @@ public class FixtureExpectations
             store.DatabaseFile).RunAsync(Index, CalendarSession, "replay-calendar-for-ladders");
 
         await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-ladders");
+        await new MoveAnnotator(clock, store.DatabaseFile).RunAsync("replay-moves");
 
         return store;
     }
@@ -3218,6 +3224,156 @@ public class FixtureExpectations
 
         Assert.Equal(TrendState.NotClassified, highsOnly.State);
         Assert.Contains("swing lows", highsOnly.Reason!, StringComparison.Ordinal);
+    }
+
+    // ---- 5.2, the move annotator ----
+
+    [Fact]
+    public async Task TheMovesMatchTheRulesOverTheCommittedBars()
+    {
+        // The expectation was computed outside this repository from the captured
+        // payloads, so a component that stored the wrong set does not agree with
+        // it. A count frozen from the run would agree with a run that read the
+        // wrong window, because it would have been taken from that run.
+        var expected = Expected("moves");
+        var byName = expected.GetProperty("byName");
+        var rules = expected.GetProperty("rules");
+
+        // The spans and the cap are read from the expectation and asserted
+        // against the constants, so the file and the code cannot drift apart
+        // while both look right on their own.
+        Assert.Equal(
+            [.. rules.GetProperty("spans").EnumerateArray().Select(span => span.GetInt32())],
+            MoveSeries.Spans);
+
+        Assert.Equal(MoveSeries.MostMoves, rules.GetProperty("mostMoves").GetInt32());
+
+        using var store = await WithLadders();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var rows = Query(
+                store,
+                $"SELECT session_date || '|' || sessions || '|' || rank FROM move WHERE ticker = '{name}' ORDER BY rank;");
+
+            Assert.Equal(
+                [.. byName.GetProperty(name).EnumerateArray().Select(move =>
+                    $"{move.GetProperty("sessionDate").GetString()}|{move.GetProperty("sessions").GetInt32()}|{move.GetProperty("rank").GetInt32()}")],
+                rows);
+
+            // The change itself, to six places, which is where a percentage of a
+            // price stops being the same number in two languages.
+            foreach (var move in byName.GetProperty(name).EnumerateArray())
+            {
+                var stored = Query(
+                    store,
+                    $"SELECT change_pct FROM move WHERE ticker = '{name}' AND session_date = '{move.GetProperty("sessionDate").GetString()}';");
+
+                Assert.Equal(
+                    move.GetProperty("changePct").GetDouble(),
+                    double.Parse(stored.Single(), CultureInfo.InvariantCulture),
+                    6);
+            }
+        }
+
+        Assert.Equal(
+            [expected.GetProperty("counts").GetProperty("rows").GetInt32().ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT COUNT(*) FROM move;"));
+    }
+
+    [Fact]
+    public async Task AMoveIsRankedByAbsoluteSizeAndTheLongerSpanKeepsTheSession()
+    {
+        // The rules, asserted over the stored rows rather than against the
+        // expectation, so the two say the same thing for different reasons.
+        using var store = await WithLadders();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var sizes = Query(store, $"SELECT ABS(change_pct) FROM move WHERE ticker = '{name}' ORDER BY rank;")
+                .Select(value => double.Parse(value, CultureInfo.InvariantCulture))
+                .ToArray();
+
+            Assert.Equal([.. sizes.OrderByDescending(size => size)], sizes);
+
+            // A fall counts as much as a rise, which is what ranking on the
+            // absolute size means and what a table about what happened needs.
+            // Asserted rather than assumed: over four names of real bars some
+            // of the largest moves are down, and a rank that ordered on the
+            // signed value would put every fall at the bottom.
+            Assert.Contains(
+                Query(store, $"SELECT change_pct FROM move WHERE ticker = '{name}';"),
+                value => double.Parse(value, CultureInfo.InvariantCulture) < 0);
+        }
+
+        // One row per session, which the primary key holds, and the span on it
+        // is the longer of the two that end there. Asserted over constructed
+        // input, because a series where a single day is the largest mover on a
+        // session a five-day run also ends on is not something four names of
+        // committed bars can be relied on to hold.
+        var rising = Enumerable.Range(0, 12)
+            .Select(day => new MoveBar(new DateOnly(2026, 1, 1).AddDays(day), 100m + day))
+            .ToArray();
+
+        var moves = MoveSeries.For(rising);
+
+        Assert.Equal(moves.Count, moves.Select(move => move.SessionDate).Distinct().Count());
+
+        // A session far enough into the series for both spans to end on it
+        // carries the longer, and one too near the start carries the only span
+        // that reaches it. Both halves are asserted, because a rule that only
+        // ever saw the first half would read as the longer span always winning.
+        var first = rising[0].SessionDate;
+
+        Assert.All(
+            moves.Where(move => move.SessionDate.DayNumber - first.DayNumber >= 5),
+            move => Assert.Equal(5, move.Sessions));
+
+        Assert.All(
+            moves.Where(move => move.SessionDate.DayNumber - first.DayNumber < 5),
+            move => Assert.Equal(1, move.Sessions));
+
+        Assert.Contains(moves, move => move.Sessions == 5);
+        Assert.Contains(moves, move => move.Sessions == 1);
+
+        // A series shorter than a span produces the shorter moves alone rather
+        // than nothing, and a series of one session produces none: a move needs
+        // two closes and there is only one.
+        Assert.All(MoveSeries.For([.. rising.Take(3)]), move => Assert.Equal(1, move.Sessions));
+        Assert.Empty(MoveSeries.For([.. rising.Take(1)]));
+
+        // A close of zero or less gives no move rather than an infinite one,
+        // which is the boundary the committed bars cannot reach because no
+        // stored close is zero.
+        var zeroed = new MoveBar[]
+        {
+            new(new DateOnly(2026, 1, 1), 0m),
+            new(new DateOnly(2026, 1, 2), 10m),
+        };
+
+        Assert.Empty(MoveSeries.For(zeroed));
+    }
+
+    [Fact]
+    public async Task TheMoveAnnotatorDropsWhatFallsOutOfTheWindowAndLeavesWhatIsInside()
+    {
+        // The last of the six computed tables to gain a deleter, which is what
+        // 4.0 ruled and 4.2 implemented for the other five.
+        // see: Every computed table's writer is its own deleter
+        using var store = await WithLadders();
+
+        var newest = Query(store, "SELECT MAX(session_date) FROM bar;").Single();
+        var boundary = DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddYears(-1);
+
+        Assert.Equal(
+            ["0"],
+            Query(store, $"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';"));
+
+        // And rows inside the window are untouched, which is the half a drop
+        // that removed everything would also satisfy.
+        Assert.NotEqual(
+            ["0"],
+            Query(store, $"SELECT COUNT(*) FROM move WHERE session_date >= '{boundary:yyyy-MM-dd}';"));
     }
 
     // ---- 5.0, the assertions the phase 4 sign-off's mutation sweep left ----

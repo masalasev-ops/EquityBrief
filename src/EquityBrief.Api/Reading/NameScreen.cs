@@ -264,7 +264,8 @@ public static class NameScreen
         IReadOnlyList<LevelRow> levels,
         IReadOnlyList<ProfileRow> profile,
         LadderRow? ladder,
-        CalendarRow? nextEvent)
+        CalendarRow? nextEvent,
+        IReadOnlyList<MoveRow> moves)
     {
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
@@ -335,7 +336,8 @@ public static class NameScreen
             PlanRows(ladder),
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
-            Arithmetic(ladder));
+            Arithmetic(ladder),
+            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))]);
     }
 
     // The members column, as the mark needs it. SCHEMA stores each member's

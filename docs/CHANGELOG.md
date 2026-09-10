@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - SCHEMA.md - the last of the six computed tables gains its deleter
+Authorised by: Every computed table's writer is its own deleter
+Was:
+> `move` gave Delete to nobody, and the note read "Five of the six are declared at 4.2 and `move`
+> waits for 5.2"
+Now:
+> MoveAnnotator owns all three operations, and the note reads that all six are declared
+Why: 4.0 ruled that every computed table's writer is its own deleter and 4.2 implemented it for
+five of them. `move` waited because `MoveAnnotator` did not exist and a deleter declared before its
+component deletes is a declaration with nothing behind it, which `writer-ownership` refuses in that
+direction. The component exists now, so the ruling is complete.
+
 ### 2026-09-10 - SCHEMA.md, BUILD_PLAN.md - the sector is declared, and two limits leave the checkpoint that produces neither's evidence
 Corrects: two due points naming a checkpoint that cannot supply what they need. Section 17's row
 coverage claim is about a listings row for every name every night and `listing` is created at 5.4,

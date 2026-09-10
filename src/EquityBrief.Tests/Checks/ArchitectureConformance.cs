@@ -769,7 +769,7 @@ public class ArchitectureConformance
 
         Assert.Equal(Scope.ScreensTables.Length, screensTables.Length);
 
-        // Stated in advance: seven tables, 37 rows, 43 claim subjects. The
+        // Stated in advance: seven tables, 37 rows, 44 claim subjects. The
         // Level chart row decomposes into its four elements, and 5.0 decomposed
         // three more per surface, being the universe screen's sector strip and
         // table, whose listing halves cannot exist until 5.4 creates that
@@ -777,7 +777,7 @@ public class ArchitectureConformance
         // whose verdicts need resolved setups. A run finding none would
         // otherwise pass both directions over an empty set.
         Assert.Equal(37, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
-        Assert.Equal(43, inDocument.Length);
+        Assert.Equal(44, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -818,8 +818,8 @@ public class ArchitectureConformance
             string.Join("; ", unnamed) +
             ". A decomposition the document does not carry is a second statement of the row's content.");
 
-        // Stated in advance, and it is the scope carrying the property: eighteen
-        // elements over seven rows, four on the level chart, two on the gap
+        // Stated in advance, and it is the scope carrying the property: twenty
+        // elements over eight rows, four on the level chart, two on the gap
         // failure, two on the unavailable feed, two on the two-hundred-bar row
         // 3.1 decomposed, and six 5.0 added. Zero would pass every assertion
         // above.
@@ -832,7 +832,7 @@ public class ArchitectureConformance
         // table were split at the listing store 5.1 does not have and the run
         // page's reason record was split between the counts 5.6 draws and the
         // verdicts that need resolved setups.
-        Assert.Equal(18, checkedElements);
+        Assert.Equal(20, checkedElements);
     }
 
     [Fact]

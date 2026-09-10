@@ -13,6 +13,7 @@ using EquityBrief.Web.Marks;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Ladders;
+using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Levels;
@@ -36,6 +37,9 @@ public class ReadSurface
         "read-surface",
         ["fixtures/membership-2026-09-05"],
         [
+            // 5.2, the move annotator.
+            CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves"),
+
             // The universe screen, 5.1.
             CheckReach.Key("15.5 The mark vocabulary", "Distance row"),
             CheckReach.Key("15.8 Universe", "Sector strip, one line per sector"),
@@ -664,6 +668,7 @@ public class ReadSurface
             store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "run-calendar");
 
         await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "run-ladders");
+        await new MoveAnnotator(clock, store.DatabaseFile).RunAsync("run-moves");
 
         return store;
     }
@@ -701,7 +706,8 @@ public class ReadSurface
             await api.LevelsAsync(Name),
             await api.ProfileAsync(Name),
             await api.LadderAsync(Name),
-            await api.NextEventAsync(Name, DateOnly.MinValue));
+            await api.NextEventAsync(Name, DateOnly.MinValue),
+            await api.MovesAsync(Name));
 
         // The four marks section 15.9 lists for this region, each named and each
         // asserted, rather than a count of svg elements which two of one kind
@@ -751,7 +757,8 @@ public class ReadSurface
             await api.LevelsAsync("NOSUCH"),
             await api.ProfileAsync("NOSUCH"),
             await api.LadderAsync("NOSUCH"),
-            await api.NextEventAsync("NOSUCH", DateOnly.MinValue));
+            await api.NextEventAsync("NOSUCH", DateOnly.MinValue),
+            await api.MovesAsync("NOSUCH"));
 
         Assert.Contains("data-trend-state=\"none\"", missing, StringComparison.Ordinal);
     }
@@ -1069,6 +1076,48 @@ public class ReadSurface
         // current members, and it is read from the expectation rather than
         // written here.
         Assert.Equal(FixtureExpectation.CurrentMembers.Length, Count(store, "ladder"));
+    }
+
+    [Fact]
+    public async Task TheHowItGotHereTableDrawsTheMovesAndStatesThatTheCauseIsAbsent()
+    {
+        // Section 15.9's second region, read off the markup rather than by eye.
+        // Its cause column arrives at 6.5 with the pass that writes a cause, and
+        // until then it is absent and said so once rather than drawn as an empty
+        // cell in every row: an absence stated and an absence drawn as emptiness
+        // are different things.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var moves = await api.MovesAsync(Name);
+        var marks = new MarkRenderer();
+        var table = marks.MovesTable(Name, [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))]);
+
+        Assert.NotEmpty(moves);
+        Assert.Contains($"data-moves=\"{moves.Count}\"", table, StringComparison.Ordinal);
+        Assert.Contains("data-cause-column=\"absent\"", table, StringComparison.Ordinal);
+        Assert.Contains("data-cause=\"absent\"", table, StringComparison.Ordinal);
+
+        // No cell holds a cause, and no row carries an empty one. The second is
+        // the half a blank column would satisfy.
+        Assert.DoesNotContain("data-cause=\"\"", table, StringComparison.Ordinal);
+        Assert.Equal(moves.Count, Regex.Matches(table, "<tr data-session-date=\"[^\"]+\"").Count);
+
+        // Every value drawn is one the store carries, which is the containment
+        // property applied to a table.
+        foreach (var move in moves)
+        {
+            Assert.Contains($"data-session-date=\"{move.SessionDate:yyyy-MM-dd}\"", table, StringComparison.Ordinal);
+            Assert.Contains($"data-rank=\"{move.Rank}\"", table, StringComparison.Ordinal);
+        }
+
+        // A five-day run reads as one rather than as a day that moved that far,
+        // which is what the span column is for.
+        Assert.Contains("sessions</td>", table, StringComparison.Ordinal);
+
+        // And a name with no stored moves says so rather than drawing an empty
+        // table, which a reader would read as a name that never moved.
+        Assert.Contains("no moves are stored", marks.MovesTable("NOSUCH", []), StringComparison.Ordinal);
     }
 
     // ---- 5.1, the universe screen ----

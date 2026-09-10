@@ -1,0 +1,224 @@
+{
+ "stage": "moves",
+ "derivedFrom": "the captured bars read through the rules in section 7, not from a run. For each name the adjusted closes inside the window the backfill asks for are taken, a change is computed over each span ending at each session, the longer span wins where two end on the same session, and the largest eight by absolute change are kept with ties broken on the later session. Computed outside this repository from the captured payloads, so a component that stored the wrong set would not agree with it.",
+ "tables": [
+  "move"
+ ],
+ "rules": {
+  "spans": [
+   1,
+   5
+  ],
+  "mostMoves": 8,
+  "rankedBy": "absolute change, ties on the later session first",
+  "sameSessionTwoSpans": "the longer span wins, which is what keeps the primary key",
+  "causeColumn": "absent, because the cause of a move is a researched claim and lives in research_section with its source"
+ },
+ "counts": {
+  "rowsPerName": 8,
+  "names": 4,
+  "rows": 32
+ },
+ "byName": {
+  "AAPL": [
+   {
+    "sessionDate": "2026-07-02",
+    "sessions": 5,
+    "changePct": 12.167927,
+    "rank": 1
+   },
+   {
+    "sessionDate": "2026-07-07",
+    "sessions": 5,
+    "changePct": 10.264791,
+    "rank": 2
+   },
+   {
+    "sessionDate": "2026-07-06",
+    "sessions": 5,
+    "changePct": 10.176891,
+    "rank": 3
+   },
+   {
+    "sessionDate": "2026-08-03",
+    "sessions": 5,
+    "changePct": -9.940357,
+    "rank": 4
+   },
+   {
+    "sessionDate": "2026-08-04",
+    "sessions": 5,
+    "changePct": -9.027276,
+    "rank": 5
+   },
+   {
+    "sessionDate": "2026-07-08",
+    "sessions": 5,
+    "changePct": 8.304501,
+    "rank": 6
+   },
+   {
+    "sessionDate": "2025-09-22",
+    "sessions": 5,
+    "changePct": 8.187592,
+    "rank": 7
+   },
+   {
+    "sessionDate": "2026-08-05",
+    "sessions": 5,
+    "changePct": -8.039868,
+    "rank": 8
+   }
+  ],
+  "KEYS": [
+   {
+    "sessionDate": "2026-02-24",
+    "sessions": 5,
+    "changePct": 28.623235,
+    "rank": 1
+   },
+   {
+    "sessionDate": "2026-03-02",
+    "sessions": 5,
+    "changePct": 27.865306,
+    "rank": 2
+   },
+   {
+    "sessionDate": "2026-02-26",
+    "sessions": 5,
+    "changePct": 27.757368,
+    "rank": 3
+   },
+   {
+    "sessionDate": "2026-02-27",
+    "sessions": 5,
+    "changePct": 26.192823,
+    "rank": 4
+   },
+   {
+    "sessionDate": "2026-02-25",
+    "sessions": 5,
+    "changePct": 25.997582,
+    "rank": 5
+   },
+   {
+    "sessionDate": "2025-11-28",
+    "sessions": 5,
+    "changePct": 16.667649,
+    "rank": 6
+   },
+   {
+    "sessionDate": "2025-12-01",
+    "sessions": 5,
+    "changePct": 14.376701,
+    "rank": 7
+   },
+   {
+    "sessionDate": "2026-08-24",
+    "sessions": 5,
+    "changePct": -13.980341,
+    "rank": 8
+   }
+  ],
+  "MSFT": [
+   {
+    "sessionDate": "2026-08-03",
+    "sessions": 5,
+    "changePct": 25.327672,
+    "rank": 1
+   },
+   {
+    "sessionDate": "2026-08-04",
+    "sessions": 5,
+    "changePct": 25.285365,
+    "rank": 2
+   },
+   {
+    "sessionDate": "2026-08-05",
+    "sessions": 5,
+    "changePct": 24.816922,
+    "rank": 3
+   },
+   {
+    "sessionDate": "2026-07-31",
+    "sessions": 5,
+    "changePct": 21.750063,
+    "rank": 4
+   },
+   {
+    "sessionDate": "2026-07-30",
+    "sessions": 5,
+    "changePct": 18.218992,
+    "rank": 5
+   },
+   {
+    "sessionDate": "2026-02-03",
+    "sessions": 5,
+    "changePct": -14.434626,
+    "rank": 6
+   },
+   {
+    "sessionDate": "2026-02-04",
+    "sessions": 5,
+    "changePct": -14.002441,
+    "rank": 7
+   },
+   {
+    "sessionDate": "2026-04-17",
+    "sessions": 5,
+    "changePct": 13.999531,
+    "rank": 8
+   }
+  ],
+  "NFLX": [
+   {
+    "sessionDate": "2026-03-02",
+    "sessions": 5,
+    "changePct": 27.71639,
+    "rank": 1
+   },
+   {
+    "sessionDate": "2026-03-03",
+    "sessions": 5,
+    "changePct": 25.192209,
+    "rank": 2
+   },
+   {
+    "sessionDate": "2026-02-27",
+    "sessions": 5,
+    "changePct": 22.333799,
+    "rank": 3
+   },
+   {
+    "sessionDate": "2026-03-04",
+    "sessions": 5,
+    "changePct": 19.29867,
+    "rank": 4
+   },
+   {
+    "sessionDate": "2026-03-05",
+    "sessions": 5,
+    "changePct": 17.23608,
+    "rank": 5
+   },
+   {
+    "sessionDate": "2026-04-23",
+    "sessions": 5,
+    "changePct": -13.888116,
+    "rank": 6
+   },
+   {
+    "sessionDate": "2026-04-22",
+    "sessions": 5,
+    "changePct": -13.434222,
+    "rank": 7
+   },
+   {
+    "sessionDate": "2026-04-21",
+    "sessions": 5,
+    "changePct": -12.890478,
+    "rank": 8
+   }
+  ]
+ }
+}
