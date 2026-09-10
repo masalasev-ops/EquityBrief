@@ -435,9 +435,11 @@ Migration creating `move`. The largest single-day and multi-day moves of the sto
 ### 5.3 The facts assembler and the change detector
 Migration creating `facts`. Every number the computed sections may use, each with its source, and the hash. The change detector writing only the material-change list, on disjoint columns of the same row.
 
-The change detector's catalogue and matrix rows landed at 5.0, so the component has a row to be reconciled against before it exists. Its listings read is what the retention needs: a facts row is kept whole for a night the name fired and every other night keeps the hash and the material changes, with the payload emptied by the detector, which already owns Update on that table.
+The change detector's catalogue and matrix rows landed at 5.0, so the component has a row to be reconciled against before it exists. What 5.3 builds is the material-change half: the detector reads the last stored facts row for a name, compares it against tonight's, and writes only what changed, on its own column of the same row.
 
-**Done when** the facts file matches the fixture byte for byte, the per-operation split is proved rather than true by construction, since a facts re-run must not blank the change list, and a payload from a night the name did not fire is emptied while its hash stands.
+**The retention half lands at 5.4 rather than here**, because it reads the listings store to know which nights a name fired and that store is created at 5.4. A component declaring a read of a table nothing has created is a declaration with nothing behind it, which is the direction `writer-ownership` and `schema-columns` have both already refused, at 4.0 for a deleter and at 5.0 for a column. So the detector's matrix row gains its Listings cell at 5.4 with the read itself.
+
+**Done when** the facts file matches the fixture byte for byte, and the per-operation split is proved rather than true by construction, since a facts re-run must not blank the change list.
 
 ### 5.4 The shortlist builder and tonight's list
 The plan column's condition sentences fall due here, on the surface a person reads them on (owes: The plan column's condition sentences asserted on the surface a person reads). `NameScreen`'s condition-to-words mapping ends in a catch-all arm, so a sixth condition, a typo or an unset value renders as the same sentence with nothing failing, and no test in the suite asserts any plan sentence at all. The catch-all is made to fail rather than to render, and 5.4 is the checkpoint that builds the surface those sentences sit beside.
@@ -445,6 +447,8 @@ The plan column's condition sentences fall due here, on the surface a person rea
 Migration creating `listing`. **A row for every index member every night**, whether or not a reason fired, carrying the reasons with their values and the plan as it stood that night.
 
 Tonight's list: the header with the true fired count, the watch list above it, twenty rows drawn, the reasons on each row. The list orders on band strength as its tiebreaker, so the ruling on what that score is dominated by falls due here (owes: The strength score read against four names).
+
+The change detector gains its listings read and the payload emptying it needs, which 5.3 could not build because the store did not exist: a facts row is kept whole for a night the name fired and every other night keeps the hash and the material changes.
 
 Contradiction L repaired, to 5.0's ruling: the shortlist reads levels, indicators, ladders, the calendar, the facts file and the bar store, and reads no fundamentals, because it selects on chart state alone with no fundamentals and no model in the decision. `listings-coverage` is implemented and promoted on the roster here rather than at 5.1, following the shape `LadderBuilder` already set: the population is the index read from membership and not the names with bars.
 

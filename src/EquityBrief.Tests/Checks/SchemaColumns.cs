@@ -18,6 +18,9 @@ public class SchemaColumns
         "schema-columns",
         ["docs/SCHEMA.md"],
         [
+            // 5.3, the facts file.
+            CheckReach.Key(Scope.StoresTable, "Facts"),
+
             // 5.2, the move annotator.
             CheckReach.Key(Scope.StoresTable, "Indicators, swings, volume profile, levels, ladders, moves"),
 

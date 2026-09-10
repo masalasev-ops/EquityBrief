@@ -5,6 +5,7 @@ using EquityBrief.Data.Migrations;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
@@ -238,6 +239,21 @@ public static class Nightly
 
                 return $"{outcome.RowsWritten} move(s) written for {outcome.NamesExamined} name(s), " +
                     $"{outcome.RowsDropped} dropped";
+            }),
+            // Section 14's step 13. The facts file and the change list are one
+            // stage rather than two, because the detector compares tonight's
+            // payload against the last stored one and there is nothing for it
+            // to read until the assembler has written tonight's.
+            new("facts", async () =>
+            {
+                var assembled = await new FactsAssembler(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                var changes = await new ChangeDetector(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return $"{assembled.RowsWritten} file(s) for {assembled.NamesExamined} name(s), " +
+                    $"{assembled.FactsWritten} fact(s), {changes.ChangesRecorded} material change(s)";
             }),
         ];
 

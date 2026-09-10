@@ -27,6 +27,9 @@ public class NightlyRun
         "nightly-run",
         ["docs/ARCHITECTURE.html", "fixtures/membership-2026-09-05"],
         [
+            // 5.3, the facts file.
+            CheckReach.Key(NightlyRunSteps.Heading, "Write the facts file for every name."),
+
             // 5.2, the move annotator.
             CheckReach.Key(NightlyRunSteps.Heading, "Annotate the largest moves for every name."),
 

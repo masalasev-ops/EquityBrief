@@ -25,6 +25,25 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - ARCHITECTURE.html, BUILD_PLAN.md, SCHEMA.md - three reads move to the checkpoints that create the stores
+Corrects: three cells filled ahead of the code they claim. The facts assembler's matrix row read
+Listings and Fundamentals, and the change detector's read Listings, while `listing` is created at
+5.4 and `fundamentals` at 6.1. `component-access` refuses a declaration with no cell behind it and a
+cell with no declaration behind it, in both directions, and it refused these the moment the two
+components landed. It is the same direction `writer-ownership` refused a deleter at 4.0 and
+`schema-columns` refused a column at 5.0.
+Was:
+> the facts assembler read `bar store, indicators, swings, volume profile, levels, ladders, moves,
+> listings, fundamentals, calendar` with Listings and Fundamentals filled; the change detector's
+> Listings cell was filled; and 5.3 was to build the payload retention
+Now:
+> the three cells are blank and each row says which checkpoint fills it, and the retention lands at
+> 5.4 with the store it reads
+Why: a component declaring a read of a table nothing has created is a declaration with nothing
+behind it, and the check that would catch it can only reach a row once the component exists. So the
+cell is filled where the read is, which is the same rule the corpus has now applied to a deleter, a
+column and a read.
+
 ### 2026-09-10 - SCHEMA.md - the last of the six computed tables gains its deleter
 Authorised by: Every computed table's writer is its own deleter
 Was:

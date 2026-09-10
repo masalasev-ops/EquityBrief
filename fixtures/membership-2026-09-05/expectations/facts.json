@@ -1,0 +1,58 @@
+{
+ "stage": "facts",
+ "derivedFrom": "the rules in section 7, not from a run. The set of facts a name carries and the source of each are written from the assembler's stated inputs: the last stored session gives four, the indicators give one per name computed on that session, each immediate band gives its two edges and its strength, the ladder gives the trend state, the largest move gives three, the swings give a count and the calendar gives the next dated event or says it is not on file. The values are asserted against the stores they were read from rather than against a copy of the payload, so a stage that wrote the wrong number does not agree with itself.",
+ "tables": [
+  "facts"
+ ],
+ "frozen": "nothing here is frozen from a run. The payload hash is not stated, because a hash of a payload is a function of that payload and stating it would be a regression baseline wearing the clothes of an expectation.",
+ "factsPerName": {
+  "fromBar": [
+   "close",
+   "session high",
+   "session low",
+   "session volume"
+  ],
+  "fromIndicator": [
+   "atr14",
+   "macd",
+   "macd_hist",
+   "macd_signal",
+   "rsi14",
+   "sma20",
+   "sma200",
+   "sma50",
+   "vol_avg20",
+   "vol_avg50"
+  ],
+  "fromLevel": [
+   "immediate resistance high edge",
+   "immediate resistance low edge",
+   "immediate resistance strength",
+   "immediate support high edge",
+   "immediate support low edge",
+   "immediate support strength"
+  ],
+  "fromLadder": [
+   "trend state"
+  ],
+  "fromMove": [
+   "largest move per cent",
+   "largest move session",
+   "largest move sessions"
+  ],
+  "fromSwing": [
+   "swings marked"
+  ],
+  "fromCalendar": [
+   "next dated event"
+  ],
+  "note": "ordinal order, which is what the payload is written in: sma200 sorts before sma50 because a string comparison reads the third character and not the number."
+ },
+ "properties": {
+  "everyFactNamesItsSource": "a number in written prose must exist here, and the source is what says which stage computed it",
+  "namesAreInOrder": "the payload is written with the facts in name order, so two runs over one store produce the same bytes and a diff is a difference in the figures rather than in the writing",
+  "aNameWithNoBarsGetsNoRow": "an absence rather than a file of nulls",
+  "aNameWithNoDatedEventSaysSo": "not on file, rather than a blank a reader supplies themselves",
+  "theChangeListSurvivesAFactsRerun": "the two writers own disjoint columns of the same row, and the assembler's statement names two columns and no more"
+ }
+}
