@@ -19,6 +19,51 @@ Two jobs. Neither is part of the application, because scheduling lives outside i
 
 **Both jobs are idempotent.** Running a night twice produces identical stored state and makes no additional model call.
 
+### Registering the schedule
+
+Until 5.7 this section said to register the schedule with the platform's scheduler, which is an instruction and not a command, and nothing was ever registered. A night that nobody scheduled produces no evening of observation however long anyone waits for one, so the two figures that were waiting on a week of nights waited on this instead.
+
+**The instant is 23:30 UTC, provisionally.** The close is 20:00 UTC in summer and 21:00 in winter, and the bulk file posts after it, so this leaves the provider a margin at both ends of the year (see: The night runs at a fixed UTC instant set after the provider posts the day's bulk file). It is provisional because the posting hour has not been measured, and a night that runs before the file is posted refuses rather than storing the wrong session, which is visible on the run page the next morning and is itself the measurement (owes: The provider's posting hour for the day's bulk file, measured from live fetches). Move the instant earlier once five nights show the file was already there.
+
+**Windows.** Task Scheduler triggers fire in local time unless the trigger's own start boundary carries a zone, which is the trap this repository's UTC rule exists for: a task registered at a local hour walks an hour relative to the provider when daylight saving changes, and it walks into the wrong side of the close twice a year. Setting `StartBoundary` to an instant with a `Z` is what pins it, and it is the same setting the interface calls synchronizing across time zones.
+
+```powershell
+$root    = 'E:\Stock Analysis  Tool Ideas\EquityBrief'
+$action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
+             -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$root\tools\nightly.ps1`"" `
+             -WorkingDirectory $root
+$trigger = New-ScheduledTaskTrigger -Daily -At 6pm
+$trigger.StartBoundary = '2026-09-11T23:30:00Z'
+$settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
+             -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
+             -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+Register-ScheduledTask -TaskName 'EquityBrief nightly' -Action $action `
+             -Trigger $trigger -Settings $settings
+```
+
+`-WakeToRun` because a laptop left to itself sleeps and a nightly job that silently did not run is worse than no nightly job. `-StartWhenAvailable` because a machine that was off at the instant should run the night when it comes back rather than skip it, and the night is idempotent. Confirm with `Get-ScheduledTask 'EquityBrief nightly'`, and remove with `Unregister-ScheduledTask 'EquityBrief nightly'`.
+
+**macOS.** `launchd` has no UTC option at all: `StartCalendarInterval` is local time and there is no zone field. So the job is registered to run every hour and the script itself decides, which is the only form that holds the UTC rule across a daylight saving change without anyone editing a plist twice a year.
+
+```xml
+<!-- ~/Library/LaunchAgents/dev.equitybrief.nightly.plist -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>dev.equitybrief.nightly</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>[ "$(date -u +%H%M)" = "2330" ] &amp;&amp; exec "$HOME/EquityBrief/tools/nightly"</string>
+  </array>
+  <key>StartCalendarInterval</key><dict><key>Minute</key><integer>30</integer></dict>
+  <key>RunAtLoad</key><false/>
+</dict></plist>
+```
+
+Load with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.nightly.plist`, and confirm with `launchctl list | grep equitybrief`.
+
+**The source defaults to live, so neither needs setting for a live night.** `EquityBrief:Providers:Source` is worth reading before registering anything only because a machine that has been replaying a capture carries it as `fixture`, and a scheduled night would go on replaying that capture every evening, storing the same session forever while the run page shows a night that worked. What a live night does need is the key: with no `EquityBrief:Providers:Eodhd:ApiKey` beside the worker it refuses by name rather than reaching the provider anonymously.
+
 ---
 
 ## Providers, and what each is for
@@ -72,7 +117,7 @@ The whole system is a checkout and one database file.
 5. Write `appsettings.Secrets.json` in each project that needs one.
 6. Run `tools/migrate` and confirm it reports no pending migrations.
 7. Run `tools/ci` and confirm green.
-8. Register the schedule with the platform's scheduler, in UTC.
+8. Register the schedule, by running the command for the platform under "Registering the schedule" above rather than by finding one. Confirm the task exists before moving on.
 9. Run `tools/nightly` by hand once and read the run page before trusting the schedule.
 
 **Re-measure the local and paid boundary after a hardware change** rather than carrying the previous setting over. How much of a research pass runs locally is set by how much context the local model can hold, which is a property of the machine.

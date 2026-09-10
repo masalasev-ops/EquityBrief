@@ -51,6 +51,13 @@ public class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Build the levels for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Classify the trend state and build the ladder for every name, writing a row whether or not it carries a tranche (see: A ladder row is written for every index member every night) (see: The trend classifier returns its label to the ladder builder)."),
             CheckReach.Key(Scope.LimitsTable, "Per-request timeout and the night's deadline"),
+
+            // 5.7. The row states a figure the night is bounded by and the
+            // deadline follows it by three, which is a relationship between two
+            // stated numbers and is assertable here. What the figure should be
+            // is a property of the running system and is carried as an
+            // operating obligation, read on the operational header.
+            CheckReach.Key(Scope.LimitsTable, "Nightly wall clock, at index size"),
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with none of the index in it"),
@@ -111,6 +118,39 @@ public class NightlyRun
         Assert.Contains($"{policy.FirstWait.TotalSeconds:0} seconds and then {policy.FirstWait.TotalSeconds * 2:0}", cell, StringComparison.Ordinal);
         Assert.Contains($"bounded by {policy.Timeout.TotalSeconds:0} seconds", cell, StringComparison.Ordinal);
         Assert.Contains($"bounded by {policy.Deadline.TotalMinutes:0} minutes", cell, StringComparison.Ordinal);
+
+        // The wall clock the deadline is three times, read off its own row, so
+        // the limit cannot move in one place alone. Before 5.7 the two numbers
+        // sat side by side with a comment saying one was three times the other,
+        // and the comment was the only thing that would have noticed.
+        var wallClockAt = row.IndexOf("Nightly wall clock, at index size", StringComparison.Ordinal);
+
+        Assert.True(wallClockAt >= 0, "Section 17 no longer carries the wall clock row.");
+
+        var wallClock = row[wallClockAt..row.IndexOf("</tr>", wallClockAt, StringComparison.Ordinal)];
+
+        Assert.Contains(
+            $"bounded by {RetryPolicy.WallClock.TotalMinutes:0} minutes",
+            wallClock,
+            StringComparison.Ordinal);
+
+        // The relationship, with the multiple written as the number the row's
+        // own prose states rather than as the constant the code derives from.
+        // Asserting the derivation against the constant it is derived from is a
+        // thing asserted against itself, which cannot fail: `Deadline` is
+        // defined as `WallClock * DeadlineMultiple`, so changing the multiple
+        // moves both sides together and the document is what notices.
+        Assert.Contains("three times", wallClock, StringComparison.Ordinal);
+        Assert.Equal(RetryPolicy.WallClock * 3, policy.Deadline);
+
+        // The row says the figure is proposed and names what settles it, which
+        // is what keeps a proposed limit from being read as a measured one.
+        Assert.Contains("proposed until", wallClock, StringComparison.Ordinal);
+        Assert.Contains("operational header", wallClock, StringComparison.Ordinal);
+
+        // And the population is the index the fetch returned rather than the
+        // literal 500, which is the other half of the row's own claim.
+        Assert.Contains("rather than as the literal 500", wallClock, StringComparison.Ordinal);
     }
 
     // A payload that arrives and is wrong, in the two shapes section 18 now
