@@ -46,10 +46,15 @@ public class FixtureExpectations
 {
     internal static CheckReach Reach => new(
         "fixture-expectations",
-        ["fixtures/membership-2026-09-05"],
+        ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
             // 5.4, tonight's list.
             CheckReach.Key(Scope.FixtureTable, "listings"),
+
+            // Section 11 whole, which its own placement names this check for:
+            // every one of the six reasons is recomputed here from the tables
+            // it reads.
+            "11. The shortlist and its six reasons",
             CheckReach.Key(Scope.FailureTable, "Earnings date missing, the earnings reason"),
 
             // 5.3, the facts file.
@@ -3284,6 +3289,37 @@ public class FixtureExpectations
     }
 
     // ---- 5.4, the shortlist builder ----
+
+    [Fact]
+    public void SectionElevensSixReasonsAreTheSixTheCodeEvaluates()
+    {
+        // Section 11's table is placed whole against this check, and covering a
+        // table means covering rows nobody enumerated, so the instrument has to
+        // open the document that carries them. It is read here rather than
+        // restated: a list of six names beside a table of six rows is two
+        // statements of one fact.
+        var table = ArchitectureTables.In(Corpus.Read("docs/ARCHITECTURE.html"))
+            .Single(read => read.Heading == "11. The shortlist and its six reasons");
+
+        var named = table.Body
+            .Where(row => row.Count > 1 && row[0].Length > 0)
+            .Select(row => row[0].ToLowerInvariant())
+            .ToArray();
+
+        Assert.Equal(6, named.Length);
+        Assert.Equal([.. ShortlistSeries.Reasons.Order(StringComparer.Ordinal)], [.. named.Order(StringComparer.Ordinal)]);
+
+        // And the two figures the table's own cells state, read from the cells
+        // rather than from a list beside them.
+        var soon = table.Body.Single(row => row.Count > 1 && row[0].Equals("Earnings soon", StringComparison.OrdinalIgnoreCase));
+        var unusual = table.Body.Single(row => row.Count > 1 && row[0].Equals("Unusual volume", StringComparison.OrdinalIgnoreCase));
+
+        Assert.Contains("twenty sessions", soon[1], StringComparison.Ordinal);
+        Assert.Equal(20, ShortlistSeries.EarningsHorizonSessions);
+
+        Assert.Contains("twice", unusual[1], StringComparison.Ordinal);
+        Assert.Equal(2, ShortlistSeries.UnusualVolumeMultiple);
+    }
 
     [Fact]
     public async Task EachOfTheSixReasonsIsRecomputedFromTheTablesItReads()

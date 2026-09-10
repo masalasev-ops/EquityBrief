@@ -744,6 +744,12 @@ internal static class Scope
         // dictionary exists to declare rather than to hide.
         ["Listings"] = "5.4",
 
+        // 5.4's own text names the fundamentals, in the sentence saying the
+        // shortlist reads none of them. The store arrives at 6.1 with the
+        // fetcher that writes it, and read from the plan alone the subject
+        // resolves to the first checkpoint whose text carries the word.
+        ["Fundamentals"] = "6.1",
+
     };
 
     // Components the plan does not name. The catalogue and the matrix share it.

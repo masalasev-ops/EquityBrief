@@ -25,6 +25,19 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - BUILD_PLAN.md - the two obligations 5.4 discharges, marked so
+Corrects: nothing in the figures. Both rows were still open at a checkpoint the record now shows as
+landed, which `obligation-reconciles` refuses: a row still owed at a checkpoint that has landed is a
+row whose due point has passed with nothing saying so.
+Was:
+> the strength score row and the plan column's condition sentences row both read `5.4` with no
+> discharge
+Now:
+> both read `5.4, discharged`
+Why: 5.4 orders tonight's list on band strength as its tiebreaker, with the phase 3 sign-off's
+measurement behind what that score is dominated by, and it makes the condition-to-words mapping's
+catch-all fail rather than render with every sentence asserted on the surface a person reads.
+
 ### 2026-09-10 - ARCHITECTURE.html - the change detector's listings read, restored where the store exists
 Corrects: nothing new. 5.3 cleared the cell because `listing` did not exist and a component
 declaring a read of a table nothing has created is a declaration with nothing behind it. 5.4 creates

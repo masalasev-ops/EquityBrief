@@ -120,8 +120,15 @@ internal static class PhaseReport
         // roster row and section 17's row coverage limit, and this one was
         // caught by recording 5.1 before the run that verifies it, which is what
         // done condition 8 exists for.
+        // Converted from a due point to a check at 5.4, which is the checkpoint
+        // its own reason named: the listings expectations exist now, so the
+        // placement names the instrument that reaches it rather than the point
+        // it waits for. A placement still owed at a checkpoint the record shows
+        // as landed is refused, which is what 1.5 did with the gap row and what
+        // this run did here.
         ["11. The shortlist and its six reasons"] = new Placement(
-            "rules, asserted by the fixture's listings expectations", Due: "5.4"),
+            "rules, asserted by the fixture's listings expectations, each reason recomputed from the tables it reads",
+            Check: "fixture-expectations"),
         // Section 12.2's second table. Its heading is an h4 rather than a
         // numbered one, because the numbers in this document are navigation and
         // it sits inside 12.2 rather than beside it. The rows are the lane each
