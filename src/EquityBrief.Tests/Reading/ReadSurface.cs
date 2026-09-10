@@ -1713,7 +1713,8 @@ public class ReadSurface
     {
         // The guard 5.1 carries in place of the limit it cannot measure. A
         // night's wall clock at index size is a property of the running system
-        // and is read from a week of nights at 5.7; what the code carries is
+        // and is read on the run page's operational header once five scheduled
+        // nights over the whole index have run; what the code carries is
         // that every stage records its own instants, so a night landing inside
         // its limit by one step doing nothing is legible rather than hidden in a
         // total.

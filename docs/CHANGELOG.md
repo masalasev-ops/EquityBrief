@@ -25,6 +25,17 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - ARCHITECTURE.html, BUILD_PLAN.md - the amended done condition swept into the three places that restated it
+Corrects: 5.7 amended its own done condition off calendar time in `BUILD_PLAN.md` and swept nothing else, so three further statements of the old condition were left standing, one of them in the document the corpus calls the source of truth. Found by the phase 5 sign-off, which read section 20 and reported that it states an unmet phase 5 done condition. Two of the three were inside `BUILD_PLAN.md` itself and the sign-off did not name those, which is what makes this an incomplete sweep rather than a single stale cell.
+Was:
+> a week of unattended nights with the list current each morning, and every stored listing carrying its entry, stop and target
+>
+> It moves to 5.7, whose done condition is already a week of unattended nights and which already carries the posting hour for exactly that reason.
+>
+> Section 17's limit is set at 5.7 from the week of nights that produces a distribution, as that measurement plus stated headroom with the headroom's reason, and the deadline follows at three times it.
+Now: section 20's phase 5 cell requires all phase-5 rows PASS, the stored plan on every listing, and the schedule registered as a command; and 5.1's two references point at the operating trigger and the surface it is read on rather than at a checkpoint that waits.
+Why: a done condition may not require calendar time, and the rule saying so was written at 5.7 in `CLAUDE.md` while three statements of the condition it forbids were left in place. An amendment that lands in one of two documents holding one fact leaves the other as the one a reader believes, and section 20 is the one a sign-off reads.
+
 ### 2026-09-10 - BUILD_PLAN.md - 6.0 gains the bulk payload refusal
 Corrects: nothing in the corpus covered a bulk payload that is not a price payload at all. Section 18 has a row for one that is for another session and one for a payload holding none of the index, and the provider returns neither of those for a session that is not the most recent: it returns something the parser meets and throws a `FormatException` on. Found by replaying sessions 2026-09-04 and 2026-09-08 while measuring a night at index size.
 Was:
