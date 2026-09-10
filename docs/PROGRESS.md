@@ -4977,3 +4977,177 @@ Amended:    nothing. This checkpoint amends no done condition.
 Tests:      415. `tools/ci` green end to end, all 6 steps. `tools/verify-phase` green.
 Notes:      this session has committed code to phase 4 and may not sign it off. The sign-off is
             owed on the phase as a whole, by a fresh session, before phase 5's plan.
+
+### Phase 4 sign-off                                                         2026-09-09
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. The building
+            session committed code at every checkpoint of phase 4 and says so in its handover.
+Verified:   by re-running both gates on `main` rather than by reading the 4.9 entry.
+            `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, 415 tests passing inside
+            it, migrations 0 to 12, exit 0. `tools/verify-phase.ps1` green at 203 claims, 92
+            PASS, 0 FAIL, 111 out of scope, 0 unexamined, 25 tables, 98 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT with 1 captured over 6
+            constituents and 4 names, 34 checks on the roster and 31 carried, 31 ran and passed
+            and none did not run. Windows PowerShell on this machine, at commit 5d669d9. Every
+            figure the 4.9 entry states reproduces exactly. The build was run again cold with
+            `--no-incremental`, so the 0 warnings is over a full compile and not a cached one.
+Matrix:     read from the runs that pushed each merge rather than from the machine at hand,
+            because done condition 5 is about both runners. Jobs were enumerated rather than
+            run conclusions read, since a skipped job leaves a run green and the two are
+            indistinguishable from the conclusion alone. Ten merges, PRs 39 through 48, carry
+            20 runs of 3 jobs each: matrix windows-latest, matrix macos-latest and
+            case-sensitivity. All 60 jobs succeeded and none was skipped or cancelled.
+Plan:       all ten checkpoints, 4.0 through 4.9, are in `BUILD_PLAN.md` and all ten are
+            recorded above. No open pull request and no unmerged branch. The carried
+            obligations table holds 38 rows, 29 discharged, 3 operating and 6 open, and the
+            earliest open one is due at 5.4, so nothing is owed inside phase 4. All six open
+            due points are in the plan and none is recorded as landed. Every one of the ten
+            expectation files states an independent derivation and none is frozen from a run,
+            which is done condition 7 read off the files rather than off the entries. No due
+            point in `Scope.cs` is a phase: all 36 distinct due points are checkpoints, which
+            is the positive half of a sweep whose negative half returns nothing and is
+            therefore self-validating on its own. Mutation evidence is recorded at every
+            checkpoint from 4.1 to 4.8; 4.9 builds nothing and records that it amends no done
+            condition, so condition 9 has no assertion to bind to there.
+Swept:      38 mutation runs over 36 distinct mutations, all made in an isolated worktree at
+            5d669d9 and reverted, the worktree removed, and the main tree modified at no point.
+            The rule was stated before the sweep and not after: every mutation targets a site
+            where phase 4 code asserts a shape rather than a value, being a branch order, a
+            reference identity, a relabelling or a fall-through guard, because a wrong shape
+            returns a well-formed answer that no eye catches. The four the handover named were
+            taken first, then the phase 4 source was swept for every other site carrying those
+            same four shapes, so the set is found rather than chosen.
+            One of the 36 was invalid and is not counted below. The projection meant to break
+            `ExitsFor`'s reference identity was applied before `traded` derived from it, so
+            identity survived and the mutation was a no-op. Corrected, it turns a test red.
+            Of the 35 valid mutations, 23 turned a test red, 1 failed to compile because a test
+            asserts against the constant directly and the analyzer refuses the result, and 11
+            left the whole suite green at 415 of 415. The 23 reds are the evidence that the
+            harness detects, in place of separately run controls.
+Group A:    equivalent under an invariant the suite does not state. Two, and neither is a
+            defect in shipped code.
+            `ExitsFor`'s `ReferenceEquals(band, top)` replaced by value equality stays green,
+            because two resistance bands cannot be value-equal once merging has run. The
+            handover's actual worry, that a rewrite projecting the bands would break identity
+            silently, is not borne out: projected so that `top` is a different instance, a test
+            goes red. That worry is answered here rather than carried.
+            `PlanRows`'s `FindIndex` replaced by `FindLastIndex` stays green, because stops are
+            strictly decreasing and at most one stop row can sit at the invalidation price. The
+            relabel cannot lose a stop, and it cannot by an argument that nothing asserts. Each
+            stop is at or above the low edge of the band beneath its tranche, and the next
+            tranche's stop is below that tranche's own low edge, so no two tranches share a
+            stop. That is the property the relabel rests on and it is the one to write down.
+Group B:    a property the code states and no test names. Four.
+            `EarningsRuleFor`'s two fall-through guards. Removing either leaves the suite green,
+            which is the path the handover said it had not tested, and both produce a number
+            rather than an absence. Without the `before` guard a print older than the stored
+            bars reports a one-day move equal to the price itself, since the missing prior bar
+            reads as a close of zero. Without the `at` guard a print after the last stored bar
+            reports a zero move dated 0001-01-01. Both would reach the earnings rule on the
+            page as figures, and the rule they break is the one that says code owns every
+            number (see: Code owns every number).
+            The blended entry taken from the first tranche alone rather than the mean of the
+            first two stays green, so the figure section 17 names as what the near-exit skip is
+            measured from is unasserted.
+            The invalidation falling back to a tranche's own low edge where no band sits beneath
+            it stays green, because no tranche in this fixture has an absent stop: the three
+            uptrend names take one from the trailing rule and the range name has a band beneath
+            all three of its tranches. The ladder expectation says as much in its own
+            invalidation note, so the fixture documents the gap it leaves.
+Group C:    the shock condition, unasserted in its parts. Two.
+            The shock multiple changed from 3 to 1 stays green, because the constructed case
+            uses a move large enough for either figure and the negative case a move small
+            enough for either. The lookback beside it does turn that same test red, so the pair
+            is asymmetric: one figure is reached and the other is not, and the two are stated
+            in one sentence in `DECISIONS.md` as proposals on the same terms.
+            The shock's next-day hold requirement removed stays green, since the constructed
+            window holds its low and no case is written where it does not.
+Group D:    a boundary or a population the committed fixture cannot reach. Three, and this is
+            the class phase 3's sign-off named as its group three rather than a defect of the
+            first two kinds.
+            Tranche eligibility admitting a band whose low edge equals the close exactly.
+            The near-exit skip at exactly two typical days' moves.
+            The window slice for a name with more than ten recent sessions, which no test
+            enters at all: taking the first ten instead of the last ten stays green, so the
+            branch that trims the window is never run.
+Judged:     the three the handover put up for rejection, taken one at a time.
+            The trailing stop taking the higher of the band beneath and the last swing low is
+            the right rule and is recorded in the wrong place. It is right because a stop below
+            the range floor is looser than the range rule gives and trails nothing, and the
+            fixture holds the case that shows it: MSFT's third tranche has its last swing low a
+            hundred points under the band, and the literal reading would put the stop there. It
+            changes exactly one stop in this fixture, which the 4.5 entry states and the ladder
+            expectation derives independently. What is wrong is that no spec says it. Figure
+            10.1 still reads "the stop trails the last higher low" and the decision it rests on
+            says the same (see: The stop rule depends on the trend state). The phrase "higher
+            of" appears in no spec in this repository, only in the two records, a source
+            comment and an expectation note. `CLAUDE.md` says a decision is changed only by
+            another decision and that no progress entry or checkpoint note supersedes one, so
+            the rule the code runs is a rule the corpus does not hold.
+            The lookback of 10 and the shock multiple of 3, and every figure in the three event
+            setups, are accepted as proposals. They are stated as proposals in both section 10
+            and `DECISIONS.md`, they name the obligation that will calibrate them, and none is
+            presented as measured. What is owed is only the asymmetry group C records.
+            `ReachesTheZone` as the absence of a pattern is the right modelling and is named in
+            no spec. A tranche whose band the price has not reached needs a label and the
+            alternatives are worse. But figure 10.1 calls its list fixed and names four, the
+            decision enumerates the same four, and the fifth reaches both the store and the
+            page, where it reads "buy on the price reaching the zone". The string appears
+            nowhere in the corpus. Beside it, `NameScreen`'s condition-to-words mapping ends in
+            a catch-all arm, so a sixth condition, a typo or an unset value would render as
+            that same sentence with nothing failing, and no test in the suite asserts any plan
+            sentence at all.
+Found:      two further things, neither of them code.
+            Section 10 is not a claim source. The 203 claims come from sections 7, 14, 15, 16,
+            17, 18 and 19.1 and the read and write matrix, so figure 10.1's rows are reached by
+            nothing. That is the class that produced the trailing stop drift, and it is the
+            more useful half of that finding: the ladder's rules can move away from the code
+            with no instrument asking.
+            `CHANGELOG.md`'s entry for phase 4 becoming ten checkpoints states that the
+            obligations table held 28 rows and holds 43. It held 27 before that commit and 37
+            after it, which the phase 3 sign-off and the 4.0 entry both record correctly by
+            measurement. The 43 is 28 plus the fifteen obligations the entry names, and the
+            fifteen became ten rows because phase 3's nine group-three cases were consolidated
+            into three rows by component. All nine are covered and all six named obligations
+            are present, so nothing was lost; the figure was predicted and never counted.
+            Records are exempt from `stated-counts`, which is how it survived.
+Not a reopen: under the stopping rules none of the above reopens phase 4. No check broke, both
+            gates are green, and no done condition fails. In every case the shipped code is
+            correct and what is absent is either an assertion or a sentence in a spec, which is
+            the class phase 2 and phase 3 each carried out of their own sign-offs.
+Carried:    eleven obligations created here, for 5.0 to enter in the table rather than by this
+            entry, which edits no spec. Two are spec corrections, one is a placement question
+            and eight are tests. The due points are proposals for 5.0 to place against the
+            checkpoints it writes, since phase 5's detail is not this session's to settle.
+            The trailing stop rule written as a decision that supersedes the one it changes,
+            with figure 10.1 restated to match, due at 5.0, which is the pass that reads the
+            corpus before phase 5 builds on it.
+            `ReachesTheZone` named in section 10 and in the decision that enumerates the
+            conditions, due at 5.0, for the same reason.
+            Section 10's figure rows placed as claims, or the corpus stating why they are not,
+            due at 5.0, since it is a placement question and not a test.
+            The two earnings guards asserted over a print older than the stored bars and a
+            print after the last one, due at 5.1.
+            The blended entry asserted over a plan with two tranches, due at 5.1.
+            The invalidation asserted where a tranche has no band beneath it, due at 5.1.
+            The stop distinctness the relabel rests on asserted, due at 5.1.
+            The shock multiple's value asserted, and the next-day hold asserted over a window
+            that does not hold its low, due at 5.1.
+            The condition window asserted for a name with more than ten recent sessions, due
+            at 5.1.
+            The tranche eligibility and near-exit boundaries asserted over constructed input,
+            due at 5.1.
+            The plan column's condition sentences asserted on the surface a person reads, with
+            the catch-all arm made to fail rather than to render, due at 5.4, which is the
+            checkpoint that builds the surface those sentences sit beside.
+Noted:      the three worktrees the phase 3 sign-off recorded under the repository's local
+            worktree directory are still registered and still at f48d9d6, untouched. They are
+            recorded again rather than removed, for the reason that entry gave. The worktree
+            this sweep used was created under the session scratchpad, outside the repository,
+            and was removed; `git worktree list` holds the same four entries it held before.
+            The five live calendar requests the 4.3 and 4.8 entries record are taken as
+            recorded, being measurements against a key this session did not use.
+Tests:      415, unchanged from 4.9. Windows for this run; the matrix carries macOS and the
+            Linux case-sensitivity job, and all three were green on 7eee922, the head of the
+            last phase 4 merge.
+Signed:     phase 4 is signed off at 5d669d9. Phase 5's plan is not opened by this session.
