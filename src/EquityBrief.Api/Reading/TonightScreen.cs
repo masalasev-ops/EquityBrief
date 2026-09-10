@@ -52,9 +52,15 @@ public static class TonightScreen
     {
         using var document = JsonDocument.Parse(listing.Reasons);
 
+        // The values that made each reason true, carried beside the names since
+        // 5.6, because 15.7's reasons-per-row half shows them on hover and a row
+        // holding only the names could not.
         var fired = document.RootElement.EnumerateArray()
             .Where(reason => reason.GetProperty("fired").GetBoolean())
-            .Select(reason => reason.GetProperty("name").GetString()!)
+            .Select(reason => new FiredReason(
+                reason.GetProperty("name").GetString()!,
+                reason.GetProperty("values").EnumerateObject()
+                    .ToDictionary(value => value.Name, value => value.Value.GetString()!, StringComparer.Ordinal)))
             .ToArray();
 
         return new ListingCell(
@@ -63,6 +69,7 @@ public static class TonightScreen
             listing.FiredCount,
             strengthByTicker.TryGetValue(listing.Ticker, out var strength) ? strength : 0,
             closeByTicker.TryGetValue(listing.Ticker, out var close) ? close : null,
+            [.. fired.Select(reason => reason.Name)],
             fired);
     }
 

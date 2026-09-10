@@ -81,6 +81,42 @@ public sealed record ListingRow(
     int FiredCount,
     string PlanAtListing);
 
+// One stage of one run, as the run log holds it.
+//
+// The two instants arrive parsed rather than as text, because the only thing
+// this row is read for is a page that states how long each stage took, and a
+// surface that parsed them would be the second place the log's time format is
+// stated.
+public sealed record RunStageRow(
+    string RunId,
+    string Stage,
+    DateTimeOffset StartedAt,
+    DateTimeOffset EndedAt,
+    string Outcome,
+    int RowsWritten,
+    int ModelCalls,
+    int NetworkRequests,
+    string Spend,
+    string Detail);
+
+// One filled forward return, as the store holds it.
+//
+// `Outcome` is null while the horizon has not matured, and it is null rather
+// than a word for it, because an unresolved setup is never a win and a word
+// would put it in the same column as one. `BaseRate` sits on the row rather
+// than beside the horizon, which is the grain the store already chose so the
+// row a page reads carries the figure it must be read against.
+// see: An unresolved setup is never a win
+// see: Every forward-return figure is shown against the universe base rate
+public sealed record ForwardReturnRow(
+    string Ticker,
+    DateOnly SessionDate,
+    string Horizon,
+    string? Outcome,
+    DateOnly? ResolvedOn,
+    double? ReturnPct,
+    double? BaseRate);
+
 // One of a name's biggest moves, as the store holds it.
 //
 // No cause. It is a researched claim and lives in `research_section` with its
@@ -251,6 +287,21 @@ public sealed class ReadApi : IComponent
         ORDER BY ticker;
     ";
 
+    // Every listing the store holds, which is what a reason's record is counted
+    // over.
+    //
+    // Every night rather than tonight, because a record is a property of the
+    // reason across every name it ever fired for, and a record over one evening
+    // would be a statement about that evening wearing the clothes of a verdict.
+    // It is a scan of the table, and it is one scan an evening on a page nobody
+    // reloads: the reasons are JSON on the row, so a count per reason cannot be
+    // asked of the store.
+    const string EveryListing = @"
+        SELECT ticker, session_date, reasons, fired_count, plan_at_listing
+        FROM listing
+        ORDER BY session_date, ticker;
+    ";
+
     // A name's own listing history, which is what the universe screen's two
     // right-hand columns count and what the listing strip draws.
     const string ListingsForName = @"
@@ -290,6 +341,46 @@ public sealed class ReadApi : IComponent
                 ORDER BY i.session_date DESC LIMIT 1)
         FROM membership m
         WHERE m.index_code = $index_code AND m.""left"" IS NULL
+        ORDER BY m.ticker;
+    ";
+
+    // Every stage of every run that started inside a window of UTC days, which
+    // is what the run page's operational header draws.
+    //
+    // The window is wide and the night is decided afterwards, by the clock. The
+    // log has no session column, and it cannot have one it would agree with:
+    // the run starts after the close in New York, so the UTC date it carries is
+    // the session's on some evenings and the next day's on others, and which it
+    // is depends on the offset that evening. The clock is the one thing allowed
+    // to answer that question, and it answers it here rather than in SQL.
+    // see: Nothing is written against one operating system
+    const string RunLogInWindow = @"
+        SELECT run_id, stage, started_at, ended_at, outcome,
+               rows_written, model_calls, network_requests, spend, detail
+        FROM run_log
+        WHERE started_at >= $from AND started_at < $to
+        ORDER BY started_at, stage;
+    ";
+
+    // Every filled forward return, which is what the run page's reason records
+    // count over and where the base rate is read from.
+    const string ForwardReturns = @"
+        SELECT ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate
+        FROM forward_return
+        ORDER BY session_date, ticker, horizon;
+    ";
+
+    // The current members whose stored series does not end on the newest session
+    // anyone has, which is the stale region's population. The same query the
+    // night's closing stage counts over, returning the names rather than the
+    // count, because a page that says four names are stale and does not say
+    // which is a page nobody can act on.
+    const string StaleNames = @"
+        SELECT m.ticker
+        FROM membership m
+        WHERE m.index_code = $index AND m.""left"" IS NULL
+          AND IFNULL((SELECT MAX(b.session_date) FROM bar b WHERE b.ticker = m.ticker), '')
+              < (SELECT MAX(session_date) FROM bar)
         ORDER BY m.ticker;
     ";
 
@@ -425,33 +516,129 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    // How long the night took, read from the run log rather than measured here.
-    // A night the log does not carry says so rather than showing nothing, which
-    // is the same rule the fact strip follows for a date not on file.
-    const string NightDuration = @"
-        SELECT MIN(started_at), MAX(ended_at)
-        FROM run_log
-        WHERE run_id IN (SELECT run_id FROM run_log WHERE stage = 'listings');
-    ";
-
-    public async Task<string?> NightDurationAsync(DateOnly night)
+    // Every stage of the runs that belong to one night, in the order they ran.
+    //
+    // The night is decided by the clock over each row's own start, for the
+    // reason the query states: a run that starts at half past eight in New York
+    // carries tomorrow's UTC date and belongs to tonight. The window handed to
+    // SQL is a day either side, so the filter has something to filter and the
+    // whole log is not read to draw one evening.
+    public async Task<IReadOnlyList<RunStageRow>> RunLogAsync(DateOnly night)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = NightDuration;
+        command.CommandText = RunLogInWindow;
+        command.Parameters.AddWithValue("$from", night.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", night.AddDays(2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<RunStageRow>();
 
         await using var reader = await command.ExecuteReaderAsync();
 
-        if (!await reader.ReadAsync() || reader.IsDBNull(0) || reader.IsDBNull(1))
+        while (await reader.ReadAsync())
+        {
+            var started = DateTimeOffset.Parse(reader.GetString(2), CultureInfo.InvariantCulture);
+
+            if (clock.SessionDateAt(started) != night)
+            {
+                continue;
+            }
+
+            rows.Add(new RunStageRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                started,
+                DateTimeOffset.Parse(reader.GetString(3), CultureInfo.InvariantCulture),
+                reader.GetString(4),
+                reader.GetInt32(5),
+                reader.GetInt32(6),
+                reader.GetInt32(7),
+                reader.GetString(8),
+                reader.IsDBNull(9) ? string.Empty : reader.GetString(9)));
+        }
+
+        return rows;
+    }
+
+    // How long the night took, read from the run log rather than measured here.
+    // A night the log does not carry says so rather than showing nothing, which
+    // is the same rule the fact strip follows for a date not on file.
+    //
+    // The night is what selects the rows, which it did not until 5.6. The query
+    // took every run carrying a listings stage and spanned the lot, so the date
+    // in the parameter changed nothing and two stored nights reported one
+    // duration covering both. The span is over the run that wrote that night's
+    // list, so a re-run of an earlier evening is its own duration rather than a
+    // widening of tonight's.
+    public async Task<string?> NightDurationAsync(DateOnly night)
+    {
+        var rows = await RunLogAsync(night);
+
+        var runs = rows
+            .Where(row => row.Stage == "listings")
+            .Select(row => row.RunId)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var stages = rows.Where(row => runs.Contains(row.RunId)).ToArray();
+
+        if (stages.Length == 0)
         {
             return null;
         }
 
-        var started = DateTimeOffset.Parse(reader.GetString(0), CultureInfo.InvariantCulture);
-        var ended = DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture);
+        var started = stages.Min(stage => stage.StartedAt);
+        var ended = stages.Max(stage => stage.EndedAt);
 
         return (ended - started).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
+    }
+
+    public async Task<IReadOnlyList<ForwardReturnRow>> ForwardReturnsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ForwardReturns;
+
+        var rows = new List<ForwardReturnRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new ForwardReturnRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.IsDBNull(3) ? null : reader.GetString(3),
+                reader.IsDBNull(4)
+                    ? null
+                    : DateOnly.ParseExact(reader.GetString(4), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6)));
+        }
+
+        return rows;
+    }
+
+    public async Task<IReadOnlyList<string>> StaleNamesAsync(string indexCode)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = StaleNames;
+        command.Parameters.AddWithValue("$index", indexCode);
+
+        var names = new List<string>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            names.Add(reader.GetString(0));
+        }
+
+        return names;
     }
 
     public async Task<DateOnly?> NewestNightAsync()
@@ -473,6 +660,16 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = ListingsForNight;
         command.Parameters.AddWithValue("$session_date", sessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await ListingsAsync(command);
+    }
+
+    public async Task<IReadOnlyList<ListingRow>> ListingsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = EveryListing;
 
         return await ListingsAsync(command);
     }

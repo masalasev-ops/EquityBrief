@@ -127,19 +127,90 @@ public sealed record UniverseCell(
 public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank);
 
 // One row of tonight's list, already projected.
+//
+// `Fired` carries the same reasons as `Reasons` with the values that made each
+// true, which is 15.7's reasons-per-row half and arrived at 5.6 with the record
+// that sits beside them. It is optional because a caller that only needs the
+// names of what fired, the watch list among them, should not have to carry the
+// values to say so.
 public sealed record ListingCell(
     string Ticker,
     DateOnly SessionDate,
     int FiredCount,
     int Strength,
     decimal? Close,
-    IReadOnlyList<string> Reasons);
+    IReadOnlyList<string> Reasons,
+    IReadOnlyList<FiredReason>? Fired = null);
 
 // One reason that fired for a name, with the values that made it true.
 public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string> Values);
 
 // One reason and how many of tonight's names it fired on.
 public sealed record ReasonTotal(string Reason, int Names);
+
+// One reason's record, as the run page draws it.
+//
+// Counts and no rate. The share that reached target before stop and the
+// break-even those setups demanded are the other half of 15.10's row and arrive
+// at 7.5 with the verdicts; what this carries is how much has been scored and
+// how far that is from the minimum a verdict needs.
+// see: An unresolved setup is never a win
+public sealed record ReasonRecord(
+    string Reason,
+    int Fired,
+    int Won,
+    int Lost,
+    int Unresolved,
+    int Minimum)
+{
+    // A setup that has done nothing is neither right nor wrong, so it is in
+    // neither half of this.
+    public int Resolved => Won + Lost;
+
+    public bool HasEarnedAVerdict => Resolved >= Minimum;
+}
+
+// One row of the reason track: section 15.5's three states out of one
+// denominator.
+//
+// `ResolvedUnsplit` is the resolved setups of a reason that has not earned a
+// verdict, drawn as one segment rather than as a win segment beside a loss one.
+// 15.11 gates the record column on the minimum, and a split drawn below it is
+// the same figure through a second channel.
+public sealed record ReasonTrackRow(
+    string Reason,
+    int Won,
+    int Lost,
+    int Unresolved,
+    int ResolvedUnsplit = 0)
+{
+    public int Total => Won + Lost + Unresolved + ResolvedUnsplit;
+}
+
+// One window's universe base rate, as the run page pins it.
+//
+// `Rate` is null before the first fill has anything matured to count, which is a
+// window nothing has measured rather than a rate of zero.
+public sealed record BaseRateLine(string Window, double? Rate);
+
+// The four verdict counts of the last phase report.
+//
+// Four fields and no total. Out of scope is counted apart from unexamined and
+// only one of them is a defect, so a record that summed them would make the run
+// page report a build that has not reached a claim as one that failed to check
+// it.
+public sealed record HarnessCounts(int Passed, int Failed, int Unexamined, int OutOfScope);
+
+// One stage of a night, as the operational header draws it.
+public sealed record StageRow(
+    string Stage,
+    double Seconds,
+    int RowsWritten,
+    int ModelCalls,
+    int NetworkRequests,
+    string Spend,
+    string Outcome,
+    string Detail);
 
 // One line of the sector strip.
 public sealed record SectorLine(string Sector, int Names, int InUptrend, int OnTheList);
@@ -978,7 +1049,10 @@ public sealed class MarkRenderer : IComponent
     // than here, because a page that shows twenty every night cannot tell you
     // how busy the night was.
     // see: The page shows twenty and states the true count
-    public string TonightList(IReadOnlyList<ListingCell> rows, int drawn)
+    public string TonightList(
+        IReadOnlyList<ListingCell> rows,
+        int drawn,
+        IReadOnlyList<ReasonRecord>? records = null)
     {
         var shown = rows.Take(drawn).ToArray();
         var list = new StringBuilder();
@@ -1000,7 +1074,7 @@ public sealed class MarkRenderer : IComponent
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\">");
             list.Append(Invariant, $"<td>{Escaped(row.Ticker)}</td>");
             list.Append(Invariant, $"<td>{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
-            list.Append(Invariant, $"<td data-reasons=\"{Escaped(string.Join(", ", row.Reasons))}\">{Escaped(string.Join(", ", row.Reasons))}</td>");
+            list.Append(Invariant, $"<td data-reasons=\"{Escaped(string.Join(", ", row.Reasons))}\">{ReasonsForRow(row, records)}</td>");
             list.Append("</tr>");
         }
 
@@ -1016,6 +1090,379 @@ public sealed class MarkRenderer : IComponent
         list.Append("</section>");
 
         return list.ToString();
+    }
+
+    // The reasons on one row of tonight's list, section 15.7's fourth region.
+    //
+    // Each reason named, with its measured record beside it under 15.11 and the
+    // values that made it true on hover. The record is the reason's and not the
+    // name's: it says how this reason has done across every name it ever fired
+    // for, and it is not a statement about the name in this row. That is why it
+    // is drawn inside the reason's own span rather than in a column of its own,
+    // where a reader would take it for a property of the row.
+    // see: A reason's record is displayed, beside the reason and never beside the name
+    static string ReasonsForRow(ListingCell row, IReadOnlyList<ReasonRecord>? records)
+    {
+        var byReason = records?.ToDictionary(record => record.Reason, StringComparer.Ordinal);
+        var cell = new StringBuilder();
+
+        // The values arrive with `Fired` and the names without it, so a caller
+        // that has only the names still draws the reasons rather than nothing.
+        var fired = row.Fired
+            ?? [.. row.Reasons.Select(name => new FiredReason(name, new Dictionary<string, string>(StringComparer.Ordinal)))];
+
+        foreach (var reason in fired)
+        {
+            var values = string.Join(
+                ", ",
+                reason.Values.OrderBy(value => value.Key, StringComparer.Ordinal).Select(value => $"{value.Key} {value.Value}"));
+
+            cell.Append(Invariant, $"<span class=\"reason\" data-reason=\"{Escaped(reason.Name)}\" ");
+            cell.Append(Invariant, $"title=\"{Escaped(values.Length == 0 ? "no values stored for this reason" : values)}\">");
+            cell.Append(Invariant, $"{Escaped(reason.Name)}");
+
+            if (byReason is not null && byReason.TryGetValue(reason.Name, out var record))
+            {
+                cell.Append(record.HasEarnedAVerdict
+                    ? Formatted($"<span class=\"record\" data-verdict=\"due\" data-resolved=\"{record.Resolved}\">{record.Resolved} resolved</span>")
+                    : Formatted($"<span class=\"record not-measured\" data-outline=\"dashed\" data-verdict=\"none\" data-resolved=\"{record.Resolved}\" data-minimum=\"{record.Minimum}\">{record.Resolved} of {record.Minimum} resolved</span>"));
+            }
+
+            cell.Append("</span>");
+        }
+
+        return cell.ToString();
+    }
+
+    // The reason track, section 15.5's sixth mark.
+    //
+    // Per reason, out of one denominator: setups resolved as a win, resolved as
+    // a loss, and unresolved. The third state is a dashed outline and never a
+    // third colour, because unresolved is not a smaller amount of losing and
+    // must not read as one.
+    // see: Not yet measured is drawn as a dashed outline, never as a pale value
+    //
+    // One denominator means one across the whole mark rather than one per row.
+    // Scaled per row every bar would be full width and the mark would say
+    // nothing about which reason fired on more names, which is the question it
+    // exists to answer.
+    //
+    // Hue is not a channel here at all. The three states are one ink at two
+    // steps plus an outline, and each row carries its counts in words on its own
+    // title, so a reader who cannot separate two greys loses nothing.
+    // see: Support and resistance own two hues and nothing else uses them
+    public string ReasonTrack(IReadOnlyList<ReasonTrackRow> rows)
+    {
+        const int Row = 18;
+        const int Width = 220;
+        const int Label = 4;
+
+        var most = rows.Count == 0 ? 0 : rows.Max(row => row.Total);
+        var height = Math.Max(rows.Count, 1) * Row;
+        var track = new StringBuilder();
+
+        track.Append(Invariant, $"<svg class=\"reason-track\" role=\"img\" viewBox=\"0 0 {Width} {height}\" ");
+        track.Append(Invariant, $"width=\"{Width}\" height=\"{height}\" data-reasons=\"{rows.Count}\" data-denominator=\"{most}\">");
+
+        for (var at = 0; at < rows.Count; at++)
+        {
+            var row = rows[at];
+            var top = (at * Row) + 3;
+
+            track.Append(Invariant, $"<g data-reason=\"{Escaped(row.Reason)}\" data-total=\"{row.Total}\" ");
+            track.Append(Invariant, $"data-won=\"{row.Won}\" data-lost=\"{row.Lost}\" ");
+            track.Append(Invariant, $"data-resolved-unsplit=\"{row.ResolvedUnsplit}\" data-unresolved=\"{row.Unresolved}\">");
+
+            // A reason that fired on nothing draws its rule rather than nothing,
+            // so a reason that never fires is visible as one that never fires
+            // rather than absent from the picture.
+            if (row.Total == 0 || most == 0)
+            {
+                track.Append(Invariant, $"<rect x=\"{Label}\" y=\"{top + (Row / 2)}\" width=\"{Width - Label - 2}\" height=\"1\" fill=\"var(--rule, #d8d8d8)\" />");
+            }
+
+            var span = most == 0 ? 0d : (double)(Width - Label - 2) / most;
+            var left = (double)Label;
+
+            left = Segment(track, "won", row.Won, left, top, span, "var(--ink, #1c1c1c)", 1);
+            left = Segment(track, "lost", row.Lost, left, top, span, "var(--ink, #1c1c1c)", 0.45);
+            left = Segment(track, "resolved", row.ResolvedUnsplit, left, top, span, "var(--ink, #1c1c1c)", 0.7);
+
+            // The unresolved segment, drawn as an outline with nothing inside
+            // it. Its own segment of the track and never folded into the rate.
+            if (row.Unresolved > 0 && span > 0)
+            {
+                track.Append(Invariant, $"<rect data-state=\"unresolved\" data-count=\"{row.Unresolved}\" ");
+                track.Append(Invariant, $"x=\"{left:0.##}\" y=\"{top}\" width=\"{row.Unresolved * span:0.##}\" height=\"{Row - 6}\" ");
+                track.Append(Invariant, $"fill=\"none\" stroke=\"var(--ink, #1c1c1c)\" stroke-dasharray=\"3 2\" />");
+            }
+
+            track.Append(Invariant, $"<title>{Escaped(row.Reason)}: {Words(row)}</title>");
+            track.Append("</g>");
+        }
+
+        track.Append("</svg>");
+
+        return track.ToString();
+    }
+
+    static double Segment(
+        StringBuilder track,
+        string state,
+        int count,
+        double left,
+        int top,
+        double span,
+        string fill,
+        double opacity)
+    {
+        const int Row = 18;
+
+        if (count <= 0 || span <= 0)
+        {
+            return left;
+        }
+
+        track.Append(Invariant, $"<rect data-state=\"{state}\" data-count=\"{count}\" ");
+        track.Append(Invariant, $"x=\"{left:0.##}\" y=\"{top}\" width=\"{count * span:0.##}\" height=\"{Row - 6}\" ");
+        track.Append(Invariant, $"fill=\"{fill}\" fill-opacity=\"{Number(opacity)}\" />");
+
+        return left + (count * span);
+    }
+
+    // The counts in words, so the picture is never the only channel.
+    static string Words(ReasonTrackRow row) =>
+        row.Total == 0
+            ? "no setup on this reason yet"
+            : row.ResolvedUnsplit > 0
+                ? Formatted($"{row.ResolvedUnsplit} resolved and {row.Unresolved} unresolved, of {row.Total}")
+                : Formatted($"{row.Won} won, {row.Lost} lost and {row.Unresolved} unresolved, of {row.Total}");
+
+    // The reason records, section 15.10's second region, in the state this build
+    // is in for its first year.
+    //
+    // A reason below the minimum shows a dashed outline carrying its resolved
+    // count against that minimum, and no rate. A pale number reads as a small
+    // one, and a rate over a handful of cases reads as evidence and is not.
+    // see: Not yet measured is drawn as a dashed outline, never as a pale value
+    // see: The record column stays empty until it has earned a number
+    // see: A reason's record is displayed, beside the reason and never beside the name
+    //
+    // The base rate is the pinned first row rather than a figure beside one of
+    // them, which is what makes it impossible to read a forward-return figure on
+    // this page without it.
+    // see: Every forward-return figure is shown against the universe base rate
+    public string ReasonRecords(
+        IReadOnlyList<ReasonRecord> records,
+        IReadOnlyList<ReasonTrackRow> tracks,
+        IReadOnlyList<BaseRateLine> baseRates,
+        int nights)
+    {
+        // The guard that makes the rule a property of the code rather than a
+        // habit of this method. A region that can be drawn with no base rate is
+        // one that will be, on the evening somebody passes an empty list, and
+        // the figure that appears without it looks exactly like one that has it.
+        // see: Every forward-return figure is shown against the universe base rate
+        if (baseRates.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "The reason records were asked for with no base rate line at all. Every " +
+                "forward-return figure on this page is shown against the universe base rate " +
+                "for the same window, so a region with no pinned line is a region drawing " +
+                "figures a reader cannot judge.");
+        }
+
+        var table = new StringBuilder();
+
+        table.Append(Invariant, $"<section class=\"reason-records\" data-reasons=\"{records.Count}\" ");
+        table.Append(Invariant, $"data-nights=\"{nights}\" data-base-rates=\"{baseRates.Count}\" ");
+        table.Append(Invariant, $"data-minimum=\"{(records.Count == 0 ? 0 : records[0].Minimum)}\">");
+
+        // The base rates, pinned above every row rather than beside one of them,
+        // one per window that has one. The population is stated in the same
+        // breath: every name-night the store holds, and not the nights a reason
+        // fired, which would compare a signal against itself.
+        foreach (var line in baseRates)
+        {
+            table.Append(Invariant, $"<p class=\"base-rate\" data-pinned=\"true\" data-window=\"{Escaped(line.Window)}\" ");
+            table.Append(Invariant, $"data-base-rate=\"{(line.Rate is { } rate ? Number(rate) : "none")}\">");
+
+            table.Append(line.Rate is { } shown
+                ? Formatted($"the universe base rate over the {Escaped(line.Window)} session window is {Number(shown)} per cent, ")
+                : Formatted($"the universe base rate over the {Escaped(line.Window)} session window is not yet measured, "));
+
+            table.Append("computed over every name-night the store holds rather than over the nights a reason fired</p>");
+        }
+
+        // The setup horizon has no universe figure of the same kind, and the
+        // page says why rather than leaving a window without a line and letting
+        // a reader wonder which of the three is missing.
+        // see: The `setup` horizon has no universe base rate, and the column is null for it
+        table.Append("<p class=\"base-rate\" data-window=\"setup\" data-base-rate=\"none by rule\">");
+        table.Append("the setup horizon has no universe base rate: target before stop is a question about a plan, ");
+        table.Append("and a name with no plan that night has no answer to it. A setup is judged against the ");
+        table.Append("break-even its own plan demanded</p>");
+
+        table.Append(Invariant, $"<p class=\"nights\" data-nights=\"{nights}\">the record below stands on {nights} night(s) of listings</p>");
+
+        table.Append("<table class=\"records-table\">");
+        table.Append("<tr><th>Reason</th><th>Track</th><th>Fired</th><th>Resolved</th><th>Record</th></tr>");
+
+        var byReason = tracks.ToDictionary(track => track.Reason, StringComparer.Ordinal);
+
+        foreach (var record in records)
+        {
+            table.Append(Invariant, $"<tr data-reason=\"{Escaped(record.Reason)}\" data-fired=\"{record.Fired}\" ");
+            table.Append(Invariant, $"data-resolved=\"{record.Resolved}\" data-minimum=\"{record.Minimum}\">");
+            table.Append(Invariant, $"<td>{Escaped(record.Reason)}</td>");
+            table.Append(Invariant, $"<td>{(byReason.TryGetValue(record.Reason, out var track) ? ReasonTrack([track]) : string.Empty)}</td>");
+            table.Append(Invariant, $"<td>{record.Fired}</td>");
+            table.Append(Invariant, $"<td>{record.Resolved}</td>");
+
+            // The count against the minimum, inside the dashed outline. The
+            // count is what makes the absence readable: a reader sees how far
+            // off a verdict is rather than only that there is none.
+            table.Append(record.HasEarnedAVerdict
+                ? Formatted($"<td data-verdict=\"due\">{record.Resolved} resolved, and the share that reached target before stop arrives with the verdicts at 7.5</td>")
+                : Formatted($"<td class=\"not-measured\" data-outline=\"dashed\" data-verdict=\"none\">{record.Resolved} of {record.Minimum} resolved</td>"));
+
+            table.Append("</tr>");
+        }
+
+        table.Append("</table>");
+        table.Append("<p class=\"degraded\" data-verdicts=\"absent\">no rate is shown for a reason below the minimum, because a rate over a handful of resolved setups is consistent with almost any truth</p>");
+        table.Append("</section>");
+
+        return table.ToString();
+    }
+
+    // The operational header, section 15.10's first region: what ran, how long
+    // each stage took, model calls, network requests, spend and the outcome.
+    //
+    // Per stage rather than in one total, because a night that landed inside its
+    // limit by one step doing nothing is legible only if the steps are apart.
+    public string OperationalHeader(DateOnly night, IReadOnlyList<StageRow> stages)
+    {
+        var header = new StringBuilder();
+
+        header.Append(Invariant, $"<header class=\"operational\" data-night=\"{night:yyyy-MM-dd}\" data-stages=\"{stages.Count}\">");
+
+        if (stages.Count == 0)
+        {
+            header.Append(Invariant, $"<p class=\"degraded\" data-stages=\"0\">the run log carries no stage for {night:yyyy-MM-dd}</p></header>");
+
+            return header.ToString();
+        }
+
+        header.Append("<table class=\"stage-table\">");
+        header.Append("<tr><th>Stage</th><th>Took</th><th>Rows</th><th>Model calls</th><th>Requests</th><th>Spend</th><th>Outcome</th></tr>");
+
+        foreach (var stage in stages)
+        {
+            header.Append(Invariant, $"<tr data-stage=\"{Escaped(stage.Stage)}\" data-seconds=\"{Number(stage.Seconds)}\" ");
+            header.Append(Invariant, $"data-rows=\"{stage.RowsWritten}\" data-model-calls=\"{stage.ModelCalls}\" ");
+            header.Append(Invariant, $"data-requests=\"{stage.NetworkRequests}\" data-spend=\"{Escaped(stage.Spend)}\" ");
+            header.Append(Invariant, $"data-outcome=\"{Escaped(stage.Outcome)}\">");
+            header.Append(Invariant, $"<td title=\"{Escaped(stage.Detail)}\">{Escaped(stage.Stage)}</td>");
+            header.Append(Invariant, $"<td>{Number(stage.Seconds)}s</td><td>{stage.RowsWritten}</td>");
+            header.Append(Invariant, $"<td>{stage.ModelCalls}</td><td>{stage.NetworkRequests}</td>");
+            header.Append(Invariant, $"<td>{Escaped(stage.Spend)}</td><td>{Escaped(stage.Outcome)}</td></tr>");
+        }
+
+        header.Append("</table>");
+
+        // The night's own total beneath the steps rather than above them, so the
+        // steps are what is read first.
+        header.Append(Invariant, $"<p class=\"total\" data-seconds=\"{Number(stages.Sum(stage => stage.Seconds))}\">");
+        header.Append(Invariant, $"{stages.Count} stage(s), {Number(stages.Sum(stage => stage.Seconds))} second(s) of stage time</p>");
+        header.Append("</header>");
+
+        return header.ToString();
+    }
+
+    // Stale and failed, section 15.10's fourth region: names carrying
+    // yesterday's bars, and what failed in which component.
+    //
+    // The names are listed rather than counted. A page that says four names are
+    // stale and does not say which is a page nobody can act on. The research
+    // halves, being the sections that fell back and the documents refused by
+    // admissibility, arrive with the pass that produces them and are stated as
+    // absent rather than drawn as empty lists.
+    public string StaleAndFailed(IReadOnlyList<string> stale, IReadOnlyList<StageRow> failed)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"stale-and-failed\" data-stale=\"{stale.Count}\" data-failed=\"{failed.Count}\">");
+
+        region.Append(stale.Count == 0
+            ? "<p data-stale=\"none\">no name is carrying yesterday's bars</p>"
+            : Formatted($"<p data-stale=\"{stale.Count}\">{stale.Count} name(s) carrying yesterday's bars: {Escaped(string.Join(", ", stale))}</p>"));
+
+        region.Append(failed.Count == 0
+            ? "<p data-failed=\"none\">no stage of this night failed</p>"
+            : Formatted($"<p data-failed=\"{failed.Count}\">{failed.Count} stage(s) failed</p>"));
+
+        foreach (var stage in failed)
+        {
+            region.Append(Invariant, $"<p class=\"failed\" data-stage=\"{Escaped(stage.Stage)}\" data-outcome=\"{Escaped(stage.Outcome)}\">");
+            region.Append(Invariant, $"{Escaped(stage.Stage)}: {Escaped(stage.Outcome)}. {Escaped(stage.Detail)}</p>");
+        }
+
+        region.Append("<p class=\"degraded\" data-research=\"absent\">the sections that fell back and the documents refused by admissibility arrive with the research pass that produces them</p>");
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The harness, section 15.10's last region: the verdict counts from the last
+    // phase report, each separately.
+    //
+    // Separately because out of scope is counted apart from unexamined and only
+    // one of them is a defect, and a page that summed them would report a build
+    // that has not reached a claim as one that failed to check it.
+    public string HarnessVerdicts(HarnessCounts? counts)
+    {
+        if (counts is not { } read)
+        {
+            return "<section class=\"harness\" data-report=\"none\">" +
+                "<p class=\"degraded\">no phase report has been written on this machine</p></section>";
+        }
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"harness\" data-passed=\"{read.Passed}\" data-failed=\"{read.Failed}\" ");
+        region.Append(Invariant, $"data-unexamined=\"{read.Unexamined}\" data-out-of-scope=\"{read.OutOfScope}\">");
+        region.Append(Invariant, $"<p>{read.Passed} passed, {read.Failed} failed, {read.Unexamined} unexamined, ");
+        region.Append(Invariant, $"{read.OutOfScope} out of scope</p>");
+        region.Append("<p class=\"degraded\">out of scope is counted apart from unexamined and never added to it, because only unexamined is a defect</p>");
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // Tonight's reason totals, section 15.7's last region: the reason track
+    // across tonight's fired names, which says whether the evening is one thing
+    // happening to many names or many things happening to a few.
+    public string ReasonTotals(IReadOnlyList<ReasonTrackRow> tracks)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"reason-totals\" data-reasons=\"{tracks.Count}\" ");
+        region.Append(Invariant, $"data-names=\"{tracks.Sum(track => track.Total)}\">");
+        region.Append(ReasonTrack(tracks));
+        region.Append("<table class=\"totals-table\"><tr><th>Reason</th><th>Names</th></tr>");
+
+        foreach (var track in tracks)
+        {
+            region.Append(Invariant, $"<tr data-reason=\"{Escaped(track.Reason)}\" data-names=\"{track.Total}\">");
+            region.Append(Invariant, $"<td>{Escaped(track.Reason)}</td><td>{track.Total}</td></tr>");
+        }
+
+        region.Append("</table>");
+        region.Append("<p class=\"degraded\" data-unresolved=\"all\">every name listed tonight is a setup nothing has scored yet, so the whole of tonight's track is the unresolved state</p>");
+        region.Append("</section>");
+
+        return region.ToString();
     }
 
     // The night header, section 15.7's first region.

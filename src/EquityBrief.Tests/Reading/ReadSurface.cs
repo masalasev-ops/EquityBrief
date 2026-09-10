@@ -6,6 +6,7 @@ using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Returns;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
@@ -39,6 +40,18 @@ public class ReadSurface
         "read-surface",
         ["fixtures/membership-2026-09-05"],
         [
+            // 5.6, the run page. Every one of these is a claim about a surface,
+            // which is why they are reached by a check that draws the surface
+            // and reads it back rather than by a declaration.
+            CheckReach.Key(Scope.LimitsTable, "Base rate"),
+            CheckReach.Key("15.5 The mark vocabulary", "Reason track"),
+            CheckReach.Key("15.7 Tonight", "Reasons, per row"),
+            CheckReach.Key("15.7 Tonight", "Reason totals"),
+            CheckReach.Key("15.10 Run", "Operational header"),
+            CheckReach.Key("15.10 Run", "Reason records, the resolved count"),
+            CheckReach.Key("15.10 Run", "Stale and failed"),
+            CheckReach.Key("15.10 Run", "Harness"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.LimitsTable, "List display"),
             CheckReach.Key("15.5 The mark vocabulary", "Listing strip"),
@@ -2009,6 +2022,705 @@ public class ReadSurface
                     DateOnly.ParseExact(member.GetProperty("date").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture))),
             ])),
     ];
+
+    // ---- 5.6, the run page ----
+
+    // Constructed input, written straight into a throwaway store, which is what
+    // the suite is exempt from writer ownership for. Nothing here reaches the
+    // configured data root.
+    static void Insert(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        command.ExecuteNonQuery();
+    }
+
+    static JsonElement Expected(string stage) =>
+        JsonDocument.Parse(File.ReadAllText(
+            Path.Combine(FixtureFolder(), "expectations", stage + ".json"))).RootElement;
+
+    // Constructed listing reasons, in section 11's own names, because a stored
+    // reason the roster does not carry is refused rather than counted.
+    static string FiredNamed(params string[] names) =>
+        "[" + string.Join(",", names.Select(name =>
+            $"{{\"name\":\"{name}\",\"fired\":true,\"values\":{{\"close\":\"10\"}}}}")) + "]";
+
+    static string RunRow(string runId, string stage, string started, string ended, string outcome = "ok") =>
+        "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, " +
+        $"model_calls, network_requests, spend, detail) VALUES ('{runId}', '{stage}', '{started}', " +
+        $"'{ended}', '{outcome}', 3, 0, 1, '0', 'constructed');";
+
+    [Fact]
+    public async Task TheOperationalHeaderDrawsEveryStageOfTheNightWithItsOwnElapsedTime()
+    {
+        // Section 15.10's first region. Per stage rather than in one total,
+        // because a night that landed inside its limit by one step doing nothing
+        // is legible only if the steps are apart.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+        var night = ((IClock)FixedClock.At(Instant, SessionZones.UnitedStates)).SessionDateAt(Instant);
+        var log = await api.RunLogAsync(night);
+
+        // The population is the store's own rows for that night, and it is
+        // floored well under what the replay writes so ordinary growth never
+        // moves it. The property is the per-stage split, and a header drawn over
+        // one row would satisfy every assertion below by having one stage.
+        Assert.True(log.Count >= 8, $"The night carried {log.Count} stages, expected at least 8.");
+
+        var stages = RunScreen.Stages(log);
+        var header = new MarkRenderer().OperationalHeader(night, stages);
+
+        Assert.Equal(log.Count, stages.Count);
+        Assert.Contains($"data-stages=\"{stages.Count}\"", header, StringComparison.Ordinal);
+        Assert.Equal(stages.Count, Regex.Matches(header, "<tr data-stage=\"[^\"]+\"").Count);
+
+        // Every stage the store recorded is on the page, named, with the counts
+        // the row carries rather than counts this test supplies. The counts are
+        // read back off the row they were drawn into, so a header that printed
+        // a constant would fail here rather than pass by drawing the right
+        // number of rows.
+        foreach (var row in log)
+        {
+            var drawnRow = Regex.Match(
+                header,
+                $"<tr data-stage=\"{Regex.Escape(row.Stage)}\"(?<attributes>[^>]*)>(?<cells>.*?)</tr>",
+                RegexOptions.Singleline);
+
+            Assert.True(drawnRow.Success, $"the header drew no row for the {row.Stage} stage");
+
+            var attributes = drawnRow.Groups["attributes"].Value;
+
+            Assert.Contains($"data-rows=\"{row.RowsWritten}\"", attributes, StringComparison.Ordinal);
+            Assert.Contains($"data-model-calls=\"{row.ModelCalls}\"", attributes, StringComparison.Ordinal);
+            Assert.Contains($"data-requests=\"{row.NetworkRequests}\"", attributes, StringComparison.Ordinal);
+            Assert.Contains($"data-spend=\"{row.Spend}\"", attributes, StringComparison.Ordinal);
+            Assert.Contains($"data-outcome=\"{row.Outcome}\"", attributes, StringComparison.Ordinal);
+
+            // The cells and not only the attributes. A claim that something is
+            // shown is a claim about the surface a person reads, and the two
+            // channels are written by different expressions: the row's counts
+            // can be right in the markup a machine reads and wrong in the cells
+            // a person does, which is what the sweep found here.
+            var cells = drawnRow.Groups["cells"].Value;
+
+            Assert.Contains($"<td>{row.RowsWritten}</td>", cells, StringComparison.Ordinal);
+            Assert.Contains($"<td>{row.ModelCalls}</td><td>{row.NetworkRequests}</td>", cells, StringComparison.Ordinal);
+            Assert.Contains($"<td>{row.Spend}</td><td>{row.Outcome}</td>", cells, StringComparison.Ordinal);
+        }
+
+        // The requests are the figure the cost rule is read against, so they are
+        // asserted where they are not all the same number. One stage of this
+        // night made a request and the rest made none, and a header printing a
+        // constant would agree with the store on every row but that one.
+        Assert.Contains(log, row => row.NetworkRequests > 0);
+        Assert.Contains(log, row => row.NetworkRequests == 0);
+
+        Assert.Contains("listings", header, StringComparison.Ordinal);
+        Assert.Contains("forward-returns", header, StringComparison.Ordinal);
+
+        // The elapsed time itself, over constructed rows, because every row a
+        // fixed clock writes started and ended at the same instant and a night
+        // of zeroes cannot show that the two columns are read apart.
+        var timed = RunScreen.Stages(
+        [
+            new RunStageRow("run-1", "slow", Utc("2026-09-05T21:00:00Z"), Utc("2026-09-05T21:02:30Z"), "ok", 4, 0, 1, "0", "detail"),
+            new RunStageRow("run-1", "quick", Utc("2026-09-05T21:02:30Z"), Utc("2026-09-05T21:02:31Z"), "ok", 0, 0, 0, "0", "detail"),
+        ]);
+
+        Assert.Equal([150d, 1d], [.. timed.Select(stage => stage.Seconds)]);
+
+        var drawn = new MarkRenderer().OperationalHeader(night, timed);
+
+        Assert.Contains("data-seconds=\"150\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-seconds=\"1\"", drawn, StringComparison.Ordinal);
+
+        // And the order is the order they ran, which is what makes a step that
+        // did nothing findable beside the one before it.
+        Assert.True(
+            drawn.IndexOf("data-stage=\"slow\"", StringComparison.Ordinal)
+                < drawn.IndexOf("data-stage=\"quick\"", StringComparison.Ordinal),
+            "the header drew a later stage above an earlier one");
+
+        // A night the log carries nothing for says so rather than drawing an
+        // empty table, which reads as a night that did nothing.
+        Assert.Contains(
+            "carries no stage",
+            new MarkRenderer().OperationalHeader(night, []),
+            StringComparison.Ordinal);
+    }
+
+    static DateTimeOffset Utc(string instant) =>
+        DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture);
+
+    [Fact]
+    public async Task ANightsRunLogIsTheNightsAndTheClockDecidesWhichNightARowIsOn()
+    {
+        // The run log has no session column and cannot have one it would agree
+        // with: the run starts after the close in New York, so the UTC date it
+        // carries is the session's on some evenings and the next day's on
+        // others. The clock is what decides, and this is the pair of rows that
+        // shows it: one written after midnight UTC that belongs to this night,
+        // and one written the evening before that does not.
+        using var store = await FixtureExpectations.WithReturns();
+
+        Insert(store, RunRow("night-late", "close", "2026-09-06T01:30:00Z", "2026-09-06T01:31:00Z"));
+        Insert(store, RunRow("night-before", "listings", "2026-09-04T21:00:00Z", "2026-09-04T21:00:10Z"));
+
+        var api = Api(store);
+        var night = new DateOnly(2026, 9, 5);
+        var log = await api.RunLogAsync(night);
+
+        // Half past nine in the evening in New York is half past one the next
+        // morning in UTC, and it is this night. A filter on the stored date
+        // would drop it.
+        Assert.Contains(log, row => row.RunId == "night-late");
+
+        // The evening before is its own night, and it is the one that would
+        // widen this night's duration if the rows were read together.
+        Assert.DoesNotContain(log, row => row.RunId == "night-before");
+
+        Assert.Equal(
+            ["night-before"],
+            [.. (await api.RunLogAsync(new DateOnly(2026, 9, 4))).Select(row => row.RunId).Distinct()]);
+
+        // The duration follows from the same selection, over the run that wrote
+        // that night's list. Every stage the replay wrote carries one instant
+        // from the fixed clock, so this night's span is zero and the evening
+        // before is ten seconds. Before 5.6 the query took every run carrying a
+        // listings stage and spanned the lot, so both of these read as ten
+        // minutes and the date in the parameter changed nothing.
+        Assert.Equal("00:00:00", await api.NightDurationAsync(night));
+        Assert.Equal("00:00:10", await api.NightDurationAsync(new DateOnly(2026, 9, 4)));
+        Assert.Null(await api.NightDurationAsync(new DateOnly(2026, 9, 1)));
+    }
+
+    [Fact]
+    public async Task AReasonsRecordCountsEverySetupThatFiredItAndShowsNoRateBelowTheMinimum()
+    {
+        // Section 15.10's reason record, in the state this build is in for its
+        // first year: counts, and no rate at all.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+        var listings = await api.ListingsAsync();
+        var returns = await api.ForwardReturnsAsync();
+        var records = RunScreen.Records(listings, RunScreen.Resolved(returns));
+
+        // The population, derived here from the stored rows rather than read
+        // back from the projection, and stated in advance by the expectation
+        // file rather than frozen from this run.
+        var expected = Expected("run-page");
+
+        Assert.Equal(expected.GetProperty("counts").GetProperty("reasons").GetInt32(), records.Count);
+        Assert.Equal(ShortlistSeries.Reasons.Length, records.Count);
+        Assert.Equal(RunScreen.MinimumResolvedSetups, expected.GetProperty("rules").GetProperty("minimumResolvedSetups").GetInt32());
+        Assert.Equal(expected.GetProperty("counts").GetProperty("resolved").GetInt32(), records.Sum(record => record.Resolved));
+        Assert.Equal(expected.GetProperty("counts").GetProperty("fired").GetInt32(), records.Sum(record => record.Fired));
+
+        var fired = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var listing in listings)
+        {
+            foreach (var reason in JsonDocument.Parse(listing.Reasons).RootElement.EnumerateArray()
+                .Where(reason => reason.GetProperty("fired").GetBoolean())
+                .Select(reason => reason.GetProperty("name").GetString()!))
+            {
+                fired[reason] = fired.GetValueOrDefault(reason) + 1;
+            }
+        }
+
+        foreach (var record in records)
+        {
+            Assert.Equal(fired.GetValueOrDefault(record.Reason), record.Fired);
+        }
+
+        // Nothing the committed fixture holds has matured, so every record is
+        // below the minimum and carries no rate. That is the state, not a hole:
+        // its listings sit on the last stored session and nothing after them
+        // exists.
+        Assert.All(records, record => Assert.False(record.HasEarnedAVerdict));
+        Assert.Equal(0, records.Sum(record => record.Resolved));
+
+        // A setup belongs to every reason that fired on the night it was listed,
+        // and a resolved setup for a name nobody listed belongs to none. Both
+        // over constructed rows, because the fixture cannot reach either.
+        var night = new DateOnly(2026, 9, 4);
+
+        var constructed = RunScreen.Records(
+            [
+                new ListingRow("AAAA", night, FiredNamed(ShortlistSeries.AtEntryZone, ShortlistSeries.CrossedALevel), 2, "{}"),
+                new ListingRow("BBBB", night, FiredNamed(ShortlistSeries.AtEntryZone), 1, "{}"),
+            ],
+            [
+                new ResolvedSetup("AAAA", night, ForwardReturnSeries.Win),
+                new ResolvedSetup("BBBB", night, ForwardReturnSeries.Loss),
+                new ResolvedSetup("CCCC", night, ForwardReturnSeries.Win),
+            ]);
+
+        var atEntry = constructed.Single(record => record.Reason == ShortlistSeries.AtEntryZone);
+        var crossed = constructed.Single(record => record.Reason == ShortlistSeries.CrossedALevel);
+
+        // AAAA fired two reasons and won, so both carry that win. BBBB fired one
+        // and lost. A setup counted against one reason alone would be a record
+        // about whichever reason happened to be read first.
+        Assert.Equal((1, 1), (atEntry.Won, atEntry.Lost));
+        Assert.Equal((1, 0), (crossed.Won, crossed.Lost));
+
+        // The unlisted name is in nobody's record, which is what keeps a record
+        // a statement about the reason that fired. Two of the three resolved
+        // setups reach a record, and one of those reaches two.
+        Assert.Equal(3, constructed.Sum(record => record.Resolved));
+        Assert.All(
+            constructed.Where(record => record.Reason != ShortlistSeries.AtEntryZone && record.Reason != ShortlistSeries.CrossedALevel),
+            record => Assert.Equal(0, record.Resolved));
+
+        // And a stored reason the roster does not carry refuses rather than
+        // being counted into whichever row is read first.
+        var unknown = Assert.Throws<InvalidOperationException>(
+            () => RunScreen.Records([new ListingRow("AAAA", night, FiredNamed("a seventh reason"), 1, "{}")], []));
+
+        Assert.Contains("a seventh reason", unknown.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ARecordBelowTheMinimumDrawsItsCountInADashedOutlineAndNeverARate()
+    {
+        // 15.11's first row, and the state the column is in for the first year.
+        // The count against the minimum is what makes the absence readable: a
+        // reader sees how far off a verdict is rather than only that there is
+        // none.
+        var marks = new MarkRenderer();
+
+        var below = new ReasonRecord(ShortlistSeries.AtEntryZone, 400, 6, 5, 40, RunScreen.MinimumResolvedSetups);
+        var above = new ReasonRecord(ShortlistSeries.CrossedALevel, 900, 150, 130, 60, RunScreen.MinimumResolvedSetups);
+
+        Assert.False(below.HasEarnedAVerdict);
+        Assert.True(above.HasEarnedAVerdict);
+
+        var records = new[] { below, above };
+        var drawn = marks.ReasonRecords(records, RunScreen.Tracks(records), Rates(1.2, 3.4), 60);
+
+        // One row per reason with the reason track mark, which is what section
+        // 15.10 states the region is. A table of counts with the picture gone
+        // is a different region.
+        Assert.Equal(records.Length, Regex.Matches(drawn, "<svg class=\"reason-track\"").Count);
+
+        Assert.Contains("data-outline=\"dashed\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("11 of 250 resolved", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-verdict=\"none\"", drawn, StringComparison.Ordinal);
+
+        // No rate anywhere on the region, for either row. The share that reached
+        // target before stop and the break-even those setups demanded are the
+        // other half of this row and arrive at 7.5 with the verdicts.
+        Assert.DoesNotContain("%", drawn, StringComparison.Ordinal);
+        Assert.Contains("7.5", drawn, StringComparison.Ordinal);
+
+        // The nights the record stands on, which is what the three operating
+        // obligations read on this page are counted in.
+        Assert.Contains("data-nights=\"60\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("stands on 60 night(s)", drawn, StringComparison.Ordinal);
+
+        // And the split is gated on the same minimum in the picture as in the
+        // column. A win beside a loss below the minimum is the same figure
+        // through a second channel, since a reader reads the ratio off it.
+        var tracks = RunScreen.Tracks(records);
+
+        Assert.Equal(0, tracks[0].Won);
+        Assert.Equal(0, tracks[0].Lost);
+        Assert.Equal(11, tracks[0].ResolvedUnsplit);
+        Assert.Equal(150, tracks[1].Won);
+        Assert.Equal(130, tracks[1].Lost);
+        Assert.Equal(0, tracks[1].ResolvedUnsplit);
+    }
+
+    static IReadOnlyList<BaseRateLine> Rates(double? five, double? twentyOne) =>
+    [
+        new BaseRateLine(ForwardReturnSeries.FiveSessions, five),
+        new BaseRateLine(ForwardReturnSeries.TwentyOneSessions, twentyOne),
+    ];
+
+    [Fact]
+    public async Task NoForwardReturnFigureIsDrawnWithoutTheUniverseBaseRateBesideIt()
+    {
+        // Section 17's base rate limit, on the surface a person reads it on. The
+        // filler computes the figure and stores it beside every return; the
+        // claim is that no forward-return figure on this page is shown without
+        // it, which is a claim about a surface.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+        var returns = await api.ForwardReturnsAsync();
+        var rates = RunScreen.BaseRates(returns);
+
+        // One line per window that has one, and the setup horizon is not among
+        // them by rule rather than by absence.
+        Assert.Equal(
+            [ForwardReturnSeries.FiveSessions, ForwardReturnSeries.TwentyOneSessions],
+            [.. rates.Select(rate => rate.Window)]);
+
+        // The value is the stored column and not a count taken here. Nothing in
+        // the committed fixture has matured, so both windows read as not yet
+        // measured rather than as zero.
+        foreach (var rate in rates)
+        {
+            Assert.Equal(
+                returns.FirstOrDefault(row => row.Horizon == rate.Window && row.BaseRate is not null)?.BaseRate,
+                rate.Rate);
+        }
+
+        var records = RunScreen.Records(await api.ListingsAsync(), RunScreen.Resolved(returns));
+        var marks = new MarkRenderer();
+        var drawn = marks.ReasonRecords(records, RunScreen.Tracks(records), rates, 1);
+
+        Assert.Contains("data-window=\"5\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-window=\"21\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("is not yet measured", drawn, StringComparison.Ordinal);
+        Assert.Equal(2, Regex.Matches(drawn, "data-pinned=\"true\"").Count);
+
+        // The population in the same breath as the figure, which is what turns
+        // a number into one a reader can check.
+        Assert.Contains("every name-night the store holds", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-window=\"setup\" data-base-rate=\"none\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-window=\"setup\" data-base-rate=\"none by rule\"", drawn, StringComparison.Ordinal);
+
+        // A measured window carries its value, over constructed rows because the
+        // fixture's own listings sit on the last stored session and nothing
+        // after them exists.
+        var measured = marks.ReasonRecords(records, RunScreen.Tracks(records), Rates(41.5, 57.25), 1);
+
+        Assert.Contains("data-base-rate=\"41.5\"", measured, StringComparison.Ordinal);
+        Assert.Contains("57.25 per cent", measured, StringComparison.Ordinal);
+
+        // And the region refuses rather than drawing the records with no base
+        // rate at all. A figure that can be shown without it is one that will
+        // be, on the evening somebody passes an empty list.
+        var refused = Assert.Throws<InvalidOperationException>(
+            () => marks.ReasonRecords(records, RunScreen.Tracks(records), [], 1));
+
+        Assert.Contains("base rate", refused.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheReasonTrackDrawsThreeStatesOutOfOneDenominatorAndOutlinesTheUnresolved()
+    {
+        // Section 15.5's sixth mark. Its third state is a dashed outline and
+        // never a third colour, because unresolved is not a smaller amount of
+        // losing and must not read as one.
+        var track = new MarkRenderer().ReasonTrack(
+        [
+            new ReasonTrackRow("busy", 6, 2, 2),
+            new ReasonTrackRow("quiet", 2, 1, 2),
+            new ReasonTrackRow("never fired", 0, 0, 0),
+        ]);
+
+        Assert.Equal(3, Regex.Matches(track, "<g data-reason=").Count);
+        Assert.Contains("data-denominator=\"10\"", track, StringComparison.Ordinal);
+
+        // One denominator across the mark rather than one per row. The busy
+        // reason's won segment is three times the quiet one's, which is the point
+        // of the mark: scaled per row every bar would be full width and the
+        // picture would say nothing about which reason fired on more names.
+        var widths = Regex.Matches(track, "data-state=\"won\" data-count=\"(\\d+)\" x=\"[\\d.]+\" y=\"\\d+\" width=\"([\\d.]+)\"")
+            .Select(match => double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(2, widths.Length);
+        Assert.Equal(3d, widths[0] / widths[1], 3);
+
+        // The unresolved segment has no fill at all and carries the dashes.
+        var unresolved = Regex.Matches(track, "<rect data-state=\"unresolved\"[^/]*/>");
+
+        Assert.Equal(2, unresolved.Count);
+        Assert.All(unresolved, match => Assert.Contains("fill=\"none\"", match.Value, StringComparison.Ordinal));
+        Assert.All(unresolved, match => Assert.Contains("stroke-dasharray", match.Value, StringComparison.Ordinal));
+
+        // Hue is never the only channel: every row carries its counts in words.
+        Assert.Contains("6 won, 2 lost and 2 unresolved, of 10", track, StringComparison.Ordinal);
+
+        // A reason that fired on nothing draws its rule rather than nothing, so
+        // a reason that never fires is visible as one that never fires rather
+        // than absent from the picture.
+        Assert.Contains("no setup on this reason yet", track, StringComparison.Ordinal);
+        Assert.Contains("data-reason=\"never fired\" data-total=\"0\"", track, StringComparison.Ordinal);
+
+        // The rule itself, and not only the words on the title. A group holding
+        // nothing at all is an empty space on the picture, and an empty space is
+        // what a reason absent from the mark would look like.
+        var groups = Regex.Matches(track, "<g data-reason=\"(?<reason>[^\"]+)\".*?</g>", RegexOptions.Singleline);
+        var empty = groups.Single(group => group.Groups["reason"].Value == "never fired").Value;
+
+        Assert.Contains("height=\"1\" fill=\"var(--rule", empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-state=", empty, StringComparison.Ordinal);
+
+        // And a reason that did fire draws its segments rather than a rule, so
+        // the two states are told apart by the picture as well as by the words.
+        Assert.DoesNotContain(
+            "height=\"1\" fill=\"var(--rule",
+            groups.Single(group => group.Groups["reason"].Value == "busy").Value,
+            StringComparison.Ordinal);
+
+        // Below the minimum the resolved setups are one segment rather than two,
+        // and the words follow the picture.
+        var gated = new MarkRenderer().ReasonTrack([new ReasonTrackRow("gated", 0, 0, 40, 11)]);
+
+        Assert.Contains("data-state=\"resolved\" data-count=\"11\"", gated, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-state=\"won\"", gated, StringComparison.Ordinal);
+        Assert.Contains("11 resolved and 40 unresolved, of 51", gated, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EveryReasonOnARowCarriesItsRecordAndTheValuesThatMadeItTrue()
+    {
+        // Section 15.7's reasons-per-row region. The record is the reason's and
+        // never the name's: it says how this reason has done across every name
+        // it ever fired for, and it is not a statement about the row it sits in.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+        var universe = await api.UniverseAsync("GSPC");
+
+        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var row in universe)
+        {
+            var bands = await api.LevelsAsync(row.Ticker);
+
+            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+        }
+
+        var rows = TonightScreen.Rows(
+            listings,
+            strengths,
+            universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal));
+
+        Assert.NotEmpty(rows);
+
+        var records = RunScreen.Records(await api.ListingsAsync(), RunScreen.Resolved(await api.ForwardReturnsAsync()));
+        var list = new MarkRenderer().TonightList(rows, SinglePageApp.TonightDrawn, records);
+
+        // Every reason that fired on a drawn row is named on that row, with the
+        // values the store holds for it rather than values this test supplies.
+        foreach (var row in rows)
+        {
+            Assert.NotNull(row.Fired);
+
+            foreach (var reason in row.Fired!)
+            {
+                Assert.Contains($"data-reason=\"{reason.Name}\"", list, StringComparison.Ordinal);
+
+                foreach (var value in reason.Values)
+                {
+                    Assert.Contains($"{value.Key} {value.Value}", list, StringComparison.Ordinal);
+                }
+            }
+        }
+
+        // The record beside each reason, in the not-yet-measured state, carrying
+        // its count against the minimum rather than a rate.
+        var named = rows.SelectMany(row => row.Reasons).Distinct(StringComparer.Ordinal).Count();
+
+        Assert.True(named >= 1, $"the drawn rows named {named} reasons, expected at least 1.");
+        Assert.Equal(
+            rows.Sum(row => row.Reasons.Count),
+            Regex.Matches(list, "class=\"record not-measured\"").Count);
+
+        Assert.Contains($"of {RunScreen.MinimumResolvedSetups} resolved", list, StringComparison.Ordinal);
+
+        // A row with no values stored for a reason says so rather than drawing
+        // an empty hover, which reads as a reason with nothing behind it.
+        var bare = new MarkRenderer().TonightList(
+            [new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone])],
+            SinglePageApp.TonightDrawn,
+            records);
+
+        Assert.Contains("no values stored for this reason", bare, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheReasonTotalsDrawTonightsFiredNamesAndEveryOneOfThemIsUnresolved()
+    {
+        // Section 15.7's last region. Whether the evening is one thing happening
+        // to many names or many things happening to a few, and every name on it
+        // is a setup nothing has scored yet.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+
+        var totals = TonightScreen.Totals(listings);
+        var tracks = RunScreen.Tracks(totals);
+        var drawn = new MarkRenderer().ReasonTotals(tracks);
+
+        Assert.Equal(ShortlistSeries.Reasons.Length, tracks.Count);
+
+        // The region draws the mark and not only the table beside it. This row
+        // is the reason track on tonight's screen, so a region that lost the
+        // picture would be the claim gone with the table still passing.
+        Assert.Contains("<svg class=\"reason-track\"", drawn, StringComparison.Ordinal);
+        Assert.Contains($"data-reasons=\"{tracks.Count}\" data-denominator=", drawn, StringComparison.Ordinal);
+
+        // The counts are the store's, per reason, and the whole of tonight's
+        // track is the unresolved state.
+        foreach (var total in totals)
+        {
+            Assert.Contains($"data-reason=\"{total.Reason}\" data-names=\"{total.Names}\"", drawn, StringComparison.Ordinal);
+            Assert.Equal(total.Names, tracks.Single(track => track.Reason == total.Reason).Unresolved);
+        }
+
+        Assert.All(tracks, track => Assert.Equal(0, track.Won + track.Lost + track.ResolvedUnsplit));
+        Assert.DoesNotContain("data-state=\"won\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-unresolved=\"all\"", drawn, StringComparison.Ordinal);
+
+        // The fired count on the page is the fired count in the store, summed
+        // over the reasons rather than over the names, because a name that fired
+        // two reasons is in two of these.
+        Assert.Equal(
+            listings.Sum(listing => listing.FiredCount),
+            tracks.Sum(track => track.Total));
+    }
+
+    [Fact]
+    public async Task StaleAndFailedNamesTheStaleNamesAndTheStageThatFailed()
+    {
+        // Section 15.10's fourth region. The names are listed rather than
+        // counted: a page that says four names are stale and does not say which
+        // is a page nobody can act on.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+
+        // The population is the one the night's closing stage counts over, which
+        // is the index and not the names with bars. A member with no series at
+        // all is stale in the way that matters, and this is the case the
+        // committed fixture cannot reach: it is constructed by adding a member
+        // the backfill never saw.
+        var before = await api.StaleNamesAsync("GSPC");
+
+        Insert(
+            store,
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
+            "VALUES ('GSPC', 'NEWW', '2026-09-01', NULL, '2026-09-05T21:10:00Z', 'Technology');");
+
+        var stale = await api.StaleNamesAsync("GSPC");
+
+        Assert.Equal(["NEWW"], [.. stale.Except(before, StringComparer.Ordinal)]);
+        Assert.Contains("NEWW", stale);
+
+        var failed = RunScreen.Failed(RunScreen.Stages(
+        [
+            new RunStageRow("run-1", "fetch", Utc("2026-09-05T21:00:00Z"), Utc("2026-09-05T21:00:05Z"), "ok", 4, 0, 1, "0", "fine"),
+            new RunStageRow("run-1", "calendar", Utc("2026-09-05T21:00:05Z"), Utc("2026-09-05T21:00:06Z"), "failed", 0, 0, 3, "0", "the feed did not answer"),
+        ]));
+
+        Assert.Equal(["calendar"], [.. failed.Select(stage => stage.Stage)]);
+
+        var region = new MarkRenderer().StaleAndFailed(stale, failed);
+
+        Assert.Contains("data-stale=\"1\"", region, StringComparison.Ordinal);
+        Assert.Contains("NEWW", region, StringComparison.Ordinal);
+        Assert.Contains("data-stage=\"calendar\"", region, StringComparison.Ordinal);
+        Assert.Contains("the feed did not answer", region, StringComparison.Ordinal);
+
+        // The research halves are stated as absent rather than drawn as empty
+        // lists, which would read as a night that refused nothing.
+        Assert.Contains("data-research=\"absent\"", region, StringComparison.Ordinal);
+
+        // A clean night says both things rather than showing two empty regions.
+        var clean = new MarkRenderer().StaleAndFailed([], []);
+
+        Assert.Contains("no name is carrying yesterday's bars", clean, StringComparison.Ordinal);
+        Assert.Contains("no stage of this night failed", clean, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheHarnessRegionCountsOutOfScopeApartFromUnexaminedAndSaysSoWithNoReport()
+    {
+        // Section 15.10's last region, and CLAUDE.md's rule about the two
+        // counts: only one of them is a defect, and a page that summed them
+        // would report a build that has not reached a claim as one that failed
+        // to check it.
+        var report = """
+            { "summary": { "pass": 156, "fail": 0, "unexamined": 0, "outOfScope": 81 } }
+            """;
+
+        var counts = RunScreen.Harness(report);
+
+        Assert.Equal(new HarnessCounts(156, 0, 0, 81), counts);
+
+        var region = new MarkRenderer().HarnessVerdicts(counts);
+
+        Assert.Contains("data-unexamined=\"0\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-out-of-scope=\"81\"", region, StringComparison.Ordinal);
+        Assert.Contains("156 passed, 0 failed, 0 unexamined, 81 out of scope", region, StringComparison.Ordinal);
+
+        // Never summed, on the surface as well as in the arithmetic.
+        Assert.DoesNotContain("237 ", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("81 unexamined", region, StringComparison.Ordinal);
+
+        // A machine with no report says so rather than showing four zeros,
+        // which would read as a build nothing failed.
+        Assert.Null(RunScreen.Harness(null));
+        Assert.Null(RunScreen.Harness("{}"));
+
+        var absent = new MarkRenderer().HarnessVerdicts(null);
+
+        Assert.Contains("no phase report has been written", absent, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-passed", absent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheRunPageDrawsEveryRegionSectionFifteenTenNamesAndStatesTheTwoThatAreAbsent()
+    {
+        // The five regions in the order that section states them, with the two
+        // that need what phase 7 builds stated as absent rather than drawn
+        // empty. An empty region reads as a night that produced nothing.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync();
+        var returns = await api.ForwardReturnsAsync();
+        var stages = RunScreen.Stages(await api.RunLogAsync(night));
+        var records = RunScreen.Records(listings, RunScreen.Resolved(returns));
+
+        var page = new SinglePageApp().RunRegion(
+            new MarkRenderer(),
+            night,
+            stages,
+            RunScreen.Failed(stages),
+            records,
+            RunScreen.Tracks(records),
+            RunScreen.BaseRates(returns),
+            RunScreen.Nights(listings),
+            await api.StaleNamesAsync("GSPC"),
+            RunScreen.Harness(null));
+
+        foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "harness" })
+        {
+            Assert.Contains($"class=\"{region}\"", page, StringComparison.Ordinal);
+        }
+
+        // In that order, so the evidence page reads as section 15.10 states it.
+        var at = new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "harness" }
+            .Select(region => page.IndexOf($"class=\"{region}\"", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal([.. at.Order()], at);
+
+        Assert.Contains("data-shadow=\"absent\"", page, StringComparison.Ordinal);
+        Assert.Contains("7.4", page, StringComparison.Ordinal);
+
+        // And the route is a link, which is what makes the page shareable.
+        Assert.Contains(SinglePageApp.RunRoute, new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
+        Assert.Contains("/screens/run/", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
+    }
 
     static ChartBar[] Bars(IReadOnlyList<BarRow> served) =>
         [.. served.Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))];

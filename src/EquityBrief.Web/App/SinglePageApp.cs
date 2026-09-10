@@ -39,6 +39,11 @@ public sealed class SinglePageApp : IComponent
     // names and which 15.3's own list lacked until 5.0.
     public const string NightRoute = "#/night/";
 
+    // The run page, section 15.3's last route. The date is the night's, resolved
+    // through the clock rather than through the UTC date the run log carries,
+    // because a run that starts after the close in New York carries tomorrow's.
+    public const string RunRoute = "#/run/";
+
     // The hash route, so one document serves every screen and the browser never
     // asks the server for a page it already has.
     //
@@ -73,6 +78,12 @@ public sealed class SinglePageApp : IComponent
             const night = hash.startsWith('{{NightRoute}}') ? '/' + encodeURIComponent(hash.slice('{{NightRoute}}'.length)) : '';
             const tonight = await fetch('/screens/tonight' + night);
             screen.innerHTML = await tonight.text();
+            return;
+          }
+          if (hash.startsWith('{{RunRoute}}')) {
+            const night = encodeURIComponent(hash.slice('{{RunRoute}}'.length));
+            const run = await fetch('/screens/run/' + night);
+            screen.innerHTML = await run.text();
             return;
           }
           if (hash.startsWith('{{UniverseRoute}}')) {
@@ -246,7 +257,9 @@ public sealed class SinglePageApp : IComponent
         string? duration,
         IReadOnlyList<ListingCell> rows,
         IReadOnlyList<ListingCell> watched,
-        string selectedName)
+        string selectedName,
+        IReadOnlyList<ReasonRecord>? records = null,
+        IReadOnlyList<ReasonTrackRow>? totals = null)
     {
         var region = new StringBuilder();
 
@@ -254,12 +267,19 @@ public sealed class SinglePageApp : IComponent
 
         region.Append(marks.NightHeader(night, index, fired, duration));
         region.Append(marks.WatchList(watched));
-        region.Append(marks.TonightList(rows, TonightDrawn));
+        region.Append(marks.TonightList(rows, TonightDrawn, records));
 
         // The selected name's plan and level summary, which is what section 15.7
         // means by the common case needing no navigation. It arrives already
         // composed, because the marks it holds are the name screen's.
         region.Append(selectedName);
+
+        // The reason totals, 15.7's last region, drawn beneath the list because
+        // it is a statement about the evening rather than about a name in it.
+        if (totals is not null)
+        {
+            region.Append(marks.ReasonTotals(totals));
+        }
 
         region.Append("</section>");
 
@@ -269,6 +289,49 @@ public sealed class SinglePageApp : IComponent
     // Section 17's list display count, held here so the app and the projection
     // agree about it rather than each stating it.
     public const int TonightDrawn = 20;
+
+    // The run page, section 15.10's five regions, in the order that section
+    // states them.
+    //
+    // Two of the five are absent and say so. The shadow candidates need the
+    // candidate register, which phase 7 builds, and the reason records' verdict
+    // half needs resolved setups, which no checkpoint accumulates. Each is
+    // stated rather than drawn empty, because an empty region reads as a night
+    // that produced nothing.
+    //
+    // It is deliberately not a status dashboard. A page of green tiles invites a
+    // glance and this one is meant to be read, which is why every region is a
+    // table of counts rather than a light.
+    public string RunRegion(
+        MarkRenderer marks,
+        DateOnly night,
+        IReadOnlyList<StageRow> stages,
+        IReadOnlyList<StageRow> failed,
+        IReadOnlyList<ReasonRecord> records,
+        IReadOnlyList<ReasonTrackRow> tracks,
+        IReadOnlyList<BaseRateLine> baseRates,
+        int nights,
+        IReadOnlyList<string> stale,
+        HarnessCounts? harness)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-stages=\"{stages.Count}\">"));
+
+        region.Append(marks.OperationalHeader(night, stages));
+        region.Append(marks.ReasonRecords(records, tracks, baseRates, nights));
+
+        region.Append("<section class=\"shadow-candidates\" data-shadow=\"absent\">");
+        region.Append("<p class=\"degraded\">registered candidates that are not on the list, and the correction divisor beside each threshold, arrive with the register at 7.4</p>");
+        region.Append("</section>");
+
+        region.Append(marks.StaleAndFailed(stale, failed));
+        region.Append(marks.HarnessVerdicts(harness));
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
 
     // Section 18's banner half. The bulk price feed not answering keeps last
     // night's bars, and what a reader must not be shown is tonight's list built
