@@ -31,6 +31,7 @@ public class CoverageReported
         ["decision-resolves"] = "DecisionCitations",
         ["no-superseded-citation"] = "DecisionCitations",
         ["obligation-reconciles"] = "ObligationReconciles",
+        ["done-condition-producible"] = "DoneConditionProducible",
         ["changelog-reconciles"] = "ChangelogReconciles",
         ["record-append-only"] = "RecordAppendOnly",
         ["pinned-constants"] = "PinnedConstants",

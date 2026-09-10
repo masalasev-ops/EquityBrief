@@ -25,6 +25,13 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - CLAUDE.md, BUILD_PLAN.md - the calendar-time rule gains an instrument
+Corrects: the rule that a done condition may not require calendar time arrived at 5.7 with nothing asserting it, in the same pass that left three statements of the condition it forbids standing. A convention with no check is a convention the next planning pass writes past, and this one had already been written past before the ink was dry. Found by repairing those three and asking what would have caught them.
+Was:
+> being one night on one machine at one moment. Section 17's limit is set when five scheduled nights over the whole index have run, as that measurement plus stated headroom with the headroom's reason, and the deadline follows at three times it.
+Now: `done-condition-producible` on the roster, reading every done condition in `BUILD_PLAN.md` and section 20's Done when column; and 5.1's trailing sentence moved out of its done condition into a paragraph of its own, because a clause sitting inside one reads as something the checkpoint waits for.
+Why: the check refuses a span of calendar, several nights or days, an unattended run, and evidence stated as accumulating, over 55 done conditions and 8 phase rows. It carries its own proof in both directions, since a sweep whose expected result is nothing is passed by a matcher that matches nothing at all. What it does not reach is prose about a done condition, which is where two of the three stale statements sat: it asserts that no done condition says this, not that nothing in the corpus describes one that did.
+
 ### 2026-09-10 - ARCHITECTURE.html, BUILD_PLAN.md - the amended done condition swept into the three places that restated it
 Corrects: 5.7 amended its own done condition off calendar time in `BUILD_PLAN.md` and swept nothing else, so three further statements of the old condition were left standing, one of them in the document the corpus calls the source of truth. Found by the phase 5 sign-off, which read section 20 and reported that it states an unmet phase 5 done condition. Two of the three were inside `BUILD_PLAN.md` itself and the sign-off did not name those, which is what makes this an incomplete sweep rather than a single stale cell.
 Was:
