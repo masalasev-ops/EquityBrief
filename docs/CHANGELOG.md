@@ -25,6 +25,44 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - BUILD_PLAN.md - 5.7's done condition, which required calendar time
+Corrects: a done condition that read "a week of unattended nights has run" and so stopped the build for a week while producing nothing. Found when the operator asked why development halts for days at a time at the end of every phase. The two figures it waited on are produced by the system running on a schedule and by no checkpoint, which is the class this plan already carries as operating, and nothing was registered with any scheduler, so the wait would not have ended on its own.
+Was:
+> The week of unattended nights is what produces the posting hour (owes: The provider's posting hour for the day's bulk file, measured from live fetches). It stood at 3.7, which is the phase 3 report and produces no evenings; a week of nights that ran on a schedule is a week of observations of when the file actually appeared, and it is the first thing in the plan that yields several.
+>
+> The week of nights is also what sets the nightly wall clock at index size, which stood at 5.1 and which 5.1 cannot produce: one night run by hand is an observation and a limit needs a distribution. The limit is that week's measurement plus stated headroom with the headroom's reason, and the night's deadline follows at three times it, in section 17 and in the retry policy together.
+>
+> **Done when** every phase 5 claim is PASS naming an instrument whose declared reach includes it, unexamined is zero, a week of unattended nights has run with the list current each morning, the posting hour is recorded from those nights rather than from documentation, the wall clock limit is set from those nights with its headroom stated, and the pair 5.0 predicted is checked against the actual pair, with every claim that arrived unpredicted named and placed in the list it belonged in and every predicted claim that did not arrive named as such.
+Now: the section states the defect and repairs it, both figures move to the operating form, and the done condition keeps the half 5.7 produces: the pair checked, the two rows converted, and the registration written as a command.
+Why: `CLAUDE.md`'s deferral convention already names this failure, in the words "never, where the named point is a report or a page rather than the thing that measures". 5.7 is the phase 5 report. The posting hour had already been moved from 3.7, which is the phase 3 report, so it had been moved from one report to another and neither produces an evening.
+
+### 2026-09-10 - BUILD_PLAN.md - the posting hour row, and a wall clock row beside it
+Corrects: the same defect in the table the checkpoint text was reading. The posting hour was a checkpoint row due at 5.7, and the wall clock was carried in 5.1's and 5.7's prose without a row of its own.
+Was:
+> | **The provider's posting hour for the day's bulk file, measured from live fetches** | 2.0 | 5.7 | 5.7's done condition is a week of unattended nights, which is what produces evenings of observation. Bounded at 2.1 and again at 2.6. It stood at 3.7, which is the phase 3 report and produces no evenings |
+Now: both rows are operating, each stating its numeric trigger, the surface it is read on and the checkpoint that built that surface, which is 5.6's operational header.
+Why: an operating row is chased by the trigger firing rather than by a checkpoint arriving, and 5.6 already built the surface both are read on. The wall clock gains a row because a figure carried only in prose is a figure `obligation-reconciles` cannot see.
+
+### 2026-09-10 - CLAUDE.md - a done condition may not require calendar time
+Corrects: nothing in the conventions forbade the done condition above, so the next planning pass would have written another. The deferral rule covered where an obligation points and said nothing about what a checkpoint may wait for.
+Was: the Conventions section moved from the deferral paragraph straight to "Obligations are named and cited, as decisions are".
+Now: a paragraph between them stating that evidence which only accumulates is carried in the second deferral form, that the checkpoint keeps the half it produces, and that where a done condition needs the system to have run, what it requires is the procedure written down as a command rather than the operator having got around to it.
+Why: the rule is stated with the evidence that produced it, which is that this corpus wrote such a condition once and it cost a week that was not even buying the evidence.
+
+### 2026-09-10 - ARCHITECTURE.html - the wall clock row and the deadline that follows it
+Corrects: both rows said the wall clock is proposed until 5.1 measures it, and 5.0 had already moved it to 5.7, so the document named a checkpoint the plan no longer did. Neither produced it.
+Was:
+> <tr><td>Nightly wall clock, at index size</td><td>the measured night plus stated headroom, proposed until 5.1 measures it. ...</td>...<td>run log duration, measured per step on a live night at index size and recorded with the run's own conditions</td></tr>
+Now: the row states a figure the night is bounded by, names five scheduled nights read on the operational header as what settles it, and its asserted-by cell claims the relationship between the two rows rather than a measurement the harness cannot reach.
+Why: a limit stated with no figure is a limit nothing can be pinned against, and a claim whose asserted-by cell describes a live measurement is a claim about the running system, which a green report never speaks to. The relationship between the wall clock and the deadline is assertable today and is now asserted, in the document and in the retry policy together.
+
+### 2026-09-10 - RUNBOOK.md - registering the schedule, as a command
+Corrects: step 8 read "Register the schedule with the platform's scheduler, in UTC", which is an instruction and not a command, and nothing was ever registered on either machine. Every figure that waited on nights was waiting on this.
+Was:
+> 8. Register the schedule with the platform's scheduler, in UTC.
+Now: step 8 points at a new section carrying the command for each platform, the provisional UTC instant with the reason it is provisional, and the local-time trap in both schedulers.
+Why: the two schedulers both trigger in local time and each needs a different thing done about it, which is exactly the knowledge a runbook exists to hold. A step that tells the reader to find a command is a step that gets deferred to a quieter evening.
+
 ### 2026-09-10 - BUILD_PLAN.md - the news window obligation, discharged
 Authorised by: News is one dated query, paged to cover the day, and attributed to names locally
 Was:

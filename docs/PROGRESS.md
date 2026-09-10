@@ -5713,3 +5713,111 @@ Notes:      no store, no migration and no spec edit. The page reads what phase 5
             record over one evening would be a statement about that evening wearing the clothes of
             a verdict. That is a scan of the listings table once an evening, and it is the reason
             the read surface gained a listing query with no filter on it.
+### 5.7 - the phase 5 report, and the done condition that required calendar time   2026-09-10
+Built:      nothing that runs. This checkpoint reports, converts two obligations, and repairs its
+            own done condition. **This checkpoint amends its own done condition**, and the
+            amendment is the substance of the entry rather than an aside in it.
+Claims:     237, 165 PASS, 72 out of scope, 0 FAIL, 0 unexamined, from 226 and 107 at the phase 4
+            sign-off pass. 172 placements and verdicts reconciled against a floor of 34.
+Predicted:  234 claims and 162 PASS, with 72 out of scope. The actual is 237, 165 and 72.
+            Three claims arrived unpredicted and each is named and placed. Two are the night
+            close's catalogue row and its matrix row, which arrived at 5.5 because a component is
+            named in the catalogue in the same commit that introduces it, and 5.0 predicted the
+            stage without predicting that the stage was a component; both are PASS and belong in
+            list B. One is section 15.9's how-it-got-here row decomposed into its table of moves at
+            5.2 and its cause column at 6.5, named in 5.2's own entry so this pass could place it;
+            it is out of scope at 6.5 and belongs in list B.
+            One claim predicted to stay out of scope is PASS instead: section 17's wall clock row,
+            below. So out of scope lands on the predicted 72 by two movements that cancel rather
+            than by nothing having moved, which is worth saying, because a total that matches for
+            two reasons is not a total that matched.
+            The arithmetic: 234 plus 3 is 237; 162 plus the two night close rows plus the wall
+            clock is 165; 72 plus the cause column minus the wall clock is 72.
+            Every claim list A named arrived. No predicted claim failed to arrive.
+Amended:    the done condition read that a week of unattended nights has run with the list current
+            each morning, that the posting hour is recorded from those nights, and that the wall
+            clock limit is set from them. It now requires the pair checked, the two figures carried
+            as operating rows, and the registration written as a command.
+            The reason is that neither figure is produced by a checkpoint. Both are produced by the
+            system running on a schedule, which is the class this plan already carries as operating
+            for the reason thresholds and the reason records. `CLAUDE.md`'s deferral convention had
+            already named the failure in the words "never, where the named point is a report or a
+            page rather than the thing that measures", and 5.7 is the phase 5 report. The posting
+            hour stood at 3.7 before it stood here, which is the phase 3 report, so it had been
+            moved from one report to another and neither produces an evening.
+            The second half is worse than the first. Nothing had been registered with any
+            scheduler. `RUNBOOK.md` step 8 read "Register the schedule with the platform's
+            scheduler, in UTC", which is an instruction and not a command, so the week the done
+            condition was waiting for was not going to arrive however long the build waited: no
+            night was scheduled to run. A done condition that waits on the operator having got
+            around to something is a done condition with no mechanism behind it.
+Found:      three things beyond the done condition itself.
+            The wall clock and the deadline were two numbers held in the relationship the row
+            claims by a comment saying so. `RetryPolicy` stated fifteen minutes and a comment said
+            it was three times the wall clock section 17 states, and section 17 stated no figure at
+            all. The deadline is now derived from the wall clock at three times it, so the limit
+            cannot move in one place alone, and the relationship is asserted in the document and in
+            the policy together.
+            Section 17 named the wrong checkpoint in two rows. Both said the wall clock is proposed
+            until 5.1 measures it, and 5.0 had moved it to 5.7, so the document named a checkpoint
+            the plan no longer did. Neither produced it.
+            And one assertion this checkpoint wrote was a tautology, caught while writing it rather
+            than by the sweep. `Deadline` is defined as `WallClock * DeadlineMultiple`, so asserting
+            the one against the other cannot fail: changing the multiple moves both sides together.
+            The multiple is now the number the row's own prose states, and the document is what
+            notices.
+Measured:   the wall clock claim moves from out of scope to PASS, which is 5.7's only claim
+            movement. What is assertable is the relationship between the two rows and the
+            derivation in the policy; what the figure should be is a property of the running system
+            and is carried as an operating row, read on the operational header. Five minutes stands
+            as proposed with what settles it named beside it.
+Mutated:    six mutations, six runs, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed. None was invalid. The rule was stated
+            before the sweep: each names the property it is trying to break rather than the line it
+            edits.
+            The properties: the night's deadline is three times the wall clock the document states;
+            the wall clock the code holds is the figure section 17 states; the wall clock row says
+            its figure is proposed and names what settles it; an operating row states the surface
+            its trigger is read on; an operating row carries no checkpoint due point beside its
+            trigger; and the checkpoint that builds the surface cites the obligation back.
+            All six turned a test red. The last three are `obligation-reconciles` reading the two
+            converted rows, which is the check that has to hold for the conversion to be worth
+            anything: a row that reads as tracked from either end is chased from neither.
+            None of the properties added went unmutated.
+Tests:      474, unchanged. This checkpoint added assertions to a test that existed rather than
+            tests of its own, which is where the wall clock row's claim belonged: `nightly-run`
+            already read the deadline row against the policy. `tools/ci.sh` green end to end, all 6
+            steps, migrations 0 to 18, exit 0. `tools/verify-phase` green at 237 claims, 165 PASS,
+            0 FAIL, 72 out of scope, 0 unexamined, 172 placements and verdicts reconciled against a
+            floor of 34. Windows on this machine; the matrix carries macOS and the Linux
+            case-sensitivity job.
+Carried:    two rows converted rather than discharged, and neither is closed by this checkpoint.
+            (owes: The provider's posting hour for the day's bulk file, measured from live fetches)
+            is 5 nights fetched under the schedule, and what those establish is a bound on the hour
+            rather than the hour: a night that found the file already posted says the file was
+            posted by then and says nothing about when. Tightening it needs a probe earlier than
+            the schedule rather than more nights of it, and that is written into the row so a later
+            session does not read five nights as five measurements.
+            (owes: The nightly wall clock at index size, measured from nights that ran on the
+            schedule) is 5 scheduled nights over the whole index. It is created here and open here,
+            which is the first row in this table created by the checkpoint that also converts it.
+Notes:      the registration is the deliverable that matters most and it is the smallest. Two
+            schedulers, both triggering in local time, each needing a different thing done about
+            it: Windows takes a start boundary carrying a zone, and `launchd` has no zone field at
+            all, so the macOS job runs hourly and the script decides. A schedule written in local
+            time walks an hour relative to the provider when daylight saving changes, and it walks
+            into the wrong side of the close twice a year.
+            The source needs no setting: it defaults to live, and what a live night needs is the
+            key, which refuses by name when it is absent rather than reaching the provider
+            anonymously. The runbook said both machines need the source set, which was wrong when
+            written and would have sent a reader looking for a setting that is not there; it now
+            says to read it only because a machine that has been replaying a capture carries
+            `fixture` and would go on replaying it every evening.
+            The instant is 23:30 UTC and it is provisional, which the runbook says in the same
+            breath as stating it. A night that runs before the file is posted refuses rather than
+            storing the wrong session, so an instant set too early is visible the next morning and
+            is the measurement the posting hour obligation reads.
+            What this checkpoint does not establish: that a scheduled night works. Nothing here
+            registered anything on the operator's machine, and the first scheduled night is the
+            operator's to start. What changed is that starting it is one command rather than a
+            piece of research, and that no checkpoint is waiting on it.

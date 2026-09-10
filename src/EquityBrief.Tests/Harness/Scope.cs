@@ -258,6 +258,17 @@ internal static class Scope
             Verdict.Pass,
             "a night with no list shows the data date the store does have and draws no list at all, which is the half a banner above a stale list would not satisfy",
             ByReadSurface),
+        // The phase 5 report, 5.7. The row states a figure and the deadline
+        // follows it by three, which is assertable between two stated numbers
+        // and in the policy that derives one from the other. What the figure
+        // should be is a property of the running system, and it is carried as
+        // an operating obligation read on the operational header rather than
+        // waited for by a checkpoint.
+        [CheckReach.Key(LimitsTable, "Nightly wall clock, at index size")] = new Scoped(
+            Verdict.Pass,
+            "the deadline is derived from this row's own figure at three times it, asserted in the document and in the retry policy together, with the figure stated as proposed and naming the surface that settles it",
+            ByNight),
+
         // The run page, 5.6. Every one of these is a claim about a surface, so
         // each is reached by the check that draws the surface and reads it back.
         [CheckReach.Key(LimitsTable, "Base rate")] = new Scoped(
