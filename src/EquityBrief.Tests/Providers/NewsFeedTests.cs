@@ -54,6 +54,85 @@ public class NewsFeedTests
     }
 
     [Fact]
+    public async Task ADayWiderThanOnePageIsPagedUntilItIsCoveredAndEveryPageIsCounted()
+    {
+        // The property 5.0's whole news ruling rests on, and 5.5's own mutation
+        // found nothing exercising it: the captured payload is one page under
+        // the cap, so a feed that stopped after one page passed the suite. The
+        // fixture cannot produce a day wider than a page, which is the
+        // unproducible shape, so the pages are constructed.
+        //
+        // 2.5 measured one request for a single session coming back at exactly
+        // 1,000 articles, which is the provider's cap. A count taken from it is
+        // a count over whatever the cap happened to include.
+        // see: News is one dated query, paged to cover the day, and attributed to names locally
+        var pages = new List<string>
+        {
+            Page(EodhdNewsFeed.Limit, "AAA"),
+            Page(EodhdNewsFeed.Limit, "BBB"),
+            Page(3, "CCC"),
+        };
+
+        var at = 0;
+        var handler = new Answering(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(pages[Math.Min(at++, pages.Count - 1)]),
+        });
+
+        var feed = new EodhdNewsFeed(
+            new HttpClient(handler) { BaseAddress = new Uri(Base) },
+            new ProviderCredentials(Key),
+            new ProviderRequest(RetryPolicy.Standard, (_, _) => Task.CompletedTask));
+
+        var articles = await feed.ArticlesAsync(From, To);
+
+        // Every page is asked for and every page is counted, so the figure the
+        // run log carries is the pages rather than the queries.
+        Assert.Equal(3, handler.Asked.Count);
+        Assert.Equal(3, feed.Requests);
+        Assert.Equal((EodhdNewsFeed.Limit * 2) + 3, articles.Count);
+
+        // The offset advances by what arrived rather than by a page size the
+        // caller assumed, so a provider that answers short of the cap is not
+        // asked for the same rows twice.
+        Assert.Contains("offset=0", handler.Asked[0].Query, StringComparison.Ordinal);
+        Assert.Contains($"offset={EodhdNewsFeed.Limit}", handler.Asked[1].Query, StringComparison.Ordinal);
+        Assert.Contains($"offset={EodhdNewsFeed.Limit * 2}", handler.Asked[2].Query, StringComparison.Ordinal);
+
+        // The last page carries names the first two do not, which is the half a
+        // feed that fetched three pages and kept one would also have to pass.
+        Assert.Contains(articles, article => article.Symbols.Contains("CCC"));
+        Assert.Contains(articles, article => article.Symbols.Contains("AAA"));
+
+        // And a day that reaches the page cap refuses rather than storing a
+        // truncated count, because a count over part of a day reported as the
+        // whole is the failure this exists to prevent.
+        var endless = new Answering(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(Page(EodhdNewsFeed.Limit, "ZZZ")),
+        });
+
+        var runaway = new EodhdNewsFeed(
+            new HttpClient(endless) { BaseAddress = new Uri(Base) },
+            new ProviderCredentials(Key),
+            new ProviderRequest(RetryPolicy.Standard, (_, _) => Task.CompletedTask));
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => runaway.ArticlesAsync(From, To));
+
+        Assert.Contains("still had more", refused.Message, StringComparison.Ordinal);
+        Assert.Equal(EodhdNewsFeed.MostPages, endless.Asked.Count);
+    }
+
+    // One page of articles inside the window, each attributed to one name.
+    static string Page(int count, string symbol) =>
+        "[" + string.Join(",", Enumerable.Range(0, count).Select(at =>
+            $$"""
+            {"date":"2026-09-01T12:00:00+00:00","title":"page item {{at}}","content":"text",
+             "link":"https://example.test/{{symbol}}/{{at}}","symbols":["{{symbol}}"]}
+            """)) + "]";
+
+    [Fact]
     public async Task OneDatedRequestCarriesTheWindowAndNoTicker()
     {
         var (feed, handler) = Feed();
