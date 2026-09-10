@@ -11,6 +11,15 @@ set -uo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
+# The store this drops is its own and never the operator's.
+#
+# Until 5.7 both resolved to `data`, so verifying a checkpoint deleted the
+# store the nightly job had been filling, and the next night silently ran a
+# first-run backfill of the whole index. A tool that verifies the build must
+# not be able to reach the store the build produced, and the cheapest way to
+# make that true is for it never to know the path.
+export EquityBrief__DataRoot="$root/data-ci"
+
 step() {
   name="$1"
   shift
@@ -23,7 +32,7 @@ step() {
 }
 
 drop_store() {
-  rm -rf data
+  rm -rf data-ci
 }
 
 step "drop the store"  drop_store

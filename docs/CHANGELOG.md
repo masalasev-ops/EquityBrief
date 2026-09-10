@@ -25,6 +25,27 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - CLAUDE.md - the store the verification scripts drop
+Corrects: `tools/ci.*` dropped `data`, which is the operator's store and the one the nightly job fills. Found by running the two in one session: a live night backfilled 125,736 bars over 503 per-name requests, `tools/ci.sh` was run to verify the next commit, and the backfill was gone. Every session that verifies a checkpoint was silently resetting the store the schedule accumulates into, and the next night would have run a first-run backfill without anything saying why.
+Was:
+> /data             gitignored. the store lives here
+Now: the same line, and `/data-ci` beside it as the store the verification scripts create and drop, with the note that they never reach the one above.
+Why: the corpus already holds that nothing in the harness reaches `data/`, and that was true of the suite and false of the scripts that run it. A property held by everything except the one tool an operator runs by hand is not held. The scripts now export a data root of their own, so the path to the operator's store is not something they know rather than something they are trusted not to use.
+
+### 2026-09-10 - RUNBOOK.md - the scheduled task's logon type, and what the boundary stores
+Corrects: the registration written earlier the same day produces a task that runs only while the account is logged on, and says nothing about it. Found by registering it on the operator's machine and reading the task back: `Register-ScheduledTask` with no principal stores `InteractiveToken`, and the difference from a task that runs when logged off does not appear in `Get-ScheduledTask`, which shows both as ready.
+Was:
+> `-WakeToRun` because a laptop left to itself sleeps and a nightly job that silently did not run is worse than no nightly job. `-StartWhenAvailable` because a machine that was off at the instant should run the night when it comes back rather than skip it, and the night is idempotent. Confirm with `Get-ScheduledTask 'EquityBrief nightly'`, and remove with `Unregister-ScheduledTask 'EquityBrief nightly'`.
+Now: the same two sentences, then the logon type stated as the thing that is invisible, the elevated principal that fixes it, and the one line that reads back which of the two is registered.
+Why: the section exists so a nightly job does not silently fail to run, and it shipped with the commonest way for one to silently fail to run. A machine that has been running nights for a month stops on the morning after an update reboot, and the run page shows the night before, which reads as a night that has not happened yet rather than as a schedule that is gone.
+
+### 2026-09-10 - RUNBOOK.md - what Task Scheduler stores for a UTC boundary
+Corrects: the text said setting the boundary to an instant with a `Z` is what pins it, and reading the task back shows an offset rather than a `Z`, which reads as the pinning having failed.
+Was:
+> Setting `StartBoundary` to an instant with a `Z` is what pins it, and it is the same setting the interface calls synchronizing across time zones.
+Now: the same sentence, and then what is actually stored, which is the machine's own offset carrying the same instant, with the note that a boundary carrying any offset is the pinned form and a boundary carrying none is the one that walks.
+Why: an operator who checks the work and finds something other than what the runbook described has to decide whether the runbook or the machine is wrong, and the answer is neither.
+
 ### 2026-09-10 - BUILD_PLAN.md - 5.7's done condition, which required calendar time
 Corrects: a done condition that read "a week of unattended nights has run" and so stopped the build for a week while producing nothing. Found when the operator asked why development halts for days at a time at the end of every phase. The two figures it waited on are produced by the system running on a schedule and by no checkpoint, which is the class this plan already carries as operating, and nothing was registered with any scheduler, so the wait would not have ended on its own.
 Was:
