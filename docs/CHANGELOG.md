@@ -25,6 +25,13 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - BUILD_PLAN.md - 6.0 gains the bulk payload refusal
+Corrects: nothing in the corpus covered a bulk payload that is not a price payload at all. Section 18 has a row for one that is for another session and one for a payload holding none of the index, and the provider returns neither of those for a session that is not the most recent: it returns something the parser meets and throws a `FormatException` on. Found by replaying sessions 2026-09-04 and 2026-09-08 while measuring a night at index size.
+Was:
+> Settles which local model, the section-to-lane configuration shape, and how a research pass is recorded so a fixture can replay it without a network. Discharges the source-lists obligation from 1.7 against the coverage measurement (owes: Source lists reviewed against measured coverage), whose evidence has been in hand since 1.7 and which sits here because 6.0 is where the lists are next used rather than because anything is waited on.
+Now: the same paragraph, and a second sentence pointing the new obligation here with the evidence stated, because the repair is a failure row and a named refusal rather than a component.
+Why: the night refuses and names the step, so nothing wrong is stored and the defect is the message rather than the behaviour. A planning pass is where a failure row is added, and the evidence is already in hand rather than waited on.
+
 ### 2026-09-10 - CLAUDE.md - the store the verification scripts drop
 Corrects: `tools/ci.*` dropped `data`, which is the operator's store and the one the nightly job fills. Found by running the two in one session: a live night backfilled 125,736 bars over 503 per-name requests, `tools/ci.sh` was run to verify the next commit, and the backfill was gone. Every session that verifies a checkpoint was silently resetting the store the schedule accumulates into, and the next night would have run a first-run backfill without anything saying why.
 Was:

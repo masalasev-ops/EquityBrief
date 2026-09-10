@@ -101,6 +101,15 @@ public sealed class NewsPulseCounter : IComponent
         var written = 0;
         var counted = 0;
 
+        // One transaction around the whole loop rather than one per row.
+        //
+        // Without it every row commits on its own and each commit is a disk
+        // sync, which costs about the same whatever the row holds. Over the
+        // four names of the committed fixture that is invisible; over 503 it
+        // was measured at 110 seconds for 503 rows. The stages that had this were the ones
+        // phase 5 wrote, because a fixture of four names cannot show it.
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
         foreach (var ticker in members)
         {
             // A member the day wrote nothing about gets a row carrying zero.
@@ -111,6 +120,7 @@ public sealed class NewsPulseCounter : IComponent
 
             await using var command = connection.CreateCommand();
 
+            command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = Insert;
             command.Parameters.AddWithValue("$ticker", ticker);
             command.Parameters.AddWithValue("$session_date", sessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
@@ -123,6 +133,8 @@ public sealed class NewsPulseCounter : IComponent
                 counted++;
             }
         }
+
+        await transaction.CommitAsync(cancellation);
 
         var dropped = await DroppedAsync(connection, sessionDate.AddDays(-RetentionDays), cancellation);
 

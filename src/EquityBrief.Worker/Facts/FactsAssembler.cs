@@ -153,6 +153,13 @@ public sealed class FactsAssembler : IComponent
         var rows = 0;
         var facts = 0;
 
+        // One transaction around the whole loop rather than one per row. A row
+        // that commits on its own costs a disk sync, and a sync costs the same
+        // whatever the row holds, so the price is per row and not per byte. The
+        // committed fixture has four names and cannot show it; the first night
+        // over 503 did.
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
         foreach (var ticker in tickers)
         {
             var assembled = await FactsForAsync(connection, ticker, cancellation);
@@ -166,6 +173,7 @@ public sealed class FactsAssembler : IComponent
 
             await using var command = connection.CreateCommand();
 
+            command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = Insert;
             command.Parameters.AddWithValue("$ticker", ticker);
             command.Parameters.AddWithValue("$session_date", assembled.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
@@ -177,6 +185,8 @@ public sealed class FactsAssembler : IComponent
             rows++;
             facts += assembled.Facts.Count;
         }
+
+        await transaction.CommitAsync(cancellation);
 
         await RecordAsync(connection, runId, startedAt, tickers.Count, rows, facts, cancellation);
 

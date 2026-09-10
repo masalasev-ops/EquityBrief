@@ -123,6 +123,18 @@ public sealed class ForwardReturnFiller : IComponent
             _ => new List<string?>(),
             StringComparer.Ordinal);
 
+        // One transaction around every write this stage makes, rather than one
+        // per row. A row that commits on its own costs a disk sync and a sync
+        // costs the same whatever the row holds, so the price is paid per row
+        // and not per byte. Over the four names of the committed fixture that is
+        // invisible; over 503 listings at three horizons each it was measured at
+        // 334 seconds, which was more than half the night.
+        //
+        // It also makes the stage atomic, which is what it should have been: a
+        // fill interrupted halfway left some horizons of some listings written
+        // and the base rate belonging to none of them.
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
         foreach (var listing in listings)
         {
             var after = await SessionsAfterAsync(connection, listing.Ticker, listing.SessionDate, cancellation);
@@ -138,7 +150,7 @@ public sealed class ForwardReturnFiller : IComponent
 
             foreach (var outcome in filled)
             {
-                await WriteAsync(connection, listing.Ticker, listing.SessionDate, outcome, cancellation);
+                await WriteAsync(connection, transaction, listing.Ticker, listing.SessionDate, outcome, cancellation);
 
                 byHorizon[outcome.Horizon].Add(outcome.Outcome);
 
@@ -166,12 +178,15 @@ public sealed class ForwardReturnFiller : IComponent
 
             await using var command = connection.CreateCommand();
 
+            command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = SetBaseRate;
             command.Parameters.AddWithValue("$horizon", horizon);
             command.Parameters.AddWithValue("$base_rate", (object?)rate ?? DBNull.Value);
 
             await command.ExecuteNonQueryAsync(cancellation);
         }
+
+        await transaction.CommitAsync(cancellation);
 
         await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, cancellation);
 
@@ -196,6 +211,7 @@ public sealed class ForwardReturnFiller : IComponent
 
     async Task WriteAsync(
         SqliteConnection connection,
+        System.Data.Common.DbTransaction transaction,
         string ticker,
         string sessionDate,
         ForwardReturn outcome,
@@ -203,6 +219,7 @@ public sealed class ForwardReturnFiller : IComponent
     {
         await using var command = connection.CreateCommand();
 
+        command.Transaction = (SqliteTransaction)transaction;
         command.CommandText = Upsert;
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$session_date", sessionDate);

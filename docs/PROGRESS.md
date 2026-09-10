@@ -5893,3 +5893,84 @@ Notes:      the schedule is registered on this machine for 23:30 UTC daily, whic
             nights both operating rows are counting (owes: The provider's posting hour for the
             day's bulk file, measured from live fetches) (owes: The nightly wall clock at index
             size, measured from nights that ran on the schedule).
+### 5.7 - the night measured at index size, and the three defects that measuring it found   2026-09-10
+Measured:   a whole night over 503 names, run by hand for session 2026-09-09 against the live
+            provider, three times: once as it stood, once with room to finish, and once with the
+            repairs below. Warm store, home network, provider answering normally, on the operator's
+            Windows machine. The first run is what forced the rest.
+            Run 1 was stopped by its own deadline on the `facts` step at fifteen minutes, having
+            reached twelve of seventeen stages. It behaved exactly as section 18 says: it named the
+            step, kept last night's bars and marked every name stale rather than half-writing a
+            night. That is the first time the deadline has fired against a real run rather than a
+            constructed one, and it means the schedule registered this morning would have failed
+            at 23:30 tonight.
+            Run 3, after the repairs, is 44.6 seconds for the same session over the same store,
+            from 574.7. Per stage, and the row counts are identical either side so the comparison
+            is like for like:
+              changes            106.0s -> 0.0s over 503 rows
+              forward-returns    334.0s -> 0.0s over 1,509 rows
+              indicators           9.0s -> 18.0s over 1,257,450 rows
+              whole night        574.7s -> 44.6s
+            The cost rule holds at index size and this is the first live evidence of it: 17 network
+            requests and 0 model calls for 503 names, 335 weighted calls of an allowance of
+            100,000. The news feed paged three times to cover one day and attributed 2,038 articles
+            to 343 of the 503, which is 5.5's paging working against the provider rather than
+            against a capture.
+            The list is not a shortlist: 477 of 503 names fired, 798 reasons. That is the flood
+            section 11's callout predicted in the abstract and it now has a number
+            (owes: The six reason thresholds calibrated from the nights they fired on).
+            A first-run backfill is 79.2 seconds for 125,736 bars over 503 per-name requests, which
+            is the one place a per-name request is allowed and it is once per name ever.
+            What this does not establish: a cold store. Every figure above is a machine whose page
+            cache already held the file, and the one cold run this session made was the one carrying
+            the defects. It also does not establish a scheduled night, since all three were run by
+            hand.
+Found:      three defects, none of which the suite could have found, because the committed fixture
+            has four names and every one of these is invisible below about five hundred.
+            Five stages wrote without a transaction. Every row that commits on its own costs a disk
+            sync and a sync costs the same whatever the row holds, so the price is per row rather
+            than per byte: 503 rows at about a fifth of a second each. Eleven components already
+            batched and the five that did not are the five phase 5 wrote, which is the fixture's
+            shape showing through the code. `ForwardReturnFiller` is now atomic as well as fast,
+            which it should have been anyway: a fill interrupted halfway left some horizons written
+            and a base rate belonging to none of them.
+            Four components wrote their run log outcome as the literal `"ok, {dropped} dropped"`
+            with the interpolation prefix missing, so the brace reached the column and the run page
+            drew it. The worse half is that `RunScreen.Failed` decides the stale-and-failed region
+            by comparing the outcome against `ok`, so four stages of every night would have been
+            reported as failures on the one region that exists to say what failed. The count was
+            already on the detail beside it, correctly, which is why every review passed over it.
+            An outcome is a closed vocabulary and not a sentence, so all four now write `ok`.
+            And a replayed night froze its own measurement. `--session` resolved to a `FixedClock`,
+            so every stage started and ended at the same instant and the operational header drew a
+            row of zeroes that reads as a value. The session is what has to be fixed for a replay;
+            the duration is what the page is for. `ReplayClock` fixes the one and lets the other
+            run, and it is why the table above exists at all.
+Mutated:    one mutation, one run, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed. The rule: reinstate the defect the new
+            guard was written for, in one of the four files rather than all four, since a guard
+            that only fires when every instance is present is a guard nobody will trip.
+            `"ok"` back to `"ok, {dropped} dropped"` in `SwingFinder` turns two tests red, being the
+            placeholder sweep and the closed-vocabulary assertion.
+Carried:    one new obligation. The bulk feed refuses with an unnamed `FormatException` for a
+            session that is not the most recent one: 2026-09-04 and 2026-09-08 both fail with "One
+            of the identified items was in an invalid format" while 2026-09-09 fetches cleanly. The
+            provider appears to serve the bulk file for the last session and something else for
+            older ones, and the parser meets that something else and throws rather than refusing by
+            name. Section 18 has rows for a payload that is for another session and for one holding
+            none of the index, and no row for one that is not a price payload at all.
+            It costs nothing tonight, because a scheduled night fetches the most recent session,
+            which is the case that works. It costs the catch-up night the `--session` comment
+            claims: a machine that was off for three days cannot fetch those days, and the comment
+            says it can.
+Tests:      476, from 474. Two guards added, both over the replayed chain rather than at the four
+            sites, because the next missing prefix will be written somewhere else: no run log value
+            may carry a brace around a bare identifier, and every stage of a clean run says `ok`.
+            `tools/ci.sh` green end to end, migrations 0 to 18. `tools/verify-phase` green at 237
+            claims, 165 PASS, 0 FAIL, 72 out of scope, 0 unexamined. Windows on this machine.
+Notes:      the wall clock stays at 5 minutes and stays proposed. One by-hand run on a warm store
+            is one observation, and the row is settled by nights that ran on the schedule
+            (owes: The nightly wall clock at index size, measured from nights that ran on the
+            schedule). What the measurement does say is that the proposed figure is the right order
+            of magnitude rather than wrong by three times, which is what it looked like this
+            morning before the transactions went in.

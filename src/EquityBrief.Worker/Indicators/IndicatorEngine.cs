@@ -223,7 +223,15 @@ public sealed class IndicatorEngine : IComponent
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-        command.Parameters.AddWithValue("$outcome", "ok, {dropped} dropped");
+        // "ok" and nothing else. The count of rows dropped is on the detail
+        // beside it, where it is interpolated and where a person reads it.
+        // This line carried "ok, {dropped} dropped" without the interpolation
+        // prefix until 5.7, so it stored the brace literally and the run page
+        // drew it. The worse half was that the outcome column is compared
+        // against "ok" to decide what failed, so four stages of every night
+        // were reported as failures on the one region that exists to say what
+        // failed. An outcome is a closed vocabulary, not a sentence.
+        command.Parameters.AddWithValue("$outcome", "ok");
         command.Parameters.AddWithValue("$rows_written", rows);
 
         // The absent count is on the row a person reads rather than inferred
