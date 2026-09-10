@@ -121,6 +121,19 @@ public class FixtureExpectations
         return store;
     }
 
+    // Constructed input, written straight into a throwaway store. The suite is
+    // exempt from writer ownership for exactly this: it writes to temporary
+    // directories and nothing here reaches the configured data root.
+    static void Insert(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        command.ExecuteNonQuery();
+    }
+
     static IReadOnlyList<string> Query(TemporaryStore store, string sql)
     {
         using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
@@ -3374,6 +3387,38 @@ public class FixtureExpectations
         Assert.NotEqual(
             ["0"],
             Query(store, $"SELECT COUNT(*) FROM move WHERE session_date >= '{boundary:yyyy-MM-dd}';"));
+
+        // The two assertions above are vacuous on their own and 5.2's own
+        // mutation showed it: every move the committed bars produce is already
+        // inside the window, so a drop that did nothing satisfies both. The
+        // boundary is unreachable from this fixture, which is the class 5.0
+        // named, so the row is constructed.
+        // Rank 1 rather than a rank past the kept count, so the row can only be
+        // removed by the retention drop. A rank outside tonight's set is
+        // removed by the fallen-out drop instead, and the first sweep of this
+        // checkpoint showed that: the assertion passed with the retention
+        // statement disabled, because the other statement was doing the work.
+        Insert(store, "INSERT INTO move (ticker, session_date, sessions, change_pct, rank) " +
+            $"VALUES ('AAPL', '{boundary.AddDays(-1):yyyy-MM-dd}', 1, 99.0, 1);");
+
+        Assert.Equal(
+            ["1"],
+            Query(store, $"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';"));
+
+        var inside = Query(store, "SELECT COUNT(*) FROM move;").Single();
+
+        await new MoveAnnotator(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync("drop-check");
+
+        Assert.Equal(
+            ["0"],
+            Query(store, $"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';"));
+
+        // One row went and no others did, so the drop is the boundary deciding
+        // rather than the table being rewritten.
+        Assert.Equal(
+            [(int.Parse(inside, CultureInfo.InvariantCulture) - 1).ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT COUNT(*) FROM move;"));
     }
 
     // ---- 5.0, the assertions the phase 4 sign-off's mutation sweep left ----
