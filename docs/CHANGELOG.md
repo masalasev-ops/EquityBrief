@@ -25,6 +25,27 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - BUILD_PLAN.md, ARCHITECTURE.html - phase 5's claims predicted as a pair, and three expectations the fixture table did not name
+Corrects: two things. Phase 5's checkpoint text stated its deliverables and not the rulings 5.0
+took, so 5.1 claimed the backfill was new at index size when 2.6 had already run 126,235 bars over
+503 tickers, and its wall clock read as a suite assertion when it is a property of the running
+system. And section 19.1 named the expectation files a fixture holds and listed neither moves nor
+forward returns nor news pulse, all three of which phase 5 produces, which is the same defect the
+4.0 obligation found from the other end when the fixture held three files the table did not name.
+Was:
+> 5.0 predicted nothing; 5.1 read "Membership and backfill over the whole index" with "the nightly
+> wall clock is inside its limit at index size" as a done condition; 5.2 through 5.7 stated their
+> deliverables alone; and 19.1's expected outputs ran from membership to facts with no row for
+> moves, forward returns or news pulse
+Now:
+> two disjoint lists with the arithmetic between them and the pair the sum makes, 234 claims and
+> 162 PASS after phase 5; the computed chain named as what has never run at index size; the wall
+> clock recorded per step with its conditions and with what it does not establish; and three rows
+> in 19.1
+Why: 5.7's done condition checks a total and a PASS count, and a prediction given as components is
+checked by re-deriving it, which is not the same as checking it. Phase 4 predicted 204 and 93 and
+came in at 203 and 92, and the one-away miss was legible because a pair had been stated.
+
 ### 2026-09-10 - ARCHITECTURE.html, RUNBOOK.md, BUILD_PLAN.md - one dated news query does not carry a day
 Authorised by: News is one dated query, paged to cover the day, and attributed to names locally
 Was:

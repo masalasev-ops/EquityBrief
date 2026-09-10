@@ -400,20 +400,40 @@ Each of the seven carries its own mutation. They are assertions written to close
 
 **Predicts the phase's claims by naming them,** in two disjoint lists with the arithmetic between them and the pair the sum makes, and 5.7 checks that pair. A prediction given as components is checked by re-deriving it, which is not the same as checking it.
 
+**List A, the 55 claims already placed at a 5.x checkpoint** and waiting for it: 7 at 5.1, 5 at 5.2, 7 at 5.3, 17 at 5.4, 12 at 5.5 and 7 at 5.6. Every one becomes PASS when its checkpoint lands or the phase is not signed off, since unexamined is zero at 5.7.
+
+**List B, the 31 claims this pass itself added,** named rather than counted. Twenty-three came from reading the figures, being figure 9.1's six boxes, figure 10.1's nine and figure 12.1's eight. Two are the change detector's catalogue and matrix rows. Three are the section 15 rows decomposed per surface, the universe screen's sector strip and table each splitting at the listing store and the run page's reason record splitting between its counts and its verdicts. Three are the expectation files section 19.1 did not name, being moves, forward returns and news pulse, which phase 5 produces and the table listed neither.
+
+Fifteen of the 31 pass already, being the two flow figures whose stages have shipped since phases 3 and 4. Sixteen do not: figure 12.1's eight are phase 6, the reason record's verdict half is 7.5, and the remaining seven land inside phase 5 at 5.2, 5.3, 5.4 and 5.5.
+
+**The pair. 234 claims and 162 PASS after phase 5**, with 72 out of scope, 0 unexamined and 0 fail. The arithmetic: 203 claims and 92 PASS at the phase 4 sign-off, plus the 31 of list B and the 15 of them that pass now gives 234 and 107, which is what this pass leaves; plus list A's 55 gives 162, and 162 with the 72 that remain at 6.x and 7.x is 234.
+
 ### 5.1 The full universe and the universe screen
 Membership and backfill over the whole index. The universe screen: every name, paged, sorted by distance to the nearest level, with the sector strip and the filters.
 
-**Done when** every index member holds its year, the nightly wall clock is inside its limit at index size, and the screen reaches every name rather than the first page of them.
+**The backfill has already run at scale, and the new risk is the computed chain.** 2.6 ran a live night with no fixture folder given: 822 membership rows and 126,235 bars over 503 tickers, which 2.7 restates. What has never run at index size is what comes after the bars, being the indicators, the swings, the volume profile, the levels and the ladder, over 503 names where every night so far has run them over four. That is a different failure mode from a backfill's, and this checkpoint watches the right thing only because it says so.
+
+The `sector` column, declared in `SCHEMA.md` and migrated here rather than at 5.0, because a column declared before its migration is a declaration with nothing behind it. It is read from the `Components` object of the constituents response the loader already fetches, at no extra request, and the permanent test refusing that object as the index stands: it is read for the sector and never for the membership.
+
+The screen draws what exists before `listing` does. Its sector strip counts the sectors and how many names are in an uptrend; its table draws every name with its distance to the nearest level. The regions that count how many are on tonight's list, and the columns carrying the evening a name was last on it and the listing strip, are 5.4's, which is where the store they read is created.
+
+**The wall clock is a live measurement rather than a suite assertion**, because it is a property of the running system, and such a property is asserted by a guard the code carries and by a figure a person reads. The guard exists as the night's deadline from 2.2, and nothing in the harness reaches `data/`. A 500-name store generated for the suite is explicitly not built: it would be an assertion over a payload no provider produced, which is the class 5.0 has just named.
+
+**Done when** every index member holds its year, the computed chain completes for every member, the screen reaches every name rather than the first page of them, and a live night over the whole index is recorded with the elapsed time per step, so a night landing inside its limit by one step doing nothing is legible rather than hidden in a total; with the run's own conditions, being a cold or warm store, which network, and whether the provider was slow that evening, since a single figure with no conditions is one observation read as a bound; and with what it does not establish stated in the same entry, being one night on one machine at one moment. Section 17's limit is then that measurement plus stated headroom with the headroom's reason, and the deadline follows at three times it.
 
 ### 5.2 The move annotator
 Migration creating `move`. The largest single-day and multi-day moves of the stored year, which become the rows of the how-it-got-here table with the cause column empty until phase 5.
 
-**Done when** the moves match the fixture and the table renders with its cause column explicitly absent rather than blank.
+`MoveAnnotator` declared its own deleter in `SCHEMA.md`'s ownership table and in its access, which is the last of the six computed tables and discharges 4.0's retention ruling in full (see: Every computed table's writer is its own deleter). Section 16's store row covering all six is owed here for that reason. The `sessions` column 5.0 added is what makes the catalogue row true, since a table keyed on one session with no span could carry only the single-day half of what the annotator selects.
+
+**Done when** the moves match the fixture with the span of each, the table renders with its cause column explicitly absent rather than blank, and rows past the window are gone with rows inside it untouched.
 
 ### 5.3 The facts assembler and the change detector
 Migration creating `facts`. Every number the computed sections may use, each with its source, and the hash. The change detector writing only the material-change list, on disjoint columns of the same row.
 
-**Done when** the facts file matches the fixture byte for byte, and the per-operation split is proved: a facts re-run must not blank the change list, asserted rather than true by construction.
+The change detector's catalogue and matrix rows landed at 5.0, so the component has a row to be reconciled against before it exists. Its listings read is what the retention needs: a facts row is kept whole for a night the name fired and every other night keeps the hash and the material changes, with the payload emptied by the detector, which already owns Update on that table.
+
+**Done when** the facts file matches the fixture byte for byte, the per-operation split is proved rather than true by construction, since a facts re-run must not blank the change list, and a payload from a night the name did not fire is emptied while its hash stands.
 
 ### 5.4 The shortlist builder and tonight's list
 The plan column's condition sentences fall due here, on the surface a person reads them on (owes: The plan column's condition sentences asserted on the surface a person reads). `NameScreen`'s condition-to-words mapping ends in a catch-all arm, so a sixth condition, a typo or an unset value renders as the same sentence with nothing failing, and no test in the suite asserts any plan sentence at all. The catch-all is made to fail rather than to render, and 5.4 is the checkpoint that builds the surface those sentences sit beside.
@@ -422,7 +442,11 @@ Migration creating `listing`. **A row for every index member every night**, whet
 
 Tonight's list: the header with the true fired count, the watch list above it, twenty rows drawn, the reasons on each row. The list orders on band strength as its tiebreaker, so the ruling on what that score is dominated by falls due here (owes: The strength score read against four names).
 
-**Done when** the listing row count equals the index size on every completed night, the fired count in the header matches the reasons, and a night with more than twenty fired names draws twenty and states the true count.
+Contradiction L repaired, to 5.0's ruling: the shortlist reads levels, indicators, ladders, the calendar, the facts file and the bar store, and reads no fundamentals, because it selects on chart state alone with no fundamentals and no model in the decision. `listings-coverage` is implemented and promoted on the roster here rather than at 5.1, following the shape `LadderBuilder` already set: the population is the index read from membership and not the names with bars.
+
+Section 17's list display row is asserted against a constructed night of forty names, which is a constructed store as 4.0's average-anchor band was and not a constructed provider payload. The universe screen's listing-dependent regions land here, deferred from 5.1.
+
+**Done when** the listing row count equals the index size on every completed night, the fired count in the header matches the reasons, a night with more than twenty fired names draws twenty and states the true count, every stored listing carries its entry, stop and first traded target, and the plan column's condition sentences are asserted on the surface a person reads them on, with the catch-all arm made to fail rather than to render.
 
 The plan-at-listing column is the one thing in this phase that cannot be added later. Bars can be replayed and the plan cannot, because by the time a verdict is possible the rules may have changed and recomputing would score old listings under new ones.
 
@@ -431,19 +455,25 @@ Migration creating `forward_return` and `news_pulse`. The five and twenty-one se
 
 The pulse count answers the obligation 2.5 created (owes: One day of news exceeds one request at the provider's limit), whose evidence is already in hand: one live dated request returned a thousand articles over more than three thousand symbols and reached the provider's cap, so a count taken from one request is a count over whatever the cap happened to include. The counter carries a window or a page.
 
-**Done when** an immature row reads as not yet matured rather than as a blank or a zero, and the news pulse costs one request rather than one per name.
+The counter is built to 5.0's paging ruling: one dated query paged until the day is covered, every page counted, a day reaching the stated maximum refusing rather than truncating, and the count fanned out to names in code. Its matrix row is blank in every column today and attributing articles to names needs a membership read, which is filled here.
+
+The base rate is computed to 5.0's definition, over every name-night in the window rather than over the rows where a reason fired, null for the `setup` horizon, and stored beside the return it is shown against.
+
+**Done when** an immature row reads as not yet matured rather than as a blank or a zero, a whole day is covered rather than a capped sample of it, the page count is measured over two universe sizes and shown not to grow with the population, and the base rate names the population it was computed over on the surface it is read on.
 
 ### 5.6 The run page
 The operational header, and each reason's record with the base rate pinned as the first row.
 
 This checkpoint builds the surface three operating obligations are read on (owes: The six reason thresholds calibrated from the nights they fired on), (owes: The three reason records that need resolved setups) and (owes: The event setups' triggers calibrated from resolved setups). None is due at a checkpoint, because no checkpoint accumulates nights or resolved setups; what 5.6 owes is that each trigger is legible on the page when it fires, which is the count of nights beside the reason record, the resolved count against its minimum, and the same count for the event book's own setups.
 
+15.10's reason record row is decomposed per surface, and this checkpoint builds the half it can: the resolved count, the count of nights beside it and the base rate pinned as the first row, all drawn in the not-yet-measured state (see: Not yet measured is drawn as a dashed outline, never as a pale value). The verdicts are 7.5's, because they need resolved setups and no checkpoint accumulates those.
+
 **Done when** no forward-return figure is shown without the base rate beside it, and a reason below the minimum shows a dashed outline carrying its count rather than a rate.
 
 ### 5.7 Phase 5 report
 The week of unattended nights is what produces the posting hour (owes: The provider's posting hour for the day's bulk file, measured from live fetches). It stood at 3.7, which is the phase 3 report and produces no evenings; a week of nights that ran on a schedule is a week of observations of when the file actually appeared, and it is the first thing in the plan that yields several.
 
-**Done when** every phase 5 claim is PASS, a week of unattended nights has run with the list current each morning, and the posting hour is recorded from those nights rather than from documentation.
+**Done when** every phase 5 claim is PASS naming an instrument whose declared reach includes it, unexamined is zero, a week of unattended nights has run with the list current each morning, the posting hour is recorded from those nights rather than from documentation, and the pair 5.0 predicted is checked against the actual pair, with every claim that arrived unpredicted named and placed in the list it belonged in and every predicted claim that did not arrive named as such.
 
 ---
 
