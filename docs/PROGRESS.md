@@ -5347,3 +5347,63 @@ Notes:      the read API still derives nothing, which `read-surface` asserts ove
             The regions the listings store feeds are absent and say so rather than being drawn
             as zero: how many of a sector are on tonight's list, the evening a name was last on
             it, and the listing strip. A zero there would read as nothing having fired.
+
+### 5.2 - the move annotator                                                 2026-09-10
+Built:      migration 14 and the `move` table, `MoveSeries`, `MoveAnnotator`, section 14's step
+            11, and the how-it-got-here table on the name page.
+Decided:    the spans a move is measured over, being one session and one trading week. Two rather
+            than a range, because a set of spans is a threshold and nothing has measured one: a
+            third would be a figure nobody could later tell from a measured one, which is the
+            rule the tranche lookback and the shock multiple are already stated under. It is in
+            code rather than in a document, so it pins nothing and states nothing.
+Measured:   32 move rows over 4 names, 8 per name, which is the cap `MoveSeries` states. The
+            population is the names with a captured price series, not the index: a name that left
+            keeps its stored history and a report opened on it reads what it read last night.
+            The expectation was computed outside this repository from the captured payloads,
+            applying the window the backfill asks for, so a component that stored the wrong set
+            does not agree with it. AAPL's largest is 12.17 per cent over five sessions ending
+            2026-07-02; KEYS 28.62 over five ending 2026-02-24; MSFT 25.33 over five ending
+            2026-08-03; NFLX 27.72 over five ending 2026-03-02.
+            235 claims from 234, 118 PASS from 112, 117 out of scope, 0 unexamined. The extra
+            claim is unpredicted and is named here so 5.7 can place it: section 15.9's
+            how-it-got-here row decomposed into two, its table of moves at 5.2 and its cause
+            column at 6.5.
+Found:      two holes in this checkpoint's own work, both by its own mutation sweep.
+            The retention assertion was vacuous. Every move the committed bars produce is already
+            inside the window, so a drop that did nothing satisfied both halves of it: no row
+            below the boundary, and rows above it untouched. That is the unreachable boundary,
+            and the row is constructed now.
+            The constructed row was then removed by the wrong statement. Given a rank past the
+            kept count it was taken by the fallen-out drop rather than by the retention drop, so
+            the assertion still passed with the retention statement disabled. Given rank 1 the
+            only statement that can reach it is the one under test. Two greens for one property,
+            and the second was the sharper of them: the first was a case the fixture could not
+            reach and the second was an assertion reaching the wrong code.
+Mutated:    four mutations, in a worktree under the session scratchpad outside the repository,
+            reverted, and the worktree removed. The rule was stated before the sweep: each names
+            the property it is trying to break rather than the line it edits.
+            The properties added: a move is ranked by absolute size so a fall counts as much as a
+            rise; where two spans end on one session the longer wins; a move does not outlive the
+            bar it sits on; and the cause column is stated as absent rather than drawn empty.
+            All four were mutated and all four turn a test red. Two were green on the first sweep
+            and are the holes above. None of the four went unmutated. The span set itself was not
+            mutated and is named here as not mutated: it is a proposal rather than a property, and
+            a different set is a different reading of the same rule rather than a broken one.
+Tests:      437, from 433. `tools/ci.sh` green end to end, all 6 steps, migrations 0 to 14, exit
+            0. `tools/verify-phase` green at 235 claims, 118 PASS, 0 FAIL, 117 out of scope, 0
+            unexamined, 125 placements and verdicts reconciled against a floor of 34. Windows on
+            this machine; the matrix carries macOS and the Linux case-sensitivity job.
+Carried:    nothing new.
+Notes:      `move` gains its deleter here, which is the last of the six computed tables and
+            completes 4.0's ruling that every computed table's writer is its own deleter. The
+            store row covering all six is owed at this checkpoint for that reason rather than
+            where the first of them arrived.
+            The annotator carries two delete statements and they are different things. One drops
+            everything below the retention boundary for every name at once, which is the shape
+            the other five computed tables have. The other drops the rows a name held above
+            tonight's rank count, which is a session that was a biggest move last night and is
+            not one now. The second is what makes the table a set rather than a union of every
+            night's sets, and it is why the first needed isolating before it could be asserted.
+            Section 15.9's how-it-got-here row is decomposed per surface, its table at 5.2 and
+            its cause at 6.5, for the reason 5.0 decomposed the universe screen's two rows and
+            the run page's one.
