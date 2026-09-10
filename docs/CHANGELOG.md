@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - BUILD_PLAN.md - the news window obligation, discharged
+Authorised by: News is one dated query, paged to cover the day, and attributed to names locally
+Was:
+> | **One day of news exceeds one request at the provider's limit** | 2.5 | 5.5 | ...
+Now:
+> the same row with `5.5, discharged`
+Why: 2.5 measured one dated request coming back at exactly the provider's cap and recorded the
+obligation for the checkpoint that counts articles per name. 5.5 builds that counter, and the answer
+is a page rather than a window: the query is paged until the day is covered, every page is counted,
+the page count follows the day's news volume rather than the size of the universe, and a day past
+the cap refuses rather than storing a truncated count.
+
 ### 2026-09-10 - ARCHITECTURE.html - the night close, and two reads the components turned out to need
 Corrects: two cells and one missing row. The news pulse counter's matrix row was blank in every
 column while the count it keeps is over the index rather than over every symbol the market wrote

@@ -5549,3 +5549,73 @@ Notes:      the trend-changed reason cannot fire over the committed fixture, bec
             `listings-coverage` reads the same replay the fixture expectations read rather than a
             second one. Two replays of one pipeline disagree eventually, and the two checks would
             be the pair.
+
+### 5.5 - the forward return filler, the news pulse counter and the night's close   2026-09-10
+Built:      migrations 17 and 18 with the `forward_return` and `news_pulse` tables,
+            `ForwardReturnSeries`, `ForwardReturnFiller`, `NewsPulseCounter`, `NightClose`, the
+            live news feed's paging, and section 14's steps 14, 15 and 16.
+Decided:    nothing new. The paging is 5.0's ruling implemented, and the base rate's population is
+            5.0's ruling computed.
+Measured:   12 forward return rows over 4 listings, three horizons each, and every one of them not
+            yet matured. That is the state the committed fixture is in rather than a defect: its
+            listings sit on the last stored session, so nothing after them exists. 4 news pulse
+            rows over 4 current members, and the capture attributes more symbols than the index
+            holds, which is what makes the filter observable.
+            237 claims, 156 PASS from 143, 81 out of scope, 0 unexamined.
+            Two floors in `architecture-conformance` fell with the phase, each with the reason
+            written beside it: the out-of-scope count from 100 to 80 at 5.4, and the plan-derived
+            share from 20 to 12 here. Both are facts about how far the build has got rather than
+            about the property, and the property in each case is the split the assertion makes.
+Found:      three things, two of them by this checkpoint's own mutations.
+            The setup's branch order cannot be observed at all. The test is on the close, and one
+            close cannot be both below the stop and at or above the target while the stop is
+            beneath the target, so swapping the two branches changes nothing any series can show.
+            That is the unproducible shape, and the remedy for that class is the invariant written
+            down and asserted rather than a stronger assertion at the site. A plan whose stop sits
+            at or above its target now refuses rather than being scored by whichever branch ran
+            first, and the invariant is asserted over every plan the store carries as well as over
+            constructed input.
+            Nothing exercised the paging path, which is what 5.0's whole news ruling rests on. The
+            captured payload is one page under the cap, so a feed that stopped after one page
+            passed the suite. Three pages are constructed, two at the cap and one short of it, and
+            a day that reaches the page cap is asserted to refuse rather than to store a truncated
+            count.
+            And the closing row's counts were unasserted: it could report zero names on the list
+            and the suite stayed green. Every figure is now recomputed from the tables the stage
+            counts over.
+Mutated:    thirteen mutation runs over nine distinct mutations, in a worktree under the session
+            scratchpad outside the repository, reverted, and the worktree removed. Two were
+            invalid, being a form that did not compile, and both were corrected and re-run. The
+            rule was stated before the sweep: each names the property it is trying to break rather
+            than the line it edits.
+            The properties added: an unresolved setup is a value of its own and never a win or a
+            loss; an immature horizon reads as not yet matured rather than as a blank or a zero;
+            an unresolved outcome is in neither half of the base rate; a window with nothing
+            matured has no rate rather than a rate of zero; a member the day wrote nothing about
+            carries a row with zero; the count is kept over the index rather than over every
+            symbol the market wrote about; the query is paged until the day is covered; every
+            count on the closing row is taken off the store; and a plan whose stop sits at or
+            above its target refuses.
+            Eight turn a test red. One stays green and is the control rather than a hole: the
+            setup's branch order, which no series can distinguish, and whose invariant is what is
+            asserted in its place. That is the second time this phase has answered a green
+            mutation with an invariant rather than with an assertion at the site.
+            None of the properties added went unmutated.
+Tests:      463, from 456. `tools/ci.sh` green end to end, all 6 steps, migrations 0 to 18, exit
+            0. `tools/verify-phase` green at 237 claims, 156 PASS, 0 FAIL, 81 out of scope, 0
+            unexamined, 163 placements and verdicts reconciled against a floor of 34. Windows on
+            this machine; the matrix carries macOS and the Linux case-sensitivity job.
+Carried:    nothing new. (owes: One day of news exceeds one request at the provider's limit) is
+            discharged: the counter carries a page rather than a window, the page count follows
+            the day's news volume rather than the size of the universe, and a day past the cap
+            refuses.
+Notes:      the base rate limit moved from 5.5 to 5.6, whose own Asserted by cell names a run page
+            test. 5.5 computes the figure and stores it beside every return it is shown against;
+            the claim is that no forward-return figure is shown without it, which is a claim about
+            a surface. That is the eighth due point of this family the phase has corrected, after
+            the roster row and the row coverage limit at 5.0, section 11's placement and the
+            Listings store row at 5.1, the Fundamentals store row and section 11's placement again
+            at 5.4, and this one.
+            The night close is a component and gains its catalogue and matrix rows here, because a
+            component is named in the catalogue in the same commit that introduces it and
+            `component-access` refused the class until it was.
