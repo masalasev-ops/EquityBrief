@@ -5974,3 +5974,65 @@ Notes:      the wall clock stays at 5 minutes and stays proposed. One by-hand ru
             schedule). What the measurement does say is that the proposed figure is the right order
             of magnitude rather than wrong by three times, which is what it looked like this
             morning before the transactions went in.
+
+### 5.7 - correction: the amended done condition, in the four places it was not swept   2026-09-10
+Found:      the phase 5 sign-off read section 20 and reported that it states an unmet phase 5 done
+            condition. It does, or did: `docs/ARCHITECTURE.html:1131` still read that phase 5 is
+            done when a week of unattended nights has run, which 5.7 had amended in
+            `docs/BUILD_PLAN.md` earlier the same day and swept nowhere else. Reading for the rest
+            found three more, two of them inside the file 5.7 edited: 5.1's prose said the wall
+            clock moves to 5.7 whose done condition is already a week of unattended nights, and
+            5.1's own done condition ended with a sentence setting section 17's limit from the week
+            of nights that produces a distribution. A source comment in `ReadSurface.cs` carried the
+            same wording. So the finding is not one stale cell but an amendment that reached one of
+            four statements of the same fact, which is the class this corpus has now met from both
+            ends: two places holding one fact, and the one that loses is whichever a reader opens.
+Also found: every cell in section 13.2's Phase column was wrong, in the column beside the one being
+            repaired. 5.0 ruled the six reason thresholds an operating obligation triggered by sixty
+            nights of listings, and repaired that row from 4 to 5 rather than off a phase at all, so
+            13.2 and 13.4 both went on saying phase 5 tunes the thresholds while the obligation
+            table said no checkpoint produces the evidence. The other three rows read 6 where the
+            register is 7.3, the rule versions 7.6 and the model's proposal 7.7, and the sentence
+            immediately under the table already said phase 7. That is 5.0's incomplete sweep rather
+            than 5.7's, and it is recorded here because it was found here.
+Repaired:   four statements of the done condition and five cells of 13.2, as two commits, one per
+            checkpoint that owed the sweep. Section 20's phase 5 cell now requires all phase-5 rows
+            PASS, the stored plan on every listing, and the schedule registered as a command. No
+            claim moved: 237 claims, 165 PASS, 0 FAIL, 72 out of scope, 0 unexamined, unchanged
+            either side, because neither section 13 nor section 20 is a claim source. That is the
+            reason nothing failed and the reason it needed reading rather than running.
+Guarded:    `done-condition-producible`, rostered and implemented, which is the instrument
+            `CLAUDE.md`'s calendar-time rule arrived without. It reads all 55 done conditions in
+            `docs/BUILD_PLAN.md` and section 20's 8 Done when cells, and refuses a span of calendar,
+            several nights or days, an unattended run, and evidence stated as accumulating. The
+            column is anchored from the table's own header rather than taken as the last one, so a
+            column added to the right of Done when cannot leave the check scanning the new column
+            and reporting the same green.
+            Shown red against the corpus as it stood, in a worktree under the session scratchpad
+            outside the repository, removed after: it names `ARCHITECTURE.html:1131` and
+            `BUILD_PLAN.md:426` and passes on the repaired tree. Both directions are permanent
+            tests rather than that one run, because a sweep whose expected result is nothing is
+            passed every time by a matcher that matches nothing at all; the second asserts that a
+            producible condition is left alone, since a matcher catching every mention of a night
+            would make the rule unwritable in a system whose work is nights.
+            The first attempt at this was one such narrowing. Keyed on a quantity before the period
+            noun it caught `a week of unattended nights` and missed `the week of nights`, so it went
+            green over `BUILD_PLAN.md:426` while naming section 20 correctly. That is the prefix and
+            near-miss class the verification rules already name, found here by running the check
+            against the defect rather than by reading it.
+            What it does not reach: prose about a done condition, which is where two of the four
+            stale statements sat. It asserts that no done condition says this, not that nothing in
+            the corpus describes one that did, and widening it that far would require exempting the
+            convention that has to quote the forbidden text in order to forbid it.
+            5.1's trailing sentence moved out of its done condition into a paragraph of its own in
+            the same pass, because a clause sitting inside one reads as something the checkpoint
+            waits for, which is the defect the paragraph was repaired for.
+Tests:      479, from 476. `tools/ci.sh` green end to end, migrations 0 to 18. `tools/verify-phase`
+            green at 237 claims, 165 PASS, 0 FAIL, 72 out of scope, 0 unexamined, 35 checks on the
+            roster and 33 carried. Windows on this machine.
+Notes:      this session committed the code being corrected and does not sign phase 5 off. The
+            repair was made here rather than by the sign-off for that reason: a reviewer that edits
+            the spec it measures against and then measures against its own edit is permitted by the
+            fresh-session rule, which bars only code, and is the thing the rule exists to prevent.
+            The sign-off reviews a consistent corpus instead, and the finding stands to its credit
+            rather than being absorbed into the work it was reviewing.

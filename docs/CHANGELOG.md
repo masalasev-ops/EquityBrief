@@ -25,6 +25,35 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - CLAUDE.md, BUILD_PLAN.md - the calendar-time rule gains an instrument
+Corrects: the rule that a done condition may not require calendar time arrived at 5.7 with nothing asserting it, in the same pass that left three statements of the condition it forbids standing. A convention with no check is a convention the next planning pass writes past, and this one had already been written past before the ink was dry. Found by repairing those three and asking what would have caught them.
+Was:
+> being one night on one machine at one moment. Section 17's limit is set when five scheduled nights over the whole index have run, as that measurement plus stated headroom with the headroom's reason, and the deadline follows at three times it.
+Now: `done-condition-producible` on the roster, reading every done condition in `BUILD_PLAN.md` and section 20's Done when column; and 5.1's trailing sentence moved out of its done condition into a paragraph of its own, because a clause sitting inside one reads as something the checkpoint waits for.
+Why: the check refuses a span of calendar, several nights or days, an unattended run, and evidence stated as accumulating, over 55 done conditions and 8 phase rows. It carries its own proof in both directions, since a sweep whose expected result is nothing is passed by a matcher that matches nothing at all. What it does not reach is prose about a done condition, which is where two of the three stale statements sat: it asserts that no done condition says this, not that nothing in the corpus describes one that did.
+
+### 2026-09-10 - ARCHITECTURE.html, BUILD_PLAN.md - the amended done condition swept into the three places that restated it
+Corrects: 5.7 amended its own done condition off calendar time in `BUILD_PLAN.md` and swept nothing else, so three further statements of the old condition were left standing, one of them in the document the corpus calls the source of truth. Found by the phase 5 sign-off, which read section 20 and reported that it states an unmet phase 5 done condition. Two of the three were inside `BUILD_PLAN.md` itself and the sign-off did not name those, which is what makes this an incomplete sweep rather than a single stale cell.
+Was:
+> a week of unattended nights with the list current each morning, and every stored listing carrying its entry, stop and target
+>
+> It moves to 5.7, whose done condition is already a week of unattended nights and which already carries the posting hour for exactly that reason.
+>
+> Section 17's limit is set at 5.7 from the week of nights that produces a distribution, as that measurement plus stated headroom with the headroom's reason, and the deadline follows at three times it.
+Now: section 20's phase 5 cell requires all phase-5 rows PASS, the stored plan on every listing, and the schedule registered as a command; and 5.1's two references point at the operating trigger and the surface it is read on rather than at a checkpoint that waits.
+Why: a done condition may not require calendar time, and the rule saying so was written at 5.7 in `CLAUDE.md` while three statements of the condition it forbids were left in place. An amendment that lands in one of two documents holding one fact leaves the other as the one a reader believes, and section 20 is the one a sign-off reads.
+
+### 2026-09-10 - ARCHITECTURE.html - section 13's phase column, against the plan it describes
+Corrects: every cell in 13.2's Phase column was wrong, and the sentence under the table contradicted three of them. 5.0 ruled the six reason thresholds an operating obligation triggered by sixty nights of listings, and repaired that row from 4 to 5 rather than off a phase altogether, so 13.2 and 13.4 both went on saying phase 5 tunes them while the obligation table said no checkpoint produces the evidence. The other three rows read 6 where the register is 7.3, the rule versions 7.6 and the model's proposal 7.7, and the table's own next sentence already said phase 7. Found while sweeping the stale phase 5 done condition, in the column beside it.
+Was:
+> 5, which is the phase that first records how many names fire each night, using that record rather than a backfill
+>
+> Only the first is cheap enough to do early, and it is the one that matters least. The other three need resolved setups, which take months to accumulate, which is why they sit in phase 7 and why phase 5 has an obligation described below.
+>
+> Beyond that the phases carry what their table already says. Phase 5 also tunes the thresholds, because it is the phase that first records how many names fire each night.
+Now: the thresholds row names no phase and says why, the other three name their phase 7 checkpoints, and both prose passages state that all four wait on the calendar rather than on a checkpoint.
+Why: the same defect as the entry above, from the other end. A ruling was taken in `BUILD_PLAN.md` and the document that describes the same thing was left saying what it said before, so the corpus held two answers and the check that would have caught it does not exist. Section 13 is not a claim source, which is why nothing failed and why it needed reading rather than running.
+
 ### 2026-09-10 - BUILD_PLAN.md - 6.0 gains the bulk payload refusal
 Corrects: nothing in the corpus covered a bulk payload that is not a price payload at all. Section 18 has a row for one that is for another session and one for a payload holding none of the index, and the provider returns neither of those for a session that is not the most recent: it returns something the parser meets and throws a `FormatException` on. Found by replaying sessions 2026-09-04 and 2026-09-08 while measuring a night at index size.
 Was:
