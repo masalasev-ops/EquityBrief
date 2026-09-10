@@ -25,6 +25,12 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 5.3, the facts file.
+            CheckReach.Key(Scope.CatalogueTable, "Facts assembler"),
+            CheckReach.Key(Scope.CatalogueTable, "Change detector"),
+            CheckReach.Key(Scope.MatrixTable, "Facts assembler"),
+            CheckReach.Key(Scope.MatrixTable, "Change detector"),
+
             // 5.2, the move annotator.
             CheckReach.Key(Scope.CatalogueTable, "Move annotator"),
             CheckReach.Key(Scope.MatrixTable, "Move annotator"),

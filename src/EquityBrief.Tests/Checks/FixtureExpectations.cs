@@ -14,6 +14,8 @@ using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Core.Facts;
+using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
@@ -44,6 +46,9 @@ public class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05"],
         [
+            // 5.3, the facts file.
+            CheckReach.Key(Scope.FixtureTable, "facts"),
+
             // 5.2, the move annotator.
             CheckReach.Key(Scope.FixtureTable, "moves"),
 
@@ -1886,18 +1891,19 @@ public class FixtureExpectations
         // rather than about whether anything reads them.
         Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
 
-        // Six stand unread and each is named rather than counted, because a
+        // Seven stand unread and each is named rather than counted, because a
         // number here would drift silently as keys are added. `rowsInFile` is
         // the count of rows in the captured bulk payload, which the fetch
         // expectation states so a reader can see what the membership filter cut
-        // from; `index` is the index code; and the four notes are sentences.
+        // from; `index` is the index code; `facts.frozen` says that nothing in
+        // that file is frozen; and the notes are sentences.
         // None is a figure the pipeline produces, which is why nothing asserts
         // them. The series state file added two keys when it landed and this
         // assertion caught both on the same run; the ladder file added its note
         // at 4.1 and it caught that too; the sector note arrived at 5.1 and it
         // caught that. Which is what it is for.
         Assert.Equal(
-            ["fetch.rowsInFile", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note"],
+            ["facts.frozen", "fetch.rowsInFile", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 
@@ -2191,6 +2197,19 @@ public class FixtureExpectations
 
         await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-ladders");
         await new MoveAnnotator(clock, store.DatabaseFile).RunAsync("replay-moves");
+
+        return store;
+    }
+
+    // The chain through the facts file, which is the ladder chain plus the two
+    // components that write and then compare it.
+    static async Task<TemporaryStore> WithFacts()
+    {
+        var store = await WithLadders();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new FactsAssembler(clock, store.DatabaseFile).RunAsync("replay-facts");
+        await new ChangeDetector(clock, store.DatabaseFile).RunAsync("replay-changes");
 
         return store;
     }
@@ -3237,6 +3256,207 @@ public class FixtureExpectations
 
         Assert.Equal(TrendState.NotClassified, highsOnly.State);
         Assert.Contains("swing lows", highsOnly.Reason!, StringComparison.Ordinal);
+    }
+
+    // ---- 5.3, the facts assembler and the change detector ----
+
+    [Fact]
+    public async Task TheFactsFileCarriesEveryDeclaredFactWithTheSourceThatComputedIt()
+    {
+        // The set of facts and the source of each are written from the rules
+        // rather than frozen from a run, so a stage that wrote the wrong number
+        // of them does not agree with the file.
+        var expected = Expected("facts").GetProperty("factsPerName");
+
+        using var store = await WithFacts();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var payload = Query(store, $"SELECT payload FROM facts WHERE ticker = '{name}';").Single();
+            var facts = JsonDocument.Parse(payload).RootElement.GetProperty("facts");
+
+            var bySource = facts.EnumerateArray()
+                .GroupBy(fact => fact.GetProperty("source").GetString()!)
+                .ToDictionary(group => group.Key, group => group.Select(fact => fact.GetProperty("name").GetString()!).Order(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
+
+            foreach (var (key, source) in new[]
+            {
+                ("fromBar", FactsAssembler.FromBars),
+                ("fromIndicator", FactsAssembler.FromIndicators),
+                ("fromLevel", FactsAssembler.FromLevels),
+                ("fromLadder", FactsAssembler.FromLadder),
+                ("fromMove", FactsAssembler.FromMoves),
+                ("fromSwing", FactsAssembler.FromSwings),
+                ("fromCalendar", FactsAssembler.FromCalendar),
+            })
+            {
+                Assert.Equal(
+                    [.. expected.GetProperty(key).EnumerateArray().Select(fact => fact.GetString()!).Where(fact => fact.Length > 0)],
+                    bySource.TryGetValue(source, out var written) ? written : []);
+            }
+
+            // Every fact names a source, and no fact names one the assembler
+            // does not have. A fact with no provenance is a number in prose that
+            // traces to nothing.
+            Assert.All(facts.EnumerateArray(), fact =>
+                Assert.False(string.IsNullOrWhiteSpace(fact.GetProperty("source").GetString())));
+
+            // The payload is written in name order, so two runs over one store
+            // produce the same bytes.
+            var names = facts.EnumerateArray().Select(fact => fact.GetProperty("name").GetString()!).ToArray();
+
+            Assert.Equal([.. names.Order(StringComparer.Ordinal)], names);
+        }
+    }
+
+    [Fact]
+    public async Task EveryValueInTheFactsFileIsTheValueTheStoreHolds()
+    {
+        // Nothing in the facts file is derived, which is what makes it the file
+        // a written section is checked against. Asserted against the stores the
+        // values were read from rather than against a copy of the payload, so a
+        // stage that wrote the wrong number does not agree with itself.
+        using var store = await WithFacts();
+
+        foreach (var name in FixtureExpectation.Names)
+        {
+            var payload = Query(store, $"SELECT payload FROM facts WHERE ticker = '{name}';").Single();
+            var facts = JsonDocument.Parse(payload).RootElement.GetProperty("facts")
+                .EnumerateArray()
+                .ToDictionary(fact => fact.GetProperty("name").GetString()!, fact => fact.GetProperty("value").GetString()!, StringComparer.Ordinal);
+
+            var session = JsonDocument.Parse(payload).RootElement.GetProperty("sessionDate").GetString();
+
+            Assert.Equal(
+                Query(store, $"SELECT MAX(session_date) FROM bar WHERE ticker = '{name}';").Single(),
+                session);
+
+            Assert.Equal(
+                Query(store, $"SELECT close FROM bar WHERE ticker = '{name}' AND session_date = '{session}';").Single(),
+                facts["close"]);
+
+            Assert.Equal(
+                Query(store, $"SELECT volume FROM bar WHERE ticker = '{name}' AND session_date = '{session}';").Single(),
+                facts["session volume"]);
+
+            Assert.Equal(
+                Query(store, $"SELECT trend_state FROM ladder WHERE ticker = '{name}' ORDER BY as_of DESC LIMIT 1;").Single(),
+                facts["trend state"]);
+
+            Assert.Equal(
+                Query(store, $"SELECT COUNT(*) FROM swing WHERE ticker = '{name}';").Single(),
+                facts["swings marked"]);
+
+            Assert.Equal(
+                Query(store, $"SELECT session_date FROM move WHERE ticker = '{name}' ORDER BY rank LIMIT 1;").Single(),
+                facts["largest move session"]);
+
+            // The immediate bands, read from the level rows the assembler read.
+            foreach (var role in new[] { "support", "resistance" })
+            {
+                var edges = Query(
+                    store,
+                    $"SELECT low_edge FROM level WHERE ticker = '{name}' AND role = '{role}' AND immediate = 1 " +
+                    $"AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}');");
+
+                Assert.Equal(edges.Single(), facts[$"immediate {role} low edge"]);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task AFactsRerunDoesNotBlankTheChangeList()
+    {
+        // The per-operation split, proved rather than true by construction. The
+        // two writers own disjoint columns of the same row and the grain is the
+        // same, which is what permits a table with an inserter and a different
+        // updater under a rule that forbids two owners for one operation.
+        using var store = await WithFacts();
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        // A change list that did not arise from a comparison, so what survives
+        // is visibly this test's value rather than an empty list that would look
+        // the same whether it survived or was rewritten.
+        Insert(store, "UPDATE facts SET material_changes = '[\"a change nobody computed\"]';");
+
+        var before = Query(store, "SELECT material_changes FROM facts ORDER BY ticker;");
+
+        Assert.All(before, changes => Assert.Contains("nobody computed", changes, StringComparison.Ordinal));
+
+        await new FactsAssembler(clock, store.DatabaseFile).RunAsync("rerun-facts");
+
+        Assert.Equal(before, Query(store, "SELECT material_changes FROM facts ORDER BY ticker;"));
+
+        // And the assembler's own columns are still what it wrote, so the run
+        // did something rather than nothing at all.
+        Assert.All(
+            Query(store, "SELECT payload_hash FROM facts;"),
+            hash => Assert.Equal(64, hash.Length));
+
+        // The detector rewrites its own column and touches neither of the
+        // assembler's, which is the same property from the other side.
+        var payloads = Query(store, "SELECT payload || '|' || payload_hash FROM facts ORDER BY ticker;");
+
+        await new ChangeDetector(clock, store.DatabaseFile).RunAsync("rerun-changes");
+
+        Assert.Equal(payloads, Query(store, "SELECT payload || '|' || payload_hash FROM facts ORDER BY ticker;"));
+        Assert.All(
+            Query(store, "SELECT material_changes FROM facts;"),
+            changes => Assert.DoesNotContain("nobody computed", changes, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task TheChangeListNamesWhatMovedAndIsEmptyOnAFirstNight()
+    {
+        // A material change is a fact that appeared, went, or took a different
+        // value, compared by name so a fact added between two others is one
+        // change rather than every fact after it changing.
+        using var store = await WithFacts();
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        // A first night has nothing to compare against, so the list is empty
+        // rather than unknown. The two read differently on a page and only one
+        // of them is true.
+        Assert.All(
+            Query(store, "SELECT material_changes FROM facts;"),
+            changes => Assert.Equal("[]", changes));
+
+        // A second night, constructed by writing an earlier row whose payload
+        // differs in exactly one fact. The committed fixture holds one night per
+        // name, so a comparison against a previous night is unreachable from it.
+        var name = FixtureExpectation.Names[0];
+        var payload = Query(store, $"SELECT payload FROM facts WHERE ticker = '{name}';").Single();
+        var earlier = payload.Replace("\"value\":\"", "\"value\":\"9", StringComparison.Ordinal);
+
+        Insert(
+            store,
+            "INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES " +
+            $"('{name}', '2000-01-03', '{earlier.Replace("'", "''", StringComparison.Ordinal)}', 'earlier');");
+
+        await new ChangeDetector(clock, store.DatabaseFile).RunAsync("second-night");
+
+        var changed = Query(store, $"SELECT material_changes FROM facts WHERE ticker = '{name}' AND session_date != '2000-01-03';").Single();
+        var named = JsonDocument.Parse(changed).RootElement.EnumerateArray().Select(item => item.GetString()!).ToArray();
+
+        Assert.NotEmpty(named);
+        Assert.Equal([.. named.Order(StringComparer.Ordinal)], named);
+
+        // Every name in the list is a fact the payload carries, so the list
+        // names what moved rather than what the comparison invented.
+        var carried = JsonDocument.Parse(payload).RootElement.GetProperty("facts")
+            .EnumerateArray()
+            .Select(fact => fact.GetProperty("name").GetString()!)
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.All(named, fact => Assert.Contains(fact, carried));
+
+        // A fact that did not move is not in the list, which is the half a list
+        // of every fact would also satisfy.
+        Assert.Equal(
+            [.. FactsFile.Changed(earlier, payload)],
+            named);
     }
 
     // ---- 5.2, the move annotator ----

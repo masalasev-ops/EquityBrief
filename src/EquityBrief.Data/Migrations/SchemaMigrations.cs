@@ -113,6 +113,29 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The facts file, one row per ticker per night, written by two components on
+    // disjoint columns of the same row.
+    //
+    // `payload` and `payload_hash` are the assembler's; `material_changes` is
+    // the change detector's. The sets are disjoint and the grain is the same,
+    // which is what permits a table with an inserter and a different updater
+    // under a rule that forbids two owners for one operation.
+    //
+    // Every column is TEXT. The payload is JSON holding every number the
+    // computed sections may use with the source of each, and a number inside it
+    // is in the storage form the store uses everywhere else, so a price is text
+    // there too.
+    const string CreateFacts = @"
+        CREATE TABLE facts (
+            ticker           TEXT NOT NULL,
+            session_date     TEXT NOT NULL,
+            payload          TEXT NOT NULL,
+            payload_hash     TEXT NOT NULL,
+            material_changes TEXT,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
+
     // The sector, on the membership row, added at 5.1 because that is where the
     // universe screen filters on it.
     //
@@ -321,6 +344,7 @@ public static class SchemaMigrations
         new Migration(12, "create calendar", CreateCalendar),
         new Migration(13, "add membership.sector", AddMembershipSector),
         new Migration(14, "create move", CreateMove),
+        new Migration(15, "create facts", CreateFacts),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

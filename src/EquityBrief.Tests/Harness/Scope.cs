@@ -138,6 +138,39 @@ internal static class Scope
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
+        // The facts assembler and the change detector, 5.3. Two components on one
+        // table's disjoint columns, which is what permits an inserter and a
+        // different updater under a rule that forbids two owners for one
+        // operation.
+        [CheckReach.Key(CatalogueTable, "Facts assembler")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the eight stores it reads and the facts row it inserts, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Change detector")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the facts it reads and updates and nothing else, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Facts assembler")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Change detector")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Facts")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and the two writers own disjoint columns of one row at one grain",
+            ByMigration),
+        [CheckReach.Key(FixtureTable, "facts")] = new Scoped(
+            Verdict.Pass,
+            "every declared fact and the source of each is asserted against a set written from the rules, and every value against the store it was read from rather than against a copy of the payload",
+            ByExpectations),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Write the facts file for every name.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs the stage in the order section 14 states, writing the file and then comparing it, and its run log row records both",
+            ByNight),
+
         // The move annotator, 5.2. It is the last of the six computed tables to
         // gain a deleter, which is why the store row covering all six is owed
         // here rather than where the first of them arrived.
