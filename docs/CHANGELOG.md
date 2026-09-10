@@ -25,6 +25,29 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-09 - CLAUDE.md - three verification rules the corpus had paid for twice and never written
+Corrects: three defects the phase 4 sign-off found and left in a record, where a record is where a
+finding goes to be true and unread. First, the sign-off sorted eleven surviving mutations into four
+groups and only three of them had ever been named, and the unnamed one is the class where the test is
+well formed and the data cannot take the shape the mutation would change. Second, an elapsed-time
+bound written as an absolute number has been repaired twice by hand on one test, at a quarter of a
+second and then at three seconds, and the rule behind both repairs was never stated. Third, 4.4 chose
+its condition 9 mutation by a rule stated in advance, and that rule named where a stop sits, so two
+of the three properties the checkpoint added went unmutated with the condition satisfied.
+Was:
+> the Verification list carried nine rules and none of them about classifying a surviving mutation,
+> about calibrating a bound on elapsed time, or about how a mutation is chosen
+Now:
+> three further rules: a surviving mutation classified as a tautology, a missing property, an
+> unreachable boundary or an unproducible shape, with only the first three defects in the test; a
+> bound on elapsed time calibrated against something the machine also produces; and a mutation's
+> stated rule naming the property it is trying to break rather than the line it edits, with the
+> properties the checkpoint did not mutate named
+Why: phase 5 writes assertions against news at index scale and phase 6 against filings and a model's
+output, which is the largest untested payload surface in the project and the one where a captured
+shape is least likely to be representative. The remedy for the fourth class is capture before parse
+applied to assertions and not only to parsers, which is the instrument the corpus already has.
+
 ### 2026-09-09 - SCHEMA.md - the calendar window reaches a year behind
 Authorised by: A calendar event is fetched once for the whole index, and the calendar holds provider events only
 Was:
