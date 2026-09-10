@@ -1,0 +1,14 @@
+{
+ "stage": "news pulse",
+ "derivedFrom": "the captured news payload read through the rules in section 11 and section 17, not from a run. The count per name is the articles the payload attributes to that name, recomputed in the suite from the same capture, and a member the day wrote nothing about carries zero rather than no row.",
+ "tables": [
+  "news_pulse"
+ ],
+ "rules": {
+  "oneRowPerMemberPerDate": "including the members the day wrote nothing about, because the pulse is compared against its own baseline and a night missing from the series would read as a night nobody counted",
+  "pagedUntilTheDayIsCovered": "every page counted, and the page count follows the day's news volume rather than the size of the universe",
+  "mostPages": 20,
+  "retentionDays": 365,
+  "populationIsTheIndex": "not every symbol the market wrote about: one live request reached 3,232 distinct symbols against an index of 503"
+ }
+}

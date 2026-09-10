@@ -52,37 +52,76 @@ public sealed class EodhdNewsFeed(
             request);
     }
 
+    // One dated query, paged until the day is covered.
+    //
+    // 2.5 measured one request for a single session coming back at exactly 1,000
+    // articles, which is the provider's cap, over 3,232 distinct symbols. So one
+    // request does not carry a day, and a count taken from it is a count over
+    // whatever the cap happened to include, which is a figure over a mixed
+    // population and is not stated at all.
+    // see: News is one dated query, paged to cover the day, and attributed to names locally
+    //
+    // Every page is counted, and the page count follows the day's news volume
+    // rather than the size of the universe: one request already reached 3,232
+    // symbols against an index of 503, so adding names adds no articles. That is
+    // what keeps a paged query something other than a per-name call.
+    //
+    // A day that reaches the maximum refuses rather than truncating, because a
+    // truncated count reported as a whole one is the failure this exists to
+    // prevent.
+    public const int MostPages = 20;
+
     public async Task<IReadOnlyList<NewsArticle>> ArticlesAsync(
         DateOnly from,
         DateOnly to,
         CancellationToken cancellation = default)
     {
-        Requests++;
+        var articles = new List<NewsArticle>();
+        var offset = 0;
 
-        var body = await request
-            .SendAsync(token => FetchAsync(from, to, token), cancellation)
-            .ConfigureAwait(false);
+        for (var page = 0; page < MostPages; page++)
+        {
+            Requests++;
 
-        // Parsed by the reader the double uses, then filtered to the window.
-        // The provider honours the range, so the filter is a guard rather than
-        // the mechanism: an article outside it would otherwise be counted
-        // against a night it does not belong to.
-        return
-        [
-            .. RecordedNewsFeed.Parse(body)
+            var at = offset;
+            var body = await request
+                .SendAsync(token => FetchAsync(from, to, at, token), cancellation)
+                .ConfigureAwait(false);
+
+            // Parsed by the reader the double uses, then filtered to the window.
+            // The provider honours the range, so the filter is a guard rather
+            // than the mechanism: an article outside it would otherwise be
+            // counted against a night it does not belong to.
+            var parsed = RecordedNewsFeed.Parse(body);
+
+            articles.AddRange(parsed
                 .Where(article => DateOnly.FromDateTime(article.Published.UtcDateTime) >= from
-                    && DateOnly.FromDateTime(article.Published.UtcDateTime) <= to),
-        ];
+                    && DateOnly.FromDateTime(article.Published.UtcDateTime) <= to));
+
+            // A page short of the cap is the last page. A page at the cap means
+            // there is more, so the next one is asked for.
+            if (parsed.Count < Limit)
+            {
+                return articles;
+            }
+
+            offset += parsed.Count;
+        }
+
+        throw new InvalidOperationException(
+            $"The news query for {from:yyyy-MM-dd} to {to:yyyy-MM-dd} reached {MostPages} pages of " +
+            $"{Limit} and the provider still had more. A count taken from a truncated day is a count " +
+            "over whatever the pages happened to include, so the night refuses rather than storing one.");
     }
 
-    async Task<string> FetchAsync(DateOnly from, DateOnly to, CancellationToken cancellation)
+    async Task<string> FetchAsync(DateOnly from, DateOnly to, int offset, CancellationToken cancellation)
     {
         try
         {
             using var response = await client
                 .GetAsync(
                     EodhdQuery.WithKey(
-                        $"{Endpoint}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&limit={Limit}&fmt=json",
+                        $"{Endpoint}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&limit={Limit}&offset={offset}&fmt=json",
                         credentials),
                     cancellation)
                 .ConfigureAwait(false);

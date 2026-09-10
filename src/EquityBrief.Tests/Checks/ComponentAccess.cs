@@ -25,6 +25,14 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 5.5, the forward returns and the news pulse.
+            CheckReach.Key(Scope.CatalogueTable, "Forward return filler"),
+            CheckReach.Key(Scope.CatalogueTable, "News pulse counter"),
+            CheckReach.Key(Scope.CatalogueTable, "Night close"),
+            CheckReach.Key(Scope.MatrixTable, "Forward return filler"),
+            CheckReach.Key(Scope.MatrixTable, "News pulse counter"),
+            CheckReach.Key(Scope.MatrixTable, "Night close"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.CatalogueTable, "Shortlist builder"),
             CheckReach.Key(Scope.MatrixTable, "Shortlist builder"),

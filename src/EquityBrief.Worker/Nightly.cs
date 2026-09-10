@@ -9,6 +9,9 @@ using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
+using EquityBrief.Worker.News;
+using EquityBrief.Worker.Nights;
+using EquityBrief.Worker.Returns;
 using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
@@ -265,7 +268,43 @@ public static class Nightly
                     .RunAsync(runId, night.Token);
 
                 return $"{assembled.RowsWritten} file(s) for {assembled.NamesExamined} name(s), " +
-                    $"{assembled.FactsWritten} fact(s), {changes.ChangesRecorded} material change(s)";
+                    $"{assembled.FactsWritten} fact(s), {changes.ChangesRecorded} material change(s), " +
+                    $"{changes.PayloadsEmptied} payload(s) emptied";
+            }),
+            // Section 14's step 14. Once per night rather than per name,
+            // because the base rate is a figure over the whole population and a
+            // per-name pass would compute it once per name from the same rows.
+            new("forward-returns", async () =>
+            {
+                var outcome = await new ForwardReturnFiller(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return $"{outcome.RowsWritten} row(s) over {outcome.ListingsExamined} listing(s), " +
+                    $"{outcome.Matured} matured, {outcome.Immature} not yet matured";
+            }),
+            // Section 14's step 15. One dated query, paged until the day is
+            // covered, fanned out to names in code.
+            new("news-pulse", async () =>
+            {
+                var outcome = await new NewsPulseCounter(feeds.News, clock, store.DatabaseFile)
+                    .RunAsync(indexCode, clock.SessionDateAt(clock.UtcNow), runId, night.Token);
+
+                return $"{outcome.Articles} article(s) over {outcome.Requests} page(s), " +
+                    $"{outcome.RowsWritten} row(s), {outcome.NamesCounted} name(s) with news, " +
+                    $"{outcome.RowsDropped} dropped";
+            }),
+            // Section 14's step 16, which closes the arithmetic and records its
+            // counts. It computes nothing: every figure is counted off the
+            // store the night has just written, which is what makes it a record
+            // of what happened rather than of what each stage intended.
+            new("close", async () =>
+            {
+                var outcome = await new NightClose(clock, store.DatabaseFile)
+                    .RunAsync(indexCode, runId, night.Token);
+
+                return $"{outcome.NamesComputed} name(s) computed, {outcome.NamesOnTheList} on the list, " +
+                    $"{outcome.ReasonsFired} reason(s) fired, {outcome.NamesStale} stale, " +
+                    $"{outcome.Duration}";
             }),
         ];
 

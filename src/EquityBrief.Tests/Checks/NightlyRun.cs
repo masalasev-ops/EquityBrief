@@ -27,6 +27,11 @@ public class NightlyRun
         "nightly-run",
         ["docs/ARCHITECTURE.html", "fixtures/membership-2026-09-05"],
         [
+            // 5.5, the forward returns and the news pulse.
+            CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Count today's articles per name from one dated news query, paged until the day is covered and every page counted, fanned out to names in code rather than asked for per name. The page count follows the day's news volume and not the size of the universe (see: News is one dated query, paged to cover the day, and attributed to names locally)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Close the arithmetic and record its counts: names computed, names on the list, reasons fired, stale names, duration."),
+
             // 5.4, tonight's list.
             CheckReach.Key(NightlyRunSteps.Heading, "Evaluate the list reasons for every name."),
 

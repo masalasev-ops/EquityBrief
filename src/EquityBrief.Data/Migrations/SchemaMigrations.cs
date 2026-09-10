@@ -113,6 +113,45 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The forward returns, one row per listing per horizon.
+    //
+    // `outcome` is `win`, `loss`, `unresolved` or null while immature, and
+    // `unresolved` is a value rather than a null so it is counted in its own
+    // column and never in a rate. An immature row reads as not yet matured
+    // rather than as a blank or a zero, which is what the null is for.
+    //
+    // `return_pct` and `base_rate` are REAL because both are statistics rather
+    // than prices, and both are null for the `setup` horizon: target before stop
+    // is a question about a plan, and a name with no plan has no answer to it.
+    //
+    // No deleter. This is the operator's own record and it is kept forever.
+    const string CreateForwardReturn = @"
+        CREATE TABLE forward_return (
+            ticker       TEXT NOT NULL,
+            session_date TEXT NOT NULL,
+            horizon      TEXT NOT NULL,
+            outcome      TEXT,
+            resolved_on  TEXT,
+            return_pct   REAL,
+            base_rate    REAL,
+            PRIMARY KEY (ticker, session_date, horizon)
+        ) STRICT;
+    ";
+
+    // The news pulse, one row per ticker per date.
+    //
+    // It exists so the staleness judge can work without spending anything, and
+    // it is the one table whose retention has been owned since 1.4 by the
+    // component that writes it.
+    const string CreateNewsPulse = @"
+        CREATE TABLE news_pulse (
+            ticker       TEXT NOT NULL,
+            session_date TEXT NOT NULL,
+            article_count INTEGER NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
+
     // The listings, one row per ticker per night, for every index member and not
     // only the listed ones.
     //
@@ -376,6 +415,8 @@ public static class SchemaMigrations
         new Migration(14, "create move", CreateMove),
         new Migration(15, "create facts", CreateFacts),
         new Migration(16, "create listing", CreateListing),
+        new Migration(17, "create forward_return", CreateForwardReturn),
+        new Migration(18, "create news_pulse", CreateNewsPulse),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

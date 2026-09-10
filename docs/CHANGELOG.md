@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - ARCHITECTURE.html - the night close, and two reads the components turned out to need
+Corrects: two cells and one missing row. The news pulse counter's matrix row was blank in every
+column while the count it keeps is over the index rather than over every symbol the market wrote
+about, which needs membership: one live request reached 3,232 distinct symbols against an index of
+503. And section 14's closing step had no component behind it, so the counts it names were nobody's.
+Was:
+> the news pulse counter read no store at all; and neither the catalogue nor the matrix carried a
+> row for the night's closing stage
+Now:
+> the counter reads membership, and the Night close has both rows, reading the four stores it counts
+> off and appending to the run log
+Why: a component is named in the catalogue in the same commit that introduces it, and
+`component-access` refused the class until it was. The closing stage computes nothing and decides
+nothing: every figure is counted off the store the night has just written, because a stage's own
+count of what it wrote is the stage's opinion and this is the store's.
+
 ### 2026-09-10 - BUILD_PLAN.md - the two obligations 5.4 discharges, marked so
 Corrects: nothing in the figures. Both rows were still open at a checkpoint the record now shows as
 landed, which `obligation-reconciles` refuses: a row still owed at a checkpoint that has landed is a

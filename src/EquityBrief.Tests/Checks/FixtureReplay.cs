@@ -10,6 +10,8 @@ using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.News;
+using EquityBrief.Worker.Returns;
 using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
@@ -96,6 +98,11 @@ public class FixtureReplay
         // step 12 and the facts file is step 13, and the detector's retention
         // reads the listings there were none of the first time it ran.
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes-again");
+        await new ForwardReturnFiller(night, store.DatabaseFile).RunAsync("replay-returns");
+        await new NewsPulseCounter(
+            RecordedNewsFeed.FromFolder(Folder()),
+            night,
+            store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "replay-pulse");
 
         return store;
     }
