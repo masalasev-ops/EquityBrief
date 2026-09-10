@@ -46,9 +46,15 @@ static async Task<int> NightlyRun(string[] args)
     // this morning asks the provider for a session the exchange has not traded
     // yet, and every member comes back unaccounted for.
     //
-    // It resolves to a fixed instant in the middle of that session's evening,
-    // so the same derivation runs as on any other night rather than a second one
-    // written for this argument.
+    // It resolves to an instant in the middle of that session's evening, so the
+    // same derivation runs as on any other night rather than a second one
+    // written for this argument, and elapsed time runs on from there for real.
+    //
+    // A frozen clock was the first form and it froze the run log with it: every
+    // stage started and ended at the same instant, so a replayed night reported
+    // as having taken no time and the operational header drew a row of zeroes
+    // that reads as a measurement. The session is what has to be fixed here; the
+    // duration is what the page is for.
     var named = Argument(args, "--session");
     IClock clock;
 
@@ -58,7 +64,7 @@ static async Task<int> NightlyRun(string[] args)
     }
     else if (DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
     {
-        clock = new FixedClock(
+        clock = new ReplayClock(
             new DateTimeOffset(session.ToDateTime(new TimeOnly(21, 10)), TimeSpan.Zero),
             SessionZones.ResolveSessionZone(SessionZones.UnitedStates));
     }

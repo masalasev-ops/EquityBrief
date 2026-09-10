@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -286,6 +287,99 @@ public class NightlyRun
         Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
         Assert.Contains("did not answer", error, StringComparison.Ordinal);
         Assert.Equal(before, Count(store));
+    }
+
+    [Fact]
+    public async Task NoRunLogValueCarriesAnUnsubstitutedPlaceholder()
+    {
+        // The general form of a defect four components carried until 5.7. Each
+        // wrote its outcome as "ok, {dropped} dropped" with the interpolation
+        // prefix missing, so the brace reached the column literally, the run
+        // page drew it, and the outcome stopped matching "ok" which is what
+        // decides whether a stage is reported as failed.
+        //
+        // Asserted over the whole replayed chain rather than at the four sites,
+        // because the next one will be written somewhere else. A stored value
+        // holding a brace around a bare identifier is a format string that was
+        // never formatted, and nothing else in this store has a reason to hold
+        // one.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var placeholder = new Regex(@"\{[A-Za-z_][A-Za-z0-9_]*\}");
+        var rows = 0;
+        var unsubstituted = new List<string>();
+
+        await using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            await connection.OpenAsync();
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT stage, outcome, IFNULL(detail, '') FROM run_log ORDER BY rowid;";
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                rows++;
+
+                foreach (var value in new[] { reader.GetString(1), reader.GetString(2) })
+                {
+                    if (placeholder.IsMatch(value))
+                    {
+                        unsubstituted.Add($"{reader.GetString(0)}: {value}");
+                    }
+                }
+            }
+        }
+
+        // The scope carrying the property is the rows read, and it is floored
+        // well under what the chain writes so ordinary growth never moves it. A
+        // replay that logged nothing would satisfy the assertion below by having
+        // nothing to check.
+        Assert.True(rows >= 10, $"Read {rows} run log rows, expected at least 10.");
+
+        Assert.DoesNotContain(unsubstituted, _ => true);
+
+        // And the permanent proof that the reading can fail, over constructed
+        // input rather than by breaking a component.
+        Assert.Matches(placeholder, "ok, {dropped} dropped");
+        Assert.DoesNotMatch(placeholder, "ok");
+        Assert.DoesNotMatch(placeholder, "503 name(s), 4024 move(s), 0 dropped");
+    }
+
+    [Fact]
+    public async Task EveryStageThatSucceededSaysOkAndNothingElse()
+    {
+        // The other half, and the one the run page reads. `RunScreen.Failed`
+        // decides what to draw in the stale-and-failed region by comparing the
+        // outcome against "ok", so an outcome that carries a count is a stage
+        // reported as failed on every night it runs. The vocabulary is closed
+        // and this is where that is asserted.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var outcomes = new List<(string Stage, string Outcome)>();
+
+        await using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            await connection.OpenAsync();
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT stage, outcome FROM run_log ORDER BY rowid;";
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                outcomes.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
+        Assert.True(outcomes.Count >= 10, $"Read {outcomes.Count} run log rows, expected at least 10.");
+
+        // Every stage of a clean replay succeeded, so every outcome is the one
+        // word. A stage that fails writes its own outcome and is not reached
+        // here, which is why this is asserted over a chain that ran clean.
+        Assert.DoesNotContain(outcomes, row => row.Outcome != "ok");
     }
 
     [Fact]

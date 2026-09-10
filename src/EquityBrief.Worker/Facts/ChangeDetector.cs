@@ -132,12 +132,20 @@ public sealed class ChangeDetector : IComponent
         var written = 0;
         var changes = 0;
 
+        // One transaction around the whole loop rather than one per row, for the
+        // reason `IndicatorEngine` batches its points: every row that commits on
+        // its own costs a disk sync, and a sync costs the same whatever the row
+        // holds. Over the four names of the committed fixture that is invisible.
+        // Over 503 it was measured at 106 seconds for 503 rows before this was here.
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
         foreach (var pair in pairs)
         {
             var changed = FactsFile.Changed(pair.Previous, pair.Payload);
 
             await using var command = connection.CreateCommand();
 
+            command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = RecordChanges;
             command.Parameters.AddWithValue("$ticker", pair.Ticker);
             command.Parameters.AddWithValue("$session_date", pair.SessionDate);
@@ -153,6 +161,8 @@ public sealed class ChangeDetector : IComponent
             written++;
             changes += changed.Count;
         }
+
+        await transaction.CommitAsync(cancellation);
 
         var emptied = await EmptyAsync(connection, cancellation);
 
