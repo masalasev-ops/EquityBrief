@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Providers;
 // one whose request count no contract forced. The 1.7 measurement ran through a
 // class the nightly path does not reach, so a live implementation could have
 // made one request per name and nothing would have said so.
-// see: News arrives in one dated feed request and is attributed to names locally
+// see: News is one dated query, paged to cover the day, and attributed to names locally
 public class NewsFeedTests
 {
     const string Key = "demo-key-not-a-real-one";

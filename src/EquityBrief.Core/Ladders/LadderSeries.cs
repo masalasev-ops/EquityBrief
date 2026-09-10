@@ -164,7 +164,7 @@ public static class LadderSeries
         // not be classified carries none either: the label decides whether a
         // plan exists, and a plan placed on a label nobody could read is a
         // purchase on an unmeasured input.
-        // see: The stop rule depends on the trend state
+        // see: The trailing stop is the higher of the band beneath and the last swing low
         if (trendState is TrendState.Downtrend)
         {
             return new Ladder([], [], null, "the trend is down, so no tranche is placed", []);
@@ -249,7 +249,7 @@ public static class LadderSeries
     // floor. In an uptrend it trails: the stop is the higher of that band and
     // the most recent swing low beneath the tranche, so it rises as the
     // structure makes higher lows and is never looser than the range rule.
-    // see: The stop rule depends on the trend state
+    // see: The trailing stop is the higher of the band beneath and the last swing low
     //
     // Taking the higher of the two rather than the swing low alone is what keeps
     // the rule meaningful. Read literally, "the stop trails the last higher low"

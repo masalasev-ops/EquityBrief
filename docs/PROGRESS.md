@@ -5151,3 +5151,118 @@ Tests:      415, unchanged from 4.9. Windows for this run; the matrix carries ma
             Linux case-sensitivity job, and all three were green on 7eee922, the head of the
             last phase 4 merge.
 Signed:     phase 4 is signed off at 5d669d9. Phase 5's plan is not opened by this session.
+
+### 5.0 planning - the addendum's three, four groups renamed, and the figures nothing read   2026-09-10
+Not a checkpoint entry. It belongs to 5.0, which has not landed. This session has committed
+            code and may not sign it off.
+Built:      no component. Six commits, each carrying one kind of work so a reader can check one
+            kind at a time: the verification rules and the absolute bound, the seven assertions
+            with their mutations, the eleven obligations and two spec discharges, the figures,
+            the holes and faults, and the prediction with the checkpoint text.
+Addendum:   the operator's three, and two of the three figures it states do not reproduce.
+            The survivors are eleven and the sign-off had already sorted them into four groups
+            lettered A to D, not three. The three-group scheme is the phase 3 sign-off's, and
+            phase 4's Group D back-references it by name. Re-sorted against phase 3's three,
+            the survivors that fit none of them are Group A and there are two of them, not six.
+            The class is real and the addendum's definition and the sign-off's are one fault
+            seen from opposite sides: equivalent under an invariant the suite does not state,
+            from the mutation's side, and asserting something the payload cannot produce, from
+            the assertion's side. So CLAUDE.md names the class rather than a fourth beside a
+            scheme that already had one, and this entry records two instances rather than six.
+            The elapsed-time instances are two, not three, and both are the same test,
+            ANightThatPassesItsDeadlineStopsAndSaysSo, at 250 milliseconds and then at three
+            seconds. two-platform's other two catches are a shallow clone and a leftover
+            artifact, neither of them a bound on time. The suite held one absolute bound and one
+            self-calibrating one, so the self-calibrating form tied rather than outnumbered.
+            The ConditionFor fork resolves to its first branch. 4.4 mutated the stop, not the
+            condition, and its rule was stated first and named where a stop sits, so condition 9
+            worked and the choice of assertion was the gap. Condition 9 is not amended; what
+            CLAUDE.md gains is that a mutation's rule names the property it is trying to break
+            rather than the line it edits, and that a checkpoint names the properties it added
+            and did not mutate.
+            The tautology the addendum points at is real and sits at the exactly-one assertion,
+            whose two sides both come from production: five ConditionFor calls against the enum
+            ConditionFor returns from. Swap two kinds and the set over those inputs is unchanged.
+            It is redundant rather than load-bearing, because the five assertions above it
+            compare against literals and each goes red, so it stays with that written on it.
+            What it never asserted is the exclusivity it advertises, and one of the three overlap
+            pairs had no case anywhere: a window carrying both a close below the band and a shock
+            whose low held. Added in both directions. The pair the plan expected to be missing
+            was already asserted at two multiples.
+Decided:    three holes settled and one of them filed by this pass.
+            **The base rate is over every name-night, and never over the listed ones**, with two
+            sub-questions answered beside it rather than folded in: the setup horizon has no
+            universe figure of the same kind and the column is null there, and the figure repeats
+            down the table by design because the row is what the run page reads.
+            **News is one dated query, paged to cover the day, and attributed to names locally**,
+            superseding the decision whose name said one request. 2.5's measurement falsifies two
+            documented limits and both are restated rather than satisfied. What saves the cost
+            rule is the measurement: one request already attributed 3,232 distinct symbols
+            against an index of 503, so the feed is market-wide and adding names adds no
+            articles, which is what makes a paged query something other than a per-name call.
+            **The trailing stop is the higher of the band beneath and the last swing low**,
+            superseding **The stop rule depends on the trend state**, which the code has run
+            since 4.5 against a corpus that said something else.
+            The six reason thresholds are confirmed as proposals with nothing tuned in advance.
+Found:      no figure in the document was read by anything, which is why figure 10.1's rows were
+            reached by nothing. The table reader matches table elements, every figure is a div,
+            and the placement check asserted that every table the reader returned was placed, so
+            its completeness was defined by the thing it was checking. Four figures and 59 boxes
+            were invisible and no check could say so. That is the shrinking-population defect in
+            its third form, after a floor set to what a run produced and a reader whose
+            population was its own output, so the new reader states its population as the
+            document's own count of figure openings and refuses if the parse returns fewer.
+            The first run of the system diagram's own placement found the diagram naming a store
+            called "list reasons" where section 16 carries Listings.
+            And the sign-off's description of one Group B survivor does not reproduce. It says
+            that without the later-session guard a print after the last stored bar reports a zero
+            move dated 0001-01-01. Removing that guard alone changes nothing, because the session
+            it leaves at the default has no session before it and the earlier-session guard
+            catches it. The guard is real and is not independently observable through the
+            function's output, so the mutation that reaches it removes both.
+Measured:   11 mutation runs over 10 distinct mutations, all in a worktree under the session
+            scratchpad outside the repository, reverted, and the worktree removed. The worktree
+            list holds the same four entries it held before, being this tree and the three the
+            phase 3 sign-off recorded. The rule was stated before the sweep: each mutation names
+            the property the assertion it targets was written to close, taken from the sign-off's
+            own survivor list where one exists.
+            Nine turned a test red, one was invalid and is described above, and one is the
+            control. Red: the earlier-session guard, both earnings guards together, the blended
+            entry taken from the first tranche alone, the invalidation without its fallback, the
+            band beneath taken as the lowest rather than the nearest, the shock multiple at 1,
+            the next-day hold removed, the condition window taking the first ten, and tranche
+            eligibility admitting the close. Green: the relabel's first match replaced by its
+            last, which is the Group A survivor and is expected to stay green, because stops are
+            strictly decreasing and the data cannot produce two at the invalidation price. That
+            is the control the property assertion was written for rather than against.
+            Claims 234, from 203. PASS 107, from 92. Out of scope 127, unexamined 0, fail 0. The
+            population is every claim the harness reads from the document, which is now every
+            table, every figure and the nightly run's ordered list.
+            The 31 new claims: 23 from the figures, being 6 for figure 9.1, 9 for figure 10.1 and
+            8 for figure 12.1; 2 for the change detector's catalogue and matrix rows; 3 for the
+            section 15 rows decomposed per surface; and 3 for the expectation files section 19.1
+            did not name. 15 of the 31 pass now.
+            Section 15 carries 37 rows and 43 claim subjects, from 40, because three rows were
+            decomposed. The decomposed elements are 18 over 7 rows, from 12 over 4.
+            The obligations table holds 49 rows, from 38, with 11 entered here.
+Predicted:  234 claims and 162 PASS after phase 5, with 72 out of scope. The two lists and the
+            arithmetic between them are in BUILD_PLAN.md at 5.0, and 5.7 checks the pair rather
+            than the components.
+Tests:      426, from 415.
+Carried:    nothing new. Ten of the eleven obligations entered here are discharged here and the
+            eleventh is due at 5.4, which its own text cites back.
+Notes:      no-superseded-citation now reads the specs and the code and excludes the three
+            records by name. Superseding the trailing stop rule turned it red on the phase 4
+            sign-off's own citation of that rule, and PROGRESS.md is append only: a record is
+            corrected by a new dated entry rather than by editing the old one, so a check that
+            refused such a line would forbid the corpus from ever superseding a decision a record
+            has cited. A second test asserts the exclusion removes at least one citation and that
+            every one it removes sits in a record, because a filter that matches nothing reads as
+            a rule and behaves as a comment.
+            The sector was ruled here and is declared and migrated at 5.1. schema-columns refused
+            the column when this pass declared it ahead of the migration, which is the same
+            direction writer-ownership refused a deleter at 4.0.
+            Two of this pass's own constructed windows were wrong on their first run, and both
+            were the class the pass had just finished naming: a bar whose close sat outside its
+            own range, and a window whose ordinary bars were themselves shocks. Repaired rather
+            than worked around.

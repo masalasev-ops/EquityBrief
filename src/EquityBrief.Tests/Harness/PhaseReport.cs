@@ -152,6 +152,34 @@ internal static class PhaseReport
             "a record, not a claim about code"),
     };
 
+    // The figures, placed on the same terms as the tables.
+    //
+    // Added at 5.0. The phase 4 sign-off found that figure 10.1's rows were
+    // reached by nothing, which is how the trailing stop rule drifted from the
+    // corpus for a phase without an instrument asking. The cause was wider than
+    // the one figure: nothing read any of them, because the reader matched table
+    // elements and every figure is a div.
+    //
+    // A flow figure states rules and is a claim source. Figure 5.1 is a system
+    // diagram whose boxes are the components, stores and outside sources that
+    // section 7 and section 16 already claim by name, so claiming them again
+    // would count one claim twice. Its placement is reconciled against those two
+    // tables instead, which is a stronger statement than a reason: a box added
+    // to the diagram and to no table fails.
+    static readonly string[] FigureClaimSources =
+    [
+        "Figure 9.1",
+        "Figure 10.1",
+        "Figure 12.1",
+    ];
+
+    static readonly Dictionary<string, Placement> FiguresPlaced = new(StringComparer.Ordinal)
+    {
+        ["Figure 5.1"] = new Placement(
+            "the system diagram, whose boxes are the components and stores sections 7 and 16 claim name for name and the outside sources they read; asserted against both tables rather than claimed twice",
+            Check: "architecture-conformance"),
+    };
+
     // Which instrument reaches this claim, and what it would assert. This is a
     // statement about the corpus and not about any run, which is why the
     // reconciliation reads it: whether a declaration is used by a verdict is a
@@ -203,6 +231,7 @@ internal static class PhaseReport
 
     internal static PhaseReportModel Build(
         IReadOnlyList<ArchitectureTable> tables,
+        IReadOnlyList<ArchitectureFigure>? figures = null,
         IReadOnlyList<string>? nightlySteps = null,
         FixtureStatus? fixture = null,
         IReadOnlyList<CheckCoverage>? coverage = null,
@@ -284,6 +313,56 @@ internal static class PhaseReport
 
             claims.AddRange(rows);
             placed.Add(new PlacedTable(table.Heading, rows.Length, "claim source"));
+        }
+
+        // The figures, both directions, on the same terms as the tables above.
+        // A figure placed as neither stops the harness, and a placement naming a
+        // figure the document no longer has stops it too.
+        var drawn = figures ?? [];
+
+        var unplacedFigures = drawn
+            .Where(figure => !FigureClaimSources.Contains(figure.Id, StringComparer.Ordinal)
+                && !FiguresPlaced.ContainsKey(figure.Id))
+            .Select(figure => figure.Id)
+            .ToArray();
+
+        if (unplacedFigures.Length > 0)
+        {
+            throw new InvalidOperationException(
+                "These figures are placed neither as claim sources nor as figures that make no " +
+                "claims, so nothing would have read them: " + string.Join("; ", unplacedFigures) +
+                ". Place each one before the report can be trusted.");
+        }
+
+        var missingFigures = FigureClaimSources
+            .Concat(FiguresPlaced.Keys)
+            .Where(id => !drawn.Any(figure => figure.Id == id))
+            .ToArray();
+
+        if (missingFigures.Length > 0)
+        {
+            throw new InvalidOperationException(
+                "These figures were expected and not found: " + string.Join("; ", missingFigures) +
+                ". A missing figure is a parse failure, not a figure with no claims in it.");
+        }
+
+        foreach (var figure in drawn)
+        {
+            if (!FigureClaimSources.Contains(figure.Id, StringComparer.Ordinal))
+            {
+                var placement = FiguresPlaced[figure.Id];
+
+                placed.Add(new PlacedTable(figure.Id, 0, placement.Reason, placement.Check, placement.Due));
+
+                continue;
+            }
+
+            var boxes = figure.Boxes
+                .Select(box => Scoped(figure.Id, box.Name))
+                .ToArray();
+
+            claims.AddRange(boxes);
+            placed.Add(new PlacedTable(figure.Id, boxes.Length, "claim source, read as a figure"));
         }
 
         // Section 14 is named as a claim source and carries an ordered list

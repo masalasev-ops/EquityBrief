@@ -9,8 +9,16 @@
 #
 # 4000 lines of 100 characters on each stream is about 400 kB per stream,
 # comfortably past the 64 kB a pipe buffer typically holds on both platforms.
+#
+# The line count is an argument defaulting to that, so the suite can run the
+# same script and the same reader over a hundredth of the work and time it. A
+# bound on elapsed time is a bound on the machine unless it is calibrated
+# against something the machine also produces, and a control at 40 lines is
+# 4 kB per stream, which no pipe buffer blocks on, so the control measures this
+# machine's cost without being able to hang.
+lines=${1:-4000}
 line=$(printf 'x%.0s' {1..100})
-for i in $(seq 1 4000); do
+for i in $(seq 1 "$lines"); do
   echo "$line"
   echo "$line" >&2
 done

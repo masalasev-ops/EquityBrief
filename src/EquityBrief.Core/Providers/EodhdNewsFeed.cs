@@ -9,7 +9,7 @@ namespace EquityBrief.Core.Providers;
 // zero-per-name rule applied here: the payload names the tickers each article is
 // about, so five hundred names are reached by reading an attribution rather than
 // by making five hundred requests
-// (see: News arrives in one dated feed request and is attributed to names locally).
+// (see: News is one dated query, paged to cover the day, and attributed to names locally).
 //
 // The 1.7 capture was taken with a ticker, because the measurement it fed was
 // about coverage per name. That query is in the fixture's manifest and is not

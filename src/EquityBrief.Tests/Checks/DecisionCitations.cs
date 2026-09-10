@@ -37,13 +37,64 @@ public class DecisionCitations
         Assert.DoesNotContain(unresolved, _ => true);
     }
 
+    // Everything decision-resolves reads, less the three records.
+    //
+    // A superseded citation in a spec or in code is a live pointer to a dead
+    // rule. In a record it is a dated statement of what the corpus held on the
+    // day it was written, and PROGRESS.md is append only for that reason: a
+    // record is corrected by a new dated entry and never by editing the old one,
+    // so a check that refused such a line would forbid the corpus from ever
+    // superseding a decision an entry had cited.
+    //
+    // Narrowed at 5.0, when the trailing stop decision was superseded and the
+    // phase 4 sign-off's own citation of it turned this red. The scope is stated
+    // in numbers and the exclusion is asserted to be doing work rather than
+    // being a filter that matches nothing, which is the drift this file already
+    // carries one story about.
+    static IReadOnlyList<CorpusFinding> CitedOutsideTheRecords()
+    {
+        var records = Corpus.Records
+            .Select(record => Path.Combine(Repository.Root, record.Replace('/', Path.DirectorySeparatorChar)))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return [.. Cited().Where(citation => !records.Contains(citation.File))];
+    }
+
     [Fact]
-    public void NoCitationResolvesToASupersededDecision()
+    public void NoCitationInASpecOrInCodeResolvesToASupersededDecision()
     {
         var superseded = Corpus.SupersededNames(Corpus.Read("docs/DECISIONS.md")).ToHashSet(StringComparer.Ordinal);
+        var scanned = CitedOutsideTheRecords();
 
         Assert.True(superseded.Count >= 5, $"Found {superseded.Count} superseded decisions, expected at least 5.");
-        Assert.DoesNotContain(Cited(), citation => superseded.Contains(citation.Detail));
+        Assert.True(scanned.Count >= 100, $"Scanned {scanned.Count} citations outside the records, expected at least 100.");
+
+        Assert.DoesNotContain(scanned, citation => superseded.Contains(citation.Detail));
+    }
+
+    [Fact]
+    public void TheRecordsAreExcludedByNameAndTheExclusionIsDoingWork()
+    {
+        // The other half of the narrowing above. A filter that matches nothing
+        // reads as a rule and behaves as a comment, so what it removes is
+        // asserted rather than assumed: the records do carry a citation of a
+        // superseded decision, and every one of them sits in a record.
+        var superseded = Corpus.SupersededNames(Corpus.Read("docs/DECISIONS.md")).ToHashSet(StringComparer.Ordinal);
+
+        var records = Corpus.Records
+            .Select(record => Path.Combine(Repository.Root, record.Replace('/', Path.DirectorySeparatorChar)))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var removed = Cited()
+            .Where(citation => superseded.Contains(citation.Detail))
+            .ToArray();
+
+        Assert.True(
+            removed.Length >= 1,
+            $"Found {removed.Length} superseded citations anywhere in the corpus, expected at least 1. " +
+            "With none, this exclusion is a filter that matches nothing.");
+
+        Assert.All(removed, citation => Assert.Contains(citation.File, records));
     }
 
     [Fact]

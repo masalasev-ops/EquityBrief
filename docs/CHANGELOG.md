@@ -25,6 +25,181 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - BUILD_PLAN.md, ARCHITECTURE.html - phase 5's claims predicted as a pair, and three expectations the fixture table did not name
+Corrects: two things. Phase 5's checkpoint text stated its deliverables and not the rulings 5.0
+took, so 5.1 claimed the backfill was new at index size when 2.6 had already run 126,235 bars over
+503 tickers, and its wall clock read as a suite assertion when it is a property of the running
+system. And section 19.1 named the expectation files a fixture holds and listed neither moves nor
+forward returns nor news pulse, all three of which phase 5 produces, which is the same defect the
+4.0 obligation found from the other end when the fixture held three files the table did not name.
+Was:
+> 5.0 predicted nothing; 5.1 read "Membership and backfill over the whole index" with "the nightly
+> wall clock is inside its limit at index size" as a done condition; 5.2 through 5.7 stated their
+> deliverables alone; and 19.1's expected outputs ran from membership to facts with no row for
+> moves, forward returns or news pulse
+Now:
+> two disjoint lists with the arithmetic between them and the pair the sum makes, 234 claims and
+> 162 PASS after phase 5; the computed chain named as what has never run at index size; the wall
+> clock recorded per step with its conditions and with what it does not establish; and three rows
+> in 19.1
+Why: 5.7's done condition checks a total and a PASS count, and a prediction given as components is
+checked by re-deriving it, which is not the same as checking it. Phase 4 predicted 204 and 93 and
+came in at 203 and 92, and the one-away miss was legible because a pair had been stated.
+
+### 2026-09-10 - ARCHITECTURE.html, RUNBOOK.md, BUILD_PLAN.md - one dated news query does not carry a day
+Authorised by: News is one dated query, paged to cover the day, and attributed to names locally
+Was:
+> section 14's step read "Count today's articles per name from one news feed request"; section 17's
+> weighted-call row priced "the news feed 5"; `RUNBOOK.md` read "News costs 5."; and the decision's
+> name said news arrives in one dated feed request
+Now:
+> one dated query paged until the day is covered with every page counted, priced per page, and a
+> decision whose name says so, with the page count named as a function of the day's news volume
+Why: 2.5 measured one dated request for a single session coming back at exactly 1,000 articles,
+which is the provider's cap, over 3,232 distinct symbols. One request does not carry a day, so a
+count taken from it is a count over whatever the cap happened to include, which is a figure over a
+mixed population and is not stated at all. The limits are restated rather than satisfied. The cost
+rule survives on the measurement rather than on a workaround: one request already reached 3,232
+symbols against an index of 503, so the feed is market-wide and adding names adds no articles, which
+is what makes a paged query something other than a per-name call.
+
+### 2026-09-10 - SCHEMA.md - the base rate's population, its null horizon and its grain
+Authorised by: The base rate is over every name-night, and never over the listed ones
+Was:
+> `base_rate` read "the universe figure for the same window and horizon", and the file said nothing
+> about which population, about the `setup` horizon, or about why one night's figure repeats across
+> the index
+Now:
+> the figure for this horizon over every name-night in the window rather than over the listed ones,
+> null for `setup`, and repeated per row by design because the row is what the run page reads
+Why: the corpus named the figure in six places and defined it in none. 15.10 was the only place a
+population appeared, and `CLAUDE.md` settles the rest on its own terms: a figure computed over listed
+names only is a figure over the wrong population, because a listings row exists for every name.
+
+### 2026-09-10 - ARCHITECTURE.html, SCHEMA.md, CLAUDE.md - fourteen faults the corpus carried into phase 5
+Corrects: fourteen, each of which would have failed a check or produced a wrong reading during the
+phase. `listings-coverage` was rostered from 5.1 and `listing` is created at 5.4, so the row would
+have failed `coverage-reported` the moment 5.1 landed. The universe screen reads listings and 5.1
+builds it three checkpoints before that store exists. The run page's reason record sat wholly at 7.5
+while three operating obligations name 5.6 as the surface their trigger is read on. `ChangeDetector`
+had a declared column set and no catalogue or matrix row. Section 16's calendar row still described
+the `status` column 4.3 removed. `facts` had a retention rule nobody owned and half of it named a
+condition nothing records. `news_pulse` had no updater and the night is declared idempotent. `move`'s
+grain could not express the multi-day moves its catalogue row claims. 13.2 and 13.4 disagreed about
+which phase tunes the thresholds. 15.3's route list lacked the route 15.7 uses. Every limit was
+written against 500 and the fetched index is 503. And 19.2 listed no row for the screens or the
+figures, so two claim sources had no declared check in the document.
+Was:
+> the calendar row read "whether the provider has confirmed it"; the facts row read "kept for every
+> night a name was on the list or was opened; other nights keep the hash only"; the wall clock row
+> read "Nightly wall clock, 500 names" and "under 5 minutes, proposed"; the threshold row read "4,
+> using its own nightly record"; the route list omitted `#/night/<date>`; and the catalogue, the
+> matrix and 19.2 carried no row for the change detector, the screens or the figures
+Now:
+> each corrected to what is true, with the change detector given both rows and a listings read, the
+> facts retention owned by the component that already owns Update on that table, and "or was opened"
+> dropped because nothing records that a name was read
+Why: a rule the store cannot answer is a rule no test can induce, and a cell that promises one is
+worse than a cell that says less. The wall clock is the sharpest of them: a limit set to the figure
+that measured it is passed by construction by the night that set it, so the row now states the
+measurement plus headroom with the headroom's reason, and the night's deadline follows at three
+times whatever the limit becomes.
+
+### 2026-09-10 - CLAUDE.md, ARCHITECTURE.html - the figures are read, and one names a store the tables do not carry
+Corrects: no figure in the document was read by anything. The phase 4 sign-off found that figure
+10.1's rows were reached by nothing, which is how the trailing stop rule drifted from the corpus for
+a phase with no instrument asking. The cause is wider than the one figure: `ArchitectureTables.In`
+matches table elements, every figure is a `div.fig`, and `EveryTableInTheDocumentIsPlaced` asserted
+that every table the reader returned was placed. Its completeness was defined by the thing it was
+checking, so four figures and fifty-nine boxes were unread and nothing could say so.
+Was:
+> the roster row read "in a table or in the nightly run's ordered list" and "every table in the
+> document is placed so none can go unread"; and figure 5.1's nightly store box read "facts,
+> levels, ladders, list reasons, forward returns"
+Now:
+> "in a table, in a figure, or in the nightly run's ordered list", with every table and every
+> figure placed against a population read from the document rather than from the reader; and the
+> box reads "listings", which is the name section 16 carries
+Why: this is the shrinking-population defect in its third form, after a floor set to what a run
+produced and a reader whose population was its own output, so the population is now the document's
+own count of figure openings asserted against the number parsed. Figures 9.1 and 10.1 become claim
+sources reached by `fixture-expectations`, figure 12.1's eight boxes are out of scope until phase 6,
+and figure 5.1 is placed as the system diagram with every box asserted to name a component or store
+sections 7 and 16 carry. That last assertion found the wording on its first run: the diagram named
+a store called "list reasons" and the store is Listings.
+
+### 2026-09-10 - ARCHITECTURE.html - the trailing stop and the fifth condition, as the code runs them
+Authorised by: The trailing stop is the higher of the band beneath and the last swing low
+Was:
+> figure 10.1's trend box read "uptrend: tranches on pullback bands, the stop trails the last
+> higher low", the key beneath it read "In a range the stop is the range floor. In an uptrend it
+> trails", and the conditions box called its list fixed and named four patterns
+Now:
+> the stop trails to the higher of the band beneath and the last swing low beneath the tranche,
+> with the reason a swing low alone is looser than the range rule; and the conditions box names
+> the fifth answer, a tranche reaching the zone, as the absence of the four rather than a fifth
+> pattern
+Why: the phase 4 sign-off read the code against the corpus and found the corpus held neither rule.
+The phrase "higher of" appeared in two records, a source comment and an expectation note, and the
+string `ReachesTheZone` appeared nowhere at all while reaching the store and the page. A decision is
+changed only by another decision, so the rule the code ran was a rule no spec stated.
+
+### 2026-09-10 - CLAUDE.md - no-superseded-citation reads the specs and the code, not the records
+Corrects: the check refused a superseded citation anywhere in the corpus, which forbids the corpus
+from ever superseding a decision a record has cited. `PROGRESS.md` is append only and a record is
+corrected by a new dated entry rather than by editing the old one, so the phase 4 sign-off's own
+citation of the trailing stop rule turned the check red the moment that rule was superseded. Found
+at 5.0 by superseding it.
+Was:
+> No cited name resolves to a decision under "Previously decided"
+Now:
+> the same for a spec or for code, with the three records excluded by name and the exclusion
+> asserted to be removing something
+Why: a superseded citation in a spec or in code is a live pointer to a dead rule; in a record it is
+a dated statement of what the corpus held on the day it was written. The exclusion is asserted to
+match at least one citation rather than left as a filter that reads as a rule and behaves as a
+comment, which is the drift that file already carries one story about.
+
+### 2026-09-10 - BUILD_PLAN.md - the eleven obligations the phase 4 sign-off left for 5.0 to enter
+Corrects: nothing. Obligations recorded when they were created rather than remembered. The sign-off
+edits no spec, so it named them and left their due points as proposals for this pass to place.
+Was:
+> the obligations table carried thirty-eight rows and none of the eleven; 5.0 read "Settles the
+> base rate's population and window. Confirms the six reason thresholds as the proposals they are,
+> and states that 5.6's own record is what calibrates them, so nothing is tuned in advance."; and
+> 5.4 opened with its migration
+Now:
+> forty-nine rows, ten of them due at 5.0 and one at 5.4, each cited back by the checkpoint that
+> owes it
+Why: seven of the eleven are tests over phase 4 code with the evidence in hand, and 4.0 took five
+such obligations in its own planning pass for the same reason. An obligation waiting for a
+checkpoint that will not look at its subject is waiting for nothing, and 5.1 is whole-index
+membership, backfill at scale, the universe screen and a live night, which is the checkpoint whose
+failure mode nobody has seen yet.
+
+### 2026-09-09 - CLAUDE.md - three verification rules the corpus had paid for twice and never written
+Corrects: three defects the phase 4 sign-off found and left in a record, where a record is where a
+finding goes to be true and unread. First, the sign-off sorted eleven surviving mutations into four
+groups and only three of them had ever been named, and the unnamed one is the class where the test is
+well formed and the data cannot take the shape the mutation would change. Second, an elapsed-time
+bound written as an absolute number has been repaired twice by hand on one test, at a quarter of a
+second and then at three seconds, and the rule behind both repairs was never stated. Third, 4.4 chose
+its condition 9 mutation by a rule stated in advance, and that rule named where a stop sits, so two
+of the three properties the checkpoint added went unmutated with the condition satisfied.
+Was:
+> the Verification list carried nine rules and none of them about classifying a surviving mutation,
+> about calibrating a bound on elapsed time, or about how a mutation is chosen
+Now:
+> three further rules: a surviving mutation classified as a tautology, a missing property, an
+> unreachable boundary or an unproducible shape, with only the first three defects in the test; a
+> bound on elapsed time calibrated against something the machine also produces; and a mutation's
+> stated rule naming the property it is trying to break rather than the line it edits, with the
+> properties the checkpoint did not mutate named
+Why: phase 5 writes assertions against news at index scale and phase 6 against filings and a model's
+output, which is the largest untested payload surface in the project and the one where a captured
+shape is least likely to be representative. The remedy for the fourth class is capture before parse
+applied to assertions and not only to parsers, which is the instrument the corpus already has.
+
 ### 2026-09-09 - SCHEMA.md - the calendar window reaches a year behind
 Authorised by: A calendar event is fetched once for the whole index, and the calendar holds provider events only
 Was:

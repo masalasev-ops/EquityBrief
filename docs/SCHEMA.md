@@ -96,6 +96,10 @@ Kept forever. Without the spans, a name added last month would appear in a sixty
 
 **`joined` admits an unknown, and that was forced by the provider rather than chosen.** The live payload carries 822 spans and 145 have no start date, two of them current members: IR and WAB are in tonight's snapshot of 503 and the provider will not say since when. Dropping such a name takes a real member out of the index and out of everything computed from it, and writing a date nobody has is the guess this file refuses elsewhere. The unknown cannot sit in a primary key, because SQLite treats nulls as distinct and a second night would insert a second row rather than conflicting with the first, so the uniqueness moved to an index that folds it. That is the one place a sentinel belongs: inside the index that enforces uniqueness, never in the column a query reads.
 
+**`sector` is ruled here and declared at 5.1, which is the checkpoint that migrates it and writes it.** A column declared before the migration creates it is a declaration with nothing behind it, and `schema-columns` refuses it in that direction, which is the reason 4.0 gave for leaving the computed tables' deleters until 4.2. What is settled now is where the value comes from and what a departed name carries, because the universe screen filters on it and 5.1 draws that screen.
+
+It comes from the response the loader already fetches, at no extra request. The constituents payload carries a `Components` object with a sector and an industry per current member, beside the `HistoricalTickerComponents` object the membership spans are read from. The two are read for different things and only the second is the index: a permanent test refuses the snapshot object as the membership, and that stands. The sector is written when a name is seen in `Components` and is never cleared, so a name that has left keeps the sector it carried when it was last observed, dated by the `observed_at` already on the row. A name that left before this column existed carries null, and null is drawn as not on file and excluded by name from every sector bucket rather than falling into one, because a filter that reads an absent value as a category is the defect this file has already paid for twice.
+
 **A row whose join date is unknown answers no to a past-date query and yes to members now.** A comparison against null is null, so such a name is absent from the set for any past date, which is the truthful answer: nothing here can say whether it was a member in June. Whether it is a member tonight is `left IS NULL`, which the row answers exactly.
 
 ### bar
@@ -231,10 +235,13 @@ Grain: one row per ticker and session selected as a large move.
 |---|---|---|
 | `ticker` | TEXT | |
 | `session_date` | TEXT | |
+| `sessions` | INTEGER | how many sessions the move spans, 1 for a single day |
 | `change_pct` | REAL | |
 | `rank` | INTEGER | position within the window by absolute size |
 
 Primary key: `ticker`, `session_date`.
+
+**`sessions` is what makes the catalogue row true, and it was added at 5.0.** The annotator selects the largest single-day and multi-day moves of the stored year, and a table keyed on one session with no span could carry only the first of those. `session_date` is the session the move ended on, so a five-day run and a one-day gap on the same date are one row and the longer span wins, which is the reading that keeps the primary key.
 
 The cause of each move is not stored here. It is a researched claim and lives in `research_section` with its source.
 
@@ -267,9 +274,11 @@ Grain: one row per listing per horizon.
 | `outcome` | TEXT | `win`, `loss`, `unresolved`, or null while immature |
 | `resolved_on` | TEXT | date, null while unresolved |
 | `return_pct` | REAL | null for the `setup` horizon |
-| `base_rate` | REAL | the universe figure for the same window and horizon |
+| `base_rate` | REAL | the universe figure for this horizon, over every name-night in the window rather than over the listed ones, and null for the `setup` horizon |
 
 Primary key: `ticker`, `session_date`, `horizon`.
+
+**The base rate's population is every name-night** (see: The base rate is over every name-night, and never over the listed ones). A `listing` row exists for every index member every night, and the figure is computed over all of them for the horizon it is stated at. It is null for `setup`, because target before stop is a question about a plan and a name with no plan has no answer to it (see: The `setup` horizon has no universe base rate, and the column is null for it). It repeats down the table by design: the row is what the run page reads, and a figure that has to be joined for is a figure that can be shown without it (see: `base_rate` is stored per row on purpose, and the reason is that the row is what gets read).
 
 The `setup` horizon is the one that matters: it records whether the plan's target was reached before its stop, within the time cap. `unresolved` is a value rather than a null, so it is counted in its own column and never in a rate.
 
@@ -287,6 +296,12 @@ Grain: one row per ticker per night.
 Primary key: `ticker`, `session_date`.
 
 Declared column sets: FactsAssembler owns `payload` and `payload_hash`; ChangeDetector owns `material_changes`. The sets are disjoint and the grain is the same, which is what permits the split.
+
+**Retention, settled at 5.0 and implemented at 5.3.** Section 16 states that a facts row is kept for every night a name was on the list or was opened, and that other nights keep the hash only. Nobody owned it, and the behaviour it describes is not a delete: the row stays and `payload` is emptied, so the hash still answers whether a later night's facts differ without holding the facts they differ from. That is an update, and `ChangeDetector` already owns Update on this table, so the retention is its work rather than a second updater. A table may have different owners for different operations and never two for one, and giving the assembler an update here would break that for a rule that fits the component which already reads last night's row against tonight's.
+
+**"or was opened" is dropped, because nothing records an open.** No table in this file holds that a name was read, so half the stated rule could not be implemented and the cell would have promised a behaviour no test could induce. What stands is the half the store can answer: a night the name fired is kept whole, and every other night keeps the hash. That gives `ChangeDetector` a listings read, which its matrix row carries, and the ordering is already right, since the shortlist is step 12 of the night and the facts file is step 13.
+
+The cost is what the rule is for. One row per name per night at index size is about 125,000 rows a year, and a payload holding every number the computed sections may use is the largest of them by an order of magnitude; keeping every payload forever is hundreds of megabytes a year against the twelve the listings cost.
 
 ### fundamentals
 Grain: one row per ticker per filing date.
@@ -315,6 +330,8 @@ Grain: one row per ticker per date.
 Primary key: `ticker`, `session_date`.
 
 One year retained, which is enough to hold a ninety-day baseline. This table exists so the staleness judge can work without spending anything.
+
+**A night run twice writes the same count rather than a second row or a changed one.** Update is none and the primary key is `ticker` and `session_date`, so a second run of the same night conflicts on every row it already wrote. The insert ignores the conflict rather than replacing the row, which keeps the table insert-only as the ownership row declares and keeps the night idempotent in what it records about the market. Replacing would be an update by another name and would need declaring as one; failing would make a night that ran twice an error rather than a repeat.
 
 The counter drops rows older than the window on the night they fall out of it, and is declared above as this table's deleter. It was declared retained with no deleter at all until 1.4, which is the same defect as `bar`'s in a second table: a retention window nobody owns is a table that grows forever while this file says it does not.
 
