@@ -1,0 +1,23 @@
+{
+ "stage": "forward returns",
+ "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero.",
+ "tables": [
+  "forward_return"
+ ],
+ "rules": {
+  "horizons": [
+   "5",
+   "21",
+   "setup"
+  ],
+  "setupSessionCap": 63,
+  "immature": "outcome null, which reads as not yet matured rather than as a blank or a zero",
+  "unresolved": "a value rather than a null, so it is counted in its own column and never in a rate",
+  "stopBeforeTarget": "a session that closed through both was stopped out before it could reach anything",
+  "baseRatePopulation": "every name-night in the window, not the rows where a reason fired",
+  "baseRateForSetup": "null, because target before stop is a question about a plan and a name with no plan has no answer to it"
+ },
+ "counts": {
+  "rowsPerListing": 3
+ }
+}

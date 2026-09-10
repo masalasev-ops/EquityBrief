@@ -18,6 +18,10 @@ public class SchemaColumns
         "schema-columns",
         ["docs/SCHEMA.md"],
         [
+            // 5.5, the forward returns and the news pulse.
+            CheckReach.Key(Scope.StoresTable, "Forward returns"),
+            CheckReach.Key(Scope.StoresTable, "News pulse"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.StoresTable, "Listings"),
 

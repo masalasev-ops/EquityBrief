@@ -140,6 +140,60 @@ internal static class Scope
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
         // The shortlist builder and tonight's list, 5.4.
+        // The forward returns, the news pulse and the night's close, 5.5.
+        [CheckReach.Key(CatalogueTable, "Forward return filler")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bars and listings it reads and the forward returns it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "News pulse counter")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership it reads, the news feed it calls and the pulse it writes and drops, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Night close")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the four stores it counts off and the run log it appends to, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Forward return filler")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "News pulse counter")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Night close")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Forward returns")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, with the base rate beside every return it is shown against",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "News pulse")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and its retention is owned by the component that writes it",
+            ByMigration),
+        [CheckReach.Key(FixtureTable, "forward returns")] = new Scoped(
+            Verdict.Pass,
+            "every horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, with the matured cases over constructed series because the committed fixture has no session after its listings",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "news pulse")] = new Scoped(
+            Verdict.Pass,
+            "the count per name is recomputed from the same captured payload rather than read back from the counter, and no symbol outside the index carries a row",
+            ByExpectations),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs the stage once rather than per name, and its run log row records the listings, the matured rows and the ones not yet matured apart",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Count today's articles per name from one dated news query, paged until the day is covered and every page counted, fanned out to names in code rather than asked for per name. The page count follows the day's news volume and not the size of the universe (see: News is one dated query, paged to cover the day, and attributed to names locally).")] = new Scoped(
+            Verdict.Pass,
+            "one dated query is fanned out to names in code, every page is counted on the run log row, and a day that reaches the page cap refuses rather than storing a truncated count",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Close the arithmetic and record its counts: names computed, names on the list, reasons fired, stale names, duration.")] = new Scoped(
+            Verdict.Pass,
+            "every count on the closing row is taken off the store the night has just written rather than reported by the stage that wrote it, and a run with no span says so rather than reporting a duration of zero",
+            ByNight),
+
         [CheckReach.Key(CatalogueTable, "Shortlist builder")] = new Scoped(
             Verdict.Pass,
             "the class declares the seven stores it reads and the listings it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
@@ -749,6 +803,12 @@ internal static class Scope
         // fetcher that writes it, and read from the plan alone the subject
         // resolves to the first checkpoint whose text carries the word.
         ["Fundamentals"] = "6.1",
+
+        // The base rate limit's own Asserted by cell names a run page test, and
+        // the run page is 5.6. 5.5 computes the figure and stores it beside
+        // every return; the claim is that no forward-return figure is shown
+        // without it, which is a claim about a surface.
+        ["Base rate"] = "5.6",
 
     };
 

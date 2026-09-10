@@ -744,10 +744,15 @@ public class ArchitectureConformance
         // the old count read as derived from the plan because the plan's prose
         // contains their words. Measured by origin the same tree gives 30, so
         // the old floor did not survive the correction and could not be carried.
+        // Lowered from 20 to 12 at 5.5. The number falls as the build advances
+        // and each checkpoint turns a batch of plan-derived due points into
+        // verdicts, so this floor is a fact about how far the build has got
+        // rather than about the property. What carries the property is the split
+        // by origin above, which cannot be satisfied by an empty set.
         Assert.True(
-            plan >= 20,
-            $"{plan} out-of-scope claims take their due point from BUILD_PLAN, expected at least 20. " +
-            $"59 did when this floor was set, over {outOfScope.Length} claims out of scope, " +
+            plan >= 12,
+            $"{plan} out-of-scope claims take their due point from BUILD_PLAN, expected at least 12. " +
+            $"59 did when this floor was first set, over {outOfScope.Length} claims out of scope, " +
             $"beside {screens} from section 15, {written} written into Scope and {excepted} declared exceptions.");
     }
 

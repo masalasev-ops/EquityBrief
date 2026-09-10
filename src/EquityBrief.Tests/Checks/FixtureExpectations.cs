@@ -21,6 +21,10 @@ using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Core.Returns;
+using EquityBrief.Worker.News;
+using EquityBrief.Worker.Nights;
+using EquityBrief.Worker.Returns;
 using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
@@ -48,6 +52,10 @@ public class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 5.5, the forward returns and the news pulse.
+            CheckReach.Key(Scope.FixtureTable, "forward returns"),
+            CheckReach.Key(Scope.FixtureTable, "news pulse"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.FixtureTable, "listings"),
 
@@ -2236,6 +2244,22 @@ public class FixtureExpectations
 
         await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings");
 
+        return store;
+    }
+
+    // The chain through the forward returns and the news pulse, which is the
+    // listings chain plus the two components that read them.
+    internal static async Task<TemporaryStore> WithReturns()
+    {
+        var store = await WithListings();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new ForwardReturnFiller(clock, store.DatabaseFile).RunAsync("replay-returns");
+        await new NewsPulseCounter(
+            RecordedNewsFeed.FromFolder(Folder()),
+            clock,
+            store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "replay-pulse");
+
         // The detector again, because its retention reads the listings and there
         // were none the first time it ran. This is the order the night takes as
         // well: the shortlist is step 12 and the facts file is step 13.
@@ -3286,6 +3310,301 @@ public class FixtureExpectations
 
         Assert.Equal(TrendState.NotClassified, highsOnly.State);
         Assert.Contains("swing lows", highsOnly.Reason!, StringComparison.Ordinal);
+    }
+
+    // ---- 5.5, the forward returns and the news pulse ----
+
+    [Fact]
+    public async Task EveryListingCarriesEveryHorizonAndAnImmatureOneReadsAsNotYetMatured()
+    {
+        // The committed fixture's listings sit on the last stored session, so
+        // nothing after them has matured. That is the state this checkpoint is
+        // about: an immature row reads as not yet matured rather than as a blank
+        // or a zero, and the two are different statements with only one true.
+        var rules = Expected("forward-returns").GetProperty("rules");
+
+        Assert.Equal(
+            [.. rules.GetProperty("horizons").EnumerateArray().Select(horizon => horizon.GetString()!)],
+            ForwardReturnSeries.Horizons);
+
+        Assert.Equal(ForwardReturnSeries.SetupSessionCap, rules.GetProperty("setupSessionCap").GetInt32());
+
+        using var store = await WithReturns();
+
+        var listings = int.Parse(Query(store, "SELECT COUNT(*) FROM listing;").Single(), CultureInfo.InvariantCulture);
+        var perListing = Expected("forward-returns").GetProperty("counts").GetProperty("rowsPerListing").GetInt32();
+
+        Assert.Equal(
+            [(listings * perListing).ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT COUNT(*) FROM forward_return;"));
+
+        // Every horizon is present for every listing, so a horizon that never
+        // matures is still a row a later session can fill.
+        foreach (var horizon in ForwardReturnSeries.Horizons)
+        {
+            Assert.Equal(
+                [listings.ToString(CultureInfo.InvariantCulture)],
+                Query(store, $"SELECT COUNT(*) FROM forward_return WHERE horizon = '{horizon}';"));
+        }
+
+        // Nothing has matured over this fixture, and the row says so with a null
+        // outcome rather than with a zero return.
+        Assert.Equal(
+            [(listings * perListing).ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT COUNT(*) FROM forward_return WHERE outcome IS NULL;"));
+
+        Assert.Equal(["0"], Query(store, "SELECT COUNT(*) FROM forward_return WHERE return_pct = 0;"));
+    }
+
+    [Fact]
+    public async Task AHorizonMaturesIntoAWinOrALossAndASetupResolvesOnWhicheverCameFirst()
+    {
+        // The arithmetic, over constructed series, because the committed fixture
+        // has no session after its listings and cannot reach a matured horizon
+        // at all. That is the unreachable boundary this phase has now named
+        // three times.
+        ReturnBar[] Rising(int count, decimal from) =>
+            [.. Enumerable.Range(1, count).Select(at => new ReturnBar(new DateOnly(2026, 1, 1).AddDays(at), from + at))];
+
+        // Five sessions of a rising series is a win, and the return is the
+        // change against the close the listing was made at.
+        var win = ForwardReturnSeries.Over(5, Rising(10, 100m), 100m);
+
+        Assert.Equal(ForwardReturnSeries.Win, win.Outcome);
+        Assert.Equal(5, win.ReturnPct!.Value, 6);
+        Assert.Equal(new DateOnly(2026, 1, 6), win.ResolvedOn);
+
+        // A falling series is a loss, and the return is negative rather than
+        // absent: a loss is a measurement and not a missing one.
+        var falling = Rising(10, 100m).Select(bar => bar with { Close = 200m - bar.Close }).ToArray();
+        var loss = ForwardReturnSeries.Over(5, falling, 100m);
+
+        Assert.Equal(ForwardReturnSeries.Loss, loss.Outcome);
+        Assert.True(loss.ReturnPct < 0);
+
+        // A horizon with fewer sessions than it needs has not matured, asserted
+        // either side of the boundary.
+        Assert.Null(ForwardReturnSeries.Over(21, Rising(20, 100m), 100m).Outcome);
+        Assert.NotNull(ForwardReturnSeries.Over(21, Rising(21, 100m), 100m).Outcome);
+
+        // The setup: the stop is tested before the target, so a session that
+        // closed through both was stopped out before it could reach anything. A
+        // rule that took the target first would score a gap through the stop as
+        // a win.
+        var through = new ReturnBar[] { new(new DateOnly(2026, 1, 2), 80m) };
+
+        Assert.Equal(ForwardReturnSeries.Loss, ForwardReturnSeries.OverSetup(through, 90m, 110m).Outcome);
+
+        var reached = new ReturnBar[] { new(new DateOnly(2026, 1, 2), 120m) };
+
+        Assert.Equal(ForwardReturnSeries.Win, ForwardReturnSeries.OverSetup(reached, 90m, 110m).Outcome);
+
+        // Running out of sessions is unresolved, which is a value rather than a
+        // null so it is counted in its own column and never in a rate.
+        // see: An unresolved setup is never a win
+        var flat = Enumerable.Range(1, ForwardReturnSeries.SetupSessionCap)
+            .Select(at => new ReturnBar(new DateOnly(2026, 1, 1).AddDays(at), 100m))
+            .ToArray();
+
+        Assert.Equal(ForwardReturnSeries.Unresolved, ForwardReturnSeries.OverSetup(flat, 90m, 110m).Outcome);
+
+        // One session short of the cap is not yet matured, which is a different
+        // thing from unresolved and is stated as one.
+        Assert.Null(ForwardReturnSeries.OverSetup([.. flat.Take(flat.Length - 1)], 90m, 110m).Outcome);
+
+        // A listing with no plan has no setup to resolve, which is an absence
+        // rather than an unresolved setup.
+        Assert.Null(ForwardReturnSeries.OverSetup(flat, null, null).Outcome);
+
+        // The invariant the branch order rests on, asserted rather than assumed.
+        // 5.5's own mutation showed that swapping the stop and the target
+        // branches changes nothing any series can show: the test is on the
+        // close, and one close cannot be both below the stop and at or above the
+        // target while the stop is beneath the target. So what is asserted is
+        // the invariant, and a plan that breaks it refuses rather than being
+        // scored by whichever branch ran first.
+        var broken = Assert.Throws<InvalidOperationException>(
+            () => ForwardReturnSeries.OverSetup(flat, 110m, 90m));
+
+        Assert.Contains("not a plan", broken.Message, StringComparison.Ordinal);
+
+        Assert.Throws<InvalidOperationException>(() => ForwardReturnSeries.OverSetup(flat, 100m, 100m));
+
+        // And the invariant holds over every plan the store carries, which is
+        // where it has to hold rather than only over constructed input.
+        using var stored = await WithReturns();
+
+        foreach (var plan in Query(stored, "SELECT plan_at_listing FROM listing;"))
+        {
+            var root = JsonDocument.Parse(plan).RootElement;
+
+            if (root.TryGetProperty("stop", out var stop) && stop.ValueKind == JsonValueKind.String
+                && root.TryGetProperty("firstTradedTarget", out var target) && target.ValueKind == JsonValueKind.String)
+            {
+                Assert.True(
+                    decimal.Parse(stop.GetString()!, CultureInfo.InvariantCulture)
+                        < decimal.Parse(target.GetString()!, CultureInfo.InvariantCulture),
+                    $"a stored plan has its stop at {stop.GetString()} and its target at {target.GetString()}.");
+            }
+        }
+    }
+
+    [Fact]
+    public void TheBaseRateIsOverEveryNameNightAndIsAbsentWhereNothingHasMatured()
+    {
+        // The population is every name-night and not the rows where a reason
+        // fired, because a listings row exists for every name and a figure over
+        // the listed ones is a figure over the wrong population.
+        // see: The base rate is over every name-night, and never over the listed ones
+        Assert.Equal(50, ForwardReturnSeries.BaseRate([ForwardReturnSeries.Win, ForwardReturnSeries.Loss])!.Value, 6);
+        Assert.Equal(100, ForwardReturnSeries.BaseRate([ForwardReturnSeries.Win])!.Value, 6);
+
+        // An unresolved outcome is in neither half of the rate, which is what
+        // counting it in its own column means.
+        Assert.Equal(
+            100,
+            ForwardReturnSeries.BaseRate([ForwardReturnSeries.Win, ForwardReturnSeries.Unresolved])!.Value,
+            6);
+
+        // A window with nothing matured has no rate rather than a rate of zero.
+        // A zero says every name fell; nothing says nothing has matured.
+        Assert.Null(ForwardReturnSeries.BaseRate([null, null]));
+        Assert.Null(ForwardReturnSeries.BaseRate([]));
+    }
+
+    [Fact]
+    public async Task TheNewsPulseCountsEveryMemberFromOneDatedQueryAndKeepsTheCountOverTheIndex()
+    {
+        // One dated query fanned out to names in code, and the count is kept for
+        // the index rather than for every symbol the market wrote about: one
+        // live request reached 3,232 distinct symbols against an index of 503.
+        // see: News is one dated query, paged to cover the day, and attributed to names locally
+        var rules = Expected("news-pulse").GetProperty("rules");
+
+        Assert.Equal(NewsPulseCounter.RetentionDays, rules.GetProperty("retentionDays").GetInt32());
+
+        using var store = await WithReturns();
+
+        var members = FixtureExpectation.CurrentMembers;
+
+        // A row per member per date, including the members the day wrote nothing
+        // about: the pulse is compared against its own baseline, and a night
+        // missing from the series would read as a night nobody counted.
+        Assert.Equal(
+            [.. members],
+            Query(store, "SELECT ticker FROM news_pulse ORDER BY ticker;"));
+
+        // And the counts are the payload's own attribution, recomputed here from
+        // the same capture rather than read back from the counter.
+        var articles = RecordedNewsFeed.Parse(File.ReadAllText(
+            Path.Combine(Folder(), "news-2026-09-08.json")));
+
+        var byName = NewsAttribution.ByName(articles);
+
+        foreach (var member in members)
+        {
+            Assert.Equal(
+                [(byName.TryGetValue(member, out var found) ? found.Count : 0).ToString(CultureInfo.InvariantCulture)],
+                Query(store, $"SELECT article_count FROM news_pulse WHERE ticker = '{member}';"));
+        }
+
+        // No symbol outside the index has a row, which is what keeps this a
+        // table about the universe rather than about the market.
+        Assert.True(
+            byName.Count > members.Length,
+            $"the capture attributes {byName.Count} symbols against {members.Length} members, so the filter is untested.");
+
+        Assert.Equal(
+            [members.Length.ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT COUNT(*) FROM news_pulse;"));
+    }
+
+    [Fact]
+    public async Task TheNewsPulseCostsOnePageWhereOnePageCoversTheDay()
+    {
+        // The page count is read off the feed rather than stated by the caller,
+        // because a caller that wrote the figure would be recording its own
+        // intention: correct today, and still reading one on the night a feed
+        // starts paging.
+        using var store = await WithReturns();
+
+        var requests = Query(store, "SELECT network_requests FROM run_log WHERE stage = 'news-pulse';");
+
+        Assert.Equal(["1"], requests);
+
+        // And it does not grow with the population, which is the property the
+        // cost rule rests on. The captured payload is one page whatever the
+        // index holds, so the count is asserted against the feed's own figure
+        // over two universe sizes rather than against a literal.
+        var feed = RecordedNewsFeed.FromFolder(Folder());
+
+        await feed.ArticlesAsync(new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 8));
+
+        Assert.Equal(1, feed.Requests);
+
+        await feed.ArticlesAsync(new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 8));
+
+        Assert.Equal(2, feed.Requests);
+    }
+
+    [Fact]
+    public async Task TheClosingRowsCountsAreTakenOffTheStoreRatherThanReportedByTheStages()
+    {
+        // Section 14's last step. 5.5's own mutation found this unasserted: the
+        // closing row could report a count of zero for the names on the list and
+        // the suite stayed green.
+        //
+        // Every figure is recomputed here from the same tables the stage counts
+        // over, so a stage that reported its own opinion of what it wrote
+        // disagrees with the store rather than with a frozen number.
+        using var store = await WithReturns();
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+        var closed = await new NightClose(clock, store.DatabaseFile).RunAsync(Index, "close-check");
+
+        Assert.Equal(
+            int.Parse(Query(store, "SELECT COUNT(*) FROM ladder WHERE as_of = (SELECT MAX(as_of) FROM ladder);").Single(), CultureInfo.InvariantCulture),
+            closed.NamesComputed);
+
+        Assert.Equal(
+            int.Parse(Query(store, "SELECT COUNT(*) FROM listing WHERE fired_count > 0;").Single(), CultureInfo.InvariantCulture),
+            closed.NamesOnTheList);
+
+        Assert.Equal(
+            int.Parse(Query(store, "SELECT IFNULL(SUM(fired_count), 0) FROM listing;").Single(), CultureInfo.InvariantCulture),
+            closed.ReasonsFired);
+
+        // The counts are non-zero, so the agreement above is two figures meeting
+        // rather than two zeros.
+        Assert.True(closed.NamesComputed > 0, "the night computed no name, so the counts agree over nothing.");
+        Assert.True(closed.ReasonsFired > 0, "no reason fired, so the count agrees over nothing.");
+
+        // Stale is over the index rather than over the names with bars, because
+        // a member with none is stale in the way that matters. Every fixture
+        // name ends on the same session, so the constructed member is what
+        // reaches the case.
+        Assert.Equal(0, closed.NamesStale);
+
+        Insert(
+            store,
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
+            "VALUES ('GSPC', 'ZZZZ', '2026-01-02', NULL, '2026-09-08T00:00:00Z', 'Utilities');");
+
+        Assert.Equal(1, (await new NightClose(clock, store.DatabaseFile).RunAsync(Index, "close-stale")).NamesStale);
+
+        // A run with no rows of its own says so rather than reporting a duration
+        // of zero, because the two read the same on a page and only one is true.
+        // This run id has no stages behind it, so that is the branch it takes.
+        Assert.Equal("no duration recorded", closed.Duration);
+
+        // And a run whose stages did write rows reports the span they cover,
+        // which is the other half. Asserted over a run id the replay used, so
+        // the two branches are both reached rather than one of them being
+        // whatever the arrangement happened to give.
+        Assert.Contains(
+            "second(s)",
+            (await new NightClose(clock, store.DatabaseFile).RunAsync(Index, "replay-listings")).Duration,
+            StringComparison.Ordinal);
     }
 
     // ---- 5.4, the shortlist builder ----
