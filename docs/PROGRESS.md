@@ -5407,3 +5407,58 @@ Notes:      `move` gains its deleter here, which is the last of the six computed
             Section 15.9's how-it-got-here row is decomposed per surface, its table at 5.2 and
             its cause at 6.5, for the reason 5.0 decomposed the universe screen's two rows and
             the run page's one.
+
+### 5.3 - the facts assembler and the change detector                        2026-09-10
+Built:      migration 15 and the `facts` table, `FactsFile`, `FactsAssembler`, `ChangeDetector`,
+            and section 14's step 13. The file and the change list are one nightly stage rather
+            than two, because the detector compares tonight's payload against the last stored one
+            and there is nothing for it to read until the assembler has written tonight's.
+Measured:   26 facts per name over 4 names. The population is the names with a captured price
+            series, not the index: the assembler reads the last stored session and a name with no
+            bars gets no row, which is an absence rather than a file of nulls.
+            The set is 4 from the bar, 10 from the indicators, 6 from the two immediate bands, 1
+            from the ladder, 3 from the largest move, 1 from the swings and 1 from the calendar.
+            It is written from the rules rather than frozen from a run, and every value is
+            asserted against the store it was read from rather than against a copy of the
+            payload.
+            235 claims, 125 PASS from 118, 110 out of scope, 0 unexamined.
+Found:      four cells filled ahead of the code they claim, and one statement that was an update
+            wearing an insert's name.
+            `writer-ownership` reads the statement rather than the declaration, and the
+            assembler's first upsert was an update on a table whose Update belongs to the change
+            detector. A table may never have two owners for one operation, so the assembler
+            inserts and ignores a conflict. A night run twice writes the same file and leaves the
+            change list where it is, which is the same shape `news_pulse` takes.
+            The facts assembler's matrix row read Listings and Fundamentals and the change
+            detector's read Listings, while `listing` is created at 5.4 and `fundamentals` at
+            6.1. `component-access` refused all three the moment the components landed. Each cell
+            now sits at the checkpoint that creates the store it names, and the payload retention
+            moves to 5.4 with the read it needs. That is the same direction `writer-ownership`
+            refused a deleter at 4.0 and `schema-columns` refused a column at 5.0, which makes
+            three instances of one rule: a declaration before the thing exists is refused, and
+            the cell belongs where the code is.
+Mutated:    six mutations, in a worktree under the session scratchpad outside the repository,
+            reverted, and the worktree removed. The rule was stated before the sweep: each names
+            the property it is trying to break rather than the line it edits.
+            The properties added: a facts re-run does not blank the change list; the payload is
+            written in name order so two runs over one store produce the same bytes; a material
+            change is a fact that appeared, went, or took a different value; a first night has no
+            changes rather than an unknown number of them; every fact names the stage that
+            computed it; and the detector touches its own column and neither of the assembler's.
+            All six were mutated and all six turn a test red on the first sweep, which is the
+            first checkpoint of this phase where that happened. None went unmutated. The hash
+            itself was not mutated and is named here as not mutated: it is a function of the
+            payload beside it, so a mutation of one is a mutation of the other and the assertion
+            over the payload already carries it.
+Tests:      441, from 437. `tools/ci.sh` green end to end, all 6 steps, migrations 0 to 15, exit
+            0. `tools/verify-phase` green at 235 claims, 125 PASS, 0 FAIL, 110 out of scope, 0
+            unexamined. Windows on this machine; the matrix carries macOS and the Linux
+            case-sensitivity job.
+Carried:    nothing new.
+Notes:      the change list is an empty list rather than a null where there is nothing to compare
+            against, because a name whose first night this is has no changes rather than an
+            unknown number of them, and the two read differently on a page.
+            The comparison is on the fact's name rather than on its position, so a fact added
+            between two others is one change rather than every fact after it changing. The
+            constructed second night is what asserts it: the committed fixture holds one night
+            per name, so a comparison against a previous night is unreachable from it.
