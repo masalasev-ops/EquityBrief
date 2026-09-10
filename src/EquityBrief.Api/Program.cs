@@ -188,6 +188,15 @@ app.MapGet("/screens/tonight/{night?}", async (
         ? NameScreen.PlanRegion(page, marks, rows[0].Ticker, await read.LadderAsync(rows[0].Ticker), universe.FirstOrDefault(row => row.Ticker == rows[0].Ticker)?.Close ?? 0m)
         : string.Empty;
 
+    // The record beside each reason and the evening's own totals, which are
+    // 15.7's two halves that need a reason to have a history. The record is
+    // over every night the store holds rather than over this one, for the
+    // reason the run page states: it is a property of the reason and not of the
+    // evening.
+    var records = RunScreen.Records(
+        await read.ListingsAsync(),
+        RunScreen.Resolved(await read.ForwardReturnsAsync()));
+
     return Results.Content(
         page.TonightRegion(
             marks,
@@ -197,7 +206,9 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.NightDurationAsync(dated),
             rows,
             [],
-            selected),
+            selected,
+            records,
+            RunScreen.Tracks(TonightScreen.Totals(listings))),
         "text/html; charset=utf-8");
 });
 
@@ -238,6 +249,66 @@ app.MapGet("/screens/universe", async (
             request.Query["trend"].FirstOrDefault(),
             request.Query["sector"].FirstOrDefault()),
         "text/html; charset=utf-8");
+});
+
+// The run page, section 15.10, read here and composed by the app.
+//
+// `/screens/run` resolves to the newest night the listings hold and
+// `/screens/run/<date>` to an earlier one, which is the pair the tonight route
+// already answers and which keeps `#/run/<date>` a link.
+app.MapGet("/screens/run/{night?}", async (
+    string? night,
+    ReadApi read,
+    MarkRenderer marks,
+    SinglePageApp page) =>
+{
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+
+    var asOf = night is { Length: > 0 }
+        ? DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+        : await read.NewestNightAsync();
+
+    if (asOf is not { } dated)
+    {
+        return Results.Content(
+            "<p class=\"degraded\" data-night=\"none\">no night has been recorded yet</p>",
+            "text/html; charset=utf-8");
+    }
+
+    // The reason record is over every night the store holds and not over this
+    // one. A record is a property of the reason across every name it ever fired
+    // for, and a record over one evening would be a statement about that
+    // evening wearing the clothes of a verdict.
+    var everyListing = await read.ListingsAsync();
+    var returns = await read.ForwardReturnsAsync();
+    var stages = RunScreen.Stages(await read.RunLogAsync(dated));
+    var records = RunScreen.Records(everyListing, RunScreen.Resolved(returns));
+
+    return Results.Content(
+        page.RunRegion(
+            marks,
+            dated,
+            stages,
+            RunScreen.Failed(stages),
+            records,
+            RunScreen.Tracks(records),
+            RunScreen.BaseRates(returns),
+            RunScreen.Nights(everyListing),
+            await read.StaleNamesAsync(index),
+            RunScreen.Harness(PhaseReport())),
+        "text/html; charset=utf-8");
+
+    // The phase report the harness last wrote, read as text and handed to the
+    // projection rather than opened by it, so nothing on the read surface
+    // reaches the filesystem for a store it does not own. A machine with no
+    // report says so rather than showing four zeros.
+    string? PhaseReport()
+    {
+        var path = builder.Configuration["EquityBrief:PhaseReport"]
+            ?? Path.Combine(builder.Environment.ContentRootPath, "artifacts", "phase-report.json");
+
+        return File.Exists(path) ? File.ReadAllText(path) : null;
+    }
 });
 
 // One run log row for the surface coming up, which is the grain SCHEMA declares

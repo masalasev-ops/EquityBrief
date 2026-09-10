@@ -1,0 +1,28 @@
+{
+ "stage": "run page",
+ "derivedFrom": "the rules in section 15.10, section 15.11 and section 17 applied to the stored listings and forward returns, not from a run. Every count below is recomputed in the suite from the two tables: a reason's fired count is the listings whose reasons name it, and its resolved count is the setup-horizon rows that reached an outcome for a name listed that night.",
+ "tables": [
+  "listing",
+  "forward_return"
+ ],
+ "counts": {
+  "reasons": 6,
+  "fired": 8,
+  "resolved": 0
+ },
+ "rules": {
+  "minimumResolvedSetups": 250,
+  "everyReasonIsARow": "in section 11's order, whether or not it fired, because a reason absent from the page is a reason nobody can ask about",
+  "aSetupBelongsToEveryReasonThatFired": "on the night it was listed, since a setup counted against one reason alone would be a record about whichever reason was read first",
+  "belowTheMinimum": "a dashed outline carrying the resolved count against the minimum, and no rate through any channel: the win and loss counts are handed to the track as one resolved segment rather than as two",
+  "noRateAtAll": "the share that reached target before stop and the break-even those setups demanded are the other half of 15.10's row and arrive at 7.5 with the verdicts",
+  "baseRateWindows": [
+   "5",
+   "21"
+  ],
+  "theSetupHorizonHasNoBaseRate": "target before stop is a question about a plan, and a name with no plan that night has no answer to it, so the page states the absence and its reason rather than leaving a window without a line",
+  "nothingHasMatured": "the committed fixture's listings sit on the last stored session, so every horizon over them is not yet matured and every record is below the minimum. That is the state of the fixture rather than a defect, and it is why the resolved count above is zero",
+  "firedIsReasonFirings": "reason firings summed over the reasons, not names on the list. A name that fired two reasons is counted in two of the six rows, which is what a record per reason is over",
+  "resolvedIsSetupHorizonOutcomes": "setup-horizon rows that reached an outcome, over every night the store holds"
+ }
+}

@@ -258,6 +258,41 @@ internal static class Scope
             Verdict.Pass,
             "a night with no list shows the data date the store does have and draws no list at all, which is the half a banner above a stale list would not satisfy",
             ByReadSurface),
+        // The run page, 5.6. Every one of these is a claim about a surface, so
+        // each is reached by the check that draws the surface and reads it back.
+        [CheckReach.Key(LimitsTable, "Base rate")] = new Scoped(
+            Verdict.Pass,
+            "the base rate is pinned per window above every record, read off the column the filler wrote beside each return, and the region refuses to draw at all with no pinned line rather than showing a figure a reader cannot judge",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] = new Scoped(
+            Verdict.Pass,
+            "three states out of one denominator shared across the whole mark, with the unresolved segment an outline carrying no fill and every row's counts in words as well as in the picture",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = new Scoped(
+            Verdict.Pass,
+            "each reason on a drawn row is named with the values the store holds for it and the reason's own record beside it, in the dashed not-yet-measured state carrying its count against the minimum",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Reason totals")] = new Scoped(
+            Verdict.Pass,
+            "the track across tonight's fired names, counted per reason off the stored listings, with every name on it in the unresolved state because nothing has scored tonight",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Operational header")] = new Scoped(
+            Verdict.Pass,
+            "every stage the night's run log carries is drawn with its own elapsed time, rows, model calls, requests and spend, in the order they ran, and the night is selected through the clock rather than through the date the log stores",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = new Scoped(
+            Verdict.Pass,
+            "a setup is counted against every reason that fired on the night it was listed, a reason below the minimum draws its count in a dashed outline and no rate through either channel, and a stored reason the roster does not carry refuses",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Stale and failed")] = new Scoped(
+            Verdict.Pass,
+            "the stale names are listed rather than counted, over the index rather than the names with bars, and each failed stage is named with its outcome and its detail",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Harness")] = new Scoped(
+            Verdict.Pass,
+            "the four verdict counts are drawn separately and never summed, and a machine with no phase report says so rather than drawing four zeros",
+            ByReadSurface),
+
         [CheckReach.Key(FailureTable, "Earnings date missing, the earnings reason")] = new Scoped(
             Verdict.Pass,
             "the reason does not fire with no date on file and says not on file rather than a guessed date, with the horizon asserted either side of its boundary",

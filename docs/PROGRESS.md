@@ -5619,3 +5619,97 @@ Notes:      the base rate limit moved from 5.5 to 5.6, whose own Asserted by cel
             The night close is a component and gains its catalogue and matrix rows here, because a
             component is named in the catalogue in the same commit that introduces it and
             `component-access` refused the class until it was.
+### 5.6 - the run page   2026-09-10
+Built:      section 15.10's five regions, section 15.5's reason track mark, and section 15.7's two
+            halves that needed a reason to have a history. `RunScreen`, the run route at
+            `#/run/<date>`, `RunRegion`, and five marks: the operational header, the reason records,
+            the reason track, stale and failed, and the harness verdicts. The read surface gained
+            the night's run log, every listing, the forward returns and the stale names.
+Decided:    two things, both about where a gate is applied rather than about a new rule.
+            The win and loss split is gated on the same minimum in the picture as in the column.
+            15.11 gates the record column at 250 resolved setups, and a split drawn beside a reason
+            with eleven of them is the same figure through a second channel, since a reader takes
+            the ratio off the bar. The mark keeps its three states as 15.5 defines them and draws
+            what it is given; below the minimum the page hands it the resolved setups as one
+            segment. So no reason below the minimum shows a rate anywhere on the page, through
+            either channel.
+            And the base rate is pinned per window rather than as one figure. Section 17's row says
+            every forward-return figure is shown against the base rate for the same window, the
+            horizons are three, and the setup horizon has none by rule. Two pinned lines and a
+            third line stating the setup horizon's absence with its reason, rather than a window
+            with no line at all, which a reader cannot tell from an oversight.
+Measured:   237 claims, 164 PASS from 156, 73 out of scope, 0 unexamined. The eight are the run
+            page's: the reason track, tonight's reasons-per-row and reason totals, 15.10's
+            operational header, resolved count, stale and failed and harness, and section 17's base
+            rate limit.
+            Two floors in `architecture-conformance` fell with the phase, both the out-of-scope
+            floor and for the reason written beside it: from 80 to 70, because eight claims became
+            PASS at once. It is a fact about how far the build has got and the claims are what
+            carries the property.
+            Over the committed fixture: 8 reason firings across 4 listings, 0 resolved setups, and
+            both base rate windows not yet measured. That is the fixture's state rather than a
+            defect, and it is the state the page is designed for: its listings sit on the last
+            stored session, so nothing after them has matured.
+Found:      three things, two of them by this checkpoint's own mutations.
+            `NightDurationAsync` ignored the night it was given. The query took every run carrying
+            a listings stage and spanned the lot, so the date in the parameter changed nothing and
+            two stored nights reported one duration covering both. It has been wrong since 5.4 and
+            the header has been drawing it since. The run log has no session column and cannot have
+            one it would agree with, because a run that starts after the close in New York carries
+            tomorrow's UTC date, so the night is decided by the clock over each row's own start.
+            That is asserted with the pair of rows that makes it visible: one written at half past
+            one in the morning UTC that belongs to this night, and one written the evening before
+            that does not.
+            The reason totals region could lose its mark and stay green. The table of counts beside
+            it carried every assertion, so the picture, which is the row's whole claim, was drawn
+            and read by nothing.
+            And the operational header's model calls and network requests could be drawn as
+            constants. The assertion was on the data attributes, which the mutation left alone: the
+            counts were right in the markup a machine reads and zero in the cells a person reads.
+            That is CLAUDE.md's own rule about a claim that something is shown being a claim about
+            the surface, missed while writing the assertion for it. The cells are asserted now, on
+            a night where one stage made a request and the rest made none, so a header printing a
+            constant disagrees on the row that matters.
+Mutated:    seventeen distinct mutations over thirty-nine runs, in a worktree under the session
+            scratchpad outside the repository, reverted, and the worktree removed. One was invalid,
+            being a form that did not compile, and it was corrected and re-run. The rule was stated
+            before the sweep: each names the property it is trying to break rather than the line it
+            edits.
+            The properties: a setup belongs to every reason that fired on the night it was listed;
+            a resolved setup for a name nobody listed belongs to no reason; a stored reason section
+            11's list does not hold refuses; the win and loss split is gated on the minimum in the
+            picture as well as in the column; a record below the minimum draws its count against
+            the minimum and no verdict; the reason track scales on one denominator across the whole
+            mark; the unresolved segment is an outline and never a third colour; no forward-return
+            figure is drawn with no base rate pinned above it; the night a run log row belongs to
+            is decided by the clock and not by the date the log stores; a night's duration is over
+            the run that wrote that night's list; a member with no stored series at all is stale;
+            out of scope is counted apart from unexamined and never in its place; a reason that
+            fired on nothing draws its rule rather than nothing; the reason totals region draws the
+            track and not only the table; the operational header carries each stage's model calls
+            and network requests; the stages are drawn in the order they ran; and each reason on a
+            row carries the values that made it true.
+            Fifteen turned a test red on the first run. Two stayed green and both were holes rather
+            than controls: the totals region's mark and the header's two cells, both closed above
+            and both red on the re-run. This is the first sweep in the phase with no green mutation
+            left standing as a control.
+            None of the properties added went unmutated.
+Tests:      474, from 463. `tools/ci.sh` green end to end, all 6 steps, migrations 0 to 18, exit 0.
+            `tools/verify-phase` green at 237 claims, 164 PASS, 0 FAIL, 73 out of scope, 0
+            unexamined, 171 placements and verdicts reconciled against a floor of 34. Windows on
+            this machine; the matrix carries macOS and the Linux case-sensitivity job.
+Carried:    nothing new, and nothing discharged. The three operating obligations this page is the
+            surface for stay open, which is what they are: (owes: The six reason thresholds
+            calibrated from the nights they fired on) needs 60 nights, (owes: The three reason
+            records that need resolved setups) and (owes: The event setups' triggers calibrated
+            from resolved setups) need 250 resolved setups. What this checkpoint owed them is that
+            each trigger is legible when it fires, and each is now a count on the page: the nights
+            the record stands on, the resolved count against its minimum on every reason row, and
+            the same count beside each reason on tonight's list.
+Notes:      no store, no migration and no spec edit. The page reads what phase 5 has already
+            written, which is why it is the last checkpoint before the report.
+            The reason record is over every night the store holds rather than over the night being
+            read. A record is a property of the reason across every name it ever fired for, and a
+            record over one evening would be a statement about that evening wearing the clothes of
+            a verdict. That is a scan of the listings table once an evening, and it is the reason
+            the read surface gained a listing query with no filter on it.
