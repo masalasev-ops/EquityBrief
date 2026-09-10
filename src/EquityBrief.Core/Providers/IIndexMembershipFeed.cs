@@ -19,7 +19,13 @@ namespace EquityBrief.Core.Providers;
 // of the index and out of every computation downstream, or to write a date
 // nobody has, which is the thing this corpus refuses everywhere else. Null is
 // what is true.
-public sealed record IndexConstituent(string Ticker, DateOnly? Joined, DateOnly? Left);
+// `Sector` is null where the provider names none, and a name that has left the
+// index is one of those: the snapshot object the sector is read from carries
+// current members only. A departed name keeps whatever it was last seen with,
+// which is what the store already holds, and null is drawn as not on file rather
+// than falling into a bucket
+// (see: The universe is the S&P 500, and membership is fetched, not maintained).
+public sealed record IndexConstituent(string Ticker, DateOnly? Joined, DateOnly? Left, string? Sector = null);
 
 // The index membership feed of section 5, behind an interface so the nightly
 // path and the suite meet the same shape.

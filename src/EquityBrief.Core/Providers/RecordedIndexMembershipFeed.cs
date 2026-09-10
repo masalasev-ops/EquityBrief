@@ -64,9 +64,11 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
                 "every name that has left as one that never existed.");
         }
 
+        var sectors = Sectors(document.RootElement);
+
         var constituents = components
             .EnumerateObject()
-            .Select(entry => Read(entry.Value))
+            .Select(entry => Read(entry.Value, sectors))
             .OrderBy(constituent => constituent.Ticker, StringComparer.Ordinal)
             .ToArray();
 
@@ -78,7 +80,46 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
                 "leave date onto every name in the store.");
     }
 
-    static IndexConstituent Read(JsonElement entry)
+    // The sector, read from the snapshot object rather than from the spans.
+    //
+    // Two objects, read for two things, and only one of them is the index. The
+    // spans are what membership is, and the guard above refuses a payload that
+    // carries only the snapshot for exactly that reason. The snapshot is where
+    // the provider puts Sector and Industry, and it carries current members
+    // alone, so a name that has left appears in the spans and not here and its
+    // sector comes back null. That is what is true rather than an omission: the
+    // provider stops naming a sector for a name once it leaves.
+    //
+    // An absent snapshot leaves every sector null and the index unaffected,
+    // because the index is the spans. It is not a fault the way an absent spans
+    // object is.
+    const string Snapshot = "Components";
+
+    static IReadOnlyDictionary<string, string> Sectors(JsonElement root)
+    {
+        if (!root.TryGetProperty(Snapshot, out var snapshot))
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        var sectors = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var entry in snapshot.EnumerateObject())
+        {
+            if (entry.Value.TryGetProperty("Code", out var code)
+                && code.GetString() is { Length: > 0 } ticker
+                && entry.Value.TryGetProperty("Sector", out var sector)
+                && sector.ValueKind == JsonValueKind.String
+                && sector.GetString() is { Length: > 0 } named)
+            {
+                sectors[ticker] = named;
+            }
+        }
+
+        return sectors;
+    }
+
+    static IndexConstituent Read(JsonElement entry, IReadOnlyDictionary<string, string> sectors)
     {
         var ticker = entry.TryGetProperty("Code", out var code) ? code.GetString() : null;
 
@@ -94,7 +135,8 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
         return new IndexConstituent(
             ticker,
             Date(entry, "StartDate", ticker),
-            Date(entry, "EndDate", ticker));
+            Date(entry, "EndDate", ticker),
+            sectors.TryGetValue(ticker, out var sector) ? sector : null);
     }
 
     // Three outcomes, kept apart on purpose.

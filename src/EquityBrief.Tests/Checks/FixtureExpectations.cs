@@ -299,6 +299,31 @@ public class FixtureExpectations
             [.. expected.GetProperty("departed").EnumerateArray().Select(n => n.GetString()!)],
             Query(store, "SELECT ticker FROM membership WHERE left IS NOT NULL ORDER BY ticker;"));
 
+        // The sector, read from the snapshot object of the same payload, which
+        // is where the provider puts it. Two objects read for two things, and
+        // the guard refusing the snapshot as the index stands.
+        var sectors = expected.GetProperty("sectors");
+
+        foreach (var named in sectors.EnumerateObject())
+        {
+            Assert.Equal(
+                [named.Value.GetString()!],
+                Query(store, $"SELECT sector FROM membership WHERE ticker = '{named.Name}';"));
+        }
+
+        // A departed name has no sector, because the snapshot carries current
+        // members alone. Null is what the provider says rather than an omission,
+        // and it is asserted as null rather than as an empty string, because a
+        // falsy value standing in for an absent one is the class this store has
+        // already been bitten by twice.
+        Assert.Equal(
+            [.. expected.GetProperty("departed").EnumerateArray().Select(_ => "")],
+            Query(store, "SELECT IFNULL(sector, '') FROM membership WHERE left IS NOT NULL ORDER BY ticker;"));
+
+        Assert.Equal(
+            [expected.GetProperty("departed").GetArrayLength().ToString()],
+            Query(store, "SELECT COUNT(*) FROM membership WHERE sector IS NULL;"));
+
         // The two populations are different, which is the thing a reader is
         // most likely to conflate: five constituents and three names.
         Assert.NotEqual(
@@ -1843,17 +1868,18 @@ public class FixtureExpectations
         // rather than about whether anything reads them.
         Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
 
-        // Five stand unread and each is named rather than counted, because a
+        // Six stand unread and each is named rather than counted, because a
         // number here would drift silently as keys are added. `rowsInFile` is
         // the count of rows in the captured bulk payload, which the fetch
         // expectation states so a reader can see what the membership filter cut
-        // from; `index` is the index code; and the three notes are sentences.
+        // from; `index` is the index code; and the four notes are sentences.
         // None is a figure the pipeline produces, which is why nothing asserts
         // them. The series state file added two keys when it landed and this
         // assertion caught both on the same run; the ladder file added its note
-        // at 4.1 and it caught that too, which is what it is for.
+        // at 4.1 and it caught that too; the sector note arrived at 5.1 and it
+        // caught that. Which is what it is for.
         Assert.Equal(
-            ["fetch.rowsInFile", "ladder.note", "membership.index", "membership.note", "series-state.note"],
+            ["fetch.rowsInFile", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

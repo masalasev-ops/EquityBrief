@@ -138,6 +138,30 @@ internal static class Scope
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
+        // The universe screen, 5.1. Every one is read off the rendered markup
+        // and matched against the store rather than by eye, which is what a
+        // claim about a surface requires.
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row")] = new Scoped(
+            Verdict.Pass,
+            "the mark draws each edge that exists in its own hue, states both distances in typical days, and says so where a name has neither rather than drawing a shape at one end",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Sector strip, one line per sector")] = new Scoped(
+            Verdict.Pass,
+            "one line per sector with its name count and its uptrend count, the lines summing to the index, and a name with no sector counted in its own line rather than folded into a real one",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = new Scoped(
+            Verdict.Pass,
+            "one row per index member, counted off the markup, ordered by distance to the nearest level ascending with an absent distance sorting last rather than first",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Filters")] = new Scoped(
+            Verdict.Pass,
+            "one chip per trend state and one per sector, each a hash route carrying its value, and a filter narrowing the table while the strip keeps stating the whole index",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A name leaves the index")] = new Scoped(
+            Verdict.Pass,
+            "a departed name is absent from the universe and keeps its membership row with its leave date, asserted over the two the fixture holds",
+            ByReadSurface),
+
         // Figure 9.1's five steps and the store they write, added at 5.0 when
         // the figures were first read at all. Each is asserted over the
         // committed fixture by the level expectations, which is the same
@@ -573,6 +597,15 @@ internal static class Scope
         // a recorded run, and that arrives at 1.4.
         ["Backfill"] = "1.4",
 
+        // 5.1 names the listings store to say it is absent there: its universe
+        // screen draws every region except the ones that store feeds, and its
+        // text has to name what it is not drawing. The store itself is created
+        // at 5.4. Read from the plan alone the subject resolves to the first
+        // checkpoint whose text carries the word, which is the prefix shape the
+        // verification rules name as having arrived four times and which this
+        // dictionary exists to declare rather than to hide.
+        ["Listings"] = "5.4",
+
     };
 
     // Components the plan does not name. The catalogue and the matrix share it.
@@ -907,7 +940,7 @@ internal static class Scope
         // recorded run, which is the first point either limit is asserted.
         ["Model calls in the nightly run"] = "1.4",
         ["Per-name network calls in the nightly run"] = "1.4",
-        ["Nightly wall clock, at index size"] = "5.1",
+        ["Nightly wall clock, at index size"] = "5.7",
         // Retention is what makes the year a limit rather than a description,
         // and it lands with the fetcher at 1.4.
         ["Bar history kept"] = "1.4",
@@ -923,7 +956,7 @@ internal static class Scope
         ["Claim rejection"] = "6.1",
         ["Theme search parameters"] = "6.6",
         ["Source admissibility"] = "6.1",
-        ["Nightly row coverage"] = "5.1",
+        ["Nightly row coverage"] = "5.4",
         ["Reason record display"] = "7.5",
         ["Minimum resolved setups"] = "7.5",
         ["Family size and correction"] = "7.1",

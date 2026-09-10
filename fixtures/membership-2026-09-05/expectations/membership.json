@@ -17,7 +17,15 @@
   "XRAY"
  ],
  "note": "constituents and names are different populations: a constituent is a membership row and a name is a ticker with a captured price series, so the two departed constituents are owed no series.",
+ "sectors": {
+  "AAPL": "Technology",
+  "KEYS": "Technology",
+  "MSFT": "Technology",
+  "NFLX": "Communication Services"
+ },
+ "sectorNote": "derived from the Components object of the same captured payload, which is where the provider puts Sector and carries current members alone. The two departed constituents appear in the spans and not in Components, so their sector is null, which is what the provider says rather than an omission.",
  "properties": {
+  "aDepartedNameHasNoSectorBecauseTheSnapshotHoldsCurrentMembersAlone": "null, drawn as not on file",
   "aDepartedNameKeepsItsRowAndItsLeaveDate": "membership has no declared deleter",
   "aPastDateQueryAnswersWithThatDatesSet": "not with tonight's"
  }

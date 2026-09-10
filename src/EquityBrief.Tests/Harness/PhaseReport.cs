@@ -113,8 +113,15 @@ internal static class PhaseReport
             "definitions the document uses, not claims it makes about the code"),
         ["4. The report, section by section, and where each part comes from"] = new Placement(
             "outside the claim scope the catalogue states; the sections it maps are asserted by the screens tables in 15"),
+        // 5.4 and not 5.1. Its reason names the listings expectations and
+        // `listing` is created at 5.4, so this is the third row of the same
+        // family: a due point naming a checkpoint that does not produce the
+        // store its own reason reads. The other two were the `listings-coverage`
+        // roster row and section 17's row coverage limit, and this one was
+        // caught by recording 5.1 before the run that verifies it, which is what
+        // done condition 8 exists for.
         ["11. The shortlist and its six reasons"] = new Placement(
-            "rules, asserted by the fixture's listings expectations", Due: "5.1"),
+            "rules, asserted by the fixture's listings expectations", Due: "5.4"),
         // Section 12.2's second table. Its heading is an h4 rather than a
         // numbered one, because the numbers in this document are navigation and
         // it sits inside 12.2 rather than beside it. The rows are the lane each

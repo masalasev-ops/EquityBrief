@@ -379,6 +379,79 @@ public class MembershipLoaderTests
         Assert.True(captured.RootElement.TryGetProperty("HistoricalTickerComponents", out _));
     }
 
+    [Fact]
+    public async Task ANameThatLeavesTheIndexKeepsTheSectorItWasLastSeenWith()
+    {
+        // The case the committed fixture cannot produce, found by 5.1's own
+        // mutation: its two departed names were never in the snapshot object, so
+        // they have no sector to lose and assigning the incoming value reads the
+        // same as coalescing it. The property is that the store keeps what it
+        // last saw, and the only way to assert it is a name that had one and
+        // then left.
+        //
+        // The provider's snapshot carries current members alone, so on the night
+        // a name leaves, its span is still returned and its sector is not.
+        // Assigning would clear it and the universe screen would show a name it
+        // had a sector for yesterday as not on file.
+        using var store = new TemporaryStore().Migrated();
+
+        const string WhileAMember = """
+            {
+              "Components": { "0": { "Code": "ZZZZ", "Sector": "Technology" } },
+              "HistoricalTickerComponents": {
+                "1": { "Code": "ZZZZ", "StartDate": "2020-01-02" }
+              }
+            }
+            """;
+
+        // The same name, one night later, having left. It keeps its span and its
+        // start date, gains an end date, and is gone from the snapshot.
+        const string AfterLeaving = """
+            {
+              "Components": { "0": { "Code": "YYYY", "Sector": "Utilities" } },
+              "HistoricalTickerComponents": {
+                "1": { "Code": "ZZZZ", "StartDate": "2020-01-02", "EndDate": "2026-09-08" },
+                "2": { "Code": "YYYY", "StartDate": "2021-01-04" }
+              }
+            }
+            """;
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new MembershipLoader(new RecordedIndexMembershipFeed(WhileAMember), clock, store.DatabaseFile)
+            .LoadAsync(Index, "night-one");
+
+        Assert.Equal("Technology", Sector(store, "ZZZZ"));
+
+        await new MembershipLoader(new RecordedIndexMembershipFeed(AfterLeaving), clock, store.DatabaseFile)
+            .LoadAsync(Index, "night-two");
+
+        // It left, and it kept what it had.
+        Assert.Equal("2026-09-08", Scalar(store, "SELECT \"left\" FROM membership WHERE ticker = 'ZZZZ';"));
+        Assert.Equal("Technology", Sector(store, "ZZZZ"));
+
+        // And the name that joined carries its own, so the second night wrote
+        // sectors rather than writing none at all, which would pass the
+        // assertion above for the wrong reason.
+        Assert.Equal("Utilities", Sector(store, "YYYY"));
+    }
+
+    static string? Sector(TemporaryStore store, string ticker) =>
+        Scalar(store, $"SELECT sector FROM membership WHERE ticker = '{ticker}';");
+
+    static string? Scalar(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        var value = command.ExecuteScalar();
+
+        return value is null or DBNull ? null : (string)value;
+    }
+
     static string Payload(string tail) =>
         $$"""
         { "HistoricalTickerComponents": { "0": { "Code": "ZZZZ", "StartDate": "2020-01-02", {{tail}} } } }
