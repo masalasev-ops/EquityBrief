@@ -8,6 +8,10 @@ $ErrorActionPreference = 'Stop'
 
 Set-Location (Split-Path -Parent $PSScriptRoot)
 
+# The store this drops is its own and never the operator's, for the reason
+# tools/ci.sh states at the same point.
+$env:EquityBrief__DataRoot = Join-Path (Get-Location) 'data-ci'
+
 function Step {
     param(
         [Parameter(Mandatory)][string] $Name,
@@ -29,7 +33,7 @@ function Step {
     }
 }
 
-Step "drop the store"  { if (Test-Path data) { Remove-Item -Recurse -Force data } }
+Step "drop the store"  { if (Test-Path data-ci) { Remove-Item -Recurse -Force data-ci } }
 Step "restore"         { dotnet restore EquityBrief.slnx }
 Step "build"           { dotnet build EquityBrief.slnx --no-restore }
 Step "suite"           { dotnet test EquityBrief.slnx --no-build }

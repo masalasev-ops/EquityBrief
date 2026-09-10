@@ -5821,3 +5821,75 @@ Notes:      the registration is the deliverable that matters most and it is the 
             registered anything on the operator's machine, and the first scheduled night is the
             operator's to start. What changed is that starting it is one command rather than a
             piece of research, and that no checkpoint is waiting on it.
+### 5.7 - correction: the scheduled task's logon type, and the first live night at index size   2026-09-10
+Corrects:   the 5.7 entry above records that the registration is written as a command an operator
+            runs. The command was run on this machine and it produces a task that runs only while
+            the account is logged on, which the entry did not say because the pass that wrote it
+            did not run it. `RUNBOOK.md` now states the logon type, the elevated principal that
+            fixes it, and the line that reads back which of the two is registered.
+Measured:   the first live night at index size since 2.6, run by hand at 12:57 UTC on the operator's
+            machine against a store `tools/ci.sh` had just dropped, so it was a first-run backfill
+            rather than an evening.
+            822 membership rows over 1 request. 125,736 bars over 503 names and 503 requests,
+            covering 2025-09-10 to 2026-09-09. The backfill is the one place a per-name request is
+            allowed and it is once per name ever, which is what those 503 are.
+            The night then refused, correctly, and this is the part worth keeping: the fetch step
+            stopped on the bulk file for 2026-09-10 carrying nothing for any of the 503 current
+            members, naming the first five. It was 12:57 UTC and the session opens at 13:30, so
+            there was no file for today to carry anything. A payload holding none of the index is
+            refused before anything is stored rather than read as a night that ran, which is the
+            behaviour section 18 states and the first time it has been seen against a live payload
+            rather than a constructed one.
+            The night exits 1 on that failure through both entry points, `tools/nightly` and
+            `tools/nightly.ps1`, checked separately because a scheduler records the exit code and a
+            failed night that reports success is the failure mode the whole run page exists to
+            prevent.
+            The second run of the same night, made after the store had been dropped by the fault
+            below, is timed: membership 0.7 seconds over 1 request, and the backfill 79.2 seconds
+            over 503 requests for 125,736 rows. So the heaviest night this system can have, being a
+            first run over the whole index, is 80 seconds against a deadline of fifteen minutes and
+            a proposed wall clock of five. That is a bound on the part that fetches and stores and
+            is not a measurement of a night: the computed chain over 503 names has still never run,
+            which is what 5.1's text named as the risk phase 5 actually carries, and it is what the
+            first scheduled night gives.
+Found:      three things, all from running the thing rather than from reading it.
+            The logon type above. `Register-ScheduledTask` with no principal stores
+            `InteractiveToken`. A locked screen is still logged on, so it works until a sign-out or
+            an update reboot nobody signs back into, and then the nights stop with the run page
+            showing the night before, which reads as a night not yet run rather than as a schedule
+            that is gone. The durable form is an S4U principal and it needs an elevated shell,
+            because logging a task on without a session is a batch logon. This session is not
+            elevated: the interactive task is what is registered, and switching it is one elevated
+            command.
+            Task Scheduler rewrites a `Z` boundary into the machine's own offset. The task was
+            handed 2026-09-10T23:30:00Z and stores 2026-09-10T19:30:00-04:00, which is the same
+            instant in the pinned form. The runbook said the `Z` is what pins it and now says what
+            is stored, because an operator checking the work and finding something else has to
+            decide which of the two is wrong.
+            `tools/ci.*` dropped the operator's store, and this session did it to itself. The
+            live night above backfilled 125,736 bars, `tools/ci.sh` was then run to verify the next
+            commit, and the backfill was gone: both the verification scripts and the nightly job
+            resolved to `data`. Every session that has ever verified a checkpoint has been
+            resetting the store the schedule is meant to accumulate into, and the next night would
+            have run a first-run backfill of the whole index with nothing anywhere saying why. It
+            has been latent since 0.4 and could not fire until a schedule existed, which is today.
+            Both scripts now export a data root of their own and drop `/data-ci`, so the path to
+            the operator's store is not something they know rather than something they are trusted
+            not to use. The corpus already held that nothing in the harness reaches `data/`, and
+            that was true of the suite and false of the two scripts that run it.
+            And the estimate given to the operator before the run was wrong in the direction that
+            matters. It was described as one evening's provider quota, and the store had just been
+            dropped by `tools/ci.sh`, so it was a first-run backfill of 503 per-name requests. The
+            spend is the same one the schedule would have made unattended at 23:30 tonight, which
+            is why it was run rather than stopped, but it was not the spend that was described.
+            The store was backfilled twice as a result, which is 1,006 per-name requests where
+            503 were needed, and the second was this session's own doing rather than the schedule's.
+Notes:      the schedule is registered on this machine for 23:30 UTC daily, which is 19:30 local in
+            the Eastern zone today, with wake-to-run set and a two hour execution limit. Tonight's
+            night is an evening rather than a backfill: the store now holds a year for every
+            current member through 2026-09-09.
+            What is not established: that a scheduled night runs. Nothing has yet fired on the
+            trigger. That is read on the run page tomorrow morning, and it is the first of the five
+            nights both operating rows are counting (owes: The provider's posting hour for the
+            day's bulk file, measured from live fetches) (owes: The nightly wall clock at index
+            size, measured from nights that ran on the schedule).

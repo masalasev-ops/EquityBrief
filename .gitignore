@@ -1,5 +1,6 @@
 # the store
 /data/
+/data-ci/
 
 # local scratch archive of build prompts
 /prompts/

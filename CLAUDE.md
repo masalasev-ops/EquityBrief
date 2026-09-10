@@ -59,7 +59,8 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                   expectations/ holding what the rules in ARCHITECTURE produce over them
 /artifacts        gitignored. the phase report and the suite result it reads, written by verify-phase
 /prompts          gitignored. spent build prompts, kept locally
-/data             gitignored. the store lives here
+/data             gitignored. the store lives here, and nothing that verifies reaches it
+/data-ci          gitignored. the store `tools/ci.*` creates and drops, which is not the one above
 CLAUDE.md         these rules, read first every session
 source-lists.json the two open-web lists a research search may return, with their review date
 EquityBrief.slnx  the six projects, at the root
@@ -96,6 +97,8 @@ global.json       pins the SDK to the 10.0.3xx feature band
 **The report is one instrument reading another, and the seam is where it went wrong once.** The tool ran no check from 0.5, and from 0.7, where the first verdict map arrived, it printed PASS from a name: it read a map naming the instrument that reaches each claim and never asked whether that instrument had run, so `Verdict.Fail` was assigned nowhere and the "fail 0" line was structural rather than measured. A tree with five failing tests produced an identical verdict block and the same green exit. What a green report says is that no claim in scope failed and none went unexamined. It says nothing about the claims out of scope, which are not checked at all, and nothing about a running system, which is the separate rule below.
 
 **`tools/ci.*` is not a wrapper around `dotnet test`.** It runs every step of the CI workflow in order against a dropped store, exiting non-zero on the first failure. A green `dotnet test` does not satisfy done condition 2.
+
+**The store it drops is `/data-ci` and never `/data`.** Both were `/data` until 5.7, so verifying a checkpoint deleted the store the nightly job fills, and the next scheduled night ran a first-run backfill of the whole index with nothing saying why. The scripts export a data root of their own, so the operator's store is not a path they know rather than one they are trusted not to use. This is the same rule as nothing in the harness reaching `data/`, which was true of the suite and false of the two scripts that run it.
 
 The PowerShell and shell versions are not translations of each other. `&&` is a parse error in Windows PowerShell, so the two files differ in syntax by necessity. `ci-parity` asserts they run the same steps in the same order, not that they contain the same text.
 
