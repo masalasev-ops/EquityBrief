@@ -87,6 +87,7 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     var levels = await read.LevelsAsync(ticker);
     var profile = await read.ProfileAsync(ticker);
     var ladder = await read.LadderAsync(ticker);
+    var moves = await read.MovesAsync(ticker);
 
     // On or after the last stored session, so the strip states what is coming
     // rather than what has been. A night's own session is what the calendar
@@ -96,7 +97,35 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
         bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
 
     return Results.Content(
-        NameScreen.Region(page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent),
+        NameScreen.Region(page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves),
+        "text/html; charset=utf-8");
+});
+
+// The universe screen, section 15.8, read here and composed by the app for the
+// reason the name route gives: the composition is in EquityBrief.Web so the
+// suite asserts the shipped path rather than a copy of it.
+//
+// The filters arrive in the query the shell passes through from the hash, so a
+// filtered view is a link.
+app.MapGet("/screens/universe", async (
+    HttpRequest request,
+    ReadApi read,
+    MarkRenderer marks,
+    SinglePageApp page) =>
+{
+    // The index, from configuration with the same default the worker takes, so
+    // the screen and the night are over one universe rather than two.
+    // see: One universe now, the seam for more built now
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+    var cells = UniverseScreen.Rows(await read.UniverseAsync(index));
+
+    return Results.Content(
+        page.UniverseRegion(
+            marks,
+            cells,
+            UniverseScreen.Sectors(cells),
+            request.Query["trend"].FirstOrDefault(),
+            request.Query["sector"].FirstOrDefault()),
         "text/html; charset=utf-8");
 });
 

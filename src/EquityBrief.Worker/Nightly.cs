@@ -6,6 +6,7 @@ using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Ladders;
+using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
@@ -226,6 +227,17 @@ public static class Nightly
                 return $"{outcome.RowsWritten} row(s) written for {outcome.MembersConsidered} member(s), " +
                     $"{outcome.Uptrend} uptrend, {outcome.Downtrend} downtrend, {outcome.Range} range, " +
                     $"{outcome.NotClassified} not classified";
+            }),
+            // Section 14's step 11, and the first stage after the ladder. It
+            // reads the same bars every stage before it read and writes the
+            // rows the how-it-got-here table is built from.
+            new("moves", async () =>
+            {
+                var outcome = await new MoveAnnotator(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return $"{outcome.RowsWritten} move(s) written for {outcome.NamesExamined} name(s), " +
+                    $"{outcome.RowsDropped} dropped";
             }),
         ];
 

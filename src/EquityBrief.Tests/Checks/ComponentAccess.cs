@@ -25,6 +25,10 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 5.2, the move annotator.
+            CheckReach.Key(Scope.CatalogueTable, "Move annotator"),
+            CheckReach.Key(Scope.MatrixTable, "Move annotator"),
+
             CheckReach.Key(Scope.CatalogueTable, "Membership loader"),
             CheckReach.Key(Scope.MatrixTable, "Membership loader"),
             CheckReach.Key(Scope.MatrixTable, "Migration runner"),

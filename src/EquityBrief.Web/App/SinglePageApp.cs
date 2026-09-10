@@ -112,7 +112,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<PlanRow> plan,
         decimal close,
         string eventBook,
-        string arithmetic)
+        string arithmetic,
+        IReadOnlyList<MoveCell> moves)
     {
         var region = new StringBuilder();
 
@@ -140,6 +141,11 @@ public sealed class SinglePageApp : IComponent
         {
             region.Append(marks.VolumeProfile(ticker, profile, marks.AxisFor(bars, averages)));
         }
+
+        // How it got here, which section 15.9 puts after the chart region. Its
+        // cause column arrives at 6.5 and is absent rather than blank until
+        // then, stated once by the table rather than in every row.
+        region.Append(marks.MovesTable(ticker, moves));
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));

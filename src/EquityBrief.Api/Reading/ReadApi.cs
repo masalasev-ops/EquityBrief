@@ -69,6 +69,13 @@ public sealed record CalendarRow(string Ticker, DateOnly EventDate, string Kind,
 // stated.
 public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, string Plan);
 
+// One of a name's biggest moves, as the store holds it.
+//
+// No cause. It is a researched claim and lives in `research_section` with its
+// source, so the how-it-got-here table's cause column is explicitly absent until
+// phase 6 rather than blank.
+public sealed record MoveRow(string Ticker, DateOnly SessionDate, int Sessions, double ChangePct, int Rank);
+
 // One row of the universe screen, and every field is a stored column.
 //
 // Nothing here is derived, which is what keeps the read surface's own claim
@@ -207,6 +214,15 @@ public sealed class ReadApi : IComponent
         FROM indicator
         WHERE ticker = $ticker AND session_date >= $from AND session_date <= $to
         ORDER BY session_date, name;
+    ";
+
+    // A name's biggest moves, largest first, which is the order the
+    // how-it-got-here table is read down.
+    const string MovesForName = @"
+        SELECT ticker, session_date, sessions, change_pct, rank
+        FROM move
+        WHERE ticker = $ticker
+        ORDER BY rank;
     ";
 
     // Every current member of the index, with what the night computed for it.
@@ -368,6 +384,31 @@ public sealed class ReadApi : IComponent
                 Money.FromStorage(reader.GetString(3)),
                 reader.GetInt64(4),
                 reader.GetDouble(5)));
+        }
+
+        return rows;
+    }
+
+    public async Task<IReadOnlyList<MoveRow>> MovesAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = MovesForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var rows = new List<MoveRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new MoveRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(2),
+                reader.GetDouble(3),
+                reader.GetInt32(4)));
         }
 
         return rows;

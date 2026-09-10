@@ -27,6 +27,9 @@ public class NightlyRun
         "nightly-run",
         ["docs/ARCHITECTURE.html", "fixtures/membership-2026-09-05"],
         [
+            // 5.2, the move annotator.
+            CheckReach.Key(NightlyRunSteps.Heading, "Annotate the largest moves for every name."),
+
             CheckReach.Key(NightlyRunSteps.Heading, "Load index membership and record any joins and leaves."),
             CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members."),

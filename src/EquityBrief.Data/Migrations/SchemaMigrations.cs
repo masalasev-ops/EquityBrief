@@ -90,6 +90,29 @@ public static class SchemaMigrations
         ALTER TABLE bar ADD COLUMN raw_close TEXT;
     ";
 
+    // The largest moves of the stored year, one row per ticker and the session a
+    // move ended on.
+    //
+    // `change_pct` is REAL because a percentage of a price is a statistic and
+    // not a price, which is the same division `volume_profile` draws in one row.
+    // `sessions` is how many sessions the move spans, 1 for a single day, and it
+    // is what makes the catalogue row true: a table keyed on one session with no
+    // span could carry only the single-day half of what the annotator selects.
+    //
+    // `rank` is the position within the name's own set by absolute size. The
+    // cause of each move is not here: it is a researched claim and lives in
+    // `research_section` with its source.
+    const string CreateMove = @"
+        CREATE TABLE move (
+            ticker       TEXT NOT NULL,
+            session_date TEXT NOT NULL,
+            sessions     INTEGER NOT NULL,
+            change_pct   REAL NOT NULL,
+            rank         INTEGER NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
+
     // The sector, on the membership row, added at 5.1 because that is where the
     // universe screen filters on it.
     //
@@ -297,6 +320,7 @@ public static class SchemaMigrations
         new Migration(11, "create ladder", CreateLadder),
         new Migration(12, "create calendar", CreateCalendar),
         new Migration(13, "add membership.sector", AddMembershipSector),
+        new Migration(14, "create move", CreateMove),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

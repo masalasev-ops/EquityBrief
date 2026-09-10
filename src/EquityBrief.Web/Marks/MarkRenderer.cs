@@ -117,6 +117,10 @@ public sealed record UniverseCell(
     double? ToResistance,
     double? Nearest);
 
+// One of a name's biggest moves, as the table is given it. No cause: it is a
+// researched claim and arrives with the pass that writes it.
+public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank);
+
 // One line of the sector strip.
 public sealed record SectorLine(string Sector, int Names, int InUptrend);
 
@@ -822,6 +826,50 @@ public sealed class MarkRenderer : IComponent
 
     // What a mark returns instead of a drawing. It states the count rather than
     // apologising, because the reader's next question is how many there were.
+    // The how-it-got-here table's rows, section 15.9's second region.
+    //
+    // The biggest moves of the stored year, largest first, each saying how many
+    // sessions it spans so a five-day run reads as one and not as a day that
+    // moved twelve per cent.
+    //
+    // The cause column is absent and the table says so once, rather than drawn
+    // as an empty cell in every row. A cause is a researched claim and lives in
+    // `research_section` with its source, so it arrives at 6.5 with the pass
+    // that writes it. An absence stated and an absence drawn as emptiness are
+    // different things, and only the first is readable.
+    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves)
+    {
+        var table = new StringBuilder();
+
+        table.Append(Invariant, $"<section class=\"how-it-got-here\" data-ticker=\"{Escaped(ticker)}\" data-moves=\"{moves.Count}\">");
+
+        if (moves.Count == 0)
+        {
+            table.Append("<p class=\"degraded\" data-moves=\"none\">no moves are stored for this name yet</p></section>");
+
+            return table.ToString();
+        }
+
+        table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"absent\">");
+        table.Append("<tr><th>Session</th><th>Over</th><th>Change</th></tr>");
+
+        foreach (var move in moves)
+        {
+            table.Append(Invariant, $"<tr data-session-date=\"{move.SessionDate:yyyy-MM-dd}\" data-sessions=\"{move.Sessions}\" ");
+            table.Append(Invariant, $"data-change-pct=\"{Number(move.ChangePct)}\" data-rank=\"{move.Rank}\">");
+            table.Append(Invariant, $"<td>{move.SessionDate:yyyy-MM-dd}</td>");
+            table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
+            table.Append(Invariant, $"<td>{Number(move.ChangePct)}%</td>");
+            table.Append("</tr>");
+        }
+
+        table.Append("</table>");
+        table.Append("<p class=\"degraded\" data-cause=\"absent\">the cause of each move arrives with the research pass that writes it, and is not stored here</p>");
+        table.Append("</section>");
+
+        return table.ToString();
+    }
+
     // The distance row, section 15.5's mark for a table cell.
     //
     // A name's close between its nearest support and its nearest resistance,

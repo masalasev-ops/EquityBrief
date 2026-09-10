@@ -138,6 +138,34 @@ internal static class Scope
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
+        // The move annotator, 5.2. It is the last of the six computed tables to
+        // gain a deleter, which is why the store row covering all six is owed
+        // here rather than where the first of them arrived.
+        [CheckReach.Key(CatalogueTable, "Move annotator")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bars it reads and the moves it inserts, updates and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Move annotator")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Indicators, swings, volume profile, levels, ladders, moves")] = new Scoped(
+            Verdict.Pass,
+            "all six tables carry the columns and types SCHEMA declares, and each is dropped at the same one-year boundary by its own writer, which the last of them gained here",
+            ByMigration),
+        [CheckReach.Key(FixtureTable, "moves")] = new Scoped(
+            Verdict.Pass,
+            "the largest single-day and multi-day moves over the committed bars are diffed against an expectation computed outside this repository from the captured payloads rather than frozen from a run",
+            ByExpectations),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Annotate the largest moves for every name.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs the stage in the order section 14 states and its run log row records what it wrote and what it dropped",
+            ByNight),
+        [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = new Scoped(
+            Verdict.Pass,
+            "every stored move is drawn with its session, its span and its change, counted off the markup, and the cause column is stated as absent once rather than drawn empty in every row",
+            ByReadSurface),
+
         // The universe screen, 5.1. Every one is read off the rendered markup
         // and matched against the store rather than by eye, which is what a
         // claim about a surface requires.
@@ -698,7 +726,8 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",
         [CheckReach.Key("15.9 Name", "Fact strip")] = "6.1",
         [CheckReach.Key("15.9 Name", "The short version")] = "6.4",
-        [CheckReach.Key("15.9 Name", "How it got here")] = "6.5",
+        [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = "5.2",
+        [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = "6.5",
         [CheckReach.Key("15.9 Name", "The chart")] = "4.1",
         [CheckReach.Key("15.9 Name", "The plan")] = "4.6",
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.5",
@@ -768,6 +797,16 @@ internal static class Scope
         // plan says builds it.
         [CheckReach.Key("15.10 Run", "Reason records")] =
             ["the resolved count", "the share that reached target before stop"],
+
+        // The name page's how-it-got-here row, decomposed at 5.2 for the reason
+        // the universe screen's two were at 5.0. Its table of the biggest moves
+        // is what the annotator writes and is drawable the night that store
+        // exists; the cause of each is a researched claim living in
+        // `research_section` with its source, and it arrives at 6.5. Read as one
+        // claim the table would be owed at 6.5 and the half that works would sit
+        // unasserted for a phase, which is contradiction F's argument.
+        [CheckReach.Key("15.9 Name", "How it got here")] =
+            ["the table of the biggest moves", "the cause of each where research has been written"],
 
         // The same shape in the failure table, and it arrived by the same
         // route. This row's "What you see" cell names two surfaces drawn a
