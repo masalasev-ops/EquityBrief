@@ -1128,6 +1128,30 @@ public class ReadSurface
             lastMeasured < firstAbsent.Item2,
             $"a name with no distance sorts at {firstAbsent.Item2}, above one with a distance at {lastMeasured}.");
 
+        // The partition above passes over a fixture where every name has a
+        // distance, because there is nothing on the other side of it. 5.1's own
+        // mutation found that: sorting absent distances first left the suite
+        // green. So the case is constructed, since the committed fixture holds
+        // four names and every one of them has bands and bars.
+        var constructed = UniverseScreen.Rows(
+        [
+            new UniverseRow("NONE", "Technology", null, null, null, null, null),
+            new UniverseRow("FAR", "Technology", 100m, "range", 80m, null, 1),
+            new UniverseRow("NEAR", "Technology", 100m, "range", 99m, null, 1),
+        ]);
+
+        Assert.Equal(["NEAR", "FAR", "NONE"], [.. constructed.Select(cell => cell.Ticker)]);
+        Assert.Null(constructed[^1].Nearest);
+
+        // And a name whose typical move is zero has no distance rather than an
+        // infinite one, which would sort it to the bottom for the same reason a
+        // zero would sort it to the top: it is a name that has not moved, and
+        // neither end of the screen is a statement about it.
+        var still = UniverseScreen.Rows([new UniverseRow("STILL", "Utilities", 100m, "range", 90m, 110m, 0)]);
+
+        Assert.Null(still.Single().Nearest);
+        Assert.Null(still.Single().ToSupport);
+
         // The distance is in typical days' moves and is derived from the close
         // and the band edge, so it is asserted against the arithmetic rather
         // than against itself.
