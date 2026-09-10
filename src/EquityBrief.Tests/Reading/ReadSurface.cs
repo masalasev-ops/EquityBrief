@@ -36,6 +36,13 @@ public class ReadSurface
         "read-surface",
         ["fixtures/membership-2026-09-05"],
         [
+            // The universe screen, 5.1.
+            CheckReach.Key("15.5 The mark vocabulary", "Distance row"),
+            CheckReach.Key("15.8 Universe", "Sector strip, one line per sector"),
+            CheckReach.Key("15.8 Universe", "The table, every name in the index"),
+            CheckReach.Key("15.8 Universe", "Filters"),
+            CheckReach.Key(Scope.FailureTable, "A name leaves the index"),
+
             CheckReach.Key("15.4 The two surfaces", "The app"),
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles"),
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, a volume pane"),
@@ -1062,6 +1069,253 @@ public class ReadSurface
         // current members, and it is read from the expectation rather than
         // written here.
         Assert.Equal(FixtureExpectation.CurrentMembers.Length, Count(store, "ladder"));
+    }
+
+    // ---- 5.1, the universe screen ----
+
+    [Fact]
+    public async Task TheUniverseReachesEveryIndexMemberAndNotOnlyTheNamesWithBars()
+    {
+        // The population is the index, which is what section 15.8 means by
+        // answering where everything sits including the names nothing happened
+        // to. A screen over the names with bars would be a screen over the wrong
+        // population, and it would look complete.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var rows = await api.UniverseAsync("GSPC");
+
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, rows.Count);
+
+        Assert.Equal(
+            [.. FixtureExpectation.CurrentMembers],
+            [.. rows.Select(row => row.Ticker)]);
+
+        // A departed name is absent from the universe and still holds its row in
+        // the store, which is section 18's row read on the surface it names: it
+        // disappears from the universe and its history is kept.
+        foreach (var departed in FixtureExpectation.Departed)
+        {
+            Assert.DoesNotContain(rows, row => row.Ticker == departed);
+        }
+
+        Assert.Equal(FixtureExpectation.Constituents, (int)Count(store, "membership"));
+    }
+
+    [Fact]
+    public async Task TheUniverseIsOrderedByDistanceToTheNearestLevelWithAbsentDistancesLast()
+    {
+        // Section 15.8 sorts ascending so the top is what nearly fired. A name
+        // the night computed nothing for has no distance, and an absent distance
+        // read as zero would put every such name at the top of the screen whose
+        // whole point is the top.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var cells = UniverseScreen.Rows(await api.UniverseAsync("GSPC"));
+
+        var measured = cells.Where(cell => cell.Nearest is not null).Select(cell => cell.Nearest!.Value).ToArray();
+
+        Assert.NotEmpty(measured);
+        Assert.Equal([.. measured.OrderBy(distance => distance)], measured);
+
+        // Every name carrying a distance sorts above every name carrying none,
+        // asserted as a partition rather than by reading the first row.
+        var lastMeasured = cells.Select((cell, at) => (cell, at)).Last(pair => pair.cell.Nearest is not null).at;
+        var firstAbsent = cells.Select((cell, at) => (cell, at)).FirstOrDefault(pair => pair.cell.Nearest is null, (null!, cells.Count));
+
+        Assert.True(
+            lastMeasured < firstAbsent.Item2,
+            $"a name with no distance sorts at {firstAbsent.Item2}, above one with a distance at {lastMeasured}.");
+
+        // The distance is in typical days' moves and is derived from the close
+        // and the band edge, so it is asserted against the arithmetic rather
+        // than against itself.
+        foreach (var cell in cells.Where(cell => cell.ToSupport is not null))
+        {
+            var bands = await api.LevelsAsync(cell.Ticker);
+            var support = bands.Where(band => band.Role == "support" && band.Immediate).Max(band => band.HighEdge);
+            var typical = (await api.IndicatorsAsync(cell.Ticker, new DateOnly(2000, 1, 1), new DateOnly(2100, 1, 1)))
+                .Where(row => row.Name == IndicatorSeries.Atr14)
+                .OrderBy(row => row.SessionDate)
+                .Last()
+                .Value;
+
+            Assert.Equal(
+                Math.Abs((double)(cell.Close!.Value - support)) / typical!.Value,
+                cell.ToSupport!.Value,
+                6);
+        }
+    }
+
+    [Fact]
+    public async Task TheDistanceRowDrawsBothEdgesAndSaysSoWhenThereIsNeither()
+    {
+        // 15.5's mark for a table cell. Read off the markup rather than by eye,
+        // which is the containment property applied to a picture.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var cells = UniverseScreen.Rows(await api.UniverseAsync("GSPC"));
+        var marks = new MarkRenderer();
+
+        var drawn = cells.First(cell => cell.ToSupport is not null && cell.ToResistance is not null);
+        var svg = marks.DistanceRow(drawn);
+
+        Assert.Contains($"data-ticker=\"{drawn.Ticker}\"", svg, StringComparison.Ordinal);
+        Assert.Contains("class=\"support-edge\"", svg, StringComparison.Ordinal);
+        Assert.Contains("class=\"resistance-edge\"", svg, StringComparison.Ordinal);
+        Assert.Contains("typical days to support", svg, StringComparison.Ordinal);
+
+        // The two hues are the ones support and resistance own, and which is
+        // which is asserted rather than that there are two of them: the phase 3
+        // sign-off found a mark drawing every support band in the resistance hue
+        // while a test asserting two distinct hues stayed green.
+        var support = svg[svg.IndexOf("support-edge", StringComparison.Ordinal)..];
+        var resistance = svg[svg.IndexOf("resistance-edge", StringComparison.Ordinal)..];
+
+        Assert.Contains("--support", support[..support.IndexOf("/>", StringComparison.Ordinal)], StringComparison.Ordinal);
+        Assert.Contains("--resistance", resistance[..resistance.IndexOf("/>", StringComparison.Ordinal)], StringComparison.Ordinal);
+
+        // A name with neither edge says so rather than drawing a shape at one
+        // end, which a reader would read.
+        var neither = new UniverseCell("ZZZZ", "not on file", null, null, null, null, null, null, null);
+        var absent = marks.DistanceRow(neither);
+
+        Assert.Contains("data-nearest=\"none\"", absent, StringComparison.Ordinal);
+        Assert.Contains("no band on either side yet", absent, StringComparison.Ordinal);
+        Assert.DoesNotContain("support-edge", absent, StringComparison.Ordinal);
+        Assert.DoesNotContain("resistance-edge", absent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheSectorStripCountsEverySectorAndKeepsNotOnFileOutOfAllOfThem()
+    {
+        // The strip's lines sum to the index, and a name with no sector is
+        // counted in its own line rather than folded into a real one. A falsy
+        // value standing in for an absent one is the class this store has been
+        // bitten by twice, and a sector count is where it would bite.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var cells = UniverseScreen.Rows(await api.UniverseAsync("GSPC"));
+        var lines = UniverseScreen.Sectors(cells);
+
+        Assert.Equal(cells.Count, lines.Sum(line => line.Names));
+
+        var expected = FixtureExpectation.Of("membership").GetProperty("sectors");
+
+        foreach (var line in lines.Where(line => line.Sector != UniverseScreen.SectorNotOnFile))
+        {
+            Assert.Equal(
+                expected.EnumerateObject().Count(named => named.Value.GetString() == line.Sector),
+                line.Names);
+        }
+
+        // The uptrend count is read against the ladder rows rather than against
+        // itself.
+        foreach (var line in lines)
+        {
+            Assert.Equal(
+                cells.Count(cell => cell.Sector == line.Sector && cell.TrendState == "uptrend"),
+                line.InUptrend);
+        }
+
+        var strip = new MarkRenderer().SectorStrip(lines);
+
+        Assert.Contains($"data-sectors=\"{lines.Count}\"", strip, StringComparison.Ordinal);
+        Assert.Contains("data-listed=\"absent\"", strip, StringComparison.Ordinal);
+
+        // A name with no sector never answers to a real sector's bucket,
+        // asserted over a constructed row because every fixture name has one.
+        var mixed = UniverseScreen.Sectors(
+        [
+            new UniverseCell("AAAA", "Technology", null, "uptrend", null, null, null, null, null),
+            new UniverseCell("BBBB", UniverseScreen.SectorNotOnFile, null, "range", null, null, null, null, null),
+        ]);
+
+        Assert.Equal(1, mixed.Single(line => line.Sector == "Technology").Names);
+        Assert.Equal(1, mixed.Single(line => line.Sector == UniverseScreen.SectorNotOnFile).Names);
+        Assert.Equal(UniverseScreen.SectorNotOnFile, mixed[^1].Sector);
+    }
+
+    [Fact]
+    public async Task TheUniverseScreenDrawsEveryNameAndItsFiltersAreLinks()
+    {
+        // The screen reaches every name rather than the first page of them,
+        // which is 5.1's done condition, and the filters are hash routes so a
+        // filtered view is a link.
+        using var store = await WithLadders();
+
+        var api = Api(store);
+        var cells = UniverseScreen.Rows(await api.UniverseAsync("GSPC"));
+        var app = new SinglePageApp();
+        var region = app.UniverseRegion(new MarkRenderer(), cells, UniverseScreen.Sectors(cells));
+
+        Assert.Contains($"data-names=\"{cells.Count}\"", region, StringComparison.Ordinal);
+        Assert.Contains($"data-shown=\"{cells.Count}\"", region, StringComparison.Ordinal);
+        Assert.Contains($"data-rows=\"{cells.Count}\"", region, StringComparison.Ordinal);
+
+        // Every name in the index has a row, counted off the markup rather than
+        // trusted.
+        foreach (var cell in cells)
+        {
+            Assert.Contains($"data-ticker=\"{cell.Ticker}\"", region, StringComparison.Ordinal);
+        }
+
+        Assert.Equal(
+            cells.Count,
+            Regex.Matches(region, "<tr data-ticker=\"[^\"]+\"").Count);
+
+        // The filters, one chip per trend state and one per sector, each a link
+        // carrying its value in the hash.
+        Assert.Contains("data-filter=\"trend\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-filter=\"sector\"", region, StringComparison.Ordinal);
+        Assert.Contains("href=\"#/universe?sector=", region, StringComparison.Ordinal);
+
+        // And a filter narrows the table rather than the strip, so the strip
+        // keeps saying what the whole index looks like while the table shows the
+        // part being read.
+        var filtered = app.UniverseRegion(
+            new MarkRenderer(),
+            cells,
+            UniverseScreen.Sectors(cells),
+            trendFilter: "uptrend");
+
+        var uptrend = cells.Count(cell => cell.TrendState == "uptrend");
+
+        Assert.Contains($"data-names=\"{cells.Count}\"", filtered, StringComparison.Ordinal);
+        Assert.Contains($"data-shown=\"{uptrend}\"", filtered, StringComparison.Ordinal);
+        Assert.Equal(uptrend, Regex.Matches(filtered, "<tr data-ticker=\"[^\"]+\"").Count);
+    }
+
+    [Fact]
+    public async Task EveryStageOfANightRecordsWhenItStartedAndWhenItEnded()
+    {
+        // The guard 5.1 carries in place of the limit it cannot measure. A
+        // night's wall clock at index size is a property of the running system
+        // and is read from a week of nights at 5.7; what the code carries is
+        // that every stage records its own instants, so a night landing inside
+        // its limit by one step doing nothing is legible rather than hidden in a
+        // total.
+        using var store = await WithLadders();
+
+        Assert.Equal(
+            0,
+            Scalar(store, "SELECT COUNT(*) FROM run_log WHERE started_at IS NULL OR ended_at IS NULL OR ended_at < started_at;"));
+
+
+    }
+
+    static long Scalar(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        return Convert.ToInt64(command.ExecuteScalar());
     }
 
     static long Count(TemporaryStore store, string table)

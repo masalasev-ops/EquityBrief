@@ -101,6 +101,25 @@ public static class PlanKind
 // statement beside it is the failure that row describes.
 public sealed record AbsentAverage(string Name, int BarCount);
 
+// One row of the universe screen, already projected.
+//
+// `Nearest` is the smaller of the two distances and is what the screen orders
+// on. Every nullable field is a name the night computed nothing for, and each is
+// drawn as an absence rather than as a zero.
+public sealed record UniverseCell(
+    string Ticker,
+    string Sector,
+    decimal? Close,
+    string? TrendState,
+    decimal? NearestSupport,
+    decimal? NearestResistance,
+    double? ToSupport,
+    double? ToResistance,
+    double? Nearest);
+
+// One line of the sector strip.
+public sealed record SectorLine(string Sector, int Names, int InUptrend);
+
 // The price scale a chart drew, so another mark can draw against it.
 //
 // Section 15.5 says the volume profile is drawn against the same price axis as
@@ -156,6 +175,11 @@ public sealed class MarkRenderer : IComponent
     const int Margin = 8;
 
     static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
+
+    // The same culture as a function, for the places a fragment is built
+    // rather than appended. StringBuilder takes the provider directly; a
+    // string does not.
+    static string Formatted(FormattableString text) => text.ToString(Invariant);
 
     // The one place a price becomes a plot coordinate.
     //
@@ -798,6 +822,194 @@ public sealed class MarkRenderer : IComponent
 
     // What a mark returns instead of a drawing. It states the count rather than
     // apologising, because the reader's next question is how many there were.
+    // The distance row, section 15.5's mark for a table cell.
+    //
+    // A name's close between its nearest support and its nearest resistance,
+    // with the distances in typical days. It turns a column of numbers into a
+    // shape, so a scan down five hundred rows shows which names are near an edge
+    // without reading any of them
+    // (see: Distances are stated as typical days' moves).
+    //
+    // The two hues are the ones support and resistance own everywhere else, and
+    // nothing else on this mark uses them
+    // (see: Support and resistance own two hues and nothing else uses them).
+    //
+    // A name with neither edge draws a rule and says so. An absence drawn as a
+    // shape at one end is a shape a reader will read.
+    public string DistanceRow(UniverseCell row)
+    {
+        const int Width = 120;
+        const int Height = 18;
+        const int Middle = Height / 2;
+
+        // The scale is fixed across every row rather than fitted to each, which
+        // is the whole point of a mark meant to be scanned down a column: a
+        // shape that means one thing on one row and another on the next says
+        // nothing about the column. Four typical days either side, clamped, so a
+        // name far from everything sits at the edge rather than off it.
+        const double Span = 4;
+
+        double Offset(double? days, int direction) => days is { } value
+            ? (Width / 2.0) + (direction * Math.Min(value, Span) / Span * (Width / 2.0))
+            : Width / 2.0;
+
+        var mark = new StringBuilder();
+
+        // Appended fragment by fragment with the provider on each, rather than
+        // concatenated and formatted once. Two interpolated strings joined with
+        // a plus are formatted in the current culture before anything sees them,
+        // which is the coercion the compiler refuses here and the one this
+        // repository bans everywhere else.
+        mark.Append(Invariant, $"<svg class=\"distance-row\" role=\"img\" viewBox=\"0 0 {Width} {Height}\" width=\"{Width}\" height=\"{Height}\" ");
+        mark.Append(Invariant, $"data-ticker=\"{Escaped(row.Ticker)}\" ");
+        mark.Append(Invariant, $"data-to-support=\"{Days(row.ToSupport)}\" data-to-resistance=\"{Days(row.ToResistance)}\" ");
+        mark.Append(Invariant, $"data-nearest=\"{Days(row.Nearest)}\">");
+
+        mark.Append(Formatted(
+            $"<line x1=\"0\" y1=\"{Middle}\" x2=\"{Width}\" y2=\"{Middle}\" stroke=\"var(--rule, #d8d8d8)\" stroke-width=\"1\" />"));
+
+        if (row.ToSupport is not null)
+        {
+            mark.Append(Invariant, $"<line class=\"support-edge\" x1=\"{Offset(row.ToSupport, -1):0.##}\" y1=\"2\" ");
+            mark.Append(Invariant, $"x2=\"{Offset(row.ToSupport, -1):0.##}\" y2=\"{Height - 2}\" stroke=\"{SupportHue}\" stroke-width=\"2\" />");
+        }
+
+        if (row.ToResistance is not null)
+        {
+            mark.Append(Invariant, $"<line class=\"resistance-edge\" x1=\"{Offset(row.ToResistance, 1):0.##}\" y1=\"2\" ");
+            mark.Append(Invariant, $"x2=\"{Offset(row.ToResistance, 1):0.##}\" y2=\"{Height - 2}\" stroke=\"{ResistanceHue}\" stroke-width=\"2\" />");
+        }
+
+        // The close, always drawn, because the mark is about where the price
+        // sits between the two and a row with no marker is a row with no
+        // subject.
+        mark.Append(Formatted(
+            $"<circle class=\"close\" cx=\"{Width / 2}\" cy=\"{Middle}\" r=\"2.5\" fill=\"var(--ink, #1c1c1c)\" />"));
+
+        mark.Append(row.ToSupport is null && row.ToResistance is null
+            ? Formatted($"<title>{Escaped(row.Ticker)}: no band on either side yet</title>")
+            : Formatted($"<title>{Escaped(row.Ticker)}: {Reads(row.ToSupport, "support")}, {Reads(row.ToResistance, "resistance")}</title>"));
+
+        mark.Append("</svg>");
+
+        return mark.ToString();
+    }
+
+    static string Days(double? days) =>
+        days is { } value ? value.ToString("0.##", CultureInfo.InvariantCulture) : "none";
+
+    static string Reads(double? days, string side) =>
+        days is { } value
+            ? Formatted($"{value:0.#} typical days to {side}")
+            : Formatted($"no {side} band");
+
+    // The sector strip, section 15.8's first region.
+    //
+    // One line per sector with how many names it holds and how many are in an
+    // uptrend. The count of names on tonight's list is the half this cannot draw
+    // until 5.4 creates the store it would read, and it is absent rather than
+    // shown as zero: a zero here would say nothing fired tonight.
+    public string SectorStrip(IReadOnlyList<SectorLine> lines)
+    {
+        var strip = new StringBuilder();
+
+        strip.Append(Formatted($"<section class=\"sector-strip\" data-sectors=\"{lines.Count}\">"));
+
+        foreach (var line in lines)
+        {
+            strip.Append(Invariant, $"<div class=\"sector\" data-sector=\"{Escaped(line.Sector)}\" ");
+            strip.Append(Invariant, $"data-names=\"{line.Names}\" data-uptrend=\"{line.InUptrend}\">");
+            strip.Append(Invariant, $"{Escaped(line.Sector)}: {line.Names} name(s), {line.InUptrend} in an uptrend</div>");
+        }
+
+        strip.Append("<p class=\"degraded\" data-listed=\"absent\">how many are on the list arrives with the listings store</p>");
+        strip.Append("</section>");
+
+        return strip.ToString();
+    }
+
+    // The universe table, section 15.8's second region.
+    //
+    // Every name in the index, in the order the projection put them, which is by
+    // distance to the nearest level ascending. The columns the listings store
+    // carries, being the evening a name was last on the list and the listing
+    // strip, are absent rather than blank, and the table says so once rather
+    // than in every row.
+    public string UniverseTable(IReadOnlyList<UniverseCell> rows)
+    {
+        var table = new StringBuilder();
+
+        table.Append(Formatted($"<table class=\"universe-table\" data-rows=\"{rows.Count}\">"));
+        table.Append("<tr><th>Name</th><th>Sector</th><th>Close</th><th>Trend</th><th>Distance</th></tr>");
+
+        foreach (var row in rows)
+        {
+            table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-sector=\"{Escaped(row.Sector)}\" ");
+            table.Append(Invariant, $"data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\">");
+
+            table.Append(Formatted($"<td>{Escaped(row.Ticker)}</td>"));
+            table.Append(Formatted($"<td>{Escaped(row.Sector)}</td>"));
+            // The close, interpolated with the provider rather than converted
+            // through the storage helper, which lives in the project that
+            // stores things and is not one this project references. A name the
+            // night computed nothing for says so rather than showing a zero.
+            table.Append(Invariant, $"<td>{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
+            table.Append(Formatted(
+                $"<td>{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>"));
+            table.Append(Formatted($"<td>{DistanceRow(row)}</td>"));
+            table.Append("</tr>");
+        }
+
+        table.Append("</table>");
+        table.Append("<p class=\"degraded\" data-listing-columns=\"absent\">the evening last on the list and the listing strip arrive with the listings store</p>");
+
+        return table.ToString();
+    }
+
+    // What a name with no ladder row is shown as. Its own value rather than an
+    // empty cell, so it can be filtered for and counted.
+    const string NotClassified = "not classified";
+
+    // The filters, section 15.8's third region: trend state and sector as chips,
+    // in the hash so a filtered view is a link.
+    //
+    // Drawn from the rows rather than from a list written here, so a state or a
+    // sector the store holds and this file has never heard of still gets a chip.
+    public string UniverseFilters(IReadOnlyList<UniverseCell> rows)
+    {
+        var states = rows
+            .Select(row => row.TrendState ?? NotClassified)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(state => state, StringComparer.Ordinal)
+            .ToArray();
+
+        var sectors = rows
+            .Select(row => row.Sector)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(sector => sector, StringComparer.Ordinal)
+            .ToArray();
+
+        var filters = new StringBuilder();
+
+        filters.Append(Invariant, $"<nav class=\"universe-filters\" data-states=\"{states.Length}\" data-sector-chips=\"{sectors.Length}\">");
+
+        foreach (var state in states)
+        {
+            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"{Escaped(state)}\" ");
+            filters.Append(Invariant, $"href=\"#/universe?trend={Uri.EscapeDataString(state)}\">{Escaped(state.Replace('_', ' '))}</a>");
+        }
+
+        foreach (var sector in sectors)
+        {
+            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"{Escaped(sector)}\" ");
+            filters.Append(Invariant, $"href=\"#/universe?sector={Uri.EscapeDataString(sector)}\">{Escaped(sector)}</a>");
+        }
+
+        filters.Append("</nav>");
+
+        return filters.ToString();
+    }
+
     public string Degraded(string ticker, int bars) =>
         $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{bars}\">" +
         $"{Escaped(ticker)} has {bars} stored session{(bars == 1 ? string.Empty : "s")}, " +

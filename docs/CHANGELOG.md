@@ -25,6 +25,27 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - SCHEMA.md, BUILD_PLAN.md - the sector is declared, and two limits leave the checkpoint that produces neither's evidence
+Corrects: two due points naming a checkpoint that cannot supply what they need. Section 17's row
+coverage claim is about a listings row for every name every night and `listing` is created at 5.4,
+which is the same fault as the `listings-coverage` roster row 5.0 moved and was missed beside it.
+And the wall clock at index size needs a night that ran on a schedule; 5.1 produces one night run by
+hand on the machine at hand, which is an observation and not a bound. Both would have failed the
+moment `PROGRESS.md` recorded 5.1, because a claim still out of scope naming a landed checkpoint is
+refused.
+Was:
+> `SCHEMA.md` carried the sector as a ruling due at 5.1 and `membership` declared five columns; and
+> the two limits were owed at 5.1
+Now:
+> `membership` declares six, with the sector last because `ALTER TABLE` appends and this file states
+> the order the store has rather than the order that reads best; and the two limits are owed at 5.4
+> and 5.7
+Why: a deferral names what produces the evidence. 5.7's done condition is already a week of
+unattended nights and it already carries the posting hour for the same reason, so a distribution of
+durations arrives there and nowhere earlier. What 5.1 carries instead is the guard: every stage
+records the instant it started and the instant it ended, so a night landing inside its limit by one
+step doing nothing is legible rather than hidden in a total.
+
 ### 2026-09-10 - BUILD_PLAN.md, ARCHITECTURE.html - phase 5's claims predicted as a pair, and three expectations the fixture table did not name
 Corrects: two things. Phase 5's checkpoint text stated its deliverables and not the rulings 5.0
 took, so 5.1 claimed the backfill was new at index size when 2.6 had already run 126,235 bars over

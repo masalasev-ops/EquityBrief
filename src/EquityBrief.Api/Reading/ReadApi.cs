@@ -1,3 +1,4 @@
+using EquityBrief.Core.Indicators;
 using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Time;
@@ -67,6 +68,25 @@ public sealed record CalendarRow(string Ticker, DateOnly EventDate, string Kind,
 // parsing it here would make this surface the second place the plan's shape is
 // stated.
 public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, string Plan);
+
+// One row of the universe screen, and every field is a stored column.
+//
+// Nothing here is derived, which is what keeps the read surface's own claim
+// true. The distance the screen sorts on is worked out from these values by the
+// projection, in the seam `NameScreen` names, and not here and not in the page.
+//
+// Every nullable field is a name the night computed nothing for: a joiner with
+// no bars has no close, a name with no ladder row has no trend state, and a name
+// whose chart has no band on one side has no edge there. Each is drawn as an
+// absence rather than as a zero.
+public sealed record UniverseRow(
+    string Ticker,
+    string? Sector,
+    decimal? Close,
+    string? TrendState,
+    decimal? NearestSupport,
+    decimal? NearestResistance,
+    double? TypicalMove);
 
 // The read surface. Serves what the nightly run stored, and nothing else.
 //
@@ -187,6 +207,38 @@ public sealed class ReadApi : IComponent
         FROM indicator
         WHERE ticker = $ticker AND session_date >= $from AND session_date <= $to
         ORDER BY session_date, name;
+    ";
+
+    // Every current member of the index, with what the night computed for it.
+    //
+    // The population is the index rather than the names with bars, which is the
+    // same population the ladder builder writes over and the same reason: a name
+    // the night computed nothing for is a row saying so, and a name quietly
+    // absent would make a count wrong in the direction nobody looks.
+    //
+    // Left joins throughout, and the bands are the immediate ones the level
+    // builder already marked, so the nearest on each side is read rather than
+    // searched for. `as_of` binds to the maximum for the same reason the level
+    // query binds it: a screen holding two nights of bands is a screen holding
+    // two charts.
+    const string Universe = @"
+        SELECT m.ticker,
+               m.sector,
+               (SELECT b.close FROM bar b WHERE b.ticker = m.ticker
+                ORDER BY b.session_date DESC LIMIT 1),
+               (SELECT l.trend_state FROM ladder l WHERE l.ticker = m.ticker
+                ORDER BY l.as_of DESC LIMIT 1),
+               (SELECT MAX(v.high_edge) FROM level v WHERE v.ticker = m.ticker
+                AND v.immediate = 1 AND v.role = 'support'
+                AND v.as_of = (SELECT MAX(a.as_of) FROM level a WHERE a.ticker = m.ticker)),
+               (SELECT MIN(v.low_edge) FROM level v WHERE v.ticker = m.ticker
+                AND v.immediate = 1 AND v.role = 'resistance'
+                AND v.as_of = (SELECT MAX(a.as_of) FROM level a WHERE a.ticker = m.ticker)),
+               (SELECT i.value FROM indicator i WHERE i.ticker = m.ticker AND i.name = $typical
+                ORDER BY i.session_date DESC LIMIT 1)
+        FROM membership m
+        WHERE m.index_code = $index_code AND m.""left"" IS NULL
+        ORDER BY m.ticker;
     ";
 
     // One row per process start, stage read-api, which is the grain SCHEMA
@@ -316,6 +368,34 @@ public sealed class ReadApi : IComponent
                 Money.FromStorage(reader.GetString(3)),
                 reader.GetInt64(4),
                 reader.GetDouble(5)));
+        }
+
+        return rows;
+    }
+
+    public async Task<IReadOnlyList<UniverseRow>> UniverseAsync(string indexCode)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Universe;
+        command.Parameters.AddWithValue("$index_code", indexCode);
+        command.Parameters.AddWithValue("$typical", IndicatorSeries.Atr14);
+
+        var rows = new List<UniverseRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new UniverseRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetString(1),
+                reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2)),
+                reader.IsDBNull(3) ? null : reader.GetString(3),
+                reader.IsDBNull(4) ? null : Money.FromStorage(reader.GetString(4)),
+                reader.IsDBNull(5) ? null : Money.FromStorage(reader.GetString(5)),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6)));
         }
 
         return rows;

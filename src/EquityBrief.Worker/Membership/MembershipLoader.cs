@@ -41,12 +41,21 @@ public sealed class MembershipLoader(
     // night rewrites the same rows with the same values, which is what makes the
     // stage idempotent.
     const string Upsert = @"
-        INSERT INTO membership (index_code, ticker, joined, ""left"", observed_at)
-        VALUES ($index_code, $ticker, $joined, $left, $observed_at)
+        INSERT INTO membership (index_code, ticker, joined, ""left"", sector, observed_at)
+        VALUES ($index_code, $ticker, $joined, $left, $sector, $observed_at)
         ON CONFLICT (index_code, ticker, IFNULL(joined, '')) DO UPDATE SET
             ""left"" = excluded.""left"",
+            sector = COALESCE(excluded.sector, membership.sector),
             observed_at = excluded.observed_at;
     ";
+
+    // The sector is coalesced rather than assigned, which is the whole of the
+    // ruling in one clause. The snapshot object carries current members alone,
+    // so the night a name leaves the index its span is still returned and its
+    // sector is not, and assigning would clear the value the store already
+    // holds. A departed name keeps the sector it was last seen with, dated by
+    // the `observed_at` on its own row, and a name the provider has never named
+    // a sector for stays null.
 
     // Members on a date, which is a different question from members now.
     //
@@ -114,6 +123,7 @@ public sealed class MembershipLoader(
             command.Parameters.AddWithValue("$ticker", constituent.Ticker);
             command.Parameters.AddWithValue("$joined", Text(constituent.Joined) ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("$left", Text(constituent.Left) ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$sector", (object?)constituent.Sector ?? DBNull.Value);
             command.Parameters.AddWithValue("$observed_at", observedAt);
 
             await command.ExecuteNonQueryAsync(cancellationToken);

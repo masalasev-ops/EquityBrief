@@ -90,6 +90,18 @@ public static class SchemaMigrations
         ALTER TABLE bar ADD COLUMN raw_close TEXT;
     ";
 
+    // The sector, on the membership row, added at 5.1 because that is where the
+    // universe screen filters on it.
+    //
+    // Nullable for the reason raw_close is, and for a second reason of its own:
+    // the value comes from the snapshot object of the constituents response,
+    // which carries current members alone, so a name that has left the index has
+    // no sector to read and null is what is true. Null is drawn as not on file
+    // and excluded by name from every bucket rather than falling into one.
+    const string AddMembershipSector = @"
+        ALTER TABLE membership ADD COLUMN sector TEXT;
+    ";
+
     // Whether a name's stored series can be trusted, at the grain the statement
     // is about, which is the name. Contradiction C: the failure table said a
     // name whose corporate action check failed is marked suspect and nothing
@@ -284,6 +296,7 @@ public static class SchemaMigrations
         new Migration(10, "create level", CreateLevel),
         new Migration(11, "create ladder", CreateLadder),
         new Migration(12, "create calendar", CreateCalendar),
+        new Migration(13, "add membership.sector", AddMembershipSector),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

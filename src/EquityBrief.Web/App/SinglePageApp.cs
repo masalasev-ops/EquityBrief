@@ -28,6 +28,12 @@ public sealed class SinglePageApp : IComponent
 
     public const string NameRoute = "#/name/";
 
+    // The universe route, section 15.3's second. Filters live in the hash so a
+    // filtered view is a link, which is what that section means by a route being
+    // a link: what is on screen can be sent to another machine and be the same
+    // thing.
+    public const string UniverseRoute = "#/universe";
+
     // The hash route, so one document serves every screen and the browser never
     // asks the server for a page it already has.
     //
@@ -52,12 +58,18 @@ public sealed class SinglePageApp : IComponent
         </head>
         <body>
         <h1>{{Escaped(title)}}</h1>
-        <p class="route">Open a name at <code>#/name/AAPL</code>.</p>
+        <p class="route">The index at <code>#/universe</code>, a name at <code>#/name/AAPL</code>.</p>
         <main id="screen"></main>
         <script>
         async function show() {
           const hash = location.hash;
           const screen = document.getElementById('screen');
+          if (hash.startsWith('{{UniverseRoute}}')) {
+            const query = hash.slice('{{UniverseRoute}}'.length);
+            const universe = await fetch('/screens/universe' + query);
+            screen.innerHTML = await universe.text();
+            return;
+          }
           if (!hash.startsWith('{{NameRoute}}')) { screen.innerHTML = ''; return; }
           const ticker = encodeURIComponent(hash.slice('{{NameRoute}}'.length));
           const response = await fetch('/screens/name/' + ticker);
@@ -146,6 +158,44 @@ public sealed class SinglePageApp : IComponent
         // last in the plan region. It arrives written for the same reason the
         // event book does.
         region.Append(arithmetic);
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The universe screen's three regions, composed from stored values.
+    //
+    // Section 15.8 answers where everything sits, including the names nothing
+    // happened to, so the population is the index and not the names with bars. A
+    // name the night computed nothing for is a row saying so.
+    //
+    // The regions the listings store feeds arrive at 5.4, when that store
+    // exists: how many names in a sector are on tonight's list, the evening a
+    // name was last on it, and the listing strip. Each is absent and says so
+    // rather than being drawn as a zero, which would read as nothing having
+    // fired.
+    // see: A screen reads and renders, and computes nothing
+    public string UniverseRegion(
+        MarkRenderer marks,
+        IReadOnlyList<UniverseCell> rows,
+        IReadOnlyList<SectorLine> sectors,
+        string? trendFilter = null,
+        string? sectorFilter = null)
+    {
+        var shown = rows
+            .Where(row => trendFilter is null || (row.TrendState ?? "not classified") == trendFilter)
+            .Where(row => sectorFilter is null || row.Sector == sectorFilter)
+            .ToArray();
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant($"<section class=\"universe\" data-names=\"{rows.Count}\" data-shown=\"{shown.Length}\" "));
+        region.Append(Invariant($"data-trend-filter=\"{Escaped(trendFilter ?? "all")}\" data-sector-filter=\"{Escaped(sectorFilter ?? "all")}\">"));
+
+        region.Append(marks.SectorStrip(sectors));
+        region.Append(marks.UniverseFilters(rows));
+        region.Append(marks.UniverseTable(shown));
 
         region.Append("</section>");
 
