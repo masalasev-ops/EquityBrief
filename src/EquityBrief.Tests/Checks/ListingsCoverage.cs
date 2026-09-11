@@ -136,6 +136,49 @@ public class ListingsCoverage
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task AMemberTheDaysFileCarriedNothingForIsListedTonightWithNothingFired()
+    {
+        // The other case the committed fixture cannot reach: a member whose bars
+        // stop before tonight, being a name the day's file carried nothing for.
+        // Two of the operator's 503 are such names every night. Until the phase 5
+        // sign-off the row was dated by the name's own last session, so the
+        // member had no row for tonight and one row months back that went on
+        // firing on old prices, and this check, whose fixture holds no such
+        // member, could not see it.
+        using var store = await FixtureExpectations.WithListings();
+
+        var name = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).First();
+        var tonight = Query(store, "SELECT MAX(session_date) FROM bar;").Single();
+        var before = Query(store, $"SELECT MAX(session_date) FROM bar WHERE ticker = '{name}' AND session_date < '{tonight}';").Single();
+
+        // The name's bar for the night goes, and so does any facts file newer
+        // than the bar it is left with, since a name the file carried nothing
+        // for has no facts for that night either.
+        Insert(store, $"DELETE FROM bar WHERE ticker = '{name}' AND session_date = '{tonight}';");
+        Insert(store, $"DELETE FROM facts WHERE ticker = '{name}' AND session_date > '{before}';");
+        Insert(store, "DELETE FROM listing;");
+
+        await new ShortlistBuilder(
+            FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("GSPC", "coverage-stale");
+
+        // Every member has the night's row, the stale one included, and no row
+        // is dated by the stale member's last session.
+        Assert.Equal(
+            [.. FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal)],
+            Query(store, $"SELECT ticker FROM listing WHERE session_date = '{tonight}' ORDER BY ticker;"));
+        Assert.Equal(["0"], Query(store, $"SELECT COUNT(*) FROM listing WHERE session_date = '{before}';"));
+
+        // Nothing fired on prices from a session it did not trade tonight, and
+        // the plan says which session its last bar is.
+        Assert.Equal(["0"], Query(store, $"SELECT fired_count FROM listing WHERE ticker = '{name}';"));
+        Assert.Contains(
+            $"no bar for this session; the last session stored for the name is {before}",
+            Query(store, $"SELECT plan_at_listing FROM listing WHERE ticker = '{name}';").Single(),
+            StringComparison.Ordinal);
+    }
+
     static IReadOnlyList<string> Query(TemporaryStore store, string sql)
     {
         using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");

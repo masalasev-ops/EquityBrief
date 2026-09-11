@@ -4689,13 +4689,17 @@ public class FixtureExpectations
         // inside the window, so a drop that did nothing satisfies both. The
         // boundary is unreachable from this fixture, which is the class 5.0
         // named, so the row is constructed.
-        // Rank 1 rather than a rank past the kept count, so the row can only be
-        // removed by the retention drop. A rank outside tonight's set is
-        // removed by the fallen-out drop instead, and the first sweep of this
-        // checkpoint showed that: the assertion passed with the retention
+        // A name the store holds no bars for, so the row can only be removed by
+        // the retention drop. For a name with bars, any session outside
+        // tonight's set is removed by the fallen-out drop, and the first sweep of
+        // this checkpoint showed that: the assertion passed with the retention
         // statement disabled, because the other statement was doing the work.
+        // The row was AAPL's at rank 1 until the phase 5 sign-off, when the
+        // fallen-out drop came to take every session outside tonight's set
+        // whatever its rank, and a name with bars stopped being one only the
+        // retention can reach.
         Insert(store, "INSERT INTO move (ticker, session_date, sessions, change_pct, rank) " +
-            FormattableString.Invariant($"VALUES ('AAPL', '{boundary.AddDays(-1):yyyy-MM-dd}', 1, 99.0, 1);"));
+            FormattableString.Invariant($"VALUES ('GONE', '{boundary.AddDays(-1):yyyy-MM-dd}', 1, 99.0, 1);"));
 
         Assert.Equal(
             ["1"],
@@ -4715,6 +4719,45 @@ public class FixtureExpectations
         Assert.Equal(
             [(int.Parse(inside, CultureInfo.InvariantCulture) - 1).ToString(CultureInfo.InvariantCulture)],
             Query(store, "SELECT COUNT(*) FROM move;"));
+    }
+
+    [Fact]
+    public async Task AMovePushedOutOfTheTopEightGoesAndEveryRankIsHeldOnce()
+    {
+        // A new move entering a name's top eight pushes the eighth out, and until
+        // the phase 5 sign-off the fallen-out drop took only ranks past tonight's
+        // count, so the pushed-out session stood at rank eight beside tonight's
+        // eighth. The operator's store held nine names with two moves ranked
+        // eighth.
+        using var store = await WithLadders();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var name = FixtureExpectation.Names[0];
+        var before = Query(store, $"SELECT session_date FROM move WHERE ticker = '{name}' ORDER BY rank;");
+
+        Assert.Equal(8, before.Count);
+
+        // A session that is not a biggest move tonight, made one: its close is
+        // raised far enough that its one-day move outranks every stored one.
+        var quiet = Query(
+            store,
+            $"SELECT session_date FROM bar WHERE ticker = '{name}' " +
+            $"AND session_date NOT IN (SELECT session_date FROM move WHERE ticker = '{name}') " +
+            "ORDER BY session_date DESC LIMIT 1 OFFSET 5;").Single();
+
+        Insert(store, $"UPDATE bar SET close = printf('%.4f', CAST(close AS REAL) * 3) WHERE ticker = '{name}' AND session_date = '{quiet}';");
+
+        await new MoveAnnotator(clock, store.DatabaseFile).RunAsync("moves-pushed");
+
+        var after = Query(store, $"SELECT session_date FROM move WHERE ticker = '{name}' ORDER BY rank;");
+
+        // The new move is in, a stored one went, and the name still holds eight.
+        Assert.Contains(quiet, after);
+        Assert.Equal(8, after.Count);
+        Assert.NotEmpty(before.Except(after));
+
+        // Every rank of every name held once.
+        Assert.Empty(Query(store, "SELECT ticker, rank FROM move GROUP BY ticker, rank HAVING COUNT(*) > 1;"));
     }
 
     // ---- 5.0, the assertions the phase 4 sign-off's mutation sweep left ----

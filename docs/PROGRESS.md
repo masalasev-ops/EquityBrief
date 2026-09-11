@@ -6900,3 +6900,43 @@ Tests:      528, from 523. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             scope, 0 unexamined, 178 placements reconciled. No claim moved; two placements now name
             what they reach. Windows on this machine; the matrix carries macOS and the Linux
             case-sensitivity job.
+
+### 5.7 - correction: a move pushed out of the top eight kept its rank, a suspect name was never retried, and a stale member was listed on its own last session   2026-09-11
+Corrects:   the 5.2 entry above, which records the move annotator's fallen-out drop; the 1.6 and 1.8
+            entries above, which record the suspect mark; and the 5.4 correction above that dated a
+            listing with no stored bar by the session, which left a member with an old bar dated by it.
+            Three defects found by the phase 5 sign-off reviewer and repaired under 5.7.
+Found:      by the phase 5 sign-off reviewer. The fallen-out drop took rows ranked below tonight's count,
+            so a move pushed out of a name's top eight stood at rank eight beside tonight's eighth: nine
+            names in the operator's store held two moves ranked eighth. A name whose corporate action
+            refetch failed was marked suspect and nothing read the mark, so it was never refetched
+            again unless another action landed on it; no live case today. And a member the day's file
+            carried nothing for was listed on its own last session, so EQR and PSTG had no row for
+            2026-09-10 and one row each dated 2026-08-17 and 2026-04-16 that fired two and three reasons
+            on those sessions' prices, and `listings-coverage` could not reach the case.
+Repaired:   the fallen-out drop deletes every session for the name outside tonight's set, named by
+            session rather than rank. The action check reads series state and refetches every suspect
+            name that has not left the index, with or without an action of its own, until one refetch
+            succeeds, counting the retries on its row; the catalogue row, the matrix cell and section 18
+            say so. The shortlist builder lists a member whose newest bar is older than the newest
+            session any name holds on that session, with nothing fired and a plan naming its last
+            stored session, the newest session read off the store rather than the clock so a replay on
+            a weekend does not make every name stale. The move retention test's constructed row moved to
+            a name with no bars, because the fallen-out drop now reaches any row of a name with bars and
+            left that test asserting a drop another statement performed.
+Guarded:    a move made to outrank every stored one on a session outside the set: it is in, a stored one
+            went, the name holds eight, and every rank of every name is held once. A suspect name
+            refetched on the next night with no action for anyone and set ok, the retry on the row, and
+            the night after asking nothing for it. And a member with no bar for the night listed on the
+            night with nothing fired and its plan naming its last session, every member holding a row on
+            the night and none dated by the stale session.
+Mutated:    the rule, stated before the sweep: reinstate each defect, being the fallen-out drop keyed
+            on rank, the suspect names not read, and a stale member dated by its own last session and
+            evaluated over it. Three mutations, three runs, in a worktree under the session scratchpad
+            outside the repository, reverted, and the worktree removed. Each turned its own test red
+            and left the other 530 green: the move test, the suspect retry test and the stale-member
+            coverage test. None of the properties added went unmutated.
+Tests:      531, from 528. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 245 claims, 171 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined, 178 placements reconciled. No claim moved. Windows on this machine;
+            the matrix carries macOS and the Linux case-sensitivity job.

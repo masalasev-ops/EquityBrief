@@ -19,7 +19,9 @@ public sealed record ActionCheckOutcome(
     int RowsReplaced,
     int Requests,
     IReadOnlyList<string> Suspect,
-    int RefetchRequests = 0);
+    int RefetchRequests = 0,
+    // Names an earlier night left suspect and this one refetched again.
+    IReadOnlyList<string>? Retried = null);
 
 // The corporate action check. One bulk request per kind per night, and a
 // full-year refetch of any current member whose adjusted prices an action has
@@ -43,12 +45,14 @@ public sealed class CorporateActionChecker : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read | Touch.Insert | Touch.Delete),
-            // Written and never read. The mark is an upsert, so the check does
-            // not ask what the state was before setting it: a name that was
-            // suspect and now refetches cleanly is set back to ok by the run
-            // that established it, and a name that fails again is set to
-            // suspect again with the new reason.
-            new StoreTouch(Store.SeriesState, Touch.Insert | Touch.Update),
+            // Read as well as written, from the phase 5 sign-off. The mark is an
+            // upsert, so a name that was suspect and now refetches cleanly is set
+            // back to ok by the run that established it, and a name that fails
+            // again is set to suspect again with the new reason. Until then it
+            // was written and never read, so a name whose refetch failed stayed
+            // suspect with its adjusted history out of step with the provider,
+            // and nothing asked for it again unless another action landed on it.
+            new StoreTouch(Store.SeriesState, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.SplitsAndDividends, Feed.HistoricalPrice]);
@@ -84,6 +88,22 @@ public sealed class CorporateActionChecker : IComponent
     const string CurrentMembers = @"
         SELECT ticker FROM membership
         WHERE index_code = $index AND (""left"" IS NULL OR ""left"" > $session);
+    ";
+
+    // The names a night before this one marked suspect, among the names the
+    // night stores. Each is refetched again tonight whether or not an action
+    // landed on it today, because the action that made it suspect is still in
+    // its stored history unadjusted. A refetch is the per-name request the cost
+    // rule carves out, and this adds one per suspect name, which grows with the
+    // failures and never with the index.
+    // see: Adjusted history is re-fetched after a corporate action
+    const string SuspectNames = @"
+        SELECT s.ticker FROM series_state s
+        WHERE s.state = $suspect
+          AND EXISTS (
+              SELECT 1 FROM membership m
+              WHERE m.index_code = $index AND m.ticker = s.ticker
+                AND (m.""left"" IS NULL OR m.""left"" > $session));
     ";
 
     // The only sanctioned removal of a bar besides retention, and it is paired
@@ -146,9 +166,15 @@ public sealed class CorporateActionChecker : IComponent
         // Current members only. An action on a name the index does not hold is
         // not this system's concern, and the fixture carries three of them so
         // the filter has something to reject.
+        //
+        // And every name an earlier night left suspect, retried until one
+        // refetch succeeds.
+        var retried = await SuspectAsync(connection, indexCode, session);
+
         var affected = today
             .Where(action => members.Contains(action.Ticker))
             .Select(action => action.Ticker)
+            .Concat(retried)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(ticker => ticker, StringComparer.Ordinal)
             .ToArray();
@@ -219,11 +245,33 @@ public sealed class CorporateActionChecker : IComponent
             await CountAsync(connection) - before,
             actions.Requests - actionRequestsBefore + refetchRequests,
             suspect,
-            refetchRequests);
+            refetchRequests,
+            retried);
 
         await AppendAsync(connection, runId, observed, outcome);
 
         return outcome;
+    }
+
+    static async Task<IReadOnlyList<string>> SuspectAsync(SqliteConnection connection, string indexCode, DateOnly session)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SuspectNames;
+        command.Parameters.AddWithValue("$suspect", Suspect);
+        command.Parameters.AddWithValue("$index", indexCode);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var names = new List<string>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            names.Add(reader.GetString(0));
+        }
+
+        return names;
     }
 
     static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session)
@@ -311,7 +359,9 @@ public sealed class CorporateActionChecker : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
-            $"{outcome.RefetchRequests} of the {outcome.Requests} request(s) per name" +
+            $"{outcome.RefetchRequests} of the {outcome.Requests} request(s) per name, " +
+            $"{(outcome.Retried ?? []).Count} retried from an earlier night" +
+            ((outcome.Retried ?? []).Count == 0 ? string.Empty : ": " + string.Join(", ", outcome.Retried!)) +
             (outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect)));
 
         await command.ExecuteNonQueryAsync();

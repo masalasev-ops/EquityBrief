@@ -25,6 +25,17 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - ARCHITECTURE.html - a suspect name is retried every night
+Corrects: a name whose refetch failed was marked suspect and nothing read the mark, so its stored history stayed unadjusted for an action the provider had applied until another action happened to land on it. Found by the phase 5 sign-off reviewer.
+Was:
+> <td>splits and dividends feed, historical price feed, membership, bar store</td><td>bar store, series state</td><td>refetches a name's full year when an action changes its adjusted prices, because stored history silently diverges otherwise; the refetch replaces the year inside one transaction, and a name whose own check failed is marked suspect rather than passing</td>
+>
+> <td>the corporate action check refetches the year; if the check itself fails the name is marked suspect (see: Adjusted history is re-fetched after a corporate action)</td>
+>
+> the read and write matrix's corporate action checker row carried W alone under series state
+Now: the checker reads series state as well as writing it, the matrix cell reads R W, and a suspect name is refetched again every night until one refetch succeeds, in the catalogue row and in section 18's row.
+Why: a mark nobody reads is a record of a failure and not a response to one, and the action that made the name suspect is still in its stored history unadjusted.
+
 ### 2026-09-11 - ARCHITECTURE.html - the run page opens on the night that ran, and a stage's detail is a cell
 Corrects: the run page opened on the newest night the listings held and kept that night's rows alone, so a night that stopped before its list was absent from the page a person opens, and the claim that the region shows the stage a night stopped on passed through a read with the date supplied. The operational header carried each stage's own account of itself as a hover title. Found by the phase 5 sign-off reviewer, who stopped a night at the fetch and read the default page.
 Was:
