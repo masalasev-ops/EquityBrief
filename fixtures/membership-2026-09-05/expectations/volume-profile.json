@@ -1,5 +1,6 @@
 {
  "stage": "volume-profile",
+ "derivation": "derived",
  "derivedFrom": "section 9.1's window paragraph and the two decisions 3.3 takes, applied to the committed bar files outside this repository and without running the builder. The last sixty sessions of each name's adjusted series, its own high and low divided into twenty bands, each day's volume spread across the bands its own range covers in proportion to the overlap, and the fractions apportioned to whole shares by the largest remainder so they sum to the window's total. A builder that placed each day's volume at its close would still agree with a total taken from itself, which is what makes this an expectation rather than a regression baseline.",
  "tables": [
   "volume_profile"

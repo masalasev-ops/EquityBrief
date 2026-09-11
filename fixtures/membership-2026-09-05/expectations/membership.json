@@ -1,5 +1,6 @@
 {
  "stage": "membership",
+ "derivation": "derived",
  "derivedFrom": "the captured constituents payload read through the rules in section 7, not from a run. The spans come from HistoricalTickerComponents, which is where the provider puts dates; Components is tonight's snapshot and holds none. Widened to four names at 3.6: the payload was recaptured and re-trimmed rather than having a row spliced into the earlier one, so every row here came from one payload.",
  "tables": [
   "membership"

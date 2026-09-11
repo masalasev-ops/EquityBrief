@@ -1,5 +1,6 @@
 {
   "stage": "calendar",
+  "derivation": "derived",
   "derivedFrom": "the captured calendar response read through the rules in section 7 and the window the fetcher asks for, not from a run. The window is a year behind the night's session and ninety days ahead of it, so a night dated 2026-09-08 asks 2025-09-08 to 2026-12-07. Each row's ticker is its code without the exchange suffix, its date is report_date and never date, which is the fiscal period the report covers, and a row is stored only where the ticker is a current index member. Every figure below was read off the captured file by hand.",
   "tables": [
     "calendar"

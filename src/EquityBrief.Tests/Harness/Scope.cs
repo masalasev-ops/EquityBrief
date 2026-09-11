@@ -181,6 +181,14 @@ internal static class Scope
             Verdict.Pass,
             "the count per name is recomputed from the same captured payload rather than read back from the counter, and no symbol outside the index carries a row",
             ByExpectations),
+        // 5.6's expectation file, which section 19.1 gained a row for at the
+        // phase 5 sign-off. Reached by the check that draws the page, since what
+        // the file holds is the counts a record is computed from across every
+        // night the store holds rather than one stage's serialised output.
+        [CheckReach.Key(FixtureTable, "run page")] = new Scoped(
+            Verdict.Pass,
+            "each reason's firings and its resolved count are recomputed in the suite from the stored listings and forward returns, and the state each record is drawn in follows from the count against the minimum rather than from a value the test supplies",
+            ByReadSurface),
         [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate.")] = new Scoped(
             Verdict.Pass,
             "the night runs the stage once rather than per name, and its run log row records the listings, the matured rows and the ones not yet matured apart",
@@ -289,7 +297,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Operational header")] = new Scoped(
             Verdict.Pass,
-            "every stage the night's run log carries is drawn with its own elapsed time, rows, model calls, requests and spend, in the order they ran, and the night is selected through the clock rather than through the date the log stores",
+            "every stage the night's run log carries is drawn with the instant it started and its own elapsed time, rows, model calls, requests and spend, in the order they ran, and the night is selected through the clock rather than through the date the log stores",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = new Scoped(
             Verdict.Pass,

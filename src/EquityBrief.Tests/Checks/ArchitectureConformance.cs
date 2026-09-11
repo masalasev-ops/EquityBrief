@@ -180,7 +180,21 @@ public class ArchitectureConformance
     {
         var report = Report();
 
-        Assert.True(report.Claims.Count >= 80, $"Read {report.Claims.Count} claims, expected at least 100.");
+        // The claim count grows as the document is read more completely, so the
+        // floor sits far below it and never needs moving. It was 100, and 5.4
+        // lowered it to 80 in the same edit that lowered the two out-of-scope
+        // floors from 100, which was a sweep over a literal rather than a
+        // judgement: this count had gone 203, 226, 234, 237 and was never near
+        // either number. The failure message kept saying 100 while the assertion
+        // said 80, so the two disagreed until the phase 5 sign-off read them.
+        // Restored to 100, and the message is derived from the floor rather than
+        // written beside it, because a message stating a second number is the
+        // second place one fact lives.
+        const int ClaimFloor = 100;
+
+        Assert.True(
+            report.Claims.Count >= ClaimFloor,
+            $"Read {report.Claims.Count} claims, expected at least {ClaimFloor}.");
 
         // Out of scope is counted separately and never added to unexamined,
         // so the four have to account for every claim exactly once.
@@ -332,13 +346,27 @@ public class ArchitectureConformance
             .Select(claim => claim.Note[(claim.Note.LastIndexOf("until ", StringComparison.Ordinal) + 6)..].Trim())
             .ToArray();
 
-        // The floor falls as the build advances, which is what it is for: it
-        // stops this half passing over an empty set. Lowered from 100 at 5.4,
-        // where seventeen claims became PASS at once, from 80 at 5.6, where
-        // eight did, and it will fall again. The claims themselves are what
-        // carries the property; this number is a fact about how far the build
-        // has got.
-        Assert.True(due.Length >= 70, $"Read {due.Length} out-of-scope claims, expected at least 70.");
+        // Context with a non-vacuity guard, and deliberately not a floor that
+        // tracks the count.
+        //
+        // This number falls as the build advances and reaches zero at phase 7 by
+        // construction, so no floor under it can be far enough below that
+        // ordinary building never moves it, which is the test CLAUDE.md sets for
+        // keeping one. It stood at 100, then 80 at 5.4, then 70 at 5.6, and each
+        // fall was recorded with the same sentence saying the number is a fact
+        // about how far the build has got rather than about the property. That
+        // sentence is the rule's own condition for the other branch: such a
+        // scope is left without a floor and marked as context. Three sessions
+        // wrote the condition and lowered the floor anyway, which is a
+        // maintenance edit every phase and never a caught defect.
+        //
+        // So the guard is one, which is what the number was ever doing here: it
+        // stops the two assertions below passing over an empty set. The property
+        // is carried by those assertions and not by the size of the population.
+        // When phase 7 empties this set the guard fails, which is correct: at
+        // that point the two assertions below have nothing to say and the test
+        // is what has to change, rather than the number.
+        Assert.True(due.Length >= 1, $"Read {due.Length} out-of-scope claims, so the two assertions below would pass over an empty set.");
         Assert.DoesNotContain(due, point => !DuePoints.InThePlan(point, plan));
         Assert.DoesNotContain(due, point => DuePoints.HasLanded(point, progress));
     }
@@ -498,10 +526,10 @@ public class ArchitectureConformance
 
         Assert.Equal(0, report.Count(Verdict.Unexamined));
         Assert.Equal(0, report.Count(Verdict.Fail));
-        // The same floor as the one above and it falls with it, for the reason
-        // written there: the number is a fact about how far the build has got
-        // and the claims are what carries the property.
-        Assert.True(outOfScope.Length >= 70, $"{outOfScope.Length} claims are out of scope, expected at least 70.");
+        // The same guard as the one above and for the reason written there: this
+        // count falls to zero by construction, so it is context with a
+        // non-vacuity guard rather than a floor that is lowered every phase.
+        Assert.True(outOfScope.Length >= 1, $"{outOfScope.Length} claims are out of scope, so the assertion below would pass over an empty set.");
         Assert.DoesNotContain(outOfScope, claim => !claim.Note.Contains("until", StringComparison.Ordinal));
     }
 
@@ -748,16 +776,21 @@ public class ArchitectureConformance
         // the old count read as derived from the plan because the plan's prose
         // contains their words. Measured by origin the same tree gives 30, so
         // the old floor did not survive the correction and could not be carried.
-        // Lowered from 20 to 12 at 5.5. The number falls as the build advances
-        // and each checkpoint turns a batch of plan-derived due points into
-        // verdicts, so this floor is a fact about how far the build has got
-        // rather than about the property. What carries the property is the split
-        // by origin above, which cannot be satisfied by an empty set.
+        // Lowered from 20 to 12 at 5.5, and converted to a non-vacuity guard by
+        // the phase 5 sign-off for the reason the two counts above were: the
+        // number falls as the build advances and is zero at phase 7 by
+        // construction, so a floor under it is a maintenance edit every phase
+        // rather than a property. The comment already said as much and the
+        // number was lowered anyway. What carries the property is the split by
+        // origin above, which cannot be satisfied by an empty set, and the one
+        // thing a number here can catch is a derivation that has stopped
+        // resolving anything at all, which is what one catches.
         Assert.True(
-            plan >= 12,
-            $"{plan} out-of-scope claims take their due point from BUILD_PLAN, expected at least 12. " +
-            $"59 did when this floor was first set, over {outOfScope.Length} claims out of scope, " +
-            $"beside {screens} from section 15, {written} written into Scope and {excepted} declared exceptions.");
+            plan >= 1,
+            $"{plan} out-of-scope claims take their due point from BUILD_PLAN, so the derivation has " +
+            $"stopped resolving anything at all. 59 did when a floor was first set here, over " +
+            $"{outOfScope.Length} claims out of scope, beside {screens} from section 15, {written} " +
+            $"written into Scope and {excepted} declared exceptions.");
     }
 
     [Fact]

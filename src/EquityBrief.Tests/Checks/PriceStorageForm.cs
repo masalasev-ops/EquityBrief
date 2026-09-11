@@ -2,9 +2,18 @@ using EquityBrief.Data.Migrations;
 
 namespace EquityBrief.Tests.Checks;
 
-// price-storage-form. No migration declares a price or money column REAL.
-// The rule can be satisfied in code while a REAL column is still written, which
-// is why this reads the migration text rather than the C# that uses it.
+// price-storage-form. No migration declares a price or money column REAL, and
+// every helper crossing between the decimal world and the double one is named
+// for the crossing.
+//
+// The rule has two halves and they fail apart. The storage half can be satisfied
+// in code while a REAL column is still written, which is why the first test
+// reads the migration text rather than the C# that uses it. The code half can be
+// satisfied in the migrations while an expression casts money to a statistic
+// inline, which is what the phase 5 sign-off found: `Statistic` sat in
+// `EquityBrief.Data`, out of reach of `EquityBrief.Core`, and the two Core
+// components that cross this boundary cast inline because they could not call
+// it. Nothing read either direction of the code half at all.
 public class PriceStorageForm
 {
     // Which columns hold money is read from SCHEMA.md, not listed here.
@@ -87,5 +96,99 @@ public class PriceStorageForm
 
         Assert.Contains(new StoreColumn("spend", "REAL"), columns);
         Assert.Contains(new StoreColumn("ticker", "TEXT"), columns);
+    }
+
+    // Every method in the shipped source whose signature crosses between the two
+    // worlds, being decimal in and double out or the reverse.
+    //
+    // The signature is what makes this checkable. An inline cast cannot be told
+    // from a legitimate one by reading the source, since `(double)` over an int
+    // is arithmetic and `(double)` over an object is unboxing, and neither is
+    // this boundary. A method that takes money and hands back a statistic is
+    // unambiguous, and it is also the thing worth governing: a second crossing
+    // helper nobody knows about is how the boundary stops being one place.
+    internal static IReadOnlyList<string> CrossingHelpersIn(string source, string file)
+    {
+        var code = SourceStatements.WithoutComments(source);
+
+        return System.Text.RegularExpressions.Regex
+            .Matches(
+                code,
+                @"(?<returns>\bdecimal\b|\bdouble\b)\??\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\((?<parameters>[^)]*)\)")
+            .Where(match =>
+            {
+                var returns = match.Groups["returns"].Value;
+                var parameters = match.Groups["parameters"].Value;
+                var opposite = returns == "double" ? "decimal" : "double";
+
+                return System.Text.RegularExpressions.Regex.IsMatch(parameters, @"\b" + opposite + @"\b");
+            })
+            .Select(match => $"{Path.GetFileName(file)}: {match.Groups["name"].Value}")
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    [Fact]
+    public void EveryCrossingBetweenTheTwoWorldsIsAHelperNamedForIt()
+    {
+        var shipped = Repository.SourceFiles()
+            .Where(file => !file.Contains(
+                Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar,
+                StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.True(shipped.Length >= 15, $"Read {shipped.Length} shipped source files, expected at least 15.");
+
+        var crossings = shipped
+            .SelectMany(file => CrossingHelpersIn(File.ReadAllText(file), file))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+
+        // Stated as a set rather than a count, so a new one is a decision and
+        // not a number that moved.
+        //
+        // Three are `Statistic`'s own and are the boundary proper. The other
+        // three each cross it and each reaches it through one of those three,
+        // which is what the rule asks: `PlotValue` is the chart's crossing and
+        // says why it is separate, a coordinate being a position on a surface
+        // rather than a statistic and never travelling back; `Y` is the local
+        // that calls it; and `Distance` turns a gap between two prices into a
+        // count of typical days, through `Statistic.FromPrice`. That last one
+        // cast inline until the phase 5 sign-off.
+        Assert.Equal(
+            [
+                "MarkRenderer.cs: PlotValue",
+                "MarkRenderer.cs: Y",
+                "Statistic.cs: FromPrice",
+                "Statistic.cs: FromRatio",
+                "Statistic.cs: ToPrice",
+                "UniverseScreen.cs: Distance",
+            ],
+            crossings);
+    }
+
+    [Fact]
+    public void TheCrossingReaderReadsBothDirectionsAndLeavesArithmeticAlone()
+    {
+        // Permanent proof in both directions. The forward cases are the two
+        // shapes the rule governs.
+        Assert.Equal(
+            ["Probe.cs: FromPrice"],
+            CrossingHelpersIn("public static double FromPrice(decimal price) => (double)price;", "Probe.cs"));
+
+        Assert.Equal(
+            ["Probe.cs: ToPrice"],
+            CrossingHelpersIn("public static decimal ToPrice(double statistic) => (decimal)statistic;", "Probe.cs"));
+
+        // And the reverse, since a reader that flagged every double would make
+        // the rule unwritable: arithmetic over a count, a conversion from a
+        // volume, and a method that stays inside one world are not crossings.
+        Assert.Empty(CrossingHelpersIn("public static double FromVolume(long shares) => shares;", "Probe.cs"));
+        Assert.Empty(CrossingHelpersIn("static double Slot(double width, int count) => width / count;", "Probe.cs"));
+        Assert.Empty(CrossingHelpersIn("static decimal Round(decimal value, int places) => value;", "Probe.cs"));
+
+        // A comment describing one is not one, which is why the source is
+        // stripped first.
+        Assert.Empty(CrossingHelpersIn("// static double Sneak(decimal price) => 0;", "Probe.cs"));
     }
 }

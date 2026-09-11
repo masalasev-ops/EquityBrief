@@ -246,7 +246,7 @@ public class MembershipLoaderTests
                 ("NFLX", null),
                 ("XRAY", "2024-04-03"),
             ],
-            parsed.Select(constituent => (constituent.Ticker, constituent.Left?.ToString("yyyy-MM-dd"))));
+            parsed.Select(constituent => (constituent.Ticker, constituent.Left?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))));
     }
 
     [Theory]
@@ -259,7 +259,7 @@ public class MembershipLoaderTests
         // row's left column records.
         var parsed = RecordedIndexMembershipFeed.Parse(Payload(tail), Index);
 
-        Assert.Equal(expected, Assert.Single(parsed).Left?.ToString("yyyy-MM-dd"));
+        Assert.Equal(expected, Assert.Single(parsed).Left?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     [Theory]

@@ -1,5 +1,6 @@
 {
   "stage": "ladders",
+  "derivation": "derived",
   "derivedFrom": "the trend rule and the tranche rules settled at 4.0, applied to the committed bar files and the levels expectation outside this repository and without running the ladder builder. The bars are adjusted first, the factor being the provider's adjusted close over its raw close with the high and low scaled by the same figure. The averages are the arithmetic mean of the last 50 and the last 200 adjusted closes. The swings are sessions whose high is strictly above all six neighbours or whose low is strictly below all six. The tranches are the support bands whose low edge is below the close, nearest first, at most three, skipping any band with no anchor other than a moving average; each stop is the low edge of the next support band beneath it whatever anchors that one in a range, and in an uptrend the higher of that band and the most recent swing low beneath the tranche; the invalidation is the lowest of those stops, or a tranche's own low edge where no band sits beneath it. The typical day's move is twice the merge distance the levels expectation states, the merge distance being half of it. Nothing here was read back from a run.",
   "tables": [
     "ladder"

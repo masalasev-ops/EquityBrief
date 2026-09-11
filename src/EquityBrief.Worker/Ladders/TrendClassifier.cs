@@ -1,3 +1,4 @@
+using EquityBrief.Core.Prices;
 using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Indicators;

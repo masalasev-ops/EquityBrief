@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -192,7 +193,7 @@ public sealed class MembershipLoader(
     // A session date is a date and not an instant, which SCHEMA states and which
     // is why the comparisons above are string comparisons: an ISO date sorts
     // lexically in the same order it sorts chronologically.
-    static string Text(DateOnly date) => date.ToString("yyyy-MM-dd");
+    static string Text(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static string? Text(DateOnly? date) => date is { } value ? Text(value) : null;
 }

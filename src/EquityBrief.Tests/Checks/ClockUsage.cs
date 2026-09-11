@@ -67,6 +67,91 @@ public class ClockUsage
             .ToArray();
     }
 
+    // The other direction, and it was missing until the phase 5 sign-off.
+    //
+    // The matcher above reads `.Parse(` and its three siblings, which are all
+    // static calls carrying their type's name, so they can be matched on the
+    // type. Formatting is an instance call and carries no type name, so it
+    // needs its own reader, and having none meant the check asserted half of
+    // what its roster row claims.
+    //
+    // The fault it guards is not cosmetic. Under a culture whose default
+    // calendar is not Gregorian, being th-TH, ar-SA or fa-IR, `yyyy` renders a
+    // different year, so a night writes `2569-09-10` into `run_log.started_at`,
+    // the read surface filters that night's rows out at the session-date
+    // comparison, and the operational header draws nothing with no error
+    // anywhere. Every `session_date` write already passed a culture and every
+    // `started_at` and `ended_at` write did not, which is the split that says
+    // the discipline was present and the guard was absent.
+    internal static IReadOnlyList<string> CultureFreeDateFormatting(string source, string file)
+    {
+        var code = SourceStatements.WithoutComments(source);
+
+        // Keyed on the call having no second argument rather than on the absence
+        // of the word CultureInfo.
+        //
+        // A name is the wrong thing to look for: the renderer holds the culture
+        // in a field called `Invariant`, so a reader searching the statement for
+        // `CultureInfo` reports two correct sites and would have to be told the
+        // alias, which is a second place one fact lives and goes stale the day
+        // someone renames it. What actually makes a format culture-free is that
+        // the call passes a provider, so the shape to match is a `ToString` that
+        // closes straight after its format string.
+        //
+        // Keyed on the format itself for the same reason: the receiver is a
+        // value of any name, and a format carrying a year, a month or a day
+        // component is a date being rendered whatever it is called.
+        string[] components = ["yyyy", "MM-dd", "HH:mm"];
+
+        return System.Text.RegularExpressions.Regex
+            .Matches(code, @"\.ToString\(\s*""(?<format>[^""]*)""\s*\)")
+            .Where(match => components.Any(component =>
+                match.Groups["format"].Value.Contains(component, StringComparison.Ordinal)))
+            .Select(match => $"{Path.GetFileName(file)}: {match.Value}")
+            .ToArray();
+    }
+
+    [Fact]
+    public void NothingRendersADateAgainstTheMachinesLocale()
+    {
+        var files = Repository.SourceFiles();
+
+        Assert.True(files.Count >= 15, $"Read {files.Count} source files, expected at least 15.");
+
+        var loose = files
+            .SelectMany(file => CultureFreeDateFormatting(File.ReadAllText(file), file))
+            .ToArray();
+
+        Assert.Empty(loose);
+    }
+
+    [Fact]
+    public void TheCheckReportsADateRenderedAgainstTheMachinesLocale()
+    {
+        // Permanent proof in both directions, because a sweep whose expected
+        // result is nothing is passed every time by a matcher that matches
+        // nothing at all. The loose form is what every run log write in this
+        // repository carried until the sign-off read them.
+        var loose = "command.Parameters.AddWithValue(\"$started_at\", clock.UtcNow." + "ToString(\"yyyy-MM-ddTHH:mm:ssZ\"));";
+        var pinned = "command.Parameters.AddWithValue(\"$started_at\", clock.UtcNow." + "ToString(\"yyyy-MM-ddTHH:mm:ssZ\", CultureInfo.InvariantCulture));";
+
+        Assert.Single(CultureFreeDateFormatting(loose, "Probe.cs"));
+        Assert.Empty(CultureFreeDateFormatting(pinned, "Probe.cs"));
+
+        // A provider held under another name passes, which is what the renderer
+        // does and what a reader looking for the word CultureInfo would report.
+        Assert.Empty(CultureFreeDateFormatting("var drawn = listed." + "ToString(\"yyyy-MM-dd\", Invariant);", "Probe.cs"));
+
+        // And a number is not a date. A reader keyed on `.ToString("` alone
+        // would report every formatted figure in the renderer, which would make
+        // the rule unwritable rather than enforced.
+        Assert.Empty(CultureFreeDateFormatting("var drawn = share." + "ToString(\"0.##\");", "Probe.cs"));
+
+        // A comment naming the pattern is not a use of it, which is the reason
+        // the source is stripped first.
+        Assert.Empty(CultureFreeDateFormatting("// ToString(\"yyyy-MM-dd\") is what this used to do;", "Probe.cs"));
+    }
+
     [Fact]
     public void NothingParsesADateAgainstTheMachinesLocale()
     {

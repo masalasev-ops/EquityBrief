@@ -1,3 +1,4 @@
+using EquityBrief.Core.Prices;
 using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Indicators;
@@ -130,7 +131,7 @@ public sealed class IndicatorEngine : IComponent
                 command.Transaction = (SqliteTransaction)transaction;
                 command.CommandText = Upsert;
                 command.Parameters.AddWithValue("$ticker", ticker);
-                command.Parameters.AddWithValue("$session_date", point.SessionDate.ToString("yyyy-MM-dd"));
+                command.Parameters.AddWithValue("$session_date", point.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 command.Parameters.AddWithValue("$name", point.Name);
                 command.Parameters.AddWithValue("$value", (object?)point.Value ?? DBNull.Value);
                 command.Parameters.AddWithValue("$bar_count", point.BarCount);
@@ -221,8 +222,8 @@ public sealed class IndicatorEngine : IComponent
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
-        command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+        command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         // "ok" and nothing else. The count of rows dropped is on the detail
         // beside it, where it is interpolated and where a person reads it.
         // This line carried "ok, {dropped} dropped" without the interpolation

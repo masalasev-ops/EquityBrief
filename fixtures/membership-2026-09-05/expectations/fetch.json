@@ -1,5 +1,6 @@
 {
  "stage": "fetch",
+ "derivation": "derived",
  "derivedFrom": "the membership rows and the captured bulk file read through the rules in section 14, not from a run. The bulk file is one exchange's day for every listed symbol, and the fetch stores a bar only for a name membership says is a current member tonight, so every figure below is the result of applying that filter to the two committed inputs rather than a count taken from what the fetcher happened to write.",
  "tables": [
   "bar"

@@ -3532,19 +3532,132 @@ public class FixtureExpectations
 
         Assert.Equal(["1"], requests);
 
-        // And it does not grow with the population, which is the property the
-        // cost rule rests on. The captured payload is one page whatever the
-        // index holds, so the count is asserted against the feed's own figure
-        // over two universe sizes rather than against a literal.
-        var feed = RecordedNewsFeed.FromFolder(Folder());
+        // One page covers this day, and the figure above is the stage's own
+        // rather than a literal repeated here.
+        //
+        // What this test does not assert is the population half, which is the
+        // sibling below. It stood here until the phase 5 sign-off and asserted
+        // nothing: it called the feed twice with the same date pair and watched
+        // a counter move from one to two, which shows that a second call
+        // increments a counter. No universe can reach that seam, because
+        // `INewsFeed.ArticlesAsync` takes a date range and no member set.
+    }
 
-        await feed.ArticlesAsync(new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 8));
+    [Fact]
+    public async Task AFillInterruptedPartwayLeavesNoHorizonWrittenAtAll()
+    {
+        // The atomicity 5.7 claimed in prose and nothing asserted.
+        //
+        // Five stages gained a transaction at 5.7 after a night at index size
+        // measured 574.7 seconds, and the entry recorded that one of the five is
+        // a correctness fix and not only a speed one: "a fill interrupted
+        // halfway left some horizons written and a base rate belonging to none
+        // of them". That is the same shape the phase 1 sign-off already ruled on
+        // for the refetch, where a scan for the keyword reported the construct
+        // and a behavioural test was what carried the claim.
+        // owes: The refetch's atomicity asserted as a property rather than as a construct
+        //
+        // The interruption is induced downstream of real writes. Listings are
+        // filled in session and then ticker order, so a listing whose ticker
+        // sorts last is reached after the fixture's four have written twelve
+        // rows between them, and a stored plan whose stop sits at or above its
+        // target refuses rather than being scored by whichever branch ran first.
+        // By then there is a half-filled stage to observe, which is exactly what
+        // nothing in the suite could reach.
+        using var store = await WithListings();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
 
-        Assert.Equal(1, feed.Requests);
+        var listed = Query(store, "SELECT ticker, session_date FROM listing ORDER BY ticker;");
 
-        await feed.ArticlesAsync(new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 8));
+        Assert.True(listed.Count >= 4, $"The replay listed {listed.Count} names, and the interruption needs rows before the failing one.");
 
-        Assert.Equal(2, feed.Requests);
+        var session = listed[0].Split('|')[1];
+
+        Insert(
+            store,
+            "INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) " +
+            $"VALUES ('ZZZZ', '{session}', '[]', 0, " +
+            "'{\"entry\":\"10\",\"stop\":\"12\",\"firstTradedTarget\":\"11\"}', '[]');");
+
+        // Nothing was in the table before the fill, so anything in it afterwards
+        // is the interrupted run's.
+        Assert.Empty(Query(store, "SELECT ticker FROM forward_return;"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new ForwardReturnFiller(clock, store.DatabaseFile).RunAsync("replay-interrupted"));
+
+        // The property. Not one horizon of one listing survives, where twelve
+        // rows had been written before the throw. Without the transaction this
+        // holds those twelve, and the base rate belongs to none of them because
+        // the stage never reached the statement that sets it.
+        Assert.Empty(Query(store, "SELECT ticker FROM forward_return;"));
+
+        // And the run is repeatable once the bad plan is gone, which is what
+        // makes the rollback a rollback rather than a stage that stopped writing.
+        Insert(store, "DELETE FROM listing WHERE ticker = 'ZZZZ';");
+
+        var outcome = await new ForwardReturnFiller(clock, store.DatabaseFile).RunAsync("replay-recovered");
+
+        Assert.Equal(listed.Count * 3, outcome.RowsWritten);
+        Assert.Equal(listed.Count * 3, Query(store, "SELECT ticker FROM forward_return;").Count);
+    }
+
+    [Fact]
+    public async Task TheNewsPulseRequestCountDoesNotGrowWithTheUniverse()
+    {
+        // The half 5.5's done condition names, measured over two universe sizes
+        // rather than over one run twice.
+        //
+        // The universe has to vary where the stage reads it, which is the
+        // membership the counter queries, not the feed's own seam. This is the
+        // shape `nightly-cost` already uses for the bulk feed, applied to the
+        // one stage its own night never runs.
+        var (whole, wholeRows) = await PulseAsync(drop: null);
+        var (smaller, smallerRows) = await PulseAsync(drop: "MSFT");
+
+        // The population genuinely moved, so what follows is a comparison over
+        // two universes rather than a repeated measurement of one. Asserted
+        // first, because a run where the drop did nothing would make the
+        // request comparison below true for the wrong reason.
+        Assert.Equal(4, wholeRows);
+        Assert.Equal(3, smallerRows);
+
+        // And the request count did not move with it. The feed is market-wide:
+        // one dated query covers the day whatever the index holds, so paging
+        // follows the day's news volume and never the size of the universe,
+        // which is what makes a paged query something other than a per-name
+        // call.
+        Assert.Equal(whole.Requests, smaller.Requests);
+        Assert.Equal(1, whole.Requests);
+    }
+
+    // One news pulse over the fixture's day, against a membership the caller
+    // sizes. `drop` names a current member to mark as left, so the second run
+    // counts a smaller universe than the first.
+    static async Task<(NewsPulseOutcome Outcome, int Rows)> PulseAsync(string? drop)
+    {
+        using var store = new TemporaryStore().Migrated();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new MembershipLoader(
+            RecordedIndexMembershipFeed.FromFile(Path.Combine(Folder(), "index-constituents.json")),
+            clock,
+            store.DatabaseFile).LoadAsync(Index, "pulse-0");
+
+        if (drop is not null)
+        {
+            // Marked as left rather than deleted, for the reason `nightly-cost`
+            // states at the same point: membership has no declared deleter and
+            // a name that leaves keeps its row.
+            store.Execute($"UPDATE membership SET \"left\" = '2026-09-07' WHERE ticker = '{drop}';");
+        }
+
+        var outcome = await new NewsPulseCounter(
+            RecordedNewsFeed.FromFolder(Folder()),
+            clock,
+            store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "pulse-1");
+
+        return (outcome, outcome.RowsWritten);
     }
 
     [Fact]
@@ -4575,23 +4688,92 @@ public class FixtureExpectations
         Assert.Equal(102m, tranche.HighEdge);
     }
 
+    // Which of the two an expectation file is, read off a declared field rather
+    // than inferred from prose. Returns the fault where there is one.
+    internal static string? DerivationFaultIn(string content, string file)
+    {
+        var document = JsonDocument.Parse(content).RootElement;
+        var name = Path.GetFileName(file);
+
+        if (!document.TryGetProperty("stage", out _))
+        {
+            return $"{name} names no stage.";
+        }
+
+        if (!document.TryGetProperty("derivedFrom", out var from) || string.IsNullOrWhiteSpace(from.GetString()))
+        {
+            return $"{name} does not say what it was derived from.";
+        }
+
+        if (!document.TryGetProperty("derivation", out var kind))
+        {
+            return $"{name} does not state whether it is derived or frozen.";
+        }
+
+        return kind.GetString() switch
+        {
+            "derived" => null,
+
+            // A frozen file names the run it was taken from, because that is the
+            // whole of what a reader needs to place it: a regression baseline is
+            // only as good as the run behind it, and one that cannot name that
+            // run is a number nobody can date.
+            "frozen" when document.TryGetProperty("frozenFrom", out var run)
+                && !string.IsNullOrWhiteSpace(run.GetString()) => null,
+
+            "frozen" => $"{name} is frozen and does not name the run it was taken from.",
+
+            _ => $"{name} states a derivation of '{kind.GetString()}', which is neither derived nor frozen.",
+        };
+    }
+
     [Fact]
-    public void EveryExpectationFileNamesWhatItWasDerivedFrom()
+    public void EveryExpectationFileStatesWhichOfTheTwoItIs()
     {
         // A frozen figure and a derived one look identical in a JSON file, so
         // each states which it is. This is the assertion that keeps the
         // distinction from decaying into a folder of numbers nobody can place.
+        //
+        // It asserted a `derivedFrom` sentence existed and nothing more until
+        // the phase 5 sign-off, so a file frozen from a run whose sentence read
+        // "the run of 2026-09-10" passed unchanged, which is the exact shape the
+        // check exists to reject. Done condition 7 rests on the distinction, and
+        // a prose field is not a distinction a check can read. Every file in the
+        // fixture is genuinely derived and says so in its own words, so nothing
+        // was mis-declared; what was missing was the ability to tell.
         var files = Directory.GetFiles(Path.Combine(Folder(), "expectations"), "*.json");
 
         Assert.True(files.Length >= 2, $"The fixture holds {files.Length} expectation files, expected at least 2.");
 
-        foreach (var file in files)
-        {
-            var document = JsonDocument.Parse(File.ReadAllText(file)).RootElement;
+        var faults = files
+            .Select(file => DerivationFaultIn(File.ReadAllText(file), file))
+            .Where(fault => fault is not null)
+            .ToArray();
 
-            Assert.True(document.TryGetProperty("stage", out _), $"{Path.GetFileName(file)} names no stage.");
-            Assert.True(document.TryGetProperty("derivedFrom", out var from), $"{Path.GetFileName(file)} does not say what it was derived from.");
-            Assert.False(string.IsNullOrWhiteSpace(from.GetString()));
-        }
+        Assert.Empty(faults);
+    }
+
+    [Fact]
+    public void TheDerivationReaderCatchesAFileThatDoesNotSayAndLeavesBothDeclaredFormsAlone()
+    {
+        // Permanent proof in both directions, since a sweep whose expected
+        // result is nothing is passed every time by a matcher that matches
+        // nothing at all.
+        Assert.Null(DerivationFaultIn("""{"stage":"s","derivation":"derived","derivedFrom":"the rules"}""", "Probe.json"));
+        Assert.Null(DerivationFaultIn("""{"stage":"s","derivation":"frozen","derivedFrom":"a run","frozenFrom":"the run of 2026-09-10"}""", "Probe.json"));
+
+        // The shape that passed before: a frozen file whose prose says so and
+        // whose declaration is absent.
+        Assert.Equal(
+            "Probe.json does not state whether it is derived or frozen.",
+            DerivationFaultIn("""{"stage":"s","derivedFrom":"the run of 2026-09-10"}""", "Probe.json"));
+
+        Assert.Equal(
+            "Probe.json is frozen and does not name the run it was taken from.",
+            DerivationFaultIn("""{"stage":"s","derivation":"frozen","derivedFrom":"a run"}""", "Probe.json"));
+
+        Assert.Equal(
+            "Probe.json states a derivation of 'mostly', which is neither derived nor frozen.",
+            DerivationFaultIn("""{"stage":"s","derivation":"mostly","derivedFrom":"the rules"}""", "Probe.json"));
     }
 }

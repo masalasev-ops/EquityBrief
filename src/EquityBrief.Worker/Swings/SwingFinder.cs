@@ -135,10 +135,10 @@ public sealed class SwingFinder : IComponent
                 command.Transaction = (SqliteTransaction)transaction;
                 command.CommandText = Upsert;
                 command.Parameters.AddWithValue("$ticker", ticker);
-                command.Parameters.AddWithValue("$session_date", swing.SessionDate.ToString("yyyy-MM-dd"));
+                command.Parameters.AddWithValue("$session_date", swing.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 command.Parameters.AddWithValue("$direction", swing.Direction);
                 Money.Bind(command, "$price", swing.Price);
-                command.Parameters.AddWithValue("$confirmed_on", swing.ConfirmedOn.ToString("yyyy-MM-dd"));
+                command.Parameters.AddWithValue("$confirmed_on", swing.ConfirmedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
                 await command.ExecuteNonQueryAsync(cancellation);
 
@@ -226,8 +226,8 @@ public sealed class SwingFinder : IComponent
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
-        command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+        command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         // "ok" and nothing else. The count of rows dropped is on the detail
         // beside it, where it is interpolated and where a person reads it.
         // This line carried "ok, {dropped} dropped" without the interpolation

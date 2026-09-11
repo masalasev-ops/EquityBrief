@@ -52,6 +52,14 @@ public class ReadSurface
             CheckReach.Key("15.10 Run", "Stale and failed"),
             CheckReach.Key("15.10 Run", "Harness"),
 
+            // The run page's own expectation file, which 5.6 added and section
+            // 19.1 did not name until the phase 5 sign-off. It is reached here
+            // rather than by `fixture-expectations` because what it holds is the
+            // counts a record is drawn from, computed across every night the
+            // store holds, and the check that reads it is the one that draws the
+            // page.
+            CheckReach.Key(Scope.FixtureTable, "run page"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.LimitsTable, "List display"),
             CheckReach.Key("15.5 The mark vocabulary", "Listing strip"),
@@ -168,7 +176,7 @@ public class ReadSurface
         // what the store holds rather than against a parse of it.
         var round = served.Select(bar => string.Join(
             "|",
-            bar.SessionDate.ToString("yyyy-MM-dd"),
+            bar.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             EquityBrief.Data.Money.ToStorage(bar.Open),
             EquityBrief.Data.Money.ToStorage(bar.High),
             EquityBrief.Data.Money.ToStorage(bar.Low),
@@ -256,7 +264,7 @@ public class ReadSurface
             .Select(match => match.Groups[1].Value)
             .ToArray();
 
-        Assert.Equal(served.Select(bar => bar.SessionDate.ToString("yyyy-MM-dd")), drawn);
+        Assert.Equal(served.Select(bar => bar.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)), drawn);
     }
 
     // ---- the moving averages, the third of the level chart's four elements ----
@@ -2095,6 +2103,14 @@ public class ReadSurface
 
             var attributes = drawnRow.Groups["attributes"].Value;
 
+            // The instant the stage started, which is a different question from
+            // how long it took and is the one the posting hour is read against.
+            // owes: The provider's posting hour for the day's bulk file, measured from live fetches
+            Assert.Contains(
+                $"data-started=\"{row.StartedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\"",
+                attributes,
+                StringComparison.Ordinal);
+
             Assert.Contains($"data-rows=\"{row.RowsWritten}\"", attributes, StringComparison.Ordinal);
             Assert.Contains($"data-model-calls=\"{row.ModelCalls}\"", attributes, StringComparison.Ordinal);
             Assert.Contains($"data-requests=\"{row.NetworkRequests}\"", attributes, StringComparison.Ordinal);
@@ -2108,6 +2124,7 @@ public class ReadSurface
             // a person does, which is what the sweep found here.
             var cells = drawnRow.Groups["cells"].Value;
 
+            Assert.Contains($"<td>{row.StartedAt.UtcDateTime:HH:mm:ss}</td>", cells, StringComparison.Ordinal);
             Assert.Contains($"<td>{row.RowsWritten}</td>", cells, StringComparison.Ordinal);
             Assert.Contains($"<td>{row.ModelCalls}</td><td>{row.NetworkRequests}</td>", cells, StringComparison.Ordinal);
             Assert.Contains($"<td>{row.Spend}</td><td>{row.Outcome}</td>", cells, StringComparison.Ordinal);
@@ -2138,6 +2155,21 @@ public class ReadSurface
 
         Assert.Contains("data-seconds=\"150\"", drawn, StringComparison.Ordinal);
         Assert.Contains("data-seconds=\"1\"", drawn, StringComparison.Ordinal);
+
+        // The instant and the duration are drawn from different values, which is
+        // what these two rows are shaped to show: the second stage starts where
+        // the first ended, so a header deriving one column from the other would
+        // disagree here. Asserted on the cells as well as the attributes, since
+        // the instant is what a person reads off the page to bound the hour the
+        // provider posts the day's file.
+        Assert.Contains("data-started=\"2026-09-05T21:00:00Z\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-started=\"2026-09-05T21:02:30Z\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("<td>21:00:00</td>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<td>21:02:30</td>", drawn, StringComparison.Ordinal);
+
+        Assert.Equal(
+            [Utc("2026-09-05T21:00:00Z"), Utc("2026-09-05T21:02:30Z")],
+            [.. timed.Select(stage => stage.StartedAt)]);
 
         // And the order is the order they ran, which is what makes a step that
         // did nothing findable beside the one before it.
@@ -2532,6 +2564,28 @@ public class ReadSurface
             Regex.Matches(list, "class=\"record not-measured\"").Count);
 
         Assert.Contains($"of {RunScreen.MinimumResolvedSetups} resolved", list, StringComparison.Ordinal);
+
+        // And it is drawn INSIDE the reason's own span, which is the hard rule
+        // rather than a detail of the markup: the record says how this reason
+        // has done across every name it ever fired for, so a record in a column
+        // of its own reads as a property of the ticker on that row.
+        //
+        // The count above cannot see this. Move every record span out of its
+        // reason and into a cell on the ticker's row and the count is unchanged,
+        // every data-reason is still present and no rate appears, so all three
+        // assertions stay green while the rule is broken. What has teeth is the
+        // nesting, asserted both ways: every record sits inside a reason, and
+        // none sits outside one.
+        // see: A reason's record is displayed, beside the reason and never beside the name
+        var nested = Regex.Matches(
+            list,
+            "<span class=\"reason\"[^>]*>(?:(?!</span>).)*?<span class=\"record[^\"]*\"",
+            RegexOptions.Singleline).Count;
+
+        var all = Regex.Matches(list, "<span class=\"record[^\"]*\"").Count;
+
+        Assert.True(all >= 1, $"the list drew {all} records, expected at least 1.");
+        Assert.Equal(all, nested);
 
         // A row with no values stored for a reason says so rather than drawing
         // an empty hover, which reads as a reason with nothing behind it.

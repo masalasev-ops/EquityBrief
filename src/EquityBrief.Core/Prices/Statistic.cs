@@ -1,8 +1,15 @@
-using EquityBrief.Core.Prices;
 
-namespace EquityBrief.Data;
+
+namespace EquityBrief.Core.Prices;
 
 // The one way a price becomes a statistic.
+//
+// It lived in `EquityBrief.Data` until the phase 5 sign-off, which put it out of
+// reach of `EquityBrief.Core`: Data references Core and not the other way round,
+// so the two Core components that cross this boundary could not call it and cast
+// inline instead. A helper the rule requires and half the tree cannot see is a
+// helper that gets bypassed, so it sits beside `PriceForm` now, which is the
+// other half of the same boundary and was always in Core.
 //
 // CLAUDE.md's rule is that prices are decimal in code and TEXT in storage, that
 // statistics are double, and that there is no implicit conversion between the
@@ -34,6 +41,20 @@ public static class Statistic
     public static double FromPrice(decimal price) => (double)price;
 
     public static double FromVolume(long shares) => shares;
+
+    // A ratio of two prices becoming a statistic.
+    //
+    // Named apart from `FromPrice` because what arrives is no longer money: a
+    // percentage change is one price divided by another, so the units have
+    // cancelled and nothing about it is a price any more. `FromPrice` would
+    // accept it and would be the wrong name on the call, which matters here more
+    // than it usually does, since the rule this file exists for is about telling
+    // the two worlds apart rather than about the cast itself.
+    //
+    // The division is done in decimal by the caller and the crossing happens
+    // once, at the end. Dividing after the crossing would be two approximations
+    // where one will do.
+    public static double FromRatio(decimal ratio) => (double)ratio;
 
     // A statistic that is itself a price, becoming one.
     //

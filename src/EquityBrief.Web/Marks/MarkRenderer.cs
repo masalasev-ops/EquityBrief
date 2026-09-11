@@ -202,8 +202,16 @@ public sealed record BaseRateLine(string Window, double? Rate);
 public sealed record HarnessCounts(int Passed, int Failed, int Unexamined, int OutOfScope);
 
 // One stage of a night, as the operational header draws it.
+// `StartedAt` is the instant, not the duration, and the two are different
+// questions. The duration answers how long the night took; the instant answers
+// what time of day a stage ran, which is the only thing that can bound the hour
+// the provider posts the day's bulk file. The row carried the duration alone
+// until the phase 5 sign-off, so the surface two operating obligations name
+// could answer one of them and not the other.
+// owes: The provider's posting hour for the day's bulk file, measured from live fetches
 public sealed record StageRow(
     string Stage,
+    DateTimeOffset StartedAt,
     double Seconds,
     int RowsWritten,
     int ModelCalls,
@@ -1355,15 +1363,24 @@ public sealed class MarkRenderer : IComponent
         }
 
         header.Append("<table class=\"stage-table\">");
-        header.Append("<tr><th>Stage</th><th>Took</th><th>Rows</th><th>Model calls</th><th>Requests</th><th>Spend</th><th>Outcome</th></tr>");
+        header.Append("<tr><th>Stage</th><th>Started (UTC)</th><th>Took</th><th>Rows</th><th>Model calls</th><th>Requests</th><th>Spend</th><th>Outcome</th></tr>");
 
         foreach (var stage in stages)
         {
-            header.Append(Invariant, $"<tr data-stage=\"{Escaped(stage.Stage)}\" data-seconds=\"{Number(stage.Seconds)}\" ");
+            // The instant in UTC and stated as UTC in the column heading, for
+            // the reason every schedule in this repository is written that way:
+            // a local rendering walks an hour against the provider twice a year,
+            // and the figure this column exists to bound is the provider's.
+            // The cell carries the clock time and the attribute the whole
+            // instant, because a night that starts after the close in New York
+            // carries tomorrow's UTC date and a bare time would hide it.
+            header.Append(Invariant, $"<tr data-stage=\"{Escaped(stage.Stage)}\" ");
+            header.Append(Invariant, $"data-started=\"{stage.StartedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\" data-seconds=\"{Number(stage.Seconds)}\" ");
             header.Append(Invariant, $"data-rows=\"{stage.RowsWritten}\" data-model-calls=\"{stage.ModelCalls}\" ");
             header.Append(Invariant, $"data-requests=\"{stage.NetworkRequests}\" data-spend=\"{Escaped(stage.Spend)}\" ");
             header.Append(Invariant, $"data-outcome=\"{Escaped(stage.Outcome)}\">");
             header.Append(Invariant, $"<td title=\"{Escaped(stage.Detail)}\">{Escaped(stage.Stage)}</td>");
+            header.Append(Invariant, $"<td>{stage.StartedAt.UtcDateTime:HH:mm:ss}</td>");
             header.Append(Invariant, $"<td>{Number(stage.Seconds)}s</td><td>{stage.RowsWritten}</td>");
             header.Append(Invariant, $"<td>{stage.ModelCalls}</td><td>{stage.NetworkRequests}</td>");
             header.Append(Invariant, $"<td>{Escaped(stage.Spend)}</td><td>{Escaped(stage.Outcome)}</td></tr>");

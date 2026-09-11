@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -115,7 +116,7 @@ public sealed class CorporateActionChecker : IComponent
     {
         var started = clock.UtcNow;
         var session = clock.SessionDateAt(started);
-        var observed = started.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var observed = started.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
 
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync();
@@ -230,7 +231,7 @@ public sealed class CorporateActionChecker : IComponent
 
         command.CommandText = InsertBar;
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$session_date", bar.SessionDate.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$session_date", bar.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         Money.Bind(command, "$open", bar.Open);
         Money.Bind(command, "$high", bar.High);
@@ -275,7 +276,7 @@ public sealed class CorporateActionChecker : IComponent
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", started);
-        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", outcome.Suspect.Count == 0 ? "ok" : "partial");
         command.Parameters.AddWithValue("$rows_written", outcome.RowsReplaced);
         command.Parameters.AddWithValue("$network_requests", outcome.Requests);

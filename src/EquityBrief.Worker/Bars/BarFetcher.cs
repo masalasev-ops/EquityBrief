@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -202,7 +203,7 @@ public sealed class BarFetcher : IComponent
         await using (var drop = connection.CreateCommand())
         {
             drop.CommandText = DropOlderThan;
-            drop.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd"));
+            drop.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
             await drop.ExecuteNonQueryAsync();
         }
@@ -261,14 +262,14 @@ public sealed class BarFetcher : IComponent
 
         command.CommandText = StoreBar;
         command.Parameters.AddWithValue("$ticker", row.Ticker);
-        command.Parameters.AddWithValue("$session_date", row.Bar.SessionDate.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$session_date", row.Bar.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$open", Money.ToStorage(row.Bar.Open));
         command.Parameters.AddWithValue("$high", Money.ToStorage(row.Bar.High));
         command.Parameters.AddWithValue("$low", Money.ToStorage(row.Bar.Low));
         command.Parameters.AddWithValue("$close", Money.ToStorage(row.Bar.Close));
         command.Parameters.AddWithValue("$volume", row.Bar.Volume);
         command.Parameters.AddWithValue("$source", Source);
-        command.Parameters.AddWithValue("$observed_at", observed.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+        command.Parameters.AddWithValue("$observed_at", observed.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$raw_close", Money.ToStorage(row.Bar.RawClose));
 
         await command.ExecuteNonQueryAsync();
@@ -285,8 +286,8 @@ public sealed class BarFetcher : IComponent
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
-        command.Parameters.AddWithValue("$started_at", started.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+        command.Parameters.AddWithValue("$started_at", started.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", "ok");
         command.Parameters.AddWithValue("$rows_written", outcome.RowsWritten);
         command.Parameters.AddWithValue("$network_requests", outcome.Requests);
