@@ -6746,3 +6746,56 @@ Tests:      515, from 513. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             18, exit 0. `tools/verify-phase.ps1` green at 243 claims, 169 PASS, 0 FAIL, 74 out of
             scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
             the Linux case-sensitivity job.
+
+### 5.7 - correction: an announced index change, a joiner's backfill and a day with no session   2026-09-11
+Corrects:   the entries above that record the fetch, the backfill and the listed stages reading the
+            index as the rows with no leave date, the 5.7 entry above that records the missed session
+            read off the newest bar in the store, and the schedule's entries, which registered a
+            daily night against an exchange that trades on weekdays. Three defects found by the phase
+            5 sign-off reviewer and repaired under 5.7, at the checkpoint the sign-off's repairs sit
+            at.
+Found:      by the phase 5 sign-off reviewer. The membership feed carried the rebalance effective
+            2026-09-21 by 2026-09-10, and ten sites read a member as `left IS NULL`: in the operator's
+            store BLDR, TAP and TTD, still in the index until 2026-09-21, held no bar, no ladder row and
+            no listing, and BE, ILMN, P and PSTG were listed before they joined. The catch-up window
+            opened at the newest bar in the whole store, and a joiner's backfill writes its year
+            through tonight, so a joiner backfilled on the night after a night that did not run hid the
+            missed session from every other name; the reviewer reproduced it. And a night on a Saturday
+            or a holiday asked the provider for a session that does not exist and exited 1 at the
+            fetch, so the scheduler would have recorded a failure every weekend.
+Repaired:   a name is a member on a session when its join date is on or before it, or unknown, and
+            its leave date is after it or absent. The listing, ladder, calendar, news pulse and close
+            stages and the read surface's universe and stale names read that. The fetch, the backfill
+            and the corporate action check read every name that has not left by the session, which
+            includes an announced joiner, so a joiner is backfilled on the announcement and stored
+            every night until it joins with its year whole. The catch-up opens at the newest session a
+            bulk file stored, falling back to every bar only on a store no bulk file has reached. A
+            night whose session the closure table says was not traded writes one run log row under the
+            closing stage with an outcome of its own, fetches nothing and exits 0; the run page's
+            failed region does not count it. Two decisions record the choices a later session could
+            reverse unseen, section 18 gains two rows, SCHEMA's `left` note and member-tonight paragraph
+            are corrected, and the runbook registers weekdays and says how to move a daily task in
+            place. The operator's task was moved to weekdays at 23:30 UTC on 2026-09-11 before this
+            entry, read back as `DaysOfWeek` 62.
+Guarded:    a rebalance over the fixture, one member leaving and one joining the session after the
+            night: before it the leaver is backfilled, stored, laddered and listed and the joiner is
+            backfilled and stored and neither laddered nor listed, and on it each goes the other way.
+            A joiner backfilled through tonight over a missed night, with every member holding the
+            missed session afterwards. A Saturday night and a Labor Day night, each making no request,
+            storing nothing, writing one no-session row and exiting 0, with the run page's word asserted
+            to agree with the worker's. And a scan holding every membership read in the shipped source
+            to one of the two forms, with both sets stated: four that store or answer a past date and
+            seven that ask the join date too.
+Mutated:    the rule, stated before the sweep: reinstate each defect at one site, being the listing
+            reading `left IS NULL`, the backfill reading `left IS NULL`, the catch-up opening at the
+            newest bar of any source, and the night going on to the fetch on a day with no session.
+            Four mutations, four runs, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed. The first two each turned the rebalance
+            test and the scan red, the third the joiner's catch-up test, and the fourth both cases
+            of the closed-day test, each leaving the other 518 or 519 green. None of the properties
+            added went unmutated.
+Tests:      520, from 515. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 245 claims, 171 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined, 178 placements reconciled. The two new section 18 rows are the two
+            claims added, and the fetch step's text moved under its own placement. Windows on this
+            machine; the matrix carries macOS and the Linux case-sensitivity job.

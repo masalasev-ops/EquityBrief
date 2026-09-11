@@ -37,10 +37,15 @@ public sealed class NewsPulseCounter : IComponent
     // One year retained, which is enough to hold a ninety-day baseline.
     public const int RetentionDays = 365;
 
+    // Members on the session counted: joined by it, where the join date is
+    // known, and not left by it.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
         SELECT ticker
         FROM membership
-        WHERE index_code = $index AND ""left"" IS NULL
+        WHERE index_code = $index
+          AND (joined IS NULL OR joined <= $session)
+          AND (""left"" IS NULL OR ""left"" > $session)
         ORDER BY ticker;
     ";
 
@@ -97,7 +102,7 @@ public sealed class NewsPulseCounter : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
-        var members = await MembersAsync(connection, indexCode, cancellation);
+        var members = await MembersAsync(connection, indexCode, sessionDate, cancellation);
         var written = 0;
         var counted = 0;
 
@@ -148,12 +153,14 @@ public sealed class NewsPulseCounter : IComponent
     static async Task<IReadOnlyList<string>> MembersAsync(
         SqliteConnection connection,
         string indexCode,
+        DateOnly session,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
         command.Parameters.AddWithValue("$index", indexCode);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new List<string>();
 

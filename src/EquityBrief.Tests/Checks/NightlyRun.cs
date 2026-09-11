@@ -44,7 +44,7 @@ public class NightlyRun
 
             CheckReach.Key(NightlyRunSteps.Heading, "Load index membership and record any joins and leaves."),
             CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner."),
-            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the index's dated events for the horizon, one request, and store what the provider files (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Compute the indicators for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Mark the swings for every name."),
@@ -64,6 +64,8 @@ public class NightlyRun
             CheckReach.Key(Scope.FailureTable, "A feed answers with none of the index in it"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a row the reader cannot read"),
             CheckReach.Key(Scope.FailureTable, "A session the night finds missing"),
+            CheckReach.Key(Scope.FailureTable, "A night on a day the exchange did not trade"),
+            CheckReach.Key(Scope.FailureTable, "An index change announced before it takes effect"),
 
             // The stale-and-failed region's stopped stage, which only a night
             // can put there, decomposed from the region at the phase 5 sign-off.
@@ -904,6 +906,248 @@ public class NightlyRun
         Assert.Contains("2026-09-09", stopped.Detail, StringComparison.Ordinal);
     }
 
+    // A night over feeds the caller assembled, so a test can read what every
+    // feed was asked for afterwards rather than trusting the stage's own line.
+    static async Task<(int Code, string Output, string Error)> NightAsync(
+        TemporaryStore store,
+        NightFeeds feeds,
+        string runId,
+        IClock clock)
+    {
+        var output = new StringWriter();
+        var error = new StringWriter();
+
+        var code = await Nightly.RunAsync(
+            new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
+            feeds,
+            "GSPC",
+            clock,
+            output,
+            error,
+            runId);
+
+        return (code, output.ToString(), error.ToString());
+    }
+
+    [Fact]
+    public async Task AnAnnouncedChangeTakesEffectOnItsDateAndAJoinerIsStoredFromTheAnnouncement()
+    {
+        // The rebalance of 2026-09-21, in the fixture's own week. The membership
+        // feed carries it on 2026-09-08, effective 2026-09-09: one member
+        // leaving and one joining. Until the phase 5 sign-off every stage read
+        // the leaver as gone and the joiner as in from the night the feed
+        // carried the change, so the leaver lost its bars and its row for the
+        // days it was still in the index and the joiner was listed early.
+        using var store = new TemporaryStore();
+
+        var members = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).ToArray();
+        var leaver = members[0];
+        var joiner = members[1];
+        var effective = new DateOnly(2026, 9, 9);
+
+        NightFeeds Feeds(IBulkPriceFeed? bulk = null)
+        {
+            var feeds = NightFeeds.FromFixture(FixtureFolder());
+
+            return feeds with
+            {
+                Membership = new RebalancedMembershipFeed(feeds.Membership, leaver, joiner, effective),
+                Bulk = bulk ?? feeds.Bulk,
+            };
+        }
+
+        var (first, _, firstError) = await NightAsync(store, Feeds(), "night-announced", FixedClock.At(Night, SessionZones.UnitedStates));
+
+        Assert.True(first == 0, firstError);
+
+        // Before the effective date. The leaver is still in: backfilled,
+        // stored, laddered and listed. The joiner is stored, from its backfill
+        // and from tonight's file, so it joins with its year whole, and is
+        // neither laddered nor listed.
+        Assert.True(Scalar(store, $"SELECT COUNT(*) FROM bar WHERE ticker = '{leaver}';") > 200, $"{leaver} was not backfilled.");
+        Assert.True(Scalar(store, $"SELECT COUNT(*) FROM bar WHERE ticker = '{joiner}';") > 200, $"{joiner} was not backfilled.");
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM listing WHERE ticker = '{leaver}' AND session_date = '2026-09-08';"));
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM ladder WHERE ticker = '{leaver}';"));
+        Assert.Equal(0, Scalar(store, $"SELECT COUNT(*) FROM listing WHERE ticker = '{joiner}';"));
+        Assert.Equal(0, Scalar(store, $"SELECT COUNT(*) FROM ladder WHERE ticker = '{joiner}';"));
+
+        // The list is the index on the session and not the membership table:
+        // every member but the one not yet joined.
+        Assert.Equal(members.Length - 1, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-08';"));
+
+        // On the effective date each goes the other way.
+        var bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8));
+        var nextSession = FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        var (second, _, secondError) = await NightAsync(store, Feeds(bulk), "night-effective", nextSession);
+
+        Assert.True(second == 0, secondError);
+        Assert.Equal(0, Scalar(store, $"SELECT COUNT(*) FROM bar WHERE ticker = '{leaver}' AND session_date = '2026-09-09';"));
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM bar WHERE ticker = '{joiner}' AND session_date = '2026-09-09';"));
+        Assert.Equal(0, Scalar(store, $"SELECT COUNT(*) FROM listing WHERE ticker = '{leaver}' AND session_date = '2026-09-09';"));
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM listing WHERE ticker = '{joiner}' AND session_date = '2026-09-09';"));
+        Assert.Equal(members.Length - 1, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-09';"));
+    }
+
+    [Fact]
+    public async Task AJoinerBackfilledThroughTonightDoesNotHideAMissedSession()
+    {
+        // The store ends on 2026-09-08 and the night is 2026-09-10, so
+        // 2026-09-09 is missed. A name joins tonight and its backfill is served
+        // through tonight, as the live endpoint serves it. Read over every bar,
+        // the newest stored session before tonight was the joiner's 2026-09-09,
+        // so the fetch saw nothing missing and every other name was left short
+        // the session, which a reviewer reproduced at the phase 5 sign-off.
+        using var store = new TemporaryStore();
+
+        var members = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).ToArray();
+        var joiner = members[^1];
+
+        var firstFeeds = NightFeeds.FromFixture(FixtureFolder());
+        var withoutJoiner = firstFeeds with { Membership = new RebalancedMembershipFeed(firstFeeds.Membership, joiner, null, null, drop: true) };
+
+        var (first, _, firstError) = await NightAsync(store, withoutJoiner, "night-before-the-join", FixedClock.At(Night, SessionZones.UnitedStates));
+
+        Assert.True(first == 0, firstError);
+        Assert.Equal(0, Scalar(store, $"SELECT COUNT(*) FROM bar WHERE ticker = '{joiner}';"));
+
+        var feeds = NightFeeds.FromFixture(FixtureFolder());
+        var tonight = feeds with
+        {
+            Historical = new ThroughTonightHistoricalFeed(feeds.Historical),
+            Bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8)),
+        };
+
+        var (code, output, error) = await NightAsync(
+            store,
+            tonight,
+            "night-of-the-join",
+            FixedClock.At(new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+
+        Assert.True(code == 0, error);
+
+        // The joiner's backfill did reach tonight, so the case is the one it
+        // names rather than a backfill that happened to stop early.
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM bar WHERE ticker = '{joiner}' AND session_date = '2026-09-09' AND source = 'historical';"));
+
+        // And every member holds the missed session, fetched in bulk.
+        Assert.Contains("1 missed session(s) caught up", output, StringComparison.Ordinal);
+        Assert.Equal(members.Length, Scalar(store, "SELECT COUNT(*) FROM bar WHERE session_date = '2026-09-09';"));
+        Assert.Equal(members.Length, Scalar(store, "SELECT COUNT(*) FROM bar WHERE session_date = '2026-09-10';"));
+    }
+
+    [Fact]
+    public void EveryMembershipReadIsOneOfTheTwoFormsOverTheSession()
+    {
+        // The behaviour above is asserted through the fetch, the backfill, the
+        // list and the ladder. Seven sites read the index and the calendar, the
+        // news pulse, the close and the read surface are not in that night's
+        // assertions, so this holds every one of them to one of the two forms,
+        // with the set that stores stated rather than counted: `left IS NULL` on
+        // its own is the form that listed a name before it joined, and it
+        // passes nothing a reader would notice.
+        //
+        // Comments are stripped first, because the sites that were corrected
+        // say what they read before, and a sentence naming a pattern is not a
+        // use of it.
+        var leftIsNull = new Regex(@"(?:\w\.)?""*left""*\s+IS\s+NULL", RegexOptions.IgnoreCase);
+        var notLeft = new Regex(@"^\s+OR\s+(?:\w\.)?""*left""*\s*>\s*\$(session|on)\b", RegexOptions.IgnoreCase);
+        var joinedBy = new Regex(@"\(\s*(?:\w\.)?joined\s+IS\s+NULL\s+OR\s+(?:\w\.)?joined\s*<=\s*\$session\s*\)", RegexOptions.IgnoreCase);
+
+        var stored = new List<string>();
+        var member = new List<string>();
+        var bare = new List<string>();
+
+        foreach (var file in Directory.GetFiles(Path.Combine(Repository.Root, "src"), "*.cs", SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(Repository.Root, file).Replace('\\', '/');
+
+            if (relative.StartsWith("src/EquityBrief.Tests/", StringComparison.Ordinal)
+                || relative.Contains("/Migrations/", StringComparison.Ordinal)
+                || relative.Contains("/obj/", StringComparison.Ordinal)
+                || relative.Contains("/bin/", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var code = string.Join('\n', File.ReadAllLines(file)
+                .Select(line => line.TrimStart().StartsWith("//", StringComparison.Ordinal) ? string.Empty : line));
+
+            foreach (Match site in leftIsNull.Matches(code))
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+                var after = code[(site.Index + site.Length)..];
+
+                if (!notLeft.IsMatch(after))
+                {
+                    bare.Add(name);
+
+                    continue;
+                }
+
+                // The statement the site sits in, read back to its opening
+                // quote, is what says whether the join date is asked too.
+                var opening = code.LastIndexOf("@\"", site.Index, StringComparison.Ordinal);
+                var statement = code[opening..(site.Index + site.Length)];
+
+                (joinedBy.IsMatch(statement) ? member : stored).Add(name);
+            }
+        }
+
+        Assert.True(bare.Count == 0, "A membership read takes `left IS NULL` alone, which reads an announced change as effective: " + string.Join(", ", bare));
+
+        // The stages that store bars and their adjustment, and the loader's own
+        // past-date query, which asks its join date with `joined <= $on`
+        // rather than admitting an unknown one and is the one form here that
+        // answers about a date other than tonight.
+        Assert.Equal(
+            ["Backfill", "BarFetcher", "CorporateActionChecker", "MembershipLoader"],
+            stored.Order(StringComparer.Ordinal));
+
+        // Every other read asks the join date as well. Stated as a set, and a
+        // site added under either form moves one of the two.
+        Assert.Equal(
+            ["CalendarFetcher", "LadderBuilder", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ShortlistBuilder"],
+            member.Order(StringComparer.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(2026, 9, 12, "Saturday")]
+    [InlineData(2026, 9, 7, "Monday")]
+    public async Task ANightOnADayTheExchangeDidNotTradeFetchesNothingAndExitsClean(int year, int month, int day, string weekday)
+    {
+        // A Saturday, and Labor Day. Until the phase 5 sign-off both asked the
+        // provider for a session that does not exist and exited 1 at the fetch.
+        using var store = new TemporaryStore();
+
+        var feeds = NightFeeds.FromFixture(FixtureFolder());
+        var closed = FixedClock.At(new DateTimeOffset(year, month, day, 23, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        var (code, output, error) = await NightAsync(store, feeds, "night-closed", closed);
+
+        Assert.True(code == 0, $"The night exited {code}: {error}");
+        Assert.Equal(string.Empty, error);
+        Assert.Contains($"is a {weekday} the exchange did not trade", output, StringComparison.Ordinal);
+
+        // Nothing asked of any feed and nothing stored, and the one row that
+        // says the night ran.
+        Assert.Equal(0, feeds.Requests);
+        Assert.Equal(0, Count(store));
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM membership;"));
+
+        var row = Assert.Single(RunLog(store, "night-closed"));
+
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, row.Stage);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.NoSession, row.Outcome);
+
+        // The run page's failed region does not count it. The read surface
+        // states the word itself, since it holds no reference to the worker,
+        // so the two are asserted to agree here.
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.NoSession, EquityBrief.Api.Reading.RunScreen.NoSession);
+        Assert.Empty(EquityBrief.Api.Reading.RunScreen.Failed(
+            [new EquityBrief.Web.Marks.StageRow(row.Stage, DateTimeOffset.UnixEpoch, 0, 0, 0, 0, "0", row.Outcome, row.Detail)]));
+    }
+
     [Fact]
     public void TheClosureTableAgreesWithTheCapturedCalendarAndRefusesPastItsRange()
     {
@@ -1089,6 +1333,61 @@ sealed class HoledBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, Date
         return session == holed
             ? [.. rows.Where(row => !members.Contains(row.Ticker, StringComparer.Ordinal))]
             : rows;
+    }
+}
+
+// A membership feed carrying a rebalance the recorded one does not: one name
+// leaving and one joining on an effective date after the night, or one name
+// dropped altogether, which is a name the index has not announced yet.
+sealed class RebalancedMembershipFeed(
+    IIndexMembershipFeed inner,
+    string leaverOrDropped,
+    string? joiner,
+    DateOnly? effective,
+    bool drop = false) : IIndexMembershipFeed
+{
+    public int Requests => inner.Requests;
+
+    public async Task<IReadOnlyList<IndexConstituent>> ConstituentsAsync(
+        string indexCode,
+        CancellationToken cancellationToken = default) =>
+        [.. (await inner.ConstituentsAsync(indexCode, cancellationToken))
+            .Where(row => !(drop && row.Ticker == leaverOrDropped))
+            .Select(row =>
+                !drop && row.Ticker == leaverOrDropped ? row with { Left = effective }
+                : row.Ticker == joiner ? row with { Joined = effective }
+                : row)];
+}
+
+// A historical feed that serves a name through the night it is asked on, as the
+// live endpoint does, by carrying the last captured session forward to every
+// weekday up to the end of the range. The recorded one stops at the day it was
+// captured, which is what hid a joiner's backfill reaching past a missed night.
+sealed class ThroughTonightHistoricalFeed(IHistoricalBarFeed inner) : IHistoricalBarFeed
+{
+    public int Requests => inner.Requests;
+
+    public async Task<IReadOnlyList<ProviderBar>> BarsAsync(
+        string ticker,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken = default)
+    {
+        var bars = (await inner.BarsAsync(ticker, from, to, cancellationToken)).ToList();
+
+        if (bars.Count == 0)
+        {
+            return bars;
+        }
+
+        var last = bars[^1];
+
+        foreach (var day in EquityBrief.Core.Bars.ExchangeClosures.SessionsBetween(last.SessionDate, to.AddDays(1)))
+        {
+            bars.Add(last with { SessionDate = day });
+        }
+
+        return bars;
     }
 }
 

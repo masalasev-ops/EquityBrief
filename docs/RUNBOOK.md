@@ -32,7 +32,7 @@ $root    = 'E:\Stock Analysis  Tool Ideas\EquityBrief'
 $action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
              -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$root\tools\nightly.ps1`"" `
              -WorkingDirectory $root
-$trigger = New-ScheduledTaskTrigger -Daily -At 6pm
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At 6pm
 $trigger.StartBoundary = '2026-09-11T23:30:00Z'
 $settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
@@ -42,6 +42,16 @@ Register-ScheduledTask -TaskName 'EquityBrief nightly' -Action $action `
 ```
 
 `-WakeToRun` because a laptop left to itself sleeps and a nightly job that silently did not run is worse than no nightly job. `-StartWhenAvailable` because a machine that was off at the instant should run the night when it comes back rather than skip it, and the night is idempotent.
+
+**Weekdays only, because the exchange trades on weekdays.** 23:30 UTC is 19:30 or 18:30 in New York, so the UTC weekday and the session's weekday are the same day at both ends of the year. A night that does run on a day with no session, being a holiday or a night started by hand, asks the closure table first, writes one run log row naming the day, fetches nothing and exits 0 (see: A night on a day the exchange did not trade fetches nothing and exits clean). So the weekday trigger saves the weekend's rows and the night does not depend on it. A task registered daily before the phase 5 sign-off is moved to weekdays in place, keeping its action, settings and principal:
+
+```powershell
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At 6pm
+$trigger.StartBoundary = '2026-09-11T23:30:00Z'
+Set-ScheduledTask -TaskName 'EquityBrief nightly' -Trigger $trigger
+```
+
+Reading it back shows `DaysOfWeek` as 62, being Monday to Friday as bits.
 
 **Registered from an ordinary shell that task runs only while the account is logged on,** which is the one thing about it that is invisible. With no principal given, Task Scheduler stores `InteractiveToken`, and a locked screen still counts as logged on while a sign-out or a restart that nobody signed back into does not. So the machine that has been running nights for a month stops on the morning after an update reboot, and the run page shows the night before.
 
@@ -69,7 +79,7 @@ Confirm which one is registered, because `Get-ScheduledTask` shows both as `Read
   <array>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>[ "$(date -u +%H%M)" = "2330" ] &amp;&amp; exec "$HOME/EquityBrief/tools/nightly"</string>
+    <string>[ "$(date -u +%u)" -le 5 ] &amp;&amp; [ "$(date -u +%H%M)" = "2330" ] &amp;&amp; exec "$HOME/EquityBrief/tools/nightly"</string>
   </array>
   <key>StartCalendarInterval</key><dict><key>Minute</key><integer>30</integer></dict>
   <key>RunAtLoad</key><false/>

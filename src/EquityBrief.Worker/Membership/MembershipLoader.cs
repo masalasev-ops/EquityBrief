@@ -68,9 +68,12 @@ public sealed class MembershipLoader(
     // A row whose join date is unknown answers no to this, because a comparison
     // against null is null. That is the truthful answer and not an oversight:
     // the provider does not say when the name joined, so nothing here can say
-    // whether it was a member in June. What such a row does answer is whether
-    // the name is a member now, which is `left IS NULL` and is the query the
-    // fetch uses.
+    // whether it was a member in June. The nightly stages ask a different
+    // question, whether a name is a member on tonight's session, and there a row
+    // with no join date is a constituent the provider lists today and counts as
+    // joined; that form, and the wider one the fetch stores bars for, live with
+    // the stages that ask them.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string MembersOn = @"
         SELECT ticker
         FROM membership

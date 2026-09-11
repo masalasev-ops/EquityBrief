@@ -70,11 +70,25 @@ public sealed class BarFetcher : IComponent
         this.databaseFile = databaseFile;
     }
 
-    // Current members, being the names a night stores bars for. A name that has
-    // left keeps its rows and its history and is simply not added to.
+    // The names a night stores bars for: every name that has not left by
+    // tonight's session. A name that has left keeps its rows and its history and
+    // is simply not added to.
     // see: Your own listing history is kept forever
+    //
+    // Not left by tonight, rather than never left, and not joined by tonight
+    // either. Until the phase 5 sign-off this was `left IS NULL`, which read an
+    // announced change as effective the night it was announced: the rebalance
+    // effective 2026-09-21 was on the membership feed by 2026-09-10, so three
+    // names still in the index until then were stored nothing for and four names
+    // not yet in it were. A name announced to join is stored from the
+    // announcement, so it joins with its year whole rather than with a hole
+    // between the backfill and its first night as a member; it is listed only
+    // from its effective date, which is the other predicate and lives with the
+    // stages that list.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
-        SELECT ticker FROM membership WHERE index_code = $index AND left IS NULL;
+        SELECT ticker FROM membership
+        WHERE index_code = $index AND (""left"" IS NULL OR ""left"" > $session);
     ";
 
     const string StoreBar = @"
@@ -122,9 +136,6 @@ public sealed class BarFetcher : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync();
 
-        var members = await MembersAsync(connection, indexCode);
-        var before = await CountAsync(connection);
-
         // The session this night is for, decided here and asked for by name.
         //
         // The feed is told which session rather than asked for the last day,
@@ -133,6 +144,9 @@ public sealed class BarFetcher : IComponent
         // date the run's own instant falls on in the exchange's zone
         // (see: The night runs at a fixed UTC instant, moved only when a night finds the day's file not yet posted).
         var session = clock.SessionDateAt(started);
+
+        var members = await MembersAsync(connection, indexCode, session);
+        var before = await CountAsync(connection);
 
         // Any session the store is missing since the last night that ran,
         // fetched in bulk before tonight's.
@@ -331,10 +345,20 @@ public sealed class BarFetcher : IComponent
         "The store is missing session " + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
         ", which the exchange traded and no night stored";
 
-    // The newest session the store holds before tonight's, which is where the
-    // last night that ran left it.
+    // The newest session a night's bulk file stored before tonight's, which is
+    // where the last night that ran left it.
+    //
+    // Read off the bulk rows rather than off every bar, because a backfill
+    // writes a joining name's year through tonight: read over every bar, one
+    // joiner backfilled on the night after a night that did not run made the
+    // missed session look stored, and the index was left short it with nothing
+    // saying so. A refetch is the same shape for one name. Only a store no bulk
+    // file has reached yet falls back to every bar, which is a first run whose
+    // backfill is the whole index and is where the last night left it.
     const string LastStoredBefore = @"
-        SELECT MAX(session_date) FROM bar WHERE session_date < $session;
+        SELECT COALESCE(
+            (SELECT MAX(session_date) FROM bar WHERE source = $bulk AND session_date < $session),
+            (SELECT MAX(session_date) FROM bar WHERE session_date < $session));
     ";
 
     static async Task<DateOnly?> LastStoredAsync(SqliteConnection connection, DateOnly session)
@@ -343,18 +367,20 @@ public sealed class BarFetcher : IComponent
 
         command.CommandText = LastStoredBefore;
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$bulk", Source);
 
         return await command.ExecuteScalarAsync() is string text
             ? DateOnly.ParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture)
             : null;
     }
 
-    static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode)
+    static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
         command.Parameters.AddWithValue("$index", indexCode);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

@@ -25,6 +25,35 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - ARCHITECTURE.html, SCHEMA.md - an announced index change takes effect on its date
+Authorised by: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
+Was:
+> <li>Fetch the day's bulk bar file, one request, and store the bars for current members, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's).</li>
+>
+> The same backfill runs for a single name on the night it joins the index.
+>
+> | `left` | TEXT | date, null while a member |
+>
+> Whether it is a member tonight is `left IS NULL`, which the row answers exactly.
+Now: the fetch stores every name that has not left by the session, an announced joiner included; the backfill runs on the first night the feed carries a join; `left` is the date a name stops being a member and is set before it does; a member tonight is read against tonight's session; section 18 gains a row for a change announced before it takes effect.
+Why: the membership feed carried the rebalance of 2026-09-21 by the 10th, and reading `left IS NULL` as membership dropped three names still in the index and listed four not yet in it. Found by the phase 5 sign-off reviewer in the operator's store.
+
+### 2026-09-11 - ARCHITECTURE.html - the missed session is read off the bulk rows
+Corrects: the catch-up compared tonight's session with the newest bar the store held, and a joiner's backfill writes through tonight, so one joiner backfilled on the night after a night that did not run hid the missed session from the whole index. Found by the phase 5 sign-off reviewer, who reproduced it.
+Was:
+> each session the exchange traded between the newest one the store holds and tonight's is fetched in bulk,
+Now: between the newest one a night's bulk file stored and tonight's, with the reason stated in the row's last cell.
+Why: the backfill and the refetch write one name's year through tonight, and only the bulk rows say where the last night that ran left the index.
+
+### 2026-09-11 - RUNBOOK.md - the task fires on weekdays
+Authorised by: A night on a day the exchange did not trade fetches nothing and exits clean
+Was:
+> $trigger = New-ScheduledTaskTrigger -Daily -At 6pm
+>
+> <string>[ "$(date -u +%H%M)" = "2330" ] &amp;&amp; exec "$HOME/EquityBrief/tools/nightly"</string>
+Now: a weekly trigger on Monday to Friday at the same instant, the command that moves a daily task in place, and the macOS job checking the UTC weekday as well as the hour.
+Why: a daily task ran every weekend and each of those nights was refused at the fetch and exited 1. The night now exits clean on a day with no session, so the weekday trigger saves the weekend's rows rather than preventing a failure.
+
 ### 2026-09-11 - SCHEMA.md - material_changes null means the comparison could not be made
 Corrects: the column was a JSON list and nothing said what a name whose files cannot be compared carries. Until the phase 5 sign-off such a name stopped the change detector for every name, so the case never reached the column. Found by the phase 5 sign-off's builder, when NVDA's facts file of 2026-09-10 named a fact twice and stopped that night at step 13.
 Was:

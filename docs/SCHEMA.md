@@ -87,7 +87,7 @@ Grain: one row per index, ticker and membership span.
 | `index_code` | TEXT | the index this membership is in |
 | `ticker` | TEXT | |
 | `joined` | TEXT | date, null when the provider carries none |
-| `left` | TEXT | date, null while a member |
+| `left` | TEXT | the date the name stops being a member, null until a leave is announced. The provider carries a leave before it takes effect, so a name with a date here is still a member on every session before it |
 | `observed_at` | TEXT | UTC instant of the fetch that recorded this |
 | `sector` | TEXT | the sector the provider last named for this ticker, null where it has named none. Last because it was added by an `ALTER TABLE` at 5.1 and SQLite appends, and this file states the order the store has rather than the order that reads best |
 
@@ -99,7 +99,7 @@ Kept forever. Without the spans, a name added last month would appear in a sixty
 
 **`sector` comes from the response the loader already fetches, at no extra request, and a departed name keeps the last one it was seen with.** Ruled at 5.0 and declared here at 5.1, which is the checkpoint that migrates it and writes it, because a column declared before the migration creates it is a declaration with nothing behind it and `schema-columns` refuses it in that direction. The constituents payload carries a `Components` object with a sector and an industry per current member, beside the `HistoricalTickerComponents` object the membership spans are read from. The two are read for different things and only the second is the index: a permanent test refuses the snapshot object as the membership, and that stands. The sector is written when a name is seen in `Components` and is never cleared, so a name that has left keeps the sector it carried when it was last observed, dated by the `observed_at` already on the row. A name that left before this column existed carries null, and null is drawn as not on file and excluded by name from every sector bucket rather than falling into one, because a filter that reads an absent value as a category is the defect this file has already paid for twice.
 
-**A row whose join date is unknown answers no to a past-date query and yes to members now.** A comparison against null is null, so such a name is absent from the set for any past date, which is the truthful answer: nothing here can say whether it was a member in June. Whether it is a member tonight is `left IS NULL`, which the row answers exactly.
+**A row whose join date is unknown answers no to a past-date query and yes to members now.** A comparison against null is null, so such a name is absent from the set for any past date, which is the truthful answer: nothing here can say whether it was a member in June. Whether it is a member tonight is a question about tonight's session, answered by a join date on or before it or unknown and a leave date after it or absent, and a row with no join date is a constituent the provider lists today. `left IS NULL` was that answer until the phase 5 sign-off and is not one, because the provider carries a rebalance before it takes effect: a name with a leave date a week out is a member for the week, and a name with a join date a week out is not yet one (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement).
 
 ### bar
 Grain: one row per ticker per session.

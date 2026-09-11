@@ -65,10 +65,17 @@ public sealed class CalendarFetcher : IComponent
     // not hold.
     public const int HistoryDays = 365;
 
+    // Members on tonight's session: joined by it, where the join date is known,
+    // and not left by it. The whole window is fetched every night, so a joining
+    // name's events arrive on its first night as a member without being stored
+    // ahead of it.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
         SELECT ticker
         FROM membership
-        WHERE index_code = $index AND ""left"" IS NULL;
+        WHERE index_code = $index
+          AND (joined IS NULL OR joined <= $session)
+          AND (""left"" IS NULL OR ""left"" > $session);
     ";
 
     const string Upsert = @"
@@ -122,7 +129,7 @@ public sealed class CalendarFetcher : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
-        var members = await MembersAsync(connection, indexCode, cancellation);
+        var members = await MembersAsync(connection, indexCode, session, cancellation);
 
         var written = 0;
         var notMembers = 0;
@@ -194,12 +201,14 @@ public sealed class CalendarFetcher : IComponent
     static async Task<HashSet<string>> MembersAsync(
         SqliteConnection connection,
         string indexCode,
+        DateOnly session,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
         command.Parameters.AddWithValue("$index", indexCode);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new HashSet<string>(StringComparer.Ordinal);
 
