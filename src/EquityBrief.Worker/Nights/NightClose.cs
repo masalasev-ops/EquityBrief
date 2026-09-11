@@ -157,7 +157,7 @@ public sealed class NightClose : IComponent
             rows_written, model_calls, network_requests, spend, detail)
         VALUES (
             $run_id, $stage, $started_at, $ended_at, $outcome,
-            0, 0, 0, '0', $detail)
+            0, 0, $network_requests, '0', $detail)
         ON CONFLICT (run_id, stage) DO NOTHING;
     ";
 
@@ -179,6 +179,12 @@ public sealed class NightClose : IComponent
     //
     // The instants come from the caller's clock rather than being read here, so
     // this path reads no clock of its own.
+    //
+    // `networkRequests` is what the step asked the feeds for before it stopped,
+    // read off the feeds by the caller. The row carried 0 until the phase 5
+    // sign-off, so a step that made three attempts at a feed and then failed
+    // recorded none, and the stopped night's requests were missing from the one
+    // figure the cost rule is read against.
     public static async Task<string?> RecordStopAsync(
         string databaseFile,
         string dataRoot,
@@ -187,7 +193,8 @@ public sealed class NightClose : IComponent
         DateTimeOffset startedAt,
         DateTimeOffset endedAt,
         string outcome,
-        string detail)
+        string detail,
+        int networkRequests = 0)
     {
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync();
@@ -203,6 +210,7 @@ public sealed class NightClose : IComponent
             command.Parameters.AddWithValue("$ended_at", endedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$outcome", outcome);
             command.Parameters.AddWithValue("$detail", Portable(detail, dataRoot));
+            command.Parameters.AddWithValue("$network_requests", networkRequests);
 
             if (await command.ExecuteNonQueryAsync() == 1)
             {

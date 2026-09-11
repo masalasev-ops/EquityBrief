@@ -87,14 +87,16 @@ static async Task<int> NightlyRun(string[] args)
     // deciding what the operator meant.
     var wantsLive = args.Contains("--live");
     var wantsFixture = Argument(args, "--fixture") is not null;
+    var runId = RunId(named) ?? FormattableString.Invariant($"night-{clock.UtcNow:yyyyMMddTHHmmssZ}");
 
     if (wantsLive && wantsFixture)
     {
-        Console.Error.WriteLine(
-            "nightly: '--live' and '--fixture' were both given. A night runs against one source, " +
+        return await RefusedAsync(
+            store,
+            runId,
+            clock,
+            "'--live' and '--fixture' were both given. A night runs against one source, " +
             "and choosing between them here would be this command deciding what was meant.");
-
-        return 1;
     }
 
     NightFeeds feeds;
@@ -116,13 +118,15 @@ static async Task<int> NightlyRun(string[] args)
     }
     catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
     {
-        Console.Error.WriteLine($"nightly: {refusal.Message}");
-
-        return 1;
+        return await RefusedAsync(store, runId, clock, refusal.Message);
     }
 
-    return await Nightly.RunAsync(store, feeds, index, clock, Console.Out, Console.Error, RunId(named));
+    return await Nightly.RunAsync(store, feeds, index, clock, Console.Out, Console.Error, runId);
 }
+
+// A night refused before its first step, on stderr and on the run log.
+static Task<int> RefusedAsync(StoreLocation store, string runId, IClock clock, string message) =>
+    Nightly.RefusedAsync(store, runId, clock, message, Console.Error);
 
 // The run id, which a named session cannot take from its own clock.
 //

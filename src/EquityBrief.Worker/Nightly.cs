@@ -123,7 +123,7 @@ public static class Nightly
         // a missing column halfway through.
         Step[] steps =
         [
-            new("migrate", () =>
+            new(FirstStep, () =>
             {
                 var outcome = MigrationRunner.Standard().Apply(store.DatabaseFile);
 
@@ -152,10 +152,12 @@ public static class Nightly
 
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
                     FormattableString.Invariant($"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, ") +
-                    $"{bulkFeed.NotSessions.Count} row(s) listed and not traded, " +
-                    $"{bulkFeed.Unreadable.Count} row(s) outside the index the reader refused, " +
+                    $"{outcome.NotTraded} row(s) listed and not traded, " +
+                    $"{outcome.Unreadable} row(s) outside the index the reader refused, " +
                     $"{outcome.Unaccounted.Count} member(s) the file carried nothing for, " +
                     $"{(outcome.CaughtUp ?? []).Count} missed session(s) caught up, " +
+                    $"{(outcome.CaughtUpShort ?? new Dictionary<DateOnly, IReadOnlyList<string>>()).Values.Sum(names => names.Count)} " +
+                    "member-session(s) a caught-up file carried nothing for, " +
                     $"{outcome.Requests} request(s)";
             }),
             new("actions", async () =>
@@ -373,6 +375,10 @@ public static class Nightly
             // see: The night's cost is counted in weighted calls against the stated daily allowance
             var stepStarted = clock.UtcNow;
 
+            // What the feeds had been asked before this step, so a step that
+            // stops records the requests it made rather than none.
+            var requestsBefore = feeds.Requests;
+
             if (feeds.WeightedCalls >= ProviderWeights.DailyAllowance)
             {
                 var stopped =
@@ -403,7 +409,7 @@ public static class Nightly
                     "minute(s) and was stopped. Last night's bars are kept and every name is stale.";
 
                 error.WriteLine("nightly: " + stopped);
-                await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Stopped, stopped, error);
+                await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Stopped, stopped, error, feeds.Requests - requestsBefore);
 
                 return 1;
             }
@@ -416,7 +422,7 @@ public static class Nightly
                 var failed = $"step '{step.Name}' failed: {failure.Message}";
 
                 error.WriteLine("nightly: " + failed);
-                await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Failed, failed, error);
+                await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Failed, failed, error, feeds.Requests - requestsBefore);
 
                 return 1;
             }
@@ -441,6 +447,56 @@ public static class Nightly
             $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
 
         return 0;
+    }
+
+    // A night refused before its first step, being a source that cannot be
+    // resolved or a key that is missing, on stderr and on the run log.
+    //
+    // Until the phase 5 sign-off the command line wrote such a refusal to stderr
+    // alone, and a scheduled task's stderr goes nowhere: a night whose secrets
+    // file had gone missing exited 1 and left no row, so the run page showed the
+    // night before as the newest with nothing wrong. The row is written under
+    // the first step, being the step the night stopped before, and only into a
+    // store that already exists, because a refusal that created an empty store
+    // would leave a second fault behind the first. A store whose log cannot take
+    // the row says so on stderr and the night still exits 1: recording the
+    // refusal must never turn it into a different failure.
+    public const string FirstStep = "migrate";
+
+    public static async Task<int> RefusedAsync(
+        StoreLocation store,
+        string runId,
+        IClock clock,
+        string message,
+        TextWriter error)
+    {
+        error.WriteLine($"nightly: {message}");
+
+        if (!File.Exists(store.DatabaseFile))
+        {
+            return 1;
+        }
+
+        try
+        {
+            var at = clock.UtcNow;
+
+            await NightClose.RecordStopAsync(
+                store.DatabaseFile,
+                store.DataRoot,
+                runId,
+                [FirstStep],
+                at,
+                at,
+                NightClose.Failed,
+                "refused before the first step: " + message);
+        }
+        catch (Exception failure)
+        {
+            error.WriteLine($"nightly: the refusal could not be recorded on the run log: {failure.Message}");
+        }
+
+        return 1;
     }
 
     // A night with no session, written where the run log is read, with the same
@@ -483,7 +539,8 @@ public static class Nightly
         DateTimeOffset endedAt,
         string outcome,
         string detail,
-        TextWriter error)
+        TextWriter error,
+        int networkRequests = 0)
     {
         try
         {
@@ -495,7 +552,8 @@ public static class Nightly
                 startedAt,
                 endedAt,
                 outcome,
-                detail);
+                detail,
+                networkRequests);
 
             if (recorded is null)
             {

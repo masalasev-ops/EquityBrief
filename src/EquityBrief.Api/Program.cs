@@ -253,7 +253,7 @@ app.MapGet("/screens/universe", async (
 
 // The run page, section 15.10, read here and composed by the app.
 //
-// `/screens/run` resolves to the newest night the listings hold and
+// `/screens/run` resolves to the newest night the run log holds and
 // `/screens/run/<date>` to an earlier one, which is the pair the tonight route
 // already answers and which keeps `#/run/<date>` a link.
 app.MapGet("/screens/run/{night?}", async (
@@ -264,9 +264,11 @@ app.MapGet("/screens/run/{night?}", async (
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
+    // The newest night that ran rather than the newest that listed, so a night
+    // that stopped before its list is the one the page opens on.
     var asOf = night is { Length: > 0 }
         ? DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture)
-        : await read.NewestNightAsync();
+        : await read.RunNightAsync();
 
     if (asOf is not { } dated)
     {

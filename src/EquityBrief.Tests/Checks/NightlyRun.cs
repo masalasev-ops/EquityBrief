@@ -395,6 +395,203 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task TheRunPageOpensOnANightThatStoppedBeforeItsList()
+    {
+        // The page a person opens, and not a read with a date in it. Until the
+        // phase 5 sign-off the run page opened on the newest night the listings
+        // held and kept only that night's rows, so the reviewer stopped a night
+        // at the fetch on 2026-09-09 and the default page showed 2026-09-08
+        // saying no stage of this night failed. The test above reads a stop
+        // through `RunLogAsync` with the date supplied, which is how the claim
+        // passed while the page missed it.
+        using var store = new TemporaryStore();
+
+        var (clean, _, _) = await NightAsync(store, runId: "night-one");
+
+        Assert.Equal(0, clean);
+
+        var wednesday = FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        var (code, _, _) = await NightAsync(store, runId: "night-stopped", bulk: new FailingBulkFeed(), clock: wednesday);
+
+        Assert.Equal(1, code);
+
+        var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, wednesday);
+
+        // The listings still end on the night before, which is where the page
+        // opened; the run page now opens on the night that ran.
+        Assert.Equal(new DateOnly(2026, 9, 8), await api.NewestNightAsync());
+        Assert.Equal(new DateOnly(2026, 9, 9), await api.RunNightAsync());
+
+        var stages = EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync((await api.RunNightAsync())!.Value));
+        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], EquityBrief.Api.Reading.RunScreen.Failed(stages));
+
+        Assert.Contains("data-stage=\"fetch\"", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("no stage of this night failed", region, StringComparison.Ordinal);
+
+        // The read surface's own row and a night with no session, both later,
+        // do not move it: neither is a night that ran.
+        using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText =
+                "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+                "('read-later', 'read-api', '2026-09-12T15:00:00Z', '2026-09-12T15:00:00Z', 'started', 0, 0, 0, '0', NULL), " +
+                "('night-saturday', 'close', '2026-09-12T23:30:00Z', '2026-09-12T23:30:00Z', 'no session', 0, 0, 0, '0', 'a Saturday');";
+            command.ExecuteNonQuery();
+        }
+
+        Assert.Equal(new DateOnly(2026, 9, 9), await api.RunNightAsync());
+
+        // And the stop row carries the request the step made before it failed,
+        // which it recorded as none until the same correction.
+        Assert.Equal(1, Scalar(store, "SELECT network_requests FROM run_log WHERE run_id = 'night-stopped' AND stage = 'fetch';"));
+    }
+
+    [Fact]
+    public async Task ADeadlinePassedInsideTheActionsStepIsRecordedThereAndMarksNoNameSuspect()
+    {
+        // The corporate action check caught every exception per name, the
+        // night's cancellation included, so a deadline passed during a refetch
+        // marked a name suspect, the stage finished, and the stop was recorded
+        // under a later step. Found by the phase 5 sign-off reviewer.
+        using var store = new TemporaryStore();
+
+        var started = Stopwatch.StartNew();
+        var (warm, _, _) = await NightAsync(store, runId: "night-one");
+
+        started.Stop();
+
+        Assert.Equal(0, warm);
+
+        // Measured from the warm night, for the reason the deadline test above
+        // gives: an absolute bound is a claim about the machine.
+        var deadline = (started.Elapsed * 2) + TimeSpan.FromSeconds(2);
+
+        // The fixture's own day carries no action on a member, so one is added
+        // for the first member, which is what makes the step refetch.
+        var feeds = NightFeeds.FromFixture(FixtureFolder());
+        var slow = new SlowHistoricalFeed();
+        var member = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).First();
+        var night = feeds with
+        {
+            Historical = slow,
+            Corporate = new OneActionFeed(feeds.Corporate, member),
+        };
+
+        var output = new StringWriter();
+        var error = new StringWriter();
+
+        var code = await Nightly.RunAsync(
+            new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
+            night,
+            "GSPC",
+            FixedClock.At(Night, SessionZones.UnitedStates),
+            output,
+            error,
+            "night-slow-actions",
+            deadline);
+
+        // The backfill asked nothing, since every name holds its year, so the
+        // one request the slow feed saw is the action step's refetch.
+        Assert.True(slow.Requests >= 1, $"The action step never reached the refetch: {output}");
+
+        Assert.Equal(1, code);
+        Assert.Contains("step 'actions' passed the night's deadline", error.ToString(), StringComparison.Ordinal);
+
+        var stopped = Assert.Single(RunLog(store, "night-slow-actions"), row => row.Outcome != "ok");
+
+        Assert.Equal("actions", stopped.Stage);
+        Assert.Equal("stopped", stopped.Outcome);
+
+        // No name was marked suspect for the night running out of time.
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM series_state WHERE state = 'suspect';"));
+    }
+
+    [Fact]
+    public async Task ANightRefusedBeforeItsFirstStepSaysSoOnTheRunLog()
+    {
+        // A missing key or an unresolvable source refused the night on stderr
+        // alone, which a scheduled task discards.
+        using var store = new TemporaryStore();
+
+        EquityBrief.Data.Migrations.MigrationRunner.Standard().Apply(store.DatabaseFile);
+
+        var error = new StringWriter();
+        var location = new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!);
+
+        var code = await Nightly.RefusedAsync(
+            location,
+            "night-refused",
+            FixedClock.At(Night, SessionZones.UnitedStates),
+            "no EODHD key is configured, so a live night cannot reach the provider",
+            error);
+
+        Assert.Equal(1, code);
+        Assert.Contains("no EODHD key", error.ToString(), StringComparison.Ordinal);
+
+        var row = Assert.Single(RunLog(store, "night-refused"));
+
+        Assert.Equal(Nightly.FirstStep, row.Stage);
+        Assert.Equal("failed", row.Outcome);
+        Assert.Contains("refused before the first step: no EODHD key", row.Detail, StringComparison.Ordinal);
+
+        // And a store that does not exist yet is not created by the refusal.
+        var elsewhere = Path.Combine(Path.GetDirectoryName(store.DatabaseFile)!, "not-a-store-yet");
+
+        Directory.CreateDirectory(elsewhere);
+
+        var absent = new StoreLocation(elsewhere);
+
+        Assert.Equal(1, await Nightly.RefusedAsync(absent, "night-refused", FixedClock.At(Night, SessionZones.UnitedStates), "no key", new StringWriter()));
+        Assert.False(File.Exists(absent.DatabaseFile));
+    }
+
+    [Fact]
+    public async Task ACaughtUpFileShortOfAMemberSaysWhichOnTheFetchRow()
+    {
+        // A caught-up file carrying nothing for some members was stored for the
+        // members it carried and the shortfall was discarded, where tonight's
+        // file reports the same thing by name. Found by the phase 5 sign-off
+        // reviewer.
+        using var store = new TemporaryStore();
+
+        var (first, _, firstError) = await NightAsync(store, runId: "night-one");
+
+        Assert.True(first == 0, firstError);
+
+        var members = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).ToArray();
+        var missing = members[0];
+        var thursday = FixedClock.At(new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        var bulk = new HoledBulkFeed(
+            new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8)),
+            new DateOnly(2026, 9, 9),
+            [missing]);
+
+        var (code, output, error) = await NightAsync(store, runId: "night-short-catch-up", bulk: bulk, clock: thursday);
+
+        Assert.True(code == 0, error);
+        Assert.Contains("1 member-session(s) a caught-up file carried nothing for", output, StringComparison.Ordinal);
+
+        var detail = FetchDetail(store, "night-short-catch-up");
+
+        Assert.Contains($"\"caughtUpShort\":{{\"2026-09-09\":{{\"count\":1,\"first\":[\"{missing}\"]}}}}", detail, StringComparison.Ordinal);
+
+        // Tonight's file carried every member, which the row says in the same
+        // shape rather than by omission; and the counts that went to the night's
+        // stdout alone are on the row beside it.
+        Assert.Contains("\"unaccounted\":{\"count\":0,\"first\":[]}", detail, StringComparison.Ordinal);
+        Assert.Contains("\"notTraded\":", detail, StringComparison.Ordinal);
+        Assert.Contains("\"unreadable\":0", detail, StringComparison.Ordinal);
+
+        // The rest were stored for the missed session.
+        Assert.Equal(members.Length - 1, Scalar(store, "SELECT COUNT(*) FROM bar WHERE session_date = '2026-09-09';"));
+    }
+
+    [Fact]
     public async Task AStopInsideTheFactsStepIsRecordedUnderTheStageThatStoppedAndNotOverTheOneThatRan()
     {
         // The one composite step. The assembler writes its row and the detector
@@ -1388,6 +1585,39 @@ sealed class ThroughTonightHistoricalFeed(IHistoricalBarFeed inner) : IHistorica
         }
 
         return bars;
+    }
+}
+
+// The recorded action feed with one split added on a named member, so the action
+// step has a name to refetch on a day the capture carries none for the index.
+sealed class OneActionFeed(ICorporateActionFeed inner, string ticker) : ICorporateActionFeed
+{
+    public int Requests => inner.Requests;
+
+    public async Task<IReadOnlyList<CorporateAction>> ActionsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default) =>
+        [.. await inner.ActionsAsync(exchange, session, cancellation), new CorporateAction(ticker, session, ActionKind.Split, "2/1")];
+}
+
+// A historical feed that never answers, so a refetch hangs until the night's
+// deadline cancels it.
+sealed class SlowHistoricalFeed : IHistoricalBarFeed
+{
+    public int Requests { get; private set; }
+
+    public async Task<IReadOnlyList<ProviderBar>> BarsAsync(
+        string ticker,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken = default)
+    {
+        Requests++;
+
+        await Task.Delay(TimeSpan.FromMinutes(5), cancellationToken);
+
+        return [];
     }
 }
 

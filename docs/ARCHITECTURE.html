@@ -881,11 +881,11 @@ wrote them.</p>
 
 <h3>15.10 Run</h3>
 <p><b>Answers:</b> did last night work, what did it cost, and is any reason worth anything.</p>
-<p><b>Route:</b> <code>#/run/&lt;date&gt;</code>.</p>
+<p><b>Route:</b> <code>#/run/&lt;date&gt;</code>. With no date it opens on the newest night the run log carries a stage for, whether or not that night wrote a list, so a night that stopped before its list is the one a person sees first. A night on a day with no session is not one it opens on.</p>
 <p><b>Reads:</b> the run log, the listings and the forward returns.</p>
 <table>
   <tr><th style="width:22%">Region</th><th>What is in it</th></tr>
-  <tr><td>Operational header</td><td>what ran, the instant each stage started and how long it took, model calls, network requests, and spend</td></tr>
+  <tr><td>Operational header</td><td>what ran, the instant each stage started and how long it took, model calls, network requests, spend, and what each stage said about itself, in a cell rather than behind a pointer</td></tr>
   <tr><td>Reason records</td><td>one row per reason with the reason track mark, the resolved count, the share that reached target before stop, and the break-even those setups demanded. A pinned first row gives the base rate over every name-night, so no figure stands on its own</td></tr>
   <tr><td>Shadow candidates</td><td>the same columns for registered candidates that are not on the list, with the correction divisor stated beside the threshold</td></tr>
   <tr><td>Stale and failed</td><td>names carrying yesterday's bars, the stage a night stopped on with its outcome and the reason, sections that fell back, documents refused by admissibility with the category that refused each</td></tr>
