@@ -6036,3 +6036,214 @@ Notes:      this session committed the code being corrected and does not sign ph
             fresh-session rule, which bars only code, and is the thing the rule exists to prevent.
             The sign-off reviews a consistent corpus instead, and the finding stands to its credit
             rather than being absorbed into the work it was reviewing.
+
+### 5.1 - correction: the clauses the entry did not evidence, and where they were discharged   2026-09-10
+Corrects:   the 5.1 entry above records a checkpoint as done against a done condition whose
+            second, fifth and sixth clauses it evidences nowhere. `BUILD_PLAN.md:426`, in force
+            when 5.1 landed and verified identical at f46e296, requires every index member to
+            hold its year, the computed chain to complete for every member, and a night over the
+            whole index recorded with the elapsed time per step, with the run's own conditions,
+            being a cold or warm store, which network, and whether the provider was slow. The
+            entry's Measured block is four fixture names and six constituents, and the strings
+            503, elapsed, cold and warm do not appear in it at all.
+Found:      by the phase 5 sign-off, and the sharp part is what 5.1's own text says. It named the
+            computed chain at index size as the risk phase 5 actually carries: "What has never run
+            at index size is what comes after the bars, being the indicators, the swings, the
+            volume profile, the levels and the ladder, over 503 names where every night so far has
+            run them over four", and then "this checkpoint watches the right thing only because it
+            says so". It wrote that into its own done condition and landed without running it.
+            The condition was load-bearing rather than ceremonial, and the evidence for that is
+            what happened when the run finally came: at dead88d a whole night over 503 names was
+            stopped by its own fifteen-minute deadline on the facts step having reached twelve of
+            seventeen stages, and three defects were found that the four-name fixture cannot show.
+            That is the failure 5.1 was watching for, six checkpoints late.
+Discharged: by measurement already in the record rather than by anything built here, which is why
+            this is a correction and not a rebuild. Clause one and clause two are answered by the
+            two 5.7 entries: 125,736 bars over 503 names covering 2025-09-10 to 2026-09-09, and a
+            whole night over 503 names run three times for session 2026-09-09. Clause five is the
+            per-stage table in the night-speed entry, 574.7 seconds falling to 44.6 with the row
+            counts identical either side. Clause six is stated there in the same breath: warm
+            store, home network, provider answering normally, on the operator's Windows machine,
+            with "what this does not establish: a cold store" beside it.
+Notes:      nothing is owed onward. The wall clock the run produces is already carried as an
+            operating row (owes: The nightly wall clock at index size, measured from nights that
+            ran on the schedule), which is where 5.7 put it and is not what this corrects. What
+            this corrects is the record showing a checkpoint as having met a condition it had not,
+            which `done-condition-producible` cannot catch because the condition is producible and
+            was simply not produced.
+
+### 5.3 - correction: the done condition amended to what the fixture asserts   2026-09-10
+Corrects:   **This entry amends 5.3's done condition**, in those words, because the checkpoint
+            that built it did not. 5.3 read "the facts file matches the fixture byte for byte" and
+            the fixture refuses to be that: `facts.json` states in its own words that nothing in it
+            is frozen from a run and that the payload hash is not stated, because a hash of a
+            payload is a function of that payload and stating it would be a regression baseline
+            wearing the clothes of an expectation.
+Found:      by the phase 5 sign-off, reading each phase 5 done condition against what its
+            checkpoint actually asserts. The condition asked for exactly the thing done condition 7
+            warns against, being a checkpoint that adds only frozen expectations and has added
+            regression detection and called it verification. 5.3 built the stronger form instead
+            and said why in its Measured block, "It is written from the rules rather than frozen
+            from a run, and every value is asserted against the store it was read from rather than
+            against a copy of the payload", and then left the condition saying something else. So
+            the checkpoint amended its own done condition in substance and recorded no amendment,
+            which is the one thing CLAUDE.md says is not legitimate about amending one.
+Repaired:   the condition now reads that every fact and the stage that computed it match the
+            fixture, that the payload is written in name order so two runs over one store produce
+            the same bytes, and that the per-operation split is proved rather than true by
+            construction. That is what `FixtureExpectations` has asserted since 5.3 landed. Prior
+            text is in `CHANGELOG.md` and a paragraph beneath the condition says it was amended.
+Notes:      no claim moved and nothing was rebuilt. The behaviour 5.3 shipped is the behaviour the
+            amended condition requires, and it was the better of the two readings all along.
+
+### 5.4 - correction: the test-count baseline   2026-09-10
+Corrects:   5.4's entry records "Tests: 456, from 444". 5.3 landed at 441. The baseline should
+            read 441 and the delta the checkpoint added is fifteen rather than twelve.
+Measured:   the phase 5 sign-off counted test cases at every commit of the phase, taking facts
+            plus inline data cases, which reproduces the suite's own count exactly at HEAD. The
+            chain is 415 at the phase 4 sign-off, then 426, 433, 437, 441, 456, 463, 474, 474, 476
+            and 479, and every recorded figure matches the tree that landed it. 444 is the count
+            after 5.4's own first commit, 358c261, so the baseline names an intermediate state
+            inside the checkpoint's own branch rather than the figure the checkpoint started from.
+            It is the only break in the chain across phases 0 to 5.
+Notes:      no check reaches this and none should. `stated-counts` exempts record entries by
+            design, because a record entry is a dated measurement rather than a statement the
+            corpus makes about itself, and the exemption is in the check's own first comment. Done
+            condition 2 requires the test count recorded in PROGRESS, and 456 is recorded and is
+            right; what is wrong is the figure it is stated as having come from. Corrected by this
+            entry rather than by editing the one above, because the record is append only.
+
+### 5.7 - correction: the repairs the phase 5 sign-off found   2026-09-10
+Corrects:   fourteen things the sign-off found across phase 5, none of which needed anything
+            rebuilt. This session committed the code and does not sign phase 5 off.
+Found:      three done conditions not met as written, and each fails differently. 5.1's is above.
+            5.3's is above. 5.5 required "the page count is measured over two universe sizes and
+            shown not to grow with the population", and the test carrying it called
+            `feed.ArticlesAsync` twice with the same date pair and asserted a counter had moved
+            from one to two. No universe reaches that seam: `INewsFeed.ArticlesAsync` takes a date
+            range and no member set, so the test showed that a second call increments a counter
+            and its own comment said it was asserting the count "over two universe sizes". A check
+            that states its own scope wrongly is the class CLAUDE.md names as the one that
+            survives, and this one had been passing since 5.5.
+Also found: five checks reaching half of what their roster rows claim. `ci-parity` compares step
+            names and reads neither script's data root, so 5.7's repair of the two scripts had no
+            instrument at all and the strings `data-ci` and `DataRoot` appeared nowhere under
+            `src/`: the fault that dropped the operator's store was fixed in two files by hand and
+            nothing stopped it returning. `two-platform`'s swallow guard was a blocklist of three
+            literals, and a leg is skipped by any YAML condition whatever, none of which need
+            contain any of the three; a skipped job does not fail its run. `clock-usage` read the
+            parse direction and not the render, so every `started_at` and `ended_at` in the tree
+            was written against the machine's calendar while every `session_date` beside them
+            passed a culture. `store-portability` had never scanned a row a shipped component
+            wrote: one scan over an empty store and two over a probe table the test creates, so
+            every row it had ever read was one it had written itself. `price-storage-form` read
+            the migrations and nothing of the code half of the rule it is named for.
+            And three crossings between the decimal world and the double one bypassed the helper
+            named for them, two of them structurally unable to reach it, because `Statistic` sat
+            in `EquityBrief.Data` and `EquityBrief.Core` does not reference `EquityBrief.Data`.
+            A helper the rule requires and half the tree cannot see is a helper that gets bypassed.
+            The operational header drew how long each stage took and never the instant it started,
+            while `BUILD_PLAN.md` says twice that it carries both and the posting hour obligation
+            names it as the surface its trigger is read on. A posting hour is a clock time and
+            cannot be read off a duration. `run_log` has stored `started_at` since 1.1 and it
+            reached no surface.
+            `tools/ci.ps1` set its data root and its working directory in the caller's own
+            PowerShell process, which `tools/ci.sh` cannot do because its export dies with its
+            process. So the two were not the same in effect on the one platform the operator runs
+            them on, and `RUNBOOK.md` step 7 followed by step 9 sent a hand-run night into
+            `data-ci`. Its cmdlet-only step also died unnamed: `Step` judged a step by
+            `$LASTEXITCODE`, which a cmdlet never sets, so "drop the store" failed through a
+            terminating error under the Stop preference and the failed-at-step line never printed.
+            Three floors. The out-of-scope pair fell 100 to 80 at 5.4 and 80 to 70 at 5.6 against
+            a value of 72, and each fall was recorded with the sentence "it is a fact about how far
+            the build has got and not about the property", which is the rule's own condition for
+            leaving such a scope as context rather than flooring it. Three sessions wrote the
+            condition and lowered the floor anyway. The third fell 100 to 80 in the same sweep as
+            the first pair and is the total claim count, which only grows, has gone 203, 226, 234,
+            237 and was never near either number; it got no comment where the other two got one,
+            and its failure message still said 100 while its assertion said 80.
+            And the obligation nobody filed. 5.7's own entry states that `ForwardReturnFiller`'s
+            transaction is a correctness fix and not only a speed one, "a fill interrupted halfway
+            left some horizons written and a base rate belonging to none of them". That is the
+            shape the phase 1 sign-off already ruled on for the refetch, where a scan for the
+            keyword reported the construct and a behavioural test carried the claim. Nothing
+            asserted it and no row was filed, and CLAUDE.md says obligations are recorded when
+            created rather than remembered.
+Repaired:   all fourteen. The two-universe assertion runs the counter over two membership sets
+            against the same captured day. The interrupted fill is induced downstream of twelve
+            real writes by a stored plan whose stop sits at or above its target, and the stage is
+            asserted to leave nothing behind and to be repeatable once the bad plan is gone. The
+            five checks are widened and their roster rows say so. `Statistic` moved to
+            `EquityBrief.Core.Prices` beside `PriceForm` with a sibling named for the ratio
+            crossing, and the set of crossing helpers is asserted as a set rather than a count.
+            The header draws the instant, in UTC and labelled, with the whole instant in the
+            attribute because a night that starts after the close in New York carries tomorrow's
+            UTC date. `ci.ps1` restores both the root and the location in a `finally`, which runs
+            on `exit` and preserves the code, and names a cmdlet-only failure. The two out-of-scope
+            floors and the plan-derived one are non-vacuity guards of one now, since all three
+            reach zero at phase 7 by construction, and the claim floor is back at 100 with its
+            message derived from it.
+            Fifty-six date renderings across twenty-five files gained a culture. Sixteen
+            expectation files gained a declared `derivation`, and the check reads the field rather
+            than the prose: a file frozen from a run whose `derivedFrom` said "the run of
+            2026-09-10" passed unchanged before, which is the shape that check exists to reject.
+Guarded:    every repair that is a property rather than a text edit. The additions are the two
+            universe sizes, the interrupted fill, the header's instant, the data root in both
+            scripts, the cmdlet failure path, every YAML condition, the rendering direction of
+            `clock-usage`, the populated-store scan, the crossing-helper set, the declared
+            derivation, the record's nesting inside its reason, and the wall clock claim read off
+            its description cell rather than off the whole row.
+            That last one is worth naming: `TheLimitsRowStatesTheFiguresTheCodeUses` sliced from
+            the subject to `</tr>`, which spans all four cells, and two of the phrases it looks
+            for appear twice inside that row, once in the description and once in the Asserted-by
+            cell. So deleting the claim from the cell that carries it left the assertion green.
+            5.7 wrote that assertion specifically to stop the wall clock and the deadline being
+            held in their stated relationship by a comment, and it was reading the wrong span.
+Mutated:    twelve distinct mutations over sixteen runs, in a worktree under the session
+            scratchpad outside the repository, reverted, and the worktree removed. The worktree
+            list holds the same four entries it held before, being this tree and the three the
+            phase 3 sign-off recorded. The rule was stated before the sweep: each mutation
+            reinstates the defect the new assertion was written to catch, named by the property it
+            breaks rather than by the line it edits, and where the repair widened a check the
+            mutation is the code or corpus text that check now has to refuse.
+            All twelve turn a test red. Four were invalid on the first attempt and were corrected
+            and re-run, which is the four extra runs.
+            One of those four is worth the space, because it is the difference between an invalid
+            mutation and a surviving one and they look identical from the outside. Dropping
+            `await using` from `ForwardReturnFiller`'s transaction left the test green, and it
+            removed nothing: the connection is disposed at the end of the same scope and disposing
+            an open transaction rolls it back, so the atomicity was still there. The mutation that
+            reaches the property is one transaction per listing rather than one around the stage,
+            which is the shape the stage had before 5.7, and it turns the test red. A green run
+            recorded as a survivor there would have said the assertion was weak when what was weak
+            was the edit.
+            The properties added and not mutated: the claim floor restored to 100, the two
+            out-of-scope guards and the plan-derived guard, and the section 19.1 run page row.
+            The three floors are not mutated because a floor is not a property and the whole point
+            of the repair is that the number was standing in for one; what carries the property at
+            each site is the assertion beneath it, and each of those already had a proof. The 19.1
+            row is placed rather than asserted, and `architecture-conformance` refused it on the
+            first run by deriving a due point of 5.1 from the plan's prose, which is the placement
+            reconciliation working.
+Tests:      491, from 479. `tools/ci.sh` green end to end, all 6 steps, migrations 0 to 18, exit 0.
+            `tools/ci.ps1` green end to end on this machine, and the session it ran in kept its own
+            data root and its own working directory. `tools/verify-phase` green at 238 claims, 166
+            PASS, 0 FAIL, 72 out of scope, 0 unexamined, 173 placements and verdicts reconciled
+            against a floor of 34, 35 checks on the roster and 33 carried, 33 ran and 0 did not.
+            Windows on this machine; the matrix carries macOS and the Linux case-sensitivity job.
+            The claim count moves by one and the PASS count with it, both from section 19.1's new
+            run page row. Out of scope is unchanged at 72.
+Carried:    one new row (owes: Every stage that writes in a loop opens a transaction, asserted
+            rather than read), created at the sign-off and half discharged by it. The correctness
+            half is asserted; what 6.0 decides is whether a source scan over the loop shape earns
+            its false positives, and the argument against is already written into the row: all
+            sixteen writers loop, so a scan keyed on the loop reports every one of them and a scan
+            keyed on the transaction reports none.
+Notes:      the matrix was verified from the runs rather than from these entries. Every one of
+            phase 5's eleven merges was enumerated by job rather than by run conclusion, since a
+            skipped job leaves a run green, and all three jobs, being windows-latest, macos-latest
+            and the case-sensitivity leg, report success on all eleven with seven steps each.
+            What is not repaired, and is named here so it is not mistaken for an oversight:
+            `main` carries no branch protection and no rulesets, so the merge rule is enforced by
+            convention. That is a setting on the repository rather than a change to it, and it is
+            the operator's to make.
