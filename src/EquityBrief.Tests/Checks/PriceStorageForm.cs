@@ -206,14 +206,27 @@ public class PriceStorageForm
     // decision rather than a number that moved. The operand is keyed on its
     // first token, which is enough to tell `(double)price` from
     // `(double)counted.Count` and a parenthesised expression from either.
+    //
+    // Two more forms from the phase 5 sign-off, which the reviewer found this
+    // reader blind to: a cast to the nullable type, `(double?)`, is the same
+    // crossing with a null carried through it, and `Convert.ToDouble(` or
+    // `Convert.ToDecimal(` is a cast written as a call. One of the second
+    // shipped when the reader was written and was in no stated set.
     internal static IReadOnlyList<string> CastsIn(string source, string file)
     {
         var code = SourceStatements.WithoutComments(source);
 
-        return System.Text.RegularExpressions.Regex
-            .Matches(code, @"\((?<to>double|decimal)\)\s*(?<operand>\(|[A-Za-z_][A-Za-z0-9_.]*(?:\[[^\]]*\])?)")
-            .Select(match => $"{Path.GetFileName(file)}: ({match.Groups["to"].Value}){match.Groups["operand"].Value}")
-            .ToArray();
+        const string Operand = @"(?<operand>\(|[A-Za-z_][A-Za-z0-9_.]*(?:\[[^\]]*\])?)";
+
+        var casts = System.Text.RegularExpressions.Regex
+            .Matches(code, @"\((?<to>double|decimal)(?<nullable>\?)?\)\s*" + Operand)
+            .Select(match => $"{Path.GetFileName(file)}: ({match.Groups["to"].Value}{match.Groups["nullable"].Value}){match.Groups["operand"].Value}");
+
+        var conversions = System.Text.RegularExpressions.Regex
+            .Matches(code, @"\bConvert\.To(?<to>Double|Decimal)\(\s*" + Operand)
+            .Select(match => $"{Path.GetFileName(file)}: Convert.To{match.Groups["to"].Value}({match.Groups["operand"].Value}");
+
+        return [.. casts, .. conversions];
     }
 
     [Fact]
@@ -236,9 +249,17 @@ public class PriceStorageForm
         // arithmetic over integers and never money, and a stored statistic read
         // back as the double it is before `Statistic.ToPrice` makes it a price.
         // `PlotValue` is the chart's crossing, which says why it is its own.
+        //
+        // Two joined at the phase 5 sign-off, when the reader came to see the
+        // nullable cast and the conversion call. `(decimal?)null` types a null
+        // in the price world and crosses nothing. `Convert.ToDouble(value)` in
+        // the shortlist builder reads the fifty-session volume average, a
+        // statistic stored as the double it is, back as a double; it was in the
+        // shipped source when the reader was written and in no stated set.
         Assert.Equal(
             [
                 "ForwardReturnSeries.cs: (double)counted.Count",
+                "LadderBuilder.cs: (decimal?)null",
                 "LadderBuilder.cs: (double)value",
                 "LevelBuilder.cs: (double)value",
                 "MarkRenderer.cs: (double)(",
@@ -248,6 +269,7 @@ public class PriceStorageForm
                 "MarkRenderer.cs: (double)band.Shares",
                 "MarkRenderer.cs: (double)bar.Volume",
                 "MarkRenderer.cs: (double)price",
+                "ShortlistBuilder.cs: Convert.ToDouble(value",
                 "Statistic.cs: (decimal)statistic",
                 "Statistic.cs: (double)price",
                 "Statistic.cs: (double)ratio",
@@ -275,5 +297,14 @@ public class PriceStorageForm
 
         // A comment naming a cast is not one.
         Assert.Empty(CastsIn("// (double)price is what this used to do", "Probe.cs"));
+
+        // The two forms the phase 5 sign-off reviewer found this reader blind
+        // to, each producing a site the stated set does not hold.
+        Assert.Equal(["P.cs: (double?)price"], CastsIn("var d = (double?)price;", "P.cs"));
+        Assert.Equal(["P.cs: Convert.ToDouble(price"], CastsIn("var d = Convert.ToDouble(price);", "P.cs"));
+        Assert.Equal(["P.cs: Convert.ToDecimal(statistic"], CastsIn("var m = Convert.ToDecimal(statistic);", "P.cs"));
+
+        // And a conversion to an integer is neither world.
+        Assert.Empty(CastsIn("var n = Convert.ToInt32(count);", "P.cs"));
     }
 }

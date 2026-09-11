@@ -43,6 +43,24 @@ public static class ExchangeClosures
 
     public static IReadOnlyCollection<DateOnly> All => Closed;
 
+    // How far ahead of the table's end a night says so on its closing line.
+    //
+    // A quarter, because the exchange publishes the next year's calendar well
+    // before it starts and extending the table is an edit and a test, not a
+    // project. Until the phase 5 sign-off nothing said the table ended at all,
+    // so the first weekday past it would have been the notice.
+    // owes: The exchange closure table extended before the nights reach its end
+    public const int WarnWithinDays = 90;
+
+    // The days from a session to the table's last covered date, where that is
+    // inside the warning window, and null otherwise.
+    public static int? DaysToEnd(DateOnly session)
+    {
+        var left = CoveredThrough.DayNumber - session.DayNumber;
+
+        return left <= WarnWithinDays ? left : null;
+    }
+
     static bool Weekday(DateOnly day) => day.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday;
 
     // Whether the exchange traded on a day inside the table's range.

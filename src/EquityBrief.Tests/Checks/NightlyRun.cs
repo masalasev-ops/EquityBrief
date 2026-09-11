@@ -451,6 +451,46 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task AnAllowanceStopIsDrawnInTheRegionAgainstTheStepItStoppedBefore()
+    {
+        // The allowance half of the region's claim, asserted where the claim is
+        // placed. `nightly-cost` asserts the stop and its row for its own limits
+        // row; until the phase 5 sign-off this check's placement said an
+        // allowance stop reaches the region and nothing this check runs made
+        // one. Found by the phase 5 sign-off reviewer.
+        using var store = new TemporaryStore().Migrated();
+
+        var clock = FixedClock.At(Night, SessionZones.UnitedStates);
+        var feeds = NightFeeds.FromFixture(FixtureFolder()) with
+        {
+            Bulk = new AllowanceSpentBulkFeed(ProviderWeights.DailyAllowance / ProviderWeights.BulkEndOfDay),
+        };
+
+        var (code, _, _) = await NightAsync(store, feeds, "night-spent", clock);
+
+        Assert.Equal(1, code);
+
+        // Through the page a person opens: the run page's own night, its stages
+        // and its region.
+        var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, clock);
+        var night = await api.RunNightAsync();
+
+        Assert.Equal(new DateOnly(2026, 9, 8), night);
+
+        var failed = EquityBrief.Api.Reading.RunScreen.Failed(
+            EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync(night!.Value)));
+        var stopped = Assert.Single(failed);
+
+        Assert.Equal(Nightly.FirstStep, stopped.Stage);
+        Assert.Equal("stopped", stopped.Outcome);
+
+        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed);
+
+        Assert.Contains("data-outcome=\"stopped\"", region, StringComparison.Ordinal);
+        Assert.Contains("weighted call(s)", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ADeadlinePassedInsideTheActionsStepIsRecordedThereAndMarksNoNameSuspect()
     {
         // The corporate action check caught every exception per name, the
@@ -1394,6 +1434,145 @@ public class NightlyRun
         Assert.Empty(EquityBrief.Core.Bars.ExchangeClosures.SessionsBetween(new DateOnly(2028, 1, 7), new DateOnly(2028, 1, 10)));
     }
 
+    [Fact]
+    public void EveryClosureTheTableHoldsIsTheOneTheExchangesRulesGiveForItsYear()
+    {
+        // The captured calendar above checks the year the fixture's bars span
+        // and nothing outside it: the rest of 2025 and all of 2027 rested on the
+        // table having been typed correctly, which the phase 5 sign-off reviewer
+        // found no test guarding. Derived here from the exchange's published
+        // rules rather than from the table, so a date typed wrong disagrees.
+        var derived = new SortedSet<DateOnly>();
+
+        for (var year = EquityBrief.Core.Bars.ExchangeClosures.CoveredFrom.Year;
+             year <= EquityBrief.Core.Bars.ExchangeClosures.CoveredThrough.Year;
+             year++)
+        {
+            foreach (var day in NyseFullClosures(year))
+            {
+                derived.Add(day);
+            }
+        }
+
+        // The one closure no rule gives: the national day of mourning for
+        // President Carter, 2025-01-09, which the exchange announced a week
+        // ahead. A special closure is stated, not derived, and there is one.
+        derived.Add(new DateOnly(2025, 1, 9));
+
+        Assert.Equal(derived, new SortedSet<DateOnly>(EquityBrief.Core.Bars.ExchangeClosures.All));
+
+        // Stated in advance: three years of ten rule closures, less none, plus
+        // the one special closure. New Year's Day on a Saturday, which the
+        // exchange does not move to the Friday before, falls in 2028 and is
+        // outside the table.
+        Assert.Equal(31, derived.Count);
+    }
+
+    // The exchange's full-day closures for one year, from its published rules:
+    // New Year's Day, Martin Luther King Jr. Day, Washington's Birthday, Good
+    // Friday, Memorial Day, Juneteenth, Independence Day, Labor Day, Thanksgiving
+    // and Christmas. A fixed-date holiday on a Sunday is observed on the Monday
+    // after and on a Saturday on the Friday before, except New Year's Day, which
+    // on a Saturday is not observed at all.
+    static IEnumerable<DateOnly> NyseFullClosures(int year)
+    {
+        static DateOnly Observed(DateOnly day) => day.DayOfWeek switch
+        {
+            DayOfWeek.Saturday => day.AddDays(-1),
+            DayOfWeek.Sunday => day.AddDays(1),
+            _ => day,
+        };
+
+        static DateOnly Nth(int year, int month, DayOfWeek weekday, int n)
+        {
+            var first = new DateOnly(year, month, 1);
+            var offset = ((int)weekday - (int)first.DayOfWeek + 7) % 7;
+
+            return first.AddDays(offset + (7 * (n - 1)));
+        }
+
+        static DateOnly Last(int year, int month, DayOfWeek weekday)
+        {
+            var last = new DateOnly(year, month, DateTime.DaysInMonth(year, month));
+            var back = ((int)last.DayOfWeek - (int)weekday + 7) % 7;
+
+            return last.AddDays(-back);
+        }
+
+        // Easter Sunday by the anonymous Gregorian algorithm.
+        static DateOnly Easter(int year)
+        {
+            var a = year % 19;
+            var b = year / 100;
+            var c = year % 100;
+            var d = b / 4;
+            var e = b % 4;
+            var f = (b + 8) / 25;
+            var g = (b - f + 1) / 3;
+            var h = ((19 * a) + b - d - g + 15) % 30;
+            var i = c / 4;
+            var k = c % 4;
+            var l = (32 + (2 * e) + (2 * i) - h - k) % 7;
+            var m = (a + (11 * h) + (22 * l)) / 451;
+            var month = (h + l - (7 * m) + 114) / 31;
+            var day = ((h + l - (7 * m) + 114) % 31) + 1;
+
+            return new DateOnly(year, month, day);
+        }
+
+        var newYear = new DateOnly(year, 1, 1);
+
+        if (newYear.DayOfWeek != DayOfWeek.Saturday)
+        {
+            yield return Observed(newYear);
+        }
+
+        yield return Nth(year, 1, DayOfWeek.Monday, 3);
+        yield return Nth(year, 2, DayOfWeek.Monday, 3);
+        yield return Easter(year).AddDays(-2);
+        yield return Last(year, 5, DayOfWeek.Monday);
+        yield return Observed(new DateOnly(year, 6, 19));
+        yield return Observed(new DateOnly(year, 7, 4));
+        yield return Nth(year, 9, DayOfWeek.Monday, 1);
+        yield return Nth(year, 11, DayOfWeek.Thursday, 4);
+        yield return Observed(new DateOnly(year, 12, 25));
+    }
+
+    [Fact]
+    public async Task TheClosingLineNamesTheClosureTablesEndInsideItsLastQuarter()
+    {
+        // The table ends 2027-12-31 and refuses a weekday past it, and until the
+        // phase 5 sign-off nothing said so before the first weekday of 2028.
+        // owes: The exchange closure table extended before the nights reach its end
+        var end = EquityBrief.Core.Bars.ExchangeClosures.CoveredThrough;
+        var window = EquityBrief.Core.Bars.ExchangeClosures.WarnWithinDays;
+
+        Assert.Empty(EquityBrief.Worker.Nights.NightClose.ClosureTableEnding(end.AddDays(-(window + 1))));
+        Assert.Contains(
+            $"ends 2027-12-31, {window} day(s) after this session",
+            EquityBrief.Worker.Nights.NightClose.ClosureTableEnding(end.AddDays(-window)),
+            StringComparison.Ordinal);
+
+        // On the closing row a person reads, from a night inside the window.
+        using var store = new TemporaryStore().Migrated();
+
+        var night = FixedClock.At(new DateTimeOffset(2027, 10, 15, 23, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new EquityBrief.Worker.Nights.NightClose(night, store.DatabaseFile).RunAsync("GSPC", "night-near-the-end");
+
+        Assert.Contains(
+            "the exchange closure table ends 2027-12-31, 77 day(s) after this session",
+            Assert.Single(RunLog(store, "night-near-the-end")).Detail,
+            StringComparison.Ordinal);
+
+        // And the obligation row states the window the code uses, read from the
+        // row rather than repeated here, so a figure moved in one place fails.
+        var plan = Corpus.Read("docs/BUILD_PLAN.md");
+        var row = plan[plan.IndexOf("| **The exchange closure table extended before the nights reach its end** |", StringComparison.Ordinal)..];
+
+        Assert.Contains($"within {window} days of the last date the table covers", row[..row.IndexOf('\n')], StringComparison.Ordinal);
+    }
+
     static string FetchDetail(TemporaryStore store, string runId)
     {
         using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
@@ -1588,6 +1767,21 @@ sealed class ThroughTonightHistoricalFeed(IHistoricalBarFeed inner) : IHistorica
 
         return bars;
     }
+}
+
+// A bulk feed that has already spent the day's allowance on earlier requests and
+// is never asked for anything tonight.
+sealed class AllowanceSpentBulkFeed(int requests) : IBulkPriceFeed
+{
+    public int Requests { get; } = requests;
+
+    public IReadOnlyList<string> NotSessions => [];
+
+    public Task<IReadOnlyList<BulkBar>> RowsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default) =>
+        throw new InvalidOperationException("a night at its allowance asked the bulk feed for a file");
 }
 
 // The recorded action feed with one split added on a named member, so the action

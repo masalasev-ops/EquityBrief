@@ -122,12 +122,23 @@ public sealed class NightClose : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{computed} name(s) computed, {listed} on the list, {reasons} reason(s) fired, " +
-            $"{stale} stale, {duration}");
+            $"{stale} stale, {duration}" + ClosureTableEnding(clock.SessionDateAt(startedAt)));
 
         await command.ExecuteNonQueryAsync(cancellation);
 
         return new NightCloseOutcome(computed, listed, reasons, stale, duration);
     }
+
+    // The end of the exchange closure table, named on the closing line once a
+    // night is inside the table's last quarter, which is the surface the
+    // obligation to extend it is read on.
+    // owes: The exchange closure table extended before the nights reach its end
+    public static string ClosureTableEnding(DateOnly session) =>
+        EquityBrief.Core.Bars.ExchangeClosures.DaysToEnd(session) is { } left
+            ? "; the exchange closure table ends " +
+                EquityBrief.Core.Bars.ExchangeClosures.CoveredThrough.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
+                $", {left} day(s) after this session, and the next year's closures are to be added before then"
+            : string.Empty;
 
     // The outcomes a night that did not finish writes. A closed vocabulary
     // beside `ok`, for the reason `ok` is one: the run page decides what to draw
