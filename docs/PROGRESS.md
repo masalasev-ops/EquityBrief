@@ -6247,3 +6247,56 @@ Notes:      the matrix was verified from the runs rather than from these entries
             `main` carries no branch protection and no rulesets, so the merge rule is enforced by
             convention. That is a setting on the repository rather than a change to it, and it is
             the operator's to make.
+
+### 5.4 - correction: the second evening could not finish   2026-09-11
+Corrects:   the 5.4 entry above records the shortlist builder as done, and the first night the
+            schedule ran shows it refusing every evening after a store's first. **This entry amends
+            5.4's done condition**, in those words, because the condition as written was satisfied
+            by nights that could not complete.
+Found:      by the phase 5 sign-off reading the run log of the first scheduled night, 2026-09-10,
+            read-only through an immutable connection. It wrote eleven stages, every one `ok`, and
+            stopped after `moves`: no `listings`, `facts`, `changes`, `forward-returns`, `news-pulse`
+            or `close`, and no listing for the session. Task Scheduler recorded `LastResult 0x1`.
+            The refusal was reproduced on `main` by running the shortlist builder over a copy of the
+            store: "The facts file for A is dated 2026-09-09 and the bars end on 9/10/2026".
+            The builder compared tonight's bars with the newest facts row for equality. Section 14
+            writes the listings at step 12 and the facts at step 13, so on every evening after a
+            store's first the newest facts row is last night's and the builder refused. No test
+            could see it: every night the suite ran was a store's first or a re-run of one session,
+            and the replay chain runs the facts before the listings where the night runs them
+            after, so the builder only ever met a facts row for its own session. The by-hand nights
+            at index size were three runs of 2026-09-09 and could not see it either. The guard had
+            no test of its own in either direction.
+            The done condition that would have caught it on the second morning was the week of
+            unattended nights 5.7 amended away. The amendment was right that calendar time cannot
+            be a done condition, and it dropped the half a checkpoint can produce: a night replayed
+            over a store that already holds the one before it.
+Repaired:   the guard refuses only facts newer than the bars, which is the listing written behind a
+            facts file the store holds that it exists to refuse. Older facts are last night's file
+            and equal facts are a re-run. Its message renders the date against the invariant culture
+            rather than printing "9/10/2026". 5.4's done condition reads "on every night, asserted
+            on a night replayed over a store that already holds the night before it rather than
+            only on a store's first".
+Guarded:    a second consecutive night run end to end, which fails on the old guard with the live
+            night's own message and passes on the new one with a listing for every member on both
+            sessions, the second session's facts written and its `close` row present; and the guard
+            in both directions, refusing facts dated after the bars with both dates named and
+            running over facts dated before them.
+            `done-condition-producible` refused the first wording of the amended condition, "two
+            consecutive sessions", as a span of calendar. It is a replay and a checkpoint produces
+            it, so the matcher cannot tell a replayed span from a waited one; the condition was
+            reworded to say it is a replay rather than the matcher being loosened.
+Mutated:    the rule, stated before the sweep: reinstate the defect the new assertions were written
+            for, being the guard comparing for equality. One mutation, one run, in a worktree under
+            the session scratchpad outside the repository, reverted, and the worktree removed. It
+            turned the consecutive night and the guard's own test red and left the rest green. None
+            of the properties added went unmutated.
+Lost:       the listing and the plan for 2026-09-10 were not written. The bars, indicators, swings,
+            profile, levels, ladders and moves for that session were, and stand. Whether the listing
+            can still be written depends on a by-hand night for that session reaching its fetch,
+            which is recorded where the fetch is.
+Tests:      493, from 491. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 238 claims, 166 PASS, 0 FAIL, 72 out of
+            scope, 0 unexamined, 173 placements and verdicts reconciled against a floor of 34, 35
+            checks on the roster and 33 carried, 33 ran and 0 did not. No claim moved. Windows on
+            this machine; the matrix carries macOS and the Linux case-sensitivity job.

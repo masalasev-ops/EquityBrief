@@ -110,9 +110,17 @@ public sealed class ShortlistBuilder : IComponent
         LIMIT 1;
     ";
 
-    // The facts row for tonight, read so the listing and the facts file agree
-    // about which session they are about. A listing written against a different
-    // session from the facts beside it is a row two later readers disagree over.
+    // The newest facts row the name has, read so the listing and the facts file
+    // agree about which session they are about. A listing written behind a facts
+    // file that already exists is a row two later readers disagree over.
+    //
+    // The newest row and not tonight's, and the comparison below is one way for
+    // that reason. Section 14 writes the listings at step 12 and the facts at
+    // step 13, so on every evening after a store's first the newest facts row is
+    // last night's when this runs, and the facts step that follows makes it
+    // tonight's. This read said "tonight's" and compared for equality until the
+    // phase 5 sign-off, which refused every second evening: the first scheduled
+    // night stopped here on 2026-09-10 with eleven clean stages behind it.
     const string FactsSessionFor = @"
         SELECT session_date
         FROM facts
@@ -410,8 +418,14 @@ public sealed class ShortlistBuilder : IComponent
 
         // The facts row is read so the listing and the facts file agree about
         // which session they are about. It is read and not used for a reason,
-        // which is what its declared read is: a listing dated differently from
-        // the facts beside it is a row two later readers disagree over.
+        // which is what its declared read is: a listing dated behind the facts
+        // beside it is a row two later readers disagree over.
+        //
+        // Refused only where the facts are newer than the bars. Older facts are
+        // last night's file, which is what a second evening holds at step 12,
+        // and equal facts are a re-run of the same session. ISO dates sort
+        // lexically in the order they sort chronologically, which SCHEMA states
+        // and which is why this is an ordinal comparison.
         await using (var command = connection.CreateCommand())
         {
             command.CommandText = FactsSessionFor;
@@ -419,12 +433,13 @@ public sealed class ShortlistBuilder : IComponent
 
             if (await command.ExecuteScalarAsync(cancellation) is string factsSession
                 && sessionDate is { } tonight
-                && !string.Equals(factsSession, tonight.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), StringComparison.Ordinal))
+                && string.CompareOrdinal(factsSession, tonight.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)) > 0)
             {
                 throw new InvalidOperationException(
-                    $"The facts file for {ticker} is dated {factsSession} and the bars end on {tonight}. " +
-                    "A listing written against a different session from the facts beside it is a row " +
-                    "two later readers disagree over, so the night stops rather than storing one.");
+                    $"The facts file for {ticker} is dated {factsSession} and the bars end on " +
+                    $"{tonight.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}. A listing written behind " +
+                    "the facts beside it is a row two later readers disagree over, so the night stops " +
+                    "rather than storing one.");
             }
         }
 

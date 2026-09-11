@@ -571,6 +571,53 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task ASecondConsecutiveSessionCompletesEveryStepAndListsEveryMember()
+    {
+        // The night after the first one, which no test ran until the phase 5
+        // sign-off and which the first scheduled night showed cannot finish.
+        //
+        // Every night the suite ran was either a store's first night or a
+        // re-run of the same session, and both hide the one thing a second
+        // evening has: last night's facts file sitting beside tonight's bars.
+        // The shortlist builder compared the two and refused, because section
+        // 14 writes the listings before the facts, so on 2026-09-10 the live
+        // night stopped at step 12 having written eleven clean stages and
+        // nothing at all about the twelfth.
+        using var store = new TemporaryStore();
+
+        var (first, _, firstError) = await NightAsync(store, runId: "night-one");
+
+        Assert.True(first == 0, "The first night did not run clean: " + firstError);
+
+        // The fixture's own day served again as the next session's, so the
+        // second night has a file for the session it asks for. The prices are
+        // the same and that does not matter here: what this asserts is that the
+        // night reaches its last step and lists every member, not what fired.
+        var nextSession = FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8));
+
+        var (second, output, error) = await NightAsync(store, runId: "night-two", bulk: bulk, clock: nextSession);
+
+        Assert.True(second == 0, $"The second consecutive night exited {second}. Error: {error}");
+        Assert.Equal(string.Empty, error);
+        Assert.Contains("  close:", output, StringComparison.Ordinal);
+
+        // The hard rule, over both nights and not only the one a replay holds:
+        // a listings row for every member every night, whether or not a reason
+        // fired.
+        var current = FixtureExpectation.CurrentMembers.Length;
+
+        Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-08';"));
+        Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-09';"));
+
+        // And the stages after the listings ran for the new session rather than
+        // being skipped, which is what a night that stopped at step 12 leaves
+        // missing.
+        Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM facts WHERE session_date = '2026-09-09';"));
+        Assert.Equal(1, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE run_id = 'night-two' AND stage = 'close';"));
+    }
+
+    [Fact]
     public async Task AFailingStepIsNamedAndTheNightExitsNonZero()
     {
         // The done condition, and the reason it is a done condition: a night
@@ -614,6 +661,17 @@ public class NightlyRun
             .Parse(File.ReadAllText(file), Path.GetFileNameWithoutExtension(file))
             .Count(bar => bar.SessionDate >= opens);
 
+    static int Scalar(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        return Convert.ToInt32(command.ExecuteScalar());
+    }
+
     static int Count(TemporaryStore store)
     {
         using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
@@ -646,6 +704,24 @@ sealed class ShortBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, para
         CancellationToken cancellation = default) =>
         [.. (await inner.RowsAsync(exchange, session, cancellation))
             .Where(row => !drop.Contains(row.Ticker, StringComparer.Ordinal))];
+}
+
+// A feed that answers for the session asked for with another session's rows,
+// redated. It stands in for the next evening's file, which the fixture does not
+// hold, so a second consecutive night has something to store.
+sealed class NextSessionBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, DateOnly captured)
+    : EquityBrief.Core.Providers.IBulkPriceFeed
+{
+    public int Requests => inner.Requests;
+
+    public IReadOnlyList<string> NotSessions => inner.NotSessions;
+
+    public async Task<IReadOnlyList<EquityBrief.Core.Providers.BulkBar>> RowsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default) =>
+        [.. (await inner.RowsAsync(exchange, captured, cancellation))
+            .Select(row => row with { Bar = row.Bar with { SessionDate = session } })];
 }
 
 // A feed that never answers, which is what a hung socket looks like from here.

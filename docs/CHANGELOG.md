@@ -25,6 +25,13 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - BUILD_PLAN.md - 5.4's done condition names a night whose store holds the night before
+Corrects: 5.4 read "the listing row count equals the index size on every completed night", which a night that cannot complete satisfies without anything being asserted. The shortlist builder refused every evening after a store's first, so the first scheduled night, 2026-09-10, stopped at step 12 with no listing written. Found by the phase 5 sign-off reading that night's run log and reproducing the refusal on `main` against a copy of the store.
+Was:
+> **Done when** the listing row count equals the index size on every completed night, the fired count in the header matches the reasons,
+Now: "on every night, asserted on a night replayed over a store that already holds the night before it rather than only on a store's first", with a paragraph beneath the condition saying it was amended and why.
+Why: every night the suite ran was a store's first or a re-run of one session, and the replay ran the facts before the listings where the night runs them after, so the population that shows the defect was one nothing held. The condition names that population now.
+
 ### 2026-09-10 - BUILD_PLAN.md - 5.3's done condition amended to what the fixture asserts
 Corrects: 5.3 read "the facts file matches the fixture byte for byte" and the fixture refuses to be that. `facts.json` states in its own words that nothing in it is frozen from a run and that the payload hash is not stated, because a hash of a payload is a function of that payload and stating it would be a regression baseline wearing the clothes of an expectation. So the condition asked for exactly the thing done condition 7 warns against, the checkpoint built the stronger form instead, explained why in its Measured block, and left the condition saying something else with no amendment recorded. Found by the phase 5 sign-off.
 Was:
