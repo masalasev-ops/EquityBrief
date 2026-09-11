@@ -15,7 +15,10 @@ public sealed record ChangeOutcome(
     int RowsWritten,
     int ChangesRecorded,
     int PayloadsEmptied,
-    IReadOnlyList<string>? NotCompared = null);
+    IReadOnlyList<string>? NotCompared = null,
+    // Rows whose comparison could not be made tonight and which kept the list
+    // an earlier run made, rather than having it replaced with null.
+    int KeptEarlierList = 0);
 
 // The change detector. Compares tonight's facts against the last stored ones for
 // each name and writes only what changed, on its own column of the same row.
@@ -48,13 +51,17 @@ public sealed class ChangeDetector : IComponent
     // row is the newest strictly older session rather than yesterday, because a
     // name whose night did not run has no row for yesterday and the comparison
     // is still against the last facts anybody wrote.
+    //
+    // The list already stored on tonight's row comes with it, so a comparison
+    // that cannot be made tonight never replaces one an earlier run made.
     const string PairsToCompare = @"
         SELECT f.ticker,
                f.session_date,
                f.payload,
                (SELECT p.payload FROM facts p
                 WHERE p.ticker = f.ticker AND p.session_date < f.session_date
-                ORDER BY p.session_date DESC LIMIT 1)
+                ORDER BY p.session_date DESC LIMIT 1),
+               f.material_changes
         FROM facts f
         WHERE f.session_date = (SELECT MAX(s.session_date) FROM facts s WHERE s.ticker = f.ticker)
         ORDER BY f.ticker;
@@ -119,7 +126,7 @@ public sealed class ChangeDetector : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
-        var pairs = new List<(string Ticker, string SessionDate, string Payload, string? Previous)>();
+        var pairs = new List<(string Ticker, string SessionDate, string Payload, string? Previous, string? Stored)>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -133,12 +140,14 @@ public sealed class ChangeDetector : IComponent
                     reader.GetString(0),
                     reader.GetString(1),
                     reader.GetString(2),
-                    reader.IsDBNull(3) ? null : reader.GetString(3)));
+                    reader.IsDBNull(3) ? null : reader.GetString(3),
+                    reader.IsDBNull(4) ? null : reader.GetString(4)));
             }
         }
 
         var written = 0;
         var changes = 0;
+        var kept = 0;
 
         // One transaction around the whole loop rather than one per row, for the
         // reason `IndicatorEngine` batches its points: every row that commits on
@@ -156,6 +165,24 @@ public sealed class ChangeDetector : IComponent
             // fact twice stopped this stage for every name, on a framework
             // message about a dictionary key.
             var comparable = FactsFile.TryChanged(pair.Previous, pair.Payload, out var changed, out var reason);
+
+            // A list an earlier run made stands where the file it was made
+            // against has since been emptied. The retention empties a past
+            // night's payload at the end of every run, so a second run of the
+            // same night finds the file before tonight's blank and, until the
+            // phase 5 sign-off, replaced a list it had computed an hour earlier
+            // with null. The stored list was made against that file while it was
+            // whole, and tonight's file is the same one unless the assembler
+            // replaced it, in which case the row arrives here with no list at
+            // all. Only the emptied case: a previous file that names a fact
+            // twice was never comparable, so no list can have been made
+            // against it.
+            if (!comparable && pair.Previous is { Length: 0 } && pair.Stored is not null)
+            {
+                kept++;
+
+                continue;
+            }
 
             await using var command = connection.CreateCommand();
 
@@ -189,9 +216,9 @@ public sealed class ChangeDetector : IComponent
 
         var emptied = await EmptyAsync(connection, cancellation);
 
-        await RecordAsync(connection, runId, startedAt, pairs.Count, written, changes, emptied, notCompared, cancellation);
+        await RecordAsync(connection, runId, startedAt, pairs.Count, written, changes, emptied, notCompared, kept, cancellation);
 
-        return new ChangeOutcome(pairs.Count, written, changes, emptied, notCompared);
+        return new ChangeOutcome(pairs.Count, written, changes, emptied, notCompared, kept);
     }
 
     // The newest facts session anywhere, read from the store so a component run
@@ -224,6 +251,7 @@ public sealed class ChangeDetector : IComponent
         int changes,
         int emptied,
         IReadOnlyList<string> notCompared,
+        int kept,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -241,7 +269,7 @@ public sealed class ChangeDetector : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{examined} row(s) examined, {written} written, {changes} material change(s), {emptied} payload(s) emptied, " +
-            $"{notCompared.Count} not compared" +
+            $"{kept} kept the list an earlier run made, {notCompared.Count} not compared" +
             (notCompared.Count == 0 ? string.Empty : ": " + string.Join("; ", notCompared.Take(5))));
 
         await command.ExecuteNonQueryAsync(cancellation);

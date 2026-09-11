@@ -29,8 +29,26 @@ public static class FactsFile
     // Written with no indentation and with the facts in name order, so two runs
     // over the same store produce the same bytes and a diff is a difference in
     // the figures rather than in the writing.
-    public static string Serialise(string ticker, DateOnly sessionDate, IReadOnlyList<Fact> facts) =>
-        JsonSerializer.Serialize(new
+    //
+    // A name given twice is refused here, which is the one place a file is
+    // written from, so no caller can produce one. Until the phase 5 sign-off the
+    // rule lived in the reader alone and a file naming a fact twice was written,
+    // stored and cited before anything noticed.
+    // see: Facts are declared once and cited by descriptive name
+    public static string Serialise(string ticker, DateOnly sessionDate, IReadOnlyList<Fact> facts)
+    {
+        var repeated = facts
+            .GroupBy(fact => fact.Name, StringComparer.Ordinal)
+            .FirstOrDefault(group => group.Count() > 1);
+
+        if (repeated is not null)
+        {
+            throw new ArgumentException(
+                $"The facts file for {ticker} names '{repeated.Key}' {repeated.Count()} times, and a fact is declared once.",
+                nameof(facts));
+        }
+
+        return JsonSerializer.Serialize(new
         {
             ticker,
             sessionDate = sessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
@@ -38,6 +56,7 @@ public static class FactsFile
                 .OrderBy(fact => fact.Name, StringComparer.Ordinal)
                 .Select(fact => new { name = fact.Name, value = fact.Value, source = fact.Source }),
         });
+    }
 
     // The hash of the payload, which is what the staleness judge reads to know
     // whether tonight's facts differ from the last night's without holding the

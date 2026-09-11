@@ -6,7 +6,10 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Facts;
 
-public sealed record FactsOutcome(int NamesExamined, int RowsWritten, int FactsWritten);
+// `RowsWritten` is the files the insert wrote, of which `Replaced` took the place
+// of a stored file for the same night that differed; `Unchanged` is the files the
+// store already held exactly, which nothing was written for.
+public sealed record FactsOutcome(int NamesExamined, int RowsWritten, int FactsWritten, int Replaced = 0, int Unchanged = 0);
 
 // The facts assembler. Writes tonight's facts file for each name, with every
 // number the computed sections may use, the source of each, and the hash.
@@ -36,7 +39,9 @@ public sealed class FactsAssembler : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Move, Touch.Read),
-            new StoreTouch(Store.Facts, Touch.Insert),
+            // Delete as well as Insert: a stored file for tonight that differs
+            // from what the store now computes is removed and written again.
+            new StoreTouch(Store.Facts, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -107,21 +112,39 @@ public sealed class FactsAssembler : IComponent
         LIMIT 1;
     ";
 
-    // Insert, and nothing else. `SCHEMA.md` gives this table's Insert to this
-    // component and its Update to the change detector, and a table may never
-    // have two owners for one operation, so an upsert here would be an update by
-    // another name. `writer-ownership` reads the statement rather than the
-    // declaration and said so on the first run of this checkpoint.
-    //
-    // A night run twice conflicts on every row it already wrote and the conflict
-    // is ignored rather than replacing the row, which keeps the night idempotent
-    // in what it records about the market and keeps the change list beside it
-    // untouched. That is the same shape `news_pulse` takes and it is what makes
-    // the per-operation split a property rather than a coincidence of ordering.
+    // Insert, with the conflict ignored. `SCHEMA.md` gives this table's Insert
+    // to this component and its Update to the change detector, and a table may
+    // never have two owners for one operation, so an upsert here would be an
+    // update by another name. `writer-ownership` reads the statement rather than
+    // the declaration and said so on the first run of this checkpoint.
     const string Insert = @"
         INSERT INTO facts (ticker, session_date, payload, payload_hash)
         VALUES ($ticker, $session_date, $payload, $payload_hash)
         ON CONFLICT (ticker, session_date) DO NOTHING;
+    ";
+
+    // A stored file for the same night that differs from the one the store now
+    // computes, removed so the insert above writes tonight's in its place.
+    //
+    // Until the phase 5 sign-off the conflict was all there was, so the first
+    // file written for a night stood whatever a second run computed: the
+    // attempt of 2026-09-10 that stopped at the change detector had written
+    // every name's file from band sets a refetch had doubled, the run that
+    // completed after the band repair computed clean files, and every one was
+    // dropped on the conflict while the run log counted it written. NVDA's file
+    // for that night still named its immediate support twice. A file is what
+    // every number in a report is checked against, so it has to be what the
+    // store computes rather than what the first attempt computed.
+    //
+    // Keyed on the hash, so a night run twice over an unchanged store deletes
+    // nothing and keeps the change list beside its file; a replaced file starts
+    // with none, and the change detector, which runs next, writes it again. A
+    // delete and an insert rather than an update, because the update is the
+    // change detector's and the delete was nobody's.
+    // see: A re-run replaces a night's facts file where the store now computes a different one
+    const string ReplaceDiffering = @"
+        DELETE FROM facts
+        WHERE ticker = $ticker AND session_date = $session_date AND payload_hash != $payload_hash;
     ";
 
     const string AppendRun = @"
@@ -152,6 +175,8 @@ public sealed class FactsAssembler : IComponent
         var tickers = await TickersAsync(connection, cancellation);
         var rows = 0;
         var facts = 0;
+        var replaced = 0;
+        var unchanged = 0;
 
         // One transaction around the whole loop rather than one per row. A row
         // that commits on its own costs a disk sync, and a sync costs the same
@@ -187,27 +212,51 @@ public sealed class FactsAssembler : IComponent
             }
 
             var payload = FactsFile.Serialise(ticker, assembled.SessionDate, assembled.Facts);
+            var session = assembled.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var hash = FactsFile.Hash(payload);
+
+            await using (var replace = connection.CreateCommand())
+            {
+                replace.Transaction = (SqliteTransaction)transaction;
+                replace.CommandText = ReplaceDiffering;
+                replace.Parameters.AddWithValue("$ticker", ticker);
+                replace.Parameters.AddWithValue("$session_date", session);
+                replace.Parameters.AddWithValue("$payload_hash", hash);
+
+                replaced += await replace.ExecuteNonQueryAsync(cancellation);
+            }
 
             await using var command = connection.CreateCommand();
 
             command.Transaction = (SqliteTransaction)transaction;
             command.CommandText = Insert;
             command.Parameters.AddWithValue("$ticker", ticker);
-            command.Parameters.AddWithValue("$session_date", assembled.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$session_date", session);
             command.Parameters.AddWithValue("$payload", payload);
-            command.Parameters.AddWithValue("$payload_hash", FactsFile.Hash(payload));
+            command.Parameters.AddWithValue("$payload_hash", hash);
 
-            await command.ExecuteNonQueryAsync(cancellation);
-
-            rows++;
-            facts += assembled.Facts.Count;
+            // What the statement did rather than what was asked of it. Until the
+            // phase 5 sign-off every name counted as written, and a re-run whose
+            // every insert was dropped on the conflict said it had written the
+            // lot.
+            if (await command.ExecuteNonQueryAsync(cancellation) == 1)
+            {
+                rows++;
+                facts += assembled.Facts.Count;
+            }
+            else
+            {
+                unchanged++;
+            }
         }
 
         await transaction.CommitAsync(cancellation);
 
-        await RecordAsync(connection, runId, startedAt, tickers.Count, rows, facts, cancellation);
+        var outcome = new FactsOutcome(tickers.Count, rows, facts, replaced, unchanged);
 
-        return new FactsOutcome(tickers.Count, rows, facts);
+        await RecordAsync(connection, runId, startedAt, outcome, cancellation);
+
+        return outcome;
     }
 
     static async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, CancellationToken cancellation)
@@ -337,9 +386,7 @@ public sealed class FactsAssembler : IComponent
         SqliteConnection connection,
         string runId,
         DateTimeOffset startedAt,
-        int names,
-        int rows,
-        int facts,
+        FactsOutcome outcome,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -350,8 +397,11 @@ public sealed class FactsAssembler : IComponent
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", "ok");
-        command.Parameters.AddWithValue("$rows_written", rows);
-        command.Parameters.AddWithValue("$detail", $"{names} name(s), {rows} file(s), {facts} fact(s)");
+        command.Parameters.AddWithValue("$rows_written", outcome.RowsWritten);
+        command.Parameters.AddWithValue(
+            "$detail",
+            $"{outcome.NamesExamined} name(s), {outcome.RowsWritten} file(s) written, {outcome.Replaced} of them " +
+            $"replacing a stored file that differed, {outcome.Unchanged} unchanged, {outcome.FactsWritten} fact(s)");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

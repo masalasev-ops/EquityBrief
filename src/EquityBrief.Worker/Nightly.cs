@@ -274,9 +274,10 @@ public static class Nightly
                 var changes = await new ChangeDetector(clock, store.DatabaseFile)
                     .RunAsync(runId, night.Token);
 
-                return $"{assembled.RowsWritten} file(s) for {assembled.NamesExamined} name(s), " +
+                return $"{assembled.RowsWritten} file(s) written for {assembled.NamesExamined} name(s), " +
+                    $"{assembled.Replaced} replacing a stored file that differed, {assembled.Unchanged} unchanged, " +
                     $"{assembled.FactsWritten} fact(s), {changes.ChangesRecorded} material change(s), " +
-                    $"{changes.PayloadsEmptied} payload(s) emptied";
+                    $"{(changes.NotCompared ?? []).Count} not compared, {changes.PayloadsEmptied} payload(s) emptied";
             }, [FactsAssembler.Stage, ChangeDetector.Stage]),
             // Section 14's step 14. Once per night rather than per name,
             // because the base rate is a figure over the whole population and a

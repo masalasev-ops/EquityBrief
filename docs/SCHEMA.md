@@ -43,7 +43,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `move` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
-| `facts` | FactsAssembler | ChangeDetector | none |
+| `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
 | `research_section` | ResearchRunner, ProseWriter | ClaimChecker | none |
@@ -69,7 +69,7 @@ Each writer drops the rows that fall out of the window on the night they fall ou
 
 The `DELETE` lives in each component's own file rather than in a shared helper, because a write is attributed to the file it appears in: a helper holding the statement would be a file that deletes and is declared nowhere.
 
-**`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below.
+**`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below. The delete is the assembler's, and it removes one row only: tonight's file for a name, where it differs from the one the store now computes, so the insert writes the new one in its place (see: A re-run replaces a night's facts file where the store now computes a different one).
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
 
@@ -294,7 +294,7 @@ Grain: one row per ticker per night.
 
 Primary key: `ticker`, `session_date`.
 
-Declared column sets, stated per operation because that is the grain the rule is written at: FactsAssembler inserts `payload` and `payload_hash`; ChangeDetector updates `material_changes`, and updates `payload` to empty under the retention below. No column is written by two components in one operation, which is what permits the split.
+Declared column sets, stated per operation because that is the grain the rule is written at: FactsAssembler inserts `payload` and `payload_hash`, and deletes the row it is about to insert again where the stored hash differs from tonight's; ChangeDetector updates `material_changes`, and updates `payload` to empty under the retention below. No column is written by two components in one operation, which is what permits the split. A replaced row starts with no change list, and the detector, which runs next, writes it again; a list stands on a row whose file is unchanged, and one the detector made is kept where the file it was made against has since been emptied by the retention.
 
 The column sets were declared disjoint until the phase 5 sign-off, and the retention 5.4 added made that false in the sentence a reader is most likely to trust: `ChangeDetector` runs `UPDATE facts SET payload = ''`, so `payload` is the assembler's on insert and the detector's on update. The retention paragraph below described exactly that and the declaration thirteen lines above went on saying the sets do not overlap, which is one section holding two statements of one fact.
 
