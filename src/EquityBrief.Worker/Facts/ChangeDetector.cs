@@ -54,6 +54,13 @@ public sealed class ChangeDetector : IComponent
     //
     // The list already stored on tonight's row comes with it, so a comparison
     // that cannot be made tonight never replaces one an earlier run made.
+    //
+    // Tonight's rows only, being the newest session any file holds, rather than
+    // each name's newest row. Until the phase 5 sign-off a name with no file
+    // tonight had its own last file compared again every night: once the
+    // retention had emptied that file, its list was replaced with null beside a
+    // whole previous file, which is the keep rule's mirror and not a comparison
+    // anybody asked for.
     const string PairsToCompare = @"
         SELECT f.ticker,
                f.session_date,
@@ -63,7 +70,7 @@ public sealed class ChangeDetector : IComponent
                 ORDER BY p.session_date DESC LIMIT 1),
                f.material_changes
         FROM facts f
-        WHERE f.session_date = (SELECT MAX(s.session_date) FROM facts s WHERE s.ticker = f.ticker)
+        WHERE f.session_date = (SELECT MAX(s.session_date) FROM facts s)
         ORDER BY f.ticker;
     ";
 

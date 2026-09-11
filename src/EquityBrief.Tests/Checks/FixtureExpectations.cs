@@ -3775,6 +3775,38 @@ public class FixtureExpectations
     }
 
     [Fact]
+    public async Task AMemberWithNoBarForTheNightGetsTheNightsLadderRowAndNoneOnItsOwnLastBar()
+    {
+        // The shape the listings lost at the correction before this one and the
+        // ladder kept: EQR and PSTG held one ladder row each, dated by their own
+        // last bar, and none for any night after. Found by the fourth phase 5
+        // sign-off review.
+        using var store = await WithLadders();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var name = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).First();
+        var night = Query(store, "SELECT MAX(session_date) FROM bar;").Single();
+        var before = Query(store, $"SELECT MAX(session_date) FROM bar WHERE ticker = '{name}' AND session_date < '{night}';").Single();
+
+        Insert(store, $"DELETE FROM bar WHERE ticker = '{name}' AND session_date = '{night}';");
+        Insert(store, $"DELETE FROM ladder WHERE ticker = '{name}';");
+
+        await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "ladders-stale");
+
+        Assert.Equal([night], Query(store, $"SELECT as_of FROM ladder WHERE ticker = '{name}';"));
+        Assert.Equal([TrendState.NotClassified], Query(store, $"SELECT trend_state FROM ladder WHERE ticker = '{name}';"));
+        Assert.Contains(
+            $"no bar for this session; the last session stored for the name is {before}",
+            Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}';").Single(),
+            StringComparison.Ordinal);
+
+        // Every member has a row on the night.
+        Assert.Equal(
+            [.. FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal)],
+            Query(store, $"SELECT ticker FROM ladder WHERE as_of = '{night}' ORDER BY ticker;"));
+    }
+
+    [Fact]
     public async Task ALadderRowWithNoStoredBarIsDatedByTheSessionAndNotByTheUtcDate()
     {
         using var store = await WithLevels();
@@ -4338,6 +4370,102 @@ public class FixtureExpectations
         await new ChangeDetector(clock, store.DatabaseFile).RunAsync("rerun-changes-moved");
 
         Assert.Equal(["[]"], Query(store, $"SELECT material_changes FROM facts WHERE ticker = '{name}';"));
+    }
+
+    [Fact]
+    public async Task ANameWithNoBarTonightGetsNoFileAndItsPastFileIsLeftAsThatNightWroteIt()
+    {
+        // The assembler read every name with any bar and keyed the file on the
+        // name's own last bar, so for a name the day's file carried nothing for
+        // it rewrote a past night's file whenever the store had moved under it.
+        // Found by the fourth phase 5 sign-off review, live for EQR and PSTG.
+        using var store = await WithFacts();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var name = FixtureExpectation.Names[0];
+        var tonight = Query(store, "SELECT MAX(session_date) FROM bar;").Single();
+        var before = Query(store, $"SELECT MAX(session_date) FROM bar WHERE ticker = '{name}' AND session_date < '{tonight}';").Single();
+
+        // The name's bar for tonight goes, as a name the file carried nothing for
+        // has none, and its file for the night before is one that night wrote,
+        // which tonight's arithmetic would not reproduce.
+        Insert(store, $"DELETE FROM bar WHERE ticker = '{name}' AND session_date = '{tonight}';");
+        Insert(store, $"DELETE FROM facts WHERE ticker = '{name}';");
+        Insert(
+            store,
+            "INSERT INTO facts (ticker, session_date, payload, payload_hash, material_changes) VALUES " +
+            $"('{name}', '{before}', '{{\"ticker\":\"{name}\",\"sessionDate\":\"{before}\",\"facts\":[]}}', 'that-night', '[\"close\"]');");
+
+        var outcome = await new FactsAssembler(clock, store.DatabaseFile).RunAsync("facts-stale-name");
+
+        // No file for it tonight, and the one before is exactly as it was.
+        Assert.Empty(Query(store, $"SELECT session_date FROM facts WHERE ticker = '{name}' AND session_date = '{tonight}';"));
+        Assert.Equal(
+            [$"{{\"ticker\":\"{name}\",\"sessionDate\":\"{before}\",\"facts\":[]}}|that-night|[\"close\"]"],
+            Query(store, $"SELECT payload || '|' || payload_hash || '|' || material_changes FROM facts WHERE ticker = '{name}';"));
+
+        // The population is the names with a bar tonight, and nothing was
+        // replaced among them on a run over an unchanged store.
+        Assert.Equal(FixtureExpectation.Names.Length - 1, outcome.NamesExamined);
+        Assert.Equal(0, outcome.Replaced);
+    }
+
+    [Fact]
+    public async Task AReplacementTakesTonightsFileAndNoOtherNightsOfTheSameName()
+    {
+        // The delete is keyed on the night as well as the name. Without the
+        // night it removes every file the name ever had whose hash differs from
+        // tonight's, which is all of them, and nothing asserted that it could
+        // not: the fourth phase 5 sign-off review's mutation removing the night
+        // from the statement left the suite green.
+        using var store = await WithFacts();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var name = FixtureExpectation.Names[0];
+
+        Insert(
+            store,
+            "INSERT INTO facts (ticker, session_date, payload, payload_hash, material_changes) VALUES " +
+            $"('{name}', '2000-01-03', '', 'an-earlier-night', '[]');");
+        Insert(
+            store,
+            $"UPDATE bar SET close = '1.2345' WHERE ticker = '{name}' " +
+            $"AND session_date = (SELECT MAX(session_date) FROM bar WHERE ticker = '{name}');");
+
+        var outcome = await new FactsAssembler(clock, store.DatabaseFile).RunAsync("facts-replaced-one-night");
+
+        Assert.Equal(1, outcome.Replaced);
+        Assert.Equal(["an-earlier-night"], Query(store, $"SELECT payload_hash FROM facts WHERE ticker = '{name}' AND session_date = '2000-01-03';"));
+    }
+
+    [Fact]
+    public async Task TheChangeDetectorComparesTonightsFilesAndLeavesANameWithNoneAlone()
+    {
+        // A name with no file tonight had its own last file compared every night.
+        // Once the retention had emptied that file, the comparison against the
+        // whole file before it could not be made, and the list the name's own
+        // night had made was replaced with null. Found by the fourth phase 5
+        // sign-off review, as the mirror of the keep rule.
+        using var store = await WithFacts();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var name = FixtureExpectation.Names[0];
+        var payload = Query(store, $"SELECT payload FROM facts WHERE ticker = '{name}';").Single();
+
+        // The name's files are two past nights: the later one emptied by the
+        // retention with the list its night made, the earlier one whole.
+        Insert(store, $"DELETE FROM facts WHERE ticker = '{name}';");
+        Insert(
+            store,
+            "INSERT INTO facts (ticker, session_date, payload, payload_hash, material_changes) VALUES " +
+            $"('{name}', '2000-01-03', '{payload.Replace("'", "''", StringComparison.Ordinal)}', 'whole', '[]'), " +
+            $"('{name}', '2000-01-04', '', 'emptied', '[\"close\"]');");
+
+        var outcome = await new ChangeDetector(clock, store.DatabaseFile).RunAsync("changes-no-file-tonight");
+
+        Assert.Equal(["[\"close\"]"], Query(store, $"SELECT material_changes FROM facts WHERE ticker = '{name}' AND session_date = '2000-01-04';"));
+        Assert.Equal(FixtureExpectation.Names.Length - 1, outcome.RowsExamined);
+        Assert.Empty(outcome.NotCompared ?? []);
     }
 
     [Fact]

@@ -6995,3 +6995,49 @@ Tests:      536, from 531. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             scope, 0 unexamined, 178 placements reconciled. No claim moved. Carried obligations 55
             rows, the new one operating. Windows on this machine; the matrix carries macOS and the
             Linux case-sensitivity job.
+
+### 5.7 - correction: the facts file rewrote past nights, the pages read today's index, and a stale member kept an old ladder row   2026-09-11
+Corrects:   the correction above titled "a re-run could not replace a facts file, and said it had",
+            whose replacement reached past nights; the correction above titled "an announced index
+            change, a joiner's backfill and a day with no session", whose read surface bound the index
+            to the day a page is opened; and the correction above that listed a stale member on the
+            night, which left the ladder with the same shape. Three findings of the fourth phase 5
+            sign-off review, the ones that put a silently wrong result into the store or onto a page.
+            The rest of that review is carried at 6.0 in four named rows, by the stopping rule.
+Found:      by the fourth phase 5 sign-off review. The facts assembler read every name with any bar
+            and keyed the file on the name's own last bar, so for EQR, whose file last carried it on
+            2026-08-17, and PSTG, on 2026-04-16, each night recomputed a past night's file over windows
+            the store had moved and replaced it where the hash differed, returning an emptied payload
+            whole and resetting its list. The by-hand night of 2026-09-11 for 2026-09-10 left both
+            files' hashes unchanged against the operator's backup; the next night moves the retention
+            boundary. The change detector compared each name's newest file, so a name with no file
+            tonight had its emptied last file compared every night and its list replaced with null. The
+            read surface's universe and stale names bound membership to today, so every past-night page
+            read today's index and, from 2026-09-21 before that night, 2026-09-18's list would have
+            drawn the first-ranked leaver's plan at a close of zero. And the ladder builder dated a
+            stale member's row by its own last bar, so EQR and PSTG held one ladder row each.
+Repaired:   the assembler writes files only for the names holding a bar on the newest session the
+            store has, so a past night's file is left as that night wrote it. The change detector
+            compares tonight's files only. The universe and stale names read the index on the night
+            the page shows, and the name, tonight, universe and run routes pass that night. The ladder
+            builder writes a stale member's row on the night, not classified, with a plan naming its
+            last session.
+Guarded:    a name with no bar tonight gets no file and its past file keeps its payload, hash and list;
+            a replacement takes tonight's file and leaves an earlier night's; a name with no file
+            tonight keeps the list its own night made beside an emptied file; a leaver after the night
+            shown is in that night's universe with its close and a later joiner is not, where today's
+            read swaps them; and a stale member's ladder row is the night's, not classified, with every
+            member holding a row on the night.
+Mutated:    the rule, stated before the sweep: reinstate each defect, being the assembler reading
+            every name with a bar, the replacement keyed on the name alone, which is the fourth
+            review's surviving mutation, the detector reading each name's newest file, the read
+            surface bound to today, and the ladder dating a stale member by its own last bar. Five
+            mutations, five runs, in a worktree under the session scratchpad outside the repository,
+            reverted, and the worktree removed. Each turned its own test red and left the other 540
+            green, the second being the replacement test this entry adds for the mutation the fourth
+            review found surviving. None of the properties added went unmutated.
+Tests:      541, from 536. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 245 claims, 171 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined, 178 placements reconciled. No claim moved. Carried obligations 59
+            rows, four new at 6.0 and cited back by 6.0's text. Windows on this machine; the matrix
+            carries macOS and the Linux case-sensitivity job.
