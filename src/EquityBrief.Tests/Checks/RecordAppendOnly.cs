@@ -127,6 +127,105 @@ public class RecordAppendOnly
             $"\"{Reverted}\", reverted at 11708c9 at the operator's direction.");
     }
 
+    // The other record held as a high-water mark, over decision names.
+    //
+    // A decision is changed only by another decision, which names what it
+    // supersedes and moves the old entry to "Previously decided" with its
+    // reasoning intact. 5.0 superseded "News arrives in one dated feed request
+    // and is attributed to names locally" and deleted it instead, and nothing
+    // noticed: `no-superseded-citation` asks whether a citation resolves to a
+    // superseded entry, which a deleted one never can. The phase 5 sign-off
+    // restored it, and from there every name DECISIONS.md has ever held is in
+    // it, so this starts from the history as it stands with no exemption.
+    const string Decisions = "docs/DECISIONS.md";
+
+    internal static IReadOnlyList<string> DecisionNamesIn(string record) =>
+        Regex.Matches(record, @"^\*\*(.+?)\*\*", RegexOptions.Multiline)
+            .Select(match => match.Groups[1].Value.Trim())
+            .ToArray();
+
+    [Fact]
+    public void EveryDecisionNameEverWrittenIsStillThere()
+    {
+        var git = Shell.Locate("git");
+
+        if (git is null)
+        {
+            Assert.Fail("No git on PATH. This check reads the history, so it cannot run without one.");
+        }
+
+        var log = Shell.Run(git, ["log", "--format=%H", "--reverse", "--", Decisions]);
+
+        Assert.Equal(0, log.ExitCode);
+
+        var commits = log.StandardOutput
+            .Split((char)10, StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Trim())
+            .ToArray();
+
+        Assert.True(
+            commits.Length >= 5,
+            $"Read {commits.Length} commits touching {Decisions}, expected at least 5. A shallow " +
+            "clone returns one, and a walk that cannot see the history must fail rather than assert " +
+            "over what it can see.");
+
+        var everWritten = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var commit in commits)
+        {
+            var show = Shell.Run(git, ["show", $"{commit}:{Decisions}"]);
+
+            Assert.True(
+                show.ExitCode == 0,
+                $"git show exited {show.ExitCode} for {commit}:{Decisions}. {show.StandardError}");
+
+            foreach (var name in DecisionNamesIn(show.StandardOutput))
+            {
+                everWritten.TryAdd(name, commit);
+            }
+        }
+
+        // The floor carries the property's population: a walk that read no
+        // names would pass on nought against nought. 118 when it was set.
+        Assert.True(everWritten.Count >= 90, $"The decision record's high-water mark is {everWritten.Count} names, expected at least 90.");
+
+        var now = DecisionNamesIn(Corpus.Read(Decisions));
+
+        var lost = everWritten
+            .Where(entry => !now.Contains(entry.Key, StringComparer.Ordinal))
+            .Select(entry => $"\"{entry.Key}\", written at {entry.Value}")
+            .ToArray();
+
+        Assert.True(
+            lost.Length == 0,
+            $"{Decisions} has lost {lost.Length} decision name(s): {string.Join("; ", lost)}. A superseded " +
+            "decision moves to \"Previously decided\" with its reasoning, and is never deleted.");
+    }
+
+    [Fact]
+    public void TheDecisionReaderFindsANameThatWent()
+    {
+        const string before =
+            "**Bars are never interpolated** A gap stops computation.\n\n" +
+            "**News arrives in one dated feed request** One request.\n";
+
+        const string moved =
+            "**Bars are never interpolated** A gap stops computation.\n\n## Previously decided\n\n" +
+            "**News arrives in one dated feed request** Superseded.\n";
+
+        const string deleted = "**Bars are never interpolated** A gap stops computation.\n";
+
+        Assert.Equal(["Bars are never interpolated", "News arrives in one dated feed request"], DecisionNamesIn(before));
+
+        // Moved to "Previously decided" keeps the name, which is what the rule
+        // asks; deleted loses it, which is what 5.0 did.
+        Assert.Equal(DecisionNamesIn(before), DecisionNamesIn(moved));
+        Assert.DoesNotContain("News arrives in one dated feed request", DecisionNamesIn(deleted));
+
+        // Bold in the middle of a line is emphasis, not a name.
+        Assert.Empty(DecisionNamesIn("A rule that is **not** a decision name.\n"));
+    }
+
     [Fact]
     public void TheCheckReportsARecordThatLostAnEntry()
     {

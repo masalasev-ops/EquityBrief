@@ -25,6 +25,13 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - CLAUDE.md - record-append-only holds DECISIONS.md's names as well
+Corrects: 5.0 superseded "News arrives in one dated feed request and is attributed to names locally" and deleted it rather than moving it to "Previously decided", and no check could notice: `no-superseded-citation` asks whether a citation resolves to a superseded entry, which a deleted one never does. Found by the phase 5 sign-off comparing 5.0's record, which says it superseded the entry, with "Previously decided", which did not hold it.
+Was:
+> ... so the guard's window is visible rather than the removal sitting outside it |
+Now: the same row, with every decision name ever present in `DECISIONS.md` held as a high-water mark read from the history.
+Why: `DECISIONS.md` is a record, and a record's names are the unit a correction keys on. The entry is restored, so the check starts from the history as it stands with no exemption.
+
 ### 2026-09-11 - CLAUDE.md - clock-usage and price-storage-form rows state the halves the first repair missed
 Corrects: the phase 5 sign-off's first repair widened both checks and both still missed the shape they were widened for. `clock-usage` read `ToString` with no provider and not an interpolation hole carrying a date format, which is how every provider request URL in the tree rendered its dates. `price-storage-form` read crossing signatures, and putting any of the three inline casts it was widened for back into its method left the whole suite green. Found by the phase 5 sign-off's independent review of that repair, the second by a mutation that survived.
 Was:

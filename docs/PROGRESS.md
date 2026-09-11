@@ -6497,3 +6497,35 @@ Tests:      503, unchanged: the test that held the undercount is renamed and wid
             exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of scope, 0
             unexamined. No claim moved. Windows on this machine; the matrix carries macOS and the
             Linux case-sensitivity job.
+
+### 5.0 - correction: the superseded news decision, deleted rather than moved   2026-09-11
+Corrects:   the 5.0 planning entry above, which records "News is one dated query, paged to cover the
+            day, and attributed to names locally" as superseding the decision whose name said one
+            request. The superseded entry was deleted in that commit, 234e5a1, and "Previously
+            decided" never held it, which is the one thing `CLAUDE.md` says a supersession does in
+            the same commit. Its text survived only in a `CHANGELOG.md` quotation cut short with an
+            ellipsis.
+Found:      by the phase 5 sign-off, comparing what the 5.0 entry says it superseded with what
+            "Previously decided" holds. 5.0's other supersession in the same pass, the stop rule,
+            was moved correctly. No check could notice: `no-superseded-citation` asks whether a
+            citation resolves to a superseded entry, and a deleted one resolves to nothing, so it is
+            invisible to the check that exists for superseded entries.
+Repaired:   the entry is restored under "Previously decided" with its reasoning as it stood,
+            recovered from the revision before 234e5a1, with the date, the decision that replaced
+            it, what was superseded and what stands, and a sentence saying it was deleted and
+            restored. `record-append-only` now holds every decision name `DECISIONS.md` has ever
+            carried as a high-water mark read from the history, the same way it holds `PROGRESS.md`'s
+            headings. 118 names over 14 revisions, none lost once this one is back, so the check
+            carries no exemption.
+Guarded:    the walk over the history, and the reader's proof that a moved name stays, a deleted
+            name goes, and bold inside a line is not a name.
+Mutated:    the rule, stated before the sweep: reinstate the defect, being the superseded entry
+            deleted rather than moved. One mutation, one run, in a worktree under the session
+            scratchpad outside the repository: the restoration committed there and a second commit
+            deleting the entry again, since the check reads the history rather than the file. It
+            turned the new check red naming the entry and the commit that first wrote it. The
+            worktree and its two commits were removed. None of the properties added went unmutated.
+Tests:      505, from 503. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of
+            scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
+            the Linux case-sensitivity job.
