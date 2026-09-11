@@ -186,10 +186,33 @@ public sealed class ShortlistBuilder : IComponent
         // over 503 did.
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
+        // The newest session any name holds, which is the night the list is about.
+        // Read off the store rather than the clock, for the reason the close
+        // stage and the run page's stale names read it there: a replay run on a
+        // weekend has a clock a session ahead of every bar, and every name would
+        // read as stale against it.
+        var newest = await NewestSessionAsync(connection, cancellation);
+
         foreach (var ticker in members)
         {
             var (inputs, sessionDate, plan) = await InputsAsync(connection, ticker, cancellation);
-            var outcomes = ShortlistSeries.For(inputs);
+
+            // A member whose newest bar is older than the newest session any name
+            // holds, being a name the day's file carried nothing for. It is listed
+            // on that night as a member with no bar for it is, with nothing fired:
+            // every reason reads a close and a level, and the ones it holds are a
+            // session it did not trade that night.
+            //
+            // Until the phase 5 sign-off such a row was dated by the name's own
+            // last session, so EQR and PSTG, carried nothing for since
+            // 2026-08-17 and 2026-04-16, had no row for any night after that and
+            // one row dated months back that went on firing on old prices, and
+            // `listings-coverage` could not see it because the fixture holds no
+            // such member.
+            // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+            var stale = sessionDate is { } last && newest is { } night && last < night;
+
+            var outcomes = ShortlistSeries.For(stale ? NoBarTonight : inputs);
             var count = outcomes.Count(outcome => outcome.Fired);
 
             await using var command = connection.CreateCommand();
@@ -198,17 +221,26 @@ public sealed class ShortlistBuilder : IComponent
             command.CommandText = Upsert;
             command.Parameters.AddWithValue("$ticker", ticker);
 
-            // The session the row is about, which is the last one the store
-            // holds for the name. A member with no bars is dated by the night
-            // rather than by a session it does not have, so it still gets a row
-            // and the count per night still equals the index size.
+            // The session the row is about, which is the night's. A member with
+            // no bars is dated by the clock's session and a member with none for
+            // the night by the night, rather than by a session it has, so each
+            // still gets a row and the count per night still equals the index
+            // size.
             command.Parameters.AddWithValue(
                 "$session_date",
-                (sessionDate ?? asOf).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                (stale ? newest!.Value : sessionDate ?? asOf).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
             command.Parameters.AddWithValue("$reasons", Serialised(outcomes));
             command.Parameters.AddWithValue("$fired_count", count);
-            command.Parameters.AddWithValue("$plan_at_listing", PlanAtListing(plan));
+            command.Parameters.AddWithValue(
+                "$plan_at_listing",
+                stale
+                    ? JsonSerializer.Serialize(new
+                    {
+                        note = "no bar for this session; the last session stored for the name is " +
+                            sessionDate!.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    })
+                    : PlanAtListing(plan));
 
             // Registered candidates, evaluated the same way and shown nowhere.
             // The register arrives at 7.3, so the list is empty and says why
@@ -234,6 +266,20 @@ public sealed class ShortlistBuilder : IComponent
 
         return new ShortlistOutcome(members.Count, members.Count, fired, reasonsFired);
     }
+
+    static async Task<DateOnly?> NewestSessionAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT MAX(session_date) FROM bar;";
+
+        return await command.ExecuteScalarAsync(cancellation) is string newest
+            ? DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
+    }
+
+    // What a member with no bar for tonight is evaluated over, which is nothing:
+    // the same inputs a member the store holds no bar for at all has.
+    static readonly ReasonInputs NoBarTonight = new(null, null, null, null, [], [], null, null, null);
 
     // The plan as it stood tonight: the entry zone, the stop and the first
     // traded target. Bars can be replayed and this cannot, because by the time a

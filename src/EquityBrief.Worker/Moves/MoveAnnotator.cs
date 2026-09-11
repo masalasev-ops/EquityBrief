@@ -70,13 +70,20 @@ public sealed class MoveAnnotator : IComponent
             rank = excluded.rank;
     ";
 
-    // The rows this name no longer holds. Written as a delete of everything for
-    // the name outside tonight's set rather than a delete of the whole name and
-    // a reinsert, because the second would take rows out of a set it then puts
-    // back and this table is read between the two by nothing at all only while
-    // that is true.
+    // The rows this name no longer holds: every session for the name that is not
+    // in tonight's set, whatever rank it carried.
+    //
+    // Until the phase 5 sign-off this deleted only rows ranked below tonight's
+    // count, which catches a name whose set shrank and misses the ordinary case:
+    // a new move enters the top eight, the one it pushes out is not written
+    // tonight, and its row stands with the rank it had, beside tonight's move at
+    // that rank. The operator's store held nine names with two moves ranked
+    // eighth. The set is named by its sessions, which is the key, rather than by
+    // a rank, which is a property the stale row still has.
     const string DropFallenOut = @"
-        DELETE FROM move WHERE ticker = $ticker AND session_date > $oldest AND rank > $kept;
+        DELETE FROM move
+        WHERE ticker = $ticker
+          AND session_date NOT IN (SELECT value FROM json_each($kept));
     ";
 
     // The retention drop, one year back from the newest stored session, which is
@@ -138,15 +145,17 @@ public sealed class MoveAnnotator : IComponent
                 written++;
             }
 
-            // Anything this name held above tonight's rank count is a session
-            // that was a biggest move and is not one now.
+            // Any session this name held that is not in tonight's set was a
+            // biggest move and is not one now.
             await using (var drop = connection.CreateCommand())
             {
                 drop.Transaction = (SqliteTransaction)transaction;
                 drop.CommandText = DropFallenOut;
                 drop.Parameters.AddWithValue("$ticker", ticker);
-                drop.Parameters.AddWithValue("$oldest", "0000-00-00");
-                drop.Parameters.AddWithValue("$kept", moves.Count);
+                drop.Parameters.AddWithValue(
+                    "$kept",
+                    System.Text.Json.JsonSerializer.Serialize(
+                        moves.Select(move => move.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))));
 
                 fallenOut += await drop.ExecuteNonQueryAsync(cancellation);
             }

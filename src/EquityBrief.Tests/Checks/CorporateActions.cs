@@ -407,6 +407,73 @@ public class CorporateActions
         Assert.Null(StateOf(store, "AAPL").Reason);
     }
 
+    // A day with no action on any name, which is most days.
+    sealed class NoActionFeed : ICorporateActionFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<CorporateAction>> ActionsAsync(
+            string exchange,
+            DateOnly session,
+            CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult<IReadOnlyList<CorporateAction>>([]);
+        }
+    }
+
+    [Fact]
+    public async Task ASuspectNameIsRefetchedOnTheNextNightWithoutAnActionOfItsOwn()
+    {
+        // The test above clears a suspect name by running the same action night
+        // again, which is not what a night does: the action is on the day it
+        // lands and not after. Until the phase 5 sign-off the mark was written
+        // and never read, so a name whose refetch failed stayed suspect, with its
+        // stored history unadjusted for an action the provider had applied,
+        // until another action happened to land on it. Found by the phase 5
+        // sign-off reviewer.
+        using var store = await Stored();
+
+        await Checker(store, new RecordedHistoricalBarFeed(
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)))
+            .RunAsync(Index, "run-bad");
+
+        Assert.Equal(CorporateActionChecker.Suspect, StateOf(store, "AAPL").State);
+
+        // The next night carries no action for anyone.
+        var history = RecordedHistoricalBarFeed.FromFolder(FixtureFolder());
+        var outcome = await new CorporateActionChecker(
+            new NoActionFeed(),
+            history,
+            FixedClock.At(ActionNight.AddDays(1), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync(Index, "run-retry");
+
+        Assert.Equal(["AAPL"], outcome.Retried ?? []);
+        Assert.Equal(1, outcome.Refetched);
+        Assert.Equal(1, outcome.RefetchRequests);
+        Assert.Empty(outcome.Suspect);
+        Assert.Equal(CorporateActionChecker.Ok, StateOf(store, "AAPL").State);
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT detail FROM run_log WHERE run_id = 'run-retry' AND stage = 'actions';";
+
+        Assert.Contains("1 retried from an earlier night: AAPL", (string)command.ExecuteScalar()!, StringComparison.Ordinal);
+
+        // And once it is ok, the night after asks nothing for it.
+        var quiet = await new CorporateActionChecker(
+            new NoActionFeed(),
+            RecordedHistoricalBarFeed.FromFolder(FixtureFolder()),
+            FixedClock.At(ActionNight.AddDays(2), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync(Index, "run-quiet");
+
+        Assert.Empty(quiet.Retried ?? []);
+        Assert.Equal(0, quiet.RefetchRequests);
+    }
+
     [Fact]
     public async Task TheCheckCostsTwoRequestsAndOnePerRefetchedNameAndTheRunLogSaysSo()
     {
