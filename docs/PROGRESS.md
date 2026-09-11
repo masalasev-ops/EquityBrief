@@ -6550,3 +6550,22 @@ Tests:      506, from 505. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             18, exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of
             scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
             the Linux case-sensitivity job.
+
+### 5.4 - correction: a listing with no stored bar was dated by the UTC date   2026-09-11
+Corrects:   the 5.4 entry above records a listing row for every member, with one that has no stored
+            bar dated by the night. It was dated by the clock's UTC date rather than its session
+            date, the same shape as the ladder builder's line corrected in the 4.1 entry above.
+Found:      by the phase 5 sign-off, reading the builder while reproducing the first scheduled
+            night's refusal. Latent on the schedule as registered, which runs at 23:30 UTC, the same
+            date in both zones; a night after eight in New York dates the row a day ahead.
+Repaired:   the row is dated `clock.SessionDateAt(clock.UtcNow)`.
+Guarded:    the shortlist builder run at the same late instant as the 4.1 test, over the same
+            member the backfill never saw.
+Mutated:    the rule, stated before the sweep: reinstate the defect, being the row dated by the UTC
+            date. One mutation, one run, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed. It turned the new test red and left the
+            other 506 green. None of the properties added went unmutated.
+Tests:      507, from 506. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of
+            scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
+            the Linux case-sensitivity job.

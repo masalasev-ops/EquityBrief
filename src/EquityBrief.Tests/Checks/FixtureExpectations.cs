@@ -3635,6 +3635,24 @@ public class FixtureExpectations
     }
 
     [Fact]
+    public async Task AListingWithNoStoredBarIsDatedByTheSessionAndNotByTheUtcDate()
+    {
+        using var store = await WithListings();
+        var late = FixedClock.At(LateInstant, SessionZones.UnitedStates);
+        var session = ((IClock)late).SessionDateAt(LateInstant);
+
+        Assert.NotEqual(((IClock)late).UtcDateAt(LateInstant), session);
+
+        Insert(store, BarlessMember);
+
+        await new ShortlistBuilder(late, store.DatabaseFile).RunAsync(Index, "replay-listings-late");
+
+        Assert.Equal(
+            [session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)],
+            Query(store, "SELECT session_date FROM listing WHERE ticker = 'NEWW';"));
+    }
+
+    [Fact]
     public async Task AListingBehindTheFactsBesideItIsRefusedAndOneAheadOfThemIsNot()
     {
         // The shortlist builder's facts guard, which had no test of its own
