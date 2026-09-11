@@ -6467,3 +6467,33 @@ Tests:      503, from 499. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             claims, 167 PASS, 0 FAIL, 72 out of scope, 0 unexamined, 174 placements and verdicts
             reconciled against a floor of 34. No claim moved. Windows on this machine; the matrix
             carries macOS and the Linux case-sensitivity job.
+
+### 1.6 - correction: the actions stage counts the refetches it makes   2026-09-11
+Corrects:   the 1.6 entry above records the corporate action check's cost as two requests whatever
+            the universe is. It is two plus one per member an action moved, and the run log carried
+            the two alone.
+Found:      by the phase 5 sign-off, reconciling a figure. 5.7's night-speed entry records 17
+            network requests for the third by-hand night of 2026-09-09 and the run log's rows for
+            that run sum to 8. The 17 is the feeds' own count. The actions row records
+            `actions.Requests`, the corporate action feed's two, and not the historical feed's
+            nine per-name refetches the same stage made; the scheduled night of 2026-09-10 made
+            nine at that stage and recorded two. So the per-name request the cost rule carves out by
+            name was the one request the store never counted, and the operational header read the
+            stage as two. The test beside it asserted the stage reported two while the fixture
+            refetches AAPL, which held the undercount in place.
+Repaired:   the stage's request figure is both feeds' requests made during the run, taken as deltas
+            because the night shares one historical feed between the backfill and this stage, and the
+            detail says how many of them were per name.
+Guarded:    the fixture's one refetch counted off the feed that made it, the stage's figure being the
+            action feed's two and that one together, and the run log row carrying three with the
+            per-name part stated.
+Mutated:    the rule, stated before the sweep: reinstate the defect, being the stage reporting the
+            action feed's requests alone. One mutation, one run, in a worktree under the session
+            scratchpad outside the repository, reverted, and the worktree removed. It turned the
+            renamed test red and left the other 502 green. None of the properties added went
+            unmutated.
+Tests:      503, unchanged: the test that held the undercount is renamed and widened rather than
+            added beside. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to 18,
+            exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of scope, 0
+            unexamined. No claim moved. Windows on this machine; the matrix carries macOS and the
+            Linux case-sensitivity job.
