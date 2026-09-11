@@ -94,7 +94,10 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     var night = await read.NewestNightAsync();
     var listings = night is { } dated ? await read.ListingsAsync(dated) : [];
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
-    var universe = await read.UniverseAsync(index);
+
+    // The index on the night the list is from, so the neighbours are that
+    // night's members rather than today's.
+    var universe = await read.UniverseAsync(index, night);
 
     var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -166,7 +169,9 @@ app.MapGet("/screens/tonight/{night?}", async (
             "text/html; charset=utf-8");
     }
 
-    var universe = await read.UniverseAsync(index);
+    // The index on the night shown, so a name on that night's list has the close
+    // that night stored even after it has left.
+    var universe = await read.UniverseAsync(index, dated);
 
     // The band strength the ordering breaks ties on, and the close each row
     // shows, both read from what the night stored rather than worked out here.
@@ -228,7 +233,10 @@ app.MapGet("/screens/universe", async (
     // the screen and the night are over one universe rather than two.
     // see: One universe now, the seam for more built now
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
-    var members = await read.UniverseAsync(index);
+
+    // The index on the newest night the listings hold, which is the night the
+    // screen's figures are from.
+    var members = await read.UniverseAsync(index, await read.NewestNightAsync());
 
     // The listing history behind the two right-hand columns and the sector
     // strip's count, over the window section 15.8 states.
@@ -296,7 +304,7 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.Tracks(records),
             RunScreen.BaseRates(returns),
             RunScreen.Nights(everyListing),
-            await read.StaleNamesAsync(index),
+            await read.StaleNamesAsync(index, dated),
             RunScreen.Harness(PhaseReport())),
         "text/html; charset=utf-8");
 

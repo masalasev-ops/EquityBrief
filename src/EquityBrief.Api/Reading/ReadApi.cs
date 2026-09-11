@@ -651,14 +651,21 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    public async Task<IReadOnlyList<string>> StaleNamesAsync(string indexCode)
+    // `night` is the night the page shows. The index is read on that night and not
+    // on today's: until the phase 5 sign-off both reads below bound membership to
+    // the day the page was opened, so every page about a past night read today's
+    // index, and a page opened on 2026-09-21 before that night ran would have
+    // dropped the three leavers from 2026-09-18's list and drawn the first-ranked
+    // one's plan at a close of zero. Only a caller with no night falls back to
+    // today's session.
+    public async Task<IReadOnlyList<string>> StaleNamesAsync(string indexCode, DateOnly? night = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = StaleNames;
         command.Parameters.AddWithValue("$index", indexCode);
-        command.Parameters.AddWithValue("$session", clock.SessionDateAt(clock.UtcNow).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$session", OnNight(night));
 
         var names = new List<string>();
 
@@ -787,14 +794,19 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    public async Task<IReadOnlyList<UniverseRow>> UniverseAsync(string indexCode)
+    // The index on the night the page shows, for the reason `StaleNamesAsync`
+    // gives.
+    string OnNight(DateOnly? night) =>
+        (night ?? clock.SessionDateAt(clock.UtcNow)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    public async Task<IReadOnlyList<UniverseRow>> UniverseAsync(string indexCode, DateOnly? night = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = Universe;
         command.Parameters.AddWithValue("$index_code", indexCode);
-        command.Parameters.AddWithValue("$session", clock.SessionDateAt(clock.UtcNow).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$session", OnNight(night));
         command.Parameters.AddWithValue("$typical", IndicatorSeries.Atr14);
 
         var rows = new List<UniverseRow>();

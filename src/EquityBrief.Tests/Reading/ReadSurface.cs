@@ -2727,6 +2727,48 @@ public class ReadSurface
     }
 
     [Fact]
+    public async Task TheUniverseAndTheStaleNamesAreTheIndexOnTheNightShownAndNotOnTheDayTheyAreRead()
+    {
+        // Both reads bound membership to the day the page was opened, so every
+        // page about a past night read today's index: opened on 2026-09-21 before
+        // that night ran, 2026-09-18's list would have lost its three leavers'
+        // closes and drawn the first-ranked one's plan at zero. Found by the
+        // fourth phase 5 sign-off review.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var shown = (await Api(store).NewestNightAsync())!.Value;
+        var leaver = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).First();
+        var leaves = shown.AddDays(3).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // A member leaving after the night shown, and a name joining after it
+        // with no bars yet, each effective before the day the page is read.
+        Insert(store, $"UPDATE membership SET \"left\" = '{leaves}' WHERE ticker = '{leaver}';");
+        Insert(
+            store,
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
+            $"VALUES ('GSPC', 'JOIN', '{leaves}', NULL, '2026-09-05T21:10:00Z', 'Technology');");
+
+        var later = new ReadApi(
+            store.DatabaseFile,
+            FixedClock.At(new DateTimeOffset(shown.AddDays(10).ToDateTime(new TimeOnly(21, 10)), TimeSpan.Zero), SessionZones.UnitedStates));
+
+        // On the night shown the leaver is a member with the close that night
+        // stored, and the joiner is not yet one.
+        var onTheNight = await later.UniverseAsync("GSPC", shown);
+
+        Assert.Contains(onTheNight, row => row.Ticker == leaver && row.Close is not null);
+        Assert.DoesNotContain(onTheNight, row => row.Ticker == "JOIN");
+        Assert.DoesNotContain("JOIN", await later.StaleNamesAsync("GSPC", shown));
+
+        // Read on the later day with no night, which is what every route did,
+        // the two change places.
+        var today = await later.UniverseAsync("GSPC");
+
+        Assert.DoesNotContain(today, row => row.Ticker == leaver);
+        Assert.Contains("JOIN", await later.StaleNamesAsync("GSPC"));
+    }
+
+    [Fact]
     public void TheHarnessRegionCountsOutOfScopeApartFromUnexaminedAndSaysSoWithNoReport()
     {
         // Section 15.10's last region, and CLAUDE.md's rule about the two

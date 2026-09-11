@@ -195,11 +195,49 @@ public sealed class LadderBuilder : IComponent
         var withoutBars = 0;
         var counts = TrendState.All.ToDictionary(state => state, _ => 0, StringComparer.Ordinal);
 
+        // The newest session any name holds, which is the night the ladders are
+        // about, read off the store for the reason the shortlist builder reads it
+        // there: a replay on a weekend has a clock a session ahead of every bar.
+        var newest = await NewestSessionAsync(connection, cancellation);
+
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
         foreach (var ticker in members)
         {
             var session = await LastSessionAsync(connection, ticker, cancellation);
+
+            // A member whose newest bar is older than the night's, being a name
+            // the day's file carried nothing for. Its row is the night's, not
+            // classified, with a plan saying why, as a member with no bar at all
+            // gets: a trend and a plan read off an old bar are a chart the name
+            // did not trade tonight. Until the phase 5 sign-off such a row was
+            // dated by the name's own last bar, so EQR and PSTG held one ladder
+            // row each, dated 2026-08-17 and 2026-04-16, and none for any night
+            // after, which is what the listings did until the correction before
+            // this one and what the reviewer found surviving here.
+            // see: A ladder row is written for every index member every night
+            if (session is { } last && newest is { } night && last.SessionDate < night)
+            {
+                var reason = "no bar for this session; the last session stored for the name is " +
+                    last.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+                counts[TrendState.NotClassified]++;
+
+                await using var stale = connection.CreateCommand();
+
+                stale.Transaction = (SqliteTransaction)transaction;
+                stale.CommandText = Upsert;
+                stale.Parameters.AddWithValue("$ticker", ticker);
+                stale.Parameters.AddWithValue("$as_of", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                stale.Parameters.AddWithValue("$trend_state", TrendState.NotClassified);
+                stale.Parameters.AddWithValue("$plan", Serialised(new Ladder([], [], null, reason, []), []));
+
+                await stale.ExecuteNonQueryAsync(cancellation);
+
+                written++;
+
+                continue;
+            }
 
             // A member with no stored bar at all. It still gets a row, dated by
             // the clock rather than by a session it does not have, because the
@@ -661,6 +699,16 @@ public sealed class LadderBuilder : IComponent
             ? null
             : DateOnly.ParseExact((string)newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
                 .AddYears(-BarFetcher.RetentionYears);
+    }
+
+    static async Task<DateOnly?> NewestSessionAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT MAX(session_date) FROM bar;";
+
+        return await command.ExecuteScalarAsync(cancellation) is string newest
+            ? DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
     }
 
     static async Task<int> DroppedAsync(

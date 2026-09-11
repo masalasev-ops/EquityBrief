@@ -59,7 +59,24 @@ public sealed class FactsAssembler : IComponent
     public const string FromMoves = "move";
     public const string FromCalendar = "calendar";
 
-    const string TickersWithBars = "SELECT DISTINCT ticker FROM bar ORDER BY ticker;";
+    // The names holding a bar on the newest session the store has, being the
+    // names tonight's file can be about.
+    //
+    // Every name with any bar until the phase 5 sign-off. The file is keyed on
+    // the name's own last bar, so for a name the day's file carried nothing for,
+    // or a name that has left, it was a past night's file, recomputed each night
+    // over indicator, swing and move windows that drift as the store moves on,
+    // and the replacement below deleted and rewrote it whenever the hash moved:
+    // EQR's file of 2026-08-17 and PSTG's of 2026-04-16 would have come back
+    // whole with their change lists reset on a night that was not a re-run of
+    // theirs. A night writes tonight's files, so tonight's names are the ones
+    // with a bar tonight; a past night's file is left as that night wrote it.
+    // see: A re-run replaces a night's facts file where the store now computes a different one
+    const string TickersWithBars = @"
+        SELECT DISTINCT ticker FROM bar
+        WHERE session_date = (SELECT MAX(session_date) FROM bar)
+        ORDER BY ticker;
+    ";
 
     const string LastSessionFor = @"
         SELECT session_date, close, high, low, volume
