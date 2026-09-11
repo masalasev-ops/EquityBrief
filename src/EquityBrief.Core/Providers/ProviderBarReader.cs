@@ -127,10 +127,25 @@ public static class ProviderBarReader
         };
     }
 
-    static long Volume(JsonElement entry, string ticker) =>
-        entry.TryGetProperty("volume", out var value) && value.ValueKind is JsonValueKind.Number
-            ? value.GetInt64()
-            : throw new FormatException($"{ticker} carries no volume, or one that is not a whole number.");
+    // A whole number of shares, or a refusal that says what arrived.
+    //
+    // `GetInt64` on a number with a fraction throws a FormatException carrying
+    // the framework's default message, which names no row and no field, and
+    // until the phase 5 sign-off that was what reached the operator. The
+    // provider does send fractional volumes: 530131.7 for one fund on
+    // 2026-09-08. A volume is never rounded here, because a figure the code
+    // changed is not the provider's figure (see: Code owns every number).
+    static long Volume(JsonElement entry, string ticker)
+    {
+        if (!entry.TryGetProperty("volume", out var value) || value.ValueKind is not JsonValueKind.Number)
+        {
+            throw new FormatException($"{ticker} carries no volume.");
+        }
+
+        return value.TryGetInt64(out var shares)
+            ? shares
+            : throw new FormatException($"{ticker} carries a volume of {value.GetRawText()}, which is not a whole number of shares.");
+    }
 
     static string Text(JsonElement entry, string name, string ticker) =>
         entry.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.String

@@ -48,6 +48,12 @@ public sealed class EodhdBulkPriceFeed(
     // request did.
     public IReadOnlyList<string> NotSessions => notSessions;
 
+    readonly List<UnreadableRow> unreadable = [];
+
+    // The rows the reader refused, accumulated across calls for the reason the
+    // two figures above are.
+    public IReadOnlyList<UnreadableRow> Unreadable => unreadable;
+
     // What the retry actually did. One request may have cost three attempts and
     // two waits, and the difference is a night worth reading about.
     public int Attempts => request.Attempts;
@@ -106,7 +112,7 @@ public sealed class EodhdBulkPriceFeed(
         var body = await request.SendAsync(token => FetchAsync(exchange, session, token), cancellation)
             .ConfigureAwait(false);
 
-        return RecordedBulkPriceFeed.Parse(body, exchange, session, notSessions);
+        return RecordedBulkPriceFeed.Parse(body, exchange, session, notSessions, unreadable);
     }
 
     async Task<string> FetchAsync(string exchange, DateOnly session, CancellationToken cancellation)

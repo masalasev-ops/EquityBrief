@@ -6353,3 +6353,57 @@ Tests:      496, from 493. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             claim, and the unavailable-feed claim's verdict note now states the run log half it had
             omitted. Windows on this machine; the matrix carries macOS and the Linux
             case-sensitivity job.
+
+### 2.1 - correction: one fund's fractional volume refused the whole exchange's file   2026-09-11
+Corrects:   the 2.1 entry above records the reader's row policy on the live exchange file, being a
+            symbol that did not trade passed over and named and anything else refusing the file.
+            The second clause refused whole nights for a row the index does not hold. And the
+            record of 5.7 and the obligation row it filed, which read the refusal as the provider
+            serving something other than prices for an older session and carried it to 6.0.
+Found:      by the phase 5 sign-off, with two live requests on the operator's key, the first of
+            them approved as a probe. The file for 2026-09-09, fetched a day later, answered 200 as
+            JSON dated for that session. The file for 2026-09-08 answered the same way with 50,249
+            rows, and six carry a fractional volume: FMAO, EWG, EZU, EWW, API and ALP, the largest
+            being EWG at 530131.7. None is an index member. The reader took every volume through
+            `GetInt64`, which throws a `FormatException` with the framework's default message, "One
+            of the identified items was in an invalid format", and the parser let it refuse the
+            whole file. That is the message 5.7 recorded for 2026-09-04 and 2026-09-08, and it named
+            no row, no field and no ticker, which is how a reader defect was read as the provider
+            sending something other than prices.
+            It is not a catch-up defect. Any evening whose file carries one such row anywhere on the
+            exchange stops the night at the fetch, and two of the first four days fetched at index
+            size did. 2026-09-09 and 2026-09-10 happened not to.
+Repaired:   the volume reader refuses a fraction by name, with the ticker and the number that
+            arrived, and never rounds it. The bulk parser passes over a row that names its ticker and
+            cannot be read, keeping the reason, where the caller collects such rows, and refuses as
+            before where it does not. The fetcher refuses the night by name, before anything is
+            stored, if a current member's row is among them, because a member with no bar tonight
+            would read as a shorter history. The fetch line counts the rows outside the index the
+            reader refused. Section 18 gains a row for a row the reader cannot read, placed PASS by
+            `nightly-run`. The obligation is discharged here rather than at 6.0, and 6.0's text no
+            longer carries it (owes: A bulk payload that is not a price payload refused by name).
+Recoverable: the listing and the plan for 2026-09-10, which the 5.4 correction above records as not
+            written, can still be written, and only until the next scheduled night stores
+            2026-09-11. The store's bars end on 2026-09-10, so a by-hand night for that session run
+            before then computes its listing from the series as it stood that evening; after it,
+            the listing stage reads a later ladder. That run is the operator's to start, on the
+            operator's key, and this entry does not record it as done.
+Guarded:    the reader over four rows copied from the provider's own file, two whole volumes and two
+            fractional, returning the two and naming the two with their numbers; the strict path
+            naming the row; the fetcher storing every member past a fund's fractional volume and
+            refusing by name on a member's; and a whole night doing both, with the member's refusal
+            on the run log.
+Mutated:    the rule, stated before the sweep: each mutation reinstates the defect a new assertion
+            was written for. The volume is read through `GetInt64` again; the parser refuses the file
+            on a row it cannot read; the fetcher stores past a member's refused row.
+            Three mutations, three runs, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed, over source identical byte for byte to
+            this commit's. All three turned tests red: the first and second each turned the
+            reader's test, the fetcher's and the whole night's red, and the third turned the
+            fetcher's and the whole night's. None was invalid. None of the properties added went
+            unmutated.
+Tests:      499, from 496. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of
+            scope, 0 unexamined, 174 placements and verdicts reconciled against a floor of 34. The
+            claim and the PASS each move by one, both from section 18's new row. Windows on this
+            machine; the matrix carries macOS and the Linux case-sensitivity job.

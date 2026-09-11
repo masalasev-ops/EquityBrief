@@ -757,6 +757,13 @@ internal static class Scope
             Verdict.Pass,
             "a payload carrying nothing for any current member is refused by the fetcher before the transaction opens, and one short of some but not all is stored for the rest with the count carried out of the stage",
             ByNight),
+        // Added at the phase 5 sign-off, when the unnamed refusal 5.7 read as
+        // the provider serving something other than prices turned out to be one
+        // fund's fractional volume refusing the whole exchange's file.
+        [CheckReach.Key(FailureTable, "A feed answers with a row the reader cannot read")] = new Scoped(
+            Verdict.Pass,
+            "a night over the captured file with a fund's fractional volume added outside the index stores every member, and the same volume on a member's own row refuses the night at the fetch step with the ticker and what arrived, leaving the stored bars as they were",
+            ByNight),
         [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
             Verdict.Pass,
             "the three attempts, the doubling wait and both bounds are read off the row and asserted against the policy the code uses, and a night given a deadline it cannot meet stops on the step it was on and says so",

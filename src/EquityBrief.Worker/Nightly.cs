@@ -152,6 +152,7 @@ public static class Nightly
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
                     $"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, " +
                     $"{bulkFeed.NotSessions.Count} row(s) listed and not traded, " +
+                    $"{bulkFeed.Unreadable.Count} row(s) outside the index the reader refused, " +
                     $"{outcome.Unaccounted.Count} member(s) the file carried nothing for, " +
                     $"{outcome.Requests} request(s)";
             }),

@@ -62,6 +62,7 @@ public class NightlyRun
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with none of the index in it"),
+            CheckReach.Key(Scope.FailureTable, "A feed answers with a row the reader cannot read"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -238,6 +239,56 @@ public class NightlyRun
         Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
         Assert.Contains("carries nothing for any of the 4 current member(s)", error, StringComparison.Ordinal);
         Assert.Equal(before, Count(store));
+    }
+
+    [Fact]
+    public async Task ARowTheReaderCannotReadStopsTheNightOnlyWhenItIsAMembers()
+    {
+        // The row section 18 gained at the phase 5 sign-off, over a whole night
+        // rather than over the fetcher alone. The fractional volume is the
+        // provider's own, copied from its file for 2026-09-08, where six of
+        // 50,249 rows carried one and each refused the night for every name.
+        var fixture = File.ReadAllText(Directory.GetFiles(FixtureFolder(), "bulk-*.json").Single());
+        const string Fund =
+            """{"code":"EWG","exchange_short_name":"US","date":"2026-09-08","open":43.79,"high":43.8401,"low":43.545,"close":43.57,"adjusted_close":43.57,"volume":530131.7}""";
+
+        using (var store = new TemporaryStore())
+        {
+            var outside = new RecordedBulkPriceFeed(fixture.TrimEnd().TrimEnd(']') + "," + Fund + "]");
+
+            var (code, output, error) = await NightAsync(store, runId: "night-fund", bulk: outside);
+
+            Assert.True(code == 0, error);
+            Assert.Contains("1 row(s) outside the index the reader refused", output, StringComparison.Ordinal);
+            Assert.Equal(FixtureExpectation.CurrentMembers.Length, Tickers(store, "2026-09-08").Count);
+        }
+
+        using (var store = new TemporaryStore())
+        {
+            var (clean, _, _) = await NightAsync(store, runId: "night-one");
+
+            Assert.Equal(0, clean);
+
+            var before = Count(store);
+            var onMember = System.Text.RegularExpressions.Regex.Replace(
+                fixture, @"(""code"":\s*""MSFT""[^}]*?""volume"":\s*)(\d+)", "${1}${2}.5");
+
+            Assert.NotEqual(fixture, onMember);
+
+            var (code, _, error) = await NightAsync(store, runId: "night-member", bulk: new RecordedBulkPriceFeed(onMember));
+
+            Assert.Equal(1, code);
+            Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
+            Assert.Contains("MSFT carries a volume of", error, StringComparison.Ordinal);
+            Assert.Contains("which is not a whole number", error, StringComparison.Ordinal);
+            Assert.Equal(before, Count(store));
+
+            // And on the run log, where the operator reads it.
+            var stopped = Assert.Single(RunLog(store, "night-member"), row => row.Outcome != "ok");
+
+            Assert.Equal("fetch", stopped.Stage);
+            Assert.Contains("MSFT", stopped.Detail, StringComparison.Ordinal);
+        }
     }
 
     [Fact]

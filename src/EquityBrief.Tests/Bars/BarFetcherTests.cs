@@ -214,6 +214,93 @@ public class BarFetcherTests
         Assert.Equal("AAPL", rows[0].Ticker);
     }
 
+    // Four rows copied byte for byte from the provider's bulk file for
+    // 2026-09-08, fetched by the phase 5 sign-off. The file held 50,249 rows and
+    // six carried a volume with a fraction, two of them below; the reader
+    // refused the whole file on the first with the framework's default message,
+    // "One of the identified items was in an invalid format", which is what 5.7
+    // recorded as the provider serving something other than prices for an older
+    // session. It serves prices. Capture before parse, applied to the assertion.
+    const string CapturedWithFractionalVolumes =
+        """
+        [{"code":"FMAO","exchange_short_name":"US","date":"2026-09-08","open":35.2,"high":35.2,"low":33.69,"close":34.85,"adjusted_close":34.85,"volume":31119.2},
+         {"code":"AAPL","exchange_short_name":"US","date":"2026-09-08","open":317.1,"high":320.7,"low":314.9,"close":316.22,"adjusted_close":316.22,"volume":35477100},
+         {"code":"MSFT","exchange_short_name":"US","date":"2026-09-08","open":493.01,"high":495.19,"low":490.15,"close":493.95,"adjusted_close":493.95,"volume":18882340},
+         {"code":"EWG","exchange_short_name":"US","date":"2026-09-08","open":43.79,"high":43.8401,"low":43.545,"close":43.57,"adjusted_close":43.57,"volume":530131.7}]
+        """;
+
+    [Fact]
+    public void AFractionalVolumeIsRefusedForItsRowAndNotForTheFile()
+    {
+        var unreadable = new List<UnreadableRow>();
+
+        var rows = RecordedBulkPriceFeed.Parse(
+            CapturedWithFractionalVolumes, "US", new DateOnly(2026, 9, 8), [], unreadable);
+
+        Assert.Equal(["AAPL", "MSFT"], [.. rows.Select(row => row.Ticker)]);
+        Assert.Equal(["FMAO", "EWG"], [.. unreadable.Select(row => row.Ticker)]);
+
+        // The reason names the row and what arrived, rather than the default
+        // message that named nothing.
+        Assert.Contains("EWG carries a volume of 530131.7, which is not a whole number", unreadable[1].Reason, StringComparison.Ordinal);
+
+        // Nothing is rounded. The two rows that were read carry the provider's
+        // own whole numbers and the refused ones carry none.
+        Assert.Equal(35477100L, rows[0].Bar.Volume);
+
+        // A caller that collects nothing gets the strict answer, and it names
+        // the row.
+        var strict = Assert.Throws<FormatException>(() => RecordedBulkPriceFeed.Parse(CapturedWithFractionalVolumes, "US"));
+
+        Assert.Contains("FMAO carries a volume of 31119.2", strict.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AFractionalVolumeOutsideTheIndexIsStoredPastAndOneOnAMemberRefusesByName()
+    {
+        // Outside the index: the fixture's own file with one extra row, a fund
+        // the index does not hold carrying the captured fractional volume. The
+        // night stores its members as it would have without the row.
+        var fixture = File.ReadAllText(Directory.GetFiles(FixtureFolder(), "bulk-*.json").Single());
+        var withFund = fixture.TrimEnd().TrimEnd(']') +
+            """,{"code":"EWG","exchange_short_name":"US","date":"2026-09-08","open":43.79,"high":43.8401,"low":43.545,"close":43.57,"adjusted_close":43.57,"volume":530131.7}]""";
+
+        using (var store = await WithAYearStored())
+        {
+            var feed = new RecordedBulkPriceFeed(withFund);
+
+            var outcome = await Fetcher(store, feed).RunAsync(Index, "run-fund");
+
+            Assert.Equal(FixtureExpectation.CurrentMembers.Length, outcome.MembersStored);
+            Assert.Equal(["EWG"], [.. feed.Unreadable.Select(row => row.Ticker)]);
+        }
+
+        // On a member: the same shape on AAPL's own row. Refused before
+        // anything is stored, with the ticker and the reason, rather than AAPL
+        // quietly holding no bar tonight.
+        var aaplVolume = System.Text.RegularExpressions.Regex.Match(
+            fixture, @"""code"":\s*""AAPL""[^}]*?""volume"":\s*(?<volume>\d+)").Groups["volume"].Value;
+
+        Assert.False(string.IsNullOrEmpty(aaplVolume), "The fixture's bulk file carries no AAPL volume to alter.");
+
+        var withMember = System.Text.RegularExpressions.Regex.Replace(
+            fixture,
+            @"(""code"":\s*""AAPL""[^}]*?""volume"":\s*)" + aaplVolume,
+            "${1}" + aaplVolume + ".5");
+
+        using (var store = await WithAYearStored())
+        {
+            var before = TickersOn(store, "2026-09-08");
+
+            var refusal = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => Fetcher(store, new RecordedBulkPriceFeed(withMember)).RunAsync(Index, "run-member"));
+
+            Assert.Contains("current member row(s) the reader refused", refusal.Message, StringComparison.Ordinal);
+            Assert.Contains($"AAPL carries a volume of {aaplVolume}.5", refusal.Message, StringComparison.Ordinal);
+            Assert.Equal(before, TickersOn(store, "2026-09-08"));
+        }
+    }
+
     [Fact]
     public void AResponseWithNoCodeIsRefusedRatherThanReadAsANamelessRow()
     {

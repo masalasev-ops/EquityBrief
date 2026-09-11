@@ -39,6 +39,10 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
 
     public IReadOnlyList<string> NotSessions => notSessions;
 
+    readonly List<UnreadableRow> unreadable = [];
+
+    public IReadOnlyList<UnreadableRow> Unreadable => unreadable;
+
     // Every row the file holds, for every name, unfiltered.
     //
     // Counted once per call rather than once per name, because that count is
@@ -57,17 +61,24 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
     {
         Requests++;
 
-        return Task.FromResult(Parse(response, exchange, session, notSessions));
+        return Task.FromResult(Parse(response, exchange, session, notSessions, unreadable));
     }
 
     // Shared by this and the live feed, which is what makes the double and the
     // provider the same reader. A second parser would be a second opinion about
     // what the provider sends, and the fixture would exercise only one of them.
+    //
+    // A row that names its ticker and cannot be read goes to `unreadable` with
+    // its reason where the caller collects them, and throws where it does not,
+    // so a caller that has not said what it will do with such a row gets the
+    // strict answer. Both feeds collect, and the fetcher is what refuses: it is
+    // the only one that knows whether the row belongs to a current member.
     public static IReadOnlyList<BulkBar> Parse(
         string json,
         string exchange,
         DateOnly? session = null,
-        ICollection<string>? notSessions = null)
+        ICollection<string>? notSessions = null,
+        ICollection<UnreadableRow>? unreadable = null)
     {
         using var document = JsonDocument.Parse(json);
 
@@ -81,10 +92,24 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
 
         var rows = new List<BulkBar>();
         var skipped = 0;
+        var refused = 0;
 
         foreach (var entry in document.RootElement.EnumerateArray())
         {
-            var (row, ticker) = Read(entry, exchange);
+            BulkBar? row;
+            string? ticker;
+
+            try
+            {
+                (row, ticker) = Read(entry, exchange);
+            }
+            catch (FormatException failure) when (unreadable is not null && TickerOf(entry) is { } named)
+            {
+                unreadable.Add(new UnreadableRow(named, failure.Message));
+                refused++;
+
+                continue;
+            }
 
             if (row is not null)
             {
@@ -115,7 +140,8 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
                 throw new FormatException(
                     $"The bulk response for {exchange} carries " +
                     string.Join(", ", wrong.Select(date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))) +
-                    $" and {wanted:yyyy-MM-dd} was asked for. A payload for another session is " +
+                    " and " + wanted.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
+                    " was asked for. A payload for another session is " +
                     "refused rather than stored, because bars the store already holds arrive " +
                     "looking exactly like a night that ran.");
             }
@@ -125,6 +151,13 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
         // whatever the reason each row gave. Answering with no bars would be
         // stored as an exchange that did not trade, which is the failure this
         // parser has refused since 1.4 and which skipping rows would reopen.
+        if (rows.Count == 0 && refused > 0)
+        {
+            throw new FormatException(
+                $"None of the rows the bulk response carried for {exchange} could be read, and " +
+                $"{refused} were refused. A payload no row of which reads is not a day's prices.");
+        }
+
         return rows.Count == 0 && skipped > 0
             ? throw new FormatException(
                 $"Every one of the {skipped} rows the bulk response carried for {exchange} is a " +
@@ -132,6 +165,13 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
                 "this system has any use for, and storing it would read as a night that ran.")
             : rows;
     }
+
+    // The ticker a row names, where it names one. A row naming none cannot be
+    // attributed and still refuses the file.
+    static string? TickerOf(JsonElement entry) =>
+        entry.TryGetProperty(Code, out var code) && code.ValueKind is JsonValueKind.String
+            ? code.GetString()
+            : null;
 
     const string Code = "code";
     const string Exchange = "exchange_short_name";

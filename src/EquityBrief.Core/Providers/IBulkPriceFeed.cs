@@ -47,4 +47,23 @@ public interface IBulkPriceFeed
     // is a night that stores almost nothing and reports success, and a figure
     // only one implementation answers is one the fixture never exercises.
     IReadOnlyList<string> NotSessions { get; }
+
+    // The rows the exchange sent that this reader could not read, by ticker,
+    // with the reason each gave.
+    //
+    // Kept apart from the rows that did not trade, because they mean different
+    // things: those are sessions that did not happen and these are sessions the
+    // reader refused. A row nobody asked for does not stop the night, since the
+    // file is the whole exchange and the store holds the index; the fetcher
+    // refuses by name if a current member is among them. Before the phase 5
+    // sign-off one fund's fractional volume anywhere in the file refused the
+    // file for all five hundred names, with a message that named nothing, and
+    // two of the first four days fetched at index size carried one.
+    //
+    // A default of none, so a double that reads nothing it cannot read need not
+    // say so.
+    IReadOnlyList<UnreadableRow> Unreadable => [];
 }
+
+// A bulk row the reader refused, and why.
+public sealed record UnreadableRow(string Ticker, string Reason);

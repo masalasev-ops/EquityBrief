@@ -139,6 +139,31 @@ public sealed class BarFetcher : IComponent
             .OrderBy(row => row.Ticker, StringComparer.Ordinal)
             .ToArray();
 
+        // A current member whose row the reader refused, named before anything
+        // is stored.
+        //
+        // The reader passes over a row it cannot read rather than refusing the
+        // file, because the file is the whole exchange and a fund's fractional
+        // volume is not this index's business: two of the first four days
+        // fetched at index size carried six such rows, and each refused the
+        // night for every name with a message that named nothing. What a row
+        // passed over must never do is leave a member quietly without tonight's
+        // bar, which is what this refuses, with the ticker and the reason.
+        var refusedMembers = feed.Unreadable
+            .Where(row => members.Contains(row.Ticker))
+            .OrderBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToArray();
+
+        if (refusedMembers.Length > 0)
+        {
+            throw new InvalidOperationException(
+                "The bulk file for " + session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
+                $" carries {refusedMembers.Length} current member row(s) the reader refused: " +
+                string.Join("; ", refusedMembers.Take(FirstNamed).Select(row => row.Reason)) +
+                ". A member's bar that cannot be read is refused rather than skipped, because a " +
+                "member with no bar tonight would read as a shorter history.");
+        }
+
         // Every current member accounted for, before anything is stored.
         //
         // The bulk file is the whole exchange and every member of a US index is
