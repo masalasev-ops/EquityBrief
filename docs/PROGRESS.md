@@ -6529,3 +6529,24 @@ Tests:      505, from 503. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             18, exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of
             scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
             the Linux case-sensitivity job.
+
+### 4.1 - correction: a ladder row with no stored bar was dated by the UTC date   2026-09-11
+Corrects:   the 4.1 entry above records a ladder row written for every member, with one that has no
+            stored bar dated by the clock. It was dated by the clock's UTC date rather than its
+            session date, which `IClock` exists to keep apart.
+Found:      by the phase 5 sign-off, reading the shortlist builder's matching line and sweeping the
+            shipped source for the same shape: two sites, this one and 5.4's. After eight in the
+            evening in New York the UTC date is tomorrow's, so a night running then dated this row a
+            day ahead of every row beside it. Nothing on the operator's machine has run that late:
+            the schedule is 23:30 UTC, which is the same date in both zones, winter and summer.
+Repaired:   the row is dated `clock.SessionDateAt(clock.UtcNow)`.
+Guarded:    the ladder builder run at an instant after midnight in UTC and before it in New York, with
+            the two dates asserted to differ first, over a member the backfill never saw.
+Mutated:    the rule, stated before the sweep: reinstate the defect, being the row dated by the UTC
+            date. One mutation, one run, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed. It turned the new test red and left the
+            other 505 green. None of the properties added went unmutated.
+Tests:      506, from 505. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of
+            scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
+            the Linux case-sensitivity job.

@@ -199,7 +199,13 @@ public sealed class LadderBuilder : IComponent
             // the clock rather than by a session it does not have, because the
             // row count is the claim and a missing row is the failure the count
             // exists to catch.
-            var asOf = session?.SessionDate ?? DateOnly.FromDateTime(clock.UtcNow.UtcDateTime);
+            //
+            // The session date and not the UTC date, which is what `IClock`
+            // exists to keep apart. It read the UTC date until the phase 5
+            // sign-off, so a night running after midnight in UTC, being any
+            // evening after eight in New York, dated this row a day ahead of
+            // every row beside it.
+            var asOf = session?.SessionDate ?? clock.SessionDateAt(clock.UtcNow);
 
             var trend = session is { } bar
                 ? await TrendClassifier.ForAsync(connection, ticker, bar.SessionDate, bar.Close, cancellation)

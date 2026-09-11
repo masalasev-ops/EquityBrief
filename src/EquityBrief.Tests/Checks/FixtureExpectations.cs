@@ -3602,6 +3602,38 @@ public class FixtureExpectations
         Assert.Equal(listed.Count * 3, Query(store, "SELECT ticker FROM forward_return;").Count);
     }
 
+    // An instant after midnight in UTC and before it in New York, where the UTC
+    // date and the session date differ. Every evening after eight in New York
+    // is one, and a scheduled night that ran late or a by-hand night run after
+    // dinner lands there.
+    static readonly DateTimeOffset LateInstant = new(2026, 9, 6, 1, 30, 0, TimeSpan.Zero);
+
+    // A current member the backfill never saw, so the stage dates its row by
+    // the clock rather than by a session it holds.
+    const string BarlessMember =
+        "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
+        "VALUES ('GSPC', 'NEWW', '2026-09-01', NULL, '2026-09-05T21:10:00Z', 'Technology');";
+
+    [Fact]
+    public async Task ALadderRowWithNoStoredBarIsDatedByTheSessionAndNotByTheUtcDate()
+    {
+        using var store = await WithLevels();
+        var late = FixedClock.At(LateInstant, SessionZones.UnitedStates);
+        var session = ((IClock)late).SessionDateAt(LateInstant);
+
+        // The case is only a case where the two dates differ, so that is
+        // asserted first rather than assumed.
+        Assert.NotEqual(((IClock)late).UtcDateAt(LateInstant), session);
+
+        Insert(store, BarlessMember);
+
+        await new LadderBuilder(late, store.DatabaseFile).RunAsync(Index, "replay-ladders-late");
+
+        Assert.Equal(
+            [session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)],
+            Query(store, "SELECT as_of FROM ladder WHERE ticker = 'NEWW';"));
+    }
+
     [Fact]
     public async Task AListingBehindTheFactsBesideItIsRefusedAndOneAheadOfThemIsNot()
     {
