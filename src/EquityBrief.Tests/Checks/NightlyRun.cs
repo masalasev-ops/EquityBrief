@@ -128,7 +128,26 @@ public class NightlyRun
 
         Assert.True(wallClockAt >= 0, "Section 17 no longer carries the wall clock row.");
 
-        var wallClock = row[wallClockAt..row.IndexOf("</tr>", wallClockAt, StringComparison.Ordinal)];
+        // The description cell, not the whole row.
+        //
+        // Slicing to `</tr>` spans all four cells, and this row states two of
+        // the phrases below in its Asserted-by cell as well as in its
+        // description: "operational header" and "three times" each appear
+        // twice inside it. So the assertions held over the second occurrence
+        // and deleting the claim from the cell that carries it left them green,
+        // which the phase 5 sign-off found. The claim is what the description
+        // cell says, so that is what is read.
+        var rowEnd = row.IndexOf("</tr>", wallClockAt, StringComparison.Ordinal);
+        var subjectEnd = row.IndexOf("</td>", wallClockAt, StringComparison.Ordinal);
+        var descriptionStart = row.IndexOf("<td>", subjectEnd, StringComparison.Ordinal);
+        var descriptionEnd = row.IndexOf("</td>", descriptionStart, StringComparison.Ordinal);
+
+        Assert.True(
+            descriptionStart >= 0 && descriptionEnd > descriptionStart && descriptionEnd < rowEnd,
+            "Section 17's wall clock row has no description cell to read, so the assertions below would " +
+            "run over the whole row and pass on a phrase repeated in the Asserted-by cell.");
+
+        var wallClock = row[descriptionStart..descriptionEnd];
 
         Assert.Contains(
             $"bounded by {RetryPolicy.WallClock.TotalMinutes:0} minutes",

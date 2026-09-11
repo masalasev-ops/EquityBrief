@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 namespace EquityBrief.Core.Providers;
@@ -113,7 +114,7 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
             {
                 throw new FormatException(
                     $"The bulk response for {exchange} carries " +
-                    string.Join(", ", wrong.Select(date => date.ToString("yyyy-MM-dd"))) +
+                    string.Join(", ", wrong.Select(date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))) +
                     $" and {wanted:yyyy-MM-dd} was asked for. A payload for another session is " +
                     "refused rather than stored, because bars the store already holds arrive " +
                     "looking exactly like a night that ran.");

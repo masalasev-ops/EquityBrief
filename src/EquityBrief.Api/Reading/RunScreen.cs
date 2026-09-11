@@ -191,6 +191,7 @@ public static class RunScreen
             .ThenBy(row => row.Stage, StringComparer.Ordinal)
             .Select(row => new StageRow(
                 row.Stage,
+                row.StartedAt,
                 (row.EndedAt - row.StartedAt).TotalSeconds,
                 row.RowsWritten,
                 row.ModelCalls,

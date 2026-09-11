@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -271,7 +272,7 @@ public class GapRefusal
 
         Assert.NotNull(detail);
         Assert.Contains("KEYS", detail!, StringComparison.Ordinal);
-        Assert.Contains(removed.ToString("yyyy-MM-dd"), detail, StringComparison.Ordinal);
+        Assert.Contains(removed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), detail, StringComparison.Ordinal);
     }
 
     [Fact]

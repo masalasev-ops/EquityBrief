@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
@@ -133,7 +134,7 @@ public sealed class Backfill(
                 await using var insert = connection.CreateCommand();
                 insert.CommandText = InsertBar;
                 insert.Parameters.AddWithValue("$ticker", ticker);
-                insert.Parameters.AddWithValue("$session_date", bar.SessionDate.ToString("yyyy-MM-dd"));
+                insert.Parameters.AddWithValue("$session_date", bar.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
                 // Through the money guard, which refuses anything that is not a
                 // decimal. STRICT would take a double and store its rendering.

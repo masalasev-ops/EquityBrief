@@ -25,6 +25,63 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-10 - BUILD_PLAN.md - 5.3's done condition amended to what the fixture asserts
+Corrects: 5.3 read "the facts file matches the fixture byte for byte" and the fixture refuses to be that. `facts.json` states in its own words that nothing in it is frozen from a run and that the payload hash is not stated, because a hash of a payload is a function of that payload and stating it would be a regression baseline wearing the clothes of an expectation. So the condition asked for exactly the thing done condition 7 warns against, the checkpoint built the stronger form instead, explained why in its Measured block, and left the condition saying something else with no amendment recorded. Found by the phase 5 sign-off.
+Was:
+> **Done when** the facts file matches the fixture byte for byte, and the per-operation split is proved rather than true by construction, since a facts re-run must not blank the change list.
+Now: every fact and the stage that computed it match the fixture, the payload is written in name order so two runs over one store produce the same bytes, and the per-operation split is proved rather than true by construction; with a paragraph beneath it saying the condition was amended and by whom.
+Why: a done condition narrower than its clause is the common defect in this class of corpus, and one wider than what the checkpoint can produce is the same fault mirrored. Amending it is legitimate; landing the amendment silently is what CLAUDE.md forbids, and 5.3 did the second by doing neither.
+
+### 2026-09-10 - BUILD_PLAN.md, DECISIONS.md - the posting hour was still measured at 2.1 in two places
+Corrects: 5.7 moved the posting hour to an operating row whose trigger is five nights fetched under the schedule, and two statements that it is measured at 2.1 were left standing, one of them inside the decision the schedule rests on. The obligation row says "Bounded at 2.1 and again at 2.6", which is the opposite claim: one fetch says the file was there by then and says nothing about when it appeared. Found by the phase 5 sign-off.
+Was:
+> The provider's posting hour for the day's bulk file is measured here from live fetches rather than taken from documentation, which is the one figure the schedule decision leaves open and the first thing a live feed can be asked
+Now: bounded here rather than measured, with the operating row cited for what settles it.
+Why: the decision's own ruling is unchanged, so the entry in `DECISIONS.md` is corrected rather than superseded and says so in the same breath. What was stale is a pointer inside its reasoning and not the rule it makes, and superseding a correct decision to repair a cross-reference would move every citation to it for nothing.
+
+### 2026-09-10 - ARCHITECTURE.html - section 11's calibration window, and the flood it now has a number for
+Corrects: section 11 said the thresholds are set against your own distribution "after a few weeks" while the obligation states sixty nights of listings, which its own text calls the quarter of trading the level window already uses. Two places holding one fact, and the vaguer of the two is the one a reader meets first. The same callout illustrates with "a hundred-name night says a hundred" and the first night at index size fired 477 of 503. Found by the phase 5 sign-off.
+Was:
+> so after a few weeks the thresholds are set against your own distribution (see: Condition thresholds are calibrated from your own nights, not from a backfill). Until then the app shows the strongest twenty and states the true fired count in the header, so a hundred-name night says a hundred.
+Now: sixty nights of listings with the reason the obligation gives, the obligation cited, and the measured 477 of 503 recorded beside the hundred the paragraph illustrates with.
+Why: the callout predicted the flood in the abstract and named which two reasons would cause it, which is why 477 of 503 is not a failed claim. What it did not carry was the figure, and a prediction that never records what actually happened cannot be read as confirmed or refuted.
+
+### 2026-09-10 - ARCHITECTURE.html - section 19.1 gains the run page, and the preamble admits it
+Corrects: 5.6 added `run-page.json` to the fixture and section 19.1 did not name it, which reopens the fault 4.0 reconciled this table for once already. Nothing could notice: `fixture-expectations` declares reach over sixteen keys and none is a run page, and `architecture-conformance` reads its population from the document, so a file with no row is invisible to it. Found by the phase 5 sign-off.
+Was:
+> one per stage's serialised output rather than one over a rendered page (see: The fixture is diffed on each stage's serialised output, of which the facts file is one).
+Now: the same sentence, with the run page named as the one exception and why, and a table row for it reached by `read-surface`.
+Why: the run page expectation holds the counts a record is computed from across every night the store holds, which belongs to no single stage's output. Either the table admits it or the file goes away, and the file is what carries 5.6's own expectations.
+
+### 2026-09-10 - ARCHITECTURE.html - 15.10's operational header row states the instant it now draws
+Corrects: the row promised "what ran, how long each stage took, model calls, network requests, spend, names stale, and what failed in which component" and the header drew neither of the last two, which are the sibling region's and pass on its own test. It also promised no instant, while `BUILD_PLAN.md` states twice that the header carries the instant each stage started, and the posting hour obligation is read there. A figure that is a clock time cannot be read off a duration. Found by the phase 5 sign-off.
+Was:
+> what ran, how long each stage took, model calls, network requests, spend, names stale, and what failed in which component
+Now: what ran, the instant each stage started and how long it took, model calls, network requests, and spend.
+Why: the row was wrong in both directions at once, promising two things the region beneath it delivers and omitting the one its own obligations need. `run_log` has stored `started_at` since 1.1 and it reached no surface.
+
+### 2026-09-10 - SCHEMA.md - the facts column sets are disjoint per operation, not outright
+Corrects: SCHEMA declared FactsAssembler and ChangeDetector to own disjoint column sets, and the retention 5.4 added made that false: `ChangeDetector` runs `UPDATE facts SET payload = ''`, so `payload` is the assembler's on insert and the detector's on update. The retention paragraph twelve lines below described exactly that while the declaration went on saying the sets do not overlap. Found by the phase 5 sign-off.
+Was:
+> Declared column sets: FactsAssembler owns `payload` and `payload_hash`; ChangeDetector owns `material_changes`. The sets are disjoint and the grain is the same, which is what permits the split.
+Now: the sets stated per operation, which is the grain the ownership rule is written at, with the correction named in place.
+Why: one section held two statements of one fact and the one a reader is most likely to trust was the wrong one. The rule the split rests on is that no column is written by two components in one operation, and that was true throughout; the declaration was stating something stronger and untrue.
+
+### 2026-09-10 - CLAUDE.md - five roster rows widened to what their checks now assert
+Corrects: five checks were widened by the phase 5 sign-off and a check that asserts more than its roster row says is a property nobody wrote down, which is the same fault as one that asserts less. The roster and the phase report enumerate checks by name, so the two would disagree with nothing to reconcile them.
+Was:
+> | `clock-usage` | every CI run | Nothing outside the clock reads the machine clock, no schedule is expressed in local time, and no date is parsed against the machine's locale. Comments are stripped first, because a sentence naming a pattern is not a use of it |
+>
+> | `store-portability` | every CI run | No row in a populated store carries an absolute path |
+>
+> | `price-storage-form` | every CI run | No migration declares a price or money column `REAL` |
+>
+> | `ci-parity` | every CI run | `tools/ci.ps1` and `tools/ci.sh` run the same steps in the same order, and a step that fails fails the script it runs in |
+>
+> | `two-platform` | the matrix | The suite passes on both windows and macos runners |
+Now: each row states the widened property, and each names the half that was missing rather than only the half that is there.
+Why: the five widenings are the rendering direction of `clock-usage`, a populated store for `store-portability`, the code half of the money boundary for `price-storage-form`, the data root and the cmdlet failure path for `ci-parity`, and every YAML condition rather than three literals for `two-platform`. Each was a check whose roster row claimed a property it reached half of.
+
 ### 2026-09-10 - CLAUDE.md, BUILD_PLAN.md - the calendar-time rule gains an instrument
 Corrects: the rule that a done condition may not require calendar time arrived at 5.7 with nothing asserting it, in the same pass that left three statements of the condition it forbids standing. A convention with no check is a convention the next planning pass writes past, and this one had already been written past before the ink was dry. Found by repairing those three and asking what would have caught them.
 Was:

@@ -180,7 +180,7 @@ public sealed class LevelBuilder : IComponent
                 command.Transaction = (SqliteTransaction)transaction;
                 command.CommandText = Upsert;
                 command.Parameters.AddWithValue("$ticker", ticker);
-                command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd"));
+                command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 Money.Bind(command, "$low_edge", level.LowEdge);
                 Money.Bind(command, "$high_edge", level.HighEdge);
                 command.Parameters.AddWithValue("$role", level.Role);
@@ -218,7 +218,7 @@ public sealed class LevelBuilder : IComponent
         {
             kind = member.Kind,
             price = Money.ToStorage(member.Price),
-            date = member.Date.ToString("yyyy-MM-dd"),
+            date = member.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
         }));
 
     async Task<IReadOnlyList<Level>> LevelsAsync(
@@ -351,7 +351,7 @@ public sealed class LevelBuilder : IComponent
 
         command.CommandText = AveragesFor.Replace("$names", string.Join(", ", slots), StringComparison.Ordinal);
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         for (var index = 0; index < AverageNames.Length; index++)
         {
@@ -386,7 +386,7 @@ public sealed class LevelBuilder : IComponent
 
         command.CommandText = ShelvesFor;
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$threshold", ShelfThreshold);
 
         var shelves = new List<LevelMember>();
@@ -422,7 +422,7 @@ public sealed class LevelBuilder : IComponent
             "SELECT value FROM indicator WHERE ticker = $ticker AND session_date = $as_of " +
             "AND name = $name AND value IS NOT NULL;";
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$name", IndicatorSeries.Atr14);
 
         var value = await command.ExecuteScalarAsync(cancellation);
@@ -448,8 +448,8 @@ public sealed class LevelBuilder : IComponent
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
-        command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+        command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         // "ok" and nothing else. The count of rows dropped is on the detail
         // beside it, where it is interpolated and where a person reads it.
         // This line carried "ok, {dropped} dropped" without the interpolation

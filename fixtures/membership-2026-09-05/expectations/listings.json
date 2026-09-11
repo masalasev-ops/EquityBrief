@@ -1,5 +1,6 @@
 {
  "stage": "listings",
+ "derivation": "derived",
  "derivedFrom": "the rules in section 11, not from a run. Each of the six reasons is recomputed in the suite from the tables it reads, being the bars, the indicators, the levels, the ladders and the calendar, and compared against what the builder wrote. A set frozen from the run would agree with a builder that evaluated the wrong rule, because it would have been taken from that builder.",
  "tables": [
   "listing"

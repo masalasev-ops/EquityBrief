@@ -1,3 +1,4 @@
+using EquityBrief.Core.Prices;
 namespace EquityBrief.Core.Moves;
 
 // One session as the move arithmetic reads it. Close alone, because a move is a
@@ -58,7 +59,7 @@ public static class MoveSeries
                     continue;
                 }
 
-                var change = (double)((bars[at].Close - from) / from) * 100;
+                var change = Statistic.FromRatio((bars[at].Close - from) / from) * 100;
                 var ending = bars[at].SessionDate;
 
                 if (!best.TryGetValue(ending, out var held) || span > held.Sessions)

@@ -39,7 +39,7 @@ public static class StoredSwings
 
         command.CommandText = ConfirmedBy;
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var swings = new List<Swing>();
 

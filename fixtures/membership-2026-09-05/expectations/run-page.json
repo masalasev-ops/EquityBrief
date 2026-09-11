@@ -1,5 +1,6 @@
 {
  "stage": "run page",
+ "derivation": "derived",
  "derivedFrom": "the rules in section 15.10, section 15.11 and section 17 applied to the stored listings and forward returns, not from a run. Every count below is recomputed in the suite from the two tables: a reason's fired count is the listings whose reasons name it, and its resolved count is the setup-horizon rows that reached an outcome for a name listed that night.",
  "tables": [
   "listing",

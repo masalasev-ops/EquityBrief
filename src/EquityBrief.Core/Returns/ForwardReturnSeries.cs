@@ -1,3 +1,4 @@
+using EquityBrief.Core.Prices;
 using System.Globalization;
 
 namespace EquityBrief.Core.Returns;
@@ -54,7 +55,7 @@ public static class ForwardReturnSeries
         }
 
         var at = after[sessions - 1];
-        var change = (double)((at.Close - listedAt) / listedAt) * 100;
+        var change = Statistic.FromRatio((at.Close - listedAt) / listedAt) * 100;
 
         // A win is a rise and a loss is a fall over a session horizon, which is
         // a different question from the setup's. It is the question the base

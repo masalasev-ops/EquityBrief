@@ -412,8 +412,8 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = BarsForName;
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd"));
-        command.Parameters.AddWithValue("$to", to.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var bars = new List<BarRow>();
 
@@ -441,8 +441,8 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = IndicatorsForName;
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd"));
-        command.Parameters.AddWithValue("$to", to.ToString("yyyy-MM-dd"));
+        command.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var rows = new List<IndicatorRow>();
 
@@ -809,7 +809,7 @@ public sealed class ReadApi : IComponent
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
-        command.Parameters.AddWithValue("$started_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+        command.Parameters.AddWithValue("$started_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$detail", detail);
 
         await command.ExecuteNonQueryAsync();

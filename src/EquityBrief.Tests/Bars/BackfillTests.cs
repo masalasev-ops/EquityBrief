@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
@@ -79,7 +80,7 @@ public class BackfillTests
                 continue;
             }
 
-            sessions.Add(day.ToString("yyyy-MM-dd"));
+            sessions.Add(day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         }
 
         return sessions;
@@ -199,8 +200,8 @@ public class BackfillTests
         var held = Column(store, "SELECT session_date FROM bar WHERE ticker = 'AAPL' ORDER BY session_date;");
 
         Assert.DoesNotContain("2025-09-04", held);
-        Assert.Equal(WindowFrom.ToString("yyyy-MM-dd"), held[0]);
-        Assert.Equal(WindowTo.ToString("yyyy-MM-dd"), held[^1]);
+        Assert.Equal(WindowFrom.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), held[0]);
+        Assert.Equal(WindowTo.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), held[^1]);
     }
 
     [Fact]
@@ -213,7 +214,7 @@ public class BackfillTests
         var sets = new[] { "AAPL", "MSFT", "KEYS" }
             .Select(ticker => RecordedHistoricalBarFeed
                 .Parse(File.ReadAllText(Path.Combine(FixtureFolder(), $"bars-{ticker}.json")), ticker)
-                .Select(bar => bar.SessionDate.ToString("yyyy-MM-dd"))
+                .Select(bar => bar.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
                 .ToArray())
             .ToArray();
 

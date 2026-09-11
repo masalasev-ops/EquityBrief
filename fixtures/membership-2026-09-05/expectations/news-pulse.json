@@ -1,5 +1,6 @@
 {
  "stage": "news pulse",
+ "derivation": "derived",
  "derivedFrom": "the captured news payload read through the rules in section 11 and section 17, not from a run. The count per name is the articles the payload attributes to that name, recomputed in the suite from the same capture, and a member the day wrote nothing about carries zero rather than no row.",
  "tables": [
   "news_pulse"

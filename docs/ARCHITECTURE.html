@@ -494,7 +494,7 @@
   <tr><td><b>Earnings soon</b></td><td>the next earnings date is within twenty sessions</td><td>a calendar fact rather than a setup, listed so a print is never a surprise</td></tr>
 </table>
 <div class="flag">
-  <p><b>The thresholds in this table are proposals and are known to be untested.</b> Two of them will produce too many names as written. Earnings soon fires for a large part of the index during reporting season and goes quiet between, and at entry zone fires often because the nearest support band is rarely far away. The calibration is not a backfill: the run page records how many names fired each night and which reason contributed, so after a few weeks the thresholds are set against your own distribution (see: Condition thresholds are calibrated from your own nights, not from a backfill). Until then the app shows the strongest twenty and states the true fired count in the header, so a hundred-name night says a hundred.</p>
+  <p><b>The thresholds in this table are proposals and are known to be untested.</b> Two of them will produce too many names as written. Earnings soon fires for a large part of the index during reporting season and goes quiet between, and at entry zone fires often because the nearest support band is rarely far away. The calibration is not a backfill: the run page records how many names fired each night and which reason contributed, so the thresholds are set against your own distribution once sixty nights of listings have accumulated, which is the quarter of trading the level window already uses and long enough that a distribution of fired counts is not one week's weather (see: Condition thresholds are calibrated from your own nights, not from a backfill) (owes: The six reason thresholds calibrated from the nights they fired on). This paragraph said "after a few weeks" until the phase 5 sign-off, against an obligation stating sixty nights, which is two places holding one fact and the vaguer of the two is the one a reader meets first. Until it fires the app shows the strongest twenty and states the true fired count in the header, so a hundred-name night says a hundred. The first night at index size fired 477 of 503 on 798 reasons, which is what the first sentence above predicted in the abstract and is well past the hundred this one illustrates with.</p>
 </div>
 
 <h2>12. The research runner and its staleness rules</h2>
@@ -885,7 +885,7 @@ wrote them.</p>
 <p><b>Reads:</b> the run log, the listings and the forward returns.</p>
 <table>
   <tr><th style="width:22%">Region</th><th>What is in it</th></tr>
-  <tr><td>Operational header</td><td>what ran, how long each stage took, model calls, network requests, spend, names stale, and what failed in which component</td></tr>
+  <tr><td>Operational header</td><td>what ran, the instant each stage started and how long it took, model calls, network requests, and spend</td></tr>
   <tr><td>Reason records</td><td>one row per reason with the reason track mark, the resolved count, the share that reached target before stop, and the break-even those setups demanded. A pinned first row gives the base rate over every name-night, so no figure stands on its own</td></tr>
   <tr><td>Shadow candidates</td><td>the same columns for registered candidates that are not on the list, with the correction divisor stated beside the threshold</td></tr>
   <tr><td>Stale and failed</td><td>names carrying yesterday's bars, sections that fell back, documents refused by admissibility with the category that refused each</td></tr>
@@ -1061,7 +1061,7 @@ wrote them.</p>
 <p>This document is the specification. The harness checks the code against the claims made here, and against a committed set of inputs whose expected outputs are whatever the rules in this document produce. No external document is authoritative, and no hand-written report is treated as a thing to be reproduced. (see: A frozen fixture per checkpoint, and the harness decides sign-off)</p>
 
 <h3>19.1 What a fixture holds</h3>
-<p>A fixture is one folder per name and date. It is committed, never regenerated, and its expected files are derived once from the rules in sections 9 to 13 and then frozen, one per stage's serialised output rather than one over a rendered page (see: The fixture is diffed on each stage's serialised output, of which the facts file is one). The first fixture uses a year of daily bars for one liquid name; later fixtures add names of different character, as section 20 sets out.</p>
+<p>A fixture is one folder per name and date. It is committed, never regenerated, and its expected files are derived once from the rules in sections 9 to 13 and then frozen, one per stage's serialised output rather than one over a rendered page (see: The fixture is diffed on each stage's serialised output, of which the facts file is one). The run page is the one exception and is listed as such: it holds the counts a record is drawn from rather than the markup it is drawn into, because the reason record is computed across every night the store holds and belongs to no single stage's output. 5.6 added that file and this table did not name it until the phase 5 sign-off, which is the fault 4.0 reconciled this table for once already. The first fixture uses a year of daily bars for one liquid name; later fixtures add names of different character, as section 20 sets out.</p>
 <table>
   <tr><th style="width:22%">File</th><th>What it holds</th><th>Why it is frozen</th></tr>
   <tr><td colspan="3"><b>Inputs</b></td></tr>
@@ -1083,6 +1083,7 @@ wrote them.</p>
   <tr><td>facts</td><td>the whole facts file, which is the artefact a run is diffed against</td><td>section 7's facts assembler</td></tr>
   <tr><td>forward returns</td><td>the five and twenty-one session outcomes of past listings, and the base rate each is shown against</td><td>section 7's forward return filler, and the base rate over every name-night</td></tr>
   <tr><td>news pulse</td><td>the article count per name for the fixture date, and how many pages the day took</td><td>section 7's news pulse counter, and the paging rule in section 17</td></tr>
+  <tr><td>run page</td><td>each reason's firings and resolved count over the stored nights, and the state each record is drawn in</td><td>section 15.10's regions and the minimum in section 17</td></tr>
   <tr><td colspan="3"><b>Expected rejections</b></td></tr>
   <tr><td>a poisoned paragraph</td><td>prose citing a number that is not in the facts file</td><td>must be rejected by the claim checker</td></tr>
   <tr><td>an unsourced claim</td><td>prose naming no stored document</td><td>must be rejected by the claim checker</td></tr>

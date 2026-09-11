@@ -43,6 +43,35 @@ public class TwoPlatform
         Assert.Equal(["macos-latest", "ubuntu-latest", "windows-latest"], Runners(workflow));
     }
 
+    // Every YAML condition key in the workflow. The key form only, so the pwsh
+    // step's own inline `if (` is not one of them.
+    //
+    // The optional dash is the first thing the proof below caught. A job-level
+    // condition is `    if:` and a step-level one is `      - if:`, because a
+    // step is a list item and its first key carries the dash. A pattern anchored
+    // on whitespace alone reads the job form and misses the step form, which is
+    // the narrower of the two and the easier one to add by accident.
+    static int ConditionsIn(string workflow) =>
+        Regex.Matches(workflow, @"^\s+(?:-\s+)?if:", RegexOptions.Multiline).Count;
+
+    [Fact]
+    public void TheConditionReaderCatchesASkippableLegAndLeavesTheInlineShellAlone()
+    {
+        // The permanent proof, in both directions. The forward direction is what
+        // the blocklist this replaced could not do: none of these three carries
+        // any of the literals it looked for, and every one of them skips a leg.
+        Assert.Equal(1, ConditionsIn("jobs:\n  matrix:\n    if: runner.os != 'macOS'\n    steps:\n      - run: ./tools/ci.sh\n"));
+        Assert.Equal(1, ConditionsIn("jobs:\n  matrix:\n    steps:\n      - if: ${{ false }}\n        run: ./tools/ci.sh\n"));
+        Assert.Equal(1, ConditionsIn("jobs:\n  matrix:\n    if: github.event_name == 'schedule'\n    steps:\n      - run: ./tools/ci.sh\n"));
+
+        // And the reverse, since a matcher catching every `if` anywhere would
+        // make the shipped workflow unwritable: its pwsh step chooses the entry
+        // point for the platform it is on, which is a shell conditional inside a
+        // run block and not a YAML key.
+        Assert.Equal(0, ConditionsIn("    steps:\n      - name: verify\n        shell: pwsh\n        run: |\n          if ($IsWindows) { ./tools/ci.ps1 } else { ./tools/ci.sh }\n"));
+        Assert.Equal(0, ConditionsIn("jobs:\n  matrix:\n    steps:\n      - run: ./tools/ci.sh\n"));
+    }
+
     [Fact]
     public void NoLegCanReportGreenWithoutRunningTheSuite()
     {
@@ -54,7 +83,29 @@ public class TwoPlatform
 
         Assert.DoesNotContain("continue-on-error", workflow, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("|| true", workflow, StringComparison.Ordinal);
-        Assert.DoesNotContain("if: false", workflow, StringComparison.Ordinal);
+
+        // Every YAML condition, and not the three literals that stood here.
+        //
+        // `if: false` was one of a blocklist, and a blocklist answers about the
+        // entries on it. A leg is skipped at runtime by any condition at all:
+        // `if: runner.os != 'macOS'`, `if: ${{ false }}`, a condition on an
+        // event name, or one reading a variable nobody sets. Each produces a job
+        // whose conclusion is `skipped`, and a skipped job does not fail its
+        // run, so the run is green and the leg asserted nothing. That is the
+        // exact fault the comment above this test names, and the blocklist could
+        // not see it.
+        //
+        // Counted rather than absent-checked, because a sweep expecting nothing
+        // states the count it expects in advance. The inline `if (` inside the
+        // pwsh step is not a YAML key and is not matched: the pattern requires
+        // the key form, being `if:` at the start of an indented line.
+        var conditions = ConditionsIn(workflow);
+
+        Assert.True(
+            conditions == 0,
+            $"The workflow carries {conditions} YAML condition(s), expected 0. A condition on a job or a " +
+            "step can skip a leg at runtime, and a skipped job leaves the run green, so the leg reports " +
+            "nothing and two-platform's roster row would still read as satisfied.");
 
         // fail-fast false is deliberate and is the opposite of a swallowed
         // failure: it lets the other leg finish so a fault on one platform does

@@ -1,5 +1,6 @@
 {
  "stage": "indicators",
+ "derivation": "derived",
  "derivedFrom": "the arithmetic in section 9 and section 17 applied to the committed bar files, not to a run. Every figure below was computed from the captured adjusted closes and volumes by summing them directly, outside this repository and without running the indicator engine, which is what makes it an expectation rather than a regression baseline: an engine that averaged the wrong window would still agree with a figure taken from itself. Widened to four names at 3.6. The fourth carries a ten for one split inside the window, so every close before 2025-11-17 is an adjusted one and its averages are computed over a series the provider restated rather than over the prices it printed.",
  "tables": [
   "indicator"

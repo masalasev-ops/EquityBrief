@@ -1,3 +1,4 @@
+using EquityBrief.Core.Prices;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
@@ -93,7 +94,7 @@ public static class UniverseScreen
     // for having been still.
     static double? Distance(decimal? close, decimal? edge, double? typicalMove) =>
         close is { } price && edge is { } band && typicalMove is > 0
-            ? Math.Abs((double)(price - band)) / typicalMove.Value
+            ? Statistic.FromPrice(Math.Abs(price - band)) / typicalMove.Value
             : null;
 
     static double? Nearest(double? toSupport, double? toResistance) =>

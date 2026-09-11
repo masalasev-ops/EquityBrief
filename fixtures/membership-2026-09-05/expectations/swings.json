@@ -1,5 +1,6 @@
 {
  "stage": "swings",
+ "derivation": "derived",
  "derivedFrom": "section 5's definition of a swing and section 17's swing lookback, applied to the committed bar files outside this repository and without running the swing finder. Every row below was found by adjusting each session's high and low by the same factor the stored series carries, then keeping the sessions whose high is above all six neighbours or whose low is below all six. An engine comparing against four neighbours instead of six would still agree with a count taken from itself, which is what makes this an expectation rather than a regression baseline.",
  "tables": [
   "swing"

@@ -29,6 +29,38 @@ public class StorePortability
     }
 
     [Fact]
+    public async Task NoRowTheShippedComponentsWroteCarriesAnAbsolutePath()
+    {
+        // The test the roster row was always claiming, and it was missing until
+        // the phase 5 sign-off.
+        //
+        // Every row this check had ever read, it had written itself: one scan
+        // over an empty store, and two over a probe table the test creates. The
+        // roster row says no row in a POPULATED store carries an absolute path,
+        // and the suite has built a store the whole pipeline populated since
+        // 5.5 without ever pointing this at it. Phase 5 added seven writers to
+        // the set nothing scanned, and `run_log.detail` is the column at risk:
+        // exception text carries absolute paths mid-string, which is the reason
+        // the matcher was widened off position zero at 1.3 in the first place.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var scan = AbsolutePaths.Scan(store);
+
+        Assert.Empty(scan.Offenders);
+
+        // Scope, and this one carries the property rather than being context: a
+        // scan reading nothing is the failure mode the empty store above shows,
+        // so the floor is stated in advance and sits far under what the replay
+        // writes. It is the rows that carry the property here, not the tables.
+        Assert.True(
+            scan.RowsScanned >= 200,
+            $"The scan read {scan.RowsScanned} rows from a replayed store, expected at least 200. " +
+            "A scan that reads nothing reports the same empty offender list as one that reads everything.");
+
+        Assert.Equal(TablesTheMigrationsCreate(), scan.TablesScanned);
+    }
+
+    [Fact]
     public void TheCheckReportsAnAbsolutePathInAPopulatedStore()
     {
         using var store = new TemporaryStore().Migrated();
