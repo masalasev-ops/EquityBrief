@@ -306,6 +306,145 @@ public class NightlyRun
         Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
         Assert.Contains("did not answer", error, StringComparison.Ordinal);
         Assert.Equal(before, Count(store));
+
+        // And on the run log, which is what the row's own name says and what
+        // this test did not assert until the phase 5 sign-off. The step and the
+        // reason reached stderr and nowhere else, so a scheduled night, whose
+        // stderr goes nowhere, recorded a failure only as the scheduler's exit
+        // code: the first one showed eleven clean stages on the run page.
+        var logged = RunLog(store, "night-down");
+
+        var stopped = Assert.Single(logged, row => row.Outcome != "ok");
+
+        Assert.Equal("fetch", stopped.Stage);
+        Assert.Equal("failed", stopped.Outcome);
+        Assert.Contains("did not answer", stopped.Detail, StringComparison.Ordinal);
+
+        // Read back through the surface a person reads, rather than off the
+        // column: the run page's stale-and-failed region draws the step.
+        var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, FixedClock.At(Night, SessionZones.UnitedStates));
+        var stages = EquityBrief.Api.Reading.RunScreen.Stages(
+            [.. (await api.RunLogAsync(new DateOnly(2026, 9, 8))).Where(row => row.RunId == "night-down")]);
+        var failed = EquityBrief.Api.Reading.RunScreen.Failed(stages);
+
+        Assert.Equal(["fetch"], [.. failed.Select(stage => stage.Stage)]);
+
+        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed);
+
+        Assert.Contains("data-stage=\"fetch\"", region, StringComparison.Ordinal);
+        Assert.Contains("did not answer", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("no stage of this night failed", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AStopInsideTheFactsStepIsRecordedUnderTheStageThatStoppedAndNotOverTheOneThatRan()
+    {
+        // The one composite step. The assembler writes its row and the detector
+        // writes another, so a failure in the detector must land under
+        // "changes" rather than being dropped on the conflict with "facts".
+        using var store = new TemporaryStore();
+
+        var (clean, _, _) = await NightAsync(store, runId: "night-one");
+
+        Assert.Equal(0, clean);
+
+        var started = new DateTimeOffset(2026, 9, 8, 21, 20, 0, TimeSpan.Zero);
+
+        await using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+                "VALUES ('night-half', 'facts', '2026-09-08T21:20:00Z', '2026-09-08T21:20:01Z', 'ok', 4, 0, 0, '0', 'written');";
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var recorded = await EquityBrief.Worker.Nights.NightClose.RecordStopAsync(
+            store.DatabaseFile,
+            Path.GetDirectoryName(store.DatabaseFile)!,
+            "night-half",
+            ["facts", "changes"],
+            started,
+            started.AddSeconds(2),
+            EquityBrief.Worker.Nights.NightClose.Failed,
+            "step 'facts' failed: the detector refused");
+
+        Assert.Equal("changes", recorded);
+
+        var rows = RunLog(store, "night-half");
+
+        Assert.Contains(rows, row => row is { Stage: "facts", Outcome: "ok" });
+        Assert.Contains(rows, row => row is { Stage: "changes", Outcome: "failed" });
+    }
+
+    [Fact]
+    public async Task AStopRecordedOnTheRunLogCarriesNoAbsolutePath()
+    {
+        // The recorder applies the scrub, asserted through the row it writes
+        // rather than through the helper alone. The helper's own test below
+        // stayed green with the scrub removed from the recorder, which is the
+        // mutation that found this gap.
+        using var store = new TemporaryStore().Migrated();
+        var root = Path.GetDirectoryName(store.DatabaseFile)!;
+        var at = new DateTimeOffset(2026, 9, 8, 21, 20, 0, TimeSpan.Zero);
+
+        var detail = $"step 'migrate' failed: unable to open '{store.DatabaseFile}'";
+
+        Assert.True(AbsolutePaths.LooksAbsolute(detail), detail);
+
+        await EquityBrief.Worker.Nights.NightClose.RecordStopAsync(
+            store.DatabaseFile, root, "night-path", ["migrate"], at, at, EquityBrief.Worker.Nights.NightClose.Failed, detail);
+
+        var stored = Assert.Single(RunLog(store, "night-path")).Detail;
+
+        Assert.False(AbsolutePaths.LooksAbsolute(stored), stored);
+        Assert.Contains("unable to open", stored, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AStopsDetailCarriesNoAbsolutePath()
+    {
+        // Exception text carries absolute paths mid-string, and a run log row
+        // is copied between machines. The data root is named and any other
+        // rooted token is replaced, and a date or a ratio inside a token is
+        // left alone.
+        var root = Path.Combine(Path.GetTempPath(), "equitybrief-probe");
+        var message =
+            $"could not open '{Path.Combine(root, "equitybrief.db")}', also /var/tmp/x and C:\\Users\\someone\\file.json, " +
+            "on 2026/09/08 at a ratio of 3/4";
+
+        var portable = EquityBrief.Worker.Nights.NightClose.Portable(message, root);
+
+        Assert.False(AbsolutePaths.LooksAbsolute(portable), portable);
+        Assert.Contains("<data root>", portable, StringComparison.Ordinal);
+        Assert.Contains("2026/09/08", portable, StringComparison.Ordinal);
+        Assert.Contains("3/4", portable, StringComparison.Ordinal);
+
+        // The matcher's own proof: the input was absolute before.
+        Assert.True(AbsolutePaths.LooksAbsolute(message));
+    }
+
+    sealed record LoggedStage(string Stage, string Outcome, string Detail);
+
+    static IReadOnlyList<LoggedStage> RunLog(TemporaryStore store, string runId)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT stage, outcome, IFNULL(detail, '') FROM run_log WHERE run_id = $run ORDER BY rowid;";
+        command.Parameters.AddWithValue("$run", runId);
+
+        var rows = new List<LoggedStage>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            rows.Add(new LoggedStage(reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+        }
+
+        return rows;
     }
 
     [Fact]
@@ -466,6 +605,14 @@ public class NightlyRun
 
         // And the promise section 18 makes about a feed that did not answer.
         Assert.Contains("Last night's bars are kept", error, StringComparison.Ordinal);
+
+        // On the run log as well, as a stop rather than a failure, against the
+        // step the deadline caught.
+        var stopped = Assert.Single(RunLog(store, "night-slow"), row => row.Outcome != "ok");
+
+        Assert.Equal("fetch", stopped.Stage);
+        Assert.Equal("stopped", stopped.Outcome);
+        Assert.Contains("passed the night's deadline", stopped.Detail, StringComparison.Ordinal);
     }
 
     [Fact]

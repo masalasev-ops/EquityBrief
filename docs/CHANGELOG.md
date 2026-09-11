@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - ARCHITECTURE.html - a night that stops is recorded, in 15.10 and in the Night close row
+Corrects: section 18's unavailable-feed row promises the step and the reason "on the run log", and nothing wrote them there. A failed step's name went to stderr, which a scheduled task discards, so the run page drew the stages before it as clean and the stale-and-failed region as empty. The phase 5 sign-off's repair had just removed "what failed in which component" from the operational header on the reading that this region delivers it, and for a step that throws it could not. Found by the phase 5 sign-off reading the first scheduled night, which the scheduler recorded as exiting 1.
+Was:
+> <tr><td>Stale and failed</td><td>names carrying yesterday's bars, sections that fell back, documents refused by admissibility with the category that refused each</td></tr>
+>
+> ... stale names and duration, every one counted off the store rather than reported by the stage that wrote it</td></tr>
+Now: the region names the stage a night stopped on with its outcome and the reason, and the Night close row says it records that stop as the stage's own row.
+Why: the row the region is read against has to state what the region draws, or the sibling that stopped stating it leaves the promise nowhere. `RUNBOOK.md` already told the operator the run page says what failed in which component, and it now does.
+
 ### 2026-09-11 - BUILD_PLAN.md - 5.4's done condition names a night whose store holds the night before
 Corrects: 5.4 read "the listing row count equals the index size on every completed night", which a night that cannot complete satisfies without anything being asserted. The shortlist builder refused every evening after a store's first, so the first scheduled night, 2026-09-10, stopped at step 12 with no listing written. Found by the phase 5 sign-off reading that night's run log and reproducing the refusal on `main` against a copy of the store.
 Was:

@@ -747,7 +747,7 @@ internal static class Scope
             ByCost),
         [CheckReach.Key(FailureTable, "Bulk price feed unavailable, run log")] = new Scoped(
             Verdict.Pass,
-            "a night whose feed does not answer stores nothing, leaves the bars it already held exactly as they were, names the step and exits non-zero",
+            "a night whose feed does not answer stores nothing, leaves the bars it already held exactly as they were, names the step and exits non-zero, and the run log carries the step and the reason as a failed row that the run page's stale-and-failed region draws",
             ByNight),
         [CheckReach.Key(FailureTable, "A feed answers with a session other than the one asked for")] = new Scoped(
             Verdict.Pass,

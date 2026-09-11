@@ -558,10 +558,27 @@ public class NightlyCost
         Assert.Contains($"{ProviderWeights.DailyAllowance} weighted call(s)", said, StringComparison.Ordinal);
         Assert.Contains("Last night's bars are kept", said, StringComparison.Ordinal);
 
-        // And it made no call. The feed was never asked, and no stage reached
-        // the run log, which is the surface the operator reads it on.
+        // And it made no call. The feed was never asked, and no stage ran: the
+        // one run log row is the stop itself, recorded against the step it
+        // stopped before, which is the surface the operator reads it on. Until
+        // the phase 5 sign-off this asserted the run log was empty, which was
+        // the absence of the record rather than the presence of the stop.
         Assert.False(spent.Asked);
-        Assert.Empty(Stages(store, "run-spent"));
+        Assert.Equal(["migrate"], Stages(store, "run-spent"));
+        Assert.Equal(1, OutcomeCount(store, "run-spent", "stopped"));
+    }
+
+    static int OutcomeCount(TemporaryStore store, string runId, string outcome)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM run_log WHERE run_id = $run AND outcome = $outcome;";
+        command.Parameters.AddWithValue("$run", runId);
+        command.Parameters.AddWithValue("$outcome", outcome);
+
+        return Convert.ToInt32(command.ExecuteScalar());
     }
 
     static IReadOnlyList<string> Stages(TemporaryStore store, string runId)
