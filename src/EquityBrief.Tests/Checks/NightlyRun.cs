@@ -44,7 +44,7 @@ public class NightlyRun
 
             CheckReach.Key(NightlyRunSteps.Heading, "Load index membership and record any joins and leaves."),
             CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner."),
-            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the index's dated events for the horizon, one request, and store what the provider files (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Compute the indicators for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Mark the swings for every name."),
@@ -63,6 +63,7 @@ public class NightlyRun
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with none of the index in it"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a row the reader cannot read"),
+            CheckReach.Key(Scope.FailureTable, "A session the night finds missing"),
 
             // The stale-and-failed region's stopped stage, which only a night
             // can put there, decomposed from the region at the phase 5 sign-off.
@@ -820,6 +821,149 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task ANightAfterOneThatDidNotRunFetchesTheMissedSessionFirst()
+    {
+        // The hole every name shares, which the observed calendar cannot see.
+        // The store ends on 2026-09-08; this night is 2026-09-10, so 2026-09-09
+        // is a session the exchange traded and no night stored.
+        using var store = new TemporaryStore();
+
+        var (first, _, firstError) = await NightAsync(store, runId: "night-one");
+
+        Assert.True(first == 0, firstError);
+
+        var thursday = FixedClock.At(new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8));
+
+        var (code, output, error) = await NightAsync(store, runId: "night-after-a-miss", bulk: bulk, clock: thursday);
+
+        Assert.True(code == 0, error);
+        Assert.Contains("1 missed session(s) caught up", output, StringComparison.Ordinal);
+
+        // Every member holds both sessions, the missed one and tonight's.
+        var current = FixtureExpectation.CurrentMembers.Length;
+
+        Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM bar WHERE session_date = '2026-09-09';"));
+        Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM bar WHERE session_date = '2026-09-10';"));
+
+        // One request more than an ordinary night, and the run log says which
+        // session it was for.
+        Assert.Equal(2, Scalar(store, "SELECT network_requests FROM run_log WHERE run_id = 'night-after-a-miss' AND stage = 'fetch';"));
+        Assert.Contains("\"caughtUp\":[\"2026-09-09\"]", FetchDetail(store, "night-after-a-miss"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AClosureBetweenTwoNightsCostsNoRequest()
+    {
+        // The fixture's own night: the store ends on Friday 2026-09-04 and the
+        // night is Tuesday 2026-09-08, with Labor Day between them. A table
+        // missing the closure would ask the provider for it and refuse.
+        using var store = new TemporaryStore();
+
+        var (code, output, error) = await NightAsync(store, runId: "night-over-a-closure");
+
+        Assert.True(code == 0, error);
+        Assert.Contains("0 missed session(s) caught up", output, StringComparison.Ordinal);
+        Assert.Equal(1, Scalar(store, "SELECT network_requests FROM run_log WHERE run_id = 'night-over-a-closure' AND stage = 'fetch';"));
+        Assert.Contains("\"caughtUp\":[]", FetchDetail(store, "night-over-a-closure"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AMissedSessionThatCannotBeFetchedStopsTheNightByName()
+    {
+        using var store = new TemporaryStore();
+
+        var (first, _, firstError) = await NightAsync(store, runId: "night-one");
+
+        Assert.True(first == 0, firstError);
+
+        var before = Count(store);
+        var thursday = FixedClock.At(new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        // The missed day's file holds none of the index, which is what a closure
+        // the table does not know about would look like.
+        var bulk = new HoledBulkFeed(
+            new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8)),
+            new DateOnly(2026, 9, 9),
+            FixtureExpectation.CurrentMembers);
+
+        var (code, _, error) = await NightAsync(store, runId: "night-unfillable", bulk: bulk, clock: thursday);
+
+        Assert.Equal(1, code);
+        Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
+        Assert.Contains("missing session 2026-09-09", error, StringComparison.Ordinal);
+        Assert.Contains("the closure table is missing it", error, StringComparison.Ordinal);
+
+        // Nothing stored: not the missed day, and not tonight's either, since a
+        // night storing past a hole would move it rather than fill it.
+        Assert.Equal(before, Count(store));
+
+        var stopped = Assert.Single(RunLog(store, "night-unfillable"), row => row.Outcome != "ok");
+
+        Assert.Equal("fetch", stopped.Stage);
+        Assert.Contains("2026-09-09", stopped.Detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheClosureTableAgreesWithTheCapturedCalendarAndRefusesPastItsRange()
+    {
+        // Derived from the provider's own captured bars rather than from the
+        // table: every weekday inside the window the bar files span is a session
+        // exactly where some captured name holds it. A table missing a closure,
+        // or holding a day the exchange traded, disagrees here.
+        var sessions = Directory.GetFiles(FixtureFolder(), "bars-*.json")
+            .SelectMany(file => RecordedHistoricalBarFeed
+                .Parse(File.ReadAllText(file), Path.GetFileNameWithoutExtension(file))
+                .Select(bar => bar.SessionDate))
+            .ToHashSet();
+
+        var first = sessions.Min();
+        var last = sessions.Max();
+        var weekdays = 0;
+
+        for (var day = first; day <= last; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
+            weekdays++;
+
+            Assert.True(
+                EquityBrief.Core.Bars.ExchangeClosures.IsSession(day) == sessions.Contains(day),
+                $"{day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)} is " +
+                (sessions.Contains(day) ? "a captured session the table calls a closure." : "a closure the table calls a session."));
+        }
+
+        // The window carries the property, stated in advance: a year of weekdays.
+        Assert.True(weekdays >= 250, $"Compared {weekdays} weekdays, expected a year's worth.");
+
+        // Between a Friday and the Tuesday after a Monday closure, nothing.
+        Assert.Empty(EquityBrief.Core.Bars.ExchangeClosures.SessionsBetween(new DateOnly(2026, 9, 4), new DateOnly(2026, 9, 8)));
+        Assert.Equal([new DateOnly(2026, 9, 9)], EquityBrief.Core.Bars.ExchangeClosures.SessionsBetween(new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 10)));
+
+        // Past its range it refuses a weekday rather than guessing, and a span
+        // holding only a weekend asks it nothing.
+        var refused = Assert.Throws<InvalidOperationException>(() => EquityBrief.Core.Bars.ExchangeClosures.IsSession(new DateOnly(2028, 1, 3)));
+
+        Assert.Contains("closure table covers", refused.Message, StringComparison.Ordinal);
+        Assert.Empty(EquityBrief.Core.Bars.ExchangeClosures.SessionsBetween(new DateOnly(2028, 1, 7), new DateOnly(2028, 1, 10)));
+    }
+
+    static string FetchDetail(TemporaryStore store, string runId)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT detail FROM run_log WHERE run_id = $run AND stage = 'fetch';";
+        command.Parameters.AddWithValue("$run", runId);
+
+        return (string)command.ExecuteScalar()!;
+    }
+
+    [Fact]
     public async Task AFailingStepIsNamedAndTheNightExitsNonZero()
     {
         // The done condition, and the reason it is a done condition: a night
@@ -924,6 +1068,28 @@ sealed class NextSessionBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner
         CancellationToken cancellation = default) =>
         [.. (await inner.RowsAsync(exchange, captured, cancellation))
             .Select(row => row with { Bar = row.Bar with { SessionDate = session } })];
+}
+
+// A feed whose file for one session holds none of the index, which is what a
+// closure the table does not know about looks like from the fetcher.
+sealed class HoledBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, DateOnly holed, IReadOnlyCollection<string> members)
+    : EquityBrief.Core.Providers.IBulkPriceFeed
+{
+    public int Requests => inner.Requests;
+
+    public IReadOnlyList<string> NotSessions => inner.NotSessions;
+
+    public async Task<IReadOnlyList<EquityBrief.Core.Providers.BulkBar>> RowsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default)
+    {
+        var rows = await inner.RowsAsync(exchange, session, cancellation);
+
+        return session == holed
+            ? [.. rows.Where(row => !members.Contains(row.Ticker, StringComparer.Ordinal))]
+            : rows;
+    }
 }
 
 // A feed that never answers, which is what a hung socket looks like from here.

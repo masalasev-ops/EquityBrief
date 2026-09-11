@@ -25,6 +25,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - ARCHITECTURE.html - a missed session is fetched in bulk before tonight's
+Authorised by: A session the night finds missing is fetched in bulk before tonight's
+Was:
+> <li>Fetch the day's bulk bar file, one request, and store the bars for current members.</li>
+Now: the step fetches first, in bulk and one request each, any session the store is missing since the last night that ran; section 18 gains a row for a session the night finds missing.
+Why: a night that did not run left every name short the same session, which the observed calendar cannot see, and 5.7 had read the provider as unable to serve an older session, so nothing could fill it. One probe showed it can.
+
+### 2026-09-11 - ARCHITECTURE.html, BUILD_PLAN.md, RUNBOOK.md - the schedule moves on a refusal, and the posting-hour obligation is retired
+Authorised by: The night runs at a fixed UTC instant, moved only when a night finds the day's file not yet posted
+Was:
+> The schedule is a UTC instant set after the provider posts the day's bulk file, registered with whatever scheduler the machine has, ...
+>
+> | **The provider's posting hour for the day's bulk file, measured from live fetches** | 2.0 | operating | 5 nights fetched under the schedule, read on the run page's operational header, which 5.6 builds. ...
+>
+> **The instant is 23:30 UTC, provisionally.** ... It is provisional because the posting hour has not been measured, ... Move the instant earlier once five nights show the file was already there.
+>
+> **So both become operating obligations, and 5.7 keeps the half it produces.** The posting hour's trigger is five nights fetched under the schedule, ...
+Now: the instant stands while nights succeed and moves later on a night refused because the day's file was not yet posted; the posting-hour row is discharged at 5.7 as retired, a new operating row carries the refusal trigger and 5.6 cites it; 2.1's paragraph and the runbook say why more scheduled nights settle nothing.
+Why: a scheduled fetch can only bound the posting hour from above, so the five-night trigger would fire without answering the question it named. A refusal is the only evidence that moves the instant, and with the bulk catch-up a refused night's session is fetched the next night rather than lost.
+
 ### 2026-09-11 - CLAUDE.md - record-append-only holds DECISIONS.md's names as well
 Corrects: 5.0 superseded "News arrives in one dated feed request and is attributed to names locally" and deleted it rather than moving it to "Previously decided", and no check could notice: `no-superseded-citation` asks whether a citation resolves to a superseded entry, which a deleted one never does. Found by the phase 5 sign-off comparing 5.0's record, which says it superseded the entry, with "Previously decided", which did not hold it.
 Was:

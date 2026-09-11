@@ -768,6 +768,11 @@ internal static class Scope
             Verdict.Pass,
             "a night over the captured file with a fund's fractional volume added outside the index stores every member, and the same volume on a member's own row refuses the night at the fetch step with the ticker and what arrived, leaving the stored bars as they were",
             ByNight),
+        // Added at the phase 5 sign-off with the bulk catch-up.
+        [CheckReach.Key(FailureTable, "A session the night finds missing")] = new Scoped(
+            Verdict.Pass,
+            "a night run over a store whose last night was two sessions back fetches the missed session in bulk before its own and stores every member on both, a closure between them costs no request, and a missed session whose file carries none of the index stops the night at the fetch with the session named and nothing stored",
+            ByNight),
         [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
             Verdict.Pass,
             "the three attempts, the doubling wait and both bounds are read off the row and asserted against the policy the code uses, and a night given a deadline it cannot meet stops on the step it was on and says so",
@@ -792,9 +797,9 @@ internal static class Scope
             Verdict.Pass,
             "the night runs it after membership, and a second night backfills nothing",
             ByNight),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members.")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's).")] = new Scoped(
             Verdict.Pass,
-            "the night runs it after the backfill, in one request, storing the day for current members only",
+            "the night runs it after the backfill, in one request on a night that follows one that ran, storing the day for current members only, and a night after one that did not run fetches the missed session first, one request more, and stores both",
             ByNight),
     };
 

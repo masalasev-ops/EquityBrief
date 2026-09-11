@@ -154,6 +154,7 @@ public static class Nightly
                     $"{bulkFeed.NotSessions.Count} row(s) listed and not traded, " +
                     $"{bulkFeed.Unreadable.Count} row(s) outside the index the reader refused, " +
                     $"{outcome.Unaccounted.Count} member(s) the file carried nothing for, " +
+                    $"{(outcome.CaughtUp ?? []).Count} missed session(s) caught up, " +
                     $"{outcome.Requests} request(s)";
             }),
             new("actions", async () =>

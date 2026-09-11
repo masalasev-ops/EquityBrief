@@ -6601,3 +6601,57 @@ Tests:      507, unchanged. `tools/ci.ps1` green end to end, all 6 steps, 0 warn
             Predicted before the run and matched: one claim became four, two PASS and two out of
             scope, so claims rise by three, PASS by one and out of scope by two. Windows on this
             machine; the matrix carries macOS and the Linux case-sensitivity job.
+
+### 5.7 - the missed session caught up in bulk, and the schedule moved by refusals   2026-09-11
+Built:      a table of the exchange's closures pinned in code, and the fetch fetching in bulk, one
+            request each and before tonight's, every session the store is missing since the last
+            night that ran, all stored in one transaction. Two decisions and one supersession, a
+            section 18 row, section 14's fetch step reworded, and the posting-hour obligation
+            retired for one whose trigger can answer what it names.
+Decided:    **A session the night finds missing is fetched in bulk before tonight's**. A night that
+            does not run leaves every name short the same session, and the calendar the store can
+            observe is the union of its names' dates, so that is the one hole it cannot see: every
+            indicator, move and forward return after it would count across it as one session,
+            which is what "Bars are never interpolated" forbids. 5.7 had read the provider as
+            unable to serve an older session, so nothing could fill one, and the 2.1 correction
+            above showed that reading was a reader defect. The cost is one bulk request per missed
+            session, which grows with nights missed and never with names.
+            **The night runs at a fixed UTC instant, moved only when a night finds the day's file not
+            yet posted**, superseding the entry that set the instant at a measured posting hour plus a
+            margin, which moves to "Previously decided" with its reasoning. A scheduled fetch can only
+            bound the hour from above, so five nights would fire the old trigger and settle nothing,
+            which the old row's own text conceded. A refusal is the only evidence that moves the
+            instant, and with the catch-up it costs a day's delay rather than a gap.
+Measured:   the closure table against the operator's store, read through an immutable connection:
+            its 252 sessions from 2025-09-10 to 2026-09-10 are exactly the weekdays in that span less
+            the closures the table lists, none extra and none missing. The years after that span
+            follow the exchange's published rules and are not observed; the table covers to the end
+            of 2027 and refuses a weekday past it rather than guessing.
+Guarded:    a night after one that did not run, fetching the missed session first with one request
+            more, every member on both sessions and the session named on the run log; a closure
+            between two nights costing no request; a missed session whose file holds none of the
+            index stopping the night by name with nothing stored, not even tonight's, and the stop on
+            the run log; and the table agreeing with the fixture's captured calendar over a year of
+            weekdays, refusing a weekday past its range and asking nothing of a weekend.
+Carried:    two rows. (owes: The night's instant moved later when a night finds the day's file not
+            yet posted) is operating on a trigger of one refused night, read on the stale-and-failed
+            region. And (owes: Every computation over a name whose stored series has a gap stops and
+            reports the gap), due at 6.0: the decision on what a gap is has said since 1.5 that a
+            computation over a gapped series stops, and only the backfill consults the calendar. The
+            catch-up closes the hole every name shares; a name the day's file carried nothing for,
+            two of 503 on an ordinary night, still has an interior hole the stages count across.
+Mutated:    the rule, stated before the sweep: each mutation reinstates the defect a new assertion
+            was written for. The fetch fetches no missed session; the table loses Labor Day 2026; a
+            missed session that cannot be fetched is passed over rather than stopping the night.
+            Three mutations, three runs, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed. All three turned tests red. The first
+            turned the catch-up night and the unfillable night red; the second turned 31 red,
+            because every fixture night crosses that closure and the fetch asked the provider for it;
+            the third turned the unfillable night red alone. None was invalid, and none of the
+            properties added went unmutated.
+Tests:      511, from 507. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 243 claims, 169 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined, 176 placements and verdicts reconciled against a floor of 34. The
+            claim and the PASS each move by one, from section 18's new row; section 14's fetch step
+            changed its words and stayed one claim. Windows on this machine; the matrix carries macOS
+            and the Linux case-sensitivity job.
