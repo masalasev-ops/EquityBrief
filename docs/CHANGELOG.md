@@ -25,6 +25,17 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - CLAUDE.md, BUILD_PLAN.md - two readers widened, and the closure table's end given a reminder
+Corrects: `clock-usage` did not read a raw interpolated literal and passed a literal handed to `string.Format` with a provider, which formats the literal before the provider is seen; `price-storage-form` did not read a nullable cast or a `Convert` call, and one of the second shipped in no stated set; and the exchange closure table ends 2027-12-31 with nothing saying so before the first weekday past it. Found by the phase 5 sign-off reviewer.
+Was:
+> An interpolation hole carrying a date format is a third form and is read off its literal, passing only where the literal is handed to the invariant culture; a hole with no format over a date value carries nothing a text reader can key on and is outside what this check reaches.
+>
+> and every explicit cast to double or to decimal in the shipped source is one of a stated set of sites,
+>
+> This checkpoint builds the surface five operating obligations are read on (owes: The six reason thresholds calibrated from the nights they fired on), (owes: The three reason records that need resolved setups), (owes: The event setups' triggers calibrated from resolved setups), (owes: The night's instant moved later when a night finds the day's file not yet posted) and (owes: The nightly wall clock at index size, measured from nights that ran on the schedule). ... and, in the stale-and-failed region, a night that stopped at the fetch because the day's file was not yet posted.
+Now: the `clock-usage` row reads raw literals, refuses a provider given to `string.Format` after the literal, and adds the composite format as a fourth form; the `price-storage-form` row includes the nullable casts and the two `Convert` calls; 5.6 builds the surface six operating obligations are read on, the sixth being the closure table's extension, read off the closing stage's line; and a carried obligation row states it.
+Why: a reader that cannot see a form passes every use of it, and a table that refuses past its end needs its end said before the refusal, not by it.
+
 ### 2026-09-11 - ARCHITECTURE.html - a suspect name is retried every night
 Corrects: a name whose refetch failed was marked suspect and nothing read the mark, so its stored history stayed unadjusted for an action the provider had applied until another action happened to land on it. Found by the phase 5 sign-off reviewer.
 Was:

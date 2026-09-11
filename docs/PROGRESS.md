@@ -6940,3 +6940,58 @@ Tests:      531, from 528. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             18, exit 0. `tools/verify-phase.ps1` green at 245 claims, 171 PASS, 0 FAIL, 74 out of
             scope, 0 unexamined, 178 placements reconciled. No claim moved. Windows on this machine;
             the matrix carries macOS and the Linux case-sensitivity job.
+
+### 5.7 - correction: two readers blind to forms that ship, an allowance claim its check did not reach, and a closure table with no end in sight   2026-09-11
+Corrects:   the 5.7 correction above titled "the sign-off repair's own gaps, found by reviewing it",
+            whose entry says the thirty-two loose holes it wrapped were "eleven shipped and twenty-one
+            in the suite". They were eighteen shipped and fourteen in the suite: the commit, 236992b,
+            adds `FormattableString.Invariant(` on eighteen shipped lines, none of them a comment, and
+            on sixteen suite lines, of which one is a comment and one a probe string inside the check's
+            own test. The phase 5 sign-off reviewer found the figure and this count confirms it. Also
+            the 5.7 entries above that widened `clock-usage` and `price-storage-form`, the 5.7 entry
+            that added the closure table, and the 5.7 entry that superseded the schedule decision.
+Found:      by the phase 5 sign-off reviewer. `clock-usage` did not read a raw interpolated literal, and
+            passed any literal with `InvariantCulture,` before it, which includes
+            `string.Format(CultureInfo.InvariantCulture, $"...")`, where the literal is formatted against
+            the current culture before `string.Format` receives the provider. `price-storage-form` did
+            not read `(double?)`, `(decimal?)`, `Convert.ToDouble(` or `Convert.ToDecimal(`, and
+            `Convert.ToDouble(value)` in the shortlist builder shipped in no stated set. The stale-and-
+            failed region's PASS, placed by `nightly-run`, said an allowance stop reaches the region,
+            and only `nightly-cost` made one. The closure table's dates outside the captured year had
+            no test, and it ends 2027-12-31 with nothing saying so. The schedule decision did not name
+            the one it superseded.
+Repaired:   `clock-usage` reads raw literals, with holes opening by as many braces as the literal has
+            dollar signs, passes a literal only where the call formatting it takes the provider, named
+            whole, and reads a composite format with a date format and no provider as a fourth form.
+            `price-storage-form` reads the nullable casts and the two `Convert` calls, and its stated
+            set gains the two that ship: `(decimal?)null` in the ladder builder, which crosses nothing,
+            and the volume average read back as the double it is. `nightly-run` asserts an allowance
+            stop through the run page's own night and region. The closure table is checked closure by
+            closure against the exchange's published rules for every year it covers, with the one
+            special closure stated. The closing line names the table's end once a night is within 90
+            days of it, and an operating obligation carries the extension, read on the operational
+            header, which 5.6 builds and whose paragraph now cites six. The schedule decision names what
+            it superseded. The two roster rows in CLAUDE.md say what the readers now read.
+Guarded:    probes for each new form in both directions: a provider given to `string.Format` after the
+            literal flagged, a raw literal read with one dollar sign and with two, a raw literal's
+            single brace under two dollar signs left alone, the composite form flagged and its pinned
+            twin passed, a number left alone; the nullable cast and both conversions producing sites
+            and a conversion to an integer producing none. An allowance stop drawn in the region against
+            the first step. Thirty-one closures derived from the rules equal to the table. The closing
+            line empty one day outside the window and present on its first day, written on a close run
+            inside it, and the obligation row stating the window the code uses.
+Mutated:    the rule, stated before the sweep: reinstate each defect, being the pinned forms matched on
+            any `InvariantCulture,`, raw literals unread, the composite reader reading nothing, the
+            nullable cast unread, the conversion calls unread, the allowance stop recording no row, one
+            closure moved by a day, and the reminder never firing. Eight mutations, eight runs, in a
+            worktree under the session scratchpad outside the repository, reverted, and the worktree
+            removed. Each turned red and left the rest green: the first two the interpolation probe
+            test, the third the composite probe test, the fourth and fifth both the stated set and the
+            probe test of `price-storage-form`, the sixth the allowance tests of both `nightly-run` and
+            `nightly-cost`, the seventh the rules-derived closure test and the eighth the closing line
+            test. None of the properties added went unmutated.
+Tests:      536, from 531. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 245 claims, 171 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined, 178 placements reconciled. No claim moved. Carried obligations 55
+            rows, the new one operating. Windows on this machine; the matrix carries macOS and the
+            Linux case-sensitivity job.

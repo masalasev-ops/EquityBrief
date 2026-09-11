@@ -170,23 +170,85 @@ public class ClockUsage
     // value, `{tonight}`, which renders the culture's short date and carries
     // nothing a text reader can key on without the type. That is this
     // reader's stated scope rather than a property it claims.
+    //
+    // Two more forms from the phase 5 sign-off, which the reviewer found this
+    // reader blind to. A raw interpolated literal, `$"""..."""`, was not read at
+    // all. And the pinned forms were matched on any `InvariantCulture,` before
+    // the literal, which passed `string.Format(CultureInfo.InvariantCulture,
+    // $"...{d:yyyy}...")`: there the interpolated string is formatted against the
+    // current culture before `string.Format` is handed it, so the provider never
+    // reaches the hole. Only the calls that hand the provider to the
+    // interpolation itself pass now, each named whole: `FormattableString.Invariant(`
+    // and the page's own `Invariant(` over a `FormattableString`, which renders
+    // it with the invariant culture; `string.Create(CultureInfo.InvariantCulture,`;
+    // and a builder's `Append(Invariant,`.
+    static readonly string[] DateComponents = ["yyyy", "MM-dd", "HH:mm", "HHmmss"];
+
+    const string PinnedBefore =
+        @"(?:(?<![\w.])(?:FormattableString\.)?Invariant\(|string\.Create\(\s*(?:CultureInfo\.)?InvariantCulture\s*,|\.Append\(\s*Invariant\s*,)\s*$";
+
     internal static IReadOnlyList<string> CultureFreeDateInterpolation(string source, string file)
     {
         var code = SourceStatements.WithoutComments(source);
 
-        string[] components = ["yyyy", "MM-dd", "HH:mm", "HHmmss"];
+        var regular = System.Text.RegularExpressions.Regex
+            .Matches(code, @"(?<before>[^\n]{0,48})\$@?""(?<body>(?:[^""\\\n]|\\.)*)""")
+            .Where(literal => !literal.Value.EndsWith("\"\"\"", StringComparison.Ordinal))
+            .Select(literal => (Before: literal.Groups["before"].Value, Body: literal.Groups["body"].Value, Braces: 1));
+
+        // A raw literal's holes open with as many braces as it has dollar signs.
+        var raw = System.Text.RegularExpressions.Regex
+            .Matches(code, @"(?<before>[^\n]{0,48}?)(?<dollars>\$+)""""""(?<body>[\s\S]*?)""""""")
+            .Select(literal => (Before: literal.Groups["before"].Value, Body: literal.Groups["body"].Value, Braces: literal.Groups["dollars"].Value.Length));
+
+        return regular.Concat(raw)
+            .Where(literal => HolesIn(literal.Body, literal.Braces).Any(format =>
+                DateComponents.Any(component => format.Contains(component, StringComparison.Ordinal))))
+            .Where(literal => !System.Text.RegularExpressions.Regex.IsMatch(literal.Before, PinnedBefore))
+            .Select(literal => $"{Path.GetFileName(file)}: ${'"'}{literal.Body}{'"'}")
+            .ToArray();
+    }
+
+    // The format of every hole in a literal whose holes open with `braces`
+    // braces. An escaped brace in a regular literal is two braces and opens no
+    // hole, which the look-behind keeps out.
+    static IEnumerable<string> HolesIn(string body, int braces)
+    {
+        var open = new string('{', braces);
+        var close = new string('}', braces);
 
         return System.Text.RegularExpressions.Regex
-            .Matches(code, @"(?<before>[^\n]{0,48})\$@?""(?<body>(?:[^""\\\n]|\\.)*)""")
-            .Where(literal => System.Text.RegularExpressions.Regex
-                .Matches(literal.Groups["body"].Value, @"(?<!\{)\{[^{}:]+:(?<format>[^{}]+)\}")
-                .Any(hole => components.Any(component =>
-                    hole.Groups["format"].Value.Contains(component, StringComparison.Ordinal))))
-            .Where(literal => !System.Text.RegularExpressions.Regex.IsMatch(
-                literal.Groups["before"].Value,
-                @"(?:Invariant\(|Invariant,|InvariantCulture,)\s*$"))
-            .Select(literal => $"{Path.GetFileName(file)}: ${'"'}{literal.Groups["body"].Value}{'"'}")
+            .Matches(
+                body,
+                $@"(?<!\{{){System.Text.RegularExpressions.Regex.Escape(open)}[^{{}}:]+:(?<format>[^{{}}]+){System.Text.RegularExpressions.Regex.Escape(close)}")
+            .Select(hole => hole.Groups["format"].Value);
+    }
+
+    // The composite form, `string.Format("{0:yyyy-MM-dd}", day)`, which formats
+    // against the current culture when its first argument is the format string
+    // rather than a provider. Read off the literal in first position.
+    internal static IReadOnlyList<string> CultureFreeCompositeFormat(string source, string file)
+    {
+        var code = SourceStatements.WithoutComments(source);
+
+        return System.Text.RegularExpressions.Regex
+            .Matches(code, @"(?:string|String)\.Format\(\s*""(?<body>(?:[^""\\\n]|\\.)*)""")
+            .Where(call => System.Text.RegularExpressions.Regex
+                .Matches(call.Groups["body"].Value, @"(?<!\{)\{\d+(?:,-?\d+)?:(?<format>[^{}]+)\}")
+                .Any(item => DateComponents.Any(component =>
+                    item.Groups["format"].Value.Contains(component, StringComparison.Ordinal))))
+            .Select(call => $"{Path.GetFileName(file)}: {call.Value}")
             .ToArray();
+    }
+
+    [Fact]
+    public void NothingFormatsADateThroughACompositeFormatAgainstTheMachinesLocale()
+    {
+        var files = Repository.SourceFiles();
+
+        Assert.True(files.Count >= 15, $"Read {files.Count} source files, expected at least 15.");
+
+        Assert.Empty(files.SelectMany(file => CultureFreeCompositeFormat(File.ReadAllText(file), file)));
     }
 
     [Fact]
@@ -224,6 +286,33 @@ public class ClockUsage
         Assert.Empty(CultureFreeDateInterpolation("var s = " + "$\"{seconds:0.###} second(s)\";", "Probe.cs"));
         Assert.Empty(CultureFreeDateInterpolation("var s = " + "$\"{{literal:yyyy}}\";", "Probe.cs"));
         Assert.Empty(CultureFreeDateInterpolation("// $\"{x:yyyy-MM-dd}\" is what this used to do", "Probe.cs"));
+
+        // The two forms the phase 5 sign-off reviewer found this reader blind to.
+        // A provider handed to `string.Format` does not reach an interpolated
+        // literal, which is formatted before the call receives it.
+        Assert.Single(CultureFreeDateInterpolation(
+            "var s = string.Format(CultureInfo.InvariantCulture, " + "$\"{day:yyyy-MM-dd}\");", "Probe.cs"));
+
+        // A raw literal is read, with one dollar sign and with two.
+        Assert.Single(CultureFreeDateInterpolation("var s = " + "$\"\"\"on {day:yyyy-MM-dd}\"\"\";", "Probe.cs"));
+        Assert.Single(CultureFreeDateInterpolation("var s = " + "$$\"\"\"{\"on\": \"{{day:yyyy-MM-dd}}\"}\"\"\";", "Probe.cs"));
+        Assert.Empty(CultureFreeDateInterpolation("var s = FormattableString.Invariant(" + "$\"\"\"on {day:yyyy-MM-dd}\"\"\");", "Probe.cs"));
+
+        // A raw literal's single brace under two dollar signs is text, not a hole.
+        Assert.Empty(CultureFreeDateInterpolation("var s = " + "$$\"\"\"{day:yyyy-MM-dd}\"\"\";", "Probe.cs"));
+    }
+
+    [Fact]
+    public void TheCheckReportsADateFormattedThroughACompositeFormat()
+    {
+        var loose = "var s = string." + "Format(\"{0:yyyy-MM-dd}\", day);";
+        var pinned = "var s = string." + "Format(CultureInfo.InvariantCulture, \"{0:yyyy-MM-dd}\", day);";
+
+        Assert.Single(CultureFreeCompositeFormat(loose, "Probe.cs"));
+        Assert.Empty(CultureFreeCompositeFormat(pinned, "Probe.cs"));
+
+        // A number is not a date.
+        Assert.Empty(CultureFreeCompositeFormat("var s = string." + "Format(\"{0:0.##}\", share);", "Probe.cs"));
     }
 
     [Fact]
