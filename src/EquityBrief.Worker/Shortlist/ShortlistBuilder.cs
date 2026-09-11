@@ -50,10 +50,18 @@ public sealed class ShortlistBuilder : IComponent
     // member the store holds nothing for still gets a row, because the row count
     // per night is asserted against the index size and a name quietly absent
     // would make that count wrong in the direction nobody looks.
+    //
+    // Members on tonight's session, being joined by it where the join date is
+    // known and not left by it. `left IS NULL` until the phase 5 sign-off, which
+    // listed four names a week before they joined and dropped three a week
+    // before they left.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
         SELECT ticker
         FROM membership
-        WHERE index_code = $index AND ""left"" IS NULL
+        WHERE index_code = $index
+          AND (joined IS NULL OR joined <= $session)
+          AND (""left"" IS NULL OR ""left"" > $session)
         ORDER BY ticker;
     ";
 
@@ -164,10 +172,10 @@ public sealed class ShortlistBuilder : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
-        var members = await MembersAsync(connection, indexCode, cancellation);
         // The session date and not the UTC date, for the reason the ladder
         // builder's matching line gives: after eight in New York the two differ.
         var asOf = clock.SessionDateAt(clock.UtcNow);
+        var members = await MembersAsync(connection, indexCode, asOf, cancellation);
         var fired = 0;
         var reasonsFired = 0;
 
@@ -266,12 +274,14 @@ public sealed class ShortlistBuilder : IComponent
     static async Task<IReadOnlyList<string>> MembersAsync(
         SqliteConnection connection,
         string indexCode,
+        DateOnly session,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
         command.Parameters.AddWithValue("$index", indexCode);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new List<string>();
 

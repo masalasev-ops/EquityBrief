@@ -1,3 +1,4 @@
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -316,8 +317,54 @@ public static class Nightly
 
         output.WriteLine($"nightly: {runId}, store {store.DatabaseFile}");
 
+        // The session this night is for, which every stage below reads off the
+        // same clock.
+        var session = clock.SessionDateAt(clock.UtcNow);
+
         foreach (var step in steps)
         {
+            // A day the exchange did not trade, asked once the store can hold
+            // the row that says so and before anything is fetched.
+            //
+            // Until the phase 5 sign-off a night on a Saturday or a holiday
+            // asked the provider for a session that does not exist, was refused
+            // at the fetch for a file dated the day before or holding none of
+            // the index, and exited 1: the scheduler recorded a failure every
+            // weekend, and a Friday caught up on a Saturday was rolled back with
+            // the refusal. Nothing is owed on such a day, so the night records
+            // that it ran, names the day, and exits 0. The weekday a closure
+            // table cannot place is still refused, since guessing is what the
+            // table exists to stop.
+            // see: A night on a day the exchange did not trade fetches nothing and exits clean
+            if (ReferenceEquals(step, steps[1]))
+            {
+                bool traded;
+
+                try
+                {
+                    traded = ExchangeClosures.IsSession(session);
+                }
+                catch (InvalidOperationException failure)
+                {
+                    var failed = $"stopped before step '{step.Name}': {failure.Message}";
+
+                    error.WriteLine("nightly: " + failed);
+                    await RecordStopAsync(store, runId, step, clock.UtcNow, clock.UtcNow, NightClose.Failed, failed, error);
+
+                    return 1;
+                }
+
+                if (!traded)
+                {
+                    var closed = NightClose.NotASession(session);
+
+                    output.WriteLine("nightly: " + closed);
+                    await RecordNoSessionAsync(store, runId, clock.UtcNow, closed, error);
+
+                    return 0;
+                }
+            }
+
             // The local stop, before the provider's own. Exceeding the daily
             // allowance arrives from the provider as a rejected rate, which is
             // an unavailable feed and loses the reason; stopping here says what
@@ -393,6 +440,34 @@ public static class Nightly
             $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
 
         return 0;
+    }
+
+    // A night with no session, written where the run log is read, with the same
+    // rule as a stop: failing to record it is said on stderr and never turns a
+    // clean night into a failed one.
+    static async Task RecordNoSessionAsync(
+        StoreLocation store,
+        string runId,
+        DateTimeOffset at,
+        string detail,
+        TextWriter error)
+    {
+        try
+        {
+            await NightClose.RecordStopAsync(
+                store.DatabaseFile,
+                store.DataRoot,
+                runId,
+                [NightClose.Stage],
+                at,
+                at,
+                NightClose.NoSession,
+                detail);
+        }
+        catch (Exception failure)
+        {
+            error.WriteLine($"nightly: the night with no session could not be recorded on the run log: {failure.Message}");
+        }
     }
 
     // The stop, written where the run page reads it. A night that cannot write

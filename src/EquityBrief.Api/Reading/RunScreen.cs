@@ -206,10 +206,19 @@ public static class RunScreen
     // uses for success is one a person has to look at.
     public const string Ok = "ok";
 
+    // A night on a day the exchange did not trade, which did what it should by
+    // doing nothing and is not a failure a person has to look at. The worker's
+    // own constant cannot be referenced from here, since the read surface holds
+    // no reference to the worker, so the word is stated and `nightly-run`
+    // asserts the two agree.
+    // see: A night on a day the exchange did not trade fetches nothing and exits clean
+    public const string NoSession = "no session";
+
     public static IReadOnlyList<StageRow> Failed(IReadOnlyList<StageRow> stages) =>
     [
         .. stages.Where(stage => !string.Equals(stage.Outcome, Ok, StringComparison.Ordinal)
-            && !string.Equals(stage.Outcome, "started", StringComparison.Ordinal)),
+            && !string.Equals(stage.Outcome, "started", StringComparison.Ordinal)
+            && !string.Equals(stage.Outcome, NoSession, StringComparison.Ordinal)),
     ];
 
     // The verdict counts from the last phase report, read out of the report the

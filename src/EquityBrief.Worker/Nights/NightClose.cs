@@ -54,10 +54,17 @@ public sealed class NightClose : IComponent
     // is a name carrying yesterday's bars, which is what the run page's stale
     // region reads. Counted over the index rather than over the names with
     // bars, because a member with none is stale in the way that matters.
+    //
+    // Members on tonight's session, being joined by it where the join date is
+    // known and not left by it, which is the population the list was written
+    // over.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string NamesStale = @"
         SELECT COUNT(*)
         FROM membership m
-        WHERE m.index_code = $index AND m.""left"" IS NULL
+        WHERE m.index_code = $index
+          AND (m.joined IS NULL OR m.joined <= $session)
+          AND (m.""left"" IS NULL OR m.""left"" > $session)
           AND IFNULL((SELECT MAX(b.session_date) FROM bar b WHERE b.ticker = m.ticker), '')
               < (SELECT MAX(session_date) FROM bar);
     ";
@@ -98,10 +105,10 @@ public sealed class NightClose : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
-        var computed = await CountAsync(connection, NamesComputed, null, cancellation);
-        var listed = await CountAsync(connection, OnTheList, null, cancellation);
-        var reasons = await CountAsync(connection, ReasonsFired, null, cancellation);
-        var stale = await CountAsync(connection, NamesStale, indexCode, cancellation);
+        var computed = await CountAsync(connection, NamesComputed, null, null, cancellation);
+        var listed = await CountAsync(connection, OnTheList, null, null, cancellation);
+        var reasons = await CountAsync(connection, ReasonsFired, null, null, cancellation);
+        var stale = await CountAsync(connection, NamesStale, indexCode, clock.SessionDateAt(startedAt), cancellation);
         var duration = await DurationAsync(connection, runId, cancellation);
 
         await using var command = connection.CreateCommand();
@@ -122,11 +129,23 @@ public sealed class NightClose : IComponent
         return new NightCloseOutcome(computed, listed, reasons, stale, duration);
     }
 
-    // The two outcomes a night that did not finish writes. A closed vocabulary
+    // The outcomes a night that did not finish writes. A closed vocabulary
     // beside `ok`, for the reason `ok` is one: the run page decides what to draw
     // in its stale-and-failed region by reading this column.
     public const string Failed = "failed";
     public const string Stopped = "stopped";
+
+    // The third, for a night that ran on a day the exchange did not trade. Not a
+    // failure and not `ok`: nothing was computed, and a row reading `ok` under
+    // this stage would say the night's counts were recorded.
+    // see: A night on a day the exchange did not trade fetches nothing and exits clean
+    public const string NoSession = "no session";
+
+    // What that row says, in one place so the night prints what the log holds.
+    public static string NotASession(DateOnly day) =>
+        day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " is a " +
+        day.DayOfWeek.ToString() + " the exchange did not trade, so there is no session to fetch and " +
+        "nothing was fetched or computed.";
 
     // The same insert, for a stage that never reached its own. On conflict it
     // writes nothing, so a composite step whose first component already wrote
@@ -221,6 +240,7 @@ public sealed class NightClose : IComponent
         SqliteConnection connection,
         string sql,
         string? indexCode,
+        DateOnly? session,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -230,6 +250,11 @@ public sealed class NightClose : IComponent
         if (indexCode is not null)
         {
             command.Parameters.AddWithValue("$index", indexCode);
+        }
+
+        if (session is { } on)
+        {
+            command.Parameters.AddWithValue("$session", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         }
 
         return Convert.ToInt32(await command.ExecuteScalarAsync(cancellation));

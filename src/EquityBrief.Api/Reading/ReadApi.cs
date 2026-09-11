@@ -340,7 +340,9 @@ public sealed class ReadApi : IComponent
                (SELECT i.value FROM indicator i WHERE i.ticker = m.ticker AND i.name = $typical
                 ORDER BY i.session_date DESC LIMIT 1)
         FROM membership m
-        WHERE m.index_code = $index_code AND m.""left"" IS NULL
+        WHERE m.index_code = $index_code
+          AND (m.joined IS NULL OR m.joined <= $session)
+          AND (m.""left"" IS NULL OR m.""left"" > $session)
         ORDER BY m.ticker;
     ";
 
@@ -375,10 +377,18 @@ public sealed class ReadApi : IComponent
     // night's closing stage counts over, returning the names rather than the
     // count, because a page that says four names are stale and does not say
     // which is a page nobody can act on.
+    //
+    // Both this and the universe read the index on the session the page is read
+    // in, being joined by it where the join date is known and not left by it.
+    // `left IS NULL` until the phase 5 sign-off, which read an announced change
+    // as effective the night it was announced.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string StaleNames = @"
         SELECT m.ticker
         FROM membership m
-        WHERE m.index_code = $index AND m.""left"" IS NULL
+        WHERE m.index_code = $index
+          AND (m.joined IS NULL OR m.joined <= $session)
+          AND (m.""left"" IS NULL OR m.""left"" > $session)
           AND IFNULL((SELECT MAX(b.session_date) FROM bar b WHERE b.ticker = m.ticker), '')
               < (SELECT MAX(session_date) FROM bar)
         ORDER BY m.ticker;
@@ -628,6 +638,7 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = StaleNames;
         command.Parameters.AddWithValue("$index", indexCode);
+        command.Parameters.AddWithValue("$session", clock.SessionDateAt(clock.UtcNow).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var names = new List<string>();
 
@@ -737,6 +748,7 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = Universe;
         command.Parameters.AddWithValue("$index_code", indexCode);
+        command.Parameters.AddWithValue("$session", clock.SessionDateAt(clock.UtcNow).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$typical", IndicatorSeries.Atr14);
 
         var rows = new List<UniverseRow>();

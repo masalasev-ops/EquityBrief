@@ -77,8 +77,13 @@ public sealed class CorporateActionChecker : IComponent
         this.databaseFile = databaseFile;
     }
 
+    // The names whose bars the night stores, being every name that has not left
+    // by tonight's session, so a joining name's year is adjusted as well as
+    // stored before it joins.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
-        SELECT ticker FROM membership WHERE index_code = $index AND left IS NULL;
+        SELECT ticker FROM membership
+        WHERE index_code = $index AND (""left"" IS NULL OR ""left"" > $session);
     ";
 
     // The only sanctioned removal of a bar besides retention, and it is paired
@@ -128,7 +133,7 @@ public sealed class CorporateActionChecker : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync();
 
-        var members = await MembersAsync(connection, indexCode);
+        var members = await MembersAsync(connection, indexCode, session);
         var before = await CountAsync(connection);
 
         // Both feeds counted from here, as deltas, so the figure is this run's
@@ -214,12 +219,13 @@ public sealed class CorporateActionChecker : IComponent
         return outcome;
     }
 
-    static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode)
+    static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
         command.Parameters.AddWithValue("$index", indexCode);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         await using var reader = await command.ExecuteReaderAsync();

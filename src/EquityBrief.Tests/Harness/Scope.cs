@@ -771,7 +771,16 @@ internal static class Scope
         // Added at the phase 5 sign-off with the bulk catch-up.
         [CheckReach.Key(FailureTable, "A session the night finds missing")] = new Scoped(
             Verdict.Pass,
-            "a night run over a store whose last night was two sessions back fetches the missed session in bulk before its own and stores every member on both, a closure between them costs no request, and a missed session whose file carries none of the index stops the night at the fetch with the session named and nothing stored",
+            "a night run over a store whose last night was two sessions back fetches the missed session in bulk before its own and stores every member on both, a closure between them costs no request, a missed session whose file carries none of the index stops the night at the fetch with the session named and nothing stored, and a joiner backfilled through tonight does not hide the missed session",
+            ByNight),
+        // Added at the phase 5 sign-off with the rebalance and the closed day.
+        [CheckReach.Key(FailureTable, "A night on a day the exchange did not trade")] = new Scoped(
+            Verdict.Pass,
+            "a night whose session is a Saturday and one whose session is a closure each write one row under the closing stage with the no-session outcome, make no request, store nothing and exit 0, and the run page's failed region does not count the row",
+            ByNight),
+        [CheckReach.Key(FailureTable, "An index change announced before it takes effect")] = new Scoped(
+            Verdict.Pass,
+            "over a membership carrying a leaver and a joiner dated after the night, the leaver is backfilled, stored, listed and laddered and the joiner is backfilled and stored and neither listed nor laddered, and on its effective date each goes the other way",
             ByNight),
         [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
             Verdict.Pass,
@@ -797,9 +806,9 @@ internal static class Scope
             Verdict.Pass,
             "the night runs it after membership, and a second night backfills nothing",
             ByNight),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for current members, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement).")] = new Scoped(
             Verdict.Pass,
-            "the night runs it after the backfill, in one request on a night that follows one that ran, storing the day for current members only, and a night after one that did not run fetches the missed session first, one request more, and stores both",
+            "the night runs it after the backfill, in one request on a night that follows one that ran, storing the day for the names that have not left and for no other, an announced joiner and an announced leaver included and a departed name not, and a night after one that did not run fetches the missed session first, one request more, and stores both",
             ByNight),
     };
 

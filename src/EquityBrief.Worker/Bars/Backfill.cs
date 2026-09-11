@@ -37,11 +37,17 @@ public sealed class Backfill(
     public const string Stage = "backfill";
     public const string Source = "historical";
 
-    // Current members, being the names a backfill is owed for. A name that has
-    // left keeps its stored history and is not fetched again.
+    // The names a backfill is owed for, being every name that has not left by
+    // tonight's session: the fetch's population, for the fetch's reason. A name
+    // that has left keeps its stored history and is not fetched again.
+    //
+    // `left IS NULL` until the phase 5 sign-off, which owed nothing to a name
+    // whose leave was announced and not yet effective, so three names still in
+    // the index had no bar at all.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
         SELECT ticker FROM membership
-        WHERE index_code = $index_code AND ""left"" IS NULL
+        WHERE index_code = $index_code AND (""left"" IS NULL OR ""left"" > $session)
         ORDER BY ticker;
     ";
 
@@ -90,7 +96,7 @@ public sealed class Backfill(
         await using var connection = new SqliteConnection(ConnectionString);
         await connection.OpenAsync(cancellationToken);
 
-        var members = await Read(connection, CurrentMembers, indexCode, cancellationToken);
+        var members = await Read(connection, CurrentMembers, indexCode, cancellationToken, to);
         var holding = await Read(connection, TickersHoldingBars, null, cancellationToken);
 
         var owed = members.Except(holding, StringComparer.OrdinalIgnoreCase).ToArray();
@@ -198,7 +204,8 @@ public sealed class Backfill(
         SqliteConnection connection,
         string sql,
         string? indexCode,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        DateOnly? session = null)
     {
         await using var command = connection.CreateCommand();
         command.CommandText = sql;
@@ -206,6 +213,11 @@ public sealed class Backfill(
         if (indexCode is not null)
         {
             command.Parameters.AddWithValue("$index_code", indexCode);
+        }
+
+        if (session is { } on)
+        {
+            command.Parameters.AddWithValue("$session", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         }
 
         var values = new List<string>();
