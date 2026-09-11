@@ -25,6 +25,17 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - SCHEMA.md, ARCHITECTURE.html - a re-run replaces a night's facts file that differs
+Authorised by: A re-run replaces a night's facts file where the store now computes a different one
+Was:
+> | `facts` | FactsAssembler | ChangeDetector | none |
+>
+> Declared column sets, stated per operation because that is the grain the rule is written at: FactsAssembler inserts `payload` and `payload_hash`; ChangeDetector updates `material_changes`, and updates `payload` to empty under the retention below. No column is written by two components in one operation, which is what permits the split.
+>
+> The run is idempotent in what it records about the market: running it twice on one night produces the same bars, the same membership spans and the same computed values.
+Now: the assembler owns the delete on `facts`, used on one row, tonight's file where it differs from the one the store now computes; the column-set paragraph says so and says what happens to the change list of a replaced and of an unchanged row; section 14's note says a second run's values are what the store holds, the facts file included.
+Why: the first file written for 2026-09-10 came from band sets a refetch had doubled, the clean files of the run that completed were dropped on the conflict, and the run log counted them written. Found by the phase 5 sign-off reviewer and by the builder reading the recovered store.
+
 ### 2026-09-11 - ARCHITECTURE.html, SCHEMA.md - an announced index change takes effect on its date
 Authorised by: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
 Was:

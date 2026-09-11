@@ -3706,6 +3706,14 @@ public class FixtureExpectations
             Assert.Single(Query(store, "SELECT DISTINCT session_date FROM facts")), "yyyy-MM-dd", CultureInfo.InvariantCulture);
         var before = tonight.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+        // Tonight's rows as the assembler leaves a file it has just written,
+        // with no list yet. The replay's detector already wrote an empty list on
+        // each, against nothing, and a list an earlier run made is kept where the
+        // file it was made against is emptied afterwards, which the phase 5
+        // sign-off added and the test below this one asserts. This one is about
+        // a row no comparison has reached.
+        Insert(store, "UPDATE facts SET material_changes = NULL;");
+
         // A previous file naming one fact twice, and a previous file emptied.
         Insert(
             store,
@@ -4238,7 +4246,143 @@ public class FixtureExpectations
             var names = facts.EnumerateArray().Select(fact => fact.GetProperty("name").GetString()!).ToArray();
 
             Assert.Equal([.. names.Order(StringComparer.Ordinal)], names);
+
+            // And each name once, over every file the replay stored. A fact is
+            // declared once and cited by its name, and NVDA's file of
+            // 2026-09-10 named three of them twice.
+            Assert.Equal(names.Length, names.Distinct(StringComparer.Ordinal).Count());
         }
+    }
+
+    [Fact]
+    public void AFactsFileNamingAFactTwiceCannotBeWritten()
+    {
+        // Refused where every file is written from, so no caller can produce
+        // one, rather than only in the reader that found NVDA's.
+        var session = new DateOnly(2026, 9, 10);
+
+        var refused = Assert.Throws<ArgumentException>(() => FactsFile.Serialise(
+            "NVDA",
+            session,
+            [
+                new Fact("immediate support low edge", "211.9375", FactsAssembler.FromLevels),
+                new Fact("immediate support low edge", "211.9476", FactsAssembler.FromLevels),
+            ]));
+
+        Assert.Contains("names 'immediate support low edge' 2 times", refused.Message, StringComparison.Ordinal);
+
+        // The same facts under two names are written, so the refusal is about
+        // the repeat and not about the values.
+        Assert.Contains(
+            "immediate support high edge",
+            FactsFile.Serialise(
+                "NVDA",
+                session,
+                [
+                    new Fact("immediate support low edge", "211.9375", FactsAssembler.FromLevels),
+                    new Fact("immediate support high edge", "230.2124", FactsAssembler.FromLevels),
+                ]),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AFactsRerunOverAStoreThatNowComputesADifferentFileReplacesIt()
+    {
+        // The first file written for a night stood whatever a later run
+        // computed, until the phase 5 sign-off: the insert ignored the conflict
+        // and the run log counted the file written. The attempt of 2026-09-10
+        // that stopped at the change detector had written every name's file
+        // from doubled band sets, and the run that completed after the band
+        // repair computed clean files that were all dropped.
+        using var store = await WithFacts();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var name = FixtureExpectation.Names[0];
+        var others = FixtureExpectation.Names.Length - 1;
+
+        // A change list on every row that no comparison made, so what a replaced
+        // row loses and what an unchanged row keeps are both visible.
+        Insert(store, "UPDATE facts SET material_changes = '[\"a change nobody computed\"]';");
+
+        // One stored value the assembler reads, moved as a refetch between two
+        // runs of one night would move it.
+        Insert(
+            store,
+            $"UPDATE bar SET close = '1.2345' WHERE ticker = '{name}' " +
+            $"AND session_date = (SELECT MAX(session_date) FROM bar WHERE ticker = '{name}');");
+
+        var outcome = await new FactsAssembler(clock, store.DatabaseFile).RunAsync("rerun-facts-moved");
+
+        // Counted as what the statements did. One file written, and it replaced
+        // the one before it; the rest were already exactly what the store
+        // computes and nothing was written for them.
+        Assert.Equal(1, outcome.RowsWritten);
+        Assert.Equal(1, outcome.Replaced);
+        Assert.Equal(others, outcome.Unchanged);
+        Assert.Contains(
+            $"1 file(s) written, 1 of them replacing a stored file that differed, {others} unchanged",
+            Assert.Single(Query(store, "SELECT detail FROM run_log WHERE run_id = 'rerun-facts-moved';")),
+            StringComparison.Ordinal);
+
+        // The stored file is tonight's, and its hash is its own.
+        var payload = Assert.Single(Query(store, $"SELECT payload FROM facts WHERE ticker = '{name}';"));
+
+        Assert.Contains("{\"name\":\"close\",\"value\":\"1.2345\"", payload, StringComparison.Ordinal);
+        Assert.Equal([FactsFile.Hash(payload)], Query(store, $"SELECT payload_hash FROM facts WHERE ticker = '{name}';"));
+
+        // The replaced row carries no list until the detector writes it again,
+        // and the rows left alone keep theirs.
+        Assert.Equal([name], Query(store, "SELECT ticker FROM facts WHERE material_changes IS NULL;"));
+        Assert.Equal(others, Query(store, "SELECT ticker FROM facts WHERE material_changes LIKE '%nobody computed%';").Count);
+
+        await new ChangeDetector(clock, store.DatabaseFile).RunAsync("rerun-changes-moved");
+
+        Assert.Equal(["[]"], Query(store, $"SELECT material_changes FROM facts WHERE ticker = '{name}';"));
+    }
+
+    [Fact]
+    public async Task ASecondChangeRunKeepsTheListTheFirstMadeWhenItsComparisonIsGone()
+    {
+        // The retention empties a past night's payload at the end of every run
+        // of the detector, so a second run of the same night finds the file it
+        // compared against blank. Until the phase 5 sign-off it then replaced
+        // the list it had written an hour earlier with null.
+        using var store = await WithFacts();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var name = FixtureExpectation.Names[0];
+        var payload = Query(store, $"SELECT payload FROM facts WHERE ticker = '{name}';").Single();
+
+        // An earlier night the name did not fire on, differing from tonight's in
+        // one fact, so the first run has a change to record and the retention
+        // has a payload to empty.
+        var earlier = payload.Replace("{\"name\":\"close\",\"value\":\"", "{\"name\":\"close\",\"value\":\"9", StringComparison.Ordinal);
+
+        Assert.NotEqual(payload, earlier);
+
+        Insert(
+            store,
+            "INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES " +
+            $"('{name}', '2000-01-03', '{earlier.Replace("'", "''", StringComparison.Ordinal)}', 'earlier');");
+
+        var first = await new ChangeDetector(clock, store.DatabaseFile).RunAsync("changes-first");
+
+        Assert.Equal(1, first.PayloadsEmptied);
+
+        var list = Assert.Single(Query(store, $"SELECT material_changes FROM facts WHERE ticker = '{name}' AND session_date != '2000-01-03';"));
+
+        Assert.Equal("[\"close\"]", list);
+
+        // The same night again, with the file it compared against now empty.
+        var second = await new ChangeDetector(clock, store.DatabaseFile).RunAsync("changes-second");
+
+        Assert.Equal(1, second.KeptEarlierList);
+        Assert.Empty(second.NotCompared ?? []);
+        Assert.Equal([list], Query(store, $"SELECT material_changes FROM facts WHERE ticker = '{name}' AND session_date != '2000-01-03';"));
+        Assert.Contains(
+            "1 kept the list an earlier run made, 0 not compared",
+            Assert.Single(Query(store, "SELECT detail FROM run_log WHERE run_id = 'changes-second';")),
+            StringComparison.Ordinal);
     }
 
     [Fact]

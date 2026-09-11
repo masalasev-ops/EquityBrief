@@ -6799,3 +6799,53 @@ Tests:      520, from 515. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             scope, 0 unexamined, 178 placements reconciled. The two new section 18 rows are the two
             claims added, and the fetch step's text moved under its own placement. Windows on this
             machine; the matrix carries macOS and the Linux case-sensitivity job.
+
+### 5.7 - correction: a re-run could not replace a facts file, and said it had   2026-09-11
+Corrects:   the 5.3 entry above, which records the facts assembler inserting with the conflict ignored
+            and calls that keeping the night idempotent, and the 5.7 correction above that made an
+            uncomparable file the name's own unknown, whose detector could replace a list it had made
+            with null. Found in phase 5 and repaired under it.
+Found:      by the phase 5 sign-off's builder reading the recovered store, and by the sign-off reviewer
+            independently. The 2026-09-10 files in the operator's store come from the 12:39Z attempt,
+            which ran over band sets a refetch had doubled and stopped at the change detector; the run
+            at 13:07Z computed clean files after the band repair and every insert was dropped on the
+            conflict, while the run log said 505 files written. NVDA's file still names three facts
+            twice, 211.9375 and 211.9476 for one edge where the store holds one band at 211.9375. The
+            reviewer also found that a second run of the detector over a night whose previous file the
+            retention had emptied replaced the list it had made with null, that nothing refused a file
+            naming a fact twice at the point it is written, and that "not compared" is on the page only
+            as hover text; the last is the run page's and is carried to the correction that repairs
+            that page.
+Repaired:   the assembler compares tonight's file's hash with the stored one and, where they differ,
+            deletes that row and inserts tonight's; a re-run over an unchanged store writes nothing. It
+            counts what the statements did: files written, how many of them replaced a file that
+            differed, and how many were unchanged. The detector keeps a list it made where the file it
+            was made against has since been emptied, and counts it on the run log. `FactsFile.Serialise`
+            refuses a name given twice, so no writer can produce such a file. SCHEMA gives the delete on
+            `facts` to the assembler, a decision records the choice against the update a later session
+            might reach for, and section 14's note says a second run's values are what the store holds.
+            The existing uncomparable-file test now clears tonight's lists first, since a list an
+            earlier run made is now kept where the file it was made against is emptied, and that test
+            is about a row no comparison has reached.
+Repair:     the store's 2026-09-10 files are repaired by running `tools/nightly.ps1 --session
+            2026-09-10` once this is merged and before the night of 2026-09-11 runs, because the
+            assembler writes the newest night the store holds and cannot recompute one another night
+            has followed. What that run replaces is on its facts line.
+Guarded:    a store in which one stored value the assembler reads has moved: one file written and
+            replacing the one before it, the rest unchanged and counted so on the run log, the stored
+            file tonight's with its own hash, the replaced row with no list until the detector writes
+            one and the others keeping theirs. A second detector run over a night whose previous file
+            the first run emptied, keeping the first run's list and naming nothing. A file naming a fact
+            twice refused by `Serialise` with the name, the same facts under two names written. And
+            every file the replay stores naming each fact once.
+Mutated:    the rule, stated before the sweep: reinstate each defect, being a differing file left
+            standing, every file counted as written, a list replaced with null when its comparison is
+            gone, and a repeated name written. Four mutations, four runs, in a worktree under the
+            session scratchpad outside the repository, reverted, and the worktree removed. The first
+            two each turned the replacement test red, the third the second-run test and the fourth the
+            write refusal, each leaving the other 522 green. None of the properties added went
+            unmutated.
+Tests:      523, from 520. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 245 claims, 171 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined, 178 placements reconciled. No claim moved. Windows on this machine;
+            the matrix carries macOS and the Linux case-sensitivity job.
