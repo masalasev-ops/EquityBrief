@@ -165,7 +165,9 @@ public sealed class ShortlistBuilder : IComponent
         await connection.OpenAsync(cancellation);
 
         var members = await MembersAsync(connection, indexCode, cancellation);
-        var asOf = DateOnly.FromDateTime(clock.UtcNow.UtcDateTime);
+        // The session date and not the UTC date, for the reason the ladder
+        // builder's matching line gives: after eight in New York the two differ.
+        var asOf = clock.SessionDateAt(clock.UtcNow);
         var fired = 0;
         var reasonsFired = 0;
 

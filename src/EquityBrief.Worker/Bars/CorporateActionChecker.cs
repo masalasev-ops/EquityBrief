@@ -7,12 +7,19 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Bars;
 
+// `Requests` is every request the stage made, being the action feed's and the
+// historical feed's together, and `RefetchRequests` is the per-name part of it.
+// The run log carried the action feed's alone until the phase 5 sign-off, so the
+// one per-name request the cost rule carves out by name was the one the store
+// never counted: the third by-hand night of 2026-09-09 made eleven requests at
+// this stage and its row said two.
 public sealed record ActionCheckOutcome(
     int Actions,
     int Refetched,
     int RowsReplaced,
     int Requests,
-    IReadOnlyList<string> Suspect);
+    IReadOnlyList<string> Suspect,
+    int RefetchRequests = 0);
 
 // The corporate action check. One bulk request per kind per night, and a
 // full-year refetch of any current member whose adjusted prices an action has
@@ -124,6 +131,11 @@ public sealed class CorporateActionChecker : IComponent
         var members = await MembersAsync(connection, indexCode);
         var before = await CountAsync(connection);
 
+        // Both feeds counted from here, as deltas, so the figure is this run's
+        // and not whatever a feed shared with an earlier stage had already made.
+        var actionRequestsBefore = actions.Requests;
+        var refetchRequestsBefore = history.Requests;
+
         var today = await actions.ActionsAsync(Exchange, session, cancellationToken);
 
         // Current members only. An action on a name the index does not hold is
@@ -187,12 +199,15 @@ public sealed class CorporateActionChecker : IComponent
             }
         }
 
+        var refetchRequests = history.Requests - refetchRequestsBefore;
+
         var outcome = new ActionCheckOutcome(
             today.Count,
             refetched,
             await CountAsync(connection) - before,
-            actions.Requests,
-            suspect);
+            actions.Requests - actionRequestsBefore + refetchRequests,
+            suspect,
+            refetchRequests);
 
         await AppendAsync(connection, runId, observed, outcome);
 
@@ -282,10 +297,9 @@ public sealed class CorporateActionChecker : IComponent
         command.Parameters.AddWithValue("$network_requests", outcome.Requests);
         command.Parameters.AddWithValue(
             "$detail",
-            outcome.Suspect.Count == 0
-                ? $"{outcome.Actions} action(s), {outcome.Refetched} refetched"
-                : $"{outcome.Actions} action(s), {outcome.Refetched} refetched, suspect: " +
-                    string.Join(", ", outcome.Suspect));
+            $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
+            $"{outcome.RefetchRequests} of the {outcome.Requests} request(s) per name" +
+            (outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect)));
 
         await command.ExecuteNonQueryAsync();
     }

@@ -408,21 +408,50 @@ public class CorporateActions
     }
 
     [Fact]
-    public async Task TheCheckCostsTwoRequestsWhateverTheUniverseIs()
+    public async Task TheCheckCostsTwoRequestsAndOnePerRefetchedNameAndTheRunLogSaysSo()
     {
         // One per kind, and neither grows with the universe. The refetch is a
-        // per-name call and is bounded by actions rather than by the index,
-        // which the limits row now carves out in so many words.
+        // per-name call bounded by the day's actions rather than by the index,
+        // which the limits row carves out in so many words.
+        //
+        // And it is counted. This test was "costs two requests" until the phase
+        // 5 sign-off and asserted the stage reported two while the fixture
+        // refetches AAPL, so it held the undercount in place: the run log row
+        // left out exactly the per-name request the carve-out is about, and the
+        // third by-hand night of 2026-09-09 recorded two where it made eleven.
         using var store = await Stored();
 
         var feed = RecordedCorporateActionFeed.FromFolder(FixtureFolder());
+        var history = RecordedHistoricalBarFeed.FromFolder(FixtureFolder());
+        var historyBefore = history.Requests;
+
         var outcome = await new CorporateActionChecker(
             feed,
-            RecordedHistoricalBarFeed.FromFolder(FixtureFolder()),
+            history,
             FixedClock.At(ActionNight, SessionZones.UnitedStates),
             store.DatabaseFile).RunAsync(Index, "run-actions");
 
         Assert.Equal(2, feed.Requests);
-        Assert.Equal(2, outcome.Requests);
+
+        // One refetch per affected member, counted off the feed that made it.
+        Assert.Equal(1, outcome.Refetched);
+        Assert.Equal(outcome.Refetched, history.Requests - historyBefore);
+        Assert.Equal(outcome.Refetched, outcome.RefetchRequests);
+
+        // The stage's figure is both feeds together, and the row the operator
+        // reads carries that figure rather than the action feed's alone.
+        Assert.Equal(feed.Requests + outcome.RefetchRequests, outcome.Requests);
+
+        using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT network_requests, detail FROM run_log WHERE run_id = 'run-actions' AND stage = 'actions';";
+
+        using var reader = command.ExecuteReader();
+
+        Assert.True(reader.Read(), "The check left no run log row.");
+        Assert.Equal(3L, reader.GetInt64(0));
+        Assert.Contains("1 of the 3 request(s) per name", reader.GetString(1), StringComparison.Ordinal);
     }
 }

@@ -191,4 +191,89 @@ public class PriceStorageForm
         // stripped first.
         Assert.Empty(CrossingHelpersIn("// static double Sneak(decimal price) => 0;", "Probe.cs"));
     }
+
+    // Every explicit cast to double or to decimal in a file, keyed on the file
+    // and the start of its operand.
+    //
+    // The inline half the helper set above cannot see. A method whose signature
+    // stays inside one world can still cast money to a statistic in its body,
+    // which is exactly what `MoveSeries`, `ForwardReturnSeries` and
+    // `UniverseScreen.Distance` did until the phase 5 sign-off moved them onto
+    // the helpers: and putting any of the three back left the whole suite
+    // green, because each sits in a method the signature reader either never
+    // matches or already permits. A cast's operand type cannot be read from the
+    // text, so the casts are stated as a set of sites, and a new one is a
+    // decision rather than a number that moved. The operand is keyed on its
+    // first token, which is enough to tell `(double)price` from
+    // `(double)counted.Count` and a parenthesised expression from either.
+    internal static IReadOnlyList<string> CastsIn(string source, string file)
+    {
+        var code = SourceStatements.WithoutComments(source);
+
+        return System.Text.RegularExpressions.Regex
+            .Matches(code, @"\((?<to>double|decimal)\)\s*(?<operand>\(|[A-Za-z_][A-Za-z0-9_.]*(?:\[[^\]]*\])?)")
+            .Select(match => $"{Path.GetFileName(file)}: ({match.Groups["to"].Value}){match.Groups["operand"].Value}")
+            .ToArray();
+    }
+
+    [Fact]
+    public void EveryCastBetweenTheTwoWorldsInTheShippedSourceIsAStatedSite()
+    {
+        var shipped = Repository.SourceFiles()
+            .Where(file => !file.Contains(
+                Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar,
+                StringComparison.Ordinal))
+            .ToArray();
+
+        var casts = shipped
+            .SelectMany(file => CastsIn(File.ReadAllText(file), file))
+            .OrderBy(site => site, StringComparer.Ordinal)
+            .ToArray();
+
+        // Stated as a multiset, so a second cast of an allowed shape in the same
+        // file is a change here too. Each is one of three kinds: the crossing
+        // helpers themselves, a count or a share divided by a count, which is
+        // arithmetic over integers and never money, and a stored statistic read
+        // back as the double it is before `Statistic.ToPrice` makes it a price.
+        // `PlotValue` is the chart's crossing, which says why it is its own.
+        Assert.Equal(
+            [
+                "ForwardReturnSeries.cs: (double)counted.Count",
+                "LadderBuilder.cs: (double)value",
+                "LevelBuilder.cs: (double)value",
+                "MarkRenderer.cs: (double)(",
+                "MarkRenderer.cs: (double)(",
+                "MarkRenderer.cs: (double)(",
+                "MarkRenderer.cs: (double)Label",
+                "MarkRenderer.cs: (double)band.Shares",
+                "MarkRenderer.cs: (double)bar.Volume",
+                "MarkRenderer.cs: (double)price",
+                "Statistic.cs: (decimal)statistic",
+                "Statistic.cs: (double)price",
+                "Statistic.cs: (double)ratio",
+                "TrendClassifier.cs: (double)value",
+                "VolumeProfileSeries.cs: (double)shares[band]",
+            ],
+            casts);
+    }
+
+    [Fact]
+    public void TheCastReaderKeysOnTheOperandAndIgnoresComments()
+    {
+        // The three inline casts the sign-off moved onto the helpers, each of
+        // which has to produce a site the stated set does not hold.
+        Assert.Equal(
+            ["MoveSeries.cs: (double)("],
+            CastsIn("var change = (double)((bars[at].Close - from) / from) * 100;", "MoveSeries.cs"));
+        Assert.Equal(
+            ["UniverseScreen.cs: (double)("],
+            CastsIn("? Math.Abs((double)(price - band)) / typicalMove.Value", "UniverseScreen.cs"));
+
+        // The helper's own form and an indexed operand are read whole.
+        Assert.Equal(["Statistic.cs: (double)price"], CastsIn("=> (double)price;", "Statistic.cs"));
+        Assert.Equal(["V.cs: (double)shares[band]"], CastsIn("(double)shares[band] / total", "V.cs"));
+
+        // A comment naming a cast is not one.
+        Assert.Empty(CastsIn("// (double)price is what this used to do", "Probe.cs"));
+    }
 }

@@ -135,7 +135,7 @@ static async Task<int> NightlyRun(string[] args)
 static string? RunId(string? session) =>
     session is null
         ? null
-        : $"night-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}-for-{session}";
+        : FormattableString.Invariant($"night-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}-for-{session}");
 
 static string? Argument(string[] args, string name)
 {

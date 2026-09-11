@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -19,7 +20,10 @@ public sealed record FetchOutcome(
     // longer refuses the file, so it has to be somewhere a person reads it. A
     // rise from two to two hundred is a fact about the provider that nothing
     // else would show.
-    IReadOnlyList<string> Unaccounted);
+    IReadOnlyList<string> Unaccounted,
+    // The sessions the store was missing since the last night that ran, each
+    // fetched in bulk and stored before tonight's. None on an ordinary night.
+    IReadOnlyList<DateOnly>? CaughtUp = null);
 
 // The nightly bar fetch. One bulk request, stored for current members only,
 // then the sessions that have fallen out of the retention window are dropped.
@@ -127,91 +131,50 @@ public sealed class BarFetcher : IComponent
         // because a request with no date has nothing to compare its answer
         // against. A night is scheduled after the close, so the session is the
         // date the run's own instant falls on in the exchange's zone
-        // (see: The night runs at a fixed UTC instant set after the provider posts the day's bulk file).
+        // (see: The night runs at a fixed UTC instant, moved only when a night finds the day's file not yet posted).
         var session = clock.SessionDateAt(started);
 
-        // One request. Counted by the feed rather than asserted by the caller,
-        // because a caller that looped would still report one.
-        var rows = await feed.RowsAsync(Exchange, session, cancellationToken);
-
-        var wanted = rows
-            .Where(row => members.Contains(row.Ticker))
-            .OrderBy(row => row.Ticker, StringComparer.Ordinal)
-            .ToArray();
-
-        // A current member whose row the reader refused, named before anything
-        // is stored.
+        // Any session the store is missing since the last night that ran,
+        // fetched in bulk before tonight's.
         //
-        // The reader passes over a row it cannot read rather than refusing the
-        // file, because the file is the whole exchange and a fund's fractional
-        // volume is not this index's business: two of the first four days
-        // fetched at index size carried six such rows, and each refused the
-        // night for every name with a message that named nothing. What a row
-        // passed over must never do is leave a member quietly without tonight's
-        // bar, which is what this refuses, with the ticker and the reason.
-        var refusedMembers = feed.Unreadable
-            .Where(row => members.Contains(row.Ticker))
-            .OrderBy(row => row.Ticker, StringComparer.Ordinal)
-            .ToArray();
+        // A night that did not run leaves every name short the same session, and
+        // nothing downstream can see it: the observed calendar is the union of
+        // the dates the names hold, so a session none of them holds is one it
+        // says the exchange never traded, and every indicator, move and forward
+        // return would count across the hole as though it were one session. The
+        // closure table says which weekdays should be there, and each one missing
+        // costs one more bulk request, which grows with the nights missed and
+        // never with the names. The provider serves an older session's file as
+        // prices, which is what makes this possible.
+        // see: A session the night finds missing is fetched in bulk before tonight's
+        // see: Bars are never interpolated
+        var oldest = session.AddYears(-RetentionYears);
+        var last = await LastStoredAsync(connection, session);
 
-        if (refusedMembers.Length > 0)
+        var missed = last is { } since
+            ? ExchangeClosures.SessionsBetween(since, session).Where(day => day >= oldest).ToArray()
+            : [];
+
+        var caughtUp = new List<BulkBar[]>();
+
+        foreach (var day in missed)
         {
-            throw new InvalidOperationException(
-                "The bulk file for " + session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
-                $" carries {refusedMembers.Length} current member row(s) the reader refused: " +
-                string.Join("; ", refusedMembers.Take(FirstNamed).Select(row => row.Reason)) +
-                ". A member's bar that cannot be read is refused rather than skipped, because a " +
-                "member with no bar tonight would read as a shorter history.");
+            var (dayWanted, _) = await AcceptedAsync(day, members, missedSession: true, cancellationToken);
+
+            caughtUp.Add(dayWanted);
         }
 
-        // Every current member accounted for, before anything is stored.
-        //
-        // The bulk file is the whole exchange and every member of a US index is
-        // listed on it, so a member that appears neither as a bar nor as a
-        // symbol that did not trade is a member the file does not carry. A file
-        // short of names stored as a whole one leaves most of the index
-        // silently stale with no gap to find, which is the failure that looks
-        // current and is false.
-        //
-        // Only the fetcher can ask this. The feed does not know how many names
-        // the index holds, which is why this is a different row from the wrong
-        // session and is refused in a different place.
-        // see: A feed is unavailable when it does not answer, and wrong when it answers with something else
-        var accounted = wanted
-            .Select(row => row.Ticker)
-            .Concat(feed.NotSessions)
-            .ToHashSet(StringComparer.Ordinal);
+        // Tonight's, through the same checks. One request, counted by the feed
+        // rather than asserted by the caller, because a caller that looped would
+        // still report one.
+        var (wanted, missing) = await AcceptedAsync(session, members, missedSession: false, cancellationToken);
 
-        var missing = members.Where(member => !accounted.Contains(member))
-            .OrderBy(member => member, StringComparer.Ordinal)
-            .ToArray();
-
-        // Every one, and not merely some. Corrected at 2.4 by the first live
-        // night over the whole index: two of 503 current members, EQR and PSTG,
-        // are absent from an ordinary day's file, so refusing on any absence
-        // refuses every night. A name the file carries nothing for has no bar
-        // tonight, which is that name's own shorter history and is what the gap
-        // machinery already reads.
-        //
-        // What is unambiguous is a file carrying nothing for any of them. That
-        // is the wrong file or a session the exchange has not traded, and it is
-        // not the same as a file with no rows at all: the payload can be full of
-        // symbols this index does not hold. A night run before the close
-        // produced exactly that, which is how this rule was measured rather than
-        // chosen.
-        if (missing.Length == members.Count && members.Count > 0)
-        {
-            throw new InvalidOperationException(
-                $"The bulk file for {session:yyyy-MM-dd} carries nothing for any of the " +
-                $"{members.Count} current member(s), the first being " +
-                $"{string.Join(", ", missing.Take(FirstNamed))}. A payload holding none of the " +
-                "index is the wrong file or a session the exchange has not traded, and storing " +
-                "nothing from it would read as a night that ran.");
-        }
-
+        // Every session in one transaction, the missed ones first, so a night
+        // that stops partway stores none of them rather than a series with the
+        // hole moved rather than filled.
         await using var transaction = await connection.BeginTransactionAsync();
 
-        foreach (var row in wanted)
+        foreach (var row in caughtUp.SelectMany(day => day).Concat(wanted))
         {
             await StoreAsync(connection, row, started);
         }
@@ -223,8 +186,6 @@ public sealed class BarFetcher : IComponent
         // property of what the provider happened to send: a payload for an older
         // session would have moved it backwards and kept sessions the night
         // should have dropped.
-        var oldest = session.AddYears(-RetentionYears);
-
         await using (var drop = connection.CreateCommand())
         {
             drop.CommandText = DropOlderThan;
@@ -247,11 +208,145 @@ public sealed class BarFetcher : IComponent
             stored - after,
             session,
             oldest,
-            missing);
+            missing,
+            missed);
 
         await AppendAsync(connection, runId, started, outcome);
 
         return outcome;
+    }
+
+    // One session's file, read and checked before anything is stored.
+    //
+    // The feed's two accumulating lists are read from where they stood before
+    // this call, so a night that fetches several sessions judges each against
+    // its own rows rather than against every file it has read.
+    async Task<(BulkBar[] Wanted, string[] Missing)> AcceptedAsync(
+        DateOnly day,
+        HashSet<string> members,
+        bool missedSession,
+        CancellationToken cancellationToken)
+    {
+        var unreadableFrom = feed.Unreadable.Count;
+        var notSessionsFrom = feed.NotSessions.Count;
+
+        IReadOnlyList<BulkBar> rows;
+
+        try
+        {
+            rows = await feed.RowsAsync(Exchange, day, cancellationToken);
+        }
+        catch (Exception failure) when (missedSession && failure is not OperationCanceledException)
+        {
+            throw new InvalidOperationException(
+                Missed(day) + " and its file could not be fetched: " + failure.Message +
+                " A gap stops computation rather than being counted across, so the night stops.",
+                failure);
+        }
+
+        var named = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        var wanted = rows
+            .Where(row => members.Contains(row.Ticker))
+            .OrderBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToArray();
+
+        // A current member whose row the reader refused, named before anything
+        // is stored.
+        //
+        // The reader passes over a row it cannot read rather than refusing the
+        // file, because the file is the whole exchange and a fund's fractional
+        // volume is not this index's business: two of the first four days
+        // fetched at index size carried six such rows, and each refused the
+        // night for every name with a message that named nothing. What a row
+        // passed over must never do is leave a member quietly without tonight's
+        // bar, which is what this refuses, with the ticker and the reason.
+        var refusedMembers = feed.Unreadable
+            .Skip(unreadableFrom)
+            .Where(row => members.Contains(row.Ticker))
+            .OrderBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToArray();
+
+        if (refusedMembers.Length > 0)
+        {
+            throw new InvalidOperationException(
+                "The bulk file for " + named +
+                $" carries {refusedMembers.Length} current member row(s) the reader refused: " +
+                string.Join("; ", refusedMembers.Take(FirstNamed).Select(row => row.Reason)) +
+                ". A member's bar that cannot be read is refused rather than skipped, because a " +
+                "member with no bar tonight would read as a shorter history.");
+        }
+
+        // Every current member accounted for, before anything is stored.
+        //
+        // The bulk file is the whole exchange and every member of a US index is
+        // listed on it, so a member that appears neither as a bar nor as a
+        // symbol that did not trade is a member the file does not carry. A file
+        // short of names stored as a whole one leaves most of the index
+        // silently stale with no gap to find, which is the failure that looks
+        // current and is false.
+        //
+        // Only the fetcher can ask this. The feed does not know how many names
+        // the index holds, which is why this is a different row from the wrong
+        // session and is refused in a different place.
+        // see: A feed is unavailable when it does not answer, and wrong when it answers with something else
+        var accounted = wanted
+            .Select(row => row.Ticker)
+            .Concat(feed.NotSessions.Skip(notSessionsFrom))
+            .ToHashSet(StringComparer.Ordinal);
+
+        var missing = members.Where(member => !accounted.Contains(member))
+            .OrderBy(member => member, StringComparer.Ordinal)
+            .ToArray();
+
+        // Every one, and not merely some. Corrected at 2.4 by the first live
+        // night over the whole index: two of 503 current members, EQR and PSTG,
+        // are absent from an ordinary day's file, so refusing on any absence
+        // refuses every night. A name the file carries nothing for has no bar
+        // tonight, which is that name's own shorter history and is what the gap
+        // machinery already reads.
+        //
+        // What is unambiguous is a file carrying nothing for any of them. That
+        // is the wrong file or a session the exchange has not traded, and it is
+        // not the same as a file with no rows at all: the payload can be full of
+        // symbols this index does not hold. A night run before the close
+        // produced exactly that, which is how this rule was measured rather than
+        // chosen. For a missed session it can also be a closure the table does
+        // not hold, which the message says.
+        if (missing.Length == members.Count && members.Count > 0)
+        {
+            throw new InvalidOperationException(
+                (missedSession ? Missed(day) + ", and its file " : "The bulk file for " + named + " ") +
+                $"carries nothing for any of the {members.Count} current member(s), the first being " +
+                $"{string.Join(", ", missing.Take(FirstNamed))}. A payload holding none of the " +
+                "index is the wrong file or a session the exchange has not traded, and storing " +
+                "nothing from it would read as a night that ran." +
+                (missedSession ? " If the exchange was closed that day, the closure table is missing it." : string.Empty));
+        }
+
+        return (wanted, missing);
+    }
+
+    static string Missed(DateOnly day) =>
+        "The store is missing session " + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
+        ", which the exchange traded and no night stored";
+
+    // The newest session the store holds before tonight's, which is where the
+    // last night that ran left it.
+    const string LastStoredBefore = @"
+        SELECT MAX(session_date) FROM bar WHERE session_date < $session;
+    ";
+
+    static async Task<DateOnly?> LastStoredAsync(SqliteConnection connection, DateOnly session)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LastStoredBefore;
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync() is string text
+            ? DateOnly.ParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
     }
 
     static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode)
@@ -319,7 +414,10 @@ public sealed class BarFetcher : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{{\"members\":{outcome.MembersStored},\"dropped\":{outcome.RowsDropped}," +
-            $"\"session\":\"{outcome.Session:yyyy-MM-dd}\",\"oldest\":\"{outcome.Oldest:yyyy-MM-dd}\"}}");
+            FormattableString.Invariant($"\"session\":\"{outcome.Session:yyyy-MM-dd}\",\"oldest\":\"{outcome.Oldest:yyyy-MM-dd}\",") +
+            "\"caughtUp\":[" +
+            string.Join(",", (outcome.CaughtUp ?? []).Select(day => "\"" + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "\"")) +
+            "]}");
 
         await command.ExecuteNonQueryAsync();
     }

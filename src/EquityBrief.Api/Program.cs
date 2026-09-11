@@ -315,7 +315,7 @@ app.MapGet("/screens/run/{night?}", async (
 // and what section 15.10's run page reads. Written after the host is built so a
 // store that cannot be opened fails the start rather than a request.
 await app.Services.GetRequiredService<ReadApi>().RecordStartAsync(
-    $"read-api-{app.Services.GetRequiredService<IClock>().UtcNow:yyyyMMddTHHmmssZ}",
+    FormattableString.Invariant($"read-api-{app.Services.GetRequiredService<IClock>().UtcNow:yyyyMMddTHHmmssZ}"),
     "the read surface started");
 
 app.Run();

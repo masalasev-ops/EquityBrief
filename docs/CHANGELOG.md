@@ -25,6 +25,49 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - ARCHITECTURE.html - a missed session is fetched in bulk before tonight's
+Authorised by: A session the night finds missing is fetched in bulk before tonight's
+Was:
+> <li>Fetch the day's bulk bar file, one request, and store the bars for current members.</li>
+Now: the step fetches first, in bulk and one request each, any session the store is missing since the last night that ran; section 18 gains a row for a session the night finds missing.
+Why: a night that did not run left every name short the same session, which the observed calendar cannot see, and 5.7 had read the provider as unable to serve an older session, so nothing could fill it. One probe showed it can.
+
+### 2026-09-11 - ARCHITECTURE.html, BUILD_PLAN.md, RUNBOOK.md - the schedule moves on a refusal, and the posting-hour obligation is retired
+Authorised by: The night runs at a fixed UTC instant, moved only when a night finds the day's file not yet posted
+Was:
+> The schedule is a UTC instant set after the provider posts the day's bulk file, registered with whatever scheduler the machine has, ...
+>
+> | **The provider's posting hour for the day's bulk file, measured from live fetches** | 2.0 | operating | 5 nights fetched under the schedule, read on the run page's operational header, which 5.6 builds. ...
+>
+> **The instant is 23:30 UTC, provisionally.** ... It is provisional because the posting hour has not been measured, ... Move the instant earlier once five nights show the file was already there.
+>
+> **So both become operating obligations, and 5.7 keeps the half it produces.** The posting hour's trigger is five nights fetched under the schedule, ...
+Now: the instant stands while nights succeed and moves later on a night refused because the day's file was not yet posted; the posting-hour row is discharged at 5.7 as retired, a new operating row carries the refusal trigger and 5.6 cites it; 2.1's paragraph and the runbook say why more scheduled nights settle nothing.
+Why: a scheduled fetch can only bound the posting hour from above, so the five-night trigger would fire without answering the question it named. A refusal is the only evidence that moves the instant, and with the bulk catch-up a refused night's session is fetched the next night rather than lost.
+
+### 2026-09-11 - CLAUDE.md - record-append-only holds DECISIONS.md's names as well
+Corrects: 5.0 superseded "News arrives in one dated feed request and is attributed to names locally" and deleted it rather than moving it to "Previously decided", and no check could notice: `no-superseded-citation` asks whether a citation resolves to a superseded entry, which a deleted one never does. Found by the phase 5 sign-off comparing 5.0's record, which says it superseded the entry, with "Previously decided", which did not hold it.
+Was:
+> ... so the guard's window is visible rather than the removal sitting outside it |
+Now: the same row, with every decision name ever present in `DECISIONS.md` held as a high-water mark read from the history.
+Why: `DECISIONS.md` is a record, and a record's names are the unit a correction keys on. The entry is restored, so the check starts from the history as it stands with no exemption.
+
+### 2026-09-11 - CLAUDE.md - clock-usage and price-storage-form rows state the halves the first repair missed
+Corrects: the phase 5 sign-off's first repair widened both checks and both still missed the shape they were widened for. `clock-usage` read `ToString` with no provider and not an interpolation hole carrying a date format, which is how every provider request URL in the tree rendered its dates. `price-storage-form` read crossing signatures, and putting any of the three inline casts it was widened for back into its method left the whole suite green. Found by the phase 5 sign-off's independent review of that repair, the second by a mutation that survived.
+Was:
+> ... the formatting half is keyed on the call passing no provider rather than on a name, since the provider is held under an alias in the renderer. Comments are stripped first, ...
+>
+> ... is a named crossing helper, with the set of them stated rather than counted. The two halves fail apart: ...
+Now: the clock-usage row names the interpolation form and states the unformatted hole as outside its reach; the price-storage-form row adds the stated set of cast sites.
+Why: a check asserting more than its roster row says is a property nobody wrote down, and one asserting less is the survivorship the roster exists to catch.
+
+### 2026-09-11 - BUILD_PLAN.md - the transaction obligation is open, not discharged
+Corrects: the row read "6.0, discharged" while its own text and 6.0's paragraph both said half of it is owed at 6.0, so the table counted 43 discharged and 4 open where the truth was 42 and 5. `obligation-reconciles` exempts a discharged row by design, since work done ahead of its checkpoint is legitimate, so only the label could say it. Found by the phase 5 sign-off.
+Was:
+> | **Every stage that writes in a loop opens a transaction, asserted rather than read** | 5.7 sign-off | 6.0, discharged | the phase 5 sign-off filed it and discharged the half that was assertable. ...
+Now: the due cell reads "6.0" and the note says it is open with half of it done, and why it read otherwise.
+Why: a row that reads as closed is chased by nobody, which is the fault the obligation table exists to prevent.
+
 ### 2026-09-11 - BUILD_PLAN.md, ARCHITECTURE.html - the bulk feed's unnamed refusal, diagnosed and discharged as a correction to 2.1
 Corrects: the obligation row and 6.0's paragraph read the refusal of 2026-09-04 and 2026-09-08 as the provider serving something other than prices for an older session. One probe on the operator's key refuted it: the older file is prices, and six of its 50,249 rows carry a fractional volume the reader refused the whole file for with the framework's default message. Found by the phase 5 sign-off.
 Was:

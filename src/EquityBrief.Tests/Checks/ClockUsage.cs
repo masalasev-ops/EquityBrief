@@ -152,6 +152,80 @@ public class ClockUsage
         Assert.Empty(CultureFreeDateFormatting("// ToString(\"yyyy-MM-dd\") is what this used to do;", "Probe.cs"));
     }
 
+    // The third form of the rendering direction, and the one the sign-off's
+    // first repair missed while counting fifty-six renderings fixed.
+    //
+    // An interpolation hole carrying a date format, `{session:yyyy-MM-dd}`,
+    // formats against the current culture exactly as `ToString("yyyy-MM-dd")`
+    // does, and it carries no `ToString` for the reader above to find. Every
+    // provider request URL in the tree was written this way, so on a machine
+    // whose calendar is not Gregorian the night would ask the provider for a
+    // year that has not happened. A hole is culture-free only where its whole
+    // literal is handed to something that supplies the invariant culture:
+    // `FormattableString.Invariant(`, `string.Create(CultureInfo.InvariantCulture,`
+    // or the renderer's `Append(Invariant, `. That is read off the text
+    // immediately before the literal.
+    //
+    // What this cannot reach is a hole with no format at all over a date
+    // value, `{tonight}`, which renders the culture's short date and carries
+    // nothing a text reader can key on without the type. That is this
+    // reader's stated scope rather than a property it claims.
+    internal static IReadOnlyList<string> CultureFreeDateInterpolation(string source, string file)
+    {
+        var code = SourceStatements.WithoutComments(source);
+
+        string[] components = ["yyyy", "MM-dd", "HH:mm", "HHmmss"];
+
+        return System.Text.RegularExpressions.Regex
+            .Matches(code, @"(?<before>[^\n]{0,48})\$@?""(?<body>(?:[^""\\\n]|\\.)*)""")
+            .Where(literal => System.Text.RegularExpressions.Regex
+                .Matches(literal.Groups["body"].Value, @"(?<!\{)\{[^{}:]+:(?<format>[^{}]+)\}")
+                .Any(hole => components.Any(component =>
+                    hole.Groups["format"].Value.Contains(component, StringComparison.Ordinal))))
+            .Where(literal => !System.Text.RegularExpressions.Regex.IsMatch(
+                literal.Groups["before"].Value,
+                @"(?:Invariant\(|Invariant,|InvariantCulture,)\s*$"))
+            .Select(literal => $"{Path.GetFileName(file)}: ${'"'}{literal.Groups["body"].Value}{'"'}")
+            .ToArray();
+    }
+
+    [Fact]
+    public void NothingInterpolatesADateAgainstTheMachinesLocale()
+    {
+        var files = Repository.SourceFiles();
+
+        Assert.True(files.Count >= 15, $"Read {files.Count} source files, expected at least 15.");
+
+        var loose = files
+            .SelectMany(file => CultureFreeDateInterpolation(File.ReadAllText(file), file))
+            .ToArray();
+
+        Assert.Empty(loose);
+    }
+
+    [Fact]
+    public void TheCheckReportsADateInterpolatedAgainstTheMachinesLocale()
+    {
+        // Permanent proof in both directions. The loose form is every provider
+        // request URL this repository carried until the phase 5 sign-off.
+        var url = "var request = " + "$\"{Endpoint}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&fmt=json\";";
+        var runId = "runId ??= " + "$\"night-{clock.UtcNow:yyyyMMddTHHmmssZ}\";";
+
+        Assert.Single(CultureFreeDateInterpolation(url, "Probe.cs"));
+        Assert.Single(CultureFreeDateInterpolation(runId, "Probe.cs"));
+
+        // The three pinned forms pass.
+        Assert.Empty(CultureFreeDateInterpolation("var u = FormattableString.Invariant(" + "$\"a{from:yyyy-MM-dd}\");", "Probe.cs"));
+        Assert.Empty(CultureFreeDateInterpolation("var u = string.Create(CultureInfo.InvariantCulture, " + "$\"a{from:yyyy-MM-dd}\");", "Probe.cs"));
+        Assert.Empty(CultureFreeDateInterpolation("header.Append(Invariant, " + "$\"<td>{night:yyyy-MM-dd}</td>\");", "Probe.cs"));
+
+        // A number is not a date, an escaped brace is not a hole, and a comment
+        // naming the pattern is not a use of it.
+        Assert.Empty(CultureFreeDateInterpolation("var s = " + "$\"{seconds:0.###} second(s)\";", "Probe.cs"));
+        Assert.Empty(CultureFreeDateInterpolation("var s = " + "$\"{{literal:yyyy}}\";", "Probe.cs"));
+        Assert.Empty(CultureFreeDateInterpolation("// $\"{x:yyyy-MM-dd}\" is what this used to do", "Probe.cs"));
+    }
+
     [Fact]
     public void NothingParsesADateAgainstTheMachinesLocale()
     {

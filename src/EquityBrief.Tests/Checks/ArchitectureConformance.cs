@@ -816,15 +816,17 @@ public class ArchitectureConformance
 
         Assert.Equal(Scope.ScreensTables.Length, screensTables.Length);
 
-        // Stated in advance: seven tables, 37 rows, 44 claim subjects. The
+        // Stated in advance: seven tables, 37 rows, 47 claim subjects. The
         // Level chart row decomposes into its four elements, and 5.0 decomposed
         // three more per surface, being the universe screen's sector strip and
         // table, whose listing halves cannot exist until 5.4 creates that
         // store, and the run page's reason record, whose counts are 5.6's and
-        // whose verdicts need resolved setups. A run finding none would
-        // otherwise pass both directions over an empty set.
+        // whose verdicts need resolved setups. The phase 5 sign-off split the
+        // run page's stale-and-failed region into its four parts, two of them
+        // phase 6's. A run finding none would otherwise pass both directions
+        // over an empty set.
         Assert.Equal(37, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
-        Assert.Equal(44, inDocument.Length);
+        Assert.Equal(47, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -866,9 +868,11 @@ public class ArchitectureConformance
             ". A decomposition the document does not carry is a second statement of the row's content.");
 
         // Stated in advance, and it is the scope carrying the property: twenty
-        // elements over eight rows, four on the level chart, two on the gap
+        // four elements over nine rows, four on the level chart, two on the gap
         // failure, two on the unavailable feed, two on the two-hundred-bar row
-        // 3.1 decomposed, and six 5.0 added. Zero would pass every assertion
+        // 3.1 decomposed, six 5.0 added, and four on the run page's
+        // stale-and-failed region, which the phase 5 sign-off found PASS whole
+        // while two of its parts are phase 6's. Zero would pass every assertion
         // above.
         //
         // An exact count rather than a floor, so a decomposition added without
@@ -879,7 +883,7 @@ public class ArchitectureConformance
         // table were split at the listing store 5.1 does not have and the run
         // page's reason record was split between the counts 5.6 draws and the
         // verdicts that need resolved setups.
-        Assert.Equal(20, checkedElements);
+        Assert.Equal(24, checkedElements);
     }
 
     [Fact]

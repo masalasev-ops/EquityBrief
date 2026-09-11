@@ -63,7 +63,7 @@ public sealed class EodhdEarningsCalendarFeed(
             using var response = await client
                 .GetAsync(
                     EodhdQuery.WithKey(
-                        $"{Endpoint}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&fmt=json",
+                        FormattableString.Invariant($"{Endpoint}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&fmt=json"),
                         credentials),
                     cancellation)
                 .ConfigureAwait(false);

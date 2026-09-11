@@ -86,7 +86,7 @@ public sealed class EodhdCorporateActionFeed(
             using var response = await client
                 .GetAsync(
                     EodhdQuery.WithKey(
-                        $"{Endpoint}/{exchange}?type={Parameter(kind)}&date={session:yyyy-MM-dd}&fmt=json",
+                        FormattableString.Invariant($"{Endpoint}/{exchange}?type={Parameter(kind)}&date={session:yyyy-MM-dd}&fmt=json"),
                         credentials),
                     cancellation)
                 .ConfigureAwait(false);

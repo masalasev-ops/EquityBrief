@@ -79,7 +79,7 @@ public static class ProviderBarReader
         if (bar.Low > bar.Open || bar.Low > bar.Close || bar.High < bar.Open || bar.High < bar.Close)
         {
             throw new FormatException(
-                $"{ticker} on {bar.SessionDate:yyyy-MM-dd} adjusts to low {bar.Low}, open {bar.Open}, " +
+                FormattableString.Invariant($"{ticker} on {bar.SessionDate:yyyy-MM-dd} adjusts to low {bar.Low}, open {bar.Open}, ") +
                 $"high {bar.High}, close {bar.Close}, which is a session that could not have traded.");
         }
 

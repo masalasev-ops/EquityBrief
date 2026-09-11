@@ -178,7 +178,7 @@ public sealed class Backfill(
             "$detail",
             gaps.Count == 0
                 ? (object)DBNull.Value
-                : "refused: " + string.Join(", ", gaps.Select(gap => $"{gap.Ticker} has no session on {gap.SessionDate:yyyy-MM-dd}")));
+                : "refused: " + string.Join(", ", gaps.Select(gap => FormattableString.Invariant($"{gap.Ticker} has no session on {gap.SessionDate:yyyy-MM-dd}"))));
 
         await log.ExecuteNonQueryAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);

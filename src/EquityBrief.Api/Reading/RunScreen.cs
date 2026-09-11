@@ -58,7 +58,7 @@ public static class RunScreen
                 if (!byReason.TryGetValue(reason, out var counted))
                 {
                     throw new InvalidOperationException(
-                        $"The listing for {listing.Ticker} on {listing.SessionDate:yyyy-MM-dd} carries the " +
+                        FormattableString.Invariant($"The listing for {listing.Ticker} on {listing.SessionDate:yyyy-MM-dd} carries the ") +
                         $"reason '{reason}', which section 11's list does not hold. A record counted over " +
                         "reasons this build does not know about would be a record about a different set of " +
                         "reasons from the one the page names.");
