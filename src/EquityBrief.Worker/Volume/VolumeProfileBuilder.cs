@@ -73,6 +73,18 @@ public sealed class VolumeProfileBuilder : IComponent
         DELETE FROM volume_profile WHERE as_of < $oldest;
     ";
 
+    // The name's whole set for the as-of it is about to write, removed first and
+    // in the same transaction. The upsert below is keyed on a band's low edge,
+    // and a band's edges move whenever the prices under them do, so a second run
+    // for one as-of after a refetch adjusted the series kept the first run's
+    // bands beside the second's: the by-hand run of 2026-09-10 left MOS with 39
+    // bands where the profile has 20. A whole set is what a night writes, so a
+    // whole set is what it replaces, which is the retention's own rule applied to
+    // the set being written rather than to the ones below the boundary.
+    const string ReplaceSet = @"
+        DELETE FROM volume_profile WHERE ticker = $ticker AND as_of = $as_of;
+    ";
+
     const string Upsert = @"
         INSERT INTO volume_profile (ticker, as_of, band_low, band_high, share_count, share_of_period)
         VALUES ($ticker, $as_of, $band_low, $band_high, $share_count, $share_of_period)
@@ -132,6 +144,16 @@ public sealed class VolumeProfileBuilder : IComponent
             var asOf = bars[^1].SessionDate;
 
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+            await using (var replace = connection.CreateCommand())
+            {
+                replace.Transaction = (SqliteTransaction)transaction;
+                replace.CommandText = ReplaceSet;
+                replace.Parameters.AddWithValue("$ticker", ticker);
+                replace.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                await replace.ExecuteNonQueryAsync(cancellation);
+            }
 
             foreach (var band in bands)
             {

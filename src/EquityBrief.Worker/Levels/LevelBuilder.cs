@@ -88,6 +88,17 @@ public sealed class LevelBuilder : IComponent
         DELETE FROM level WHERE as_of < $oldest;
     ";
 
+    // The name's whole band set for the as-of it is about to write, removed first
+    // and in the same transaction, for the reason the volume profile builder
+    // gives. The upsert below is keyed on a band's low edge, and a refetch that
+    // moved the adjusted series between two runs for one as-of left both sets
+    // standing: the by-hand night of 2026-09-10 gave NVDA two immediate support
+    // bands, the facts file carried their facts twice, and the change detector
+    // stopped the night on the repeated name.
+    const string ReplaceSet = @"
+        DELETE FROM level WHERE ticker = $ticker AND as_of = $as_of;
+    ";
+
     const string Upsert = @"
         INSERT INTO level (
             ticker, as_of, low_edge, high_edge, role,
@@ -172,6 +183,16 @@ public sealed class LevelBuilder : IComponent
             }
 
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+            await using (var replace = connection.CreateCommand())
+            {
+                replace.Transaction = (SqliteTransaction)transaction;
+                replace.CommandText = ReplaceSet;
+                replace.Parameters.AddWithValue("$ticker", ticker);
+                replace.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                await replace.ExecuteNonQueryAsync(cancellation);
+            }
 
             foreach (var level in levels)
             {

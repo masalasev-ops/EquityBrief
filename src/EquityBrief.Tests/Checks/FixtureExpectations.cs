@@ -918,6 +918,46 @@ public class FixtureExpectations
         return store;
     }
 
+    // One name's whole year moved by one per cent, which is what a refetch after a
+    // corporate action does to an adjusted series between two runs of one night.
+    // Every price column together, so every stored bar still has its low under
+    // its open and close and its high over them.
+    static void Readjusted(TemporaryStore store, string ticker) =>
+        Insert(
+            store,
+            "UPDATE bar SET " +
+            "open = printf('%.4f', CAST(open AS REAL) * 1.01), " +
+            "high = printf('%.4f', CAST(high AS REAL) * 1.01), " +
+            "low = printf('%.4f', CAST(low AS REAL) * 1.01), " +
+            "close = printf('%.4f', CAST(close AS REAL) * 1.01), " +
+            "raw_close = printf('%.4f', CAST(raw_close AS REAL) * 1.01) " +
+            $"WHERE ticker = '{ticker}';");
+
+    [Fact]
+    public async Task ASecondProfileForOneAsOfReplacesTheFirstRatherThanJoiningIt()
+    {
+        // The by-hand run of 2026-09-10 left MOS with 39 profile bands for one
+        // as-of: the scheduled night's twenty, and the re-run's after a refetch
+        // moved its adjusted prices, keyed on low edges the first set did not
+        // share. A night writes a whole set, so a whole set is what it replaces.
+        using var store = await WithProfile();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var first = Query(store, "SELECT as_of || '|' || band_low FROM volume_profile WHERE ticker = 'AAPL';");
+
+        Assert.Equal(VolumeProfileSeries.Bands, first.Count);
+
+        Readjusted(store, "AAPL");
+
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("replay-profile-again");
+
+        var second = Query(store, "SELECT as_of || '|' || band_low FROM volume_profile WHERE ticker = 'AAPL';");
+
+        // One set, and none of the first run's bands left in it.
+        Assert.Equal(VolumeProfileSeries.Bands, second.Count);
+        Assert.Empty(second.Intersect(first, StringComparer.Ordinal));
+    }
+
     [Fact]
     public async Task TheVolumeProfileMatchesTheArithmeticOverTheCommittedBars()
     {
@@ -1430,6 +1470,43 @@ public class FixtureExpectations
         await new LevelBuilder(clock, store.DatabaseFile).RunAsync("replay-levels");
 
         return store;
+    }
+
+    [Fact]
+    public async Task ASecondBandSetForOneAsOfReplacesTheFirstAndKeepsOneImmediateBandASide()
+    {
+        // The defect that stopped the by-hand night of 2026-09-10. A refetch
+        // moved NVDA's adjusted series between two runs for one as-of, the
+        // second run's bands were keyed on low edges the first run's did not
+        // share, and both sets stood: two immediate support bands, their facts
+        // twice in one file, and the change detector stopping on the repeat.
+        using var store = await WithLevels();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var first = Query(store, "SELECT as_of || '|' || low_edge FROM level WHERE ticker = 'AAPL';");
+
+        Assert.NotEmpty(first);
+
+        Readjusted(store, "AAPL");
+
+        // The chain the night runs over the moved series, so the averages and the
+        // shelves the bands are built from move with it.
+        await new IndicatorEngine(clock, store.DatabaseFile).RunAsync("replay-indicators-again");
+        await new SwingFinder(clock, store.DatabaseFile).RunAsync("replay-swings-again");
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("replay-profile-again");
+        await new LevelBuilder(clock, store.DatabaseFile).RunAsync("replay-levels-again");
+
+        var second = Query(store, "SELECT as_of || '|' || low_edge FROM level WHERE ticker = 'AAPL';");
+
+        Assert.NotEmpty(second);
+        Assert.Empty(second.Intersect(first, StringComparer.Ordinal));
+
+        // And the property the facts file rests on: at most one immediate band on
+        // each side for a name on one as-of.
+        Assert.Empty(Query(
+            store,
+            "SELECT ticker || '|' || as_of || '|' || role FROM level WHERE immediate = 1 " +
+            "GROUP BY ticker, as_of, role HAVING COUNT(*) > 1;"));
     }
 
     [Fact]

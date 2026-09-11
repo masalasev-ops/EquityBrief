@@ -25,6 +25,13 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - SCHEMA.md - an as-of writer replaces its set for that as-of whole
+Corrects: SCHEMA said the computed tables' writers drop whole as-of sets below the retention boundary and said nothing about the set being written. `level` and `volume_profile` upserted on each band's edge, so the by-hand night of 2026-09-10, run after the scheduled one, left NVDA with two immediate support bands and MOS with 39 profile bands for one as-of, and the change detector stopped the night on NVDA's repeated facts. Found by the phase 5 sign-off's builder, reading that night's run log.
+Was:
+> A drop removes whole sessions or whole as-of sets below that date and never a row from inside a set that stands, which is the distinction the `bar` note draws.
+Now: the same sentence, and one stating that the two writers keyed on an as-of date replace the name's set for the as-of they write whole, inside the transaction that writes it.
+Why: a night writes a whole set, so a whole set is what a second run for that night replaces; an upsert keyed on a moving edge keeps the first set beside the second.
+
 ### 2026-09-11 - ARCHITECTURE.html - a missed session is fetched in bulk before tonight's
 Authorised by: A session the night finds missing is fetched in bulk before tonight's
 Was:

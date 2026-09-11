@@ -6671,3 +6671,39 @@ Measured:   the first night the schedule ran, 2026-09-10, read from its run log 
             wall clock at index size, measured from nights that ran on the schedule). It had
             already passed the proposed five minutes before reaching its last six stages, which is
             the first sign the proposal may be short and not yet evidence that it is.
+
+### 5.7 - correction: a second run for one night added a second band set and a second profile   2026-09-11
+Corrects:   the 3.3 and 3.4 entries above, which record the volume profile and the level bands
+            written per as-of with upserts keyed on each band's low edge. A band's edges move whenever
+            the prices under it do, so a second run for one as-of after a refetch adjusted the
+            series kept the first run's rows beside the second's. Found in phase 5 and repaired
+            under it, at the checkpoint the sign-off's repairs sit at.
+Found:      by the phase 5 sign-off's builder, reading the by-hand night of 2026-09-10 the operator
+            ran to recover that night's listing. Its corporate action step refetched seven names and
+            moved their adjusted prices a hair against the scheduled night of the evening before.
+            NVDA was left with two immediate support bands for one as-of and MOS with 39 profile
+            bands where the profile has 20. NVDA's facts file then carried its immediate support
+            facts twice, and the change detector stopped the night at step 13 on the repeated name,
+            recorded as `changes` failed on the run log, which is the 5.6 correction working. The
+            listing for 2026-09-10 was written before it stopped: 505 rows, 490 fired.
+Repaired:   both builders delete the name's whole set for the as-of and write it again inside one
+            transaction. A night writes a whole set, so a whole set is what it replaces, which is
+            the retention's rule applied to the set being written. Both already own the delete on
+            their table, and SCHEMA's retention paragraph states it.
+Guarded:    for each, a set built, one name's year moved by one per cent as a refetch would move it,
+            the chain the night runs rebuilt over it for the same as-of, and no row of the first set
+            left standing: twenty profile bands, and at most one immediate band on each side for
+            every name and as-of in the store.
+            The level test failed on its first run with four of the first set's edges standing, and
+            that was the test: the swing finder had not been run again over the moved series, so the
+            bands it anchors kept their old edges. The night runs swings before levels and the test
+            now does too.
+Mutated:    the rule, stated before the sweep: reinstate the defect in each builder, being the set
+            written without removing the one before it. Two mutations, two runs, in a worktree under
+            the session scratchpad outside the repository, reverted, and the worktree removed. Each
+            turned its own builder's test red and left the other 512 green. None of the properties
+            added went unmutated.
+Tests:      513, from 511. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 243 claims, 169 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
+            the Linux case-sensitivity job.
