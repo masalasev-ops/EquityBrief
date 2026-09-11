@@ -7,7 +7,15 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Facts;
 
-public sealed record ChangeOutcome(int RowsExamined, int RowsWritten, int ChangesRecorded, int PayloadsEmptied);
+// `NotCompared` names each row whose change list is unknown and why, being a
+// facts file that is empty or names a fact twice. Its `material_changes` is left
+// null, which reads as unknown, where an empty list would read as nothing changed.
+public sealed record ChangeOutcome(
+    int RowsExamined,
+    int RowsWritten,
+    int ChangesRecorded,
+    int PayloadsEmptied,
+    IReadOnlyList<string>? NotCompared = null);
 
 // The change detector. Compares tonight's facts against the last stored ones for
 // each name and writes only what changed, on its own column of the same row.
@@ -139,9 +147,15 @@ public sealed class ChangeDetector : IComponent
         // Over 503 it was measured at 106 seconds for 503 rows before this was here.
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
+        var notCompared = new List<string>();
+
         foreach (var pair in pairs)
         {
-            var changed = FactsFile.Changed(pair.Previous, pair.Payload);
+            // A pair that cannot be compared is that name's own unknown and not
+            // the night's failure. Before the phase 5 sign-off one file naming a
+            // fact twice stopped this stage for every name, on a framework
+            // message about a dictionary key.
+            var comparable = FactsFile.TryChanged(pair.Previous, pair.Payload, out var changed, out var reason);
 
             await using var command = connection.CreateCommand();
 
@@ -153,8 +167,17 @@ public sealed class ChangeDetector : IComponent
             // An empty list rather than a null where there is nothing to
             // compare against, because a name whose first night this is has no
             // changes rather than an unknown number of them, and the two read
-            // differently on a page.
-            command.Parameters.AddWithValue("$material_changes", JsonSerializer.Serialize(changed));
+            // differently on a page. A null where the comparison could not be
+            // made, for the same reason in the other direction.
+            if (comparable)
+            {
+                command.Parameters.AddWithValue("$material_changes", JsonSerializer.Serialize(changed));
+            }
+            else
+            {
+                command.Parameters.AddWithValue("$material_changes", DBNull.Value);
+                notCompared.Add($"{pair.Ticker} ({reason})");
+            }
 
             await command.ExecuteNonQueryAsync(cancellation);
 
@@ -166,9 +189,9 @@ public sealed class ChangeDetector : IComponent
 
         var emptied = await EmptyAsync(connection, cancellation);
 
-        await RecordAsync(connection, runId, startedAt, pairs.Count, written, changes, emptied, cancellation);
+        await RecordAsync(connection, runId, startedAt, pairs.Count, written, changes, emptied, notCompared, cancellation);
 
-        return new ChangeOutcome(pairs.Count, written, changes, emptied);
+        return new ChangeOutcome(pairs.Count, written, changes, emptied, notCompared);
     }
 
     // The newest facts session anywhere, read from the store so a component run
@@ -200,6 +223,7 @@ public sealed class ChangeDetector : IComponent
         int written,
         int changes,
         int emptied,
+        IReadOnlyList<string> notCompared,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -211,9 +235,14 @@ public sealed class ChangeDetector : IComponent
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", "ok");
         command.Parameters.AddWithValue("$rows_written", written);
+
+        // The names not compared are named, the first few of them, so a rise from
+        // one to fifty is a fact on the run page rather than a count nobody reads.
         command.Parameters.AddWithValue(
             "$detail",
-            $"{examined} row(s) examined, {written} written, {changes} material change(s), {emptied} payload(s) emptied");
+            $"{examined} row(s) examined, {written} written, {changes} material change(s), {emptied} payload(s) emptied, " +
+            $"{notCompared.Count} not compared" +
+            (notCompared.Count == 0 ? string.Empty : ": " + string.Join("; ", notCompared.Take(5))));
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

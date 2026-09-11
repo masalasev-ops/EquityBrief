@@ -73,14 +73,68 @@ public static class FactsFile
         ];
     }
 
+    // The same comparison, answering whether one could be made at all.
+    //
+    // Two files cannot be compared where either is empty, which is what the
+    // retention leaves of a past night the name did not fire on, or where either
+    // names a fact twice, which is what two band sets for one as-of left in
+    // NVDA's file of 2026-09-10. Before the phase 5 sign-off either stopped the
+    // whole stage for every name, on a framework message about a dictionary key,
+    // and the first of them stopped the by-hand night of that session at step
+    // 13. A name that cannot be compared is a name whose changes are unknown,
+    // which is a different answer from a name with none, and the caller records
+    // it as that.
+    public static bool TryChanged(string? before, string after, out IReadOnlyList<string> changed, out string? reason)
+    {
+        changed = [];
+        reason = null;
+
+        if (before is null)
+        {
+            return true;
+        }
+
+        if (before.Length == 0 || after.Length == 0)
+        {
+            reason = before.Length == 0
+                ? "the previous facts file was emptied by the retention"
+                : "this facts file is empty";
+
+            return false;
+        }
+
+        try
+        {
+            changed = Changed(before, after);
+
+            return true;
+        }
+        catch (FormatException unreadable)
+        {
+            reason = unreadable.Message;
+
+            return false;
+        }
+    }
+
+    // A fact is declared once and cited by its name, so a file naming one twice
+    // is refused by name rather than read as whichever copy came last.
     static IReadOnlyDictionary<string, string> ByName(string payload)
     {
         using var document = JsonDocument.Parse(payload);
 
-        return document.RootElement.GetProperty("facts").EnumerateArray()
-            .ToDictionary(
-                fact => fact.GetProperty("name").GetString()!,
-                fact => fact.GetProperty("value").GetString()!,
-                StringComparer.Ordinal);
+        var byName = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var fact in document.RootElement.GetProperty("facts").EnumerateArray())
+        {
+            var name = fact.GetProperty("name").GetString()!;
+
+            if (!byName.TryAdd(name, fact.GetProperty("value").GetString()!))
+            {
+                throw new FormatException($"the facts file names '{name}' more than once");
+            }
+        }
+
+        return byName;
     }
 }

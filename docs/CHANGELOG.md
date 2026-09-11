@@ -25,6 +25,13 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - SCHEMA.md - material_changes null means the comparison could not be made
+Corrects: the column was a JSON list and nothing said what a name whose files cannot be compared carries. Until the phase 5 sign-off such a name stopped the change detector for every name, so the case never reached the column. Found by the phase 5 sign-off's builder, when NVDA's facts file of 2026-09-10 named a fact twice and stopped that night at step 13.
+Was:
+> | `material_changes` | TEXT | ChangeDetector. JSON list |
+Now: a JSON list, empty where there was nothing to compare against, and null where the comparison could not be made, being a facts file that is empty or names a fact twice.
+Why: an empty list reads as nothing changed and a null as unknown, and only one of them is what a detector that could not compare knows.
+
 ### 2026-09-11 - SCHEMA.md - an as-of writer replaces its set for that as-of whole
 Corrects: SCHEMA said the computed tables' writers drop whole as-of sets below the retention boundary and said nothing about the set being written. `level` and `volume_profile` upserted on each band's edge, so the by-hand night of 2026-09-10, run after the scheduled one, left NVDA with two immediate support bands and MOS with 39 profile bands for one as-of, and the change detector stopped the night on NVDA's repeated facts. Found by the phase 5 sign-off's builder, reading that night's run log.
 Was:

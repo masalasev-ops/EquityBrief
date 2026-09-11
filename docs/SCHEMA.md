@@ -290,7 +290,7 @@ Grain: one row per ticker per night.
 | `session_date` | TEXT | FactsAssembler |
 | `payload` | TEXT | FactsAssembler on insert, ChangeDetector on the retention update that empties it. JSON: every number the computed sections may use, each with its source |
 | `payload_hash` | TEXT | FactsAssembler |
-| `material_changes` | TEXT | ChangeDetector. JSON list |
+| `material_changes` | TEXT | ChangeDetector. JSON list, empty where there was nothing to compare against, and null where the comparison could not be made, being a facts file that is empty or names a fact twice |
 
 Primary key: `ticker`, `session_date`.
 

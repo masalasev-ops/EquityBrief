@@ -169,6 +169,23 @@ public sealed class FactsAssembler : IComponent
                 continue;
             }
 
+            // A fact is declared once and cited by its name, so a file naming
+            // one twice is refused by name rather than written. It is what two
+            // band sets for one as-of produced for NVDA on 2026-09-10, and the
+            // stage that left them is the defect, so the night stops on it.
+            // see: Facts are declared once and cited by descriptive name
+            var repeated = assembled.Facts
+                .GroupBy(fact => fact.Name, StringComparer.Ordinal)
+                .FirstOrDefault(group => group.Count() > 1);
+
+            if (repeated is not null)
+            {
+                throw new InvalidOperationException(
+                    $"The facts file for {ticker} would name '{repeated.Key}' {repeated.Count()} times. " +
+                    "A fact is declared once and cited by its name, so the file is refused rather than " +
+                    "written, and the rows it would have been read from are what to look at.");
+            }
+
             var payload = FactsFile.Serialise(ticker, assembled.SessionDate, assembled.Facts);
 
             await using var command = connection.CreateCommand();

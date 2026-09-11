@@ -6707,3 +6707,42 @@ Tests:      513, from 511. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             18, exit 0. `tools/verify-phase.ps1` green at 243 claims, 169 PASS, 0 FAIL, 74 out of
             scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
             the Linux case-sensitivity job.
+
+### 5.7 - correction: one facts file that could not be compared stopped every name   2026-09-11
+Corrects:   the 5.3 entry above records the change detector comparing each name's facts file with the
+            one before it. One file that could not be read as a set of named facts stopped the stage
+            for every name, and the assembler would write such a file without refusing it. Found in
+            phase 5 and repaired under it.
+Found:      by the phase 5 sign-off's builder, reading the by-hand night of 2026-09-10. NVDA's facts
+            file named its immediate support facts twice, from the two band sets the correction above
+            repairs, and `FactsFile.ByName` built a dictionary with `ToDictionary`, which threw "An
+            item with the same key has already been added" and stopped the night at step 13 for all
+            505 names. Reading the same method found the second shape before it fired: the retention
+            empties a past night's payload, `Changed` only guarded a missing previous file and not an
+            empty one, and the pairs the detector reads include every name's newest row, so the first
+            name to leave the index with two stored nights would have stopped every night after it on
+            a blank payload.
+            The scheduled night of 2026-09-11 would have compared its facts against NVDA's file of
+            2026-09-10 and stopped at the same step.
+Repaired:   `FactsFile.TryChanged` answers whether a comparison can be made, and a file that is empty
+            or names a fact twice is that name's own unknown: its `material_changes` is null, where an
+            empty list would read as nothing changed, and the run log names it with the reason. The
+            stage carries on for every other name. `ByName` refuses a repeated name by name rather
+            than through a framework message. The assembler refuses to write a file naming a fact
+            twice, before anything is stored, because the stage that left the rows is the defect.
+            SCHEMA's column note states what null means.
+Guarded:    a previous file naming a fact twice and a previous file emptied by the retention, each
+            recorded as null and named with its reason while the stage writes every name and the run
+            log says two were not compared; a name with nothing before it still carries an empty
+            list; and the assembler refusing a file that would name a fact twice, with nothing written.
+            One assertion written for this test compared a value with itself and could not fail, and
+            it was removed before the run rather than counted.
+Mutated:    the rule, stated before the sweep: reinstate each defect, being an uncomparable file
+            stopping the stage and a file naming a fact twice written. Two mutations, two runs, in a
+            worktree under the session scratchpad outside the repository, reverted, and the worktree
+            removed. Each turned its own test red and left the other 514 green. None of the
+            properties added went unmutated.
+Tests:      515, from 513. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 243 claims, 169 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
+            the Linux case-sensitivity job.

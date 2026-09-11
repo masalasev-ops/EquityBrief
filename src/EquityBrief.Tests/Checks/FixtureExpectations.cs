@@ -3692,6 +3692,81 @@ public class FixtureExpectations
         "VALUES ('GSPC', 'NEWW', '2026-09-01', NULL, '2026-09-05T21:10:00Z', 'Technology');";
 
     [Fact]
+    public async Task AFactsFileThatCannotBeComparedIsThatNamesUnknownAndNotTheNightsFailure()
+    {
+        // NVDA's facts file of 2026-09-10 named its immediate support facts
+        // twice, and the next comparison stopped the change detector for every
+        // name on a framework message about a dictionary key. A file the
+        // retention has emptied would have done the same the first night it was
+        // the previous one. Each is now that name's own unknown.
+        using var store = await WithFacts();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var tonight = DateOnly.ParseExact(
+            Assert.Single(Query(store, "SELECT DISTINCT session_date FROM facts")), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var before = tonight.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // A previous file naming one fact twice, and a previous file emptied.
+        Insert(
+            store,
+            "INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('AAPL', '" + before + "', " +
+            "'{\"ticker\":\"AAPL\",\"sessionDate\":\"" + before + "\",\"facts\":[" +
+            "{\"name\":\"immediate support high edge\",\"value\":\"1\",\"source\":\"levels\"}," +
+            "{\"name\":\"immediate support high edge\",\"value\":\"2\",\"source\":\"levels\"}]}', 'h');");
+        Insert(store, "INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('MSFT', '" + before + "', '', 'h');");
+
+        var outcome = await new ChangeDetector(clock, store.DatabaseFile).RunAsync("replay-changes-uncomparable");
+
+        // The stage ran through every name, and names the two it could not compare.
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, outcome.RowsWritten);
+        Assert.Equal(["AAPL", "MSFT"], [.. (outcome.NotCompared ?? []).Select(entry => entry.Split(' ')[0]).Order(StringComparer.Ordinal)]);
+        Assert.Contains(outcome.NotCompared!, entry => entry.Contains("names 'immediate support high edge' more than once", StringComparison.Ordinal));
+        Assert.Contains(outcome.NotCompared!, entry => entry.Contains("emptied by the retention", StringComparison.Ordinal));
+
+        // Unknown is stored as null and not as an empty list, which would read as
+        // nothing changed; a name compared against nothing still says none.
+        var tonightText = tonight.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        Assert.Equal(
+            ["AAPL", "MSFT"],
+            Query(store, $"SELECT ticker FROM facts WHERE session_date = '{tonightText}' AND material_changes IS NULL ORDER BY ticker;"));
+        Assert.Equal(["[]"], Query(store, $"SELECT material_changes FROM facts WHERE ticker = 'KEYS' AND session_date = '{tonightText}';"));
+
+        // And on the run log, where the operator reads it.
+        Assert.Contains(
+            "2 not compared",
+            Assert.Single(Query(store, "SELECT detail FROM run_log WHERE run_id = 'replay-changes-uncomparable';")),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheAssemblerRefusesAFileThatWouldNameAFactTwice()
+    {
+        // The other end of the same fault. Two immediate support bands for one
+        // name on one as-of is what the level builder left before the phase 5
+        // sign-off, and the assembler wrote both into one file. It refuses now,
+        // naming the name and the fact, rather than writing a file no reader can
+        // compare.
+        using var store = await WithLadders();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var asOf = Assert.Single(Query(store, "SELECT MAX(as_of) FROM level WHERE ticker = 'AAPL';"));
+
+        Insert(
+            store,
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"VALUES ('AAPL', '{asOf}', '1.0000', '1.5000', 'support', 1, 1, 1, '[]');");
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new FactsAssembler(clock, store.DatabaseFile).RunAsync("replay-facts-repeated"));
+
+        Assert.Contains("The facts file for AAPL would name 'immediate support", refused.Message, StringComparison.Ordinal);
+
+        // Refused before anything is written, so no half-written night of facts.
+        Assert.Empty(Query(store, "SELECT ticker FROM facts;"));
+    }
+
+    [Fact]
     public async Task ALadderRowWithNoStoredBarIsDatedByTheSessionAndNotByTheUtcDate()
     {
         using var store = await WithLevels();
