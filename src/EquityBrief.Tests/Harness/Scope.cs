@@ -303,10 +303,14 @@ internal static class Scope
             Verdict.Pass,
             "a setup is counted against every reason that fired on the night it was listed, a reason below the minimum draws its count in a dashed outline and no rate through either channel, and a stored reason the roster does not carry refuses",
             ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Stale and failed")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = new Scoped(
             Verdict.Pass,
-            "the stale names are listed rather than counted, over the index rather than the names with bars, and each failed stage is named with its outcome and its detail",
+            "the stale names are listed rather than counted, over the index rather than the names with bars",
             ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = new Scoped(
+            Verdict.Pass,
+            "a night whose feed does not answer writes a failed row naming the step and the reason, read back through the read API and drawn in the region, and a deadline or an allowance stop writes a stopped row against the step it stopped on",
+            ByNight),
         [CheckReach.Key("15.10 Run", "Harness")] = new Scoped(
             Verdict.Pass,
             "the four verdict counts are drawn separately and never summed, and a machine with no phase report says so rather than drawing four zeros",
@@ -978,7 +982,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = "5.6",
         [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "7.5",
         [CheckReach.Key("15.10 Run", "Shadow candidates")] = "7.4",
-        [CheckReach.Key("15.10 Run", "Stale and failed")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = "6.3",
+        [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.2",
         [CheckReach.Key("15.10 Run", "Harness")] = "5.6",
 
         [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "7.5",
@@ -1034,6 +1041,17 @@ internal static class Scope
         // plan says builds it.
         [CheckReach.Key("15.10 Run", "Reason records")] =
             ["the resolved count", "the share that reached target before stop"],
+
+        // The run page's stale-and-failed region, decomposed at the phase 5
+        // sign-off. It was PASS whole from 5.6 while two of its parts describe
+        // components phase 6 builds: sections that fell back are the claim
+        // checker's at 6.3 and documents refused by admissibility are 6.2's. A
+        // PASS over a row whose check reaches part of it is an unexamined claim
+        // wearing a verdict, and the region itself says the research halves
+        // are absent. The stage a night stopped on is the part the sign-off
+        // repaired, since until then no night could put one there.
+        [CheckReach.Key("15.10 Run", "Stale and failed")] =
+            ["names carrying yesterday's bars", "the stage a night stopped on", "sections that fell back", "documents refused by admissibility"],
 
         // The name page's how-it-got-here row, decomposed at 5.2 for the reason
         // the universe screen's two were at 5.0. Its table of the biggest moves

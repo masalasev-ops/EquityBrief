@@ -6569,3 +6569,35 @@ Tests:      507, from 506. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             18, exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of
             scope, 0 unexamined. No claim moved. Windows on this machine; the matrix carries macOS and
             the Linux case-sensitivity job.
+
+### 5.6 - correction: the stale-and-failed claim was PASS over parts phase 6 builds   2026-09-11
+Corrects:   the 5.6 entry above places section 15.10's stale-and-failed region PASS. The row names
+            names carrying yesterday's bars, sections that fell back and documents refused by
+            admissibility, and the last two are the claim checker's at 6.3 and admissibility's at
+            6.2. The region itself draws them as absent. So the verdict was PASS over a row its check
+            reached a third of, which is an unexamined claim wearing a verdict; the verdict note
+            described the stale names and the failed stages, the second of which no night could
+            then produce and the row did not name.
+Found:      by the phase 5 sign-off, reading the region's verdict note against its row while
+            checking whether the operational header's narrowing at the first repair was covered.
+Repaired:   the row is decomposed the way 5.0 split the reason record, into its four parts as the
+            row now words them: names carrying yesterday's bars, PASS by `read-surface`; the stage a
+            night stopped on, PASS by `nightly-run`, which is the only check that runs a night; and
+            sections that fell back and documents refused by admissibility, out of scope until 6.3
+            and 6.2. `architecture-conformance`'s stated counts move with it, forty-four claim
+            subjects to forty-seven and twenty decomposed elements to twenty-four, each with the
+            reason written beside it.
+Guarded:    the placement reconciliation that already exists: each element is asserted to appear in
+            the row's own cell, and each PASS names a check whose declared reach includes it.
+Mutated:    the rule, stated before the sweep: reinstate the defect, being a phase 6 part of the row
+            placed PASS by a check that does not reach it. One mutation, one run, in a worktree
+            under the session scratchpad outside the repository, reverted, and the worktree removed:
+            sections that fell back placed PASS by `read-surface`. It turned fifteen of the
+            conformance tests red, the report refusing to reconcile a placement no reach declaration
+            covers, and left the rest green.
+Tests:      507, unchanged. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0
+            to 18, exit 0. `tools/verify-phase.ps1` green at 242 claims, 168 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined, 175 placements and verdicts reconciled against a floor of 34.
+            Predicted before the run and matched: one claim became four, two PASS and two out of
+            scope, so claims rise by three, PASS by one and out of scope by two. Windows on this
+            machine; the matrix carries macOS and the Linux case-sensitivity job.

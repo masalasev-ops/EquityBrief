@@ -49,7 +49,7 @@ public class ReadSurface
             CheckReach.Key("15.7 Tonight", "Reason totals"),
             CheckReach.Key("15.10 Run", "Operational header"),
             CheckReach.Key("15.10 Run", "Reason records, the resolved count"),
-            CheckReach.Key("15.10 Run", "Stale and failed"),
+            CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars"),
             CheckReach.Key("15.10 Run", "Harness"),
 
             // The run page's own expectation file, which 5.6 added and section

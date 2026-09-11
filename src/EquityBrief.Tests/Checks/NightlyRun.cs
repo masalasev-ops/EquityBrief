@@ -63,6 +63,10 @@ public class NightlyRun
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with none of the index in it"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a row the reader cannot read"),
+
+            // The stale-and-failed region's stopped stage, which only a night
+            // can put there, decomposed from the region at the phase 5 sign-off.
+            CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
