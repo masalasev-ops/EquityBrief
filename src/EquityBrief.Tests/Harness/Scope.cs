@@ -747,7 +747,7 @@ internal static class Scope
             ByCost),
         [CheckReach.Key(FailureTable, "Bulk price feed unavailable, run log")] = new Scoped(
             Verdict.Pass,
-            "a night whose feed does not answer stores nothing, leaves the bars it already held exactly as they were, names the step and exits non-zero",
+            "a night whose feed does not answer stores nothing, leaves the bars it already held exactly as they were, names the step and exits non-zero, and the run log carries the step and the reason as a failed row that the run page's stale-and-failed region draws",
             ByNight),
         [CheckReach.Key(FailureTable, "A feed answers with a session other than the one asked for")] = new Scoped(
             Verdict.Pass,
@@ -756,6 +756,13 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "A feed answers with none of the index in it")] = new Scoped(
             Verdict.Pass,
             "a payload carrying nothing for any current member is refused by the fetcher before the transaction opens, and one short of some but not all is stored for the rest with the count carried out of the stage",
+            ByNight),
+        // Added at the phase 5 sign-off, when the unnamed refusal 5.7 read as
+        // the provider serving something other than prices turned out to be one
+        // fund's fractional volume refusing the whole exchange's file.
+        [CheckReach.Key(FailureTable, "A feed answers with a row the reader cannot read")] = new Scoped(
+            Verdict.Pass,
+            "a night over the captured file with a fund's fractional volume added outside the index stores every member, and the same volume on a member's own row refuses the night at the fetch step with the ticker and what arrived, leaving the stored bars as they were",
             ByNight),
         [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
             Verdict.Pass,

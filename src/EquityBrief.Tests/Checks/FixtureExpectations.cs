@@ -3603,6 +3603,46 @@ public class FixtureExpectations
     }
 
     [Fact]
+    public async Task AListingBehindTheFactsBesideItIsRefusedAndOneAheadOfThemIsNot()
+    {
+        // The shortlist builder's facts guard, which had no test of its own
+        // until the phase 5 sign-off and was wrong in the direction nothing
+        // exercised. It compared for equality, so it refused the ordinary state
+        // of every second evening, being last night's facts beside tonight's
+        // bars, and the replay could not see that because it runs the facts
+        // before the listings where the night runs them after.
+        //
+        // What it exists to refuse is the other direction: a listing written for
+        // a session older than a facts file the store already holds.
+        using var store = await WithListings();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var listed = Query(store, "SELECT session_date FROM listing WHERE ticker = 'AAPL';");
+        var session = DateOnly.ParseExact(Assert.Single(listed), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var later = session.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var earlier = session.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // Facts from a session before the bars end, which is last night's file
+        // at step 12 of a second evening. The builder runs and writes its rows.
+        Insert(store, $"DELETE FROM facts WHERE ticker = 'AAPL';");
+        Insert(store, $"INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('AAPL', '{earlier}', '{{}}', 'h');");
+
+        var outcome = await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings-behind");
+
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, outcome.RowsWritten);
+
+        // Facts from a session after the bars end. The listing would be dated
+        // behind them, and that is refused with both dates named.
+        Insert(store, $"INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('AAPL', '{later}', '{{}}', 'h');");
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings-ahead"));
+
+        Assert.Contains($"is dated {later}", refused.Message, StringComparison.Ordinal);
+        Assert.Contains("the bars end on " + Assert.Single(listed), refused.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task TheNewsPulseRequestCountDoesNotGrowWithTheUniverse()
     {
         // The half 5.5's done condition names, measured over two universe sizes

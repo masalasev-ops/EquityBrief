@@ -6247,3 +6247,163 @@ Notes:      the matrix was verified from the runs rather than from these entries
             `main` carries no branch protection and no rulesets, so the merge rule is enforced by
             convention. That is a setting on the repository rather than a change to it, and it is
             the operator's to make.
+
+### 5.4 - correction: the second evening could not finish   2026-09-11
+Corrects:   the 5.4 entry above records the shortlist builder as done, and the first night the
+            schedule ran shows it refusing every evening after a store's first. **This entry amends
+            5.4's done condition**, in those words, because the condition as written was satisfied
+            by nights that could not complete.
+Found:      by the phase 5 sign-off reading the run log of the first scheduled night, 2026-09-10,
+            read-only through an immutable connection. It wrote eleven stages, every one `ok`, and
+            stopped after `moves`: no `listings`, `facts`, `changes`, `forward-returns`, `news-pulse`
+            or `close`, and no listing for the session. Task Scheduler recorded `LastResult 0x1`.
+            The refusal was reproduced on `main` by running the shortlist builder over a copy of the
+            store: "The facts file for A is dated 2026-09-09 and the bars end on 9/10/2026".
+            The builder compared tonight's bars with the newest facts row for equality. Section 14
+            writes the listings at step 12 and the facts at step 13, so on every evening after a
+            store's first the newest facts row is last night's and the builder refused. No test
+            could see it: every night the suite ran was a store's first or a re-run of one session,
+            and the replay chain runs the facts before the listings where the night runs them
+            after, so the builder only ever met a facts row for its own session. The by-hand nights
+            at index size were three runs of 2026-09-09 and could not see it either. The guard had
+            no test of its own in either direction.
+            The done condition that would have caught it on the second morning was the week of
+            unattended nights 5.7 amended away. The amendment was right that calendar time cannot
+            be a done condition, and it dropped the half a checkpoint can produce: a night replayed
+            over a store that already holds the one before it.
+Repaired:   the guard refuses only facts newer than the bars, which is the listing written behind a
+            facts file the store holds that it exists to refuse. Older facts are last night's file
+            and equal facts are a re-run. Its message renders the date against the invariant culture
+            rather than printing "9/10/2026". 5.4's done condition reads "on every night, asserted
+            on a night replayed over a store that already holds the night before it rather than
+            only on a store's first".
+Guarded:    a second consecutive night run end to end, which fails on the old guard with the live
+            night's own message and passes on the new one with a listing for every member on both
+            sessions, the second session's facts written and its `close` row present; and the guard
+            in both directions, refusing facts dated after the bars with both dates named and
+            running over facts dated before them.
+            `done-condition-producible` refused the first wording of the amended condition, "two
+            consecutive sessions", as a span of calendar. It is a replay and a checkpoint produces
+            it, so the matcher cannot tell a replayed span from a waited one; the condition was
+            reworded to say it is a replay rather than the matcher being loosened.
+Mutated:    the rule, stated before the sweep: reinstate the defect the new assertions were written
+            for, being the guard comparing for equality. One mutation, one run, in a worktree under
+            the session scratchpad outside the repository, reverted, and the worktree removed. It
+            turned the consecutive night and the guard's own test red and left the rest green. None
+            of the properties added went unmutated.
+Lost:       the listing and the plan for 2026-09-10 were not written. The bars, indicators, swings,
+            profile, levels, ladders and moves for that session were, and stand. Whether the listing
+            can still be written depends on a by-hand night for that session reaching its fetch,
+            which is recorded where the fetch is.
+Tests:      493, from 491. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 238 claims, 166 PASS, 0 FAIL, 72 out of
+            scope, 0 unexamined, 173 placements and verdicts reconciled against a floor of 34, 35
+            checks on the roster and 33 carried, 33 ran and 0 did not. No claim moved. Windows on
+            this machine; the matrix carries macOS and the Linux case-sensitivity job.
+
+### 5.6 - correction: a stopped night left no record on the run page   2026-09-11
+Corrects:   the 5.6 entry above records the run page's stale-and-failed region as drawing what
+            failed in which component, and no night could put anything there. A step that stopped
+            wrote nothing to the run log.
+Found:      by the phase 5 sign-off, reading the same first scheduled night as the 5.4 correction
+            above. Its failed step's name and reason went to stderr, which a scheduled task
+            discards, so the run page drew eleven clean stages and an empty stale-and-failed region
+            for a night the scheduler recorded as a failure. Section 18's unavailable-feed row
+            promises the step and the reason "on the run log", and its claim had been PASS since
+            phase 2 with a verdict note that omitted those three words. The one test of the
+            stale-and-failed region built its failed row by hand, a shape the night could never
+            produce, which is an unproducible shape asserted in the direction that makes the region
+            look reached. And the sign-off's first repair pass had removed "what failed in which
+            component" from the operational header on the reading that this region delivered it,
+            while `RUNBOOK.md` went on telling the operator the run page says it.
+Repaired:   a stop writes its own run log row through `NightClose.RecordStopAsync`, as `failed` for
+            a step that threw and `stopped` for the deadline and the allowance, under the first run
+            log stage the step writes that the run does not hold yet, so a stop inside the facts
+            step is recorded under `changes` rather than dropped on the conflict with `facts`. The
+            detail has the data root named and any other rooted path replaced before it is stored,
+            because exception text carries absolute paths. A stop that cannot be recorded still
+            exits 1 and says so on stderr. Section 15.10's stale-and-failed row names the stage a
+            night stopped on, and the Night close catalogue row says it records the stop.
+Guarded:    the stop recorded on the run log for a feed that did not answer, read back through the
+            read API and drawn by the stale-and-failed region; the deadline's stop recorded as
+            `stopped`; the allowance stop recorded against the step it preceded, where the test had
+            asserted the run log stayed empty, which was the absence of the record rather than the
+            presence of the stop; the composite step's stop landing under the stage that stopped;
+            and the detail carrying no absolute path, both through the helper with the input shown
+            absolute first and through the row the recorder writes.
+Mutated:    the rule, stated before the sweep: each mutation reinstates the defect a new assertion
+            was written for. The thrown step's stop is not recorded; the recorder writes under its
+            first candidate only; the detail is stored unscrubbed. Three mutations over four runs, in
+            a worktree under the session scratchpad outside the repository, reverted, and the
+            worktree removed. The first two turned a test red on the first run, the unavailable-feed
+            test and the composite-step test.
+            The third survived at first. The scrub had a test of its own and nothing asserted that
+            the recorder applies it, which is a missing property rather than an unproducible shape:
+            the stored row is what the rule is about and no test read one. A test now writes a stop
+            whose detail carries the store's own path and reads the row back, and the same mutation
+            turns it red.
+            Added and not mutated: the allowance stop's row and the deadline's, both asserted and
+            both through the recorder the first two mutations reach.
+            The three were run again on this commit's own tree after it was split from the 5.4
+            correction, three more runs, and each turned exactly one test red.
+Tests:      496, from 493. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 238 claims, 166 PASS, 0 FAIL, 72 out of
+            scope, 0 unexamined, 173 placements and verdicts reconciled against a floor of 34. No
+            claim moved: the stale-and-failed row changed what it says and not whether it is a
+            claim, and the unavailable-feed claim's verdict note now states the run log half it had
+            omitted. Windows on this machine; the matrix carries macOS and the Linux
+            case-sensitivity job.
+
+### 2.1 - correction: one fund's fractional volume refused the whole exchange's file   2026-09-11
+Corrects:   the 2.1 entry above records the reader's row policy on the live exchange file, being a
+            symbol that did not trade passed over and named and anything else refusing the file.
+            The second clause refused whole nights for a row the index does not hold. And the
+            record of 5.7 and the obligation row it filed, which read the refusal as the provider
+            serving something other than prices for an older session and carried it to 6.0.
+Found:      by the phase 5 sign-off, with two live requests on the operator's key, the first of
+            them approved as a probe. The file for 2026-09-09, fetched a day later, answered 200 as
+            JSON dated for that session. The file for 2026-09-08 answered the same way with 50,249
+            rows, and six carry a fractional volume: FMAO, EWG, EZU, EWW, API and ALP, the largest
+            being EWG at 530131.7. None is an index member. The reader took every volume through
+            `GetInt64`, which throws a `FormatException` with the framework's default message, "One
+            of the identified items was in an invalid format", and the parser let it refuse the
+            whole file. That is the message 5.7 recorded for 2026-09-04 and 2026-09-08, and it named
+            no row, no field and no ticker, which is how a reader defect was read as the provider
+            sending something other than prices.
+            It is not a catch-up defect. Any evening whose file carries one such row anywhere on the
+            exchange stops the night at the fetch, and two of the first four days fetched at index
+            size did. 2026-09-09 and 2026-09-10 happened not to.
+Repaired:   the volume reader refuses a fraction by name, with the ticker and the number that
+            arrived, and never rounds it. The bulk parser passes over a row that names its ticker and
+            cannot be read, keeping the reason, where the caller collects such rows, and refuses as
+            before where it does not. The fetcher refuses the night by name, before anything is
+            stored, if a current member's row is among them, because a member with no bar tonight
+            would read as a shorter history. The fetch line counts the rows outside the index the
+            reader refused. Section 18 gains a row for a row the reader cannot read, placed PASS by
+            `nightly-run`. The obligation is discharged here rather than at 6.0, and 6.0's text no
+            longer carries it (owes: A bulk payload that is not a price payload refused by name).
+Recoverable: the listing and the plan for 2026-09-10, which the 5.4 correction above records as not
+            written, can still be written, and only until the next scheduled night stores
+            2026-09-11. The store's bars end on 2026-09-10, so a by-hand night for that session run
+            before then computes its listing from the series as it stood that evening; after it,
+            the listing stage reads a later ladder. That run is the operator's to start, on the
+            operator's key, and this entry does not record it as done.
+Guarded:    the reader over four rows copied from the provider's own file, two whole volumes and two
+            fractional, returning the two and naming the two with their numbers; the strict path
+            naming the row; the fetcher storing every member past a fund's fractional volume and
+            refusing by name on a member's; and a whole night doing both, with the member's refusal
+            on the run log.
+Mutated:    the rule, stated before the sweep: each mutation reinstates the defect a new assertion
+            was written for. The volume is read through `GetInt64` again; the parser refuses the file
+            on a row it cannot read; the fetcher stores past a member's refused row.
+            Three mutations, three runs, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed, over source identical byte for byte to
+            this commit's. All three turned tests red: the first and second each turned the
+            reader's test, the fetcher's and the whole night's red, and the third turned the
+            fetcher's and the whole night's. None was invalid. None of the properties added went
+            unmutated.
+Tests:      499, from 496. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 239 claims, 167 PASS, 0 FAIL, 72 out of
+            scope, 0 unexamined, 174 placements and verdicts reconciled against a floor of 34. The
+            claim and the PASS each move by one, both from section 18's new row. Windows on this
+            machine; the matrix carries macOS and the Linux case-sensitivity job.

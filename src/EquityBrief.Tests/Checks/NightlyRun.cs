@@ -62,6 +62,7 @@ public class NightlyRun
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with none of the index in it"),
+            CheckReach.Key(Scope.FailureTable, "A feed answers with a row the reader cannot read"),
         ]);
 
     const string Fixture = "membership-2026-09-05";
@@ -241,6 +242,56 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task ARowTheReaderCannotReadStopsTheNightOnlyWhenItIsAMembers()
+    {
+        // The row section 18 gained at the phase 5 sign-off, over a whole night
+        // rather than over the fetcher alone. The fractional volume is the
+        // provider's own, copied from its file for 2026-09-08, where six of
+        // 50,249 rows carried one and each refused the night for every name.
+        var fixture = File.ReadAllText(Directory.GetFiles(FixtureFolder(), "bulk-*.json").Single());
+        const string Fund =
+            """{"code":"EWG","exchange_short_name":"US","date":"2026-09-08","open":43.79,"high":43.8401,"low":43.545,"close":43.57,"adjusted_close":43.57,"volume":530131.7}""";
+
+        using (var store = new TemporaryStore())
+        {
+            var outside = new RecordedBulkPriceFeed(fixture.TrimEnd().TrimEnd(']') + "," + Fund + "]");
+
+            var (code, output, error) = await NightAsync(store, runId: "night-fund", bulk: outside);
+
+            Assert.True(code == 0, error);
+            Assert.Contains("1 row(s) outside the index the reader refused", output, StringComparison.Ordinal);
+            Assert.Equal(FixtureExpectation.CurrentMembers.Length, Tickers(store, "2026-09-08").Count);
+        }
+
+        using (var store = new TemporaryStore())
+        {
+            var (clean, _, _) = await NightAsync(store, runId: "night-one");
+
+            Assert.Equal(0, clean);
+
+            var before = Count(store);
+            var onMember = System.Text.RegularExpressions.Regex.Replace(
+                fixture, @"(""code"":\s*""MSFT""[^}]*?""volume"":\s*)(\d+)", "${1}${2}.5");
+
+            Assert.NotEqual(fixture, onMember);
+
+            var (code, _, error) = await NightAsync(store, runId: "night-member", bulk: new RecordedBulkPriceFeed(onMember));
+
+            Assert.Equal(1, code);
+            Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
+            Assert.Contains("MSFT carries a volume of", error, StringComparison.Ordinal);
+            Assert.Contains("which is not a whole number", error, StringComparison.Ordinal);
+            Assert.Equal(before, Count(store));
+
+            // And on the run log, where the operator reads it.
+            var stopped = Assert.Single(RunLog(store, "night-member"), row => row.Outcome != "ok");
+
+            Assert.Equal("fetch", stopped.Stage);
+            Assert.Contains("MSFT", stopped.Detail, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public async Task APayloadShortOfSomeMembersIsStoredForTheRestAndSaysHowMany()
     {
         // The counter-test, and it is the one the live night wrote. Two of 503
@@ -306,6 +357,145 @@ public class NightlyRun
         Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
         Assert.Contains("did not answer", error, StringComparison.Ordinal);
         Assert.Equal(before, Count(store));
+
+        // And on the run log, which is what the row's own name says and what
+        // this test did not assert until the phase 5 sign-off. The step and the
+        // reason reached stderr and nowhere else, so a scheduled night, whose
+        // stderr goes nowhere, recorded a failure only as the scheduler's exit
+        // code: the first one showed eleven clean stages on the run page.
+        var logged = RunLog(store, "night-down");
+
+        var stopped = Assert.Single(logged, row => row.Outcome != "ok");
+
+        Assert.Equal("fetch", stopped.Stage);
+        Assert.Equal("failed", stopped.Outcome);
+        Assert.Contains("did not answer", stopped.Detail, StringComparison.Ordinal);
+
+        // Read back through the surface a person reads, rather than off the
+        // column: the run page's stale-and-failed region draws the step.
+        var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, FixedClock.At(Night, SessionZones.UnitedStates));
+        var stages = EquityBrief.Api.Reading.RunScreen.Stages(
+            [.. (await api.RunLogAsync(new DateOnly(2026, 9, 8))).Where(row => row.RunId == "night-down")]);
+        var failed = EquityBrief.Api.Reading.RunScreen.Failed(stages);
+
+        Assert.Equal(["fetch"], [.. failed.Select(stage => stage.Stage)]);
+
+        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed);
+
+        Assert.Contains("data-stage=\"fetch\"", region, StringComparison.Ordinal);
+        Assert.Contains("did not answer", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("no stage of this night failed", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AStopInsideTheFactsStepIsRecordedUnderTheStageThatStoppedAndNotOverTheOneThatRan()
+    {
+        // The one composite step. The assembler writes its row and the detector
+        // writes another, so a failure in the detector must land under
+        // "changes" rather than being dropped on the conflict with "facts".
+        using var store = new TemporaryStore();
+
+        var (clean, _, _) = await NightAsync(store, runId: "night-one");
+
+        Assert.Equal(0, clean);
+
+        var started = new DateTimeOffset(2026, 9, 8, 21, 20, 0, TimeSpan.Zero);
+
+        await using (var connection = new SqliteConnection($"Data Source={store.DatabaseFile}"))
+        {
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText =
+                "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+                "VALUES ('night-half', 'facts', '2026-09-08T21:20:00Z', '2026-09-08T21:20:01Z', 'ok', 4, 0, 0, '0', 'written');";
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var recorded = await EquityBrief.Worker.Nights.NightClose.RecordStopAsync(
+            store.DatabaseFile,
+            Path.GetDirectoryName(store.DatabaseFile)!,
+            "night-half",
+            ["facts", "changes"],
+            started,
+            started.AddSeconds(2),
+            EquityBrief.Worker.Nights.NightClose.Failed,
+            "step 'facts' failed: the detector refused");
+
+        Assert.Equal("changes", recorded);
+
+        var rows = RunLog(store, "night-half");
+
+        Assert.Contains(rows, row => row is { Stage: "facts", Outcome: "ok" });
+        Assert.Contains(rows, row => row is { Stage: "changes", Outcome: "failed" });
+    }
+
+    [Fact]
+    public async Task AStopRecordedOnTheRunLogCarriesNoAbsolutePath()
+    {
+        // The recorder applies the scrub, asserted through the row it writes
+        // rather than through the helper alone. The helper's own test below
+        // stayed green with the scrub removed from the recorder, which is the
+        // mutation that found this gap.
+        using var store = new TemporaryStore().Migrated();
+        var root = Path.GetDirectoryName(store.DatabaseFile)!;
+        var at = new DateTimeOffset(2026, 9, 8, 21, 20, 0, TimeSpan.Zero);
+
+        var detail = $"step 'migrate' failed: unable to open '{store.DatabaseFile}'";
+
+        Assert.True(AbsolutePaths.LooksAbsolute(detail), detail);
+
+        await EquityBrief.Worker.Nights.NightClose.RecordStopAsync(
+            store.DatabaseFile, root, "night-path", ["migrate"], at, at, EquityBrief.Worker.Nights.NightClose.Failed, detail);
+
+        var stored = Assert.Single(RunLog(store, "night-path")).Detail;
+
+        Assert.False(AbsolutePaths.LooksAbsolute(stored), stored);
+        Assert.Contains("unable to open", stored, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AStopsDetailCarriesNoAbsolutePath()
+    {
+        // Exception text carries absolute paths mid-string, and a run log row
+        // is copied between machines. The data root is named and any other
+        // rooted token is replaced, and a date or a ratio inside a token is
+        // left alone.
+        var root = Path.Combine(Path.GetTempPath(), "equitybrief-probe");
+        var message =
+            $"could not open '{Path.Combine(root, "equitybrief.db")}', also /var/tmp/x and C:\\Users\\someone\\file.json, " +
+            "on 2026/09/08 at a ratio of 3/4";
+
+        var portable = EquityBrief.Worker.Nights.NightClose.Portable(message, root);
+
+        Assert.False(AbsolutePaths.LooksAbsolute(portable), portable);
+        Assert.Contains("<data root>", portable, StringComparison.Ordinal);
+        Assert.Contains("2026/09/08", portable, StringComparison.Ordinal);
+        Assert.Contains("3/4", portable, StringComparison.Ordinal);
+
+        // The matcher's own proof: the input was absolute before.
+        Assert.True(AbsolutePaths.LooksAbsolute(message));
+    }
+
+    sealed record LoggedStage(string Stage, string Outcome, string Detail);
+
+    static IReadOnlyList<LoggedStage> RunLog(TemporaryStore store, string runId)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT stage, outcome, IFNULL(detail, '') FROM run_log WHERE run_id = $run ORDER BY rowid;";
+        command.Parameters.AddWithValue("$run", runId);
+
+        var rows = new List<LoggedStage>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            rows.Add(new LoggedStage(reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+        }
+
+        return rows;
     }
 
     [Fact]
@@ -466,6 +656,14 @@ public class NightlyRun
 
         // And the promise section 18 makes about a feed that did not answer.
         Assert.Contains("Last night's bars are kept", error, StringComparison.Ordinal);
+
+        // On the run log as well, as a stop rather than a failure, against the
+        // step the deadline caught.
+        var stopped = Assert.Single(RunLog(store, "night-slow"), row => row.Outcome != "ok");
+
+        Assert.Equal("fetch", stopped.Stage);
+        Assert.Equal("stopped", stopped.Outcome);
+        Assert.Contains("passed the night's deadline", stopped.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -571,6 +769,53 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task ASecondConsecutiveSessionCompletesEveryStepAndListsEveryMember()
+    {
+        // The night after the first one, which no test ran until the phase 5
+        // sign-off and which the first scheduled night showed cannot finish.
+        //
+        // Every night the suite ran was either a store's first night or a
+        // re-run of the same session, and both hide the one thing a second
+        // evening has: last night's facts file sitting beside tonight's bars.
+        // The shortlist builder compared the two and refused, because section
+        // 14 writes the listings before the facts, so on 2026-09-10 the live
+        // night stopped at step 12 having written eleven clean stages and
+        // nothing at all about the twelfth.
+        using var store = new TemporaryStore();
+
+        var (first, _, firstError) = await NightAsync(store, runId: "night-one");
+
+        Assert.True(first == 0, "The first night did not run clean: " + firstError);
+
+        // The fixture's own day served again as the next session's, so the
+        // second night has a file for the session it asks for. The prices are
+        // the same and that does not matter here: what this asserts is that the
+        // night reaches its last step and lists every member, not what fired.
+        var nextSession = FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8));
+
+        var (second, output, error) = await NightAsync(store, runId: "night-two", bulk: bulk, clock: nextSession);
+
+        Assert.True(second == 0, $"The second consecutive night exited {second}. Error: {error}");
+        Assert.Equal(string.Empty, error);
+        Assert.Contains("  close:", output, StringComparison.Ordinal);
+
+        // The hard rule, over both nights and not only the one a replay holds:
+        // a listings row for every member every night, whether or not a reason
+        // fired.
+        var current = FixtureExpectation.CurrentMembers.Length;
+
+        Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-08';"));
+        Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-09';"));
+
+        // And the stages after the listings ran for the new session rather than
+        // being skipped, which is what a night that stopped at step 12 leaves
+        // missing.
+        Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM facts WHERE session_date = '2026-09-09';"));
+        Assert.Equal(1, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE run_id = 'night-two' AND stage = 'close';"));
+    }
+
+    [Fact]
     public async Task AFailingStepIsNamedAndTheNightExitsNonZero()
     {
         // The done condition, and the reason it is a done condition: a night
@@ -614,6 +859,17 @@ public class NightlyRun
             .Parse(File.ReadAllText(file), Path.GetFileNameWithoutExtension(file))
             .Count(bar => bar.SessionDate >= opens);
 
+    static int Scalar(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        return Convert.ToInt32(command.ExecuteScalar());
+    }
+
     static int Count(TemporaryStore store)
     {
         using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
@@ -646,6 +902,24 @@ sealed class ShortBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, para
         CancellationToken cancellation = default) =>
         [.. (await inner.RowsAsync(exchange, session, cancellation))
             .Where(row => !drop.Contains(row.Ticker, StringComparer.Ordinal))];
+}
+
+// A feed that answers for the session asked for with another session's rows,
+// redated. It stands in for the next evening's file, which the fixture does not
+// hold, so a second consecutive night has something to store.
+sealed class NextSessionBulkFeed(EquityBrief.Core.Providers.IBulkPriceFeed inner, DateOnly captured)
+    : EquityBrief.Core.Providers.IBulkPriceFeed
+{
+    public int Requests => inner.Requests;
+
+    public IReadOnlyList<string> NotSessions => inner.NotSessions;
+
+    public async Task<IReadOnlyList<EquityBrief.Core.Providers.BulkBar>> RowsAsync(
+        string exchange,
+        DateOnly session,
+        CancellationToken cancellation = default) =>
+        [.. (await inner.RowsAsync(exchange, captured, cancellation))
+            .Select(row => row with { Bar = row.Bar with { SessionDate = session } })];
 }
 
 // A feed that never answers, which is what a hung socket looks like from here.

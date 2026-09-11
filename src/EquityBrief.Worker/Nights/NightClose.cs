@@ -122,6 +122,101 @@ public sealed class NightClose : IComponent
         return new NightCloseOutcome(computed, listed, reasons, stale, duration);
     }
 
+    // The two outcomes a night that did not finish writes. A closed vocabulary
+    // beside `ok`, for the reason `ok` is one: the run page decides what to draw
+    // in its stale-and-failed region by reading this column.
+    public const string Failed = "failed";
+    public const string Stopped = "stopped";
+
+    // The same insert, for a stage that never reached its own. On conflict it
+    // writes nothing, so a composite step whose first component already wrote
+    // its row is recorded under the next candidate rather than over the row
+    // that succeeded.
+    const string AppendFailure = @"
+        INSERT INTO run_log (
+            run_id, stage, started_at, ended_at, outcome,
+            rows_written, model_calls, network_requests, spend, detail)
+        VALUES (
+            $run_id, $stage, $started_at, $ended_at, $outcome,
+            0, 0, 0, '0', $detail)
+        ON CONFLICT (run_id, stage) DO NOTHING;
+    ";
+
+    // How a night that stopped closes: one row for the stage it stopped on,
+    // naming the step, its outcome and why.
+    //
+    // It is here rather than in the night because recording what the night did
+    // is this component's work, and on a night that failed this is the whole of
+    // what it did. Before the phase 5 sign-off a failed step wrote nothing to
+    // the run log at all: its name went to stderr, which a scheduled task
+    // discards, so the first scheduled night showed eleven clean stages and an
+    // empty stale-and-failed region for a night the scheduler recorded as
+    // exiting 1.
+    //
+    // `stages` are the run log stages the step would have written, in order,
+    // and the row goes under the first of them the run does not hold yet. The
+    // facts step writes two, and a failure in its second must not be recorded
+    // over the first's success.
+    //
+    // The instants come from the caller's clock rather than being read here, so
+    // this path reads no clock of its own.
+    public static async Task<string?> RecordStopAsync(
+        string databaseFile,
+        string dataRoot,
+        string runId,
+        IReadOnlyList<string> stages,
+        DateTimeOffset startedAt,
+        DateTimeOffset endedAt,
+        string outcome,
+        string detail)
+    {
+        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await connection.OpenAsync();
+
+        foreach (var stage in stages)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = AppendFailure;
+            command.Parameters.AddWithValue("$run_id", runId);
+            command.Parameters.AddWithValue("$stage", stage);
+            command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$ended_at", endedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$outcome", outcome);
+            command.Parameters.AddWithValue("$detail", Portable(detail, dataRoot));
+
+            if (await command.ExecuteNonQueryAsync() == 1)
+            {
+                return stage;
+            }
+        }
+
+        return null;
+    }
+
+    // A message made safe for a store row that is copied between machines.
+    //
+    // Exception text carries absolute paths mid-string, which is why the
+    // portability matcher reads a whole value rather than its first character,
+    // and a stored path is a hard rule broken rather than a detail leaked. The
+    // data root is named first, since it is the path a store's own failures
+    // carry, and then any other token that roots a path is replaced whole. A
+    // token is rooted where it begins with a separator followed by something, or
+    // with a drive letter, a colon and a separator; in the middle of a token a
+    // slash is a date, a ratio or a relative path and is left alone.
+    // see: The whole system is a checkout and one database file
+    public static string Portable(string text, string dataRoot)
+    {
+        var named = string.IsNullOrEmpty(dataRoot)
+            ? text
+            : text.Replace(dataRoot, "<data root>", StringComparison.OrdinalIgnoreCase);
+
+        return System.Text.RegularExpressions.Regex.Replace(
+            named,
+            @"(?<=^|[\s'""(\[<])(?:[A-Za-z]:[\\/]|[\\/]+(?=[^\s\\/]))[^\s'""\)\]>]*",
+            "<path>");
+    }
+
     static async Task<int> CountAsync(
         SqliteConnection connection,
         string sql,

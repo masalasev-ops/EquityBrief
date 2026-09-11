@@ -32,7 +32,11 @@ namespace EquityBrief.Worker;
 // run log is what they read instead.
 public static class Nightly
 {
-    public sealed record Step(string Name, Func<Task<string>> Run);
+    // `Stages` are the run log stages the step writes, where they are not the
+    // step's own name. Only the facts step differs, since it runs the assembler
+    // and the detector and each writes its own row; a stop inside it is recorded
+    // under the first of the two the run does not hold yet.
+    public sealed record Step(string Name, Func<Task<string>> Run, IReadOnlyList<string>? Stages = null);
 
     // Two figures the whole nightly path rests on, carried out of the run so
     // the script can print them and nightly-cost can read them back.
@@ -148,6 +152,7 @@ public static class Nightly
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
                     $"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, " +
                     $"{bulkFeed.NotSessions.Count} row(s) listed and not traded, " +
+                    $"{bulkFeed.Unreadable.Count} row(s) outside the index the reader refused, " +
                     $"{outcome.Unaccounted.Count} member(s) the file carried nothing for, " +
                     $"{outcome.Requests} request(s)";
             }),
@@ -270,7 +275,7 @@ public static class Nightly
                 return $"{assembled.RowsWritten} file(s) for {assembled.NamesExamined} name(s), " +
                     $"{assembled.FactsWritten} fact(s), {changes.ChangesRecorded} material change(s), " +
                     $"{changes.PayloadsEmptied} payload(s) emptied";
-            }),
+            }, [FactsAssembler.Stage, ChangeDetector.Stage]),
             // Section 14's step 14. Once per night rather than per name,
             // because the base rate is a figure over the whole population and a
             // per-name pass would compute it once per name from the same rows.
@@ -317,13 +322,18 @@ public static class Nightly
             // an unavailable feed and loses the reason; stopping here says what
             // actually happened.
             // see: The night's cost is counted in weighted calls against the stated daily allowance
+            var stepStarted = clock.UtcNow;
+
             if (feeds.WeightedCalls >= ProviderWeights.DailyAllowance)
             {
-                error.WriteLine(
-                    $"nightly: stopped before step '{step.Name}'. The night has spent " +
+                var stopped =
+                    $"stopped before step '{step.Name}'. The night has spent " +
                     $"{feeds.WeightedCalls} weighted call(s) against an allowance of " +
                     $"{ProviderWeights.DailyAllowance}. Last night's bars are kept and every name " +
-                    "is stale.");
+                    "is stale.";
+
+                error.WriteLine("nightly: " + stopped);
+                await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Stopped, stopped, error);
 
                 return 1;
             }
@@ -338,10 +348,13 @@ public static class Nightly
                 // failed. A night that ran out of time and a night whose
                 // provider refused are different mornings, and a cancellation
                 // reported as a failure reads as the second.
-                error.WriteLine(
-                    $"nightly: step '{step.Name}' passed the night's deadline of " +
-                    $"{limit.TotalMinutes:0.###} minute(s) and was stopped. Last night's bars are " +
-                    "kept and every name is stale.");
+                var stopped =
+                    $"step '{step.Name}' passed the night's deadline of " +
+                    $"{limit.TotalMinutes.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)} " +
+                    "minute(s) and was stopped. Last night's bars are kept and every name is stale.";
+
+                error.WriteLine("nightly: " + stopped);
+                await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Stopped, stopped, error);
 
                 return 1;
             }
@@ -349,7 +362,12 @@ public static class Nightly
             {
                 // The step is named, and the exit code is non-zero. Both halves
                 // matter: a scheduler reads the code and a person reads the name.
-                error.WriteLine($"nightly: step '{step.Name}' failed: {failure.Message}");
+                // And the run log carries it, because the person reads the run
+                // page and a scheduled task's stderr goes nowhere.
+                var failed = $"step '{step.Name}' failed: {failure.Message}";
+
+                error.WriteLine("nightly: " + failed);
+                await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Failed, failed, error);
 
                 return 1;
             }
@@ -374,5 +392,42 @@ public static class Nightly
             $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
 
         return 0;
+    }
+
+    // The stop, written where the run page reads it. A night that cannot write
+    // it, being one whose store will not open, still exits non-zero and says so
+    // on stderr: recording the failure must never be what turns it into a
+    // different one.
+    static async Task RecordStopAsync(
+        StoreLocation store,
+        string runId,
+        Step step,
+        DateTimeOffset startedAt,
+        DateTimeOffset endedAt,
+        string outcome,
+        string detail,
+        TextWriter error)
+    {
+        try
+        {
+            var recorded = await NightClose.RecordStopAsync(
+                store.DatabaseFile,
+                store.DataRoot,
+                runId,
+                step.Stages ?? [step.Name],
+                startedAt,
+                endedAt,
+                outcome,
+                detail);
+
+            if (recorded is null)
+            {
+                error.WriteLine($"nightly: the run log already holds every stage step '{step.Name}' writes, so the stop is not recorded there.");
+            }
+        }
+        catch (Exception failure)
+        {
+            error.WriteLine($"nightly: the stop could not be recorded on the run log: {failure.Message}");
+        }
     }
 }

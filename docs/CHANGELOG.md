@@ -25,6 +25,31 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - BUILD_PLAN.md, ARCHITECTURE.html - the bulk feed's unnamed refusal, diagnosed and discharged as a correction to 2.1
+Corrects: the obligation row and 6.0's paragraph read the refusal of 2026-09-04 and 2026-09-08 as the provider serving something other than prices for an older session. One probe on the operator's key refuted it: the older file is prices, and six of its 50,249 rows carry a fractional volume the reader refused the whole file for with the framework's default message. Found by the phase 5 sign-off.
+Was:
+> | **A bulk payload that is not a price payload refused by name** | 5.7 | 6.0 | evidence in hand: sessions 2026-09-04 and 2026-09-08 both fail the fetch step with "One of the identified items was in an invalid format" while 2026-09-09 fetches cleanly, so the provider serves the bulk file for the most recent session and something else for older ones. ...
+>
+> Rules on the bulk feed's unnamed refusal in the same pass (owes: A bulk payload that is not a price payload refused by name), whose evidence is also in hand: the failure table has a row for a payload that is for another session and one for a payload holding none of the index, and none for a payload that is not prices at all, which is what the provider returns for a session that is not the most recent. It sits at a planning pass because the repair is a section 18 row and a named refusal rather than a component.
+Now: the row reads "2.1, discharged" with the diagnosis that replaced the reading; 6.0's sentence is removed and 2.1's section carries the citation, because 2.1 set the reader's row policy on the live file; section 18 gains a row for a row the reader cannot read.
+Why: any evening whose file carries one such row stopped the night at the fetch, and two of the first four days fetched at index size did, so a planning pass was the wrong place for it and the checkpoint whose rule refused the file is the one it corrects.
+
+### 2026-09-11 - ARCHITECTURE.html - a night that stops is recorded, in 15.10 and in the Night close row
+Corrects: section 18's unavailable-feed row promises the step and the reason "on the run log", and nothing wrote them there. A failed step's name went to stderr, which a scheduled task discards, so the run page drew the stages before it as clean and the stale-and-failed region as empty. The phase 5 sign-off's repair had just removed "what failed in which component" from the operational header on the reading that this region delivers it, and for a step that throws it could not. Found by the phase 5 sign-off reading the first scheduled night, which the scheduler recorded as exiting 1.
+Was:
+> <tr><td>Stale and failed</td><td>names carrying yesterday's bars, sections that fell back, documents refused by admissibility with the category that refused each</td></tr>
+>
+> ... stale names and duration, every one counted off the store rather than reported by the stage that wrote it</td></tr>
+Now: the region names the stage a night stopped on with its outcome and the reason, and the Night close row says it records that stop as the stage's own row.
+Why: the row the region is read against has to state what the region draws, or the sibling that stopped stating it leaves the promise nowhere. `RUNBOOK.md` already told the operator the run page says what failed in which component, and it now does.
+
+### 2026-09-11 - BUILD_PLAN.md - 5.4's done condition names a night whose store holds the night before
+Corrects: 5.4 read "the listing row count equals the index size on every completed night", which a night that cannot complete satisfies without anything being asserted. The shortlist builder refused every evening after a store's first, so the first scheduled night, 2026-09-10, stopped at step 12 with no listing written. Found by the phase 5 sign-off reading that night's run log and reproducing the refusal on `main` against a copy of the store.
+Was:
+> **Done when** the listing row count equals the index size on every completed night, the fired count in the header matches the reasons,
+Now: "on every night, asserted on a night replayed over a store that already holds the night before it rather than only on a store's first", with a paragraph beneath the condition saying it was amended and why.
+Why: every night the suite ran was a store's first or a re-run of one session, and the replay ran the facts before the listings where the night runs them after, so the population that shows the defect was one nothing held. The condition names that population now.
+
 ### 2026-09-10 - BUILD_PLAN.md - 5.3's done condition amended to what the fixture asserts
 Corrects: 5.3 read "the facts file matches the fixture byte for byte" and the fixture refuses to be that. `facts.json` states in its own words that nothing in it is frozen from a run and that the payload hash is not stated, because a hash of a payload is a function of that payload and stating it would be a regression baseline wearing the clothes of an expectation. So the condition asked for exactly the thing done condition 7 warns against, the checkpoint built the stronger form instead, explained why in its Measured block, and left the condition saying something else with no amendment recorded. Found by the phase 5 sign-off.
 Was:
