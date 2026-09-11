@@ -852,7 +852,7 @@ public class FixtureExpectations
         Assert.Equal(asOf.GetProperty("visible").GetInt32(), visible.Count);
         Assert.All(visible, swing => Assert.True(
             swing.ConfirmedOn <= date,
-            $"{swing.SessionDate:yyyy-MM-dd} was confirmed on {swing.ConfirmedOn:yyyy-MM-dd}, after the as-of date."));
+            FormattableString.Invariant($"{swing.SessionDate:yyyy-MM-dd} was confirmed on {swing.ConfirmedOn:yyyy-MM-dd}, after the as-of date.")));
 
         var withheld = asOf.GetProperty("withheld")
             .EnumerateArray()
@@ -4330,13 +4330,13 @@ public class FixtureExpectations
 
         Assert.Equal(
             ["0"],
-            Query(store, $"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';"));
+            Query(store, FormattableString.Invariant($"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';")));
 
         // And rows inside the window are untouched, which is the half a drop
         // that removed everything would also satisfy.
         Assert.NotEqual(
             ["0"],
-            Query(store, $"SELECT COUNT(*) FROM move WHERE session_date >= '{boundary:yyyy-MM-dd}';"));
+            Query(store, FormattableString.Invariant($"SELECT COUNT(*) FROM move WHERE session_date >= '{boundary:yyyy-MM-dd}';")));
 
         // The two assertions above are vacuous on their own and 5.2's own
         // mutation showed it: every move the committed bars produce is already
@@ -4349,11 +4349,11 @@ public class FixtureExpectations
         // checkpoint showed that: the assertion passed with the retention
         // statement disabled, because the other statement was doing the work.
         Insert(store, "INSERT INTO move (ticker, session_date, sessions, change_pct, rank) " +
-            $"VALUES ('AAPL', '{boundary.AddDays(-1):yyyy-MM-dd}', 1, 99.0, 1);");
+            FormattableString.Invariant($"VALUES ('AAPL', '{boundary.AddDays(-1):yyyy-MM-dd}', 1, 99.0, 1);"));
 
         Assert.Equal(
             ["1"],
-            Query(store, $"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';"));
+            Query(store, FormattableString.Invariant($"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';")));
 
         var inside = Query(store, "SELECT COUNT(*) FROM move;").Single();
 
@@ -4362,7 +4362,7 @@ public class FixtureExpectations
 
         Assert.Equal(
             ["0"],
-            Query(store, $"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';"));
+            Query(store, FormattableString.Invariant($"SELECT COUNT(*) FROM move WHERE session_date < '{boundary:yyyy-MM-dd}';")));
 
         // One row went and no others did, so the drop is the boundary deciding
         // rather than the table being rewritten.

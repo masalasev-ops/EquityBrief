@@ -447,14 +447,14 @@ public class StoreWrites
         {
             Assert.True(
                 Rows(store, table, column, stale) == 0,
-                $"{table} still holds a row dated {stale:yyyy-MM-dd}, which is below the one-year boundary of {boundary:yyyy-MM-dd}.");
+                FormattableString.Invariant($"{table} still holds a row dated {stale:yyyy-MM-dd}, which is below the one-year boundary of {boundary:yyyy-MM-dd}."));
 
             // The other half, and the one a drop that took everything would
             // fail. A boundary off by one direction empties the table and a
             // check that only asserted the absence would call that a pass.
             Assert.True(
                 Rows(store, table, column, fresh) > 0,
-                $"{table} lost the row dated {fresh:yyyy-MM-dd}, which is the boundary itself and inside the window.");
+                FormattableString.Invariant($"{table} lost the row dated {fresh:yyyy-MM-dd}, which is the boundary itself and inside the window."));
 
             Assert.True(
                 Total(store, table) > 1,

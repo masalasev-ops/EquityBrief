@@ -6407,3 +6407,63 @@ Tests:      499, from 496. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             scope, 0 unexamined, 174 placements and verdicts reconciled against a floor of 34. The
             claim and the PASS each move by one, both from section 18's new row. Windows on this
             machine; the matrix carries macOS and the Linux case-sensitivity job.
+
+### 5.7 - correction: the sign-off repair's own gaps, found by reviewing it   2026-09-11
+Corrects:   the 5.7 entry recording the repairs the phase 5 sign-off found, which a session that had
+            committed no code to them reviewed independently for the first time. Two of its widened
+            checks missed the shape each was widened for, one of its obligation rows was labelled
+            discharged while half of it is owed, and its floor sweep left one floor standing on the
+            reasoning it used to convert three others.
+Found:      `price-storage-form`'s code half read crossing signatures. The three inline casts the
+            repair moved onto the helpers sit in methods the signature reader either never matches
+            or already permits, so putting any of them back left the suite green: a mutation
+            reinstating the casts in `MoveSeries` and `UniverseScreen.Distance` ran 491 of 491.
+            `clock-usage`'s rendering half read `ToString` with no provider and not an
+            interpolation hole carrying a date format. That is how all five provider request URLs,
+            the fetch stage's run log detail, the run ids and eleven messages in the shipped source
+            rendered their dates, and the entry's "fifty-six renderings" was a count over what the
+            matcher could see rather than over the property. Nothing is wrong on the operator's
+            machine, whose culture is en-US on the Gregorian calendar; on one that is not, the night
+            would ask the provider for a year that has not happened.
+            The transaction obligation read "6.0, discharged" while its own text and 6.0's paragraph
+            said half of it is owed there, so the table stood at 43 discharged and 4 open where it is
+            42 and 5. `obligation-reconciles` exempts a discharged row by design and cannot read
+            intent from a note, so only the label could have said it.
+            `obligation-reconciles` kept a floor of 3 on open rows, one below their count, beside the
+            sentence the repair quoted as its reason for converting the out-of-scope floors, and a
+            floor of 2 on operating rows of the same shape.
+            And a figure. The night-speed entry records 17 network requests for the third by-hand
+            night of 2026-09-09, and the run log sums to 8 for that run. The 17 is right and is the
+            feeds' own count: the actions row records the corporate action feed's two requests and
+            not the nine per-name refetches the stage made. So the store under-reports the one
+            request the cost rule carves out by name, which is a defect in that stage's count
+            rather than in this record and is corrected in its own entry.
+Repaired:   `price-storage-form` states every explicit cast to double or to decimal in the shipped
+            source as a set of sites, fifteen of three kinds, so a cast added inline is a new site.
+            `clock-usage` reads an interpolated literal and passes a date hole only where the literal
+            is handed to the invariant culture; the thirty-two loose holes, eleven shipped and
+            twenty-one in the suite, are wrapped in `FormattableString.Invariant`. A hole with no
+            format over a date value is outside what a text reader can reach and the check says so.
+            Both roster rows state the halves they now read. The transaction row reads "6.0". Both
+            floors in `obligation-reconciles` are non-vacuity guards of one.
+Guarded:    the cast set, with the reader shown to key on the operand and to report each of the three
+            inline casts as a site the set does not hold; the interpolation sweep, with the reader
+            shown to report a request URL and a run id, to pass the three invariant forms, and to
+            leave a number, an escaped brace and a comment alone.
+Mutated:    the rule, stated before the sweep: each mutation reinstates the defect a new assertion was
+            written for. The inline casts go back into `MoveSeries` and `UniverseScreen.Distance`;
+            one provider request URL loses its invariant wrapper. Two mutations, two runs, in a
+            worktree under the session scratchpad outside the repository, reverted, and the
+            worktree removed. The first turned the cast set red, which is the same edit that ran
+            491 of 491 before it; the second turned the interpolation sweep red. Each left the other
+            502 green. None was invalid.
+            Not mutated, and why: the obligation label and the two guards are not properties a test
+            carries. The label is a statement a check exempts by design, and a guard of one is what
+            the number was ever doing, for the reason the repair itself gave.
+Tests:      503, from 499. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0, after the Api project's intermediate folder was removed: an interrupted
+            build had left a cache file of NUL bytes that failed the build step, which is a fault in
+            the machine's build output and not in the tree. `tools/verify-phase.ps1` green at 239
+            claims, 167 PASS, 0 FAIL, 72 out of scope, 0 unexamined, 174 placements and verdicts
+            reconciled against a floor of 34. No claim moved. Windows on this machine; the matrix
+            carries macOS and the Linux case-sensitivity job.

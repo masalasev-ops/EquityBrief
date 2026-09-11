@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - CLAUDE.md - clock-usage and price-storage-form rows state the halves the first repair missed
+Corrects: the phase 5 sign-off's first repair widened both checks and both still missed the shape they were widened for. `clock-usage` read `ToString` with no provider and not an interpolation hole carrying a date format, which is how every provider request URL in the tree rendered its dates. `price-storage-form` read crossing signatures, and putting any of the three inline casts it was widened for back into its method left the whole suite green. Found by the phase 5 sign-off's independent review of that repair, the second by a mutation that survived.
+Was:
+> ... the formatting half is keyed on the call passing no provider rather than on a name, since the provider is held under an alias in the renderer. Comments are stripped first, ...
+>
+> ... is a named crossing helper, with the set of them stated rather than counted. The two halves fail apart: ...
+Now: the clock-usage row names the interpolation form and states the unformatted hole as outside its reach; the price-storage-form row adds the stated set of cast sites.
+Why: a check asserting more than its roster row says is a property nobody wrote down, and one asserting less is the survivorship the roster exists to catch.
+
+### 2026-09-11 - BUILD_PLAN.md - the transaction obligation is open, not discharged
+Corrects: the row read "6.0, discharged" while its own text and 6.0's paragraph both said half of it is owed at 6.0, so the table counted 43 discharged and 4 open where the truth was 42 and 5. `obligation-reconciles` exempts a discharged row by design, since work done ahead of its checkpoint is legitimate, so only the label could say it. Found by the phase 5 sign-off.
+Was:
+> | **Every stage that writes in a loop opens a transaction, asserted rather than read** | 5.7 sign-off | 6.0, discharged | the phase 5 sign-off filed it and discharged the half that was assertable. ...
+Now: the due cell reads "6.0" and the note says it is open with half of it done, and why it read otherwise.
+Why: a row that reads as closed is chased by nobody, which is the fault the obligation table exists to prevent.
+
 ### 2026-09-11 - BUILD_PLAN.md, ARCHITECTURE.html - the bulk feed's unnamed refusal, diagnosed and discharged as a correction to 2.1
 Corrects: the obligation row and 6.0's paragraph read the refusal of 2026-09-04 and 2026-09-08 as the provider serving something other than prices for an older session. One probe on the operator's key refuted it: the older file is prices, and six of its 50,249 rows carry a fractional volume the reader refused the whole file for with the framework's default message. Found by the phase 5 sign-off.
 Was:

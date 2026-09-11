@@ -234,12 +234,14 @@ public class ObligationReconciles
             .Where(obligation => !obligation.Discharged && !obligation.SaysOperating)
             .ToArray();
 
-        // Four, from five at 5.5 where the news window row was discharged. The
-        // floor falls as the plan is worked through and it is a fact about how
-        // far the build has got rather than about the property; what carries the
-        // property is the two assertions below, neither of which an empty set
-        // would satisfy.
-        Assert.True(open.Length >= 3, $"Found {open.Length} open checkpoint rows, expected at least 3.");
+        // Context with a non-vacuity guard, for the reason the out-of-scope
+        // counts in `architecture-conformance` became one at the phase 5
+        // sign-off. The number falls as the plan is worked through, which this
+        // comment said in the rule's own words for the other branch, and the
+        // floor stood at 3 anyway, one below the count, so the next discharge
+        // but one would have been a maintenance edit. The two assertions below
+        // carry the property; the guard stops them passing over an empty set.
+        Assert.True(open.Length >= 1, $"Found {open.Length} open checkpoint rows, so the two assertions below would pass over an empty set.");
 
         Assert.DoesNotContain(open, obligation => !DuePoints.InThePlan(obligation.Checkpoint!, plan));
 
@@ -257,7 +259,9 @@ public class ObligationReconciles
 
         var operating = All().Where(obligation => obligation.SaysOperating).ToArray();
 
-        Assert.True(operating.Length >= 2, $"Found {operating.Length} operating rows, expected at least 2.");
+        // The same shape: operating rows close as their triggers fire, so this
+        // is a non-vacuity guard rather than a floor tracking the count.
+        Assert.True(operating.Length >= 1, $"Found {operating.Length} operating rows, so the assertion below would pass over an empty set.");
 
         Assert.DoesNotContain(
             operating,

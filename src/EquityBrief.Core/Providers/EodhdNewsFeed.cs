@@ -109,7 +109,7 @@ public sealed class EodhdNewsFeed(
         }
 
         throw new InvalidOperationException(
-            $"The news query for {from:yyyy-MM-dd} to {to:yyyy-MM-dd} reached {MostPages} pages of " +
+            FormattableString.Invariant($"The news query for {from:yyyy-MM-dd} to {to:yyyy-MM-dd} reached {MostPages} pages of ") +
             $"{Limit} and the provider still had more. A count taken from a truncated day is a count " +
             "over whatever the pages happened to include, so the night refuses rather than storing one.");
     }
@@ -121,7 +121,7 @@ public sealed class EodhdNewsFeed(
             using var response = await client
                 .GetAsync(
                     EodhdQuery.WithKey(
-                        $"{Endpoint}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&limit={Limit}&offset={offset}&fmt=json",
+                        FormattableString.Invariant($"{Endpoint}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}&limit={Limit}&offset={offset}&fmt=json"),
                         credentials),
                     cancellation)
                 .ConfigureAwait(false);

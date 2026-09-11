@@ -337,6 +337,6 @@ public class GapRefusal
         // One candle per stored session and none for the missing one, so the
         // hole is visible as an absence rather than closed over.
         Assert.Equal(holed, System.Text.RegularExpressions.Regex.Matches(svg, "class=\"candle\"").Count);
-        Assert.DoesNotContain($"data-session=\"{removed:yyyy-MM-dd}\"", svg, StringComparison.Ordinal);
+        Assert.DoesNotContain(FormattableString.Invariant($"data-session=\"{removed:yyyy-MM-dd}\""), svg, StringComparison.Ordinal);
     }
 }

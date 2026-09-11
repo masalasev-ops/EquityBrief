@@ -202,7 +202,7 @@ public sealed class BarFetcher : IComponent
         if (missing.Length == members.Count && members.Count > 0)
         {
             throw new InvalidOperationException(
-                $"The bulk file for {session:yyyy-MM-dd} carries nothing for any of the " +
+                FormattableString.Invariant($"The bulk file for {session:yyyy-MM-dd} carries nothing for any of the ") +
                 $"{members.Count} current member(s), the first being " +
                 $"{string.Join(", ", missing.Take(FirstNamed))}. A payload holding none of the " +
                 "index is the wrong file or a session the exchange has not traded, and storing " +
@@ -319,7 +319,7 @@ public sealed class BarFetcher : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{{\"members\":{outcome.MembersStored},\"dropped\":{outcome.RowsDropped}," +
-            $"\"session\":\"{outcome.Session:yyyy-MM-dd}\",\"oldest\":\"{outcome.Oldest:yyyy-MM-dd}\"}}");
+            FormattableString.Invariant($"\"session\":\"{outcome.Session:yyyy-MM-dd}\",\"oldest\":\"{outcome.Oldest:yyyy-MM-dd}\"}}"));
 
         await command.ExecuteNonQueryAsync();
     }

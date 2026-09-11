@@ -112,7 +112,7 @@ public static class Nightly
         // and the night fails on its first step, which is exactly what a
         // re-run is for. The caller may name its own, which is how a replay
         // records under an id it chose.
-        runId ??= $"night-{clock.UtcNow:yyyyMMddTHHmmssZ}";
+        runId ??= FormattableString.Invariant($"night-{clock.UtcNow:yyyyMMddTHHmmssZ}");
 
         var (membership, historical, bulkFeed, corporate, calendar, _) = feeds;
 
@@ -150,7 +150,7 @@ public static class Nightly
                     .RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
-                    $"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, " +
+                    FormattableString.Invariant($"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, ") +
                     $"{bulkFeed.NotSessions.Count} row(s) listed and not traded, " +
                     $"{bulkFeed.Unreadable.Count} row(s) outside the index the reader refused, " +
                     $"{outcome.Unaccounted.Count} member(s) the file carried nothing for, " +
@@ -174,8 +174,8 @@ public static class Nightly
                 var outcome = await new CalendarFetcher(calendar, clock, store.DatabaseFile)
                     .RunAsync(indexCode, clock.SessionDateAt(clock.UtcNow), runId, night.Token);
 
-                return $"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to " +
-                    $"{outcome.To:yyyy-MM-dd}, {outcome.RowsWritten} stored, " +
+                return FormattableString.Invariant($"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to ") +
+                    FormattableString.Invariant($"{outcome.To:yyyy-MM-dd}, {outcome.RowsWritten} stored, ") +
                     $"{outcome.NotMembers} for names the index does not hold, " +
                     $"{outcome.RowsDropped} dropped, {outcome.Requests} request(s)";
             }),

@@ -125,7 +125,7 @@ public sealed class EodhdBulkPriceFeed(
             using var response = await client
                 .GetAsync(
                     $"{Endpoint}/{exchange}?api_token={credentials.ApiKey}&fmt=json" +
-                    $"&date={session:yyyy-MM-dd}",
+                    FormattableString.Invariant($"&date={session:yyyy-MM-dd}"),
                     cancellation)
                 .ConfigureAwait(false);
 

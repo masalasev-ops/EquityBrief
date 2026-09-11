@@ -246,7 +246,7 @@ public sealed class CalendarFetcher : IComponent
 
         command.Parameters.AddWithValue(
             "$detail",
-            $"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to {outcome.To:yyyy-MM-dd}, " +
+            FormattableString.Invariant($"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to {outcome.To:yyyy-MM-dd}, ") +
             $"{outcome.RowsWritten} stored, {outcome.NotMembers} for names the index does not hold, " +
             $"{outcome.RowsDropped} dropped, {outcome.Requests} request(s)");
 

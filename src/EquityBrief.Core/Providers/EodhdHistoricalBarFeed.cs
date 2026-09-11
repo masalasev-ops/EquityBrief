@@ -83,7 +83,7 @@ public sealed class EodhdHistoricalBarFeed(
             using var response = await client
                 .GetAsync(
                     EodhdQuery.WithKey(
-                        $"{Endpoint}/{ticker}{ExchangeSuffix}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}" +
+                        FormattableString.Invariant($"{Endpoint}/{ticker}{ExchangeSuffix}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}") +
                         "&period=d&fmt=json",
                         credentials),
                     cancellation)

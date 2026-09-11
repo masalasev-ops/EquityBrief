@@ -780,7 +780,7 @@ public class ReadSurface
 
         Assert.NotNull(ladder);
         Assert.Contains($"data-trend-state=\"{ladder!.TrendState}\"", region, StringComparison.Ordinal);
-        Assert.Contains($"data-as-of=\"{ladder.AsOf:yyyy-MM-dd}\"", region, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"data-as-of=\"{ladder.AsOf:yyyy-MM-dd}\""), region, StringComparison.Ordinal);
 
         // A name with no ladder row says so rather than drawing nothing, which
         // is the same rule the absent average follows.
@@ -1143,7 +1143,7 @@ public class ReadSurface
         // property applied to a table.
         foreach (var move in moves)
         {
-            Assert.Contains($"data-session-date=\"{move.SessionDate:yyyy-MM-dd}\"", table, StringComparison.Ordinal);
+            Assert.Contains(FormattableString.Invariant($"data-session-date=\"{move.SessionDate:yyyy-MM-dd}\""), table, StringComparison.Ordinal);
             Assert.Contains($"data-rank=\"{move.Rank}\"", table, StringComparison.Ordinal);
         }
 
@@ -2107,7 +2107,7 @@ public class ReadSurface
             // how long it took and is the one the posting hour is read against.
             // owes: The provider's posting hour for the day's bulk file, measured from live fetches
             Assert.Contains(
-                $"data-started=\"{row.StartedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\"",
+                FormattableString.Invariant($"data-started=\"{row.StartedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\""),
                 attributes,
                 StringComparison.Ordinal);
 
@@ -2124,7 +2124,7 @@ public class ReadSurface
             // a person does, which is what the sweep found here.
             var cells = drawnRow.Groups["cells"].Value;
 
-            Assert.Contains($"<td>{row.StartedAt.UtcDateTime:HH:mm:ss}</td>", cells, StringComparison.Ordinal);
+            Assert.Contains(FormattableString.Invariant($"<td>{row.StartedAt.UtcDateTime:HH:mm:ss}</td>"), cells, StringComparison.Ordinal);
             Assert.Contains($"<td>{row.RowsWritten}</td>", cells, StringComparison.Ordinal);
             Assert.Contains($"<td>{row.ModelCalls}</td><td>{row.NetworkRequests}</td>", cells, StringComparison.Ordinal);
             Assert.Contains($"<td>{row.Spend}</td><td>{row.Outcome}</td>", cells, StringComparison.Ordinal);

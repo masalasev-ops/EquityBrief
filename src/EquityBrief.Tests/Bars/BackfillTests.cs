@@ -132,7 +132,7 @@ public class BackfillTests
         Assert.Equal(9, Closures.Length);
         Assert.All(Closures, closure => Assert.True(
             closure.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday),
-            $"{closure:yyyy-MM-dd} is a weekend, so naming it as a closure removes nothing."));
+            FormattableString.Invariant($"{closure:yyyy-MM-dd} is a weekend, so naming it as a closure removes nothing.")));
 
         Assert.Equal(SessionsInTheYear, weekdays - Closures.Length);
         Assert.Equal(SessionsInTheYear, TradingSessions().Count);
