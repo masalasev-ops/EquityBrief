@@ -6849,3 +6849,54 @@ Tests:      523, from 520. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             18, exit 0. `tools/verify-phase.ps1` green at 245 claims, 171 PASS, 0 FAIL, 74 out of
             scope, 0 unexamined, 178 placements reconciled. No claim moved. Windows on this machine;
             the matrix carries macOS and the Linux case-sensitivity job.
+
+### 5.7 - correction: the run page opened on the last night that listed, and the run log lost what a night said   2026-09-11
+Corrects:   the 5.6 entry above, which records the run page reading the newest night the listings
+            hold, the operational header, and the stale-and-failed region; the phase 5 sign-off
+            correction above that recorded a stopped step on the run log; and the fetch and action
+            entries above for what their rows carry. Found in phase 5 and repaired under it.
+Found:      by the phase 5 sign-off reviewer. The run page opened on the newest listing and kept that
+            night's rows alone, so a scratch night stopped at the fetch on 2026-09-09 left the default
+            page on 2026-09-08 saying no stage of this night failed, and the PASS for the stage a night
+            stopped on was reached through a read with the date supplied rather than the page a person
+            opens. A stage's own account of itself was a hover title, so the names a night could not
+            compare were not readable on the page. A stop row recorded no requests. The fetch's counts
+            of rows listed and not traded and of rows the reader passed over went to stdout alone, and
+            the members a caught-up file carried nothing for were discarded. A refusal before the first
+            step, such as a missing secrets file, left no row. A deadline passed inside the action step
+            was caught per name, marked the name suspect, and was recorded under the calendar. And the
+            duration spanned a night's failed run and its re-run.
+Repaired:   the run page opens on the newest night the run log carries a stage for, less the read
+            surface's own row and a night with no session, and falls back to the listings only on a log
+            that holds no night; the choice lives in the read API so a test asks it exactly what the
+            route asks. The operational header draws each stage's detail in its own cell. A stop row
+            carries the requests the step made, read off the feeds. The fetch row's detail carries the
+            not-traded and unreadable counts, tonight's missing members and each caught-up session's,
+            each as a count and the first few names, and the fetch line counts the caught-up shortfall.
+            A night refused before its first step writes a failed row under that step into a store that
+            exists, and creates none. The action step lets the night's cancellation through, so the
+            deadline stops the night there and marks no name. The duration is the run whose list the
+            store holds. Section 15.10 states the route's default and the header's detail cell.
+Guarded:    a night stopped at the fetch after a clean night: the listings still end the night before,
+            the run page's night is the stopped one, its region draws the fetch, later read-api and
+            no-session rows do not move it, and the stop row carries the one request made. A deadline
+            passed inside a refetch, recorded under the action step as stopped with no name suspect,
+            the deadline measured from a warm night on the same machine. A refusal written under the
+            first step, and a refusal into a store that does not exist creating none. A caught-up file
+            short of one member named on the fetch row and counted on the line, with tonight's shape
+            and the passed-over counts beside it. The header's detail cells and no hover title. And a
+            night run twice whose duration is the second run's alone.
+Mutated:    the rule, stated before the sweep: reinstate each defect at one site, being the run page
+            opening on the newest listing, the detail back in a hover, the stop row's requests back to
+            none, the caught-up shortfall discarded, the refusal writing no row, the action step
+            catching the cancellation, and the duration over every run that listed. Seven mutations,
+            seven runs, in a worktree under the session scratchpad outside the repository, reverted,
+            and the worktree removed. Each turned its own test red and left the other 527 green:
+            the first and third the stopped-night page test, the second the header test, the fourth
+            the caught-up shortfall test, the fifth the refusal test, the sixth the actions deadline
+            test and the seventh the duration test. None of the properties added went unmutated.
+Tests:      528, from 523. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 245 claims, 171 PASS, 0 FAIL, 74 out of
+            scope, 0 unexamined, 178 placements reconciled. No claim moved; two placements now name
+            what they reach. Windows on this machine; the matrix carries macOS and the Linux
+            case-sensitivity job.

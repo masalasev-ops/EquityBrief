@@ -23,7 +23,18 @@ public sealed record FetchOutcome(
     IReadOnlyList<string> Unaccounted,
     // The sessions the store was missing since the last night that ran, each
     // fetched in bulk and stored before tonight's. None on an ordinary night.
-    IReadOnlyList<DateOnly>? CaughtUp = null);
+    IReadOnlyList<DateOnly>? CaughtUp = null,
+    // The members each caught-up session's file carried nothing for, which
+    // tonight's file reports as `Unaccounted`. Discarded until the phase 5
+    // sign-off, so a caught-up file short of members was stored with nothing
+    // anywhere saying which names it left without that session.
+    IReadOnlyDictionary<DateOnly, IReadOnlyList<string>>? CaughtUpShort = null,
+    // Rows the files this fetch read listed as not traded, and rows the reader
+    // passed over as unreadable, over every file the fetch read. Both went to
+    // the night's stdout alone until the phase 5 sign-off, which a scheduled
+    // task discards.
+    int NotTraded = 0,
+    int Unreadable = 0);
 
 // The nightly bar fetch. One bulk request, stored for current members only,
 // then the sessions that have fallen out of the retention window are dropped.
@@ -170,12 +181,20 @@ public sealed class BarFetcher : IComponent
             : [];
 
         var caughtUp = new List<BulkBar[]>();
+        var caughtUpShort = new SortedDictionary<DateOnly, IReadOnlyList<string>>();
+        var notTradedFrom = feed.NotSessions.Count;
+        var unreadableFrom = feed.Unreadable.Count;
 
         foreach (var day in missed)
         {
-            var (dayWanted, _) = await AcceptedAsync(day, members, missedSession: true, cancellationToken);
+            var (dayWanted, dayMissing) = await AcceptedAsync(day, members, missedSession: true, cancellationToken);
 
             caughtUp.Add(dayWanted);
+
+            if (dayMissing.Length > 0)
+            {
+                caughtUpShort[day] = dayMissing;
+            }
         }
 
         // Tonight's, through the same checks. One request, counted by the feed
@@ -223,7 +242,10 @@ public sealed class BarFetcher : IComponent
             session,
             oldest,
             missing,
-            missed);
+            missed,
+            caughtUpShort,
+            feed.NotSessions.Count - notTradedFrom,
+            feed.Unreadable.Count - unreadableFrom);
 
         await AppendAsync(connection, runId, started, outcome);
 
@@ -341,6 +363,16 @@ public sealed class BarFetcher : IComponent
         return (wanted, missing);
     }
 
+    static string Quoted(DateOnly day) =>
+        "\"" + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "\"";
+
+    // A count and the first few names, as JSON. Tickers are letters, digits, a
+    // dot and a hyphen, so none of them needs escaping inside the quotes.
+    static string Named(IReadOnlyList<string> names) =>
+        $"{{\"count\":{names.Count},\"first\":[" +
+        string.Join(",", names.Take(FirstNamed).Select(name => "\"" + name + "\"")) +
+        "]}";
+
     static string Missed(DateOnly day) =>
         "The store is missing session " + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
         ", which the exchange traded and no night stored";
@@ -437,13 +469,24 @@ public sealed class BarFetcher : IComponent
         command.Parameters.AddWithValue("$outcome", "ok");
         command.Parameters.AddWithValue("$rows_written", outcome.RowsWritten);
         command.Parameters.AddWithValue("$network_requests", outcome.Requests);
+        // Everything the night's fetch line says, on the row a person reads the
+        // next morning. The line goes to stdout, which a scheduled task
+        // discards, and until the phase 5 sign-off the counts of rows passed
+        // over and of members a file carried nothing for were on the line and
+        // not here. Names are the first few, beside the whole count.
         command.Parameters.AddWithValue(
             "$detail",
             $"{{\"members\":{outcome.MembersStored},\"dropped\":{outcome.RowsDropped}," +
             FormattableString.Invariant($"\"session\":\"{outcome.Session:yyyy-MM-dd}\",\"oldest\":\"{outcome.Oldest:yyyy-MM-dd}\",") +
             "\"caughtUp\":[" +
-            string.Join(",", (outcome.CaughtUp ?? []).Select(day => "\"" + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "\"")) +
-            "]}");
+            string.Join(",", (outcome.CaughtUp ?? []).Select(day => Quoted(day))) +
+            "]," +
+            $"\"notTraded\":{outcome.NotTraded},\"unreadable\":{outcome.Unreadable}," +
+            $"\"unaccounted\":{Named(outcome.Unaccounted)}," +
+            "\"caughtUpShort\":{" +
+            string.Join(",", (outcome.CaughtUpShort ?? new Dictionary<DateOnly, IReadOnlyList<string>>())
+                .Select(entry => Quoted(entry.Key) + ":" + Named(entry.Value))) +
+            "}}");
 
         await command.ExecuteNonQueryAsync();
     }

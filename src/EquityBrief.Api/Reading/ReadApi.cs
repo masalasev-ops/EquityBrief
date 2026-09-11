@@ -277,6 +277,18 @@ public sealed class ReadApi : IComponent
     // without a date being asked for.
     const string NewestNight = "SELECT MAX(session_date) FROM listing;";
 
+    // The newest run the log carries a stage for, which is the night the run
+    // page opens on. The read surface's own row and a night on a day with no
+    // session are not nights that ran: the first is this process starting and
+    // the second fetched nothing, and opening on either would hide the evening
+    // before it.
+    const string NewestRun = @"
+        SELECT started_at FROM run_log
+        WHERE stage != $read_api AND outcome != $no_session
+        ORDER BY started_at DESC
+        LIMIT 1;
+    ";
+
     // Every listing for one night, fired and quiet alike, because the page's own
     // header states the true fired count over the whole index and the twenty
     // drawn rows cannot tell you it.
@@ -581,16 +593,24 @@ public sealed class ReadApi : IComponent
     // duration covering both. The span is over the run that wrote that night's
     // list, so a re-run of an earlier evening is its own duration rather than a
     // widening of tonight's.
+    //
+    // One run and not every run that reached the list. Until the phase 5
+    // sign-off a night that wrote its list and stopped at the next step, and
+    // then was run again, spanned both runs: the two by-hand runs of
+    // 2026-09-10 each wrote a list, and the header measured from the first's
+    // start to the second's end. The run is the newest to reach the list,
+    // being the one whose list the store holds.
     public async Task<string?> NightDurationAsync(DateOnly night)
     {
         var rows = await RunLogAsync(night);
 
-        var runs = rows
+        var run = rows
             .Where(row => row.Stage == "listings")
+            .OrderByDescending(row => row.StartedAt)
             .Select(row => row.RunId)
-            .ToHashSet(StringComparer.Ordinal);
+            .FirstOrDefault();
 
-        var stages = rows.Where(row => runs.Contains(row.RunId)).ToArray();
+        var stages = rows.Where(row => row.RunId == run).ToArray();
 
         if (stages.Length == 0)
         {
@@ -650,6 +670,32 @@ public sealed class ReadApi : IComponent
         }
 
         return names;
+    }
+
+    // The night the run page shows when none is asked for: the one the newest
+    // run belongs to, whether or not it wrote a list.
+    //
+    // Until the phase 5 sign-off the page opened on the newest night the
+    // listings hold, and then kept only that night's rows, so a night that
+    // stopped before its list, at the fetch or anywhere before step 12, was
+    // absent from the page a person opens: the reviewer stopped a night at the
+    // fetch on 2026-09-09 and the default page showed 2026-09-08 saying no stage
+    // of this night failed. The night is decided by the clock over the run's
+    // own start, for the reason `RunLogAsync` states. A store whose log holds no
+    // night falls back to the listings, which is what a store written before
+    // the log existed has.
+    public async Task<DateOnly?> RunNightAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestRun;
+        command.Parameters.AddWithValue("$read_api", Stage);
+        command.Parameters.AddWithValue("$no_session", RunScreen.NoSession);
+
+        return await command.ExecuteScalarAsync() is string started
+            ? clock.SessionDateAt(DateTimeOffset.Parse(started, CultureInfo.InvariantCulture))
+            : await NewestNightAsync();
     }
 
     public async Task<DateOnly?> NewestNightAsync()

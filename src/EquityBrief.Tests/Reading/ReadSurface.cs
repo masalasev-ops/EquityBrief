@@ -2156,6 +2156,14 @@ public class ReadSurface
         Assert.Contains("data-seconds=\"150\"", drawn, StringComparison.Ordinal);
         Assert.Contains("data-seconds=\"1\"", drawn, StringComparison.Ordinal);
 
+        // What each stage said about itself is a cell a person reads, and not a
+        // hover. Until the phase 5 sign-off it was the stage cell's title, so
+        // the names a night could not compare were on the page only for a
+        // pointer resting on the word "changes".
+        Assert.Equal(2, Regex.Matches(drawn, "<td class=\"detail\">detail</td>").Count);
+        Assert.DoesNotContain("title=", drawn, StringComparison.Ordinal);
+        Assert.Contains("<th>Detail</th>", drawn, StringComparison.Ordinal);
+
         // The instant and the duration are drawn from different values, which is
         // what these two rows are shaped to show: the second stage starts where
         // the first ended, so a header deriving one column from the other would
@@ -2229,6 +2237,30 @@ public class ReadSurface
         Assert.Equal("00:00:00", await api.NightDurationAsync(night));
         Assert.Equal("00:00:10", await api.NightDurationAsync(new DateOnly(2026, 9, 4)));
         Assert.Null(await api.NightDurationAsync(new DateOnly(2026, 9, 1)));
+    }
+
+    [Fact]
+    public async Task ANightsDurationIsTheRunWhoseListTheStoreHoldsAndNotEveryRunThatReachedOne()
+    {
+        // A night that wrote its list, stopped at the next step and was run
+        // again half an hour later wrote a list twice. Until the phase 5
+        // sign-off the duration spanned both runs, from the first's start to
+        // the second's end, which the by-hand runs of 2026-09-10 did.
+        using var store = await FixtureExpectations.WithReturns();
+
+        Insert(store, RunRow("night-first", "listings", "2026-09-03T21:00:00Z", "2026-09-03T21:00:10Z"));
+        Insert(store, RunRow("night-first", "changes", "2026-09-03T21:00:10Z", "2026-09-03T21:00:12Z", "failed"));
+        Insert(store, RunRow("night-again", "listings", "2026-09-03T21:30:00Z", "2026-09-03T21:30:05Z"));
+        Insert(store, RunRow("night-again", "close", "2026-09-03T21:30:05Z", "2026-09-03T21:30:08Z"));
+
+        var api = Api(store);
+
+        // Both runs are the night's, which the page's stage table still shows,
+        // and the duration is the second's alone.
+        Assert.Equal(
+            ["night-again", "night-first"],
+            [.. (await api.RunLogAsync(new DateOnly(2026, 9, 3))).Select(row => row.RunId).Distinct().Order(StringComparer.Ordinal)]);
+        Assert.Equal("00:00:08", await api.NightDurationAsync(new DateOnly(2026, 9, 3)));
     }
 
     [Fact]

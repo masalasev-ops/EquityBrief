@@ -297,7 +297,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Operational header")] = new Scoped(
             Verdict.Pass,
-            "every stage the night's run log carries is drawn with the instant it started and its own elapsed time, rows, model calls, requests and spend, in the order they ran, and the night is selected through the clock rather than through the date the log stores",
+            "every stage the night's run log carries is drawn with the instant it started and its own elapsed time, rows, model calls, requests, spend and what it said about itself in a cell rather than a hover, in the order they ran, the night is selected through the clock rather than through the date the log stores, and its duration is the run whose list the store holds",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = new Scoped(
             Verdict.Pass,
@@ -309,7 +309,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = new Scoped(
             Verdict.Pass,
-            "a night whose feed does not answer writes a failed row naming the step and the reason, read back through the read API and drawn in the region, and a deadline or an allowance stop writes a stopped row against the step it stopped on",
+            "a night whose feed does not answer writes a failed row naming the step, the reason and the requests it made, read back through the read API and drawn in the region; a night that stopped before its list is the night the run page opens on when no date is asked for, where the newest listing is the night before; a deadline or an allowance stop writes a stopped row against the step it stopped on, the actions step included; and a night refused before its first step writes a failed row under it",
             ByNight),
         [CheckReach.Key("15.10 Run", "Harness")] = new Scoped(
             Verdict.Pass,

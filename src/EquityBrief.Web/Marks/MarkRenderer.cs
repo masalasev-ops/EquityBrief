@@ -1363,7 +1363,7 @@ public sealed class MarkRenderer : IComponent
         }
 
         header.Append("<table class=\"stage-table\">");
-        header.Append("<tr><th>Stage</th><th>Started (UTC)</th><th>Took</th><th>Rows</th><th>Model calls</th><th>Requests</th><th>Spend</th><th>Outcome</th></tr>");
+        header.Append("<tr><th>Stage</th><th>Started (UTC)</th><th>Took</th><th>Rows</th><th>Model calls</th><th>Requests</th><th>Spend</th><th>Outcome</th><th>Detail</th></tr>");
 
         foreach (var stage in stages)
         {
@@ -1379,11 +1379,19 @@ public sealed class MarkRenderer : IComponent
             header.Append(Invariant, $"data-rows=\"{stage.RowsWritten}\" data-model-calls=\"{stage.ModelCalls}\" ");
             header.Append(Invariant, $"data-requests=\"{stage.NetworkRequests}\" data-spend=\"{Escaped(stage.Spend)}\" ");
             header.Append(Invariant, $"data-outcome=\"{Escaped(stage.Outcome)}\">");
-            header.Append(Invariant, $"<td title=\"{Escaped(stage.Detail)}\">{Escaped(stage.Stage)}</td>");
+            header.Append(Invariant, $"<td>{Escaped(stage.Stage)}</td>");
             header.Append(Invariant, $"<td>{stage.StartedAt.UtcDateTime:HH:mm:ss}</td>");
             header.Append(Invariant, $"<td>{Number(stage.Seconds)}s</td><td>{stage.RowsWritten}</td>");
             header.Append(Invariant, $"<td>{stage.ModelCalls}</td><td>{stage.NetworkRequests}</td>");
-            header.Append(Invariant, $"<td>{Escaped(stage.Spend)}</td><td>{Escaped(stage.Outcome)}</td></tr>");
+            header.Append(Invariant, $"<td>{Escaped(stage.Spend)}</td><td>{Escaped(stage.Outcome)}</td>");
+
+            // What the stage said about itself, in a cell rather than a hover.
+            // Until the phase 5 sign-off it was the stage cell's title, which a
+            // person reads only by pointing at it and a phone cannot show, so the
+            // names a night could not compare, the rows the fetch passed over and
+            // the members a file carried nothing for were on the page and not
+            // readable on it.
+            header.Append(Invariant, $"<td class=\"detail\">{Escaped(stage.Detail)}</td></tr>");
         }
 
         header.Append("</table>");

@@ -192,7 +192,14 @@ public sealed class CorporateActionChecker : IComponent
 
                 refetched++;
             }
-            catch (Exception failure)
+            // The night's deadline is not this name's failure and is not caught
+            // here. Until the phase 5 sign-off it was: a deadline passed during a
+            // refetch marked that name suspect, the stage went on to the next
+            // name and finished, and the night stopped on the calendar step's
+            // first request, so the run log named the wrong step and a name that
+            // had nothing wrong with it was suspect. The transaction's disposal
+            // rolls the name back, as a failure's does.
+            catch (Exception failure) when (!(failure is OperationCanceledException && cancellationToken.IsCancellationRequested))
             {
                 // The stored series is left as it was, and the name is marked
                 // rather than passing. A check that could not run must not look

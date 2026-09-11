@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-11 - ARCHITECTURE.html - the run page opens on the night that ran, and a stage's detail is a cell
+Corrects: the run page opened on the newest night the listings held and kept that night's rows alone, so a night that stopped before its list was absent from the page a person opens, and the claim that the region shows the stage a night stopped on passed through a read with the date supplied. The operational header carried each stage's own account of itself as a hover title. Found by the phase 5 sign-off reviewer, who stopped a night at the fetch and read the default page.
+Was:
+> <p><b>Route:</b> <code>#/run/&lt;date&gt;</code>.</p>
+>
+> <tr><td>Operational header</td><td>what ran, the instant each stage started and how long it took, model calls, network requests, and spend</td></tr>
+Now: with no date the route opens on the newest night the run log carries a stage for, whether or not it wrote a list, and not on a night with no session; the operational header adds what each stage said about itself, in a cell.
+Why: the page is where a stopped night is read the next morning, and a page that opens on the last night that listed shows a clean evening for exactly the nights that were not.
+
 ### 2026-09-11 - SCHEMA.md, ARCHITECTURE.html - a re-run replaces a night's facts file that differs
 Authorised by: A re-run replaces a night's facts file where the store now computes a different one
 Was:
