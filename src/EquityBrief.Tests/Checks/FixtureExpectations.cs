@@ -918,6 +918,46 @@ public class FixtureExpectations
         return store;
     }
 
+    // One name's whole year moved by one per cent, which is what a refetch after a
+    // corporate action does to an adjusted series between two runs of one night.
+    // Every price column together, so every stored bar still has its low under
+    // its open and close and its high over them.
+    static void Readjusted(TemporaryStore store, string ticker) =>
+        Insert(
+            store,
+            "UPDATE bar SET " +
+            "open = printf('%.4f', CAST(open AS REAL) * 1.01), " +
+            "high = printf('%.4f', CAST(high AS REAL) * 1.01), " +
+            "low = printf('%.4f', CAST(low AS REAL) * 1.01), " +
+            "close = printf('%.4f', CAST(close AS REAL) * 1.01), " +
+            "raw_close = printf('%.4f', CAST(raw_close AS REAL) * 1.01) " +
+            $"WHERE ticker = '{ticker}';");
+
+    [Fact]
+    public async Task ASecondProfileForOneAsOfReplacesTheFirstRatherThanJoiningIt()
+    {
+        // The by-hand run of 2026-09-10 left MOS with 39 profile bands for one
+        // as-of: the scheduled night's twenty, and the re-run's after a refetch
+        // moved its adjusted prices, keyed on low edges the first set did not
+        // share. A night writes a whole set, so a whole set is what it replaces.
+        using var store = await WithProfile();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var first = Query(store, "SELECT as_of || '|' || band_low FROM volume_profile WHERE ticker = 'AAPL';");
+
+        Assert.Equal(VolumeProfileSeries.Bands, first.Count);
+
+        Readjusted(store, "AAPL");
+
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("replay-profile-again");
+
+        var second = Query(store, "SELECT as_of || '|' || band_low FROM volume_profile WHERE ticker = 'AAPL';");
+
+        // One set, and none of the first run's bands left in it.
+        Assert.Equal(VolumeProfileSeries.Bands, second.Count);
+        Assert.Empty(second.Intersect(first, StringComparer.Ordinal));
+    }
+
     [Fact]
     public async Task TheVolumeProfileMatchesTheArithmeticOverTheCommittedBars()
     {
@@ -1430,6 +1470,43 @@ public class FixtureExpectations
         await new LevelBuilder(clock, store.DatabaseFile).RunAsync("replay-levels");
 
         return store;
+    }
+
+    [Fact]
+    public async Task ASecondBandSetForOneAsOfReplacesTheFirstAndKeepsOneImmediateBandASide()
+    {
+        // The defect that stopped the by-hand night of 2026-09-10. A refetch
+        // moved NVDA's adjusted series between two runs for one as-of, the
+        // second run's bands were keyed on low edges the first run's did not
+        // share, and both sets stood: two immediate support bands, their facts
+        // twice in one file, and the change detector stopping on the repeat.
+        using var store = await WithLevels();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var first = Query(store, "SELECT as_of || '|' || low_edge FROM level WHERE ticker = 'AAPL';");
+
+        Assert.NotEmpty(first);
+
+        Readjusted(store, "AAPL");
+
+        // The chain the night runs over the moved series, so the averages and the
+        // shelves the bands are built from move with it.
+        await new IndicatorEngine(clock, store.DatabaseFile).RunAsync("replay-indicators-again");
+        await new SwingFinder(clock, store.DatabaseFile).RunAsync("replay-swings-again");
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("replay-profile-again");
+        await new LevelBuilder(clock, store.DatabaseFile).RunAsync("replay-levels-again");
+
+        var second = Query(store, "SELECT as_of || '|' || low_edge FROM level WHERE ticker = 'AAPL';");
+
+        Assert.NotEmpty(second);
+        Assert.Empty(second.Intersect(first, StringComparer.Ordinal));
+
+        // And the property the facts file rests on: at most one immediate band on
+        // each side for a name on one as-of.
+        Assert.Empty(Query(
+            store,
+            "SELECT ticker || '|' || as_of || '|' || role FROM level WHERE immediate = 1 " +
+            "GROUP BY ticker, as_of, role HAVING COUNT(*) > 1;"));
     }
 
     [Fact]
@@ -3613,6 +3690,81 @@ public class FixtureExpectations
     const string BarlessMember =
         "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
         "VALUES ('GSPC', 'NEWW', '2026-09-01', NULL, '2026-09-05T21:10:00Z', 'Technology');";
+
+    [Fact]
+    public async Task AFactsFileThatCannotBeComparedIsThatNamesUnknownAndNotTheNightsFailure()
+    {
+        // NVDA's facts file of 2026-09-10 named its immediate support facts
+        // twice, and the next comparison stopped the change detector for every
+        // name on a framework message about a dictionary key. A file the
+        // retention has emptied would have done the same the first night it was
+        // the previous one. Each is now that name's own unknown.
+        using var store = await WithFacts();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var tonight = DateOnly.ParseExact(
+            Assert.Single(Query(store, "SELECT DISTINCT session_date FROM facts")), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var before = tonight.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // A previous file naming one fact twice, and a previous file emptied.
+        Insert(
+            store,
+            "INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('AAPL', '" + before + "', " +
+            "'{\"ticker\":\"AAPL\",\"sessionDate\":\"" + before + "\",\"facts\":[" +
+            "{\"name\":\"immediate support high edge\",\"value\":\"1\",\"source\":\"levels\"}," +
+            "{\"name\":\"immediate support high edge\",\"value\":\"2\",\"source\":\"levels\"}]}', 'h');");
+        Insert(store, "INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('MSFT', '" + before + "', '', 'h');");
+
+        var outcome = await new ChangeDetector(clock, store.DatabaseFile).RunAsync("replay-changes-uncomparable");
+
+        // The stage ran through every name, and names the two it could not compare.
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, outcome.RowsWritten);
+        Assert.Equal(["AAPL", "MSFT"], [.. (outcome.NotCompared ?? []).Select(entry => entry.Split(' ')[0]).Order(StringComparer.Ordinal)]);
+        Assert.Contains(outcome.NotCompared!, entry => entry.Contains("names 'immediate support high edge' more than once", StringComparison.Ordinal));
+        Assert.Contains(outcome.NotCompared!, entry => entry.Contains("emptied by the retention", StringComparison.Ordinal));
+
+        // Unknown is stored as null and not as an empty list, which would read as
+        // nothing changed; a name compared against nothing still says none.
+        var tonightText = tonight.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        Assert.Equal(
+            ["AAPL", "MSFT"],
+            Query(store, $"SELECT ticker FROM facts WHERE session_date = '{tonightText}' AND material_changes IS NULL ORDER BY ticker;"));
+        Assert.Equal(["[]"], Query(store, $"SELECT material_changes FROM facts WHERE ticker = 'KEYS' AND session_date = '{tonightText}';"));
+
+        // And on the run log, where the operator reads it.
+        Assert.Contains(
+            "2 not compared",
+            Assert.Single(Query(store, "SELECT detail FROM run_log WHERE run_id = 'replay-changes-uncomparable';")),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheAssemblerRefusesAFileThatWouldNameAFactTwice()
+    {
+        // The other end of the same fault. Two immediate support bands for one
+        // name on one as-of is what the level builder left before the phase 5
+        // sign-off, and the assembler wrote both into one file. It refuses now,
+        // naming the name and the fact, rather than writing a file no reader can
+        // compare.
+        using var store = await WithLadders();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        var asOf = Assert.Single(Query(store, "SELECT MAX(as_of) FROM level WHERE ticker = 'AAPL';"));
+
+        Insert(
+            store,
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"VALUES ('AAPL', '{asOf}', '1.0000', '1.5000', 'support', 1, 1, 1, '[]');");
+
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new FactsAssembler(clock, store.DatabaseFile).RunAsync("replay-facts-repeated"));
+
+        Assert.Contains("The facts file for AAPL would name 'immediate support", refused.Message, StringComparison.Ordinal);
+
+        // Refused before anything is written, so no half-written night of facts.
+        Assert.Empty(Query(store, "SELECT ticker FROM facts;"));
+    }
 
     [Fact]
     public async Task ALadderRowWithNoStoredBarIsDatedByTheSessionAndNotByTheUtcDate()
