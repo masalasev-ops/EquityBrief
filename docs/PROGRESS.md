@@ -6655,3 +6655,19 @@ Tests:      511, from 507. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             claim and the PASS each move by one, from section 18's new row; section 14's fetch step
             changed its words and stayed one claim. Windows on this machine; the matrix carries macOS
             and the Linux case-sensitivity job.
+
+### 5.7 - addendum: the first scheduled night, measured as far as it ran   2026-09-11
+Measured:   the first night the schedule ran, 2026-09-10, read from its run log through an immutable
+            connection. It started at 23:30:03 UTC and wrote eleven stages before it stopped at step
+            12 for the reason the 5.4 correction above records: 494 seconds from membership through
+            moves, against 44.6 seconds for a whole by-hand night of 2026-09-09 on a warm store.
+            Indicators took 156 seconds where the by-hand night took 18, the volume profile 120 and
+            the levels 156, over 505 names. It made 7 requests at the fetch and the stages before it,
+            and the actions row recorded 2 of the 9 its stage made, which is the 1.6 correction.
+            What it does not establish: a distribution, or a cold store as against a busy machine.
+            The machine was in use by a session running builds while it ran, so the figure is one
+            observation under a load nothing else will reproduce, and it is recorded for the row
+            that reads nights on the schedule rather than taken as one of them (owes: The nightly
+            wall clock at index size, measured from nights that ran on the schedule). It had
+            already passed the proposed five minutes before reaching its last six stages, which is
+            the first sign the proposal may be short and not yet evidence that it is.
