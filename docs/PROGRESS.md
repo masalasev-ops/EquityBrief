@@ -7608,3 +7608,168 @@ Notes:      the source lists are reviewed and the review's finding is what the e
             `Microsoft.AspNetCore.Mvc.Testing` is the one package this pass adds, and it is what
             lets the suite host a route. Keyed on a public type from the API's assembly rather than
             on its `Program`, which the suite also has in the global namespace.
+
+### 6.1 - the fundamentals fetcher, the numbers section and the twelve filings behind them   2026-09-12
+Built:      the company fundamentals endpoint probed and captured before its parser, migration 19
+            creating `fundamentals`, the fetcher that fills it on demand, the facts assembler's
+            fundamentals read, the numbers section on the name page and section 15.9's fact strip
+            drawn whole. Five commits, one kind of work each: the captures, the feed and the
+            on-demand feed set, the credential scan's repair, the store and the fetcher, and the two
+            surfaces with the expectation behind them.
+            (owes: Bulk fundamentals endpoint probed on the operator's key)
+Probed:     one live call per name on the key the credential path has held since 2.1, four names,
+            recorded either way as the done condition asks. The endpoint's weight was measured in
+            the same pass rather than read from documentation, which is what 4.3 did for the
+            calendar: one request moved the account's own counter from 1,771 to 1,781, so the 10
+            `RUNBOOK.md` states is confirmed rather than corrected, and the calls that read the
+            counter cost nothing themselves.
+Settled:    six things the endpoint's name and SCHEMA's own column note would each have got wrong,
+            which is what capturing first is for.
+            The endpoint files no segment table and no management guidance, under any key, for any
+            of the four names. SCHEMA's payload note names both, so a parser written from it would
+            have looked for a value and found a key missing, which reads as this name having none
+            rather than as the provider filing none for anybody.
+            Every statement row carries its own `filing_date` and it is not the period end: the
+            quarter ending 2026-06-30 was filed on 2026-07-31. That is the two-dates trap the
+            calendar's payload carries, in a second endpoint of the same provider.
+            One of the four names files a quarter with no `filing_date` at all, KEYS for the period
+            ending 2012-10-31. The grain is one row per filing date, so a reader requiring the field
+            throws on a real name and one defaulting it keys a row on a date nobody filed.
+            Money arrives as strings in the three statements, as numbers in `Highlights`, and as
+            strings again in the estimate trend while the earnings history sends numbers.
+            A quarter with no actual carries `epsDifference` zero, so a surprise read from that
+            field reports that a print which has not happened came in exactly as expected.
+            And the word segment appears in two of the four payloads inside the company
+            description, which is prose, so what says whether a part is carried is a walk over the
+            payload's key names and never a scan of its text.
+Ruled:      **Twelve filings are stored and five are shown**, decided by the operator during this
+            checkpoint. Section 4's five reported quarters is a display decision and the endpoint
+            returns years of quarters in one call, so twelve is the same request at the same weight
+            and the difference is only what is written. Five stored quarters yields one
+            year-over-year comparison, since the first such reading costs five quarters before it
+            produces a value; twelve yields eight, and twelve makes a guide-against-actual record a
+            count worth having. Not more, because a company's business changes over five years more
+            than its numbers do, so the earliest quarters describe a different company and widen
+            every range they sit in, which makes today's multiple read as mid-range when it is not.
+            The window is twelve stored filings rather than a date range, so a company that missed a
+            filing does not silently get a shorter window than one that did not, and a reading over
+            fewer than twelve carries its count the way an indicator row carries its bar count. The
+            captures were re-trimmed from eight quarters to fourteen for this: a file holding exactly
+            twelve could not tell a fetcher that selects from one that stores what it was handed.
+            (owes: The computed fundamental panel, and whether a fundamental state may fire a reason or gate a tranche)
+Stored:     one row per ticker per filing date, every column TEXT because every one is a date, an
+            instant, a document or a name. The figures live inside the payload in the storage form
+            money takes, which is what keeps a revenue out of a REAL column: a column per figure
+            would be thirty of them and each a place to write a double. Insert only with the
+            conflict ignored, which is the shape `news_pulse` has and for the same reason, so a
+            second open writes nothing and changes nothing that was written.
+            One part of a row is computed and the rest copied. The provider files a margin for the
+            trailing year and section 4 asks for one per quarter, so the margin is worked out from
+            the two figures in the same filing and `source` says so per part. Not in the facts
+            assembler, whose own rule is that nothing in it is derived, and not on the screen, which
+            reads and renders and computes nothing. The earnings bases, the valuation on each of
+            them, the market value and the next print's consensus estimate sit on the newest
+            filing's row alone, because a ratio has a price in it and a price moves every session.
+Decided:    the fetch decision is taken from a filing date the caller passes in rather than from a
+            store this component does not read, because the four questions that decide whether a
+            name needs anything are the staleness judge's and it arrives at 6.5 with the calendar
+            read that answers the first of them. A stored copy that does not predate a filing makes
+            no request at all, rather than one whose rows are discarded, which is the difference
+            between deciding not to spend and spending to decide.
+            (see: Deciding not to spend must not cost anything)
+Read:       eleven facts come off the newest filing a name holds, each read out of the payload and
+            named for what it is, which is this component's own rule: the margin on that row was
+            worked out by the fetcher and here it is a stored value like any other, so one figure is
+            not computed in two places. A name with nothing stored carries none of these facts
+            rather than carrying them as nulls, because this table fills on demand and most names on
+            most nights hold nothing.
+Drawn:      the numbers section shows five reported quarters of the twelve stored, each with the
+            filing date it came from, the balance sheet from the newest filing, and the valuation on
+            each earnings basis with the basis drawn beside the ratio, since a multiple without the
+            earnings figure it was struck on is a number nobody can check. Three absences are stated
+            rather than left blank, which is section 18's own row: the segment table and the
+            guidance for every name, and the guided quarter, whose place is taken by a figure named
+            for what it is. Section 4 puts the guided quarter at the earnings release exhibit, so
+            what this provider files is a consensus estimate, and putting an analysts' number under
+            management's name would be one party's figure beside another party's label.
+            Section 15.9's fact strip is decomposed into the seven parts its row enumerates and
+            drawn whole. Five existed from phase 3 and two did not, which is why 6.0 placed the row
+            at 6.1: market capitalisation and the multiples come from the fundamentals and no
+            computed table holds either, so a strip drawn earlier would have been five parts of
+            seven under one verdict covering all of them, which is the fault the fifth phase 5
+            sign-off review found on another row. The high and the low of the move are read as an
+            aggregate over the bars of exactly the sessions the largest move spans, counted in
+            stored sessions rather than in calendar days, because a move over a week holding a
+            holiday spans four sessions and five days and the days reach a bar the move does not
+            cover.
+Repaired:   two things this checkpoint's own work found, neither of them its deliverable.
+            The manifest checker refused two of the four captures for carrying `secret`. The word is
+            inside "Secretary", an officer's title in the company description, so a substring scan
+            over a payload holding prose read the prose. Two of the four names have a company
+            secretary and two do not, so the check refused half the captures and passed half. A
+            marker is a hit now where neither edge sits against an ASCII letter, and the boundary is
+            tested only at an end where the marker's own edge is a letter: the first form tested both
+            ends and stopped `token=` matching `?token=abc`, which is the one form that marker
+            exists for, and the proof caught it.
+            `NightFeeds.ReachesTheNetwork` named five of the record's six feeds. The calendar arrived
+            at 4.3 as the sixth member and was left out of the reader and out of its test, both of
+            which said five and meant six, so a set holding a live calendar and five captures
+            answered that it reaches no network, and that answer is what the console line reads to
+            say whether a night ran over the provider or over a capture. Nothing configurable builds
+            a mixed set, which is why it cost nothing and why the all-or-nothing pair either side
+            could not tell the two readers apart. The proof is constructed now, one live member at a
+            time, so a seventh member left out fails there.
+            The facts assembler's catalogue row said the listings joined its reads at 5.4, and they
+            did not: they went to the change detector, because the retention that needed them is an
+            update to a row the assembler inserts. Repaired with the fundamentals read the same
+            sentence promised.
+Claims:     322 claims and 236 PASS, from 315 and 222 at 6.0, with 86 out of scope, 0 unexamined and
+            0 fail. Seven arrived that 6.0's prediction did not name, and each is named here rather
+            than folded into the resplit. One is the stored-filings expectation's own row in section
+            19.1: the table already carried a `fundamentals` row and that row is an input, being the
+            captured payload, so the expected output needed a row of its own rather than a second row
+            under one name. Six are the net of the fact strip's decomposition, which is seven parts
+            arriving and the row's own subject leaving. **So the pair after phase 6 is 322 and 306**,
+            which is 315 and 299 plus the seven, and 6.11 checks the pair that was taken rather than
+            the one predicted.
+Guarded:    36 tests added, 632 from 596 at the 6.0 merge. Thirteen on the feed, one per finding the
+            capture produced, because a single test over one name would pass on the three whose
+            payload is uniform and say nothing about the fourth. Fifteen on the fetcher and the
+            store, including the window asserted to be the most recent twelve of fourteen rather
+            than a count of twelve, and the no-request path asserted on the feed's own counter rather
+            than on rows written. Nine on the two surfaces, each reading a figure back off the
+            markup against the store rather than off the model behind it. One on the credential
+            scan, asserting both directions in one test, because a scan loosened until a capture
+            passes is the failure that matters and it leaves every other assertion green.
+Mutated:    the rule, stated before the sweep: mutate the property that decides what is stored or
+            what is stated, one per decision this checkpoint added, and in each case choose the
+            mutation a count would not notice. Six mutations, six runs, in a detached worktree under
+            the session scratchpad outside this repository, each reverted before the next so one
+            mutation was in the tree at a time, and the worktree removed.
+            All six red. The window taking the oldest twelve rather than the newest, which leaves the
+            row count at twelve. The parser keying a row on the period it covers rather than on the
+            filing date, which leaves every row present and each labelled a month early. The fetch
+            decision always true, which spends a request where none was needed and writes no rows
+            either way. The as-of-the-fetch parts written onto every filing rather than the newest,
+            which is a valuation stated against a quarter from two years ago. The fact strip's market
+            capitalisation attribute renamed, which is one part of seven going missing. And the
+            credential marker's boundary dropped at one end, which turned two tests red.
+            The sweep found something in itself first. The marker mutation reported green on its
+            first run, and it had not compiled: the edit left a variable assigned and unused, which
+            is an error under warnings as errors, and the script's verdict logic could not tell a
+            build that failed from a run that passed. That is the under-reporting shape this corpus
+            names, arriving inside the instrument doing the checking, and it is why the figure above
+            says six red rather than five red and one survivor.
+            Properties added and not mutated, named because the next sweep has to find them: money
+            read from both of the payload's two forms, the quarter with no filing date counted rather
+            than dropped in silence, and the key-name walk that decides whether a part is carried.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 632 of 632 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 322 claims, 236 PASS, 0 fail, 86 out of scope, 0
+            unexamined, 243 placements and verdicts reconciled against a floor of 34, 33 of 35
+            roster checks carried and all 33 run. Migrations 0 to 19. The operator's store under
+            `data/` was not touched by either gate.
+Carried:    the filings archive joins the fetcher's reads at 6.2, which is the checkpoint that
+            reaches an archive, and the catalogue row says so rather than naming a feed no component
+            declares. The segment table and the guidance arrive with it. This session has committed
+            code and may not sign it off.

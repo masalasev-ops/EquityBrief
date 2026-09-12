@@ -25,6 +25,13 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-12 - BUILD_PLAN.md - the probe obligation discharged
+Corrects: nothing was wrong with the row; it is discharged because 6.1 did what it named. An open row whose due point the record shows as landed fails `obligation-reconciles`, which is what caught the moment the 6.1 entry was written and before the verifying run, since the record is what the reconciliation reads.
+Was:
+> | **Bulk fundamentals endpoint probed on the operator's key** | authored with the architecture | 6.1 | one live call on the key the credential path has held since 2.1. Nothing waits on evidence, and 6.1's done condition records the probe either way |
+Now: the row reads discharged and its cell carries what the probe settled, being the six things the endpoint's name and SCHEMA's own column note would each have got wrong, and the weight measured against the account's own counter rather than read from documentation.
+Why: an obligation is discharged where the evidence is, and the evidence here is what capturing before parsing produced. The prior text is kept in the cell after the words "What it read before", which is the form the other discharged rows use.
+
 ### 2026-09-12 - ARCHITECTURE.html - the stored filings expectation, and the fact strip owed whole
 Authorised by: Twelve filings are stored and five are shown
 Was:
