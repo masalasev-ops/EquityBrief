@@ -112,6 +112,7 @@ internal static class ComponentVocabulary
         ["filings archive"] = Feed.FilingsArchive,
         ["research model"] = Feed.ResearchModel,
         ["local model"] = Feed.LocalModel,
+        ["search tool"] = Feed.SearchTool,
     };
 
     // Prose that names a store under a name the mechanical rule does not reach.

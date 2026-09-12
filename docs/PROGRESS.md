@@ -7439,3 +7439,172 @@ Carried:    two obligations created here, for 6.0 to enter in the table rather t
 Signed:     phase 5 is signed off at 691fd8a. Its nine checkpoints are built and recorded, both
             gates are green on the tree being signed, the matrix ran on both runners for every
             merge, nothing is owed inside the phase, and 6.0 is unblocked.
+
+### 6.0 planning - the resplit, the gap the corpus held and no stage ran, and the readers that passed what they could not see   2026-09-12
+Not a checkpoint entry. It belongs to 6.0, which has not landed. This session has committed
+            code and may not sign it off.
+Built:      no component. Eight commits, each carrying one kind of work so a reader can check one
+            kind at a time: the prediction, the two holes as decisions, the rulings and their spec
+            repairs, the resplit and the re-pointing, the claim-bearing tables, the gap stop, the
+            five obligations due here, and this record.
+Decided:    the two holes this document assigns to 6.0, in five decisions, and four rulings beside
+            them.
+            **The local model answers at an OpenAI-compatible endpoint, and which model answers is
+            configuration**, Qwen 3.5 9B on this machine, with a key configured for that lane
+            refused rather than sent, because the queue's zero-cost property rests on the lane
+            being free. **The local lane is a configured list of section names, and the prose
+            writer writes whatever the list holds**, which closes the short-version contradiction
+            without superseding anything: section 4, figure 12.2 and section 15.12 state this
+            machine's default and the prose writer's catalogue row was naming a capability, so
+            neither side was a design fact. **The research model is one interface with an
+            implementation per wire format, chosen by configuration and never falling back**,
+            because a fallback makes the model that wrote a section unknowable from the fact that
+            the section exists. **A research pass is recorded per section call, keyed on the
+            canonicalised request**, since a sequence-keyed recording passes on the run that made
+            it and fails on every other. **The on-demand feeds are resolved in one place, as the
+            nightly feeds are.**
+            The four rulings. **The night's zero-model-call rule bounds the arithmetic, and the
+            overnight queue is carved out of it by name**, which is 1.2's carve rather than a
+            loosened rule: section 14's list runs to seventeen steps and three places said no
+            model is called while the fourth was the step. **A transaction taken for speed is not
+            asserted, and a scan that would need twelve exemptions is not written.** Admissibility
+            is applied by whichever runner fetched the document, because the checker had a read of
+            the sources column and no write, so the component that decided could not store the
+            verdict and the component that stored was not the one deciding. And the pending state
+            is a status on the row rather than a second store, which is what one matrix column can
+            carry.
+Resplit:    eleven build checkpoints where there were eight, 6.1 to 6.11. The phase carries seven
+            new components, four new stores and five new outward surfaces, and two of the eight
+            each carried a new provider, a new store and a new component at once. The filings
+            archive leaves the source store's checkpoint because it is a new provider and
+            capture-before-parse applies to it; the spend cap leaves the research runner's because
+            a gate built in the same commit as the thing it gates has no run in which the gate was
+            absent. The staleness judge moves from seventh to fifth, where its inputs exist.
+            61 out-of-scope claims re-pointed, and re-pointed from the checkpoint text wherever the
+            derivation reaches it: 20 written residuals deleted, which took the phase 6 residual
+            count from 46 to 27. Four points moved further than the map because they named a
+            checkpoint that produces nothing for them. The spend cap's failure row and the run
+            log's store row stood at the phase report and move to 6.7, where the cap and the ledger
+            are built. The claim rejection and source admissibility limit rows stood at 6.1 and
+            move to 6.4 and 6.3, which are the checkpoints that build a checker and a test.
+            One row of the map moves earlier, and the work moved rather than the point: the
+            staleness judge's claims travel with the component.
+Repaired:   the gap stop, which is the one place this pass changes behaviour. Section 18's row
+            promises that nothing is computed across a gap for that name, and a decision has said
+            since 1.5 that every computation over such a name stops and reports the gap's date. No
+            stage did any of it. Two of 503 members are absent from an ordinary day's bulk file, so
+            their series carry interior holes the indicators, the swings, the profile, the levels
+            and the moves all counted across as though the sessions either side were adjacent. That
+            is a wrong figure on a live surface every night, which the stopping rules put in the
+            class that cannot be carried.
+            Each of the five computed stages now derives the gap state on read, from its own stored
+            sessions against the pinned closure table, writes no row for a gapped name, and names
+            every stopped name with its earliest gap on its own run log row. One reader rather than
+            five copies of the rule; the write stays in each component's own file.
+            The ladder and the listing still carry a row, because both are hard rules, and the
+            ladder's plan names the gap's date rather than calling the trend unclassifiable: both
+            are true and only one says what to do. The listing is the sharp one. Five of the six
+            reasons read a close and a level and would find nothing anyway, and earnings soon reads
+            the calendar alone, so without the stop a gapped name with a print inside the horizon
+            reached tonight's list carrying an empty plan and nothing saying why.
+            The decision now states the two readings of the calendar and which behaviour uses
+            which, because they are not interchangeable: the fetcher compares an arriving series
+            against the union of what the names in hand hold, which is exact over a payload and
+            silent over one series, and a stage compares one name against the pinned table, which
+            answers over one series and refuses a weekday it cannot place. A stage handed a series
+            the table cannot place proceeds and counts the name as unchecked, since a series nobody
+            compared reported as clean is a check passing by having no population.
+Found:      five things, each by using an instrument rather than by reading it.
+            The shadow check read a nightly-step key as a subject. Those keys are prefixes of a
+            step's whole text, so the resolver never asks the derivation with one, and writing "Run
+            the overnight queue" into the checkpoint that builds it made the check demand a
+            deletion that turns sixteen conformance tests red. The map is excluded now and what
+            makes it excludable is asserted: every key is a strict prefix of a step in section 14
+            and equal to none of them.
+            Its population omitted two of the maps the resolver consults. Adding them showed
+            fourteen fixture rows holding a written value the derivation would supply and get
+            wrong: moves derives 2.1 against a real 5.2, levels 5.1 against 3.4, forward returns
+            7.1 against 5.5, because a fixture row's key is a file name and the plan uses those
+            words everywhere. That map is excluded too, with every key asserted to be a row of
+            section 19.1's own table, and three of its entries that derived by the luck of a
+            distinctive phrase are restored so the map is uniform.
+            A sentence in 6.9 naming the overnight queue moved all four of that component's claims
+            to 6.9, because the due-point derivation reads a checkpoint's prose. The sentence is
+            reworded and says so, since that is the hazard of deriving a due point from text.
+            The screens part reader demanded parts for four new rows whose descriptions ran to
+            three comma-separated clauses. Each is written as two.
+            And the route test this pass wrote asserted the date the route echoes rather than the
+            night it serves, which the mutation sweep caught. Below.
+Predicted:  315 claims and 299 PASS after phase 6, with 16 out of scope, 0 unexamined and 0 fail.
+            The pair was taken in the first commit, before a placement moved, because this pass
+            re-points sixty one claims and a prediction taken afterwards absorbs an unplanned
+            movement instead of showing it. List A is 61 and list B is 16, both named in
+            `BUILD_PLAN.md` rather than counted.
+            Two movements the prediction named as branches and one it did not. Taken: the lane
+            table stays placed rather than becoming a claim source, because what its rows state is
+            a configured default, so list B loses nine and the table's due point moves from 6.0,
+            which never lands, to 6.6, where the configuration exists. Not taken: the two
+            model-unavailability rows are separate rows, because the lanes fail into different
+            halves of the report and the answer for each is the other lane. Unpredicted, and named
+            as such: the inadmissible-document row is widened to name all six documents and stays
+            one claim rather than decomposing into six, which loses five more, because the reader
+            that reads a row's parts off a document is scoped to section 15's tables and widening
+            it would make every fixture row enumerating three or more items owe parts at once. A
+            row carries that decomposition at 6.3. And the gap stop's own expectation row is a
+            seventeenth claim that passes here, which is why the pair reads 315 and not 314.
+Mutated:    ten mutations, in a worktree under the session scratchpad outside the repository,
+            reverted, and the worktree removed. The rule was stated before the sweep: every
+            mutation targets a property this pass added that decides whether a wrong value reaches
+            a store or a surface, or whether a check can see a form at all, and each names the
+            property rather than the line it edits.
+            The properties: a computed stage withholds every row for a gapped name; a gapped member
+            still gets its ladder row with the gap as the reason; a route's own body is reached;
+            the newest run is ordered by the write order; the part sweep visits a row where any
+            subject passes; a bare `Invariant(` passes only where the source declares that helper;
+            a number rendered into stored text carries a dot whatever the culture is; the shadow
+            check's exclusion removes something and covers only prefix keys; the cast reader reads
+            a signed or numeric-literal operand; and a refusal before the first step carries its
+            own outcome.
+            Nine turned a test red on the first sweep. One survived, and it is the sharpest thing
+            this pass found: pointing the tonight route at the day before left all 590 green, which
+            is the phase 5 sign-off's own demonstration surviving a test written to catch it. The
+            route finds no listings for that day and falls back to section 18's banner, which draws
+            the night that was asked for, so a test asserting the date in the markup passes. A date
+            is the one thing a wrong night still produces. The test now asserts a name that fired
+            on that night, read off the store, and the mutation turns it red.
+            Not mutated, and named: the resplit, the re-pointing and the claim prediction, which
+            are document facts the harness reconciles rather than properties a test can break; and
+            the spend cap's two figures, which are proposals rather than properties.
+Tests:      590, from 556. `tools/ci.ps1` green end to end, all 6 steps, migrations 0 to 18, exit
+            0. `tools/verify-phase.ps1` green at 315 claims, 222 PASS, 0 FAIL, 93 out of scope, 0
+            unexamined, 229 placements and verdicts reconciled against a floor of 34. The 93 read
+            twice, by the first checkpoint each note names and by the last, give 77 at phase 6 and
+            16 at phase 7 both ways. Windows PowerShell on this machine; the matrix carries macOS
+            and the Linux case-sensitivity job.
+Carried:    three rows created here, and every other row due at 6.0 discharged. **The inadmissible
+            document row's parts read off the document**, at 6.3, where the six documents arrive
+            and the parts can be read off the row. **The industry source list measured against a
+            search that ran**, at 6.9, because only a search against that list can produce evidence
+            and the 6.0 review had no more than 1.7 did. And **The spend cap set from the passes
+            the ledger has priced**, operating, since no checkpoint accumulates research passes.
+            The two the phase 5 sign-off created are entered here, because that entry edits no
+            spec, and both are discharged here too. One of them asked for a rename that was tried
+            and reverted: the sign-off's own entry cites the name, a record is corrected by a new
+            dated entry rather than edited, and a rename leaves the citation resolving to nothing.
+            What stops the narrow discharge it was worried about is the row's own cell naming all
+            six routes.
+Notes:      the source lists are reviewed and the review's finding is what the evidence can and
+            cannot settle. 1.7 measured the licensed feed, which these lists do not govern, and
+            that feed carried 1,173 of 1,253 articles under one aggregator domain, so no entry
+            moves on its evidence. What it does settle is in the file: the three writing outlets it
+            observed are all on the company-news list, every article carried retrievable text so
+            the unretrievable case belongs to the search tool rather than the feed, and coverage
+            thins about four to one from the top of the index to the bottom.
+            Ten store-shape findings, three fixed and seven ruled as they stand with the reason in
+            the row. The ruling the finding actually asked for is that `listing` has no deleter and
+            gains none: the listings are what the improvement loop scores, a deleter over them is a
+            rule that can erase evidence, and the rows are right as written because they record
+            what the system listed that night rather than who is a member now.
+            `Microsoft.AspNetCore.Mvc.Testing` is the one package this pass adds, and it is what
+            lets the suite host a route. Keyed on a public type from the API's assembly rather than
+            on its `Program`, which the suite also has in the global namespace.

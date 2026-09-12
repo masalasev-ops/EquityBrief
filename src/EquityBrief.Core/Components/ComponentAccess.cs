@@ -62,6 +62,7 @@ public enum Feed
     FilingsArchive,
     ResearchModel,
     LocalModel,
+    SearchTool,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

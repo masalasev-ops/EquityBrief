@@ -120,10 +120,20 @@ public sealed class SwingFinder : IComponent
 
         var highs = 0;
         var lows = 0;
+        var stop = new SeriesGapStop();
 
         foreach (var ticker in tickers)
         {
             var bars = await BarsAsync(connection, ticker, cancellation);
+
+            // A name whose stored series has an interior hole is
+            // computed for nothing and named on the run log.
+            // see: A gap is a session the exchange traded and the store does not hold
+            if (stop.Stops(ticker, [.. bars.Select(bar => bar.SessionDate)]))
+            {
+                continue;
+            }
+
             var swings = SwingSeries.For(bars);
 
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
@@ -161,9 +171,9 @@ public sealed class SwingFinder : IComponent
             await BoundaryAsync(connection, cancellation),
             cancellation);
 
-        await RecordAsync(connection, runId, startedAt, tickers.Count, highs, lows, dropped, cancellation);
+        await RecordAsync(connection, runId, startedAt, tickers.Count - stop.Stopped, highs, lows, dropped, stop.Report(), cancellation);
 
-        return new SwingOutcome(tickers.Count, highs + lows, highs, lows, dropped);
+        return new SwingOutcome(tickers.Count - stop.Stopped, highs + lows, highs, lows, dropped);
     }
 
     async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, CancellationToken cancellation)
@@ -219,6 +229,7 @@ public sealed class SwingFinder : IComponent
         int highs,
         int lows,
         int dropped,
+        string gaps,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -244,7 +255,7 @@ public sealed class SwingFinder : IComponent
         // way, and a single total hides that completely.
         command.Parameters.AddWithValue(
             "$detail",
-            $"{names} name(s), {highs} high(s), {lows} low(s), {dropped} dropped");
+            $"{names} name(s), {highs} high(s), {lows} low(s), {dropped} dropped{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

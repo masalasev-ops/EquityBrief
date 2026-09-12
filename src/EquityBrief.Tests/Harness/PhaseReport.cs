@@ -136,7 +136,12 @@ internal static class PhaseReport
         // the paragraph above them, and the shape of that configuration is the
         // hole BUILD_PLAN settles at 6.0.
         ["What each lane actually writes"] = new Placement(
-            "the section-to-lane assignment, which is a setting rather than a structure and has no code behind it until the lane configuration is settled", Due: "6.0"),
+            "the section-to-lane assignment, which is a configured default rather than a structure. " +
+            "6.0 settled the configuration's shape and the table now states this machine's default " +
+            "with the two sections it assigned no lane added, so what the rows say is a value and " +
+            "not a claim about code. It is asserted where the configuration exists, which is 6.6, " +
+            "and the due point was 6.0 until then, which is a point that never lands and so a " +
+            "placement nothing could ever discharge", Due: "6.6"),
         ["13.2 Four things that can improve, shallowest first"] = new Placement(
             "a plan for phase 7, with nothing built to assert it against", Due: "7.1"),
         ["13.3 The guardrails"] = new Placement(

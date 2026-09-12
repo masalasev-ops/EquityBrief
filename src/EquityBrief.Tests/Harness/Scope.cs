@@ -338,7 +338,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(CatalogueTable, "Verification harness")] = new Scoped(
             Verdict.Pass,
-            "every claim in sections 7, 14, 15, 16, 17 and 18 carries a verdict, and both artifacts are written and read back",
+            "every claim this document makes carries a verdict and every table and figure carrying none is placed, and both artifacts are written and read back",
             ByHarness),
         [CheckReach.Key(CatalogueTable, "Backfill")] = new Scoped(
             Verdict.Pass,
@@ -438,6 +438,10 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, and its retention is owned by the component that writes it",
             ByMigration),
+        [CheckReach.Key(FixtureTable, "gap stop")] = new Scoped(
+            Verdict.Pass,
+            "the five computed tables withhold every row for a name whose stored series holds an interior hole and the ladder and the listing still carry one naming the gap's date, asserted per table over a constructed store and with the split between the two halves asserted rather than a loop run over all seven",
+            ByGap),
         [CheckReach.Key(FixtureTable, "forward returns")] = new Scoped(
             Verdict.Pass,
             "every horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, with the matured cases over constructed series because the committed fixture has no session after its listings",
@@ -1055,13 +1059,13 @@ internal static class Scope
         // about a search returning only sites on the list that applies to it,
         // and the row's own Asserted by column names a fixture search. That
         // arrives with the research pass at 6.1.
-        ["Source lists"] = "6.1",
+        ["Source lists"] = "6.9",
 
         // 1.2 names the run log, because that is where the backfill's request
         // count first reaches it. The catalogue row is not about one stage: its
         // Reads cell says "every component appends", so the row is a claim about
         // every component, and the last of them lands in phase 6.
-        ["Run log"] = "6.9",
+        ["Run log"] = "6.7",
 
         // 1.2 builds the backfill, and this row is the limit on it rather than
         // the component. Its own Asserted by column names the run log's request
@@ -1097,7 +1101,6 @@ internal static class Scope
     {
         // 4.2 builds the ladder and never uses the component's name.
         ["Ladder builder"] = "4.4",
-        ["Report exporter"] = "6.9",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -1106,9 +1109,6 @@ internal static class Scope
         // arrives rather than where the first does. The move annotator at 5.2
         // is that point; indicators land at 3.1 and ladders at 4.2.
         ["Indicators, swings, volume profile, levels, ladders, moves"] = "5.2",
-        ["Research store"] = "6.3",
-        ["Theme store"] = "6.3",
-        ["Source documents"] = "6.2",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -1155,8 +1155,8 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Reason track, unresolved")] = "5.6",
         [CheckReach.Key("15.7 Tonight", "Night header, names in the index")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Night header, names that fired")] = "5.4",
-        [CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused")] = "6.5",
-        [CheckReach.Key("15.7 Tonight", "Night header, spend")] = "6.5",
+        [CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused")] = "6.8",
+        [CheckReach.Key("15.7 Tonight", "Night header, spend")] = "6.7",
         [CheckReach.Key("15.7 Tonight", "Night header, run duration")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Night header, the harness verdict")] = "5.8",
         [CheckReach.Key("15.7 Tonight", "The list, one row per name that fired")] = "5.4",
@@ -1196,7 +1196,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "The plan, the earnings setups")] = "4.6",
         [CheckReach.Key("15.9 Name", "The plan, the sizing arithmetic")] = "4.6",
         [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = "5.2",
-        [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = "6.5",
+        [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = "6.6",
         [CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture")] = "5.8",
         [CheckReach.Key("15.10 Run", "Operational header, what ran")] = "5.6",
         [CheckReach.Key("15.10 Run", "Operational header, the instant each stage started and how long it took")] = "5.6",
@@ -1213,7 +1213,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Harness, unexamined")] = "5.6",
         // Contradiction D's own case. The exporter is a phase 6 component and
         // this row is the surface it writes.
-        [CheckReach.Key("15.4 The two surfaces", "The exported report")] = "6.9",
+        [CheckReach.Key("15.4 The two surfaces", "The exported report")] = "6.11",
 
         // Contradiction F. This row names four elements and they are drawn at
         // three different points, so the row is read as four claims. See
@@ -1241,18 +1241,22 @@ internal static class Scope
 
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",
         [CheckReach.Key("15.9 Name", "Fact strip")] = "6.1",
-        [CheckReach.Key("15.9 Name", "The short version")] = "6.4",
-        [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.5",
-        [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.5",
-        [CheckReach.Key("15.9 Name", "Provenance footer")] = "6.4",
+        [CheckReach.Key("15.9 Name", "The short version")] = "6.8",
+        [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.8",
+        [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
+        [CheckReach.Key("15.9 Name", "Provenance footer")] = "6.6",
+        [CheckReach.Key("15.9 Name", "Research not yet written")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Research stale")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Research paused")] = "6.7",
+        [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
         [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
         // 7.5 is "Reason verdicts on the run page" and 7.4 is "The shadow
         // column", so two rows of this section are owed two phases after it.
         [CheckReach.Key("15.10 Run", "Shadow candidates")] = "7.4",
         [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = "5.6",
-        [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = "6.3",
-        [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.2",
+        [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = "6.4",
+        [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.3",
 
         [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "7.5",
         [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "7.5",
@@ -1453,6 +1457,13 @@ internal static class Scope
     static readonly Dictionary<string, string> FixtureRows = new(StringComparer.Ordinal)
     {
         ["fundamentals"] = "6.1",
+        ["a poisoned paragraph"] = "6.4",
+        ["an unsourced claim"] = "6.4",
+        ["an inadmissible document"] = "6.3",
+        ["research record"] = "6.8",
+        ["theme record"] = "6.9",
+        ["source documents"] = "6.3",
+        ["refused documents"] = "6.3",
         ["calendar"] = "4.3",
         ["membership"] = "1.1",
         ["fetch"] = "2.1",
@@ -1467,9 +1478,6 @@ internal static class Scope
         ["facts"] = "5.3",
         ["forward returns"] = "5.5",
         ["news pulse"] = "5.5",
-        ["a poisoned paragraph"] = "6.3",
-        ["an unsourced claim"] = "6.3",
-        ["an inadmissible document"] = "6.2",
     };
 
     static readonly Dictionary<string, string> Failures = new(StringComparer.Ordinal)
@@ -1485,12 +1493,6 @@ internal static class Scope
         // section's tables at 4.4, which is the last surface the cell names.
         ["A gap in one name's series, level and plan sections"] = "4.6",
         ["A split or dividend not caught"] = "1.6",
-        ["Cloud model unavailable"] = "6.5",
-        ["A source is returned but its text cannot be retrieved"] = "6.2",
-        ["A pass finds no admissible source for a section"] = "6.2",
-        ["Claim checker rejects twice"] = "6.3",
-        ["Spend cap reached"] = "6.9",
-        ["Filing not yet parsed for a name"] = "6.1",
         ["A name whose trend state cannot be classified"] = "4.1",
         ["No band is eligible to carry a tranche"] = "4.4",
         ["Earnings date missing, the earnings reason"] = "5.4",
@@ -1505,8 +1507,12 @@ internal static class Scope
         // nothing a reader looks at.
         ["A name leaves the index"] = "5.1",
         ["A condition has fired but nothing has resolved yet"] = "7.5",
-        ["A section is assigned to the local lane that the machine cannot hold"] = "6.4",
-        ["The machine slept and the overnight queue did not run"] = "6.8",
+        ["A search returns snippets rather than full page text"] = "6.9",
+        ["A search returns a site the applicable list does not carry"] = "6.9",
+        ["A document's publish date falls outside the window the pass asked for"] = "6.3",
+        ["The search tool is unavailable"] = "6.9",
+        ["The local model is unavailable"] = "6.6",
+        ["A theme refresh fails while a name's pass depends on it"] = "6.9",
         ["Something tries to edit or delete a register row"] = "7.3",
         ["The candidate register and the correction disagree"] = "7.3",
     };
@@ -1518,7 +1524,6 @@ internal static class Scope
     // the last of them is.
     static readonly Dictionary<string, string> MatrixRows = new(StringComparer.Ordinal)
     {
-        ["Verification harness"] = "6.9",
     };
 
     // Section 17's limits. Each row is a claim about the code, and the code
@@ -1539,12 +1544,6 @@ internal static class Scope
         ["Tranches, exits"] = "4.5",
         ["Tranche eligibility"] = "4.4",
         ["Earnings horizon"] = "4.7",
-        ["Research passes per name per open"] = "6.7",
-        ["Research staleness triggers"] = "6.7",
-        ["Scheduling of queued work"] = "6.8",
-        ["Claim rejection"] = "6.1",
-        ["Theme search parameters"] = "6.6",
-        ["Source admissibility"] = "6.1",
         ["Nightly row coverage"] = "5.4",
         ["Reason record display"] = "7.5",
         ["Minimum resolved setups"] = "7.5",
@@ -1579,12 +1578,12 @@ internal static class Scope
         ["Classify the trend state and build the ladder"] = "4.1",
         ["Annotate the largest moves"] = "5.2",
         ["Evaluate the list reasons"] = "5.4",
+        ["Run the overnight queue"] = "6.10",
         ["Write the facts file"] = "5.3",
 
         ["Fill forward returns"] = "5.5",
         ["Count today"] = "5.5",
         ["Close the arithmetic"] = "5.5",
-        ["Run the overnight queue"] = "6.8",
     };
 
     // Figure 12.1's boxes, which are the research flow and land in phase 6.
@@ -1600,13 +1599,13 @@ internal static class Scope
     static readonly Dictionary<string, string> Figures = new(StringComparer.Ordinal)
     {
         [CheckReach.Key("Figure 12.1", "Computed sections appear")] = "6.1",
-        [CheckReach.Key("Figure 12.1", "Is there a research record?")] = "6.7",
-        [CheckReach.Key("Figure 12.1", "Does it still stand?")] = "6.7",
-        [CheckReach.Key("Figure 12.1", "All four no")] = "6.7",
-        [CheckReach.Key("Figure 12.1", "A pass is warranted")] = "6.5",
-        [CheckReach.Key("Figure 12.1", "Write the sections")] = "6.5",
-        [CheckReach.Key("Figure 12.1", "Check every claim")] = "6.3",
-        [CheckReach.Key("Figure 12.1", "Store it")] = "6.3",
+        [CheckReach.Key("Figure 12.1", "Is there a research record?")] = "6.5",
+        [CheckReach.Key("Figure 12.1", "Does it still stand?")] = "6.5",
+        [CheckReach.Key("Figure 12.1", "All four no")] = "6.5",
+        [CheckReach.Key("Figure 12.1", "A pass is warranted")] = "6.8",
+        [CheckReach.Key("Figure 12.1", "Write the sections")] = "6.8",
+        [CheckReach.Key("Figure 12.1", "Check every claim")] = "6.4",
+        [CheckReach.Key("Figure 12.1", "Store it")] = "6.4",
     };
 
     internal static Scoped For(string table, string subject)
@@ -1631,13 +1630,43 @@ internal static class Scope
     // Every subject and the due point it resolves to, so the reconciliation can
     // read the two halves apart: what the plan supplied, and what is written
     // here because the plan could not.
+    // Every map Resolve consults, and the list is the population the shadow
+    // check reads. FixtureRows and Screens were absent from it until 6.0, which
+    // is the same under-reporting the check exists to catch arriving inside the
+    // check: three fixture rows held a written value the plan could supply and
+    // nothing could say so, because the map they sat in was not in the
+    // population. Screens keys are composite and can never derive, and they are
+    // listed anyway, because a population defined by what could match is
+    // defined by the thing it is checking.
     internal static IReadOnlyList<string> ResidualSubjects() =>
         [.. DerivedIsLate.Keys, .. DerivedIsEarly.Keys, .. Components.Keys, .. Stores.Keys,
             .. Failures.Keys, .. MatrixRows.Keys, .. LimitDuePoints.Keys, .. NightlySteps.Keys,
-            .. Figures.Keys];
+            .. Figures.Keys, .. FixtureRows.Keys, .. Screens.Keys];
 
     internal static IReadOnlyList<string> DeclaredExceptions() =>
         [.. DerivedIsLate.Keys, .. DerivedIsEarly.Keys];
+
+    // A nightly-step key is a prefix of a subject and not a subject. The
+    // resolver matches a step's whole text against these, so it never asks
+    // PlanCheckpoints.DueFor with a key, and the plan naming a prefix says
+    // nothing about whether that value could derive. Reading one as shadowing
+    // the plan reports a question nobody asks, which is what 6.0 found by
+    // writing "Run the overnight queue" into the checkpoint that builds it.
+    // Named here rather than excluded inside the check, so the exclusion is a
+    // property of the map and the check asserts what makes it excludable.
+    internal static IReadOnlyList<string> ResidualPrefixSubjects() => [.. NightlySteps.Keys];
+
+    // A fixture row's key is the name of a file and not a claim subject, and
+    // the names are ordinary words: fundamentals, calendar, membership, fetch,
+    // indicators, swings, levels, ladder, moves, facts, listings. The plan uses
+    // every one of them in several checkpoints, so a derivation over the key
+    // answers about the first checkpoint that happens to use the word and not
+    // about the row. Widening the shadow check's population at 6.0 showed it in
+    // one run: fourteen of them derived, and moves gave 2.1 against a real 5.2,
+    // levels gave 5.1 against 3.4, and forward returns gave 7.1 against 5.5.
+    // So the whole map is written, uniformly, and this is the reason rather
+    // than three of it deriving by the luck of a distinctive phrase.
+    internal static IReadOnlyList<string> ResidualFileNameSubjects() => [.. FixtureRows.Keys];
 
     // Late first, then early, each with the direction it claims, so the
     // reconciliation can assert the claim rather than take the label.

@@ -5,6 +5,7 @@ using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
+using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Membership;
 using Microsoft.Data.Sqlite;
@@ -575,7 +576,16 @@ public class NightlyRun
         var row = Assert.Single(RunLog(store, "night-refused"));
 
         Assert.Equal(Nightly.FirstStep, row.Stage);
-        Assert.Equal("failed", row.Outcome);
+
+        // Its own outcome and not "failed", which is 6.0's repair for what the
+        // phase 5 sign-off found: a refusal recorded as a failure under the
+        // migrate stage reads on the run page as a migration that failed, on an
+        // evening whose real fault was a blank key or a fixture folder that does
+        // not exist. The stage stays the first step, because a refusal happens
+        // before any step and section 14's list is what the stages are read
+        // against; the outcome is the column the kind of failure is read off.
+        Assert.Equal(NightClose.Refused, row.Outcome);
+        Assert.NotEqual(NightClose.Failed, row.Outcome);
         Assert.Contains("refused before the first step: no EODHD key", row.Detail, StringComparison.Ordinal);
 
         // And a store that does not exist yet is not created by the refusal.

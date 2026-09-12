@@ -4,6 +4,24 @@ namespace EquityBrief.Core.Bars;
 // hold.
 public sealed record Gap(string Ticker, DateOnly SessionDate);
 
+// What the exchange calendar can say about one name's stored series.
+//
+// Checked is kept beside the answer rather than folded into it, because the two
+// ways of holding no gap are different facts. A series the table could place and
+// found nothing missing in is clean. A series the table cannot place was not
+// compared, and a caller handed an empty list for it would read the second as
+// the first, which is the shape TradingCalendar.CanDetect already exists to
+// refuse.
+public sealed record SeriesGaps(bool Checked, IReadOnlyList<DateOnly> Missing)
+{
+    public bool HasGap => Checked && Missing.Count > 0;
+
+    // The gap a stage names when it stops. The earliest, because that is the
+    // session the series first stopped being continuous at, and a stage that
+    // named the latest would move its own message as the hole widened.
+    public DateOnly? Earliest => Missing.Count > 0 ? Missing[0] : null;
+}
+
 // Which sessions the exchange traded, and which of them a name is missing.
 //
 // Detection is against the calendar and never against the rows themselves. A
@@ -82,4 +100,49 @@ public static class TradingCalendar
     // having no population.
     public static bool CanDetect(IReadOnlyDictionary<string, IReadOnlyCollection<DateOnly>> series) =>
         series.Count > 1;
+
+    // One name's series against the pinned exchange calendar.
+    //
+    // Read off the closure table rather than off the other names in hand,
+    // because this is the question a computed stage has to answer and the
+    // observed union above cannot: a stage runs per name, and what it needs to
+    // know is whether this name's own series has a hole. The union is exact
+    // over a whole night and answers nothing over one series, which is what
+    // CanDetect says; the table answers over one.
+    //
+    // Interior only, for the reason MissingFrom states. A hole at either edge
+    // is a shorter history and a name whose last session is Friday is not
+    // missing Monday. What is a gap is a session with stored sessions on both
+    // sides of it, which is a session the name traded through and the store
+    // does not hold.
+    // see: A gap is a session the exchange traded and the store does not hold
+    public static SeriesGaps Check(IReadOnlyCollection<DateOnly> held)
+    {
+        if (!CanCheckAgainstExchange(held))
+        {
+            return new SeriesGaps(Checked: false, Missing: []);
+        }
+
+        var ordered = held.Distinct().OrderBy(session => session).ToArray();
+        var missing = new List<DateOnly>();
+
+        for (var next = 1; next < ordered.Length; next++)
+        {
+            missing.AddRange(ExchangeClosures.SessionsBetween(ordered[next - 1], ordered[next]));
+        }
+
+        return new SeriesGaps(Checked: true, Missing: missing);
+    }
+
+    // Whether the closure table can place every weekday the series spans.
+    //
+    // Fewer than two sessions has no interior at all, so nothing can be missing
+    // from it and nothing was compared, which is the second of the two ways of
+    // holding no gap. A span reaching outside the table's range is the same
+    // answer for a different reason: the table refuses a weekday it cannot
+    // place rather than guessing, so a caller has to ask before it calls.
+    public static bool CanCheckAgainstExchange(IReadOnlyCollection<DateOnly> held) =>
+        held.Count >= 2
+        && held.Min() >= ExchangeClosures.CoveredFrom
+        && held.Max() <= ExchangeClosures.CoveredThrough;
 }

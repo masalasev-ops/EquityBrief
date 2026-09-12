@@ -344,10 +344,18 @@ public sealed class ReadApi : IComponent
     // session are not nights that ran: the first is this process starting and
     // the second fetched nothing, and opening on either would hide the evening
     // before it.
+    //
+    // Ordered by the order the rows were written and not by the instant they
+    // carry, which is 6.0's repair for what the phase 5 sign-off found. A replay
+    // stamps `started_at` from 21:10Z on the session it was given, so a night
+    // replayed for an older session after tonight's ran carries the older
+    // instant and this query would name it the newest run. The page would then
+    // open on a night whose list the store does not hold. The write order is the
+    // rowid, which is the one thing here that cannot be stamped.
     const string NewestRun = @"
         SELECT started_at FROM run_log
         WHERE stage != $read_api AND outcome != $no_session
-        ORDER BY started_at DESC
+        ORDER BY rowid DESC
         LIMIT 1;
     ";
 

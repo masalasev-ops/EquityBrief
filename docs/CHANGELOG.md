@@ -25,6 +25,92 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-12 - CLAUDE.md, BUILD_PLAN.md, RUNBOOK.md, source-lists.json - the five obligations due at 6.0, and the readers and routes they turn on
+Corrects: four of the five were rulings or tests the fourth phase 5 sign-off review left carried, and the fifth was the source lists' own review, owed since 1.7. Two check readers passed forms they could not see: `clock-usage` admitted a bare `Invariant(` wherever it appeared, which passes a literal on the name of the thing before it, and `price-storage-form` read neither a signed nor a numeric-literal operand, nor the framework's capitalised type names, nor the decimal type's own `ToDouble`. No test in the suite hosted a route, so every route body in the API's own file was unreached and each screen's PASS sat at the helper the route calls. The run page ordered the newest night by an instant a replay stamps, so a night replayed for an older session could take over the page. A refusal before the first step was recorded as a failure under the migrate stage and read on the page as a migration that failed. And numbers were formatted in the machine's culture into stored text in two places, which `clock-usage` never saw because it is keyed on date formats.
+Was:
+> the two roster rows without those forms; the five obligation rows reading 6.0 with their evidence cells open; `"reviewedOn": "2026-09-08"` and a review date of 2027-03-08; and the morning table without a row for a night that is missing from the page altogether
+Now: both roster rows state what their readers now reach and, for the one form that is stated rather than closed, that the other reader carries it with both directions asserted; the five rows read discharged with their evidence; the source lists carry the 6.0 review, which records what the 1.7 measurement can and cannot settle and moves the review date; and the runbook's morning table says where to read a refusal the store could not hold.
+Why: a reader blind to a form passes every use of it, so the only broken checks that survive are the ones that under-report. The routes are hosted in process against a throwaway store, which is 6.0's ruling on how the suite reaches a route, and the tonight route is asserted in both directions because the sign-off's own demonstration was to point it at the day before and leave the suite green. One obligation's rename was tried and reverted, since the record that cites the name is corrected by a new entry rather than edited.
+
+### 2026-09-12 - CLAUDE.md, ARCHITECTURE.html, DECISIONS.md, BUILD_PLAN.md - the gap stop, which the corpus held and no stage ran
+Corrects: section 18's gap row promises that the system computes nothing across a gap for that name and that the name's level and plan sections say not computed, and a decision has said since 1.5 that every computation over a name whose stored series has a gap stops and reports the gap's date. No stage did any of it. Two of 503 members are absent from an ordinary day's bulk file, so their series carry interior holes that the indicators, the swings, the profile, the levels and the moves all counted across as though the sessions either side were adjacent, and the listing's earnings reason reads the calendar alone, so a gapped name with a print inside the horizon reached tonight's list carrying an empty plan and nothing saying why. Found by the phase 5 sign-off, which observed that only the backfill consults the calendar at all, and carried to 6.0 as a ruling.
+Was:
+> | `gap-refusal` | every CI run | A series arriving with an interior session missing is refused, ... and one series alone reports that it cannot be checked rather than that it is clean |
+>
+> The state is derived on read from the stored sessions against the calendar rather than kept in a column, so nothing has to be brought back into step with the bars after a refetch fills the hole.
+Now: the roster row covers the computation stop as well as the fetch refusal, stating that the five computed tables withhold every row while the ladder and the listing still carry theirs, asserted per table because the two failures are opposite; the decision states the two readings of the calendar and which behaviour uses which, and says that a series the closure table cannot place is counted as unchecked rather than reported clean; section 19.1 gains a gap stop expectation row; and the obligation row reads discharged with its evidence.
+Why: section 18's row and the decision were right and the code was not, which is the one class the stopping rules say cannot be carried rather than written down. The roster row is widened with the check, because a check asserting more than its row says is a property nobody wrote down.
+
+### 2026-09-12 - ARCHITECTURE.html, CLAUDE.md - the tables phase 6's claims are read from, filled where they were short
+Corrects: the overnight queue is named in section 14's step 17, in section 17, in section 18, in section 20 and in figure 12.2 and had no catalogue row and no matrix row, so under the matrix's own blank-cell rule it held no permission to write anything; the theme research runner's reads named no search tool while three limits rows specify one; section 15.9 carried no region for research missing, stale or paused, each of which section 4's key, figure 12.1, section 15.12 and three section 18 rows describe; section 15.10 carried no region naming the queue while section 18 requires the run page to state that it did not run; both screens' read lists omitted a store their own regions draw; section 19.1 named no expectation for a research record, a theme record, the stored documents or the refused ones, and its inadmissible-document row named three kinds where section 17's assertion column asks for six; section 18 carried no row for a snippet, an off-list site, a publish date outside the window, the search tool, the local model or a failed theme refresh; section 17's spend cap and overnight queue rows carried no figure at all; figure 12.2 pointed at figures in section 17 that do not exist; the lane table assigned no lane to two of the sections figure 12.1 says a pass writes; and `claim-admissibility` was rostered from a checkpoint that builds no admissibility. Found at 6.0 reading the tables phase 6's claims come from against the phase they come from.
+Was:
+> the two screens' read lists and region tables without those rows; section 18 without the six; section 19.1 without the four and with an inadmissible-document row naming three kinds; "a configured amount of money per day and per month"; "stopping after a configured number of hours"; "the figures in section 17 are an upper bound rather than an estimate"; the lane table's seven rows; `| \`claim-admissibility\` | from 6.1 |`
+Now: the queue has a catalogue row and a matrix row landing ahead of the component; the theme runner reads the search tool; three research states and the queue's region are drawn rows with their own due points; both read lists name the store they draw; section 19.1 carries four expectation rows and an inadmissible row naming six documents; section 18 carries six new rows; the spend cap reads 10 a day and 50 a month, both marked proposed with the arithmetic between them; the queue's limit reads 1 hour until 6.10 measures a pass; figure 12.2's consequence is stated against the cap; the lane table assigns the industry cycle and the dated calendar items; and the roster row reads from 6.3.
+Why: a component in code with no row is refused in that direction, and the rows have to land before the component for the reason the change detector's did at 5.0. A state with no region is unexaminable, which is the fault the fifth phase 5 sign-off review found in a different place. And a limits row with no figure is a claim with nothing to pin.
+
+### 2026-09-12 - BUILD_PLAN.md - phase 6 resplit to eleven build checkpoints, and every claim it moves re-pointed
+Authorised by: A due point names a checkpoint that exists wherever its phase has been detailed
+Was:
+> ### 6.1 The fundamentals fetcher and the numbers section ... ### 6.9 Phase 6 report
+>
+> the eight build checkpoints and their done conditions, in which the filings archive sat inside the source store's checkpoint and the spend cap inside the research runner's, and in which the staleness judge sat seventh
+Now: 6.1 through 6.11, with the filings archive and the spend cap as checkpoints of their own and the staleness judge fifth; 6.0 carries the resplit's reason, the re-point map and list A per checkpoint; 5.8's heading moves above the rule that closes phase 5, where it belonged and did not sit.
+Why: the phase carries seven new components, four new stores and five new outward surfaces, and two of the eight checkpoints each carried a new provider, a new store and a new component at once. Condition 9 asks a checkpoint to name the property its mutation chose, and a checkpoint carrying three new things cannot say which of the three a survivor belongs to. The spend cap is split for a second reason: a gate built in the same commit as the thing it gates has no run in which the gate was absent.
+
+### 2026-09-12 - BUILD_PLAN.md - the transaction question closed by ruling that no check is written
+Authorised by: A transaction taken for speed is not asserted, and a scan that would need twelve exemptions is not written
+Was:
+> | **Every stage that writes in a loop opens a transaction, asserted rather than read** | 5.7 sign-off | 6.0 | open, with half of it done: ...
+Now: the same row reading "6.0, discharged", with the ruling in its evidence cell and the text it carried before kept after it.
+Why: the row asked 6.0 to decide whether a source scan over the loop shape earns its false positives, and it does not. All sixteen writers loop, so one keyed on the loop reports every one and one keyed on the transaction reports none, and the thing that separates a stage needing one is the row count it writes, which appears in no file's text. A scan reporting twelve findings that are not defects is made green by exempting twelve by name.
+
+### 2026-09-12 - ARCHITECTURE.html - the night's zero-model-call rule carved for the overnight queue
+Authorised by: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
+Was:
+> Every night, all 500 names, no model and no per-name network calls
+>
+> | Model calls in the nightly run | 0 (see: The nightly run is arithmetic only) | the whole design rests on the nightly half being free | run log |
+>
+> No model is called and no per-name network request is made, and a feed that answers in pages counts every page it fetched,
+Now: figure 5.1's band names the arithmetic, the limits row reads 0 in the arithmetic with step 17 carved out by name and its reason states why the carve keeps the rule true, and section 14's note scopes both clauses to steps 1 to 16 and names the carve.
+Why: section 14's own list runs to seventeen steps and step 17 calls the local model for every listed name whose research is missing or stale. Three places said no model is called and the fourth was the step, which is the shape 1.2 carved for the backfill rather than loosening a rule to fit its own exception.
+
+### 2026-09-12 - ARCHITECTURE.html, SCHEMA.md - admissibility placed where the fetch lands, and the pending state named as a status
+Corrects: the claim checker's catalogue row said it refuses to store a document that fails the admissibility test while its matrix row gives it a read of the sources column and no write, and the research runner had the write and no read, so the component that decided could not store the verdict and the component that stored was not the one deciding. In the same two rows the catalogue named a research store pending and a research store, which is two stores in a sentence against one column here, so the gate the matrix key argues for was the one property the matrix could not carry. Found at 6.0 reading the two tables against each other before the components exist.
+Was:
+> <td>facts, fundamentals, filings archive, news feed, theme store, research model</td><td>research store (pending), source documents</td><td>writes the narrative sections and keeps every document it read</td>
+>
+> <td>research store (pending), facts, source documents</td><td>research store</td><td>rejects a number absent from the facts file and a claim whose source is not stored, and refuses to store a document that fails the admissibility test; one retry, then the section is left out rather than guessed</td>
+>
+> Only the research components write research, and the claim checker sits between the runner and what is served.
+Now: the runner reads and writes the sources column and applies the test as it fetches; the checker reads the verdict and does not apply the test; both rows name the research store once; the matrix key states that the gate is the status on the row and the split of one table's operations between two owners; and SCHEMA's source-document section says who applies the test and notes that its own ownership row already said so.
+Why: the test is applied per document after the fetch, and the runners are what fetch. A pending section is a status the row already carries, so a second store column would be a second statement of one fact and the one that goes stale.
+
+### 2026-09-12 - ARCHITECTURE.html - three statements that had gone stale
+Corrects: section 6.3 called every component in the compute layer a pure function of stored data and counted eleven of them, against a catalogue carrying nineteen of which seven fetch; section 7's verification harness row listed the sections it reports on and the list was short by the figures, section 19 and section 20; and section 22 cited a decision by the first half of its name. None of the three is read by a check, which is why all three survived. Found at 6.0 reading the sections phase 6 builds against.
+Was:
+> Eleven components, all pure functions of stored data. Given the same bars they produce the same facts file byte for byte, which is what makes the fixture diff possible.
+>
+> PASS, FAIL or UNEXAMINED for every claim in sections 7, 14, 15, 16, 17 and 18
+>
+> See the decision named Theme material comes from a search tool, whose results are stored like any other document.
+Now: the layer is described as the stages that compute and the fetchers that feed them with the purity claim held to the first group and the count dropped, the harness row states what it covers by kind rather than by a list of section numbers, and the citation gives the whole name.
+Why: a count restated beside the list it enumerates is a second statement whose only job is to go stale, and this one had gone stale twice over. A purity claim that covers the fetchers is false about six components that shipped in phase 1.
+
+### 2026-09-12 - BUILD_PLAN.md - the local model and the lane's shape settled
+Authorised by: The local lane is a configured list of section names, and the prose writer writes whatever the list holds
+Was:
+> | Which local model, and the section-to-lane assignment | The lane split is configuration by decision, and nothing says what the configuration's shape is | 6.0 |
+Now: the same row, marked settled, naming the three decisions the hole took rather than one, and naming the short-version contradiction as closed by the second of them.
+Why: the hole was one question and the answers fail differently. A wrong model identifier is a setting, a lane decided section by section in code is a setting that is not one, and a provider chosen by a fallback is a section whose author cannot be read off the record.
+
+### 2026-09-12 - BUILD_PLAN.md - the research recording's format settled
+Authorised by: A research pass is recorded per section call, keyed on the canonicalised request
+Was:
+> | How a research pass is recorded for a fixture | A pass must be reproducible without a network, which needs a recorded endpoint with a defined record format | 6.0 |
+Now: the same row, marked settled, stating the record as a captured request and response pair per section call, keyed on a hash of the canonicalised request rather than on call order.
+Why: section 19.2 asked for a recording model endpoint and said nothing about its shape, and the shape is what decides whether a replay is a check or a transcript of the run that made it. A sequence-keyed recording passes on that one run and fails on every other.
+
 ### 2026-09-11 - CLAUDE.md, BUILD_PLAN.md - two readers widened, and the closure table's end given a reminder
 Corrects: `clock-usage` did not read a raw interpolated literal and passed a literal handed to `string.Format` with a provider, which formats the literal before the provider is seen; `price-storage-form` did not read a nullable cast or a `Convert` call, and one of the second shipped in no stated set; and the exchange closure table ends 2027-12-31 with nothing saying so before the first weekday past it. Found by the phase 5 sign-off reviewer.
 Was:

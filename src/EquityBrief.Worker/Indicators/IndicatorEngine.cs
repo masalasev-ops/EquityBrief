@@ -116,10 +116,20 @@ public sealed class IndicatorEngine : IComponent
 
         var rows = 0;
         var absent = 0;
+        var stop = new SeriesGapStop();
 
         foreach (var ticker in tickers)
         {
             var bars = await BarsAsync(connection, ticker, cancellation);
+
+            // A name whose stored series has an interior hole is computed
+            // for nothing and named on the run log. An average taken across
+            // a hole is an average over sessions that were never adjacent.
+            if (stop.Stops(ticker, [.. bars.Select(bar => bar.SessionDate)]))
+            {
+                continue;
+            }
+
             var points = IndicatorSeries.For(bars);
 
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
@@ -155,9 +165,9 @@ public sealed class IndicatorEngine : IComponent
             await BoundaryAsync(connection, cancellation),
             cancellation);
 
-        await RecordAsync(connection, runId, startedAt, tickers.Count, rows, absent, dropped, cancellation);
+        await RecordAsync(connection, runId, startedAt, tickers.Count - stop.Stopped, rows, absent, dropped, stop.Report(), cancellation);
 
-        return new IndicatorOutcome(tickers.Count, rows, absent, dropped);
+        return new IndicatorOutcome(tickers.Count - stop.Stopped, rows, absent, dropped);
     }
 
     async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, CancellationToken cancellation)
@@ -215,6 +225,7 @@ public sealed class IndicatorEngine : IComponent
         int rows,
         int absent,
         int dropped,
+        string gaps,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -241,7 +252,7 @@ public sealed class IndicatorEngine : IComponent
         // series that stopped arriving would show.
         command.Parameters.AddWithValue(
             "$detail",
-            $"{names} name(s), {rows} row(s), {absent} not available, {dropped} dropped");
+            $"{names} name(s), {rows} row(s), {absent} not available, {dropped} dropped{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

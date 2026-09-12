@@ -152,6 +152,16 @@ public sealed class NightClose : IComponent
     // see: A night on a day the exchange did not trade fetches nothing and exits clean
     public const string NoSession = "no session";
 
+    // A night refused before its first step, which is its own outcome and not a
+    // failed migration. It was recorded as a failure under the migrate stage
+    // until 6.0, so the run page's stale-and-failed region said a migration
+    // failed on an evening whose real fault was a fixture folder that does not
+    // exist or a key that is blank. The stage stays migrate, because a refusal
+    // happens before any step and section 14's list is what the stages are read
+    // against; what changes is the outcome, which is the column a person reads
+    // the kind of failure off.
+    public const string Refused = "refused";
+
     // What that row says, in one place so the night prints what the log holds.
     public static string NotASession(DateOnly day) =>
         day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " is a " +

@@ -604,8 +604,66 @@ public class ArchitectureConformance
         var checkpoints = PlanCheckpoints.All();
         var exceptions = Scope.DeclaredExceptions();
 
+        // The prefix-keyed map is excluded, and what makes it excludable is
+        // asserted rather than taken from the label: every key has to be a
+        // strict prefix of a step in section 14 and equal to none of them,
+        // which is what means the resolver never asks DueFor with the key. An
+        // exclusion that removed nothing, or one that grew to hold a real
+        // subject, fails here rather than narrowing the check quietly.
+        var document = Corpus.Read("docs/ARCHITECTURE.html");
+        var prefixKeyed = Scope.ResidualPrefixSubjects();
+        var steps = NightlyRunSteps.In(document);
+
+        Assert.True(
+            prefixKeyed.Count >= 10,
+            $"Read {prefixKeyed.Count} prefix-keyed residual subjects, expected at least 10.");
+
+        var notAPrefix = prefixKeyed
+            .Where(key => !steps.Any(step =>
+                step.StartsWith(key, StringComparison.Ordinal) && step.Length > key.Length))
+            .ToArray();
+
+        Assert.True(
+            notAPrefix.Length == 0,
+            "These are excluded from the shadow check as prefix keys and are not a strict prefix " +
+            "of any step in section 14, so the exclusion is covering a real subject: " +
+            string.Join("; ", notAPrefix));
+
+        // The second exclusion, and the same discipline. A fixture row's key is
+        // the name of a file, so every one has to be a row of section 19.1's
+        // own table. A key that is not a row there is a subject hiding in the
+        // exclusion, and the floor stops the exclusion emptying.
+        var fileNamed = Scope.ResidualFileNameSubjects();
+
+        var fixtureRows = ArchitectureTables.In(document)
+            .Where(table => table.Heading == Scope.FixtureTable)
+            .SelectMany(table => table.Body)
+            .Where(row => row.Count > 1 && row[0].Length > 0)
+            .Select(row => row[0])
+            .ToArray();
+
+        Assert.True(
+            fileNamed.Count >= 10,
+            $"Read {fileNamed.Count} file-named residual subjects, expected at least 10.");
+
+        Assert.True(
+            fixtureRows.Length >= 14,
+            $"Read {fixtureRows.Length} rows in {Scope.FixtureTable}, expected at least 14.");
+
+        var notAFixtureRow = fileNamed
+            .Where(key => !fixtureRows.Contains(key, StringComparer.Ordinal))
+            .ToArray();
+
+        Assert.True(
+            notAFixtureRow.Length == 0,
+            "These are excluded from the shadow check as fixture file names and are not a row of " +
+            Scope.FixtureTable + ", so the exclusion is covering a real subject: " +
+            string.Join("; ", notAFixtureRow));
+
         var shadowing = Scope.ResidualSubjects()
             .Where(subject => !exceptions.Contains(subject, StringComparer.Ordinal))
+            .Where(subject => !prefixKeyed.Contains(subject, StringComparer.Ordinal))
+            .Where(subject => !fileNamed.Contains(subject, StringComparer.Ordinal))
             .Where(subject => PlanCheckpoints.DueFor(subject, checkpoints) is not null)
             .Select(subject => $"{subject} (plan says {PlanCheckpoints.DueFor(subject, checkpoints)})")
             .ToArray();
@@ -817,7 +875,13 @@ public class ArchitectureConformance
 
         Assert.Equal(Scope.ScreensTables.Length, screensTables.Length);
 
-        // Stated in advance: seven tables, 37 rows, 47 claim subjects. The
+        // Stated in advance: seven tables, 41 rows, 104 claim subjects. It was
+        // 37 and 100 until 6.0, which added four rows for states section 15
+        // promised and gave no region: research not yet written, research stale
+        // and research paused on the name screen, each of which section 4's
+        // key, figure 12.1 and three section 18 rows all describe, and the
+        // overnight queue's region on the run page, which section 18 says
+        // states whether the queue ran and on which night. The
         // Level chart row decomposes into its four elements, and 5.0 decomposed
         // three more per surface, being the universe screen's sector strip and
         // table, whose listing halves cannot exist until 5.4 creates that
@@ -826,8 +890,8 @@ public class ArchitectureConformance
         // run page's stale-and-failed region into its four parts, two of them
         // phase 6's. A run finding none would otherwise pass both directions
         // over an empty set.
-        Assert.Equal(37, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
-        Assert.Equal(100, inDocument.Length);
+        Assert.Equal(41, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        Assert.Equal(104, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1187,7 +1251,7 @@ public class ArchitectureConformance
 
                 // A row nothing claims yet says nothing yet. Its parts are owed
                 // with it, at the point its own due point names.
-                if (!subjects.Any(subject => Scope.For(heading, subject).Verdict == Verdict.Pass))
+                if (!PartsAreOwedFor(subjects.Select(subject => Scope.For(heading, subject).Verdict)))
                 {
                     continue;
                 }
@@ -1673,5 +1737,34 @@ public class ArchitectureConformance
             .ToArray();
 
         Assert.DoesNotContain(named, check => !answerable.Contains(check, StringComparer.Ordinal));
+    }
+
+    // Whether a row's parts are owed a verdict yet, which is the question the
+    // sweep above asks of every row in section 15.
+    //
+    // Any subject rather than every one, and the difference is fourteen parts.
+    // A row whose subjects carry mixed verdicts, one drawn and one owed at a
+    // later checkpoint, is a row whose drawn half has parts on a page now. The
+    // phase 5 sign-off narrowed this to every subject and all 556 tests stayed
+    // green while the reader dropped from 71 enumerated parts to 57: the
+    // fourteen it stopped reading are the parts of the four rows whose subjects
+    // are mixed today. Named here, and asserted over constructed verdicts, so
+    // the rule is not left to a live population that happens to exercise it.
+    internal static bool PartsAreOwedFor(IEnumerable<Verdict> subjects) =>
+        subjects.Any(verdict => verdict == Verdict.Pass);
+
+    [Fact]
+    public void ARowIsVisitedWhereAnySubjectPassesAndNotWhereNoneDoes()
+    {
+        // The mixed cases are the ones narrowing the filter would lose, and they
+        // are asserted both ways round so the order of a row's subjects cannot
+        // decide the answer.
+        Assert.True(PartsAreOwedFor([Verdict.Pass]));
+        Assert.True(PartsAreOwedFor([Verdict.Pass, Verdict.OutOfScope]));
+        Assert.True(PartsAreOwedFor([Verdict.OutOfScope, Verdict.Pass]));
+
+        Assert.False(PartsAreOwedFor([Verdict.OutOfScope]));
+        Assert.False(PartsAreOwedFor([Verdict.OutOfScope, Verdict.OutOfScope]));
+        Assert.False(PartsAreOwedFor([]));
     }
 }
