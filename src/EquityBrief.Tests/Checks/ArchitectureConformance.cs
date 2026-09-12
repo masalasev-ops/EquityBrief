@@ -903,9 +903,16 @@ public class ArchitectureConformance
     // is outside what this reader reaches and is stated as its scope: the rows
     // that carry one are decomposed by hand, and `EveryDecomposedElementIsNamedByTheRowItDecomposes`
     // holds those parts to the row's own words in the other direction.
-    internal static IReadOnlyList<string> EnumeratedParts(string description)
+    internal static IReadOnlyList<string> EnumeratedParts(string description) =>
+        [.. ItemsIn(description).Where(item => !RationaleParts.Contains(item))];
+
+    // The run's items before the rationale set is taken out of them, which is
+    // what makes that set assertable in both directions: a stated exemption has
+    // to name something this reader actually picks up, and eight of the eleven
+    // named nothing until the sixth phase 5 sign-off review counted them.
+    internal static IReadOnlyList<string> ItemsIn(string description)
     {
-        var parts = new List<string>();
+        var items = new List<string>();
 
         foreach (Match run in Regex.Matches(description, @"(?:[^,.;:|]+,\s+){2,}(?:and\s+|or\s+)?[^,.;:|]+"))
         {
@@ -913,14 +920,60 @@ public class ArchitectureConformance
             {
                 var named = Regex.Replace(item, @"^(?:and|or|with|so|then|being)\s+", string.Empty).Trim();
 
-                if (named.Length > 0 && !RationaleParts.Contains(named))
+                if (named.Length > 0)
                 {
-                    parts.Add(named);
+                    items.Add(named);
                 }
             }
         }
 
-        return parts;
+        return items;
+    }
+
+    // Every item the reader picks up anywhere in section 15, which is the
+    // population a stated exemption has to be drawn from.
+    static IReadOnlyList<string> EveryItemInSectionFifteen()
+    {
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+
+        return
+        [
+            .. Scope.ScreensTables
+                .SelectMany(heading => Assert.Single(tables, candidate => candidate.Heading == heading).Body)
+                .Where(row => row.Count > 1)
+                .SelectMany(row => ItemsIn(row[1])),
+        ];
+    }
+
+    [Fact]
+    public void EveryStatedRationaleItemIsOneTheReaderActuallyPicksUp()
+    {
+        // The exemption set stated in both directions, which is the discipline
+        // `price-storage-form` applies to its cast sites and which this set did
+        // not have. Eight of its eleven entries named nothing the reader
+        // produces, and four of those carried a vertical bar, which the item
+        // class excludes, so they could not have matched any item at all. A
+        // stated set whose entries never fire is a set that looks argued and
+        // exempts nothing, and the next clause it would wrongly exempt is
+        // invisible until it arrives.
+        //
+        // The other direction, that every item this set holds is reasoning
+        // rather than a part, is the argument beside each entry and is not
+        // assertable. What is assertable is that each one is real.
+        var items = EveryItemInSectionFifteen();
+
+        Assert.NotEmpty(items);
+
+        var dead = RationaleParts
+            .Where(stated => !items.Contains(stated, StringComparer.OrdinalIgnoreCase))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            dead.Length == 0,
+            "These rationale exemptions name nothing the reader picks up, so they exempt nothing: " +
+            string.Join("; ", dead) +
+            ". An exemption is stated for an item the reader produces, or it is not stated at all.");
     }
 
     // The items a run picks up that are a row's reasoning rather than a part of
@@ -929,6 +982,15 @@ public class ArchitectureConformance
     // that says what is drawn from one that says why: each of these is a
     // subordinate clause of the sentence before it, and none of them is a thing
     // a page can be asked to show.
+    // Three, and they were eleven until the sixth phase 5 sign-off review counted
+    // which of them fire. Eight named nothing this reader picks up: four carried
+    // a vertical bar, which the item class excludes, so they could not have
+    // matched any item at all, and the other four were phrases from cells whose
+    // runs the reader does not reach. A stated set whose entries never fire
+    // looks argued and exempts nothing, and the clause it would wrongly exempt
+    // is invisible until it arrives.
+    // `EveryStatedRationaleItemIsOneTheReaderActuallyPicksUp` holds the set to
+    // what the document produces from now on.
     static readonly HashSet<string> RationaleParts = new(StringComparer.OrdinalIgnoreCase)
     {
         // 15.8's table: why the sort order is what it is.
@@ -941,20 +1003,172 @@ public class ArchitectureConformance
         // 15.10's harness: how the three counts are drawn, which the counts
         // themselves carry.
         "each separately",
-
-        // 15.11's two rows, whose second cell is the argument for the first.
-        "always the three together | a share without its denominator hides how much was checked",
-        "a share without the break-even hides whether it was any good",
-        "since a setup with a distant target needs to be right rarely and one with a near target needs to be right often",
-        "no rate | a rate over a handful of resolved setups is consistent with almost any truth",
-        "a pale number would read as a small one rather than as an absent one",
-
-        // 15.4's second cell, which says which surface writes what rather than
-        // naming a part of the app.
-        "filters and selection | the server writes the shell and the marks",
-        "as a flat file to hand to someone | the same marks",
-        "rendered without the router and with every disclosure open",
     };
+
+    // The items a row states as one phrase and the elements that decompose them,
+    // stated rather than matched.
+    //
+    // The sixth phase 5 sign-off review's second blocking finding. The matcher
+    // asked whether a subject contained the part or the part contained the
+    // subject's tail, so any new clause whose wording happens to contain an
+    // existing element was absorbed by it and passed with no verdict and no
+    // complaint. "the day change arrow" added to 15.7's list row went green
+    // against the element "day change". The check was not a tautology, but the
+    // property it states held only for clauses that avoid the vocabulary already
+    // there, and the whole phase 5 sign-off rests on that property.
+    //
+    // A part is covered now where an element equals it, and otherwise only where
+    // this map says which elements decompose it. Six entries, each because the
+    // document states in one phrase what the row is decomposed into more finely:
+    // a hand decomposition is allowed and is written down, and a clause nobody
+    // has decomposed is uncovered rather than absorbed.
+    static readonly Dictionary<string, string[]> PartDecompositions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // 15.4's app row ends "filters and selection", which is two of the four
+        // things the row names and one item to a reader that splits on commas.
+        ["filters and selection"] = ["filters", "selection"],
+
+        // 15.5's level chart names four marks in three phrases: the first
+        // carries the candles and the bands it shades behind them, and the other
+        // two are one element each with the phrase's qualifying tail.
+        ["Daily candles with the level bands shaded behind them"] = ["candles", "the level bands"],
+        ["the moving averages drawn"] = ["the moving averages"],
+        ["a volume pane beneath on a shared time axis"] = ["a volume pane"],
+
+        // 15.10's stale-and-failed row states two of its four parts with what
+        // each carries beside it, which is the part and its own detail rather
+        // than two parts.
+        ["the stage a night stopped on with its outcome and the reason"] = ["the stage a night stopped on"],
+        ["documents refused by admissibility with the category that refused each"] = ["documents refused by admissibility"],
+    };
+
+    // Whether a row's elements cover one of its stated parts.
+    //
+    // Equality, or a stated decomposition naming elements the row has. Never
+    // containment in either direction, which is what let a new clause be
+    // absorbed by an element whose wording it happens to hold.
+    internal static bool Covers(IReadOnlyList<string> elements, string part) =>
+        elements.Any(element => element.Equals(part, StringComparison.OrdinalIgnoreCase))
+        || (PartDecompositions.TryGetValue(part, out var named)
+            && named.All(element => elements.Any(held => held.Equals(element, StringComparison.OrdinalIgnoreCase))));
+
+    [Fact]
+    public void ADuePointInsideADetailedPhaseNamesACheckpointThatExists()
+    {
+        // The ruling the sixth phase 5 sign-off review handed down, asserted
+        // both ways. The reader accepted the phase alone for every due point, so
+        // "5.8" was in the plan before 5.8 was written and an obligation could be
+        // owed at a checkpoint nobody had created.
+        // see: A due point names a checkpoint that exists wherever its phase has been detailed
+        //
+        // Over constructed plan text, because the property is about a phase with
+        // detail and a phase without one, and the real plan holds only the first
+        // kind today. The phases here are not this project's.
+        const string plan =
+            "## Phase 6: research\n### 6.0 Planning\n### 6.1 The fetcher\n## Phase 9: later\n";
+
+        Assert.True(DuePoints.InThePlan("6.1", plan));
+        Assert.False(DuePoints.InThePlan("6.4", plan));
+
+        // A phase with no checkpoints written takes its points on the phase
+        // alone, which is the case CLAUDE.md argues for: a later phase gets its
+        // detail at the previous phase's sign-off, and a roster row has to be
+        // able to name a check that starts there.
+        Assert.True(DuePoints.InThePlan("9.2", plan));
+        Assert.True(DuePoints.InThePlan("phase 9", plan));
+
+        // A phase the plan does not have at all is in it under neither reading.
+        Assert.False(DuePoints.InThePlan("4.1", plan));
+
+        // And against the plan this repository actually carries: every phase
+        // through 7 is detailed, so a checkpoint nobody has written is refused
+        // where before it passed on its phase.
+        var carried = Corpus.Read("docs/BUILD_PLAN.md");
+
+        Assert.True(DuePoints.InThePlan("6.1", carried));
+        Assert.False(DuePoints.InThePlan("5.9", carried));
+        Assert.False(DuePoints.InThePlan("6.99", carried));
+    }
+
+    [Fact]
+    public void AClauseIsNotCoveredByAnElementWhoseWordingItMerelyContains()
+    {
+        // The permanent proof of the sixth phase 5 sign-off review's second
+        // blocking finding, over constructed text rather than the document,
+        // because the demonstration that found it was a clause added to
+        // ARCHITECTURE by hand and reverted.
+        //
+        // The matcher asked whether a subject contained the part or the part
+        // contained the subject's tail. Under it, every assertion below except
+        // the first two passes, and a new clause enters section 15 with no
+        // verdict, no complaint and a green run.
+        string[] elements = ["name", "close", "day change", "the reasons"];
+
+        Assert.True(Covers(elements, "day change"));
+        Assert.True(Covers(elements, "the reasons"));
+
+        // The clause the review added to 15.7's list row. It holds an element's
+        // whole wording and is not that element.
+        Assert.False(Covers(elements, "the day change arrow"));
+
+        // And the other direction, which the old matcher also accepted: a part
+        // an element contains is not that element either.
+        Assert.False(Covers(elements, "day"));
+        Assert.False(Covers(elements, "reasons"));
+
+        // A clause sharing no wording was refused before and still is, which is
+        // the case that made the check look like it worked.
+        Assert.False(Covers(elements, "a short interest badge"));
+
+        // A stated decomposition covers its phrase, and only where the row holds
+        // every element that decomposition names. A map entry cannot licence a
+        // part on a row that does not carry the elements behind it.
+        Assert.True(Covers(["filters", "selection"], "filters and selection"));
+        Assert.False(Covers(["filters"], "filters and selection"));
+        Assert.False(Covers(["selection"], "filters and selection"));
+    }
+
+    [Fact]
+    public void EveryStatedPartDecompositionNamesAPhraseTheDocumentStates()
+    {
+        // The decomposition map in the direction that can go stale. An entry
+        // keyed on a phrase the document no longer holds licences nothing and
+        // reads as though it does, which is the shape the rationale set was in
+        // when this review counted it.
+        //
+        // The other direction, that each entry's elements are the right
+        // decomposition of its phrase, is the argument written beside it and is
+        // not assertable. What is assertable is that the phrase is real.
+        var items = EveryItemInSectionFifteen();
+
+        Assert.NotEmpty(items);
+
+        var stale = PartDecompositions.Keys
+            .Where(phrase => !items.Contains(phrase, StringComparer.OrdinalIgnoreCase))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            stale.Length == 0,
+            "These stated decompositions name a phrase no section 15 row states: " +
+            string.Join("; ", stale) +
+            ". A decomposition is stated for a phrase the document holds, or it is not stated at all.");
+
+        // And every element a decomposition names is one some row is decomposed
+        // into, so an entry cannot invent an element to cover a phrase with.
+        var elements = Scope.DecomposedRows().SelectMany(Scope.ElementsOf).ToArray();
+
+        var invented = PartDecompositions.Values
+            .SelectMany(named => named)
+            .Where(element => !elements.Contains(element, StringComparer.OrdinalIgnoreCase))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(
+            invented.Length == 0,
+            "These stated decompositions name an element no row is decomposed into: " +
+            string.Join("; ", invented) + ".");
+    }
 
     [Fact]
     public void EveryPartASectionFifteenRowEnumeratesHasItsOwnVerdict()
@@ -982,8 +1196,7 @@ public class ArchitectureConformance
                 {
                     checkedParts++;
 
-                    if (!subjects.Any(subject => subject.Contains(part, StringComparison.OrdinalIgnoreCase)
-                        || part.Contains(subject[(subject.IndexOf(',') + 1)..].Trim(), StringComparison.OrdinalIgnoreCase)))
+                    if (!Covers([.. subjects.Select(subject => subject[(subject.IndexOf(',') + 1)..].Trim())], part))
                     {
                         uncovered.Add($"{heading} | {row[0]}: {part}");
                     }

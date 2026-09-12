@@ -41,9 +41,27 @@ internal static class DuePoints
     internal static string PhaseOf(string due) =>
         NamesAPhase(due) ? due[PhasePrefix.Length..].Trim() : due.Split('.')[0];
 
+    // Whether the plan has the point a due point names.
+    //
+    // The checkpoint by name where the phase has been detailed, and the phase
+    // alone where it has not. The fallback exists because a later phase gets its
+    // checkpoints only at the previous phase's sign-off, so requiring a
+    // checkpoint by name would forbid the roster from naming anything past the
+    // phase in hand, which is the case `CLAUDE.md` argues for. It applied to
+    // every due point until the sixth phase 5 sign-off review, so "5.8" was in
+    // the plan before 5.8 was written and an obligation could be owed at a
+    // checkpoint nobody had created.
+    // see: A due point names a checkpoint that exists wherever its phase has been detailed
     internal static bool InThePlan(string due, string plan) =>
         plan.Contains($"### {due} ", StringComparison.Ordinal)
-        || plan.Contains($"## Phase {PhaseOf(due)}", StringComparison.Ordinal);
+        || (!Detailed(PhaseOf(due), plan)
+            && plan.Contains($"## Phase {PhaseOf(due)}", StringComparison.Ordinal));
+
+    // Whether a phase carries checkpoint detail: any heading of its own inside
+    // it. Read from the plan rather than from a list of phases kept beside this,
+    // which would be a second statement of the same fact.
+    static bool Detailed(string phase, string plan) =>
+        plan.Contains($"\n### {phase}.", StringComparison.Ordinal);
 
     // The checkpoints PROGRESS records as built, read from its entries rather
     // than matched against its text.

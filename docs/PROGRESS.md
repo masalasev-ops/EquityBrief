@@ -7232,3 +7232,61 @@ Notes:      `stated-counts` exempts record entries as dated measurements, which 
             a figure in a record is checked by a reader and by nothing else. The figure this
             checkpoint turns on, that no out-of-scope claim names a checkpoint inside phase 5, is
             unaffected and the review reproduced it.
+### 5.7 - correction: the part matcher absorbed a clause that shared an element's wording   2026-09-12
+Corrects:   the 5.7 entry above records a row's parts coming from the row, with every part of a
+            passing row held to have a verdict of its own. The matcher that decided whether a part
+            had one asked whether a subject contained the part or the part contained the subject's
+            tail, so a clause whose wording held an existing element's was absorbed by it.
+Found:      by the sixth phase 5 sign-off review, which added a clause to 15.7's list row and ran the
+            check. "the day change arrow" went green, with no verdict and no complaint, against the
+            element "day change"; "a short interest badge" went red and named itself. The check was
+            not a tautology, and the property it states held only for clauses that avoid the
+            vocabulary already in the row. That is the 5.7 finding one level down, in the only
+            instrument that reaches section 15 part coverage, and the phase 5 sign-off rests on it.
+Repaired:   a part is covered where an element equals it, and otherwise only where a stated map says
+            which elements decompose it. Six entries, each because the document states in one phrase
+            what the row is decomposed into more finely: 15.4's app row ends "filters and selection",
+            15.5's level chart names four marks in three phrases, and two of 15.10's stale-and-failed
+            parts are stated with what each carries beside them. A hand decomposition is allowed and
+            is written down; a clause nobody has decomposed is uncovered rather than absorbed. The map
+            is held to phrases the document states and to elements some row is decomposed into, in
+            both directions, because an entry keyed on a phrase that is gone licences nothing and
+            reads as though it does.
+Also:       the rationale exemption set was eleven and three of them fired. Four carried a vertical
+            bar, which the item class excludes, so they could not have matched any item at all, and
+            four more named phrases from cells whose runs the reader does not reach. The eight are
+            gone and the set is now asserted against what the reader produces over section 15, which
+            is the discipline `price-storage-form` applies to its cast sites and which this set did
+            not have. The review found this at the fifth attempt and again at the sixth; it stood
+            because a stated set that exempts nothing looks exactly like one that exempts something.
+Ruling:     a due point inside a phase that already carries checkpoint detail must name a checkpoint
+            that exists, and the phase-alone fallback stays only for a phase whose detail has not been
+            written, which is the case `CLAUDE.md` argues for. Issued by the sixth review, and landed
+            here rather than left in the reply, because a ruling that lives only in a transcript is
+            the hole the corpus rule about issuing in conversation exists to close: the same ruling
+            was issued at the fifth review and evaporated. Detail is read from the plan itself rather
+            than from a list kept beside the reader.
+            (see: A due point names a checkpoint that exists wherever its phase has been detailed)
+Guarded:    three permanent proofs over constructed text, because the demonstration that found the
+            first was a clause added to ARCHITECTURE by hand and reverted. A clause holding an
+            element's whole wording is not covered by it, nor is a part that element contains, and a
+            stated decomposition covers only where the row holds every element it names. Every stated
+            exemption is one the reader picks up. A due point inside a detailed phase names a
+            checkpoint that exists, with a phase carrying no detail still taking its points on the
+            phase alone.
+Mutated:    the rule, stated before the sweep: reinstate the finding and each guard the repair rests
+            on. Four mutations, four runs, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed. The absorbing matcher reinstated; the
+            review's own clause added to 15.7's list row; a dead exemption put back in the stated set;
+            and the phase fallback reinstated for every due point. Each turned exactly its own guard
+            red, and the second named the clause the review had watched pass. None of the properties
+            added went unmutated.
+Tests:      556, from 552. Four added here, over a tree that already carried the day change
+            correction above: this branch alone read 554 from 550, and the figure recorded is the
+            merged tree's, which is the one that lands. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 298 claims, 221 PASS, 0 FAIL, 77 out of
+            scope, 0 unexamined, 228 placements reconciled. No claim moved: the repair is to which
+            parts the reader holds a row to rather than to what any row claims. The out-of-scope 77
+            are 61 at phase 6 and 16 at phase 7, which is the figure the entry below the 5.8 one
+            corrects. Windows on this machine; the matrix carries macOS and the Linux
+            case-sensitivity job.
