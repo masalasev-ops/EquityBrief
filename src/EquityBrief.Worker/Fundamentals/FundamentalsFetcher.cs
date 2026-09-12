@@ -307,6 +307,10 @@ public sealed class FundamentalsFetcher : IComponent
                 trailingPe = Money(fetched.Valuation.TrailingPe),
                 forwardPe = Money(fetched.Valuation.ForwardPe),
             } : null,
+            // What the market says the company is worth, which section 15.9's fact
+            // strip states beside the close. As of the fetch for the reason the
+            // ratios are, so it sits on the newest filing's row with them.
+            marketCapitalisation = newest ? Money(fetched.Market.Capitalisation) : null,
             // The next print as the provider has it, and named for what it is: an
             // analysts' estimate. Section 4 places the guided quarter at the
             // earnings release exhibit, which is management stating what it
@@ -348,7 +352,7 @@ public sealed class FundamentalsFetcher : IComponent
     public static readonly string[] Parts =
     [
         "quarter", "margin", "balanceSheet", "earnings", "epsBases", "valuation",
-        "estimated", "segments", "guidance",
+        "marketCapitalisation", "estimated", "segments", "guidance",
     ];
 
     public const string Margin = "margin";

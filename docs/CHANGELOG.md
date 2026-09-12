@@ -25,6 +25,13 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-12 - ARCHITECTURE.html - the stored filings expectation, and the fact strip owed whole
+Authorised by: Twelve filings are stored and five are shown
+Was:
+> the expected outputs of section 19.1 without a row for the filings one fetch stores
+Now: a row reading "stored filings | the twelve filings one fetch stores of the fourteen a capture holds, which parts sit on the newest filing alone, and which the provider files for nobody | the ruling that twelve filings are stored and five are shown, with the margin divided by the test rather than stated in the file"
+Why: the table already carried a `fundamentals` row and that row is an input, being the captured payload. The expectation is an expected output and needed a row of its own rather than a second row under one name, because a reader keyed on a row's name answers about both. An expectation the corpus does not list is the fault 5.6 left and the phase 5 sign-off found.
+
 ### 2026-09-12 - ARCHITECTURE.html, SCHEMA.md, BUILD_PLAN.md - the fundamentals store, its window, and the two rows that named it
 Authorised by: Twelve filings are stored and five are shown
 Was:

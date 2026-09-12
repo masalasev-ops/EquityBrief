@@ -244,6 +244,34 @@ internal static class Scope
             Verdict.Pass,
             "the evening a name was last listed is drawn, and a name never listed says never",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Fact strip, close")] = new Scoped(
+            Verdict.Pass,
+            "the last stored close, read back off the strip's own attribute against the bar the store holds",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Fact strip, market capitalisation")] = new Scoped(
+            Verdict.Pass,
+            "the figure the provider files for the whole company, stored on the newest filing's row because a price moves every session, and stated as not on file for a name holding none",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Fact strip, the high and low of the move")] = new Scoped(
+            Verdict.Pass,
+            "the high and the low of the sessions the largest move spans, read as an aggregate over exactly those stored bars rather than over the calendar days between them",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Fact strip, next earnings date")] = new Scoped(
+            Verdict.Pass,
+            "the next dated event the calendar holds on or after the last stored session, which says the date is not on file rather than drawing a blank",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Fact strip, the multiples")] = new Scoped(
+            Verdict.Pass,
+            "the trailing and forward multiples, each drawn beside the earnings basis it was struck on, and each copied from the provider rather than computed from a close this payload does not carry",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Fact strip, the averages")] = new Scoped(
+            Verdict.Pass,
+            "the three moving averages the indicator engine wrote for the last stored session, each as its own attribute, with a reading the window was too short for stated as none rather than as a zero",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Fact strip, momentum and the typical daily move")] = new Scoped(
+            Verdict.Pass,
+            "the four momentum readings and the typical daily move, on the same terms as the averages",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture")] = new Scoped(
             Verdict.Pass,
             "the level chart mark over the year to the newest stored session, drawn above the table of moves and with no bands",
@@ -805,6 +833,29 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included, against the row contradiction E repaired at 4.0",
             ByAccess),
+        // 6.1, the fundamentals. The store's own row, the fetcher's catalogue row
+        // and its matrix row, which are the three places one component is declared
+        // and which the reconciliation reads against each other.
+        [CheckReach.Key(StoresTable, "Fundamentals")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and the store is asserted to be one the file describes",
+            ByMigration),
+        [CheckReach.Key(CatalogueTable, "Fundamentals fetcher")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the feed and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Fundamentals fetcher")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(FailureTable, "Filing not yet parsed for a name")] = new Scoped(
+            Verdict.Pass,
+            "the numbers section is drawn over a store the fetcher filled and read back off its own markup: the segment table and the guidance are marked absent for every name, since this provider files neither, and no cell anywhere in the section is drawn empty",
+            ByReadSurface),
+        [CheckReach.Key("Figure 12.1", "Computed sections appear")] = new Scoped(
+            Verdict.Pass,
+            "the name route serves the computed sections from the nightly store for a name holding no filing at all, and the numbers section says so rather than delaying the page or drawing an empty table",
+            ByReadSurface),
         [CheckReach.Key(StoresTable, "Calendar")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, including the timing column that replaced the status 4.0 invented",
@@ -821,6 +872,18 @@ internal static class Scope
             Verdict.Pass,
             "the night runs it after the corporate actions and before the per-name work, and the feed's own count is one for the window whatever the universe size",
             ByNight),
+        // 6.1, the fundamentals. Two rows, because the captured payload is an
+        // input and the twelve filings one fetch keeps of the fourteen it holds
+        // are an expected output, and one test reads the capture against the
+        // store, which is what reaches both.
+        [CheckReach.Key(FixtureTable, "fundamentals")] = new Scoped(
+            Verdict.Pass,
+            "the four captured payloads are parsed and the store is diffed against what the rules produce over them: the filing date read as the filing date rather than the period it covers, the quarter the provider files no filing date for counted and not stored, and money taken from both of the two forms one payload sends it in",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "stored filings")] = new Scoped(
+            Verdict.Pass,
+            "twelve of the fourteen filings each capture holds, asserted to be the twelve most recent by filing date, with the margin divided by the test rather than read from the expectation and the three as-of-the-fetch parts asserted to sit on the newest filing alone",
+            ByExpectations),
         [CheckReach.Key(FixtureTable, "calendar")] = new Scoped(
             Verdict.Pass,
             "the captured response is diffed against what the rules produce over it, read off the file by hand before the fetcher was run: three events inside the window, two stored, and one refused for a name the index does not hold",
@@ -1186,6 +1249,16 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "The table, the distance row mark")] = "5.1",
         [CheckReach.Key("15.8 Universe", "The table, sessions until earnings")] = "5.8",
         [CheckReach.Key("15.8 Universe", "The table, the evening last on the list")] = "5.4",
+        // The fact strip, whole at 6.1. Five of its seven parts existed from
+        // phase 3 and two did not, and the row is one claim per part rather than
+        // one for the row, so the five could not pass while the two were absent.
+        [CheckReach.Key("15.9 Name", "Fact strip, close")] = "6.1",
+        [CheckReach.Key("15.9 Name", "Fact strip, market capitalisation")] = "6.1",
+        [CheckReach.Key("15.9 Name", "Fact strip, the high and low of the move")] = "6.1",
+        [CheckReach.Key("15.9 Name", "Fact strip, next earnings date")] = "6.1",
+        [CheckReach.Key("15.9 Name", "Fact strip, the multiples")] = "6.1",
+        [CheckReach.Key("15.9 Name", "Fact strip, the averages")] = "6.1",
+        [CheckReach.Key("15.9 Name", "Fact strip, momentum and the typical daily move")] = "6.1",
         [CheckReach.Key("15.9 Name", "The chart, the level chart")] = "4.1",
         [CheckReach.Key("15.9 Name", "The chart, the volume profile beside it on the same price axis")] = "3.3",
         [CheckReach.Key("15.9 Name", "The chart, the momentum panel beneath")] = "3.5",
@@ -1240,7 +1313,6 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "Filters")] = "5.1",
 
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",
-        [CheckReach.Key("15.9 Name", "Fact strip")] = "6.1",
         [CheckReach.Key("15.9 Name", "The short version")] = "6.8",
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.8",
         [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
@@ -1310,6 +1382,8 @@ internal static class Scope
             ["one line per sector", "how many are on tonight's list", "names", "how many are in an uptrend"],
         [CheckReach.Key("15.8 Universe", "The table")] =
             ["every name in the index", "the listing strip over sixty sessions", "sorted by distance to the nearest level ascending", "paged", "name", "sector", "close", "trend state", "the distance row mark", "sessions until earnings", "the evening last on the list"],
+        [CheckReach.Key("15.9 Name", "Fact strip")] =
+            ["close", "market capitalisation", "the high and low of the move", "next earnings date", "the multiples", "the averages", "momentum and the typical daily move"],
         [CheckReach.Key("15.9 Name", "The chart")] =
             ["the level chart", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates"],
         [CheckReach.Key("15.9 Name", "The plan")] =
@@ -1456,7 +1530,6 @@ internal static class Scope
     // replaced, and it had the same defect as reading a failure row whole.
     static readonly Dictionary<string, string> FixtureRows = new(StringComparer.Ordinal)
     {
-        ["fundamentals"] = "6.1",
         ["a poisoned paragraph"] = "6.4",
         ["an unsourced claim"] = "6.4",
         ["an inadmissible document"] = "6.3",
@@ -1598,7 +1671,6 @@ internal static class Scope
     // with a verdict belongs.
     static readonly Dictionary<string, string> Figures = new(StringComparer.Ordinal)
     {
-        [CheckReach.Key("Figure 12.1", "Computed sections appear")] = "6.1",
         [CheckReach.Key("Figure 12.1", "Is there a research record?")] = "6.5",
         [CheckReach.Key("Figure 12.1", "Does it still stand?")] = "6.5",
         [CheckReach.Key("Figure 12.1", "All four no")] = "6.5",

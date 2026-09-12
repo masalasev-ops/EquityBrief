@@ -17,6 +17,7 @@ using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Calendar;
+using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Bars;
@@ -57,6 +58,23 @@ public class ReadSurface
             // The nine parts 5.8 draws, and the tenth claim the selection makes
             // on the app's own row. Each is asserted off the markup rather than
             // off the model behind it, which is what the checkpoint owed.
+            // 6.1, the two claims the numbers section carries: section 18's row
+            // for a filing not parsed, which is the absence marked rather than
+            // drawn blank, and figure 12.1's first box, which is the computed
+            // sections rendering whatever the fundamentals say.
+            CheckReach.Key(Scope.FailureTable, "Filing not yet parsed for a name"),
+            CheckReach.Key("Figure 12.1", "Computed sections appear"),
+
+            // 6.1, section 15.9's fact strip, decomposed into the seven parts
+            // its row enumerates. Two of the seven are fundamentals, which is
+            // why the whole strip is owed here and not at a phase 3 checkpoint.
+            CheckReach.Key("15.9 Name", "Fact strip, close"),
+            CheckReach.Key("15.9 Name", "Fact strip, market capitalisation"),
+            CheckReach.Key("15.9 Name", "Fact strip, the high and low of the move"),
+            CheckReach.Key("15.9 Name", "Fact strip, next earnings date"),
+            CheckReach.Key("15.9 Name", "Fact strip, the multiples"),
+            CheckReach.Key("15.9 Name", "Fact strip, the averages"),
+            CheckReach.Key("15.9 Name", "Fact strip, momentum and the typical daily move"),
             CheckReach.Key("15.4 The two surfaces", "The app, selection"),
             CheckReach.Key("15.7 Tonight", "Night header, the harness verdict"),
             CheckReach.Key("15.7 Tonight", "The list, day change"),
@@ -1246,6 +1264,8 @@ public class ReadSurface
             await api.LadderAsync(listed.Ticker),
             await api.NextEventAsync(listed.Ticker, DateOnly.MinValue),
             await api.MovesAsync(listed.Ticker),
+            await api.FundamentalsAsync(listed.Ticker),
+            await api.MoveExtremesAsync(listed.Ticker),
             listed,
             "PREV",
             "NEXT");
@@ -3812,5 +3832,322 @@ public class ReadSurface
 
         // The row written last, whose instant is the earlier of the two.
         Assert.Equal(new DateOnly(2026, 8, 31), night);
+    }
+
+    // The numbers section, 6.1's visible output.
+    //
+    // A store the fetcher filled rather than rows this test wrote, because what is
+    // being asserted is that the figures on the page are the figures in the store,
+    // and a test that wrote both would be comparing itself with itself.
+    static async Task<TemporaryStore> WithFundamentals()
+    {
+        var store = await WithLadders();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new FundamentalsFetcher(
+            RecordedFundamentalsFeed.FromFolder(FixtureFolder()),
+            clock,
+            store.DatabaseFile).RunAsync(Name, null, "run-fundamentals");
+
+        return store;
+    }
+
+    static string StoredPayload(TemporaryStore store, string ticker)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT payload FROM fundamentals WHERE ticker = $ticker ORDER BY filing_date DESC LIMIT 1;";
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        return (string)command.ExecuteScalar()!;
+    }
+
+    [Fact]
+    public async Task TheNumbersSectionDrawsTheStoredFiguresAndReadsBackAgainstTheStore()
+    {
+        using var store = await WithFundamentals();
+
+        var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
+
+        using var payload = JsonDocument.Parse(StoredPayload(store, Name));
+
+        var quarter = payload.RootElement.GetProperty("quarter");
+
+        // Read off the markup against the store, figure by figure, rather than
+        // against the object the section was handed. Each figure sits on its own
+        // attribute, so a section drawing the right count of wrong numbers fails.
+        foreach (var name in new[] { "revenue", "netIncome", "grossMargin", "netMargin" })
+        {
+            Assert.Contains(
+                $"data-{name}=\"{quarter.GetProperty(name).GetString()}\"",
+                region,
+                StringComparison.Ordinal);
+        }
+
+        var sheet = payload.RootElement.GetProperty("balanceSheet");
+
+        foreach (var name in new[] { "totalAssets", "totalLiabilities", "equity", "cash", "netDebt" })
+        {
+            Assert.Contains(
+                $"data-{name}=\"{sheet.GetProperty(name).GetString()}\"",
+                region,
+                StringComparison.Ordinal);
+        }
+
+        // The valuation on each earnings basis, with the basis drawn beside the
+        // ratio: a multiple without the earnings figure it was struck on is a
+        // number nobody can check.
+        var valuation = payload.RootElement.GetProperty("valuation");
+        var bases = payload.RootElement.GetProperty("epsBases");
+
+        Assert.Contains($"data-trailingPe=\"{valuation.GetProperty("trailingPe").GetString()}\"", region, StringComparison.Ordinal);
+        Assert.Contains($"data-forwardPe=\"{valuation.GetProperty("forwardPe").GetString()}\"", region, StringComparison.Ordinal);
+        Assert.Contains($"data-trailing=\"{bases.GetProperty("trailing").GetString()}\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-basis=\"trailing\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-basis=\"forward\"", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheSectionShowsFiveQuartersWhileTheStoreHoldsTwelve()
+    {
+        using var store = await WithFundamentals();
+
+        var filings = await Api(store).FundamentalsAsync(Name);
+        var region = NameScreen.Numbers(filings);
+
+        // The read surface hands back every filing, because which of them a
+        // section shows is the section's statement rather than the surface's.
+        Assert.Equal(FundamentalsFetcher.StoredFilings, filings.Count);
+
+        Assert.Contains($"data-filings-held=\"{FundamentalsFetcher.StoredFilings}\"", region, StringComparison.Ordinal);
+        Assert.Contains($"data-quarters-shown=\"{NameScreen.QuartersShown}\"", region, StringComparison.Ordinal);
+
+        // Five rows drawn, and they are the five most recent. A section drawing all
+        // twelve would still hold every figure this test's sibling asserts.
+        var drawn = Regex.Matches(region, "data-period-end=\"[0-9-]+\"").Count;
+
+        Assert.Equal(NameScreen.QuartersShown, drawn);
+
+        foreach (var filing in filings.Take(NameScreen.QuartersShown))
+        {
+            Assert.Contains(FormattableString.Invariant($"data-filed=\"{filing.FilingDate:yyyy-MM-dd}\""), region, StringComparison.Ordinal);
+        }
+
+        // And the sixth is not drawn, which is what makes the count a selection.
+        Assert.DoesNotContain(
+            FormattableString.Invariant($"data-filed=\"{filings[NameScreen.QuartersShown].FilingDate:yyyy-MM-dd}\""),
+            region,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task WhatTheProviderDoesNotFileIsMarkedAbsentAndNeverDrawnBlank()
+    {
+        using var store = await WithFundamentals();
+
+        var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
+
+        // Section 18's row: a filing not parsed for a name shows what the provider
+        // has and marks the segment table absent, because a blank cell reads as a
+        // zero. The endpoint files no segment table and no management guidance for
+        // any name, so both are stated for every one.
+        Assert.Contains("data-absent=\"segments\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-absent=\"guidance\"", region, StringComparison.Ordinal);
+
+        // And the consensus estimate standing where the guided quarter would be is
+        // named for what it is rather than presented as a guide.
+        Assert.Contains("consensus estimate", region, StringComparison.Ordinal);
+        Assert.Contains("data-estimated-quarter=", region, StringComparison.Ordinal);
+
+        // No empty cell anywhere in the section, which is the property rather than
+        // the two absences above: a figure the filing does not carry says so.
+        Assert.DoesNotContain("<td></td>", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ANameWithNoStoredFilingSaysSoRatherThanDrawingAnEmptyTable()
+    {
+        using var store = await WithLadders();
+
+        var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
+
+        Assert.Contains("data-filings-held=\"0\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-absent=\"fundamentals\"", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("numbers-quarters", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ANameHoldingFewerFilingsThanTheSectionStatesCarriesItsCount()
+    {
+        using var store = await WithLadders();
+
+        // Three filings rather than twelve, constructed because every captured
+        // name holds more. A reading over three quarters and one over twelve are
+        // different readings, and the surface says which.
+        foreach (var filed in new[] { "2026-07-31", "2026-04-30", "2026-01-30" })
+        {
+            Insert(
+                store,
+                "INSERT INTO fundamentals (ticker, filing_date, fetched_at, payload, source) VALUES " +
+                $"('{Name}', '{filed}', '2026-09-05T21:10:00Z', " +
+                "'{\"periodEnd\":\"2026-06-30\",\"currency\":\"USD\",\"quarter\":{\"revenue\":\"1\"}}', '{}');");
+        }
+
+        var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
+
+        Assert.Contains("data-filings-held=\"3\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-quarters-shown=\"3\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-short-window=\"3\"", region, StringComparison.Ordinal);
+        Assert.Contains($"fewer than the {NameScreen.QuartersShown} quarters", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheNameRouteServesTheNumbersSection()
+    {
+        using var store = await WithFundamentals();
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = await client.GetStringAsync($"/screens/name/{Name}");
+
+        // On the route rather than on the projection alone, because a claim that
+        // something is visible is a claim about a surface and the route is the
+        // surface a person opens.
+        Assert.Contains("class=\"numbers\"", page, StringComparison.Ordinal);
+        Assert.Contains($"data-quarters-shown=\"{NameScreen.QuartersShown}\"", page, StringComparison.Ordinal);
+
+        using var payload = JsonDocument.Parse(StoredPayload(store, Name));
+
+        Assert.Contains(
+            $"data-revenue=\"{payload.RootElement.GetProperty("quarter").GetProperty("revenue").GetString()}\"",
+            page,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheFactStripStatesEveryPartItsRowEnumeratesAndEachAgainstTheStore()
+    {
+        using var store = await WithFundamentals();
+
+        var api = Api(store);
+        var bars = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        var indicators = await api.IndicatorsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        var filings = await api.FundamentalsAsync(Name);
+        var extremes = await api.MoveExtremesAsync(Name);
+
+        var strip = NameScreen.FactStrip(
+            Name,
+            bars[^1].Close,
+            (await api.NextEventAsync(Name, bars[^1].SessionDate))?.EventDate,
+            extremes,
+            filings,
+            indicators);
+
+        // Seven parts, each on its own attribute, so a strip drawing six of them
+        // fails rather than passing on the row. The row's own decomposition is what
+        // makes each a claim; this is what gives each a verdict.
+        Assert.Contains(FormattableString.Invariant($"data-close=\"{bars[^1].Close}\""), strip, StringComparison.Ordinal);
+
+        using var payload = JsonDocument.Parse(StoredPayload(store, Name));
+
+        var capitalisation = payload.RootElement.GetProperty("marketCapitalisation").GetString();
+        var valuation = payload.RootElement.GetProperty("valuation");
+
+        Assert.Contains($"data-market-capitalisation=\"{capitalisation}\"", strip, StringComparison.Ordinal);
+        Assert.Contains($"data-trailing-multiple=\"{valuation.GetProperty("trailingPe").GetString()}\"", strip, StringComparison.Ordinal);
+        Assert.Contains($"data-forward-multiple=\"{valuation.GetProperty("forwardPe").GetString()}\"", strip, StringComparison.Ordinal);
+
+        // The high and the low of the sessions the move spans, against the bars of
+        // exactly those sessions read by a second path.
+        Assert.NotNull(extremes);
+
+        var span = bars
+            .Where(bar => bar.SessionDate <= extremes!.Ended)
+            .OrderByDescending(bar => bar.SessionDate)
+            .Take(extremes!.Sessions)
+            .ToArray();
+
+        Assert.Equal(span.Max(bar => bar.High), extremes.High);
+        Assert.Equal(span.Min(bar => bar.Low), extremes.Low);
+        Assert.Contains(FormattableString.Invariant($"data-move-high=\"{extremes.High}\""), strip, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"data-move-low=\"{extremes.Low}\""), strip, StringComparison.Ordinal);
+
+        // The next dated event, kept from what the strip said before this row was
+        // decomposed, so the part that already worked still reads the same way.
+        Assert.Contains("data-next-event=", strip, StringComparison.Ordinal);
+        Assert.Contains("next dated event:", strip, StringComparison.Ordinal);
+
+        // The averages, and then momentum and the typical daily move, each against
+        // the indicator row the store holds for the last session.
+        var latest = indicators
+            .Where(row => row.SessionDate == indicators.Max(other => other.SessionDate))
+            .ToDictionary(row => row.Name, row => row.Value, StringComparer.Ordinal);
+
+        foreach (var name in new[]
+        {
+            IndicatorSeries.Sma20, IndicatorSeries.Sma50, IndicatorSeries.Sma200,
+            IndicatorSeries.Rsi14, IndicatorSeries.Macd, IndicatorSeries.MacdSignal,
+            IndicatorSeries.MacdHist, IndicatorSeries.Atr14,
+        })
+        {
+            var stated = latest.TryGetValue(name, out var value) && value is { } reading
+                ? reading.ToString("0.######", CultureInfo.InvariantCulture)
+                : "none";
+
+            Assert.Contains($"data-{name}=\"{stated}\"", strip, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public async Task TheFactStripSaysWhatIsNotOnFileRatherThanDrawingABlank()
+    {
+        // A name with no filing and no move: five of the seven parts have no value,
+        // and each says so. A blank attribute would read as a zero, and a zero
+        // market capitalisation is a figure a reader would act on.
+        using var store = await Populated();
+
+        var api = Api(store);
+        var bars = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+
+        var strip = NameScreen.FactStrip(Name, bars[^1].Close, null, null, [], []);
+
+        Assert.Contains("data-market-capitalisation=\"none\"", strip, StringComparison.Ordinal);
+        Assert.Contains("data-trailing-multiple=\"none\"", strip, StringComparison.Ordinal);
+        Assert.Contains("data-forward-multiple=\"none\"", strip, StringComparison.Ordinal);
+        Assert.Contains("data-move-high=\"none\"", strip, StringComparison.Ordinal);
+        Assert.Contains("data-move-low=\"none\"", strip, StringComparison.Ordinal);
+        Assert.Contains("data-next-event=\"none\"", strip, StringComparison.Ordinal);
+        Assert.Contains("not on file", strip, StringComparison.Ordinal);
+
+        // And the close, which this name does have, is not drawn as an absence.
+        Assert.DoesNotContain("data-close=\"none\"", strip, StringComparison.Ordinal);
+
+        // No empty attribute anywhere, which is the property rather than the six
+        // above: a part with no value says so in a word.
+        Assert.DoesNotContain("=\"\"", strip, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheNameRouteServesTheFactStripWithItsSevenParts()
+    {
+        using var store = await WithFundamentals();
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = await client.GetStringAsync($"/screens/name/{Name}");
+
+        // On the route, because a claim that something is visible is a claim about
+        // a surface and the route is the surface a person opens.
+        Assert.Contains("class=\"fact-strip\"", page, StringComparison.Ordinal);
+        Assert.Contains("data-market-capitalisation=", page, StringComparison.Ordinal);
+        Assert.Contains("data-trailing-multiple=", page, StringComparison.Ordinal);
+        Assert.Contains("data-move-high=", page, StringComparison.Ordinal);
+        Assert.Contains("data-sma200=", page, StringComparison.Ordinal);
+        Assert.Contains("data-atr14=", page, StringComparison.Ordinal);
     }
 }

@@ -139,11 +139,12 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<AbsentAverage> absent,
         string? trendState,
         DateOnly? trendAsOf,
-        DateOnly? nextEvent,
+        string factStrip,
         IReadOnlyList<PlanRow> plan,
         decimal close,
         string eventBook,
         string arithmetic,
+        string numbers,
         IReadOnlyList<MoveCell> moves,
         IReadOnlyList<ChartBar> twelveMonths,
         IReadOnlyList<FiredReason> firedReasons,
@@ -162,13 +163,13 @@ public sealed class SinglePageApp : IComponent
             ? "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>"
             : Invariant($"<p class=\"trend-state\" data-trend-state=\"{Escaped(trendState)}\" data-as-of=\"{trendAsOf:yyyy-MM-dd}\">{Escaped(trendState.Replace('_', ' '))}</p>"));
 
-        // The next dated event, which section 15.9 puts in the fact strip. A
-        // name with none says the date is not on file rather than showing an
-        // empty space: a guessed date is a wrong date, and a blank is a date a
-        // reader supplies themselves.
-        region.Append(nextEvent is null
-            ? "<p class=\"fact-strip\" data-next-event=\"none\">next dated event: not on file</p>"
-            : Invariant($"<p class=\"fact-strip\" data-next-event=\"{nextEvent:yyyy-MM-dd}\">next dated event: {nextEvent:yyyy-MM-dd}</p>"));
+        // The fact strip, which section 15.9 puts above the chart and which states
+        // seven things rather than one. It arrives already written, for the reason
+        // the event book does: two of its seven parts are fundamentals and no mark
+        // renders them. A name with no value for a part says so rather than
+        // showing an empty space, because a guessed figure is a wrong figure and a
+        // blank is one a reader supplies themselves.
+        region.Append(factStrip);
 
         // Why it is here, which section 15.9 puts above the chart and which is
         // present only when the name is on tonight's list.
@@ -185,6 +186,12 @@ public sealed class SinglePageApp : IComponent
         // cause column arrives at 6.5 and is absent rather than blank until
         // then, stated once by the table rather than in every row.
         region.Append(marks.MovesTable(ticker, moves, twelveMonths));
+
+        // The numbers, which section 4 puts fourth and which section 15.9 draws
+        // after the table of moves. It arrives already written, for the reason the
+        // event book does: what it holds is stored figures and the sentences that
+        // state an absence, rather than a mark.
+        region.Append(numbers);
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));

@@ -14,6 +14,8 @@ using EquityBrief.Data.Swings;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Calendar;
+using EquityBrief.Api.Reading;
+using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Core.Facts;
 using EquityBrief.Worker.Facts;
@@ -82,6 +84,13 @@ public class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "levels"),
             CheckReach.Key(Scope.FixtureTable, "ladder"),
             CheckReach.Key(Scope.FixtureTable, "calendar"),
+
+            // 6.1, the fundamentals. Two rows rather than one: the captured
+            // payload is an input and the twelve filings one fetch stores of the
+            // fourteen it holds are an expected output, and one test reads the
+            // capture against the store, which is what reaches both.
+            CheckReach.Key(Scope.FixtureTable, "fundamentals"),
+            CheckReach.Key(Scope.FixtureTable, "stored filings"),
             CheckReach.Key(Scope.FailureTable, "Earnings date missing, the calendar"),
             CheckReach.Key(Scope.LimitsTable, "Earnings horizon"),
             CheckReach.Key(Scope.LimitsTable, "Tranches, exits"),
@@ -1987,7 +1996,7 @@ public class FixtureExpectations
         // rather than about whether anything reads them.
         Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
 
-        // Eight stand unread and each is named rather than counted, because a
+        // Nine stand unread and each is named rather than counted, because a
         // number here would drift silently as keys are added. `rowsInFile` is
         // the count of rows in the captured bulk payload, which the fetch
         // expectation states so a reader can see what the membership filter cut
@@ -2000,7 +2009,7 @@ public class FixtureExpectations
         // caught that. The gap stop file added its note at 6.0 and it caught
         // that, on the run that added the file. Which is what it is for.
         Assert.Equal(
-            ["facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note"],
+            ["facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note", "stored-filings.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 
@@ -5333,5 +5342,177 @@ public class FixtureExpectations
         Assert.Equal(
             "Probe.json states a derivation of 'mostly', which is neither derived nor frozen.",
             DerivationFaultIn("""{"stage":"s","derivation":"mostly","derivedFrom":"the rules"}""", "Probe.json"));
+    }
+
+    // ---- 6.1, the fundamentals ----
+
+    static async Task<TemporaryStore> WithFundamentals()
+    {
+        var store = await WithCalendar();
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        // Every name the fixture holds, because the expectation states a figure
+        // per name and three of the four would otherwise go unread. On demand and
+        // after the night rather than inside it, which is where this fetch happens:
+        // the night makes no per-name request.
+        foreach (var ticker in Expected("stored-filings").GetProperty("names").EnumerateArray())
+        {
+            await new FundamentalsFetcher(
+                RecordedFundamentalsFeed.FromFolder(Folder()),
+                clock,
+                store.DatabaseFile).RunAsync(ticker.GetString()!, null, "replay-fundamentals-" + ticker.GetString());
+        }
+
+        return store;
+    }
+
+    [Fact]
+    public async Task TheFundamentalsStoreHoldsTheWindowTheRulingStatesAndTheFiguresTheRulesProduce()
+    {
+        var expected = Expected("stored-filings");
+        var window = expected.GetProperty("storedFilings").GetInt32();
+        var names = expected.GetProperty("names").EnumerateArray().Select(name => name.GetString()!).ToArray();
+
+        // The document's figure against the code's, first. A window stated in one
+        // place and enforced in another is two places holding one fact.
+        Assert.Equal(FundamentalsFetcher.StoredFilings, window);
+        Assert.Equal(NameScreen.QuartersShown, expected.GetProperty("quartersShown").GetInt32());
+
+        using var store = await WithFundamentals();
+
+        foreach (var ticker in names)
+        {
+            var rows = StoredFilings(store, ticker);
+
+            // Twelve of the fourteen the capture holds, so the window is a
+            // selection rather than the file's own length.
+            Assert.Equal(window, rows.Count);
+
+            var captured = RecordedFundamentalsFeed.Parse(
+                File.ReadAllText(Path.Combine(Folder(), RecordedFundamentalsFeed.Prefix + ticker + ".json")),
+                ticker);
+
+            Assert.Equal(expected.GetProperty("capturedFilings").GetInt32(), captured.Filed.Count);
+
+            Assert.Equal(
+                expected.GetProperty("quartersWithNoFilingDate").GetProperty(ticker).GetInt32(),
+                captured.QuartersWithNoFilingDate);
+
+            // The twelve most recent, in filing order, which is what a window that
+            // took the oldest twelve would fail on while holding the same count.
+            Assert.Equal(
+                rows.Select(row => row.Filed).OrderByDescending(filed => filed).ToArray(),
+                rows.Select(row => row.Filed).ToArray());
+
+            Assert.Equal(
+                captured.Filed.OrderByDescending(filing => filing.FilingDate).Take(window).Select(filing => filing.FilingDate).ToArray(),
+                rows.Select(row => row.Filed).ToArray());
+
+            var margin = expected.GetProperty("marginIsComputedFrom").EnumerateArray().Select(part => part.GetString()!).ToArray();
+
+            for (var at = 0; at < rows.Count; at++)
+            {
+                using var payload = JsonDocument.Parse(rows[at].Payload);
+
+                var root = payload.RootElement;
+
+                // Every filing carries the quarter's own figures; the three that
+                // are as of the fetch sit on the newest row alone, because a ratio
+                // has a price in it and a price moves every session.
+                foreach (var part in expected.GetProperty("onEveryFiling").EnumerateArray())
+                {
+                    Assert.Equal(JsonValueKind.Object, root.GetProperty(part.GetString()!).ValueKind);
+                }
+
+                foreach (var part in expected.GetProperty("onTheNewestFilingAlone").EnumerateArray())
+                {
+                    var held = root.GetProperty(part.GetString()!).ValueKind == JsonValueKind.Object;
+
+                    if (at > 0)
+                    {
+                        Assert.False(held, $"{ticker} carries {part.GetString()} on a filing that is not the newest.");
+                    }
+                }
+
+                // The filing date is after the period it covers, on every row of
+                // every name, which is the trap this payload shares with the
+                // calendar's.
+                if (expected.GetProperty("filingDateIsAfterThePeriodItCovers").GetBoolean())
+                {
+                    var period = DateOnly.ParseExact(
+                        root.GetProperty("periodEnd").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+                    Assert.True(rows[at].Filed > period, FormattableString.Invariant($"{ticker} filed {period} on {rows[at].Filed}."));
+                }
+
+                // The margin, divided here rather than read from this file, so a
+                // fetcher that wrote the right shape and the wrong arithmetic fails.
+                var quarter = root.GetProperty("quarter");
+
+                if (quarter.GetProperty("grossMargin").ValueKind == JsonValueKind.String)
+                {
+                    var part = decimal.Parse(quarter.GetProperty(margin[0]).GetString()!, CultureInfo.InvariantCulture);
+                    var whole = decimal.Parse(quarter.GetProperty(margin[1]).GetString()!, CultureInfo.InvariantCulture);
+
+                    Assert.Equal(
+                        decimal.Round(part / whole, 6, MidpointRounding.ToEven),
+                        decimal.Parse(quarter.GetProperty("grossMargin").GetString()!, CultureInfo.InvariantCulture));
+                }
+
+                // What this provider files for nobody, said on every row's source
+                // rather than inferred from a missing key.
+                using var source = JsonDocument.Parse(rows[at].Source);
+
+                foreach (var part in expected.GetProperty("partsNotCarried").EnumerateArray())
+                {
+                    Assert.Equal(
+                        FundamentalsFetcher.NotFiled,
+                        source.RootElement.GetProperty(part.GetString()!).GetString());
+
+                    Assert.Equal(JsonValueKind.Null, root.GetProperty(part.GetString()!).ValueKind);
+                }
+            }
+
+            // The name that files no estimate for its next quarter, and the three
+            // that do. The absence is in the fixture beside the presence, so a
+            // reader that invented one fails on one name and not on the others.
+            using var newest = JsonDocument.Parse(rows[0].Payload);
+
+            var filesNone = expected.GetProperty("namesFilingNoEstimate")
+                .EnumerateArray()
+                .Any(name => name.GetString() == ticker);
+
+            Assert.Equal(
+                filesNone ? JsonValueKind.Null : JsonValueKind.Object,
+                newest.RootElement.GetProperty("estimated").ValueKind);
+        }
+    }
+
+    sealed record StoredFiling(DateOnly Filed, string Payload, string Source);
+
+    static IReadOnlyList<StoredFiling> StoredFilings(TemporaryStore store, string ticker)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT filing_date, payload, source FROM fundamentals WHERE ticker = $ticker " +
+            "ORDER BY filing_date DESC;";
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var rows = new List<StoredFiling>();
+
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            rows.Add(new StoredFiling(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1),
+                reader.GetString(2)));
+        }
+
+        return rows;
     }
 }

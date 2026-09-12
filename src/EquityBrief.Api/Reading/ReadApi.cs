@@ -69,6 +69,16 @@ public sealed record CalendarRow(string Ticker, DateOnly EventDate, string Kind,
 // stated.
 public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, string Plan);
 
+// One stored filing, as the store holds it. The payload and the source are handed
+// over as written rather than unpacked here, because the read surface hands back
+// stored values unchanged and a reader that picked figures out of the JSON would
+// be deciding which of them the page may have.
+public sealed record FilingRow(string Ticker, DateOnly FilingDate, string Payload, string Source);
+
+// The high and the low of the sessions one move spans, which is what section
+// 15.9's fact strip states. A name with no annotated move has none.
+public sealed record MoveExtremes(string Ticker, DateOnly Ended, int Sessions, decimal High, decimal Low);
+
 // One listing row, as the store holds it.
 //
 // `Reasons` and `PlanAtListing` arrive as the JSON the builder wrote, because
@@ -210,6 +220,48 @@ public sealed class ReadApi : IComponent
         this.databaseFile = databaseFile;
         this.clock = clock;
     }
+
+    // Newest filing first, which is the order the numbers section draws in and the
+    // order a restatement arrives in: a later filing about an earlier quarter is a
+    // later row, so ordering on the filing date is what puts what is now known at
+    // the top.
+    const string FilingsForName = @"
+        SELECT ticker, filing_date, payload, source
+        FROM fundamentals
+        WHERE ticker = $ticker
+        ORDER BY filing_date DESC;
+    ";
+
+    // The high and the low of the sessions the largest move spans.
+    //
+    // An aggregate over stored bars rather than a derivation: the move row names
+    // the session it ended on and how many sessions it spans, and these are the
+    // extremes of exactly those bars. The span is counted in stored sessions
+    // rather than in calendar days, because a move over a week that holds a
+    // holiday spans four sessions and five days, and the days would reach a bar
+    // the move does not cover.
+    //
+    // `MAX` and `MIN` over a bounded set of rows are selection in the sense the
+    // read surface permits, as the `MAX(as_of)` the level query already uses is:
+    // they choose which stored value to hand back and change none of them.
+    const string MoveExtremesForName = @"
+        SELECT MAX(high), MIN(low)
+        FROM (
+            SELECT high, low
+            FROM bar
+            WHERE ticker = $ticker AND session_date <= $ended
+            ORDER BY session_date DESC
+            LIMIT $sessions
+        );
+    ";
+
+    const string LargestMoveForName = @"
+        SELECT session_date, sessions
+        FROM move
+        WHERE ticker = $ticker
+        ORDER BY rank
+        LIMIT 1;
+    ";
 
     // Ordered by session so the caller does not have to sort, which is the one
     // thing this does beyond selecting. Ordering is not computation: it changes
@@ -987,6 +1039,82 @@ public sealed class ReadApi : IComponent
                 reader.GetString(2),
                 reader.GetString(3))
             : null;
+    }
+
+    // Every filing one name holds, newest first. All of them rather than the five
+    // the numbers section draws, because the store holds twelve and which of them
+    // a section shows is the section's statement rather than this one's
+    // (see: Twelve filings are stored and five are shown). The payload and the
+    // source are handed back as stored, since a read surface that unpacked the JSON
+    // would be deciding which figures exist.
+    public async Task<IReadOnlyList<FilingRow>> FundamentalsAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FilingsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var rows = new List<FilingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new FilingRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetString(3)));
+        }
+
+        return rows;
+    }
+
+    // The largest move's own high and low, or none where the name has no move.
+    public async Task<MoveExtremes?> MoveExtremesAsync(string ticker)
+    {
+        await using var connection = Open();
+
+        DateOnly ended;
+        int sessions;
+
+        await using (var largest = connection.CreateCommand())
+        {
+            largest.CommandText = LargestMoveForName;
+            largest.Parameters.AddWithValue("$ticker", ticker);
+
+            await using var reader = await largest.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
+
+            ended = DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            sessions = reader.GetInt32(1);
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = MoveExtremesForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$ended", ended.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$sessions", sessions);
+
+        await using var bars = await command.ExecuteReaderAsync();
+
+        if (!await bars.ReadAsync() || bars.IsDBNull(0))
+        {
+            return null;
+        }
+
+        return new MoveExtremes(
+            ticker,
+            ended,
+            sessions,
+            Money.FromStorage(bars.GetString(0)),
+            Money.FromStorage(bars.GetString(1)));
     }
 
     // The operational record of the read surface coming up, which section

@@ -52,6 +52,12 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
 
     public int Requests { get; private set; }
 
+    // The names this feed holds a capture for, in order. Read off what was
+    // committed rather than listed anywhere, so a fifth capture is served without
+    // a second place naming it.
+    public IReadOnlyList<string> Names =>
+        [.. responses.Keys.OrderBy(ticker => ticker, StringComparer.Ordinal)];
+
     public static RecordedFundamentalsFeed FromFolder(string folder) =>
         new(Directory
             .GetFiles(folder, Prefix + "*.json")
@@ -144,6 +150,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             Estimated(history),
             Bases(root),
             Valuation(root),
+            Market(root),
             [.. MayBeAbsent.Where(part => !CarriesAKeyFor(root, part.Key)).Select(part => part.Part)],
             withNoFilingDate);
     }
@@ -224,6 +231,13 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             Money(valuation, "TrailingPE"),
             Money(valuation, "ForwardPE"));
     }
+
+    // The market's own figure for the whole company, from the aggregates the
+    // payload states as of the fetch.
+    static MarketValue Market(JsonElement root) =>
+        root.TryGetProperty("Highlights", out var highlights)
+            ? new MarketValue(Money(highlights, "MarketCapitalization"))
+            : new MarketValue(null);
 
     // Whether the payload carries a key named for a part, at any depth. A walk
     // over key names rather than a scan of the text, because the word segment

@@ -70,6 +70,10 @@ public class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Volume profile builder"),
             CheckReach.Key(Scope.CatalogueTable, "Level builder"),
             CheckReach.Key(Scope.MatrixTable, "Level builder"),
+            // 6.1, the fundamentals fetcher: its catalogue row and its matrix row,
+            // reconciled against the class's own declaration in both directions.
+            CheckReach.Key(Scope.CatalogueTable, "Fundamentals fetcher"),
+            CheckReach.Key(Scope.MatrixTable, "Fundamentals fetcher"),
             CheckReach.Key(Scope.CatalogueTable, "Calendar fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Calendar fetcher"),
             CheckReach.Key(Scope.CatalogueTable, "Trend classifier"),

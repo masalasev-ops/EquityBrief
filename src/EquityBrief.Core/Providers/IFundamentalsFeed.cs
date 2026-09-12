@@ -80,6 +80,14 @@ public sealed record EpsBases(decimal? Trailing, decimal? CurrentYear, decimal? 
 // alone and why the row carries the instant it was fetched at.
 public sealed record ValuationRatios(decimal? TrailingPe, decimal? ForwardPe);
 
+// What the market says the whole company is worth, as the provider files it.
+//
+// Money, so decimal, and as of the fetch rather than as of a filing: it is a price
+// times a share count and the price moves every session. Section 15.9's fact strip
+// states it beside the close, which is why it is read at all: the multiples and
+// this figure are the two parts of that strip no computed table can supply.
+public sealed record MarketValue(decimal? Capitalisation);
+
 // One name's fundamentals as one provider files them.
 //
 // `PartsNotCarried` is the part of this record that took a probe to write. The
@@ -101,6 +109,7 @@ public sealed record CompanyFundamentals(
     EstimatedQuarter? Estimated,
     EpsBases Bases,
     ValuationRatios Valuation,
+    MarketValue Market,
     IReadOnlyList<string> PartsNotCarried,
     int QuartersWithNoFilingDate);
 
