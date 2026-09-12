@@ -67,6 +67,19 @@ public sealed record EstimatedQuarter(
 // no close in it (see: Code owns every number).
 public sealed record EpsBases(decimal? Trailing, decimal? CurrentYear, decimal? NextYear);
 
+// The valuation on each earnings basis, as the provider files it.
+//
+// Copied rather than computed, which is the second of the two things a figure in a
+// report may be: this payload carries no close, so computing a ratio here would
+// need a price the endpoint does not send (see: Code owns every number). Decimal
+// rather than double, because both figures are a money value over a money value
+// and holding them as decimal means nothing crosses between the two worlds.
+//
+// As of the fetch rather than as of a filing. A ratio has a price in it and a
+// price moves every session, which is why these sit on the newest filing's row
+// alone and why the row carries the instant it was fetched at.
+public sealed record ValuationRatios(decimal? TrailingPe, decimal? ForwardPe);
+
 // One name's fundamentals as one provider files them.
 //
 // `PartsNotCarried` is the part of this record that took a probe to write. The
@@ -87,6 +100,7 @@ public sealed record CompanyFundamentals(
     IReadOnlyList<FiledQuarter> Filed,
     EstimatedQuarter? Estimated,
     EpsBases Bases,
+    ValuationRatios Valuation,
     IReadOnlyList<string> PartsNotCarried,
     int QuartersWithNoFilingDate);
 

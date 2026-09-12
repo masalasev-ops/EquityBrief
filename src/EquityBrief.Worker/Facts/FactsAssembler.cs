@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Facts;
 using EquityBrief.Core.Time;
@@ -39,6 +40,12 @@ public sealed class FactsAssembler : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Move, Touch.Read),
+            // The fundamentals read its catalogue row has announced since the
+            // architecture was written, and which nothing could add before 6.1
+            // created the table. A name with nothing stored carries none of these
+            // facts rather than carrying them as nulls, because this table fills
+            // on demand and most names on most nights hold nothing.
+            new StoreTouch(Store.Fundamentals, Touch.Read),
             // Delete as well as Insert: a stored file for tonight that differs
             // from what the store now computes is removed and written again.
             new StoreTouch(Store.Facts, Touch.Insert | Touch.Delete),
@@ -58,6 +65,18 @@ public sealed class FactsAssembler : IComponent
     public const string FromLadder = "ladder";
     public const string FromMoves = "move";
     public const string FromCalendar = "calendar";
+    public const string FromFundamentals = "fundamental";
+
+    // The newest filing this name has stored, and the figures on it. Newest by
+    // filing date rather than by period end, because a restatement is filed later
+    // than the quarter it restates and the later filing is what is now known.
+    const string LatestFilingFor = @"
+        SELECT filing_date, payload
+        FROM fundamentals
+        WHERE ticker = $ticker
+        ORDER BY filing_date DESC
+        LIMIT 1;
+    ";
 
     // The names holding a bar on the newest session the store has, being the
     // names tonight's file can be about.
@@ -376,8 +395,80 @@ public sealed class FactsAssembler : IComponent
                 FromCalendar));
         }
 
+        await ReadAsync(connection, LatestFilingFor, ticker, cancellation, reader =>
+            facts.AddRange(Filed(reader.GetString(0), reader.GetString(1))));
+
         return new Assembled(sessionDate, facts);
     }
+
+    // The figures on the newest stored filing, read back out of the payload and
+    // named for what they are.
+    //
+    // Read rather than derived, which is this component's own rule. The margin on
+    // that row was worked out by the fetcher from the two figures in the same
+    // filing, and here it is a stored value like any other, which is what keeps
+    // one figure from being computed in two places.
+    //
+    // Eleven facts rather than every line of three statements. What belongs here is
+    // what a written section may quote, since a number in prose has to exist in
+    // this file, and section 4's numbers row is what names them.
+    // see: Every number in written prose must exist in the facts file
+    internal static IReadOnlyList<Fact> Filed(string filingDate, string payload)
+    {
+        var facts = new List<Fact> { new("latest filing date", filingDate, FromFundamentals) };
+
+        using var document = JsonDocument.Parse(payload);
+
+        var root = document.RootElement;
+
+        Add(facts, "latest quarter end", Text(root, "periodEnd"));
+
+        if (root.TryGetProperty("quarter", out var quarter))
+        {
+            Add(facts, "latest quarter revenue", Text(quarter, "revenue"));
+            Add(facts, "latest quarter net income", Text(quarter, "netIncome"));
+            Add(facts, "latest quarter gross margin", Text(quarter, "grossMargin"));
+            Add(facts, "latest quarter net margin", Text(quarter, "netMargin"));
+        }
+
+        if (root.TryGetProperty("balanceSheet", out var sheet))
+        {
+            Add(facts, "total assets", Text(sheet, "totalAssets"));
+            Add(facts, "shareholders equity", Text(sheet, "equity"));
+            Add(facts, "net debt", Text(sheet, "netDebt"));
+        }
+
+        if (root.TryGetProperty("epsBases", out var bases))
+        {
+            Add(facts, "trailing earnings per share", Text(bases, "trailing"));
+        }
+
+        if (root.TryGetProperty("valuation", out var valuation))
+        {
+            Add(facts, "trailing price to earnings", Text(valuation, "trailingPe"));
+            Add(facts, "forward price to earnings", Text(valuation, "forwardPe"));
+        }
+
+        return facts;
+    }
+
+    // A figure the filing does not carry is left out rather than written as a
+    // zero or as a blank, for the reason an absent indicator is served as null: a
+    // zero is a reading and an absence is not one.
+    static void Add(List<Fact> facts, string name, string? value)
+    {
+        if (value is not null)
+        {
+            facts.Add(new Fact(name, value, FromFundamentals));
+        }
+    }
+
+    static string? Text(JsonElement element, string name) =>
+        element.ValueKind == JsonValueKind.Object
+        && element.TryGetProperty(name, out var value)
+        && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
 
     static async Task ReadAsync(
         SqliteConnection connection,

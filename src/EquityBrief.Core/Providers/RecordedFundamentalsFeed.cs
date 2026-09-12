@@ -143,6 +143,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             [.. filed.OrderByDescending(quarter => quarter.PeriodEnd)],
             Estimated(history),
             Bases(root),
+            Valuation(root),
             [.. MayBeAbsent.Where(part => !CarriesAKeyFor(root, part.Key)).Select(part => part.Part)],
             withNoFilingDate);
     }
@@ -206,6 +207,22 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             Money(highlights, "DilutedEpsTTM") ?? Money(highlights, "EarningsShare"),
             Money(highlights, "EPSEstimateCurrentYear"),
             Money(highlights, "EPSEstimateNextYear"));
+    }
+
+    // The valuation on each earnings basis, copied from the payload's own
+    // aggregates. Two rather than the seven the object carries, because the two
+    // are the ones section 4's numbers row asks for and a figure nothing reads is
+    // one that can be wrong without anyone noticing.
+    static ValuationRatios Valuation(JsonElement root)
+    {
+        if (!root.TryGetProperty("Valuation", out var valuation))
+        {
+            return new ValuationRatios(null, null);
+        }
+
+        return new ValuationRatios(
+            Money(valuation, "TrailingPE"),
+            Money(valuation, "ForwardPE"));
     }
 
     // Whether the payload carries a key named for a part, at any depth. A walk

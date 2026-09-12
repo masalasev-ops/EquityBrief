@@ -25,6 +25,19 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-12 - ARCHITECTURE.html, SCHEMA.md, BUILD_PLAN.md - the fundamentals store, its window, and the two rows that named it
+Authorised by: Twelve filings are stored and five are shown
+Was:
+> | Fundamentals fetcher | compute | on demand, per name | company financials feed, filings archive, fundamentals | fundamentals | fetches quarters, balance sheet, segment table and guidance when the stored copy predates the name's latest filing |
+>
+> | Facts assembler | compute | nightly, per name | bar store, indicators, swings, volume profile, levels, ladders, moves, calendar | facts | writes tonight's facts file with every number and its source, and its hash. The listings and the fundamentals join its reads at 5.4 and 6.1, which are the checkpoints that create those stores |
+>
+> Primary key: `ticker`, `filing_date`.
+>
+> Kept forever, never updated. Providers restate, and keeping the filing date is what makes it possible to know later what was known at the time.
+Now: the fetcher's row names the two parts this provider files and says the archive joins its reads at 6.2, since the probe settled that the endpoint carries no segment table and no management guidance for any name; the assembler's row carries the fundamentals read it has announced since the architecture was written, and says the listings went to the change detector rather than here; the matrix gives the assembler an R in the Fundamentals column; SCHEMA states that one fetch writes the twelve most recent filings, which is a write window and not a retention one, and what the payload and the source column hold; and BUILD_PLAN gains the obligation the ruling files, with 7.0's text citing it back.
+Why: the catalogue named both a feed and two parts that do not exist yet, and a row listing a feed no component declares fails the reconciliation in the direction nobody reads. The assembler's sentence was half wrong from 5.4: the listings read went to the change detector, because the retention that needed it is an update to a row the assembler inserts. And the store's own note said what is kept without saying what one fetch writes, which is the figure a later session reading section 4's five quarters would have narrowed.
+
 ### 2026-09-12 - CLAUDE.md, BUILD_PLAN.md, RUNBOOK.md, source-lists.json - the five obligations due at 6.0, and the readers and routes they turn on
 Corrects: four of the five were rulings or tests the fourth phase 5 sign-off review left carried, and the fifth was the source lists' own review, owed since 1.7. Two check readers passed forms they could not see: `clock-usage` admitted a bare `Invariant(` wherever it appeared, which passes a literal on the name of the thing before it, and `price-storage-form` read neither a signed nor a numeric-literal operand, nor the framework's capitalised type names, nor the decimal type's own `ToDouble`. No test in the suite hosted a route, so every route body in the API's own file was unreached and each screen's PASS sat at the helper the route calls. The run page ordered the newest night by an instant a replay stamps, so a night replayed for an older session could take over the page. A refusal before the first step was recorded as a failure under the migrate stage and read on the page as a migration that failed. And numbers were formatted in the machine's culture into stored text in two places, which `clock-usage` never saw because it is keyed on date formats.
 Was:

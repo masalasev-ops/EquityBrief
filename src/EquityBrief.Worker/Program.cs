@@ -4,6 +4,7 @@ using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker;
+using EquityBrief.Worker.Fundamentals;
 using Microsoft.Extensions.Configuration;
 
 // The nightly run and the overnight queue. Scheduling lives outside the
@@ -15,18 +16,108 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 {
     "migrate" => Migrate(),
     "nightly" => await NightlyRun(args),
+    "fundamentals" => await FundamentalsFetch(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Two are built: 'migrate' applies pending migrations, " +
-        "and 'nightly --fixture <folder>' runs the night's steps in order. '--live' fetches from " +
-        "the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the night for a " +
-        "session the operator names rather than the one the clock falls on.");
+        "EquityBrief.Worker: no verb given. Three are built: 'migrate' applies pending migrations, " +
+        "'nightly --fixture <folder>' runs the night's steps in order, and " +
+        "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet. '--live' " +
+        "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
+        "night for a session the operator names rather than the one the clock falls on.");
 
     return 1;
+}
+
+// One name's fundamentals, on demand and never from the night.
+//
+// A verb of its own rather than a step, because this endpoint is per name and the
+// night's per-name request count is zero. What decides whether it fetches is the
+// filing date passed to it, which is `--filed` here and the staleness judge's
+// first question from 6.5.
+// see: Everything expensive happens when a name is opened
+static async Task<int> FundamentalsFetch(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var ticker = Argument(args, "--ticker");
+
+    if (string.IsNullOrWhiteSpace(ticker))
+    {
+        Console.Error.WriteLine(
+            "fundamentals: no '--ticker' given. This endpoint is per name and fetching the whole " +
+            "index would spend 5,030 weighted calls on names nobody opened.");
+
+        return 1;
+    }
+
+    DateOnly? filed = null;
+    var named = Argument(args, "--filed");
+
+    if (named is not null)
+    {
+        if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var on))
+        {
+            Console.Error.WriteLine(
+                $"fundamentals: '--filed {named}' is not a date in yyyy-MM-dd. A date read against the " +
+                "machine's locale would be a different date here and a refusal on the runner.");
+
+            return 1;
+        }
+
+        filed = on;
+    }
+
+    var wantsLive = args.Contains("--live");
+    var wantsFixture = Argument(args, "--fixture") is not null;
+
+    if (wantsLive && wantsFixture)
+    {
+        Console.Error.WriteLine(
+            "fundamentals: '--live' and '--fixture' were both given. A fetch runs against one source, " +
+            "and choosing between them here would be this command deciding what was meant.");
+
+        return 1;
+    }
+
+    OnDemandFeeds feeds;
+
+    try
+    {
+        feeds = OnDemandFeeds.Resolve(
+            wantsLive ? FeedSource.Live
+                : wantsFixture ? FeedSource.Fixture
+                : configuration[FeedSource.SourceKey],
+            Argument(args, "--fixture") ?? configuration[FeedSource.FixtureKey],
+            configuration[EodhdBulkPriceFeed.BaseAddressKey],
+            configuration[ProviderCredentials.ApiKeyName]);
+    }
+    catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+    {
+        // On stderr and in the scheduler's own history rather than on the run log.
+        // A refusal before the source is resolved has no store to write to, which
+        // is what `RUNBOOK.md` says of the night's own pre-store refusal.
+        Console.Error.WriteLine("fundamentals: " + refusal.Message);
+
+        return 1;
+    }
+
+    var clock = SystemClock.ForUnitedStatesSessions();
+
+    var outcome = await new FundamentalsFetcher(feeds.Fundamentals, clock, store.DatabaseFile)
+        .RunAsync(
+            ticker,
+            filed,
+            FormattableString.Invariant($"fundamentals-{clock.UtcNow:yyyyMMddTHHmmssZ}-{ticker}"));
+
+    Console.WriteLine(
+        FundamentalsFetcher.Detail(outcome)
+        + FormattableString.Invariant($", {feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}"));
+
+    return 0;
 }
 
 // The night, invoked by tools/nightly and by nothing else in this repository:
