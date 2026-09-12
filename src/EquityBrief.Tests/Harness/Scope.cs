@@ -63,6 +63,235 @@ internal static class Scope
     // read and write matrix, where the claim is a different one.
     static readonly Dictionary<string, Scoped> Reached = new(StringComparer.Ordinal)
     {
+        // The drawn parts of the rows the fifth phase 5 sign-off review decomposed.
+        [CheckReach.Key("15.4 The two surfaces", "The app, the single page")] = new Scoped(
+            Verdict.Pass,
+            "the shell is one page whose regions the router swaps, read back off the markup",
+            ByReadSurface),
+        [CheckReach.Key("15.4 The two surfaces", "The app, routing")] = new Scoped(
+            Verdict.Pass,
+            "the hash routes to a region and back, asserted over the shell the server writes",
+            ByReadSurface),
+        [CheckReach.Key("15.4 The two surfaces", "The app, filters")] = new Scoped(
+            Verdict.Pass,
+            "the universe filters arrive in the query the shell passes through, so a filtered view is a link",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column, Everything above the marker is a sale")] = new Scoped(
+            Verdict.Pass,
+            "the exits are drawn above the price marker and nothing else is",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column, everything below is a purchase")] = new Scoped(
+            Verdict.Pass,
+            "the tranches are drawn below the price marker and nothing else is",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column, stops are horizontal rules")] = new Scoped(
+            Verdict.Pass,
+            "each stop is drawn as a rule rather than as a zone",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column, the invalidation is the lowest one")] = new Scoped(
+            Verdict.Pass,
+            "the invalidation is the lowest rule the mark draws",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row, A name's close between its nearest support and its nearest resistance")] = new Scoped(
+            Verdict.Pass,
+            "the close sits between the two edges that exist, each drawn in its own hue",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row, sized for a table cell")] = new Scoped(
+            Verdict.Pass,
+            "the mark is drawn at the one cell width the table gives it, read off the markup",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row, the distances in typical days")] = new Scoped(
+            Verdict.Pass,
+            "both distances are stated in typical days rather than in prices",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track, setups resolved as a win")] = new Scoped(
+            Verdict.Pass,
+            "the won segment is counted out of the one denominator",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track, resolved as a loss")] = new Scoped(
+            Verdict.Pass,
+            "the lost segment is counted out of the same denominator",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track, unresolved")] = new Scoped(
+            Verdict.Pass,
+            "the unresolved segment is a dashed outline and never a third colour",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Night header, names in the index")] = new Scoped(
+            Verdict.Pass,
+            "the index size is read off the markup and matched against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Night header, names that fired")] = new Scoped(
+            Verdict.Pass,
+            "the fired count is over the whole index rather than over the drawn rows",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Night header, run duration")] = new Scoped(
+            Verdict.Pass,
+            "the night's duration is drawn from the run log, and a night the log does not carry says so",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, one row per name that fired")] = new Scoped(
+            Verdict.Pass,
+            "one row per fired name, counted off the markup",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by band strength")] = new Scoped(
+            Verdict.Pass,
+            "the order is asserted over rows whose fired counts are equal, so the tiebreaker is the thing read",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, at most twenty drawn")] = new Scoped(
+            Verdict.Pass,
+            "twenty at most are drawn and the undrawn count is stated beside them",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, name")] = new Scoped(
+            Verdict.Pass,
+            "the name cell carries the ticker the row is about",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, close")] = new Scoped(
+            Verdict.Pass,
+            "the close cell carries what the night stored, and a name it computed nothing for says so",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, the reasons")] = new Scoped(
+            Verdict.Pass,
+            "each reason that fired is named in the row's own cell",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Selected name, the plan column")] = new Scoped(
+            Verdict.Pass,
+            "the plan column and its tables are composed for the selected row, so checking a plan needs no navigation",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Sector strip, one line per sector")] = new Scoped(
+            Verdict.Pass,
+            "one line per sector, the lines summing to the index",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list")] = new Scoped(
+            Verdict.Pass,
+            "the count is per sector rather than over the index, asserted over constructed rows where one sector holds more than another",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Sector strip, names")] = new Scoped(
+            Verdict.Pass,
+            "each line carries its sector's name count",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Sector strip, how many are in an uptrend")] = new Scoped(
+            Verdict.Pass,
+            "each line carries its uptrend count beside its name count",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = new Scoped(
+            Verdict.Pass,
+            "one row per index member, counted off the markup",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = new Scoped(
+            Verdict.Pass,
+            "the strip over the window is drawn from the stored listings",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, sorted by distance to the nearest level ascending")] = new Scoped(
+            Verdict.Pass,
+            "the rows are ordered by distance to the nearest level, read off the markup",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, name")] = new Scoped(
+            Verdict.Pass,
+            "the name cell carries the ticker",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, sector")] = new Scoped(
+            Verdict.Pass,
+            "the sector cell carries the sector the membership row holds",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, close")] = new Scoped(
+            Verdict.Pass,
+            "the close cell carries what the night stored, and a name it computed nothing for says so",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, trend state")] = new Scoped(
+            Verdict.Pass,
+            "the trend cell carries the ladder's label, drawn in words",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, the distance row mark")] = new Scoped(
+            Verdict.Pass,
+            "the distance mark is drawn in its own cell of each row",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, the evening last on the list")] = new Scoped(
+            Verdict.Pass,
+            "the evening a name was last listed is drawn, and a name never listed says never",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The chart, the level chart")] = new Scoped(
+            Verdict.Pass,
+            "the region draws the level chart with its bands",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The chart, the volume profile beside it on the same price axis")] = new Scoped(
+            Verdict.Pass,
+            "the profile is drawn against the chart's own price axis",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The chart, the momentum panel beneath")] = new Scoped(
+            Verdict.Pass,
+            "the momentum panel is drawn beneath the chart with its neutral rules",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The chart, the level summary table with each band's members and dates")] = new Scoped(
+            Verdict.Pass,
+            "the summary table carries each band's members and their dates",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, the plan column mark")] = new Scoped(
+            Verdict.Pass,
+            "the region draws the plan column",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, the tranche table with conditions and stops")] = new Scoped(
+            Verdict.Pass,
+            "the tranche table carries each tranche's condition and its stop",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, the exit table with actions")] = new Scoped(
+            Verdict.Pass,
+            "the exit table carries each exit and what it does",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, the earnings setups")] = new Scoped(
+            Verdict.Pass,
+            "the earnings rule's setups are drawn where the plan states them",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, the sizing arithmetic")] = new Scoped(
+            Verdict.Pass,
+            "the worked sizing example is drawn from the risk budget the reader chooses",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = new Scoped(
+            Verdict.Pass,
+            "every stored move is drawn with its session, its span and its change, counted off the markup",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Operational header, what ran")] = new Scoped(
+            Verdict.Pass,
+            "every stage the night's run log carries is drawn, in the order they ran",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Operational header, the instant each stage started and how long it took")] = new Scoped(
+            Verdict.Pass,
+            "the instant and the elapsed time are drawn from different values, on the cells as well as the attributes",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Operational header, model calls")] = new Scoped(
+            Verdict.Pass,
+            "each stage's model calls are drawn from the row rather than from a constant",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Operational header, network requests")] = new Scoped(
+            Verdict.Pass,
+            "each stage's request count is drawn from its row, over a night where they differ",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Operational header, spend")] = new Scoped(
+            Verdict.Pass,
+            "each stage's spend is drawn from its row",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Operational header, what each stage said about itself")] = new Scoped(
+            Verdict.Pass,
+            "the stage's detail is drawn in a cell rather than behind a pointer",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = new Scoped(
+            Verdict.Pass,
+            "a setup is counted against every reason that fired on the night it was listed",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reason records, one row per reason with the reason track mark")] = new Scoped(
+            Verdict.Pass,
+            "one row per reason, each carrying the reason track mark",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Harness, passed")] = new Scoped(
+            Verdict.Pass,
+            "the passed count is drawn from the phase report and never summed with the others",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Harness, failed")] = new Scoped(
+            Verdict.Pass,
+            "the failed count is drawn separately",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Harness, unexamined")] = new Scoped(
+            Verdict.Pass,
+            "the unexamined count is drawn separately from out of scope",
+            ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Migration runner")] = new Scoped(
             Verdict.Pass,
             "the schema it writes is asserted against SCHEMA.md, column by column and type by type",
@@ -131,11 +360,7 @@ internal static class Scope
             Verdict.Pass,
             "all eleven cells are blank and the declaration is empty, asserted cell by cell",
             ByAccess),
-        [CheckReach.Key("15.4 The two surfaces", "The app")] = new Scoped(
-            Verdict.Pass,
-            "the shell routes on the hash and carries no drawing element of its own, so the marks it shows are the server's",
-            ByReadSurface),
-        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles")] = new Scoped(
+                [CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles")] = new Scoped(
             Verdict.Pass,
             "one candle is drawn per stored session, counted off the rendered markup and matched session by session against the store, hollow above the open and filled below in neutral ink",
             ByReadSurface),
@@ -230,31 +455,11 @@ internal static class Scope
             Verdict.Pass,
             "one cell per evening over the window, a listed evening drawn differently in shape as well as in ink, and the count of listed evenings read off the markup",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Night header")] = new Scoped(
-            Verdict.Pass,
-            "the fired count over the whole index and the index size are read off the markup and matched against the store, and the quantities phase 6 supplies are stated as absent rather than drawn as zero",
-            ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Watch list")] = new Scoped(
+                [CheckReach.Key("15.7 Tonight", "Watch list")] = new Scoped(
             Verdict.Pass,
             "the region sits above the list rather than inside it and states that no watch list is on file, because no store holds one and none is invented",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "The list")] = new Scoped(
-            Verdict.Pass,
-            "one row per name that fired, ordered by how many fired then by band strength, at most twenty drawn, with the tiebreaker asserted over rows whose fired counts are equal",
-            ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Selected name")] = new Scoped(
-            Verdict.Pass,
-            "the plan column and its tables are composed for the first row of the list, so checking a plan needs no navigation",
-            ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list")] = new Scoped(
-            Verdict.Pass,
-            "the count is per sector rather than over the index, asserted over constructed rows where one sector has a listed name and the other does not",
-            ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = new Scoped(
-            Verdict.Pass,
-            "the evening a name was last on the list and the strip over the window are drawn from the stored listings, with a name never on it saying never rather than showing a date",
-            ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Why it is here")] = new Scoped(
+                                        [CheckReach.Key("15.9 Name", "Why it is here")] = new Scoped(
             Verdict.Pass,
             "each reason that fired is a full sentence with the values beside it, a reason the mapping has no sentence for fails rather than rendering a default, and a name that fired nothing says it is not on tonight's list",
             ByReadSurface),
@@ -283,11 +488,7 @@ internal static class Scope
             Verdict.Pass,
             "the base rate is pinned per window above every record, read off the column the filler wrote beside each return, and the region refuses to draw at all with no pinned line rather than showing a figure a reader cannot judge",
             ByReadSurface),
-        [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] = new Scoped(
-            Verdict.Pass,
-            "three states out of one denominator shared across the whole mark, with the unresolved segment an outline carrying no fill and every row's counts in words as well as in the picture",
-            ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = new Scoped(
+                [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = new Scoped(
             Verdict.Pass,
             "each reason on a drawn row is named with the values the store holds for it and the reason's own record beside it, in the dashed not-yet-measured state carrying its count against the minimum",
             ByReadSurface),
@@ -295,15 +496,7 @@ internal static class Scope
             Verdict.Pass,
             "the track across tonight's fired names, counted per reason off the stored listings, with every name on it in the unresolved state because nothing has scored tonight",
             ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Operational header")] = new Scoped(
-            Verdict.Pass,
-            "every stage the night's run log carries is drawn with the instant it started and its own elapsed time, rows, model calls, requests, spend and what it said about itself in a cell rather than a hover, in the order they ran, the night is selected through the clock rather than through the date the log stores, and its duration is the run whose list the store holds",
-            ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = new Scoped(
-            Verdict.Pass,
-            "a setup is counted against every reason that fired on the night it was listed, a reason below the minimum draws its count in a dashed outline and no rate through either channel, and a stored reason the roster does not carry refuses",
-            ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = new Scoped(
+                        [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = new Scoped(
             Verdict.Pass,
             "the stale names are listed rather than counted, over the index rather than the names with bars",
             ByReadSurface),
@@ -311,11 +504,7 @@ internal static class Scope
             Verdict.Pass,
             "a night whose feed does not answer writes a failed row naming the step, the reason and the requests it made, read back through the read API and drawn in the region; a night that stopped before its list is the night the run page opens on when no date is asked for, where the newest listing is the night before; a deadline or an allowance stop writes a stopped row against the step it stopped on, the actions step included; and a night refused before its first step writes a failed row under it",
             ByNight),
-        [CheckReach.Key("15.10 Run", "Harness")] = new Scoped(
-            Verdict.Pass,
-            "the four verdict counts are drawn separately and never summed, and a machine with no phase report says so rather than drawing four zeros",
-            ByReadSurface),
-
+        
         [CheckReach.Key(FailureTable, "Earnings date missing, the earnings reason")] = new Scoped(
             Verdict.Pass,
             "the reason does not fire with no date on file and says not on file rather than a guessed date, with the horizon asserted either side of its boundary",
@@ -383,27 +572,11 @@ internal static class Scope
             Verdict.Pass,
             "the night runs the stage in the order section 14 states and its run log row records what it wrote and what it dropped",
             ByNight),
-        [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = new Scoped(
-            Verdict.Pass,
-            "every stored move is drawn with its session, its span and its change, counted off the markup, and the cause column is stated as absent once rather than drawn empty in every row",
-            ByReadSurface),
-
+        
         // The universe screen, 5.1. Every one is read off the rendered markup
         // and matched against the store rather than by eye, which is what a
         // claim about a surface requires.
-        [CheckReach.Key("15.5 The mark vocabulary", "Distance row")] = new Scoped(
-            Verdict.Pass,
-            "the mark draws each edge that exists in its own hue, states both distances in typical days, and says so where a name has neither rather than drawing a shape at one end",
-            ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "Sector strip, one line per sector")] = new Scoped(
-            Verdict.Pass,
-            "one line per sector with its name count and its uptrend count, the lines summing to the index, and a name with no sector counted in its own line rather than folded into a real one",
-            ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = new Scoped(
-            Verdict.Pass,
-            "one row per index member, counted off the markup, ordered by distance to the nearest level ascending with an absent distance sorting last rather than first",
-            ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "Filters")] = new Scoped(
+                                [CheckReach.Key("15.8 Universe", "Filters")] = new Scoped(
             Verdict.Pass,
             "one chip per trend state and one per sector, each a hash route carrying its value, and a filter narrowing the table while the strip keeps stating the whole index",
             ByReadSurface),
@@ -616,19 +789,11 @@ internal static class Scope
             Verdict.Pass,
             "the trend state and the tranches of all four names are diffed against a set derived from the rules outside this repository, with the averages, the last two swings of each kind and the band each stop comes from stated beside the answer so a disagreement is traceable to an input",
             ByExpectations),
-        [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] = new Scoped(
-            Verdict.Pass,
-            "one vertical price axis with the close marked in it, the tranches drawn below the marker and the exits above, the stops as horizontal rules and the invalidation as the lowest, with every price read off the mark's own attributes and matched against the stored plan in both directions",
-            ByReadSurface),
-        [CheckReach.Key(FailureTable, "A gap in one name's series, level and plan sections")] = new Scoped(
+                [CheckReach.Key(FailureTable, "A gap in one name's series, level and plan sections")] = new Scoped(
             Verdict.Pass,
             "a name whose series was refused holds no bars, so it has no bands and no plan, and both sections state the absence rather than drawing nothing, with a name whose series was not refused carrying both over the same run",
             ByGap),
-        [CheckReach.Key("15.9 Name", "The plan")] = new Scoped(
-            Verdict.Pass,
-            "the region draws the plan column, the tranche table with its conditions and stops and the exit table with its actions, from the ladder row the night wrote, with a skipped exit carrying its reason rather than being omitted",
-            ByReadSurface),
-        [CheckReach.Key(LimitsTable, "Earnings horizon")] = new Scoped(
+                [CheckReach.Key(LimitsTable, "Earnings horizon")] = new Scoped(
             Verdict.Pass,
             "the second book is keyed to the next dated event the calendar holds, a name with none produces no setups and says why, and every setup carries a trigger, an entry, a stop and a target with each figure stated on the page as a proposal",
             ByExpectations),
@@ -648,11 +813,7 @@ internal static class Scope
             Verdict.Pass,
             "each missing input is induced over constructed input and produces the fourth state naming what was absent, and the row is still written with its plan carrying the reason",
             ByExpectations),
-        [CheckReach.Key("15.9 Name", "The chart")] = new Scoped(
-            Verdict.Pass,
-            "the region draws the level chart with its bands, the volume profile against the chart's own price axis, the momentum panel and the level summary table, counted off the rendered markup and matched against the store, from a store a night wrote",
-            ByReadSurface),
-
+        
         [CheckReach.Key(FixtureTable, "indicators")] = new Scoped(
             Verdict.Pass,
             "every name, session and indicator carries a row, the averages match arithmetic done over the committed bars outside this repository, and an indicator without its window is null with the bar count that explains it",
@@ -937,7 +1098,79 @@ internal static class Scope
     // an entry naming a row the document no longer has fails too.
     static readonly Dictionary<string, string> Screens = new(StringComparer.Ordinal)
     {
-        [CheckReach.Key("15.4 The two surfaces", "The app")] = "1.3",
+        // The parts of the rows the fifth phase 5 sign-off review decomposed.
+        [CheckReach.Key("15.4 The two surfaces", "The app, the single page")] = "1.3",
+        [CheckReach.Key("15.4 The two surfaces", "The app, routing")] = "1.3",
+        [CheckReach.Key("15.4 The two surfaces", "The app, filters")] = "5.1",
+        [CheckReach.Key("15.4 The two surfaces", "The app, selection")] = "5.8",
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column, Everything above the marker is a sale")] = "4.6",
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column, everything below is a purchase")] = "4.6",
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column, stops are horizontal rules")] = "4.6",
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column, the invalidation is the lowest one")] = "4.6",
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row, A name's close between its nearest support and its nearest resistance")] = "5.1",
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row, sized for a table cell")] = "5.1",
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row, the distances in typical days")] = "5.1",
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track, setups resolved as a win")] = "5.6",
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track, resolved as a loss")] = "5.6",
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track, unresolved")] = "5.6",
+        [CheckReach.Key("15.7 Tonight", "Night header, names in the index")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "Night header, names that fired")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused")] = "6.5",
+        [CheckReach.Key("15.7 Tonight", "Night header, spend")] = "6.5",
+        [CheckReach.Key("15.7 Tonight", "Night header, run duration")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "Night header, the harness verdict")] = "5.8",
+        [CheckReach.Key("15.7 Tonight", "The list, one row per name that fired")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by band strength")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "The list, at most twenty drawn")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "The list, name")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "The list, close")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "The list, day change")] = "5.8",
+        [CheckReach.Key("15.7 Tonight", "The list, trend state in a word")] = "5.8",
+        [CheckReach.Key("15.7 Tonight", "The list, the distance row mark")] = "5.8",
+        [CheckReach.Key("15.7 Tonight", "The list, the reasons")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "Selected name, the plan column")] = "5.4",
+        [CheckReach.Key("15.7 Tonight", "Selected name, the level summary")] = "5.8",
+        [CheckReach.Key("15.7 Tonight", "Selected name, whichever row is selected")] = "5.8",
+        [CheckReach.Key("15.8 Universe", "Sector strip, one line per sector")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list")] = "5.4",
+        [CheckReach.Key("15.8 Universe", "Sector strip, names")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "Sector strip, how many are in an uptrend")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = "5.4",
+        [CheckReach.Key("15.8 Universe", "The table, sorted by distance to the nearest level ascending")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, paged")] = "5.8",
+        [CheckReach.Key("15.8 Universe", "The table, name")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, sector")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, close")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, trend state")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, the distance row mark")] = "5.1",
+        [CheckReach.Key("15.8 Universe", "The table, sessions until earnings")] = "5.8",
+        [CheckReach.Key("15.8 Universe", "The table, the evening last on the list")] = "5.4",
+        [CheckReach.Key("15.9 Name", "The chart, the level chart")] = "4.1",
+        [CheckReach.Key("15.9 Name", "The chart, the volume profile beside it on the same price axis")] = "3.3",
+        [CheckReach.Key("15.9 Name", "The chart, the momentum panel beneath")] = "3.5",
+        [CheckReach.Key("15.9 Name", "The chart, the level summary table with each band's members and dates")] = "3.4",
+        [CheckReach.Key("15.9 Name", "The plan, the plan column mark")] = "4.6",
+        [CheckReach.Key("15.9 Name", "The plan, the tranche table with conditions and stops")] = "4.6",
+        [CheckReach.Key("15.9 Name", "The plan, the exit table with actions")] = "4.6",
+        [CheckReach.Key("15.9 Name", "The plan, the earnings setups")] = "4.6",
+        [CheckReach.Key("15.9 Name", "The plan, the sizing arithmetic")] = "4.6",
+        [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = "5.2",
+        [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = "6.5",
+        [CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture")] = "5.8",
+        [CheckReach.Key("15.10 Run", "Operational header, what ran")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Operational header, the instant each stage started and how long it took")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Operational header, model calls")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Operational header, network requests")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Operational header, spend")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Operational header, what each stage said about itself")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "7.5",
+        [CheckReach.Key("15.10 Run", "Reason records, one row per reason with the reason track mark")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded")] = "7.5",
+        [CheckReach.Key("15.10 Run", "Harness, passed")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Harness, failed")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Harness, unexamined")] = "5.6",
         // Contradiction D's own case. The exporter is a phase 6 component and
         // this row is the surface it writes.
         [CheckReach.Key("15.4 The two surfaces", "The exported report")] = "6.9",
@@ -954,53 +1187,32 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Volume profile")] = "3.3",
         // 4.4 is "The plan column mark and the tables", so this mark is owed a
         // phase later than the section it sits in.
-        [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] = "4.6",
         [CheckReach.Key("15.5 The mark vocabulary", "Momentum panel")] = "3.5",
         // Drawn from levels, which arrive at 3.4, and used by the universe
         // and tonight screens. 5.1 is where the first of those exists, and a
         // mark with no screen to sit on is a mark nothing can be asserted about.
-        [CheckReach.Key("15.5 The mark vocabulary", "Distance row")] = "5.1",
         // Both need a listing and a reason behind them, which phase 5 is the
         // first to write.
-        [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] = "5.6",
         [CheckReach.Key("15.5 The mark vocabulary", "Listing strip")] = "5.4",
-
-        [CheckReach.Key("15.7 Tonight", "Night header")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Watch list")] = "5.4",
-        [CheckReach.Key("15.7 Tonight", "The list")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = "5.6",
-        [CheckReach.Key("15.7 Tonight", "Selected name")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Reason totals")] = "5.6",
-
-        [CheckReach.Key("15.8 Universe", "Sector strip, one line per sector")] = "5.1",
-        [CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list")] = "5.4",
-        [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = "5.1",
-        [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = "5.4",
         [CheckReach.Key("15.8 Universe", "Filters")] = "5.1",
 
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",
         [CheckReach.Key("15.9 Name", "Fact strip")] = "6.1",
         [CheckReach.Key("15.9 Name", "The short version")] = "6.4",
-        [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = "5.2",
-        [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = "6.5",
-        [CheckReach.Key("15.9 Name", "The chart")] = "4.1",
-        [CheckReach.Key("15.9 Name", "The plan")] = "4.6",
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.5",
         [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.5",
         [CheckReach.Key("15.9 Name", "Provenance footer")] = "6.4",
         [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
-
-        [CheckReach.Key("15.10 Run", "Operational header")] = "5.6",
         // 7.5 is "Reason verdicts on the run page" and 7.4 is "The shadow
         // column", so two rows of this section are owed two phases after it.
-        [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = "5.6",
-        [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "7.5",
         [CheckReach.Key("15.10 Run", "Shadow candidates")] = "7.4",
         [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = "6.3",
         [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.2",
-        [CheckReach.Key("15.10 Run", "Harness")] = "5.6",
 
         [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "7.5",
         [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "7.5",
@@ -1029,6 +1241,43 @@ internal static class Scope
     // table, fails too.
     static readonly Dictionary<string, string[]> Elements = new(StringComparer.Ordinal)
     {
+        // Every part these rows enumerate, added at the fifth phase 5 sign-off
+        // review, which found a row's parts chosen by this reader rather than read
+        // off the row: a clause the reader left out had no verdict of its own
+        // while its row passed whole, so 15.7's list passed while the page drew
+        // neither the day change, nor the trend state, nor the distance mark it
+        // states. The parts are now read off the document and every one of them
+        // carries a verdict.
+        [CheckReach.Key("15.4 The two surfaces", "The app")] =
+            ["the single page", "routing", "filters", "selection"],
+        [CheckReach.Key("15.5 The mark vocabulary", "Plan column")] =
+            ["Everything above the marker is a sale", "everything below is a purchase", "stops are horizontal rules", "the invalidation is the lowest one"],
+        [CheckReach.Key("15.5 The mark vocabulary", "Distance row")] =
+            ["A name's close between its nearest support and its nearest resistance", "sized for a table cell", "the distances in typical days"],
+        [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] =
+            ["setups resolved as a win", "resolved as a loss", "unresolved"],
+        [CheckReach.Key("15.7 Tonight", "Night header")] =
+            ["names in the index", "names that fired", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
+        [CheckReach.Key("15.7 Tonight", "The list")] =
+            ["one row per name that fired", "ordered by how many fired then by band strength", "at most twenty drawn", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reasons"],
+        [CheckReach.Key("15.7 Tonight", "Selected name")] =
+            ["the plan column", "the level summary", "whichever row is selected"],
+        [CheckReach.Key("15.8 Universe", "Sector strip")] =
+            ["one line per sector", "how many are on tonight's list", "names", "how many are in an uptrend"],
+        [CheckReach.Key("15.8 Universe", "The table")] =
+            ["every name in the index", "the listing strip over sixty sessions", "sorted by distance to the nearest level ascending", "paged", "name", "sector", "close", "trend state", "the distance row mark", "sessions until earnings", "the evening last on the list"],
+        [CheckReach.Key("15.9 Name", "The chart")] =
+            ["the level chart", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates"],
+        [CheckReach.Key("15.9 Name", "The plan")] =
+            ["the plan column mark", "the tranche table with conditions and stops", "the exit table with actions", "the earnings setups", "the sizing arithmetic"],
+        [CheckReach.Key("15.9 Name", "How it got here")] =
+            ["the table of the biggest moves", "the cause of each where research has been written", "the twelve-month picture"],
+        [CheckReach.Key("15.10 Run", "Operational header")] =
+            ["what ran", "the instant each stage started and how long it took", "model calls", "network requests", "spend", "what each stage said about itself"],
+        [CheckReach.Key("15.10 Run", "Reason records")] =
+            ["the resolved count", "the share that reached target before stop", "one row per reason with the reason track mark", "the break-even those setups demanded"],
+        [CheckReach.Key("15.10 Run", "Harness")] =
+            ["passed", "failed", "unexamined"],
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
             ["candles", "the level bands", "the moving averages", "a volume pane"],
 
@@ -1041,11 +1290,7 @@ internal static class Scope
         // each, both rows would be owed at 5.4 and the halves that draw from
         // membership, indicators, levels and ladders would sit unasserted for
         // the whole of the phase's visible output.
-        [CheckReach.Key("15.8 Universe", "Sector strip")] =
-            ["one line per sector", "how many are on tonight's list"],
-        [CheckReach.Key("15.8 Universe", "The table")] =
-            ["every name in the index", "the listing strip over sixty sessions"],
-
+                
         // The run page's reason record, and the same argument again. Its counts
         // and the base rate pinned above them are what 5.6 builds, and three
         // operating obligations name that surface as where their trigger is
@@ -1053,9 +1298,7 @@ internal static class Scope
         // claim it would be owed at 7.5, and the obligations would name a
         // surface the harness says arrives two phases after the checkpoint the
         // plan says builds it.
-        [CheckReach.Key("15.10 Run", "Reason records")] =
-            ["the resolved count", "the share that reached target before stop"],
-
+        
         // The run page's stale-and-failed region, decomposed at the phase 5
         // sign-off. It was PASS whole from 5.6 while two of its parts describe
         // components phase 6 builds: sections that fell back are the claim
@@ -1074,9 +1317,7 @@ internal static class Scope
         // `research_section` with its source, and it arrives at 6.5. Read as one
         // claim the table would be owed at 6.5 and the half that works would sit
         // unasserted for a phase, which is contradiction F's argument.
-        [CheckReach.Key("15.9 Name", "How it got here")] =
-            ["the table of the biggest moves", "the cause of each where research has been written"],
-
+        
         // The same shape in the failure table, and it arrived by the same
         // route. This row's "What you see" cell names two surfaces drawn a
         // phase and a half apart: the chart, which exists from 1.3 and shows
