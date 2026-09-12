@@ -7290,3 +7290,152 @@ Tests:      556, from 552. Four added here, over a tree that already carried the
             are 61 at phase 6 and 16 at phase 7, which is the figure the entry below the 5.8 one
             corrects. Windows on this machine; the matrix carries macOS and the Linux
             case-sensitivity job.
+
+### Phase 5 sign-off                                                         2026-09-12
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. The building
+            session committed PRs 66 through 74 and says so in its handover. This is the eighth
+            review of phase 5; the seven before it each handed work back and this one does not.
+Verified:   by re-running both gates on `main` at 691fd8a rather than by reading the entries.
+            `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, 0 errors, 556 of 556 tests
+            passing inside it, migrations 0 to 18 applied and then none pending at schema
+            version 18, exit 0. `tools/verify-phase.ps1` green at 29 tables, 298 claims, 221
+            PASS, 0 FAIL, 77 out of scope, 0 unexamined, 228 placements and verdicts reconciled
+            against a floor of 34, fixture PRESENT with 1 captured over 6 constituents and 4
+            names, 35 checks on the roster and 33 carried, 33 ran and passed and none did not
+            run. Windows PowerShell on this machine. Every figure the 5.7 and 5.8 entries state
+            reproduces exactly, including the 556 the merged tree's correction records. Of the
+            29 tables, 17 are claim sources and 12 are placed carrying no claim, which the
+            report states as three numbers rather than leaving the difference to a reader.
+Split:      the 77 out of scope are 61 at phase 6 checkpoints and 16 at phase 7, computed over
+            the 77 out-of-scope claims in `artifacts/phase-report.json` by the checkpoint each
+            note names. Read twice, taking the first checkpoint each note names and then the
+            last, because the figure the sixth review corrected was wrong exactly there. Both
+            readings give 61 and 16, and no note now names more than one checkpoint, so the
+            ambiguity that produced the wrong figure is gone rather than avoided. None is inside
+            phase 5 and none names a bare phase. All fourteen checkpoints they name, 6.1 through
+            6.9 and 7.1 through 7.6, are in `BUILD_PLAN.md` and none is recorded above.
+Matrix:     read from the runs that pushed each merge rather than from the machine at hand,
+            because done condition 5 is about both runners, and jobs were enumerated rather than
+            run conclusions read, since a skipped job leaves a run green. The 27 merge commits on
+            `main` since the phase 4 sign-off carry 26 push runs; the 27th is 06c16a5, a branch
+            taking `main` into itself inside PR 74, which was never a head of `main`. Those 26
+            runs carry 78 jobs, 26 each of `matrix (windows-latest)`, `matrix (macos-latest)` and
+            `case-sensitivity`, and all 78 concluded success with none skipped or cancelled. PRs
+            73 and 74 were read again by job: 6 green each, the three jobs on both the push and
+            the pull_request events. `.github/workflows/ci.yml` carries zero `if:` and zero
+            `continue-on-error:` keys, counted rather than blocklisted.
+Plan:       all nine checkpoints, 5.0 through 5.8, are in `BUILD_PLAN.md` and all nine are
+            recorded above, over 119 entry headings. No open pull request. Six remote branches
+            for merged phase 5 work were not deleted after their merges; all six are ancestors of
+            `origin/main`, so nothing can diverge from them, and the local tree is on `main` and
+            clean, which is the half of that rule the hazard is about. The carried obligations
+            table holds 60 rows, 45 discharged or retired and 15 open, and the earliest open due
+            point is 6.0, so nothing is owed inside phase 5. All 16 expectation files state
+            `derivation: derived` naming the rules they come from and none is frozen from a run,
+            which is done condition 7 read off the files rather than off the entries. Mutation
+            evidence is recorded at every checkpoint from 5.1 to 5.8; 5.0 is a planning pass. The
+            two done conditions phase 5 amended, at 5.7 and at 5.3, each say so in the required
+            words.
+Store:      the operator store under `data/` was not touched by either gate. It was last written
+            2026-09-11 20:51, before this session, and still holds 2026-09-11 as its newest
+            session in `bar`, `listing` and `facts` alike. `tools/ci.ps1` dropped and rebuilt
+            `data-ci/` instead, which is the separation 5.7 put in.
+Merged:     06c16a5 read as a merge rather than as a diff, because two branches appended to
+            `PROGRESS.md` and conflicted. The merge base ded8ad0 holds 116 entry headings, the
+            branch 117 and `main` 118, and the merge holds 119, which is the union and not one
+            more or one fewer. No heading present in either parent is absent from the merge, in
+            both directions. `docs/PROGRESS.md` is the only file whose merge result differs from
+            both parents, so no other file took a resolution. 7938875 then moved that entry's
+            test count from 554 to 556: the branch had measured itself before taking `main` in,
+            and the entry had not reached `main`, so the record `main` receives was never wrong.
+Reproduced: the seventh review's own two demonstrations, run now as mutations against the repair.
+            "the day change arrow" added to 15.7's list row turns
+            `EveryPartASectionFifteenRowEnumeratesHasItsOwnVerdict` red and names itself, where it
+            passed with no verdict and no complaint before. And the day change on a past night was
+            checked through the read path rather than through the projection: the suite's own
+            past-night test constructs a second night, and every listed name's close is that
+            night's while its change is the one that night's own two sessions make.
+Swept:      15 runs over 13 mutations and 2 measurements, all made in an isolated worktree at
+            691fd8a under the session scratchpad outside the repository, reverted, the worktree
+            removed, and the main tree modified at no point. The rule was stated before the sweep
+            and not after: every mutation targets a site that decides which claims an instrument
+            reads or which of two values a surface draws, because those are the two shapes that
+            produced the blocking findings at the fifth, sixth and seventh reviews. A reader that
+            narrows silently and a figure about the wrong session are one fault seen from two ends.
+            Ten turned a test red. The night guard removed from `DayChange`, and the night bound
+            removed from `CloseOn`, each turn the stale-member test red. A clause added to 15.7's
+            list row and a clause added to 15.10's hand-decomposed row are each caught and named,
+            the second holding an existing element's whole wording. A decomposition pointed at an
+            element no row holds turns three tests red, including the map's own reconciliation.
+            Two of the three rationale exemptions removed are each named back, so all three are
+            load-bearing and the set of eleven really has become a set of three that fire.
+            `Covers` reverted to containment turns its permanent proof red. Dropping "15.8
+            Universe" from `Scope.ScreensTables` turns two red. Narrowing the enumeration reader
+            from three items to four turns its own permanent proof red. Renaming the phase report
+            writer's `outOfScope` key turns one red.
+Measured:   two floors read rather than mutated, because a floor states a scope and a scope is a
+            number. `EveryPartASectionFifteenRowEnumeratesHasItsOwnVerdict` reads 71 enumerated
+            parts against its floor of 40. The past-night test's discriminating-row count, being
+            the names whose newest close differs from the night's, is 4 of 4 against its floor of
+            1, so the two readings are told apart by every row rather than by one.
+Group A:    survived and equivalent. One, and it is not a defect.
+            `ClosesToTheNight`'s `seen <= 2` widened to `seen <= 3` leaves all 556 green. The
+            projection groups the rows it is handed, orders each name's by session descending and
+            takes the first two, so a third row changes neither figure. The row limit bounds what
+            is read and the pair is re-established above it, which is the safer arrangement of the
+            two. What nothing states is that the read returns at most two per name, and nothing
+            needs to.
+Group B:    survived, and a property the code states that no test names. Two, one of them new.
+            Pointing the `/screens/tonight/{night}` route at `dated.AddDays(-1)`, for both the
+            night it projects and the pair it reads, leaves all 556 green. No test in the suite
+            hosts a route, so every route body in `EquityBrief.Api/Program.cs` is unreached and
+            the PASS sits at the helpers they call. This is pre-existing and already carried
+            (owes: The run page's route, duration and the worker's refusal reached by tests),
+            whose text says the routes pass the night they show and that 6.0 decides how the suite
+            hosts a route. Worth saying at 6.0: that row's name says "The run page's route" where
+            its text covers the tonight route too, so a session reading the name alone could
+            discharge it having hosted one route.
+            The new one is the row filter in `EveryPartASectionFifteenRowEnumeratesHasItsOwnVerdict`.
+            It visits a row where any subject passes, which is the wide and correct rule. Narrowed
+            to rows where every subject passes, all 556 stay green and the reader drops from 71
+            enumerated parts to 57. The 14 it stops reading are the parts of the four section 15
+            rows whose subjects carry mixed verdicts today: 15.7's night header, 15.9's
+            how-it-got-here, and 15.10's reason records and stale-and-failed. Those are exactly
+            the half-built rows, where a part belonging to the built half is what goes undrawn,
+            and it is the family the fifth review's blocking finding came from. The floor of 40
+            cannot see it and should not be asked to, a floor being set far below its value so
+            ordinary growth never moves it, so the instrument for this is an assertion that the
+            skip rule is the wide one, over constructed verdicts. Carried below.
+Judged:     the four the handover offered as reversible, and none is reversed.
+            Drawing no day change for a name with no bar on the night is right. A change computed
+            from its last two stored sessions is a figure about a day the page is not showing, and
+            the two absences now read as two sentences rather than one.
+            Leaving the universe row's close unbounded is the right scope for a correction.
+            Binding it is wider than the defect, it is cited at the site, and it is the 6.0
+            finding (owes: The phase 5 sign-off's remaining store-shape findings ruled or fixed).
+            The six stated decompositions stand rather than the elements being reworded to the
+            document's phrases. Rewording ripples into claim subjects, placements and what each
+            check declares it reaches, for no gain in the property. Worth stating for 6.0: four of
+            the six name a single element, being a phrase that is that element plus a qualifying
+            tail, which is containment held to six named and twice-reconciled instances. If that
+            set grows, the matcher has drifted back toward what was just repaired.
+            The enumeration rule, three or more comma-separated items, is unchanged and is stated
+            as the reader's scope rather than left implicit.
+Not a reopen: under the stopping rules none of the above reopens phase 5. No check broke, both
+            gates are green, no done condition fails, and in every case the shipped code is
+            correct and what is absent is an assertion. The seventh review's two blocking findings
+            are repaired and both of its demonstrations now go red and name themselves; its three
+            carried items are closed.
+Carried:    two obligations created here, for 6.0 to enter in the table rather than by this entry,
+            which edits no spec. Both are tests, and 6.0 is the planning pass that already rules
+            on what a check can reach.
+            The section 15 part coverage asserted to visit a row any subject passes, over
+            constructed verdicts, so that narrowing the filter to rows every subject passes turns
+            it red rather than dropping 14 of 71 parts in silence. Due at 6.0.
+            The obligation on hosting a route restated so its name covers the routes its text
+            covers, or split into one row per route, so that discharging it cannot be read as
+            having hosted the run page's route alone. Due at 6.0.
+Signed:     phase 5 is signed off at 691fd8a. Its nine checkpoints are built and recorded, both
+            gates are green on the tree being signed, the matrix ran on both runners for every
+            merge, nothing is owed inside the phase, and 6.0 is unblocked.
