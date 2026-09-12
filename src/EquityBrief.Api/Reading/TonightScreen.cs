@@ -34,19 +34,35 @@ public static class TonightScreen
     // here.
     // owes: The strength score read against four names
     public static IReadOnlyList<ListingCell> Rows(
+        DateOnly night,
         IReadOnlyList<ListingRow> listings,
         IReadOnlyDictionary<string, int> strengthByTicker,
-        IReadOnlyDictionary<string, decimal?> closeByTicker,
         IReadOnlyDictionary<string, UniverseCell> cellByTicker,
-        IReadOnlyDictionary<string, decimal> previousCloseByTicker) =>
-    [
-        .. listings
-            .Where(listing => listing.FiredCount > 0)
-            .Select(listing => Cell(listing, strengthByTicker, closeByTicker, cellByTicker, previousCloseByTicker))
-            .OrderByDescending(cell => cell.FiredCount)
-            .ThenByDescending(cell => cell.Strength)
-            .ThenBy(cell => cell.Ticker, StringComparer.Ordinal),
-    ];
+        IReadOnlyList<CloseRow> closesToTheNight)
+    {
+        // The two newest sessions each name holds at or before the night, newest
+        // first, which is what both the close cell and the day change are read
+        // from. One read for the pair, because the pair is the property: two
+        // reads gave 5.8 a close from one session and a previous close from
+        // another, and the subtraction of two sessions that are not consecutive
+        // is a number rather than an absence.
+        var sessions = closesToTheNight
+            .GroupBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<CloseRow>)[.. group.OrderByDescending(row => row.SessionDate)],
+                StringComparer.Ordinal);
+
+        return
+        [
+            .. listings
+                .Where(listing => listing.FiredCount > 0)
+                .Select(listing => Cell(listing, night, strengthByTicker, cellByTicker, sessions))
+                .OrderByDescending(cell => cell.FiredCount)
+                .ThenByDescending(cell => cell.Strength)
+                .ThenBy(cell => cell.Ticker, StringComparer.Ordinal),
+        ];
+    }
 
     // The day's change, as a signed percentage of the session before.
     //
@@ -54,15 +70,42 @@ public static class TonightScreen
     // distance: it is not a stored column, the read surface computes nothing and
     // the page computes nothing, so the projection is the seam it belongs in.
     //
+    // It takes the name's own sessions rather than two closes, because the two
+    // closes are what went wrong: a change is only a day's change where the two
+    // sessions behind it are the name's two newest at the night and the newer of
+    // them is the night. A name with no bar on the night has no day change at
+    // all, and drawing one from its last two stored sessions would be a figure
+    // about a day the page is not showing. It read the newest bar against the
+    // newest bar before the night until the sixth phase 5 sign-off review, which
+    // is a wrong number on any past night and exactly 0.00 for a stale name.
+    //
     // A previous close of zero or less gives no change rather than an infinite
     // one. That is a name the store holds a close of nothing for, and dividing
     // by it would report the price itself as a day's move, which is the shape
     // the earnings rule's own earlier-session guard was written against.
     // see: Code owns every number
-    public static double? DayChange(decimal? close, decimal? previousClose) =>
-        close is { } today && previousClose is { } before && before > 0m
-            ? Statistic.FromPrice((today - before) / before) * 100
-            : null;
+    public static double? DayChange(DateOnly night, IReadOnlyList<CloseRow>? sessions)
+    {
+        if (sessions is not { Count: >= 2 } held || held[0].SessionDate != night || held[1].Close <= 0m)
+        {
+            return null;
+        }
+
+        return Statistic.FromPrice((held[0].Close - held[1].Close) / held[1].Close) * 100;
+    }
+
+    // The close the row shows: the name's close on the night, and nothing where
+    // the name has no bar on it.
+    //
+    // Read from the same pair the change is, rather than from the universe row,
+    // whose close column is the name's newest bar whatever night is asked for.
+    // That column is what made a past night's row carry today's close beside a
+    // change computed from that night's, and the two disagreeing on one row is
+    // what the sixth review demonstrated. The universe screen still reads it, and
+    // a past night's bands and plan are the same shape and are carried at 6.0.
+    // owes: The phase 5 sign-off's remaining store-shape findings ruled or fixed
+    public static decimal? CloseOn(DateOnly night, IReadOnlyList<CloseRow>? sessions) =>
+        sessions is { Count: > 0 } held && held[0].SessionDate == night ? held[0].Close : null;
 
     // Which row the selected-name region is drawn for: the one the reader asked
     // for, and the first when they have asked for none or for a name that is not
@@ -80,10 +123,10 @@ public static class TonightScreen
 
     static ListingCell Cell(
         ListingRow listing,
+        DateOnly night,
         IReadOnlyDictionary<string, int> strengthByTicker,
-        IReadOnlyDictionary<string, decimal?> closeByTicker,
         IReadOnlyDictionary<string, UniverseCell> cellByTicker,
-        IReadOnlyDictionary<string, decimal> previousCloseByTicker)
+        IReadOnlyDictionary<string, IReadOnlyList<CloseRow>> sessionsByTicker)
     {
         using var document = JsonDocument.Parse(listing.Reasons);
 
@@ -99,21 +142,21 @@ public static class TonightScreen
             .ToArray();
 
         var cell = cellByTicker.GetValueOrDefault(listing.Ticker);
-        var stored = closeByTicker.TryGetValue(listing.Ticker, out var close) ? close : null;
+        var sessions = sessionsByTicker.GetValueOrDefault(listing.Ticker);
 
         return new ListingCell(
             listing.Ticker,
             listing.SessionDate,
             listing.FiredCount,
             strengthByTicker.TryGetValue(listing.Ticker, out var strength) ? strength : 0,
-            stored,
+            CloseOn(night, sessions),
             [.. fired.Select(reason => reason.Name)],
             fired,
             // The three the row states beside the name, the close and the
             // reasons. Each is absent rather than zero for a name the night
             // computed nothing for, which is the rule every other column on
             // every other screen already follows.
-            DayChange(stored, previousCloseByTicker.TryGetValue(listing.Ticker, out var before) ? before : null),
+            DayChange(night, sessions),
             cell?.TrendState,
             cell);
     }

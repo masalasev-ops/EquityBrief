@@ -1467,11 +1467,11 @@ public class ReadSurface
         }
 
         var rows = TonightScreen.Rows(
+            night,
             listings,
             strengths,
-            new Dictionary<string, decimal?>(StringComparer.Ordinal),
             new Dictionary<string, UniverseCell>(StringComparer.Ordinal),
-            new Dictionary<string, decimal>(StringComparer.Ordinal));
+            []);
 
         // Only the names that fired are drawn, which is what separates the list
         // from the universe screen.
@@ -1486,14 +1486,14 @@ public class ReadSurface
         // whose fired counts are equal, because four names of real bars are not
         // guaranteed to tie.
         var tied = TonightScreen.Rows(
+            night,
             [
                 new ListingRow("AAAA", night, Fired(1), 1, "{}"),
                 new ListingRow("BBBB", night, Fired(1), 1, "{}"),
             ],
             new Dictionary<string, int>(StringComparer.Ordinal) { ["AAAA"] = 3, ["BBBB"] = 9 },
-            new Dictionary<string, decimal?>(StringComparer.Ordinal),
             new Dictionary<string, UniverseCell>(StringComparer.Ordinal),
-            new Dictionary<string, decimal>(StringComparer.Ordinal));
+            []);
 
         Assert.Equal(["BBBB", "AAAA"], [.. tied.Select(row => row.Ticker)]);
     }
@@ -2628,11 +2628,11 @@ public class ReadSurface
         }
 
         var rows = TonightScreen.Rows(
+            night,
             listings,
             strengths,
-            universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal),
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
-            (await api.PreviousClosesAsync(night)).ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal));
+            await api.ClosesToTheNightAsync(night));
 
         Assert.NotEmpty(rows);
 
@@ -2940,8 +2940,7 @@ public class ReadSurface
         var night = (await api.NewestNightAsync())!.Value;
         var listings = await api.ListingsAsync(night);
         var universe = await api.UniverseAsync(Index, night);
-        var previous = (await api.PreviousClosesAsync(night))
-            .ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal);
+        var closes = await api.ClosesToTheNightAsync(night);
 
         var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -2953,11 +2952,11 @@ public class ReadSurface
         }
 
         var rows = TonightScreen.Rows(
+            night,
             listings,
             strengths,
-            universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal),
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
-            previous);
+            closes);
 
         Assert.NotEmpty(rows);
 
@@ -3018,18 +3017,29 @@ public class ReadSurface
         }
 
         // Each of the three is an absence stated rather than a zero. A name with
-        // no earlier close, no ladder row and no bands says so three times, and
-        // says nothing that reads as a value.
+        // no bar on the night, no ladder row and no bands says so three times,
+        // and says nothing that reads as a value. Over a constructed cell here,
+        // and over the read path in the two tests below, which is the half this
+        // could not see: a hand-built cell carries whatever the test puts in it,
+        // so it proves the renderer and never the figures reaching it.
         var bare = new MarkRenderer().TonightList(
-            [new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone])],
+            [new ListingCell("ZZZZ", night, 1, 0, null, [ShortlistSeries.AtEntryZone])],
             SinglePageApp.TonightDrawn);
 
         Assert.Contains("data-day-change=\"none\"", bare, StringComparison.Ordinal);
-        Assert.Contains("no earlier close stored", bare, StringComparison.Ordinal);
+        Assert.Contains("data-absence=\"no-bar\"", bare, StringComparison.Ordinal);
         Assert.Contains("data-trend-state=\"not classified\"", bare, StringComparison.Ordinal);
         Assert.Contains("data-distance=\"none\"", bare, StringComparison.Ordinal);
         Assert.DoesNotContain("data-day-change=\"0.00\"", bare, StringComparison.Ordinal);
         Assert.DoesNotContain("<svg class=\"distance-row\"", bare, StringComparison.Ordinal);
+
+        // A name with a close and no session before it is the other absence, and
+        // it is a different sentence.
+        var first = new MarkRenderer().TonightList(
+            [new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone])],
+            SinglePageApp.TonightDrawn);
+
+        Assert.Contains("data-absence=\"no-earlier-close\"", first, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -3089,11 +3099,11 @@ public class ReadSurface
         }
 
         var rows = TonightScreen.Rows(
+            night,
             listings,
             strengths,
-            universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal),
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
-            (await api.PreviousClosesAsync(night)).ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal));
+            await api.ClosesToTheNightAsync(night));
 
         Assert.True(rows.Count >= 2, $"the night listed {rows.Count} names, and telling a selection from a default needs two.");
 
@@ -3437,6 +3447,184 @@ public class ReadSurface
         Assert.Contains("no stored session", new MarkRenderer().MovesTable("NOSUCH", [], []), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task APastNightsRowCarriesThatNightsCloseAndTheChangeAcrossThatNightsOwnSessions()
+    {
+        // The sixth phase 5 sign-off review's blocking finding, over the read
+        // path that produced it. 5.8 took the close from the universe row, whose
+        // close column is the name's newest bar whatever night is asked for, and
+        // the previous close from the newest bar before the night. On a past
+        // night that subtracts two sessions which are neither consecutive nor
+        // the night's, and the number drawn is wrong rather than absent.
+        //
+        // The committed fixture holds listings on one night, so the case is
+        // constructed: the same names listed again on an earlier session the
+        // store already holds bars for. Nothing else in the suite reaches a
+        // second night, which is why nothing saw this.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var newest = (await api.NewestNightAsync())!.Value;
+        var bars = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+
+        // A session with a session before it, and far enough back that the
+        // name's newest close is not the close on it.
+        var earlier = bars[^3].SessionDate;
+
+        Assert.True(earlier < newest, $"the earlier session {earlier} is not before the night {newest}.");
+
+        var on = Stamp(earlier);
+
+        Insert(
+            store,
+            "INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) " +
+            $"SELECT ticker, '{on}', reasons, fired_count, plan_at_listing, shadow_reasons " +
+            $"FROM listing WHERE session_date = '{Stamp(newest)}';");
+
+        var listings = await api.ListingsAsync(earlier);
+
+        Assert.NotEmpty(listings);
+
+        var universe = await api.UniverseAsync(Index, earlier);
+        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var row in universe)
+        {
+            var bands = await api.LevelsAsync(row.Ticker);
+
+            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+        }
+
+        var rows = TonightScreen.Rows(
+            earlier,
+            listings,
+            strengths,
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            await api.ClosesToTheNightAsync(earlier));
+
+        Assert.NotEmpty(rows);
+
+        var list = new MarkRenderer().TonightList(rows, SinglePageApp.TonightDrawn);
+        var discriminating = 0;
+
+        foreach (var row in rows)
+        {
+            var held = await api.BarsAsync(row.Ticker, DateOnly.MinValue, earlier);
+
+            Assert.True(held.Count >= 2, $"{row.Ticker} holds {held.Count} sessions to {earlier}, expected at least 2.");
+            Assert.Equal(earlier, held[^1].SessionDate);
+
+            // The close is that night's, not the name's newest.
+            Assert.Equal(held[^1].Close, row.Close);
+
+            var reads = (Statistic.FromPrice((held[^1].Close - held[^2].Close) / held[^2].Close) * 100)
+                .ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture);
+
+            Assert.Contains($"data-day-change=\"{reads}\"", list, StringComparison.Ordinal);
+
+            // And the two figures are about one session, which is the property
+            // the defect broke: the change is the one this night's close makes
+            // against the session before it, and both come from the same pair.
+            var newestClose = (await api.BarsAsync(row.Ticker, DateOnly.MinValue, DateOnly.MaxValue))[^1].Close;
+
+            if (newestClose != held[^1].Close)
+            {
+                discriminating++;
+
+                Assert.NotEqual(newestClose, row.Close);
+
+                var wrong = (Statistic.FromPrice((newestClose - held[^2].Close) / held[^2].Close) * 100)
+                    .ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture);
+
+                Assert.DoesNotContain($"data-day-change=\"{wrong}\"", list, StringComparison.Ordinal);
+            }
+        }
+
+        // Stated in advance, because a sweep that finds nothing is a sweep that
+        // proves nothing: at least one name has to have moved between the night
+        // and its newest session, or the two readings cannot be told apart.
+        Assert.True(
+            discriminating >= 1,
+            $"{discriminating} of {rows.Count} rows have a newest close differing from the night's, expected at least 1.");
+    }
+
+    [Fact]
+    public async Task ANameWithNoBarOnTheNightDrawsNoCloseAndNoDayChangeRatherThanZero()
+    {
+        // The second shape the sixth review found, and this one fires on the
+        // newest night. Both legs of the change resolved to the name's last
+        // stored bar, so a stale member drew exactly 0.00: a figure saying the
+        // price did not move, on a night the store holds no price for.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+        var made = listings.First(listing => listing.FiredCount > 0).Ticker;
+
+        // Made stale by removing its bar on the night, which is what a name the
+        // day's file carried nothing for looks like in the store. The facts row
+        // goes with it, because a facts file for a session with no bar is the
+        // state the 5.3 guard refuses.
+        var on = Stamp(night);
+
+        Insert(store, $"DELETE FROM facts WHERE ticker = '{made}' AND session_date = '{on}';");
+        Insert(store, $"DELETE FROM bar WHERE ticker = '{made}' AND session_date = '{on}';");
+
+        var held = await api.BarsAsync(made, DateOnly.MinValue, night);
+
+        Assert.NotEmpty(held);
+        Assert.NotEqual(night, held[^1].SessionDate);
+
+        var universe = await api.UniverseAsync(Index, night);
+        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var row in universe)
+        {
+            var bands = await api.LevelsAsync(row.Ticker);
+
+            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+        }
+
+        var rows = TonightScreen.Rows(
+            night,
+            listings,
+            strengths,
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            await api.ClosesToTheNightAsync(night));
+
+        var stale = Assert.Single(rows, row => row.Ticker == made);
+
+        Assert.Null(stale.DayChangePct);
+        Assert.Null(stale.Close);
+
+        // The universe row still carries the name's newest close, which is the
+        // column the defect read. The row does not, and that is the fix: the two
+        // are different questions and only one of them is about this night.
+        Assert.Equal(held[^1].Close, universe.Single(row => row.Ticker == made).Close);
+
+        var list = new MarkRenderer().TonightList(rows, SinglePageApp.TonightDrawn);
+        var cell = Regex.Match(list, $"<tr data-ticker=\"{made}\".*?</tr>", RegexOptions.Singleline).Value;
+
+        Assert.NotEmpty(cell);
+        Assert.Contains("data-day-change=\"none\"", cell, StringComparison.Ordinal);
+        Assert.Contains("data-absence=\"no-bar\"", cell, StringComparison.Ordinal);
+        Assert.Contains("not computed", cell, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-day-change=\"0.00\"", cell, StringComparison.Ordinal);
+        Assert.DoesNotContain("0.00%", cell, StringComparison.Ordinal);
+
+        // The names that do have a bar on the night still draw a change, so the
+        // absence is this name's and not the whole column going quiet.
+        Assert.Contains(rows, row => row.Ticker != made && row.DayChangePct is not null);
+    }
+
     static ChartBar[] Bars(IReadOnlyList<BarRow> served) =>
         [.. served.Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))];
+
+    // A session as the store writes it, formatted once against the invariant
+    // culture rather than interpolated into each statement. A hole carrying a
+    // date format is a hole rendered in the machine's locale, which is the form
+    // `clock-usage` reads off the literal and refuses.
+    static string Stamp(DateOnly session) =>
+        session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 }

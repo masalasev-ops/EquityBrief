@@ -111,14 +111,14 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     // The neighbours on the list, in the order the list itself is drawn in. The
     // walk is about position, so it takes the same ordering with the same inputs
     // rather than a cheaper one that could order differently.
-    var ordered = TonightScreen.Rows(
-        listings,
-        strengths,
-        universe.ToDictionary(member => member.Ticker, member => member.Close, StringComparer.Ordinal),
-        UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
-        night is { } on
-            ? (await read.PreviousClosesAsync(on)).ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal)
-            : new Dictionary<string, decimal>(StringComparer.Ordinal));
+    var ordered = night is { } on
+        ? TonightScreen.Rows(
+            on,
+            listings,
+            strengths,
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            await read.ClosesToTheNightAsync(on))
+        : [];
 
     var at = ordered.Select((row, position) => (row.Ticker, position))
         .Where(pair => pair.Ticker == ticker)
@@ -198,8 +198,10 @@ app.MapGet("/screens/tonight/{night?}", async (
     // that night stored even after it has left.
     var universe = await read.UniverseAsync(index, dated);
 
-    // The band strength the ordering breaks ties on, and the close each row
-    // shows, both read from what the night stored rather than worked out here.
+    // The band strength the ordering breaks ties on, read from what the night
+    // stored rather than worked out here. The close each row shows comes from the
+    // night's own bar, beside the session before it, because a close from one
+    // session and a change computed from another is one row saying two things.
     var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
 
     foreach (var row in universe)
@@ -216,15 +218,12 @@ app.MapGet("/screens/tonight/{night?}", async (
     // column on any row.
     var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
 
-    var previous = (await read.PreviousClosesAsync(dated))
-        .ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal);
-
     var rows = TonightScreen.Rows(
+        dated,
         listings,
         strengths,
-        universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal),
         cells,
-        previous);
+        await read.ClosesToTheNightAsync(dated));
 
     // Whichever row the reader selected, from the hash, and the first row when
     // they have selected none. Section 15.7's region is for whichever row is
