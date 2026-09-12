@@ -25,6 +25,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-12 - BUILD_PLAN.md - the transaction question closed by ruling that no check is written
+Authorised by: A transaction taken for speed is not asserted, and a scan that would need twelve exemptions is not written
+Was:
+> | **Every stage that writes in a loop opens a transaction, asserted rather than read** | 5.7 sign-off | 6.0 | open, with half of it done: ...
+Now: the same row reading "6.0, discharged", with the ruling in its evidence cell and the text it carried before kept after it.
+Why: the row asked 6.0 to decide whether a source scan over the loop shape earns its false positives, and it does not. All sixteen writers loop, so one keyed on the loop reports every one and one keyed on the transaction reports none, and the thing that separates a stage needing one is the row count it writes, which appears in no file's text. A scan reporting twelve findings that are not defects is made green by exempting twelve by name.
+
+### 2026-09-12 - ARCHITECTURE.html - the night's zero-model-call rule carved for the overnight queue
+Authorised by: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
+Was:
+> Every night, all 500 names, no model and no per-name network calls
+>
+> | Model calls in the nightly run | 0 (see: The nightly run is arithmetic only) | the whole design rests on the nightly half being free | run log |
+>
+> No model is called and no per-name network request is made, and a feed that answers in pages counts every page it fetched,
+Now: figure 5.1's band names the arithmetic, the limits row reads 0 in the arithmetic with step 17 carved out by name and its reason states why the carve keeps the rule true, and section 14's note scopes both clauses to steps 1 to 16 and names the carve.
+Why: section 14's own list runs to seventeen steps and step 17 calls the local model for every listed name whose research is missing or stale. Three places said no model is called and the fourth was the step, which is the shape 1.2 carved for the backfill rather than loosening a rule to fit its own exception.
+
+### 2026-09-12 - ARCHITECTURE.html, SCHEMA.md - admissibility placed where the fetch lands, and the pending state named as a status
+Corrects: the claim checker's catalogue row said it refuses to store a document that fails the admissibility test while its matrix row gives it a read of the sources column and no write, and the research runner had the write and no read, so the component that decided could not store the verdict and the component that stored was not the one deciding. In the same two rows the catalogue named a research store pending and a research store, which is two stores in a sentence against one column here, so the gate the matrix key argues for was the one property the matrix could not carry. Found at 6.0 reading the two tables against each other before the components exist.
+Was:
+> <td>facts, fundamentals, filings archive, news feed, theme store, research model</td><td>research store (pending), source documents</td><td>writes the narrative sections and keeps every document it read</td>
+>
+> <td>research store (pending), facts, source documents</td><td>research store</td><td>rejects a number absent from the facts file and a claim whose source is not stored, and refuses to store a document that fails the admissibility test; one retry, then the section is left out rather than guessed</td>
+>
+> Only the research components write research, and the claim checker sits between the runner and what is served.
+Now: the runner reads and writes the sources column and applies the test as it fetches; the checker reads the verdict and does not apply the test; both rows name the research store once; the matrix key states that the gate is the status on the row and the split of one table's operations between two owners; and SCHEMA's source-document section says who applies the test and notes that its own ownership row already said so.
+Why: the test is applied per document after the fetch, and the runners are what fetch. A pending section is a status the row already carries, so a second store column would be a second statement of one fact and the one that goes stale.
+
+### 2026-09-12 - ARCHITECTURE.html - three statements that had gone stale
+Corrects: section 6.3 called every component in the compute layer a pure function of stored data and counted eleven of them, against a catalogue carrying nineteen of which seven fetch; section 7's verification harness row listed the sections it reports on and the list was short by the figures, section 19 and section 20; and section 22 cited a decision by the first half of its name. None of the three is read by a check, which is why all three survived. Found at 6.0 reading the sections phase 6 builds against.
+Was:
+> Eleven components, all pure functions of stored data. Given the same bars they produce the same facts file byte for byte, which is what makes the fixture diff possible.
+>
+> PASS, FAIL or UNEXAMINED for every claim in sections 7, 14, 15, 16, 17 and 18
+>
+> See the decision named Theme material comes from a search tool, whose results are stored like any other document.
+Now: the layer is described as the stages that compute and the fetchers that feed them with the purity claim held to the first group and the count dropped, the harness row states what it covers by kind rather than by a list of section numbers, and the citation gives the whole name.
+Why: a count restated beside the list it enumerates is a second statement whose only job is to go stale, and this one had gone stale twice over. A purity claim that covers the fetchers is false about six components that shipped in phase 1.
+
 ### 2026-09-12 - BUILD_PLAN.md - the local model and the lane's shape settled
 Authorised by: The local lane is a configured list of section names, and the prose writer writes whatever the list holds
 Was:

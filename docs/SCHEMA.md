@@ -377,6 +377,8 @@ Primary key: `id`.
 
 A document that fails admissibility is not stored with a body. The row is kept with its refusal reason so a later reader can see what was rejected and why, which is the only way a refusal is visible at all.
 
+**The test is applied by whichever runner fetched the document, and never by the checker.** Ruled at 6.0. The catalogue said the claim checker refuses to store a document that fails the test while the matrix gave the checker a read of this table and no write, so the component that decided could not store the verdict and the component that stored was not the one deciding. The test runs on a document as it is fetched, which is where the runners are, so each runner applies it and writes the verdict into `admissibility`, and the checker reads that column to decide whether a claim resting on the document may be written. The ownership row above already said this and the architecture did not: Insert here is the two runners and nobody else, which is what forced the question.
+
 ### candidate_register
 Grain: one row per registration event. Append only.
 

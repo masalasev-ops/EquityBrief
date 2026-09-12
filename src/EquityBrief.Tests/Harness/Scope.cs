@@ -338,7 +338,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(CatalogueTable, "Verification harness")] = new Scoped(
             Verdict.Pass,
-            "every claim in sections 7, 14, 15, 16, 17 and 18 carries a verdict, and both artifacts are written and read back",
+            "every claim this document makes carries a verdict and every table and figure carrying none is placed, and both artifacts are written and read back",
             ByHarness),
         [CheckReach.Key(CatalogueTable, "Backfill")] = new Scoped(
             Verdict.Pass,
