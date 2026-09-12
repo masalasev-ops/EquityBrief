@@ -68,6 +68,37 @@ public class FixtureManifestTests
     }
 
     [Fact]
+    public void ACredentialMarkerInsideALongerWordIsNotACredential()
+    {
+        // 6.1 captured four company payloads and two were refused for carrying
+        // `secret`, which is inside "Secretary": an officer's job title in the
+        // company description. A substring scan over a payload holding prose reads
+        // the prose, and a check that refuses a clean capture is a check somebody
+        // works around.
+        Assert.False(FixtureManifest.Carries("Senior VP, General Counsel & Secretary", "secret"));
+        Assert.False(FixtureManifest.Carries("Chief Legal Officer & Secretary", "secret"));
+        Assert.False(FixtureManifest.Carries("the secretariat published it", "secret"));
+
+        // The narrowing is asserted in both directions in the same test, because a
+        // scan loosened to let a capture through is the failure that matters and it
+        // would leave every assertion above passing.
+        Assert.True(FixtureManifest.Carries("{\"secret\":\"abc\"}", "secret"));
+        Assert.True(FixtureManifest.Carries("client_secret=abc", "secret"));
+        Assert.True(FixtureManifest.Carries("SECRET abc", "secret"));
+        Assert.True(FixtureManifest.Carries("eod/AAPL.US?api_token=abc", "api_token"));
+        Assert.True(FixtureManifest.Carries("?token=abc", "token="));
+        Assert.True(FixtureManifest.Carries("password: hunter2", "password"));
+
+        // And every marker is still reachable, so a marker that stopped matching
+        // anything at all would fail here rather than passing quietly.
+        Assert.All(
+            FixtureManifest.CredentialMarkers,
+            marker => Assert.True(
+                FixtureManifest.Carries($" {marker} ", marker),
+                $"The marker '{marker}' no longer matches its own text."));
+    }
+
+    [Fact]
     public void AnInstantThatIsNotUtcIsAFault()
     {
         // Every instant is UTC. A local one read on the other machine is a

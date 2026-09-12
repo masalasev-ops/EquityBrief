@@ -16,8 +16,49 @@ internal static class FixtureManifest
 {
     // Anything that looks like a key in a captured query. A fixture is
     // committed, so a credential in one is published.
-    static readonly string[] CredentialMarkers =
+    internal static readonly string[] CredentialMarkers =
         ["api_token", "api_key", "apikey", "access_token", "token=", "secret", "password"];
+
+    // Whether a marker appears in a body as a marker rather than inside a longer
+    // word, which is the difference between a credential and the provider's prose.
+    //
+    // 6.1 captured four company payloads and two of them were refused for carrying
+    // `secret`: the word is inside "Secretary", which is an officer's job title in
+    // the company description. A substring scan over a payload that contains prose
+    // reads the prose, and the same shape had already been found that morning in
+    // the fundamentals parser, where the word "segment" appears in two
+    // descriptions and would have read as a segment table.
+    //
+    // A letter on either side of the marker means it is part of a longer word. A
+    // digit, an underscore, a quote, a colon or an equals sign does not, so
+    // `client_secret`, `"secret":` and `secret=` are all still hits, which is what
+    // the proof beside this asserts in both directions.
+    //
+    // The boundary is tested only at an end where the marker's own edge is a
+    // letter. `token=` ends in its own separator and the value follows it with no
+    // gap, so testing the character after it would refuse `?token=abc`, which is
+    // the one form that marker exists for. That was the first form of this repair
+    // and the proof caught it.
+    internal static bool Carries(string body, string marker)
+    {
+        var boundedBefore = char.IsAsciiLetter(marker[0]);
+        var boundedAfter = char.IsAsciiLetter(marker[^1]);
+
+        for (var at = body.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+             at >= 0;
+             at = body.IndexOf(marker, at + 1, StringComparison.OrdinalIgnoreCase))
+        {
+            var before = at == 0 ? ' ' : body[at - 1];
+            var after = at + marker.Length >= body.Length ? ' ' : body[at + marker.Length];
+
+            if ((!boundedBefore || !char.IsAsciiLetter(before)) && (!boundedAfter || !char.IsAsciiLetter(after)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     internal static IReadOnlyList<string> RequiredFields(string schema, string scope)
     {
@@ -108,7 +149,7 @@ internal static class FixtureManifest
 
                     foreach (var marker in CredentialMarkers)
                     {
-                        if (text.Contains(marker, StringComparison.OrdinalIgnoreCase))
+                        if (Carries(text, marker))
                         {
                             faults.Add(new ManifestFault($"inputs[{index}].query", $"carries {marker}"));
                         }
@@ -143,7 +184,7 @@ internal static class FixtureManifest
                             var body = File.ReadAllText(path);
 
                             faults.AddRange(CredentialMarkers
-                                .Where(marker => body.Contains(marker, StringComparison.OrdinalIgnoreCase))
+                                .Where(marker => Carries(body, marker))
                                 .Select(marker => new ManifestFault($"inputs[{index}].file", $"the captured response carries {marker}")));
                         }
                     }

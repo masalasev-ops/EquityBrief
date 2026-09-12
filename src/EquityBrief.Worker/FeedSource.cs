@@ -7,7 +7,7 @@ namespace EquityBrief.Worker;
 // not nightly: a second copy of five refusal branches is two chances to disagree
 // about what a mistyped fixture path does, and what a mistyped path does is the
 // whole of the property.
-// see: A feed set is resolved from configuration, and neither source falls back to the other
+// see: The on-demand feeds are resolved in one place, as the nightly feeds are
 //
 // Both directions refuse and neither falls back, and that is the property rather
 // than a courtesy. A fixture folder that does not exist must not resolve to the

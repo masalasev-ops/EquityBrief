@@ -61,11 +61,12 @@ public class FundamentalsFeedTests
         // different fields rather than one field written twice.
         foreach (var ticker in new[] { "AAPL", "MSFT", "KEYS", "NFLX" })
         {
-            Assert.All(
-                Read(ticker).Filed,
-                quarter => Assert.True(
-                    quarter.FilingDate > quarter.PeriodEnd,
-                    $"{ticker} {quarter.PeriodEnd:yyyy-MM-dd} was filed on {quarter.FilingDate:yyyy-MM-dd}."));
+            foreach (var quarter in Read(ticker).Filed)
+            {
+                var when = FormattableString.Invariant($"{ticker} {quarter.PeriodEnd:yyyy-MM-dd} filed {quarter.FilingDate:yyyy-MM-dd}");
+
+                Assert.True(quarter.FilingDate > quarter.PeriodEnd, when);
+            }
         }
     }
 
