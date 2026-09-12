@@ -121,10 +121,21 @@ public sealed class MoveAnnotator : IComponent
         var tickers = await TickersAsync(connection, cancellation);
         var written = 0;
         var fallenOut = 0;
+        var stop = new SeriesGapStop();
 
         foreach (var ticker in tickers)
         {
-            var moves = MoveSeries.For(await BarsAsync(connection, ticker, cancellation));
+            var bars = await BarsAsync(connection, ticker, cancellation);
+
+            // A name whose stored series has an interior hole is
+            // computed for nothing and named on the run log.
+            // see: A gap is a session the exchange traded and the store does not hold
+            if (stop.Stops(ticker, [.. bars.Select(bar => bar.SessionDate)]))
+            {
+                continue;
+            }
+
+            var moves = MoveSeries.For(bars);
 
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
@@ -165,9 +176,9 @@ public sealed class MoveAnnotator : IComponent
 
         var dropped = await DroppedAsync(connection, await BoundaryAsync(connection, cancellation), cancellation);
 
-        await RecordAsync(connection, runId, startedAt, tickers.Count, written, dropped + fallenOut, cancellation);
+        await RecordAsync(connection, runId, startedAt, tickers.Count - stop.Stopped, written, dropped + fallenOut, stop.Report(), cancellation);
 
-        return new MoveOutcome(tickers.Count, written, dropped + fallenOut);
+        return new MoveOutcome(tickers.Count - stop.Stopped, written, dropped + fallenOut);
     }
 
     async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, CancellationToken cancellation)
@@ -222,6 +233,7 @@ public sealed class MoveAnnotator : IComponent
         int names,
         int written,
         int dropped,
+        string gaps,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -233,7 +245,7 @@ public sealed class MoveAnnotator : IComponent
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", "ok");
         command.Parameters.AddWithValue("$rows_written", written);
-        command.Parameters.AddWithValue("$detail", $"{names} name(s), {written} move(s), {dropped} dropped");
+        command.Parameters.AddWithValue("$detail", $"{names} name(s), {written} move(s), {dropped} dropped{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

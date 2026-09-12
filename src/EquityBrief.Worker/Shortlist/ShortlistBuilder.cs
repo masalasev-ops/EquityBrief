@@ -7,6 +7,7 @@ using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
+using EquityBrief.Worker.Bars;
 
 namespace EquityBrief.Worker.Shortlist;
 
@@ -137,6 +138,10 @@ public sealed class ShortlistBuilder : IComponent
         LIMIT 1;
     ";
 
+
+    // Every session the name holds, for the gap check alone.
+    const string SessionsFor = "SELECT session_date FROM bar WHERE ticker = $ticker ORDER BY session_date;";
+
     const string Upsert = @"
         INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons)
         VALUES ($ticker, $session_date, $reasons, $fired_count, $plan_at_listing, $shadow_reasons)
@@ -178,6 +183,7 @@ public sealed class ShortlistBuilder : IComponent
         var members = await MembersAsync(connection, indexCode, asOf, cancellation);
         var fired = 0;
         var reasonsFired = 0;
+        var stop = new SeriesGapStop();
 
         // One transaction around the whole loop rather than one per row. A row
         // that commits on its own costs a disk sync, and a sync costs the same
@@ -212,7 +218,17 @@ public sealed class ShortlistBuilder : IComponent
             // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
             var stale = sessionDate is { } last && newest is { } night && last < night;
 
-            var outcomes = ShortlistSeries.For(stale ? NoBarTonight : inputs);
+            // A member whose stored series has an interior hole, evaluated
+            // over nothing for the reason a stale member is. Every reason but
+            // one reads a close and a level computed across the hole, and the
+            // one that does not, earnings soon, reads the calendar alone: a
+            // gapped name with a print inside the horizon would otherwise reach
+            // tonight's list carrying an empty plan and nothing saying why. The
+            // row is still written, because every member gets one.
+            // see: A gap is a session the exchange traded and the store does not hold
+            var gapped = stop.Stops(ticker, await SessionsAsync(connection, ticker, cancellation));
+
+            var outcomes = ShortlistSeries.For(stale || gapped ? NoBarTonight : inputs);
             var count = outcomes.Count(outcome => outcome.Fired);
 
             await using var command = connection.CreateCommand();
@@ -262,7 +278,7 @@ public sealed class ShortlistBuilder : IComponent
 
         await transaction.CommitAsync(cancellation);
 
-        await RecordAsync(connection, runId, startedAt, members.Count, fired, reasonsFired, cancellation);
+        await RecordAsync(connection, runId, startedAt, members.Count, fired, reasonsFired, stop.Report(), cancellation);
 
         return new ShortlistOutcome(members.Count, members.Count, fired, reasonsFired);
     }
@@ -275,6 +291,29 @@ public sealed class ShortlistBuilder : IComponent
         return await command.ExecuteScalarAsync(cancellation) is string newest
             ? DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
             : null;
+    }
+
+
+    async Task<IReadOnlyList<DateOnly>> SessionsAsync(
+        SqliteConnection connection,
+        string ticker,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SessionsFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var sessions = new List<DateOnly>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            sessions.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        return sessions;
     }
 
     // What a member with no bar for tonight is evaluated over, which is nothing:
@@ -523,6 +562,7 @@ public sealed class ShortlistBuilder : IComponent
         int members,
         int fired,
         int reasonsFired,
+        string gaps,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -539,7 +579,7 @@ public sealed class ShortlistBuilder : IComponent
         // it is the one number the twenty drawn rows cannot tell you.
         command.Parameters.AddWithValue(
             "$detail",
-            $"{members} member(s), {fired} fired, {reasonsFired} reason(s) fired");
+            $"{members} member(s), {fired} fired, {reasonsFired} reason(s) fired{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

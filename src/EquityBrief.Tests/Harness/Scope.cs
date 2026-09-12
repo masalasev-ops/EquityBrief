@@ -438,6 +438,10 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, and its retention is owned by the component that writes it",
             ByMigration),
+        [CheckReach.Key(FixtureTable, "gap stop")] = new Scoped(
+            Verdict.Pass,
+            "the five computed tables withhold every row for a name whose stored series holds an interior hole and the ladder and the listing still carry one naming the gap's date, asserted per table over a constructed store and with the split between the two halves asserted rather than a loop run over all seven",
+            ByGap),
         [CheckReach.Key(FixtureTable, "forward returns")] = new Scoped(
             Verdict.Pass,
             "every horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, with the matured cases over constructed series because the committed fixture has no session after its listings",

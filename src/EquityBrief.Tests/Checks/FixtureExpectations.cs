@@ -1987,7 +1987,7 @@ public class FixtureExpectations
         // rather than about whether anything reads them.
         Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
 
-        // Seven stand unread and each is named rather than counted, because a
+        // Eight stand unread and each is named rather than counted, because a
         // number here would drift silently as keys are added. `rowsInFile` is
         // the count of rows in the captured bulk payload, which the fetch
         // expectation states so a reader can see what the membership filter cut
@@ -1997,9 +1997,10 @@ public class FixtureExpectations
         // them. The series state file added two keys when it landed and this
         // assertion caught both on the same run; the ladder file added its note
         // at 4.1 and it caught that too; the sector note arrived at 5.1 and it
-        // caught that. Which is what it is for.
+        // caught that. The gap stop file added its note at 6.0 and it caught
+        // that, on the run that added the file. Which is what it is for.
         Assert.Equal(
-            ["facts.frozen", "fetch.rowsInFile", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note"],
+            ["facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

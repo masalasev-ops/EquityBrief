@@ -1,0 +1,40 @@
+{
+ "stage": "gap-stop",
+ "derivation": "derived",
+ "derivedFrom": "the decision that a gap is a session the exchange traded and the store does not hold, which has said since 1.5 that every computation over a name whose stored series has a gap stops and reports the gap's date, taken together with the two hard rules that a ladder row and a listing row are written for every index member every night. Nothing here is frozen from a run. The session cut is chosen from the store at test time as the middle of the gapped name's stored year, and the date is read back off the exchange calendar, because a date written into this file would be a second statement of which session the test removed and the two would drift the first time the fixture's year moved.",
+ "tables": [
+  "indicator",
+  "swing",
+  "volume_profile",
+  "level",
+  "move",
+  "ladder",
+  "listing"
+ ],
+ "withholdsEveryRow": [
+  "indicator",
+  "swing",
+  "volume_profile",
+  "level",
+  "move"
+ ],
+ "writesARowStatingTheReason": [
+  "ladder",
+  "listing"
+ ],
+ "gappedName": "AAPL",
+ "controlName": "MSFT",
+ "trendStateForAGappedName": "not_classified",
+ "firedCountForAGappedName": 0,
+ "reasonNamesTheGapsDate": true,
+ "notAGap": [
+  "a hole at either edge of the series, which is a shorter history",
+  "a weekend",
+  "a closure the pinned table holds"
+ ],
+ "notCheckedRatherThanClean": [
+  "a series of fewer than two sessions, which has no interior",
+  "a series reaching outside the closure table's range, which the table refuses to place rather than guessing"
+ ],
+ "note": "the five that withhold and the two that write are the whole of the population, and the split is what is asserted rather than one loop over seven tables. The two failures are opposite: a stage that computed a figure across the hole, and a stage that left a member without the row every member gets. A test written as one loop would catch neither, because each table would satisfy whichever half the loop happened to assert. Every stopped name is reported on run_log.detail by the stage that stopped it, with its earliest gap, and the names the closure table could not place are counted separately there rather than folded into the clean ones."
+}

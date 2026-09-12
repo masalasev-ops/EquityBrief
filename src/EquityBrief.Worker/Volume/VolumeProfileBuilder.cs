@@ -124,10 +124,20 @@ public sealed class VolumeProfileBuilder : IComponent
         var profiled = 0;
         var tooShort = 0;
         var rows = 0;
+        var stop = new SeriesGapStop();
 
         foreach (var ticker in tickers)
         {
             var bars = await BarsAsync(connection, ticker, cancellation);
+
+            // A name whose stored series has an interior hole is
+            // computed for nothing and named on the run log.
+            // see: A gap is a session the exchange traded and the store does not hold
+            if (stop.Stops(ticker, [.. bars.Select(bar => bar.SessionDate)]))
+            {
+                continue;
+            }
+
             var bands = VolumeProfileSeries.For(bars);
 
             if (bands.Count == 0)
@@ -184,7 +194,7 @@ public sealed class VolumeProfileBuilder : IComponent
             await BoundaryAsync(connection, cancellation),
             cancellation);
 
-        await RecordAsync(connection, runId, startedAt, profiled, tooShort, rows, dropped, cancellation);
+        await RecordAsync(connection, runId, startedAt, profiled, tooShort, rows, dropped, stop.Report(), cancellation);
 
         return new ProfileOutcome(profiled, tooShort, rows, dropped);
     }
@@ -240,6 +250,7 @@ public sealed class VolumeProfileBuilder : IComponent
         int tooShort,
         int rows,
         int dropped,
+        string gaps,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -266,7 +277,7 @@ public sealed class VolumeProfileBuilder : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{profiled} name(s) profiled, {tooShort} with fewer than " +
-            $"{VolumeProfileSeries.Window} session(s), {rows} band row(s), {dropped} dropped");
+            $"{VolumeProfileSeries.Window} session(s), {rows} band row(s), {dropped} dropped{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

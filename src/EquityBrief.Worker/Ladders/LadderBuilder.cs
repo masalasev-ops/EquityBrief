@@ -193,6 +193,7 @@ public sealed class LadderBuilder : IComponent
 
         var written = 0;
         var withoutBars = 0;
+        var stop = new SeriesGapStop();
         var counts = TrendState.All.ToDictionary(state => state, _ => 0, StringComparer.Ordinal);
 
         // The newest session any name holds, which is the night the ladders are
@@ -233,6 +234,45 @@ public sealed class LadderBuilder : IComponent
                 stale.Parameters.AddWithValue("$plan", Serialised(new Ladder([], [], null, reason, []), []));
 
                 await stale.ExecuteNonQueryAsync(cancellation);
+
+                written++;
+
+                continue;
+            }
+
+            // A member whose stored series has an interior hole. Its row is
+            // still written, because every member gets one, and its plan names
+            // the gap's date rather than saying the trend could not be
+            // classified: both are true and only one tells the reader what to
+            // do about it. No stage above this one computed anything for such a
+            // name, so the bands and the averages a plan reads are absent, and
+            // a plan built from what is left would be a plan over a chart that
+            // skips a session.
+            // see: A ladder row is written for every index member every night
+            // see: A gap is a session the exchange traded and the store does not hold
+            var held = await SessionsAsync(connection, ticker, cancellation);
+
+            if (stop.Stops(ticker, [.. held.Select(bar => bar.SessionDate)]))
+            {
+                var gapped = "the stored series has a gap at "
+                    + stop.Gaps[^1].SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    + ", so nothing is computed for this name until that session arrives";
+
+                counts[TrendState.NotClassified]++;
+
+                await using var row = connection.CreateCommand();
+
+                row.Transaction = (SqliteTransaction)transaction;
+                row.CommandText = Upsert;
+                row.Parameters.AddWithValue("$ticker", ticker);
+                row.Parameters.AddWithValue(
+                    "$as_of",
+                    (session?.SessionDate ?? clock.SessionDateAt(clock.UtcNow))
+                        .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                row.Parameters.AddWithValue("$trend_state", TrendState.NotClassified);
+                row.Parameters.AddWithValue("$plan", Serialised(new Ladder([], [], null, gapped, []), []));
+
+                await row.ExecuteNonQueryAsync(cancellation);
 
                 written++;
 
@@ -301,7 +341,7 @@ public sealed class LadderBuilder : IComponent
             counts[TrendState.NotClassified],
             withoutBars);
 
-        await RecordAsync(connection, runId, startedAt, outcome, cancellation);
+        await RecordAsync(connection, runId, startedAt, outcome, stop.Report(), cancellation);
 
         return outcome;
     }
@@ -663,6 +703,7 @@ public sealed class LadderBuilder : IComponent
         string runId,
         DateTimeOffset startedAt,
         LadderOutcome outcome,
+        string gaps,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -680,7 +721,7 @@ public sealed class LadderBuilder : IComponent
             $"{outcome.RowsWritten} row(s) for {outcome.MembersConsidered} member(s), " +
             $"{outcome.Uptrend} uptrend, {outcome.Downtrend} downtrend, {outcome.Range} range, " +
             $"{outcome.NotClassified} not classified, {outcome.WithoutBars} with no stored bars, " +
-            $"{outcome.RowsDropped} dropped");
+            $"{outcome.RowsDropped} dropped{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

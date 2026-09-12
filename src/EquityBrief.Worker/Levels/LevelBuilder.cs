@@ -56,6 +56,12 @@ public sealed class LevelBuilder : IComponent
         ORDER BY session_date;
     ";
 
+    // Every session the name holds, for the gap check alone. The window above
+    // is the last sixty and a hole older than that is still a hole, because the
+    // decision is written about the name's stored series rather than about one
+    // stage's window.
+    const string SessionsFor = "SELECT session_date FROM bar WHERE ticker = $ticker ORDER BY session_date;";
+
     const string AveragesFor = @"
         SELECT name, value
         FROM indicator
@@ -155,9 +161,20 @@ public sealed class LevelBuilder : IComponent
         var banded = 0;
         var skipped = 0;
         var bands = 0;
+        var stop = new SeriesGapStop();
 
         foreach (var ticker in tickers)
         {
+            // A name whose stored series has an interior hole is banded for
+            // nothing and named on the run log. A retracement drawn between two
+            // swings either side of a hole is drawn between prices that were
+            // never that many sessions apart.
+            // see: A gap is a session the exchange traded and the store does not hold
+            if (stop.Stops(ticker, await SessionsAsync(connection, ticker, cancellation)))
+            {
+                continue;
+            }
+
             var window = await WindowAsync(connection, ticker, cancellation);
 
             // The same population rule the profile has, and for the same reason:
@@ -226,7 +243,7 @@ public sealed class LevelBuilder : IComponent
             await BoundaryAsync(connection, cancellation),
             cancellation);
 
-        await RecordAsync(connection, runId, startedAt, banded, skipped, bands, dropped, cancellation);
+        await RecordAsync(connection, runId, startedAt, banded, skipped, bands, dropped, stop.Report(), cancellation);
 
         return new LevelOutcome(banded, skipped, bands, dropped);
     }
@@ -301,6 +318,28 @@ public sealed class LevelBuilder : IComponent
         }
 
         return tickers;
+    }
+
+    async Task<IReadOnlyList<DateOnly>> SessionsAsync(
+        SqliteConnection connection,
+        string ticker,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SessionsFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var sessions = new List<DateOnly>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            sessions.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        return sessions;
     }
 
     async Task<IReadOnlyList<LevelBar>> WindowAsync(
@@ -462,6 +501,7 @@ public sealed class LevelBuilder : IComponent
         int skipped,
         int bands,
         int dropped,
+        string gaps,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -484,7 +524,7 @@ public sealed class LevelBuilder : IComponent
 
         command.Parameters.AddWithValue(
             "$detail",
-            $"{banded} name(s) banded, {skipped} skipped, {bands} band(s), {dropped} dropped");
+            $"{banded} name(s) banded, {skipped} skipped, {bands} band(s), {dropped} dropped{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }
