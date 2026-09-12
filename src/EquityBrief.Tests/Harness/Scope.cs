@@ -1241,6 +1241,10 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.8",
         [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
         [CheckReach.Key("15.9 Name", "Provenance footer")] = "6.6",
+        [CheckReach.Key("15.9 Name", "Research not yet written")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Research stale")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Research paused")] = "6.7",
+        [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
         [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
         // 7.5 is "Reason verdicts on the run page" and 7.4 is "The shadow
         // column", so two rows of this section are owed two phases after it.
@@ -1452,6 +1456,10 @@ internal static class Scope
         ["a poisoned paragraph"] = "6.4",
         ["an unsourced claim"] = "6.4",
         ["an inadmissible document"] = "6.3",
+        ["research record"] = "6.8",
+        ["theme record"] = "6.9",
+        ["source documents"] = "6.3",
+        ["refused documents"] = "6.3",
         ["calendar"] = "4.3",
         ["membership"] = "1.1",
         ["fetch"] = "2.1",
@@ -1495,6 +1503,12 @@ internal static class Scope
         // nothing a reader looks at.
         ["A name leaves the index"] = "5.1",
         ["A condition has fired but nothing has resolved yet"] = "7.5",
+        ["A search returns snippets rather than full page text"] = "6.9",
+        ["A search returns a site the applicable list does not carry"] = "6.9",
+        ["A document's publish date falls outside the window the pass asked for"] = "6.3",
+        ["The search tool is unavailable"] = "6.9",
+        ["The local model is unavailable"] = "6.6",
+        ["A theme refresh fails while a name's pass depends on it"] = "6.9",
         ["Something tries to edit or delete a register row"] = "7.3",
         ["The candidate register and the correction disagree"] = "7.3",
     };

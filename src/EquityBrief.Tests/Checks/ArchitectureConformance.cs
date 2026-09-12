@@ -875,7 +875,13 @@ public class ArchitectureConformance
 
         Assert.Equal(Scope.ScreensTables.Length, screensTables.Length);
 
-        // Stated in advance: seven tables, 37 rows, 47 claim subjects. The
+        // Stated in advance: seven tables, 41 rows, 104 claim subjects. It was
+        // 37 and 100 until 6.0, which added four rows for states section 15
+        // promised and gave no region: research not yet written, research stale
+        // and research paused on the name screen, each of which section 4's
+        // key, figure 12.1 and three section 18 rows all describe, and the
+        // overnight queue's region on the run page, which section 18 says
+        // states whether the queue ran and on which night. The
         // Level chart row decomposes into its four elements, and 5.0 decomposed
         // three more per surface, being the universe screen's sector strip and
         // table, whose listing halves cannot exist until 5.4 creates that
@@ -884,8 +890,8 @@ public class ArchitectureConformance
         // run page's stale-and-failed region into its four parts, two of them
         // phase 6's. A run finding none would otherwise pass both directions
         // over an empty set.
-        Assert.Equal(37, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
-        Assert.Equal(100, inDocument.Length);
+        Assert.Equal(41, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        Assert.Equal(104, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
