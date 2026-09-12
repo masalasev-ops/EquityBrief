@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-12 - BUILD_PLAN.md - phase 6 resplit to eleven build checkpoints, and every claim it moves re-pointed
+Authorised by: A due point names a checkpoint that exists wherever its phase has been detailed
+Was:
+> ### 6.1 The fundamentals fetcher and the numbers section ... ### 6.9 Phase 6 report
+>
+> the eight build checkpoints and their done conditions, in which the filings archive sat inside the source store's checkpoint and the spend cap inside the research runner's, and in which the staleness judge sat seventh
+Now: 6.1 through 6.11, with the filings archive and the spend cap as checkpoints of their own and the staleness judge fifth; 6.0 carries the resplit's reason, the re-point map and list A per checkpoint; 5.8's heading moves above the rule that closes phase 5, where it belonged and did not sit.
+Why: the phase carries seven new components, four new stores and five new outward surfaces, and two of the eight checkpoints each carried a new provider, a new store and a new component at once. Condition 9 asks a checkpoint to name the property its mutation chose, and a checkpoint carrying three new things cannot say which of the three a survivor belongs to. The spend cap is split for a second reason: a gate built in the same commit as the thing it gates has no run in which the gate was absent.
+
 ### 2026-09-12 - BUILD_PLAN.md - the transaction question closed by ruling that no check is written
 Authorised by: A transaction taken for speed is not asserted, and a scan that would need twelve exemptions is not written
 Was:

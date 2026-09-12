@@ -499,8 +499,6 @@ The report, the pair checked against what 5.0 predicted, and the two figures tha
 
 **Done when** every phase 5 claim is PASS naming an instrument whose declared reach includes it, unexamined is zero, the pair 5.0 predicted is checked against the actual pair with every claim that arrived unpredicted named and placed in the list it belonged in and every predicted claim that did not arrive named as such, the posting hour and the wall clock are each carried as an operating row stating its numeric trigger and the surface it is read on, and `docs/RUNBOOK.md` states the registration for both platforms as a command with the local-time trap named.
 
----
-
 ### 5.8 The screens' stated parts
 Draws the parts section 15 states and the pages do not, each of which read as covered by a row's PASS until the fifth phase 5 sign-off review found that a row's parts were chosen by the reader rather than read off the row (owes: The screens' parts stated in section 15 and not drawn). Nine parts over five rows: tonight's list carries a day change, a trend state in a word and the distance row mark beside the name, the close and the reasons; the night header carries the harness verdict beside the counts it already draws; the selected name carries the level summary beside the plan column, and the selection is whichever row the reader picks rather than always the first; the universe table is paged and carries sessions until earnings; the name page's how-it-got-here carries the twelve-month picture above the table of moves; and the app's selection is a thing the reader does rather than a position the composition fixes, which is 15.4's own statement of the same part and is the tenth claim the nine parts carry.
 
@@ -508,9 +506,15 @@ It is a checkpoint rather than a correction because the work is drawing, and the
 
 **Done when** each of the nine parts is drawn, `read-surface` asserts each off the markup it draws rather than off the model behind it, every one of them is placed PASS naming that check, `EveryPartASectionFifteenRowEnumeratesHasItsOwnVerdict` still reads its parts off the document, and the carried obligation row reads discharged.
 
+---
+
 ## Phase 6: research on demand
 
 **Visible output at 6.1.** The numbers section fills from real filings.
+
+Eleven build checkpoints rather than eight, decided at 6.0 against the size the work turns out to be. The phase carries seven new components, four new stores and five new outward surfaces, and as this document first wrote it two of its eight checkpoints each carried a new provider, a new store and a new component at once. Condition 9 asks a checkpoint to name the property its mutation chose and why, and a checkpoint carrying three new things cannot say which of the three a survivor belongs to. That is the argument 4.0 resplit phase 4 on, and phase 5 is the evidence for it: 5.4 and 5.5 each carried more than one thing and each produced findings that reached the sign-off as work to pull out rather than as the checkpoint's own evidence.
+
+Two splits rather than one. The filings archive leaves the source store's checkpoint because it is a new provider and the capture-before-parse rule applies to it. The spend cap leaves the research runner's because the cap is a refusal path and the runner is the thing it refuses, and a gate built in the same commit as the thing it gates has no run in which the gate was absent, which is the reason 2.1 landed the cost carve-out ahead of the live feed. Taking the first split and leaving the second would take the cheaper half and leave the reason.
 
 ### 6.0 Planning
 Settles which local model, the section-to-lane configuration shape, and how a research pass is recorded so a fixture can replay it without a network. Discharges the source-lists obligation from 1.7 against the coverage measurement (owes: Source lists reviewed against measured coverage), whose evidence has been in hand since 1.7 and which sits here because 6.0 is where the lists are next used rather than because anything is waited on.
@@ -522,7 +526,7 @@ Rules on the four the fourth phase 5 sign-off review left carried rather than fi
 
 **Predicts the phase's claims by naming them,** in two disjoint lists with the arithmetic between them and the pair the sum makes, and 6.11 checks that pair. The prediction is taken in this pass's first commit, before it moves a single placement, because this pass re-points sixty one claims as it resplits the phase, which changes what is out of scope at every checkpoint in it, and a prediction taken after that movement absorbs an unplanned one instead of showing it.
 
-**List A, the 61 claims already placed at a 6.x checkpoint** and waiting for it, re-pointed by this pass as it resplits. Every one becomes PASS when its checkpoint lands or the phase is not signed off, since unexamined is zero at 6.11.
+**List A, the 61 claims already placed at a 6.x checkpoint** and waiting for it, re-pointed by this pass as it resplits: 7 at 6.1, 6 at 6.3, 11 at 6.4, 6 at 6.5, 5 at 6.6, 4 at 6.7, 10 at 6.8, 6 at 6.9, 2 at 6.10 and 4 at 6.11. None at 6.2, because the filings archive is work this pass adds and no claim was placed at a checkpoint that did not exist. Every one becomes PASS when its checkpoint lands or the phase is not signed off, since unexamined is zero at 6.11. The figures are read off `artifacts/phase-report.json` by the first checkpoint each note names and again by the last, because that is where the sixth phase 5 sign-off review's figure was wrong, and both readings give the same ten.
 
 **List B, the 30 claims this pass itself adds,** named rather than counted. Two are the overnight queue's catalogue and matrix rows, which land here ahead of the component for the reason the change detector's did at 5.0. Six are section 18's new rows, being a search returning snippets, a result from a site not on the applicable list, a publish date outside the window the pass asked for, the search tool unavailable, the local model unavailable, and a theme refresh failing while a name's pass depends on it. Four are section 19.1's new expectation rows, being the research record, the theme record, the source-document set and the refused documents. Five come from section 19.1's inadmissible-document row decomposed per document, from one row to six, being the four denied categories, the absent publish date and the text that cannot be retrieved. Three are section 15.9's research states drawn as regions of their own, being missing, stale and paused. One is section 15.10's overnight queue region. Nine come from section 12.2's lane table converted from a placed table to a claim source, being its seven rows plus the industry cycle and the dated calendar items it assigns no lane to.
 
@@ -532,52 +536,124 @@ Three things read as additions and are not. The theme research runner's search-t
 
 **The pair. 328 claims and 312 PASS after phase 6**, with 16 out of scope, 0 unexamined and 0 fail. The arithmetic: 298 claims and 221 PASS at the phase 5 sign-off, plus list B's 30 with none of them passing yet gives 328 and 221, which is what this pass leaves and which puts 107 out of scope; plus list A's 61 and list B's 30 gives 312, and 312 with the 16 that remain at 7.x is 328.
 
+**Re-points every claim the resplit moves, and re-points it from the checkpoint text wherever the derivation can reach it.** The map is 6.2 to 6.3, 6.3 to 6.4, 6.4 to 6.6, 6.5 to 6.8, 6.6 to 6.9, 6.7 to 6.5, 6.8 to 6.10 and 6.9 to 6.11, with 6.1 unchanged, and four points move further than the map because they named a checkpoint that produces nothing for them: the spend cap's failure row and the run log's store row stood at the phase report and move to 6.7 where the cap and the ledger are built, and the claim rejection and source admissibility limit rows stood at 6.1 and move to 6.4 and 6.3, which are the checkpoints that build a checker and a test.
+
+One row of the map moves earlier, 6.7 to 6.5, and the work moved rather than the point: the staleness judge itself moves from the seventh position to the fifth, so its claims travel with the component rather than being asserted before it is built. Earlier than the work is the direction this corpus calls never safe, which is why the declared-early exceptions are printed on every phase report, and a reader checking the map stops at that row unless it says which of the two moved.
+
+The due point is derived from the checkpoint's own text where the reader can reach it, and the hand-written residual is deleted rather than edited, because sixty one hand-written residuals is the population that hides a stale one. Each residual that survives is one whose subject a checkpoint cannot name in prose without writing text to satisfy a map, and the count before and after is recorded in the `PROGRESS.md` entry with each survivor named.
+
 **Two rulings inside this pass move the pair, and each is stated here with its alternative** rather than read back afterwards off whichever figure arrived. If the local model's and the search tool's unavailability fold into the existing cloud model row generalised rather than adding two rows, which is the shape 2.3 refused a second row for, list B is 28 and the pair is 326 and 310. If section 12.2's lane table is placed against a check rather than converted to a claim source, list B is 21 and the pair is 319 and 303. If both, list B is 19 and the pair is 317 and 301. The pair above takes both rulings the other way, and 6.11 checks the pair that was taken.
 
 ### 6.1 The fundamentals fetcher and the numbers section
-Migration creating `fundamentals`, one row per filing date, never updated. The quarters, balance sheet, segments and guidance, each with the filing date it came from.
+**The endpoint is probed and captured before the parser is written**, for the reason 1.6 and 1.7 state, and the probe is recorded either way (owes: Bulk fundamentals endpoint probed on the operator's key). `IFundamentalsFeed` with the `Requests` member its interface mandates, its live implementation and its recorded double, and one more file on the outward-request scan's exemption list, still asserted to hold exactly the feed implementations.
 
-**Done when** the numbers section renders, a stored copy predating a filing triggers a fetch and one that does not triggers nothing, and the bulk fundamentals probe is recorded either way (owes: Bulk fundamentals endpoint probed on the operator's key). The probe is one live call on a key the credential path has held since 2.1, so nothing here waits on evidence.
+Migration creating `fundamentals`, one row per filing date, never updated. The quarters, balance sheet, segments and guidance, each with the filing date it came from (see: Fundamentals are stored with the filing date they came from). The facts assembler's matrix row gains its fundamentals read with the read itself, which its catalogue row has announced since the architecture was written and which nothing could add before this table existed.
 
-### 6.2 The source store and admissibility
-Migration creating `source_document`. The admissibility test running after the fetch and before storage: denied categories, a publish date inside the window, and a preference for primary sources. A document that fails is kept as a row with its refusal reason and no body.
+The numbers section on the name page: five reported quarters and one guided quarter, revenue, margin, earnings, guide against actual, the balance sheet, and the valuation on each earnings basis. Computed sections appear from the nightly store before any of this arrives, so the section fills in rather than delaying the page.
 
-**Done when** each denied category is refused by a fixture document, a document whose text cannot be retrieved is discarded rather than cited, and the refusal is visible rather than silent.
+**Done when** the numbers section renders and `read-surface` reads its figures back off the markup against the store, a stored copy predating a filing triggers a fetch and one that does not triggers nothing, a filing not yet parsed for a name shows what the provider has and marks the segment table absent rather than drawing a blank cell, and the probe is recorded either way. The probe is one live call on a key the credential path has held since 2.1, so nothing here waits on evidence.
 
-### 6.3 The claim checker
-Migration creating `research_section` and `theme_section`, one row per section per version. Numbers checked against the facts file, claims checked for a stored admissible source, one retry then the section omitted.
+### 6.2 The filings archive
+The archive is a second provider and the first free one: no key, and a request that does not name a user agent refused by the archive itself, which is a transport rule no feed here has carried. **Captured before its parser is written**, for the reason 1.6 and 1.7 state and by the same route: 1.2 stored a membership parser reading a field the provider does not send, and the fixture agreed with it for two checkpoints because one session wrote both.
 
-**Done when** the poisoned paragraph and the unsourced claim are both rejected, a section failing twice is absent with its reason rather than guessed, and nothing rejected is written.
+`IFilingsArchiveFeed` with its `Requests` member and the four document kinds the report needs: the segment tables, the earnings press release exhibit that carries management's guidance, the company facts, and the verbatim call transcript where a company files one. The transcript is opportunistic and nothing depends on it (see: Transcripts are opportunistic, never a dependency).
 
-### 6.4 The prose writer
-The local model writing the short version and the figure keys from numbers, at no cost, through the claim checker like anything else.
+It is a checkpoint of its own rather than the first half of the source store's, because a new provider, a new store and a new component in one commit leaves a surviving mutation belonging to any of the three, and condition 9 asks a checkpoint to name the property it chose and why.
 
-**Done when** a pass runs against the recorded endpoint with no network, and the footer states which model wrote each section.
+**Done when** each of the four kinds is read from a captured archive response, a name that files no transcript produces none rather than an empty one, the guidance is read from the release exhibit rather than from structured data the archive does not carry, and a request without the user agent the archive requires is refused inside the feed rather than sent.
 
-### 6.5 The research runner
-Filings and news read by ticker, the theme record read, the narrative sections written, every document stored as it is fetched.
+### 6.3 The source store and admissibility
+Migration creating `source_document`, which is the source documents store the catalogue has named since the architecture was written. Every document a pass fetches is tested before it is stored, by the runner that fetched it and never by the checker, which 6.0 ruled and which SCHEMA's ownership row already implied by giving Insert to the two runners and to nobody else.
 
-A pass that reproduces byte for byte from a recording is what makes the lane boundary measurable rather than asserted (owes: The research lane boundary measured against the fixture both ways), so each section can be run on both models against the same evidence and compared.
+Source admissibility is the four denied categories, a publish date inside the window the pass asked for, and a preference for primary sources with the pass stating why it used anything else (see: A stored source is not automatically an admissible one), judged per document after the fetch and never per publisher (see: Admissibility is judged per document, after the fetch, and never per publisher). A document that fails is kept as a row with its refusal reason and no body, so a refusal is visible rather than silent.
 
-**Done when** every claim in a written section names a stored source, and a pass over the fixture reproduces byte for byte from the recorded endpoint.
+The fixture gains an inadmissible document for each kind the test refuses: one per denied category, one carrying no publish date, and one whose text cannot be retrieved. Section 19.1 named three of those where section 17's own assertion column asks for every one, which is the gap this checkpoint closes rather than inherits.
 
-### 6.6 The theme research runner
-Industry research once per theme, shared by every name in it, with the search tool called as one more fetching tool and its results stored like any other document. The theme query names the industry rather than a ticker, carries a date range, is restricted to the industry list, and requests full page text.
+The run page's stale-and-failed region gains the documents refused by admissibility with the category that refused each.
 
-**Done when** a theme refresh serves every name in its industry from one pass, and a search returning snippets rather than text produces no stored document.
+`claim-admissibility` is implemented and promoted on the roster here, with the pending-row floor lowered in the same commit. Its roster row named 6.1 until 6.0, which is a checkpoint that builds no admissibility.
 
-### 6.7 The staleness judge
-The four questions answered from data the nightly run already computed: a new filing, the earnings date passing, the news pulse above its baseline, or a manual refresh.
+**Done when** each denied category is refused by a fixture document and nothing resting on it is written, a source is returned but its text cannot be retrieved and the result is discarded rather than cited with the url and the reason on the run log, a pass finds no admissible source for a section and the section is absent with one line saying so, and each refusal is read back off the run page's own markup rather than off the model behind it.
 
-**Done when** each trigger fires its own test, a second open of an unchanged name spends nothing, and deciding not to spend costs nothing.
+### 6.4 The claim checker
+Migration creating `research_section` and `theme_section`, one row per section per version, which are the research store and the theme store the catalogue has named since the architecture was written.
 
-### 6.8 The overnight queue
-The local model writing the sections in the local lane for listed names whose research is missing or stale, in priority order, until the configured time limit, holding the machine awake, making no paid call.
+Numbers checked against the facts file, claims checked for a source document that is stored and was admitted, and claim rejection is one retry and then the section omitted with its reason (see: Every number in written prose must exist in the facts file) (see: Every researched claim must name a stored source document). Check every claim, then store it: the status transition is the gate, so a writer inserts a section as pending and only the checker moves it to accepted, rejected or fallback, which is the per-operation split SCHEMA declares and `writer-ownership` asserts in both directions.
 
-**Done when** the queue completes with zero spend, a busy night leaves names for the next night rather than running past its limit, and a night where the machine slept is reported rather than silent.
+The fixture gains a poisoned paragraph, citing a number that is not in the facts file, and an unsourced claim, naming no stored document. Both are expected rejections and neither may reach the store.
 
-### 6.9 Phase 6 report
-**Done when** every section the report specifies is produced on the current hardware with the synthesis sections written by the paid model on demand, and the spend cap stops a pass rather than warning about one.
+**Done when** a poisoned paragraph and an unsourced claim are both rejected, the claim checker rejects twice and that section is absent with its reason rather than guessed, nothing rejected is written asserted over the store rather than over a return value, and the retry is proved to be one rather than unbounded.
+
+### 6.5 The staleness judge
+The four questions answered from data the nightly run already computed: a new filing, the earnings date passing, the name's news pulse above its own baseline, or a manual refresh (see: Deciding not to spend must not cost anything). Is there a research record, does it still stand, and if all four questions answer no then the stored research is shown with its as-of date and nothing is spent (see: Nothing expires on a timer).
+
+Research staleness triggers are read off section 17's own figures, being at least five articles in the last five sessions and at least three times the name's trailing ninety-day median for a five-session window, and asserted against the code's policy rather than restated beside it.
+
+It writes the run log alone, so whether research is stale is derived on read rather than stored, which is the shape the gap state already has.
+
+**Done when** each trigger fires its own test, deciding not to spend makes zero requests and zero model calls asserted over the judge's own run rather than over a night, and a name with no record at all is answered as missing rather than as stale. The clause that a second open spends nothing is 6.8's, because nothing spends before it and a clause asserted where nothing can spend is satisfied by construction.
+
+### 6.6 The local model and the prose writer
+The local lane's client: an OpenAI-compatible endpoint with its base address, model identifier and timeout in configuration, and a key configured for that lane refused rather than sent (see: The local model answers at an OpenAI-compatible endpoint, and which model answers is configuration). Its recorded double to the record format 6.0 settled, keyed on the canonicalised request, refusing by name where the recording does not hold what was asked (see: A research pass is recorded per section call, keyed on the canonicalised request).
+
+The lane is a configured list of section names the writer takes whole (see: The local lane is a configured list of section names, and the prose writer writes whatever the list holds). `ProseWriter` writes what the list holds and asks nothing about which section it is, through the claim checker like anything else.
+
+A section is assigned to the local lane that the machine cannot hold: the pass is refused before it starts, the section is left for the paid path, and the run log names the section and the reason. The provenance footer states which model wrote each section, and this is the first checkpoint at which a section has a model to name.
+
+**Done when** a pass runs against the recorded endpoint with no network, the provenance footer states the model per section read back off the markup, a section the lane does not hold is not written by the local model asserted in both directions, a section the machine cannot hold is refused before the pass starts rather than attempted and failed, and a request the recording does not hold refuses by name rather than reaching the network.
+
+### 6.7 The spend cap and the paid lane
+**The cap lands before any paid client, in its own commit**, for the reason 2.1 states: a gate built in the same commit as the thing it gates has no run in which the gate was absent.
+
+`IResearchModelFeed` with its recorded double and configuration naming which provider answers (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back), its key in the secrets file under its own path and refused by name at startup when blank, which is the refusal `RUNBOOK.md` promises for the one key the tree holds today.
+
+The spend ledger read off the run log's own `spend` column, denominated in money because the same token count costs twice as much at peak, decimal in code and TEXT in storage. The day cap and the month cap each refuse on their own. Spend cap reached: research pauses for the period and the name says that research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
+
+The run log's `spend` and `model_calls` carry a figure other than zero for the first time here, which is what that store row has promised since migration 1 and nothing has written.
+
+**Done when** a pass at the cap is refused before it makes a call rather than after, both caps refuse on their own asserted per cap rather than in one figure over the two, the page states that research is paused and when it resumes read back off its markup, the ledger's total is measured off the store rather than self-reported, and a blank key is refused by name at startup.
+
+### 6.8 The research runner
+Filings and news read by ticker, the theme record read, the narrative sections written, and every document stored as it is fetched through 6.3's test. The live implementation behind 6.7's interface, and the recording written as the pass runs.
+
+A pass is warranted, and then the runner reads this name's filings since the last record, its news since then, and its theme record, refreshing the theme first where that is what went stale. Write the sections: the short version, what the company sells, the industry cycle, the two cases, the risks, the cause column of the moves table and the dated calendar items, each through the lane its own configuration assigns it.
+
+Cloud model unavailable: the pass does not start, stored research still renders, and the researched sections show their as-of date or an offer to write them later.
+
+Research passes per name per open is at most one (see: Everything expensive happens when a name is opened), which is the clause 6.5 could not assert because nothing spent before this.
+
+A pass that reproduces byte for byte from a recording is what makes the lane boundary measurable rather than asserted (owes: The research lane boundary measured against the fixture both ways), so each section is run on both models over the same evidence and the comparison is recorded.
+
+**Done when** every claim in a written section names a stored source, a pass over the fixture reproduces byte for byte from the recorded endpoint, opening a name twice runs one pass asserted off the run log rather than off a return value, a cloud model unavailable leaves the stored research rendering with its as-of date, and each section is run on both models over one evidence set with the comparison recorded.
+
+### 6.9 The theme research runner and the search tool
+The search tool behind a feed interface with its `Requests` member, **captured before its parser is written**, its key in the secrets file under its own path, and one more file on the outward-request scan's list. It is called as one more fetching tool inside the loop and never by the model (see: The model never fetches; components fetch and hand it documents).
+
+Theme search parameters: the query names the industry rather than a ticker, carries an explicit date range, is restricted to the industry list, and requests full page text rather than snippets, because a snippet cannot be stored as the document a claim rests on (see: A theme search is scoped by parameter, not by hope). Source lists govern this search and not the licensed feed, which is a delivery channel (see: Two source lists govern the open web, and the licensed feed is a channel rather than a list).
+
+`theme_section` written per theme with the industries that map to it, so one paid pass serves every name in that industry (see: Industry research is per theme, not per name).
+
+Scheduling of queued work: a theme refresh and any other non-interactive paid pass runs in the off-peak window, expressed in UTC (see: Queued work runs off-peak, and every schedule is written in UTC). The overnight queue is outside that row and its due point says so, because the queue makes no paid call and peak pricing reaches nothing it does.
+
+**Done when** a theme refresh serves every name in its industry from one pass asserted over two names in one industry, a search returning snippets rather than text produces no stored document, a result from a site the industry list does not carry produces none either, the four query parameters are asserted on the request the feed made rather than in the prose that describes them, and a theme refresh that fails while a name's pass depends on it leaves that name's other sections written.
+
+### 6.10 The overnight queue
+**The nightly model-call carve-out lands first, in its own commit, before the queue**, for the reason 2.1 states (see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name).
+
+Run the overnight queue on the local model, writing the sections in the local lane for listed names whose research is missing or stale, in order of reasons fired, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). It makes no paid call, and no part of the arithmetic depends on it.
+
+Its catalogue row and its matrix row landed at 6.0, ahead of the component, following the shape the change detector's took at 5.0: a component in code with no row is refused in that direction, and a row is where the permission to write anything at all is declared.
+
+The time limit is set here from this checkpoint's own measurement of the per-pass duration on this machine, stated as the hours that cover a named number of names at the measured rate, with the rate and the population it was measured over beside it. It is one hour until then, so the queue is bounded from the first night it runs.
+
+The machine slept and the overnight queue did not run: nothing is written, the run page states that it did not run and on which night, and listed names open without a draft as normal.
+
+**Done when** the queue completes with zero spend asserted off the run log, a busy night leaves names for the next night rather than running past its limit asserted at the boundary either side, a night where the machine slept is stated on the run page rather than inferred from an empty result, the arithmetic's own counts are unchanged by whether the queue ran, and the per-pass duration is recorded with the population it was measured over.
+
+### 6.11 Phase 6 report
+The report exporter, which exports a single report as a self-contained file (see: A single report can still be exported as a self-contained file), and the verification harness's own matrix row. Both have been placed at this phase's report checkpoint since 0.5, and the placement is inherited rather than chosen: nothing before this has every section to export.
+
+**Done when** every phase 6 claim is PASS naming an instrument whose declared reach includes it, unexamined is zero, every section section 4 specifies is produced on the current hardware with the synthesis sections written by the paid model on demand, the spend cap stops a pass rather than warning about one, a single report exports as a self-contained file drawing no value the store does not carry, and the pair 6.0 predicted is checked against the actual with every claim that arrived unpredicted named and placed in the list it belonged in and every predicted claim that did not arrive named as such.
 
 ---
 
@@ -671,7 +747,7 @@ Recorded when created, not remembered. Every row is named, and the name is what 
 | **Claims due at a phase rather than at a checkpoint** | 3.1 | 4.0, discharged | 4.0 is the next planning pass and the one before phase 4's first checkpoint lands, which is when the next of these fails. A claim whose due point is a phase becomes invalid the moment that phase's first checkpoint is recorded, because `HasLanded` reads a phase as landed from any checkpoint in it. Phase 3's eight were repaired at 3.1 because 3.1 landing is what made them fail; 66 remain, being 5 at phase 4, 20 at phase 5, 29 at phase 6 and 12 at phase 7, and every one of them will fail on its phase's first checkpoint exactly as these did |
 | **The suite's fixture populations read from the expectation rather than written into each test** | 3.6 | 4.0, discharged | evidence in hand: 3.6 measured it. Widening the fixture from three names to four turned 28 tests red, and repairing them touched twenty-five assertion sites across six test classes. One of the twenty-five was a named constant covering six assertions, which is the shape the other twenty-four should have had. 4.0 is the pass before phase 4 writes more of them, and turning a literal into a reading of the membership expectation is a change to how the suite is written rather than to what any one checkpoint builds, so it belongs to a pass that can make it across the whole suite at once |
 | **Section 19.1's fixture table reconciled against the expectations that exist** | 3.1 | 4.0, discharged | 4.0 is the next planning pass, which is where a change to a claim-bearing table can be made with its effect on the claim count understood. The table lists ten expected files and the fixture holds three it does not name, being membership, fetch and series state, each written by a checkpoint that needed one. `fixture-replay` found the third by reporting a populated table nothing expected; the first two have been unlisted since 1.1 and 2.1 |
-| **The research lane boundary measured against the fixture both ways** | authored with the architecture | 6.5 | 6.5 is where a pass over the fixture reproduces byte for byte from the recorded endpoint, which is what lets each section be run both ways and compared. The decision named phase 6 and this names the checkpoint inside it that produces the recording, which sharpens the point rather than moving it |
+| **The research lane boundary measured against the fixture both ways** | authored with the architecture | 6.8 | 6.8 is where a pass over the fixture reproduces byte for byte from the recorded endpoint, which is what lets each section be run both ways and compared. The decision named phase 6 and this names the checkpoint inside it that produces the recording, which sharpens the point rather than moving it. It read 6.5 until 6.0, and 6.0's resplit moved the research runner from the fifth position to the eighth, so the point moved with the work rather than the work with the point |
 | **The six reason thresholds calibrated from the nights they fired on** | 5.0 | operating | 60 nights of listings, read on the run page, which 5.6 builds. 60 because it is the quarter of trading the level window already uses, long enough that a distribution of fired counts is not one week's weather. No checkpoint accumulates nights, so 5.6 makes the trigger readable rather than producing it |
 | **The momentum panel's reading set asserted independently of the constant it is drawn from** | 3.7 sign-off | 4.0, discharged | 4.0 states the four readings where a test can read them rather than asserting the drawn names back against the set they were drawn from. The hole was asymmetric, which is what identified it: dropping `macd_hist` drew three readings and left the suite green, while adding `atr14` turned it red only because `NeutralOf` throws on a reading with no neutral rule, so the test was sensitive to the set through an exception and never through membership |
 | **The band hue mapping asserted, and not only the two hues** | 3.7 sign-off | 4.0, discharged | 4.0 asserts which band got which hue. The test asserted that three fills carry exactly two distinct hues and that one contains the support token and one the resistance token, and never which was which, so swapping the two constants drew every support band in the resistance hue and left the suite green |

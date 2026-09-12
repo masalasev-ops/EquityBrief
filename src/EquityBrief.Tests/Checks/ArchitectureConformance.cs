@@ -604,8 +604,66 @@ public class ArchitectureConformance
         var checkpoints = PlanCheckpoints.All();
         var exceptions = Scope.DeclaredExceptions();
 
+        // The prefix-keyed map is excluded, and what makes it excludable is
+        // asserted rather than taken from the label: every key has to be a
+        // strict prefix of a step in section 14 and equal to none of them,
+        // which is what means the resolver never asks DueFor with the key. An
+        // exclusion that removed nothing, or one that grew to hold a real
+        // subject, fails here rather than narrowing the check quietly.
+        var document = Corpus.Read("docs/ARCHITECTURE.html");
+        var prefixKeyed = Scope.ResidualPrefixSubjects();
+        var steps = NightlyRunSteps.In(document);
+
+        Assert.True(
+            prefixKeyed.Count >= 10,
+            $"Read {prefixKeyed.Count} prefix-keyed residual subjects, expected at least 10.");
+
+        var notAPrefix = prefixKeyed
+            .Where(key => !steps.Any(step =>
+                step.StartsWith(key, StringComparison.Ordinal) && step.Length > key.Length))
+            .ToArray();
+
+        Assert.True(
+            notAPrefix.Length == 0,
+            "These are excluded from the shadow check as prefix keys and are not a strict prefix " +
+            "of any step in section 14, so the exclusion is covering a real subject: " +
+            string.Join("; ", notAPrefix));
+
+        // The second exclusion, and the same discipline. A fixture row's key is
+        // the name of a file, so every one has to be a row of section 19.1's
+        // own table. A key that is not a row there is a subject hiding in the
+        // exclusion, and the floor stops the exclusion emptying.
+        var fileNamed = Scope.ResidualFileNameSubjects();
+
+        var fixtureRows = ArchitectureTables.In(document)
+            .Where(table => table.Heading == Scope.FixtureTable)
+            .SelectMany(table => table.Body)
+            .Where(row => row.Count > 1 && row[0].Length > 0)
+            .Select(row => row[0])
+            .ToArray();
+
+        Assert.True(
+            fileNamed.Count >= 10,
+            $"Read {fileNamed.Count} file-named residual subjects, expected at least 10.");
+
+        Assert.True(
+            fixtureRows.Length >= 14,
+            $"Read {fixtureRows.Length} rows in {Scope.FixtureTable}, expected at least 14.");
+
+        var notAFixtureRow = fileNamed
+            .Where(key => !fixtureRows.Contains(key, StringComparer.Ordinal))
+            .ToArray();
+
+        Assert.True(
+            notAFixtureRow.Length == 0,
+            "These are excluded from the shadow check as fixture file names and are not a row of " +
+            Scope.FixtureTable + ", so the exclusion is covering a real subject: " +
+            string.Join("; ", notAFixtureRow));
+
         var shadowing = Scope.ResidualSubjects()
             .Where(subject => !exceptions.Contains(subject, StringComparer.Ordinal))
+            .Where(subject => !prefixKeyed.Contains(subject, StringComparer.Ordinal))
+            .Where(subject => !fileNamed.Contains(subject, StringComparer.Ordinal))
             .Where(subject => PlanCheckpoints.DueFor(subject, checkpoints) is not null)
             .Select(subject => $"{subject} (plan says {PlanCheckpoints.DueFor(subject, checkpoints)})")
             .ToArray();
