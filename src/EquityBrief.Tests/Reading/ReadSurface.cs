@@ -3685,6 +3685,35 @@ public class ReadSurface
 
         Assert.Contains(night, body, StringComparison.Ordinal);
         Assert.DoesNotContain(before, body, StringComparison.Ordinal);
+
+        // A name that fired on that night, so what is asserted is the listings
+        // the route served and not the date it echoed back.
+        //
+        // 6.0's own mutation sweep found the weaker form: pointed at the day
+        // before, the route finds no listings for it and falls back to section
+        // 18's banner, which draws the night that was asked for. So both
+        // assertions above held and the mutation the sign-off demonstrated with
+        // survived a test written to catch it. A date in the markup is the one
+        // thing a wrong night still produces.
+        Assert.Contains(FiredOn(store, night), body, StringComparison.Ordinal);
+    }
+
+    // A ticker that fired on one night, read off the store.
+    static string FiredOn(TemporaryStore store, string night)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT ticker FROM listing WHERE session_date = $n AND fired_count > 0 ORDER BY ticker LIMIT 1;";
+        command.Parameters.AddWithValue("$n", night);
+
+        var ticker = command.ExecuteScalar() as string;
+
+        Assert.NotNull(ticker);
+
+        return ticker;
     }
 
     [Fact]
