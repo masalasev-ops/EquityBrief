@@ -7281,7 +7281,9 @@ Mutated:    the rule, stated before the sweep: reinstate the finding and each gu
             and the phase fallback reinstated for every due point. Each turned exactly its own guard
             red, and the second named the clause the review had watched pass. None of the properties
             added went unmutated.
-Tests:      554, from 550. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+Tests:      556, from 552. Four added here, over a tree that already carried the day change
+            correction above: this branch alone read 554 from 550, and the figure recorded is the
+            merged tree's, which is the one that lands. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
             18, exit 0. `tools/verify-phase.ps1` green at 298 claims, 221 PASS, 0 FAIL, 77 out of
             scope, 0 unexamined, 228 placements reconciled. No claim moved: the repair is to which
             parts the reader holds a row to rather than to what any row claims. The out-of-scope 77
