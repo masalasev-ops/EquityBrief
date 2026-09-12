@@ -132,9 +132,21 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
         ticker,
         bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
 
+    // Every filing this name holds, which the numbers section draws five of. A
+    // name nobody has opened holds none and the section says so, because the
+    // computed sections render from the nightly store whatever this read returns.
+    var fundamentals = await read.FundamentalsAsync(ticker);
+
+    // The high and the low of the sessions the largest move spans, which the fact
+    // strip states beside the close. A name with no annotated move has none, and
+    // the strip says so rather than drawing a blank.
+    var extremes = await read.MoveExtremesAsync(ticker);
+
     return Results.Content(
         NameScreen.Region(
             page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
+            fundamentals,
+            extremes,
             listings.FirstOrDefault(listing => listing.Ticker == ticker),
             at is > 0 ? ordered[at.Value - 1].Ticker : null,
             at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null),

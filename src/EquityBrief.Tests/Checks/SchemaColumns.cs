@@ -22,6 +22,10 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Forward returns"),
             CheckReach.Key(Scope.StoresTable, "News pulse"),
 
+            // 6.1, the fundamentals store: migration 19's columns and types against
+            // SCHEMA's own declaration of them.
+            CheckReach.Key(Scope.StoresTable, "Fundamentals"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.StoresTable, "Listings"),
 

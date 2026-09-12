@@ -321,6 +321,10 @@ Primary key: `ticker`, `filing_date`.
 
 Kept forever, never updated. Providers restate, and keeping the filing date is what makes it possible to know later what was known at the time.
 
+**One fetch writes the twelve most recent filings the provider returns, which is a write window and not a retention one** (see: Twelve filings are stored and five are shown). Nothing deletes from this table and no row has a deleter, so a name's count grows past twelve as later filings arrive one at a time. The endpoint returns years of quarters in one call, so the window costs nothing beyond what is written, and it is counted in filings rather than over a date range so a company that missed a filing does not get a shorter window than one that did not. The numbers section shows five of them, which is a display decision.
+
+`payload` holds the quarter's figures, the balance sheet, and the margin computed from that filing's own revenue and gross profit, with `source` naming which of the three each part came from. The earnings bases, the valuation on each of them, and the next print's consensus estimate sit on the newest filing's row alone, because a ratio has a price in it and a price moves every session. `segments` and `guidance` are present and null: the company financials endpoint files neither for any name, so the absence is the provider's rather than this name's, and the filings archive supplies both from 6.2.
+
 ### news_pulse
 Grain: one row per ticker per date.
 

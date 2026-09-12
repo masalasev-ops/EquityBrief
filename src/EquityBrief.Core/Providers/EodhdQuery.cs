@@ -65,6 +65,11 @@ public static class ProviderWeights
 
     public const int HistoricalPerTicker = 1;
 
+    // Measured at 6.1 rather than read from documentation, which the probe that
+    // captured the payload could do in the same pass: one fundamentals request
+    // moved the account's own counter from 1,771 to 1,781. The figure the document
+    // stated was already 10, so this confirms it rather than correcting it, and
+    // the calls that read the counter cost nothing themselves.
     public const int Fundamentals = 10;
 
     public const int News = 5;

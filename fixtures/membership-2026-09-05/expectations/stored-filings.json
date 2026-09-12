@@ -1,0 +1,45 @@
+{
+ "stage": "stored-filings",
+ "derivation": "derived",
+ "derivedFrom": "the ruling that twelve filings are stored and five are shown, taken together with what the probe settled about this endpoint. Nothing here is frozen from a run. The window is stated as a count of filings rather than as a list of dates, because a list would be a second statement of which quarters the capture holds and the two would drift the first time the capture moved; the dates are read off the store at test time and checked against the rules below. The margin is not stated as a figure either: what is stated is the two figures it is computed from, and the test divides them itself, so a fetcher that wrote the right shape and the wrong arithmetic fails.",
+ "tables": [
+  "fundamentals"
+ ],
+ "storedFilings": 12,
+ "quartersShown": 5,
+ "capturedFilings": 14,
+ "names": [
+  "AAPL",
+  "MSFT",
+  "KEYS",
+  "NFLX"
+ ],
+ "filingDateIsAfterThePeriodItCovers": true,
+ "quartersWithNoFilingDate": {
+  "AAPL": 0,
+  "MSFT": 0,
+  "KEYS": 1,
+  "NFLX": 0
+ },
+ "partsNotCarried": [
+  "segments",
+  "guidance"
+ ],
+ "marginIsComputedFrom": [
+  "grossProfit",
+  "revenue"
+ ],
+ "onTheNewestFilingAlone": [
+  "epsBases",
+  "valuation",
+  "estimated"
+ ],
+ "onEveryFiling": [
+  "quarter",
+  "balanceSheet"
+ ],
+ "namesFilingNoEstimate": [
+  "KEYS"
+ ],
+ "note": "the capture holds fourteen filings and the window takes twelve, which is what makes the window a selection rather than everything the file happened to hold. KEYS carries fifteen rows of which fourteen are filings, the fifteenth being a quarter the provider files no filing date for at all: this table's grain is one row per filing date, so that row cannot be keyed and is counted on the run log instead. The window is counted in filings rather than over a date range, so that name gets the same twelve as a name that filed on time. Section 4 shows five of the twelve, and the two figures being different is the ruling rather than an oversight: five stored quarters yields one year-over-year comparison and twelve yields eight."
+}

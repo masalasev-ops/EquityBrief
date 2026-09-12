@@ -397,6 +397,26 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // One row per ticker per filing date, and every column TEXT because every one
+    // of them is a date, an instant, a document or a name. The figures live inside
+    // `payload` as JSON, in the storage form money takes, which is what keeps a
+    // revenue out of a REAL column: a table with a column per figure would have
+    // thirty of them and each would be a place to write a double.
+    //
+    // Kept forever and never updated, which is the ownership SCHEMA declares. A
+    // provider that restates a quarter files it again under a new filing date, so
+    // a restatement is a new row and what was known at the time stays readable.
+    const string CreateFundamentals = @"
+        CREATE TABLE fundamentals (
+            ticker       TEXT NOT NULL,
+            filing_date  TEXT NOT NULL,
+            fetched_at   TEXT NOT NULL,
+            payload      TEXT NOT NULL,
+            source       TEXT NOT NULL,
+            PRIMARY KEY (ticker, filing_date)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -417,6 +437,7 @@ public static class SchemaMigrations
         new Migration(16, "create listing", CreateListing),
         new Migration(17, "create forward_return", CreateForwardReturn),
         new Migration(18, "create news_pulse", CreateNewsPulse),
+        new Migration(19, "create fundamentals", CreateFundamentals),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

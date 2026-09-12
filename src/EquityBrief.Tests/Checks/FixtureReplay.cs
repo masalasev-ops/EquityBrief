@@ -5,6 +5,7 @@ using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Calendar;
+using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
@@ -103,6 +104,20 @@ public class FixtureReplay
             RecordedNewsFeed.FromFolder(Folder()),
             night,
             store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "replay-pulse");
+
+        // The one stage here that is not the night's. The fundamentals fetcher runs
+        // when a name is opened, so it is replayed after the night rather than
+        // inside it, and it is replayed at all because a table nothing populates is
+        // a table no expectation can be read against. The ordering says which kind
+        // of stage it is: a night that fetched fundamentals would be a night making
+        // a per-name request, which is the one thing the limits table forbids.
+        foreach (var ticker in RecordedFundamentalsFeed.FromFolder(Folder()).Names)
+        {
+            await new FundamentalsFetcher(
+                RecordedFundamentalsFeed.FromFolder(Folder()),
+                night,
+                store.DatabaseFile).RunAsync(ticker, null, "replay-fundamentals-" + ticker);
+        }
 
         return store;
     }

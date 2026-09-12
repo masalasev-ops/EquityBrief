@@ -69,6 +69,34 @@
       "query": "news?s=NVDA.US&from=2026-08-25&to=2026-09-08&limit=200&fmt=json",
       "fetchedAt": "2026-09-08T23:58:00Z",
       "trimmedTo": "four of the articles one name's fortnight returned, kept in the provider's order. Four rather than one because the parser has to be exercised over a row naming several tickers, which is what makes one dated request serve every name; three of the four name three or more. Every key, nesting and type is the provider's. The whole set of thirty names this response came from is the 1.7 coverage measurement's sample and is recorded in PROGRESS.md rather than committed, because 1,253 articles of licensed text are not this repository's to hold."
+    },
+    {
+      "file": "fundamentals-AAPL.json",
+      "endpoint": "fundamentals/AAPL.US",
+      "query": "fundamentals/AAPL.US?fmt=json",
+      "fetchedAt": "2026-09-12T21:36:07Z",
+      "trimmedTo": "the whole payload's shape with its rows cut: every one of the thirteen top level keys, every nested key and every type is the provider's, and what was removed is rows. Fourteen quarters of each of the three statements out of 164, two years of each, fourteen of the 132 earnings history rows, two of the 40 estimate trend rows, three of the 33 annual rows, one holder of each kind and two share counts of each span. Fourteen rather than twelve, because the fetcher stores the twelve most recent filings and a file holding exactly twelve could not show that it selects rather than storing whatever it was handed. General, Highlights, Valuation, SharesStats, Technicals, SplitsDividends, AnalystRatings, ESGScores and InsiderTransactions are whole. The endpoint carries no segment table and no management guidance at all, which is what the probe settled and why the numbers section marks both absent until the filings archive supplies them."
+    },
+    {
+      "file": "fundamentals-MSFT.json",
+      "endpoint": "fundamentals/MSFT.US",
+      "query": "fundamentals/MSFT.US?fmt=json",
+      "fetchedAt": "2026-09-12T21:39:20Z",
+      "trimmedTo": "the same cut as fundamentals-AAPL.json. Its fiscal year ends in June, so its quarter ends do not line up with AAPL's September, which is what a reader ordering quarters by the calendar rather than per name would get wrong."
+    },
+    {
+      "file": "fundamentals-KEYS.json",
+      "endpoint": "fundamentals/KEYS.US",
+      "query": "fundamentals/KEYS.US?fmt=json",
+      "fetchedAt": "2026-09-12T21:39:21Z",
+      "trimmedTo": "the same cut as fundamentals-AAPL.json with one row kept on purpose: the quarter ending 2012-10-31, which the provider files with no filing date at all. It is the only such row in the four captures, and this table's grain is one row per filing date, so a fetcher that required the field would throw on a real name and one that defaulted it would key a row on a date nobody filed. Fifteen rows rather than fourteen for that reason, of which fourteen carry a filing date. This name also files no guided quarter: every one of its earnings history rows carries an actual, where the other three each carry one row with an estimate and no actual, so the absence is in the fixture beside the presence. Its fiscal year ends in October and its most recent quarter was filed on 2026-09-02, inside this fixture's own window."
+    },
+    {
+      "file": "fundamentals-NFLX.json",
+      "endpoint": "fundamentals/NFLX.US",
+      "query": "fundamentals/NFLX.US?fmt=json",
+      "fetchedAt": "2026-09-12T21:39:22Z",
+      "trimmedTo": "the same cut as fundamentals-AAPL.json. Its fiscal year ends in December, which with AAPL's September, MSFT's June and KEYS's October gives four fiscal calendars over four names."
     }
   ]
 }

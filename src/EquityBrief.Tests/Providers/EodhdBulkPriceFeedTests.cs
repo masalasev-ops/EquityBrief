@@ -313,7 +313,9 @@ public class EodhdBulkPriceFeedTests
         // One entry per live feed, and every one of them a feed. The count is
         // stated rather than left to grow: a carve-out nobody counts is one that
         // widens a file at a time until it covers the tree.
-        Assert.Equal(6, Checks.NightlyCost.MayHoldAClient.Length);
+        // Six until 6.1 added the fundamentals endpoint, which is the first of
+        // them no night calls.
+        Assert.Equal(7, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));

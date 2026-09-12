@@ -891,7 +891,15 @@ public class ArchitectureConformance
         // phase 6's. A run finding none would otherwise pass both directions
         // over an empty set.
         Assert.Equal(41, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
-        Assert.Equal(104, inDocument.Length);
+
+        // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
+        // the seven parts its row enumerates. The row's own subject goes with the
+        // decomposition, so seven arrive and one leaves. Two of the seven are why
+        // the strip is owed at 6.1 rather than in phase 3: market capitalisation
+        // and the multiples come from the fundamentals and no computed table holds
+        // either, so a strip drawn earlier would have been five parts of seven with
+        // a verdict covering all of them.
+        Assert.Equal(110, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -948,7 +956,8 @@ public class ArchitectureConformance
         // table were split at the listing store 5.1 does not have and the run
         // page's reason record was split between the counts 5.6 draws and the
         // verdicts that need resolved setups.
-        Assert.Equal(88, checkedElements);
+        // 95 from 88 at 6.1, the seven being the fact strip's own parts.
+        Assert.Equal(95, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
