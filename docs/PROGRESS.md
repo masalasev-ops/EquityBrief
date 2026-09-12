@@ -7041,3 +7041,46 @@ Tests:      541, from 536. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             scope, 0 unexamined, 178 placements reconciled. No claim moved. Carried obligations 59
             rows, four new at 6.0 and cited back by 6.0's text. Windows on this machine; the matrix
             carries macOS and the Linux case-sensitivity job.
+
+### 5.7 - correction: a row's parts were the reader's rather than the document's   2026-09-12
+Corrects:   the 5.0, 5.2, 5.4 and 5.6 entries above, whose section 15 rows were placed PASS whole
+            while the reader chose which of their parts carried a verdict, and the entries above that
+            decomposed four rows by hand at 3.1, 5.0 and the phase 5 sign-off. The blocking finding of
+            the fifth phase 5 sign-off review, which committed nothing.
+Found:      by the fifth phase 5 sign-off review. `Scope.Elements` named each decomposed row's parts,
+            so a clause it left out had no verdict of its own while its row read PASS: 15.7's list
+            states a day change, a trend state in a word and the distance row mark, the page draws
+            name, close and reasons, and the row passed. The same shape hid the harness verdict in
+            the night header, the level summary and the selection on the selected name, paging and
+            sessions until earnings on the universe table, the twelve-month picture on the name page,
+            and the break-even on the run page's reason record. That is an unexamined claim wearing a
+            verdict, and `architecture-conformance`'s population-from-the-document promise broken one
+            level below the row.
+Repaired:   the parts are read off the row. An enumeration is a run of three or more comma-separated
+            items, which is how these rows list what a region holds, and every part of a row any
+            verdict passes must be a claim with a verdict of its own. A two-item list joined by "and"
+            is outside what the reader reaches and is stated as its scope, which is why the selected
+            name is decomposed by hand; the rationale items a run picks up are a stated set of eleven,
+            each argued, the way `price-storage-form` states its cast sites. Fifteen rows are
+            decomposed into seventy-two parts, fifty-seven of them drawn and passed naming the check
+            that reads the markup back, and fifteen out of scope: nine at a new checkpoint 5.8, which
+            draws them and carries the obligation row filed for them, two at 6.5, being the research
+            pass's prose and spend, and four at 7.5 and 6.5, which the plan already owed.
+Guarded:    the reader over constructed text, taking the list's own sentence apart into its six parts,
+            dropping a leading connective, refusing a two-item list and dropping a stated rationale
+            item; and the coverage assertion over the document, which names every part of a passing
+            row that has no verdict.
+Mutated:    the rule, stated before the sweep: reinstate the finding and each guard the repair rests
+            on, being a part dropped from a row's list, a deferred part marked PASS with no check
+            reaching it, the reader returning nothing, and a drawn part's reach taken off the check
+            that names it. Four mutations, four runs, in a worktree under the session scratchpad
+            outside the repository, reverted, and the worktree removed. The first turned the coverage
+            assertion, the element reader and the due-point count red; the second and the fourth turned
+            the reconciliation red in fifteen places each; the third turned the coverage assertion and
+            the reader's own proof red. None of the properties added went unmutated.
+Tests:      543, from 541. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 298 claims, 211 PASS, 0 FAIL, 87 out of
+            scope, 0 unexamined, 218 placements reconciled. The claims rise by 53 and the out-of-scope
+            by 13 because a row's parts are claims now: 72 parts over 15 rows, 57 of them passed and
+            15 owed, nine of those at the new 5.8. Windows on this machine; the matrix carries macOS
+            and the Linux case-sensitivity job.

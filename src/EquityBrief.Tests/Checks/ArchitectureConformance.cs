@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using EquityBrief.Tests.Harness;
 
 namespace EquityBrief.Tests.Checks;
@@ -826,7 +827,7 @@ public class ArchitectureConformance
         // phase 6's. A run finding none would otherwise pass both directions
         // over an empty set.
         Assert.Equal(37, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
-        Assert.Equal(47, inDocument.Length);
+        Assert.Equal(100, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -883,7 +884,148 @@ public class ArchitectureConformance
         // table were split at the listing store 5.1 does not have and the run
         // page's reason record was split between the counts 5.6 draws and the
         // verdicts that need resolved setups.
-        Assert.Equal(24, checkedElements);
+        Assert.Equal(88, checkedElements);
+    }
+
+    // Every part a row enumerates, read off the row rather than chosen by the
+    // reader.
+    //
+    // The fifth phase 5 sign-off review's blocking finding. A row's parts were
+    // whatever `Scope.Elements` named, so a clause the reader left out had no
+    // verdict of its own while its row read PASS: 15.7's list states a day
+    // change, a trend state in a word and the distance row mark, the page draws
+    // name, close and reasons, and the row passed whole. That is an unexamined
+    // claim wearing a verdict, and it is the population-from-the-document
+    // promise broken at the level below the row.
+    //
+    // An enumeration is a run of three or more comma-separated items, which is
+    // how these rows list what a region holds. A two-item list joined by "and"
+    // is outside what this reader reaches and is stated as its scope: the rows
+    // that carry one are decomposed by hand, and `EveryDecomposedElementIsNamedByTheRowItDecomposes`
+    // holds those parts to the row's own words in the other direction.
+    internal static IReadOnlyList<string> EnumeratedParts(string description)
+    {
+        var parts = new List<string>();
+
+        foreach (Match run in Regex.Matches(description, @"(?:[^,.;:|]+,\s+){2,}(?:and\s+|or\s+)?[^,.;:|]+"))
+        {
+            foreach (var item in run.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                var named = Regex.Replace(item, @"^(?:and|or|with|so|then|being)\s+", string.Empty).Trim();
+
+                if (named.Length > 0 && !RationaleParts.Contains(named))
+                {
+                    parts.Add(named);
+                }
+            }
+        }
+
+        return parts;
+    }
+
+    // The items a run picks up that are a row's reasoning rather than a part of
+    // what it draws. Stated as a set and argued, the way `price-storage-form`
+    // states its cast sites, because a reader over prose cannot tell a clause
+    // that says what is drawn from one that says why: each of these is a
+    // subordinate clause of the sentence before it, and none of them is a thing
+    // a page can be asked to show.
+    static readonly HashSet<string> RationaleParts = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // 15.8's table: why the sort order is what it is.
+        "the top is what nearly fired",
+
+        // 15.10's operational header: where the detail is drawn, which the
+        // part before it already claims.
+        "in a cell rather than behind a pointer",
+
+        // 15.10's harness: how the three counts are drawn, which the counts
+        // themselves carry.
+        "each separately",
+
+        // 15.11's two rows, whose second cell is the argument for the first.
+        "always the three together | a share without its denominator hides how much was checked",
+        "a share without the break-even hides whether it was any good",
+        "since a setup with a distant target needs to be right rarely and one with a near target needs to be right often",
+        "no rate | a rate over a handful of resolved setups is consistent with almost any truth",
+        "a pale number would read as a small one rather than as an absent one",
+
+        // 15.4's second cell, which says which surface writes what rather than
+        // naming a part of the app.
+        "filters and selection | the server writes the shell and the marks",
+        "as a flat file to hand to someone | the same marks",
+        "rendered without the router and with every disclosure open",
+    };
+
+    [Fact]
+    public void EveryPartASectionFifteenRowEnumeratesHasItsOwnVerdict()
+    {
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+        var uncovered = new List<string>();
+        var checkedParts = 0;
+
+        foreach (var heading in Scope.ScreensTables)
+        {
+            var table = Assert.Single(tables, candidate => candidate.Heading == heading);
+
+            foreach (var row in table.Body.Where(row => row.Count > 1))
+            {
+                var subjects = Scope.SubjectsOf(heading, row[0]);
+
+                // A row nothing claims yet says nothing yet. Its parts are owed
+                // with it, at the point its own due point names.
+                if (!subjects.Any(subject => Scope.For(heading, subject).Verdict == Verdict.Pass))
+                {
+                    continue;
+                }
+
+                foreach (var part in EnumeratedParts(row[1]))
+                {
+                    checkedParts++;
+
+                    if (!subjects.Any(subject => subject.Contains(part, StringComparison.OrdinalIgnoreCase)
+                        || part.Contains(subject[(subject.IndexOf(',') + 1)..].Trim(), StringComparison.OrdinalIgnoreCase)))
+                    {
+                        uncovered.Add($"{heading} | {row[0]}: {part}");
+                    }
+                }
+            }
+        }
+
+        Assert.True(
+            uncovered.Count == 0,
+            "These parts are stated by a row a verdict passes and have no verdict of their own: " +
+            string.Join("; ", uncovered) +
+            ". A row passes for what it says, so every part it enumerates is a claim.");
+
+        Assert.True(checkedParts >= 40, $"Read {checkedParts} enumerated parts, expected at least 40.");
+    }
+
+    [Fact]
+    public void TheReaderTakesARowsPartsFromItsOwnWords()
+    {
+        // The permanent proof of the reader, over constructed text rather than
+        // the document, because a reader that returned nothing would pass the
+        // coverage assertion above every time.
+        //
+        // The list's own sentence, which is the one the fifth phase 5 sign-off
+        // review found passing whole while three of its parts were undrawn.
+        Assert.Equal(
+            ["name", "close", "day change", "trend state in a word", "the distance row mark", "the reasons"],
+            EnumeratedParts("Each row: name, close, day change, trend state in a word, the distance row mark, and the reasons"));
+
+        // A leading connective is not part of the part, and a run of two is not
+        // an enumeration: that is the reader's stated scope, and the rows that
+        // carry one are decomposed by hand instead.
+        Assert.Equal(
+            ["the single page is here", "routing", "filters"],
+            EnumeratedParts("the single page is here, with routing, filters"));
+        Assert.Empty(EnumeratedParts("the plan column and the level summary for whichever row is selected"));
+
+        // A stated rationale item is not a part. Remove it from the set and this
+        // sentence yields four parts rather than three.
+        Assert.Equal(
+            ["every name in the index", "paged", "sorted by distance to the nearest level ascending"],
+            EnumeratedParts("every name in the index, paged, sorted by distance to the nearest level ascending, so the top is what nearly fired"));
     }
 
     [Fact]
