@@ -7084,3 +7084,82 @@ Tests:      543, from 541. `tools/ci.ps1` green end to end, all 6 steps, 0 warni
             by 13 because a row's parts are claims now: 72 parts over 15 rows, 57 of them passed and
             15 owed, nine of those at the new 5.8. Windows on this machine; the matrix carries macOS
             and the Linux case-sensitivity job.
+
+### 5.8 - the screens' stated parts   2026-09-12
+Built:      the nine parts section 15 states and no page drew, and the tenth claim the ninth makes on
+            a second row. Tonight's list carries a day change, a trend state in a word and the
+            distance row mark beside the name, the close and the reasons. The night header carries the
+            harness verdict beside the counts it already drew. The selected name carries the level
+            summary beside its plan column, and it is the row the reader picked rather than the first:
+            every row is a link that names itself in the hash, and `#/night/<date>?name=<TICKER>` is a
+            selected view another machine opens the same way. The universe table is paged and carries
+            the sessions until each name's next dated event. The name page's how-it-got-here carries
+            the twelve-month picture above the table of moves. And the app's own row names selection
+            beside routing and filters, which is 15.4's statement of the same part.
+            (owes: The screens' parts stated in section 15 and not drawn)
+Why:        the fifth phase 5 sign-off review found that `Scope.Elements` named each row's parts, so a
+            clause the reader left out had no verdict of its own while its row read PASS. The repair
+            at 5.7 made the parts come from the row, which turned these nine into claims with no check
+            reaching them, and out of scope at a checkpoint that did not exist yet. This is that
+            checkpoint. Phase 5's own done condition at 5.7 asks that every phase 5 claim be PASS, so
+            the phase could not sign off while ten of its claims sat here.
+Read:       every value drawn is stored or derived in the seam `UniverseScreen` already names. Two
+            reads are new and both hand back columns: every name's next dated event on or after a
+            date, in one query rather than five hundred, and every name's close on the newest session
+            it holds before the night, which is the other half of a day change. Two figures are
+            derived and both in the projection: the day change from two closes, through
+            `Statistic.FromPrice` and stated in `price-storage-form`'s set of crossing helpers, and the
+            sessions until an event, counted off `ExchangeClosures` rather than off stored bars,
+            because the event is ahead of the night and no bar exists for a session that has not
+            happened. The read surface computes nothing and the page computes nothing, which is the
+            seam both of those rules leave open.
+            (see: A screen reads and renders, and computes nothing) (see: Code owns every number)
+Absences:   each new part states its absence rather than drawing a zero. No earlier close, no ladder
+            row and no bands each say so on the row. A name with no dated event and a name whose event
+            is past the end of the exchange closure table are two different absences and are stated as
+            two: the second is the table ending, not a name without earnings.
+            (owes: The exchange closure table extended before the nights reach its end)
+Guarded:    seven assertions in `read-surface`, each reading the part back off the markup rather than
+            off the model behind it, which is what this checkpoint owed. The day change is checked
+            against the two closes read out of the stored bars rather than against the projection that
+            drew it; the trend state against the ladder's own label; the distance marks counted one per
+            drawn row and each carrying its own name; the four harness counts drawn separately, with
+            the header asserted not to carry their sum; the selection asserted on a row that is not the
+            first, with the fallbacks for no pick and for a name not on the list; the pages asserted to
+            partition the rows in order with every link keeping the filters it was drawn under; the
+            sessions count asserted over a Friday to a Monday, a day to itself, and the week holding
+            Thanksgiving, and against the per-name read the fact strip uses; and the picture asserted
+            to be the level chart mark over the year to the newest stored session, above the table and
+            with no bands.
+Mutated:    the rule, stated before the sweep: take one part from each surface the checkpoint touched,
+            and take the one whose absence a count would not notice. Four mutations, four runs, in a
+            worktree under the session scratchpad outside the repository, reverted, and the worktree
+            removed. The selected-name region fixed back at the first row; the paging slice taking
+            from the whole table rather than from the filtered rows; the sessions count subtracting
+            dates instead of reading the calendar; and the twelve-month window measured from the
+            machine clock rather than from the newest stored session. The first, the third and the
+            fourth each turned their own assertion red on the first sweep. The second survived it, and
+            that is the finding this entry carries: the route filtered and then cut, and nothing
+            asserted the order between the two steps, so a page taken from the whole table and
+            filtered afterwards drew a short page of the wrong names with no count on the screen
+            contradicting it. The remedy is the two steps made one call the route cannot get wrong,
+            `UniverseScreen.Rows`, with the order asserted on it: page two of a filter matching half
+            the names is the second fifty of that half, and it is not page two of the whole table.
+            Mutated again there and it goes red. The fourth also went red on `clock-usage` alone at
+            first, which is a scan finding a pattern rather than a test exercising the path: the
+            committed fixture's newest session is days from the machine's, so both windows hold the
+            same bars. Asserted now over a constructed series that ended in 2020, where a window taken
+            from the clock is empty.
+Tests:      550, from 543. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 298 claims, 221 PASS, 0 FAIL, 77 out of
+            scope, 0 unexamined, 228 placements reconciled against floor 34. The ten claims this
+            checkpoint owed moved from out of scope to PASS and no claim moved the other way, so no
+            out-of-scope claim now names a checkpoint inside phase 5: the 77 are 58 at phase 6 and 19
+            at phase 7. Windows on this machine; the matrix carries macOS and the Linux
+            case-sensitivity job.
+Carried:    nothing new. The closure table's end is the obligation the sessions column now reads
+            against, and it was already open.
+Notes:      the nine parts are ten claims, because the selection is stated on 15.7's selected-name row
+            and again on 15.4's app row, and a claim is a row's part rather than a thing on a screen.
+            `BUILD_PLAN.md` says which, so the count is legible rather than arithmetic a reader has to
+            do. ARCHITECTURE is unchanged: no row was edited to match a page, at 5.7 or here.

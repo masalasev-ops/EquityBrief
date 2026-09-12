@@ -1,4 +1,5 @@
 using System.Text.Json;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Web.Marks;
 
@@ -35,20 +36,54 @@ public static class TonightScreen
     public static IReadOnlyList<ListingCell> Rows(
         IReadOnlyList<ListingRow> listings,
         IReadOnlyDictionary<string, int> strengthByTicker,
-        IReadOnlyDictionary<string, decimal?> closeByTicker) =>
+        IReadOnlyDictionary<string, decimal?> closeByTicker,
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker,
+        IReadOnlyDictionary<string, decimal> previousCloseByTicker) =>
     [
         .. listings
             .Where(listing => listing.FiredCount > 0)
-            .Select(listing => Cell(listing, strengthByTicker, closeByTicker))
+            .Select(listing => Cell(listing, strengthByTicker, closeByTicker, cellByTicker, previousCloseByTicker))
             .OrderByDescending(cell => cell.FiredCount)
             .ThenByDescending(cell => cell.Strength)
             .ThenBy(cell => cell.Ticker, StringComparer.Ordinal),
     ];
 
+    // The day's change, as a signed percentage of the session before.
+    //
+    // Derived, and derived here for the reason `UniverseScreen` states about the
+    // distance: it is not a stored column, the read surface computes nothing and
+    // the page computes nothing, so the projection is the seam it belongs in.
+    //
+    // A previous close of zero or less gives no change rather than an infinite
+    // one. That is a name the store holds a close of nothing for, and dividing
+    // by it would report the price itself as a day's move, which is the shape
+    // the earnings rule's own earlier-session guard was written against.
+    // see: Code owns every number
+    public static double? DayChange(decimal? close, decimal? previousClose) =>
+        close is { } today && previousClose is { } before && before > 0m
+            ? Statistic.FromPrice((today - before) / before) * 100
+            : null;
+
+    // Which row the selected-name region is drawn for: the one the reader asked
+    // for, and the first when they have asked for none or for a name that is not
+    // on tonight's list.
+    //
+    // Section 15.7 says the region is for whichever row is selected. A
+    // composition that always took the first would satisfy every count on this
+    // page and answer a question the reader did not ask, which is what it did
+    // until 5.8. The fallback is the first row rather than nothing, because the
+    // page opens with no name in the hash and a region that were absent then
+    // would make the common case the empty one.
+    public static ListingCell? Selected(IReadOnlyList<ListingCell> rows, string? asked) =>
+        rows.FirstOrDefault(row => string.Equals(row.Ticker, asked, StringComparison.Ordinal))
+            ?? rows.FirstOrDefault();
+
     static ListingCell Cell(
         ListingRow listing,
         IReadOnlyDictionary<string, int> strengthByTicker,
-        IReadOnlyDictionary<string, decimal?> closeByTicker)
+        IReadOnlyDictionary<string, decimal?> closeByTicker,
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker,
+        IReadOnlyDictionary<string, decimal> previousCloseByTicker)
     {
         using var document = JsonDocument.Parse(listing.Reasons);
 
@@ -63,14 +98,24 @@ public static class TonightScreen
                     .ToDictionary(value => value.Name, value => value.Value.GetString()!, StringComparer.Ordinal)))
             .ToArray();
 
+        var cell = cellByTicker.GetValueOrDefault(listing.Ticker);
+        var stored = closeByTicker.TryGetValue(listing.Ticker, out var close) ? close : null;
+
         return new ListingCell(
             listing.Ticker,
             listing.SessionDate,
             listing.FiredCount,
             strengthByTicker.TryGetValue(listing.Ticker, out var strength) ? strength : 0,
-            closeByTicker.TryGetValue(listing.Ticker, out var close) ? close : null,
+            stored,
             [.. fired.Select(reason => reason.Name)],
-            fired);
+            fired,
+            // The three the row states beside the name, the close and the
+            // reasons. Each is absent rather than zero for a name the night
+            // computed nothing for, which is the rule every other column on
+            // every other screen already follows.
+            DayChange(stored, previousCloseByTicker.TryGetValue(listing.Ticker, out var before) ? before : null),
+            cell?.TrendState,
+            cell);
     }
 
     // The true fired count over the whole index, which is the headline. It is

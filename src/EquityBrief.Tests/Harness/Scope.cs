@@ -116,6 +116,14 @@ internal static class Scope
             Verdict.Pass,
             "the unresolved segment is a dashed outline and never a third colour",
             ByReadSurface),
+        [CheckReach.Key("15.4 The two surfaces", "The app, selection")] = new Scoped(
+            Verdict.Pass,
+            "the hash is split into a path and a query before anything routes, so the selection is a link the server is given",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Night header, the harness verdict")] = new Scoped(
+            Verdict.Pass,
+            "the four verdict counts are drawn in the header, separately, and a machine with no report says so",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Night header, names in the index")] = new Scoped(
             Verdict.Pass,
             "the index size is read off the markup and matched against the store",
@@ -148,9 +156,29 @@ internal static class Scope
             Verdict.Pass,
             "the close cell carries what the night stored, and a name it computed nothing for says so",
             ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, day change")] = new Scoped(
+            Verdict.Pass,
+            "the row's change is the one its two stored closes make, drawn with its sign because the two hues are spoken for",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, trend state in a word")] = new Scoped(
+            Verdict.Pass,
+            "the row carries the ladder's own label in words, and a name with no ladder row says so",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, the distance row mark")] = new Scoped(
+            Verdict.Pass,
+            "one distance mark per drawn row, each carrying that row's own name rather than one shape repeated",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The list, the reasons")] = new Scoped(
             Verdict.Pass,
             "each reason that fired is named in the row's own cell",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Selected name, the level summary")] = new Scoped(
+            Verdict.Pass,
+            "the selected row's stored bands are drawn beside its plan column, so a plan is read with the levels it rests on",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Selected name, whichever row is selected")] = new Scoped(
+            Verdict.Pass,
+            "the region is drawn for the row the reader picked, asserted on a row that is not the first, and every row is selectable",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Selected name, the plan column")] = new Scoped(
             Verdict.Pass,
@@ -204,9 +232,21 @@ internal static class Scope
             Verdict.Pass,
             "the distance mark is drawn in its own cell of each row",
             ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, paged")] = new Scoped(
+            Verdict.Pass,
+            "the pages partition the rows in order, the region draws the page it was handed, and every page link keeps its filters",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, sessions until earnings")] = new Scoped(
+            Verdict.Pass,
+            "the count is off the exchange calendar and the date agrees with the per-name read, with no event and no calendar stated apart",
+            ByReadSurface),
         [CheckReach.Key("15.8 Universe", "The table, the evening last on the list")] = new Scoped(
             Verdict.Pass,
             "the evening a name was last listed is drawn, and a name never listed says never",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture")] = new Scoped(
+            Verdict.Pass,
+            "the level chart mark over the year to the newest stored session, drawn above the table of moves and with no bands",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "The chart, the level chart")] = new Scoped(
             Verdict.Pass,

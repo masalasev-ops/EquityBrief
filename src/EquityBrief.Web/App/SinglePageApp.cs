@@ -47,9 +47,15 @@ public sealed class SinglePageApp : IComponent
     // The hash route, so one document serves every screen and the browser never
     // asks the server for a page it already has.
     //
-    // The script is four lines and renders nothing. It reads the hash and puts
-    // the server's own markup where it goes, which is what keeps the rule that
-    // a mark needs no script to draw.
+    // The script renders nothing. It reads the hash and puts the server's own
+    // markup where it goes, which is what keeps the rule that a mark needs no
+    // script to draw.
+    //
+    // It splits the hash into a path and a query before it routes, so the three
+    // things section 15.4 says the app carries are one mechanism: routing is the
+    // path, and filters and selection are the query. Written the other way, with
+    // each route slicing the whole hash, `#/?name=AAPL` matched no route at all
+    // and the front page went blank on a selected name.
     public string Shell(string title) =>
         $$"""
         <!doctype html>
@@ -74,26 +80,29 @@ public sealed class SinglePageApp : IComponent
         async function show() {
           const hash = location.hash;
           const screen = document.getElementById('screen');
-          if (hash === '' || hash === '#/' || hash.startsWith('{{NightRoute}}')) {
-            const night = hash.startsWith('{{NightRoute}}') ? '/' + encodeURIComponent(hash.slice('{{NightRoute}}'.length)) : '';
-            const tonight = await fetch('/screens/tonight' + night);
+          const cut = hash.indexOf('?');
+          const path = cut < 0 ? hash : hash.slice(0, cut);
+          const query = cut < 0 ? '' : hash.slice(cut + 1);
+          if (path === '' || path === '#/' || path.startsWith('{{NightRoute}}')) {
+            const date = path.startsWith('{{NightRoute}}') ? path.slice('{{NightRoute}}'.length) : '';
+            const night = date === '' ? '' : '/' + encodeURIComponent(date);
+            const tonight = await fetch('/screens/tonight' + night + (query ? '?' + query : ''));
             screen.innerHTML = await tonight.text();
             return;
           }
-          if (hash.startsWith('{{RunRoute}}')) {
-            const night = encodeURIComponent(hash.slice('{{RunRoute}}'.length));
+          if (path.startsWith('{{RunRoute}}')) {
+            const night = encodeURIComponent(path.slice('{{RunRoute}}'.length));
             const run = await fetch('/screens/run/' + night);
             screen.innerHTML = await run.text();
             return;
           }
-          if (hash.startsWith('{{UniverseRoute}}')) {
-            const query = hash.slice('{{UniverseRoute}}'.length);
-            const universe = await fetch('/screens/universe' + query);
+          if (path.startsWith('{{UniverseRoute}}')) {
+            const universe = await fetch('/screens/universe' + (query ? '?' + query : ''));
             screen.innerHTML = await universe.text();
             return;
           }
-          if (!hash.startsWith('{{NameRoute}}')) { screen.innerHTML = ''; return; }
-          const ticker = encodeURIComponent(hash.slice('{{NameRoute}}'.length));
+          if (!path.startsWith('{{NameRoute}}')) { screen.innerHTML = ''; return; }
+          const ticker = encodeURIComponent(path.slice('{{NameRoute}}'.length));
           const response = await fetch('/screens/name/' + ticker);
           screen.innerHTML = await response.text();
         }
@@ -136,6 +145,7 @@ public sealed class SinglePageApp : IComponent
         string eventBook,
         string arithmetic,
         IReadOnlyList<MoveCell> moves,
+        IReadOnlyList<ChartBar> twelveMonths,
         IReadOnlyList<FiredReason> firedReasons,
         string? previousOnTheList,
         string? nextOnTheList)
@@ -174,7 +184,7 @@ public sealed class SinglePageApp : IComponent
         // How it got here, which section 15.9 puts after the chart region. Its
         // cause column arrives at 6.5 and is absent rather than blank until
         // then, stated once by the table rather than in every row.
-        region.Append(marks.MovesTable(ticker, moves));
+        region.Append(marks.MovesTable(ticker, moves, twelveMonths));
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));
@@ -221,21 +231,32 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<UniverseCell> rows,
         IReadOnlyList<SectorLine> sectors,
         string? trendFilter = null,
-        string? sectorFilter = null)
+        string? sectorFilter = null,
+        IReadOnlyList<UniverseCell>? page = null,
+        int at = 1,
+        int pageSize = 0)
     {
         var shown = rows
             .Where(row => trendFilter is null || (row.TrendState ?? "not classified") == trendFilter)
             .Where(row => sectorFilter is null || row.Sector == sectorFilter)
             .ToArray();
 
+        // The page the reader asked for, cut from the filtered rows by the
+        // projection and handed here already cut. A caller that hands none is
+        // drawing every filtered row, which is the whole table and what this did
+        // until 5.8.
+        var drawn = page ?? shown;
+
         var region = new StringBuilder();
 
         region.Append(Invariant($"<section class=\"universe\" data-names=\"{rows.Count}\" data-shown=\"{shown.Length}\" "));
+        region.Append(Invariant($"data-drawn=\"{drawn.Count}\" data-page=\"{at}\" "));
         region.Append(Invariant($"data-trend-filter=\"{Escaped(trendFilter ?? "all")}\" data-sector-filter=\"{Escaped(sectorFilter ?? "all")}\">"));
 
         region.Append(marks.SectorStrip(sectors));
         region.Append(marks.UniverseFilters(rows));
-        region.Append(marks.UniverseTable(shown));
+        region.Append(marks.UniverseTable(drawn));
+        region.Append(marks.UniversePaging(shown.Length, at, pageSize > 0 ? pageSize : Math.Max(1, drawn.Count), trendFilter, sectorFilter));
 
         region.Append("</section>");
 
@@ -258,14 +279,17 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<ListingCell> rows,
         IReadOnlyList<ListingCell> watched,
         string selectedName,
+        HarnessCounts? harness,
+        string? selectedTicker = null,
         IReadOnlyList<ReasonRecord>? records = null,
         IReadOnlyList<ReasonTrackRow>? totals = null)
     {
         var region = new StringBuilder();
 
-        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\">"));
+        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\" "));
+        region.Append(Invariant($"data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
-        region.Append(marks.NightHeader(night, index, fired, duration));
+        region.Append(marks.NightHeader(night, index, fired, duration, harness));
         region.Append(marks.WatchList(watched));
         region.Append(marks.TonightList(rows, TonightDrawn, records));
 

@@ -1,3 +1,4 @@
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Prices;
 using EquityBrief.Web.Marks;
 
@@ -46,16 +47,106 @@ public static class UniverseScreen
     // top is what nearly fired.
     public static IReadOnlyList<UniverseCell> Rows(
         IReadOnlyList<UniverseRow> rows,
-        IReadOnlyDictionary<string, IReadOnlyList<ListingRow>>? history = null) =>
+        IReadOnlyDictionary<string, IReadOnlyList<ListingRow>>? history = null,
+        IReadOnlyDictionary<string, DateOnly>? nextEventByTicker = null,
+        DateOnly? night = null) =>
     [
         .. rows
-            .Select(row => Cell(row, history))
+            .Select(row => Cell(row, history, nextEventByTicker, night))
             .OrderBy(cell => cell.Nearest is null)
             .ThenBy(cell => cell.Nearest ?? double.MaxValue)
             .ThenBy(cell => cell.Ticker, StringComparer.Ordinal),
     ];
 
-    static UniverseCell Cell(UniverseRow row, IReadOnlyDictionary<string, IReadOnlyList<ListingRow>>? history)
+    // The rows of one page, section 15.8's "paged".
+    //
+    // Every name in the index is five hundred rows carrying a mark each, and a
+    // screen that draws them all is a screen that takes seconds to open and
+    // cannot be scrolled to a place a reader can name. The page is in the hash
+    // with the filters, so a page of a filtered view is a link, which is what
+    // that section means by a route being one.
+    //
+    // The slice is taken after the filters, because the alternative is pages
+    // whose size depends on which chips are lit, and a reader on page 3 of an
+    // unfiltered table who lights a chip would land somewhere nothing chose.
+    public const int PageSize = 50;
+
+    // The page a number names, clamped to the pages that exist. A number past
+    // the end gives the last page rather than an empty table, because an empty
+    // table is the same picture as a filter that matched nothing and the two
+    // are different states.
+    public static int PageOf(int rows, int? asked) =>
+        Math.Clamp(asked ?? 1, 1, Math.Max(1, (rows + PageSize - 1) / PageSize));
+
+    public static IReadOnlyList<UniverseCell> Page(IReadOnlyList<UniverseCell> rows, int page) =>
+        [.. rows.Skip((PageOf(rows.Count, page) - 1) * PageSize).Take(PageSize)];
+
+    // The rows a request draws: the filters applied, then the page cut from what
+    // they left.
+    //
+    // One function rather than two calls at the route, because the order is the
+    // property and a route is where it can be got wrong silently. Cutting the
+    // page from the whole table and then filtering it draws a page that is
+    // plausible, shorter than a page should be, and about the wrong names, and
+    // no count on the screen contradicts it. That mutation survived the first
+    // sweep at 5.8, which is why the two steps are one call.
+    public static Shown Rows(
+        IReadOnlyList<UniverseCell> cells,
+        string? trendFilter,
+        string? sectorFilter,
+        int? asked)
+    {
+        var filtered = cells
+            .Where(row => trendFilter is null || (row.TrendState ?? NotClassified) == trendFilter)
+            .Where(row => sectorFilter is null || row.Sector == sectorFilter)
+            .ToArray();
+
+        var at = PageOf(filtered.Length, asked);
+
+        return new Shown(Page(filtered, at), at, filtered.Length);
+    }
+
+    // What a name with no ladder row is filtered as. The same value the table
+    // draws and the chips carry, named here so the filter and the cell cannot
+    // come to disagree about it.
+    public const string NotClassified = "not classified";
+
+    // The page of rows a request draws, with the page it is and the number of
+    // rows the filters left, which is what the nav states.
+    public sealed record Shown(IReadOnlyList<UniverseCell> Page, int At, int Rows);
+
+    // The sessions between a night and a name's next dated event, which is what
+    // section 15.8's column states.
+    //
+    // Counted off the exchange's own calendar rather than off stored bars,
+    // because the event is ahead of the night and no bar exists for a session
+    // that has not happened. It is the sessions strictly after the night up to
+    // and including the event's own day where that day is a session, so an event
+    // on tomorrow's session reads as 1 and one on tonight's reads as 0.
+    //
+    // An event past the end of the closure table gives no count rather than a
+    // wrong one. The table covers three years and a night says so on its closing
+    // line within a quarter of the end, and a column that guessed weekdays past
+    // it would be the guess that row exists to refuse.
+    // owes: The exchange closure table extended before the nights reach its end
+    public static int? SessionsUntil(DateOnly night, DateOnly eventDate)
+    {
+        if (eventDate < night || eventDate > ExchangeClosures.CoveredThrough || night < ExchangeClosures.CoveredFrom)
+        {
+            return null;
+        }
+
+        return eventDate == night
+            ? 0
+            : ExchangeClosures.SessionsBetween(night, eventDate).Count
+                + (ExchangeClosures.IsSession(eventDate) ? 1 : 0);
+    }
+
+    static UniverseCell Cell(
+        UniverseRow row,
+        IReadOnlyDictionary<string, IReadOnlyList<ListingRow>>? history,
+        IReadOnlyDictionary<string, DateOnly>? nextEventByTicker,
+        DateOnly? night)
     {
         var toSupport = Distance(row.Close, row.NearestSupport, row.TypicalMove);
         var toResistance = Distance(row.Close, row.NearestResistance, row.TypicalMove);
@@ -69,6 +160,13 @@ public static class UniverseScreen
 
         var listed = listings.Where(listing => listing.FiredCount > 0).ToArray();
 
+        // The name's next dated event, where the calendar holds one. A name with
+        // none has no date rather than a date nobody has, which is the rule the
+        // fact strip on the name page already follows.
+        var nextEvent = nextEventByTicker is not null && nextEventByTicker.TryGetValue(row.Ticker, out var onCalendar)
+            ? onCalendar
+            : (DateOnly?)null;
+
         return new UniverseCell(
             row.Ticker,
             row.Sector ?? SectorNotOnFile,
@@ -80,7 +178,10 @@ public static class UniverseScreen
             toResistance,
             Nearest(toSupport, toResistance),
             listed.Length == 0 ? null : listed.Max(listing => listing.SessionDate),
-            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)]);
+            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)],
+            nextEvent is { } dated && night is { } on ? SessionsUntil(on, dated) : null,
+            nextEvent,
+            nextEvent is { } beyond && beyond > ExchangeClosures.CoveredThrough);
     }
 
     // The gap to a band edge, in typical days' moves, as a distance rather than

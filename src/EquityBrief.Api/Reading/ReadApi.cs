@@ -124,6 +124,16 @@ public sealed record ForwardReturnRow(
 // phase 6 rather than blank.
 public sealed record MoveRow(string Ticker, DateOnly SessionDate, int Sessions, double ChangePct, int Rank);
 
+// One name's close on one session, as the day change is read from.
+//
+// A close and the session it is the close of, because a day change needs two of
+// these and a pair with no dates on it cannot say which is the earlier. The
+// subtraction is not here: this hands back the stored column and the projection
+// that draws the column works out the change, which is the seam
+// `UniverseScreen` already names for the distance.
+// see: A screen reads and renders, and computes nothing
+public sealed record CloseRow(string Ticker, DateOnly SessionDate, decimal Close);
+
 // One row of the universe screen, and every field is a stored column.
 //
 // Nothing here is derived, which is what keeps the read surface's own claim
@@ -247,6 +257,46 @@ public sealed class ReadApi : IComponent
         WHERE ticker = $ticker AND event_date >= $on_or_after
         ORDER BY event_date
         LIMIT 1;
+    ";
+
+    // The next event on or after a date for every name that has one, which is
+    // what the universe table's sessions-until-earnings column reads.
+    //
+    // One query rather than one per name. The per-name form above answers the
+    // fact strip, which is about the one name a reader opened; this answers a
+    // column over five hundred rows, and five hundred round trips to draw one
+    // column is the shape that makes a page too slow to open. The window
+    // function picks each name's earliest event on or after the date, so the
+    // row this returns is the row the per-name query would return.
+    const string NextEventForEveryName = @"
+        SELECT ticker, event_date, kind, timing, detail
+        FROM (
+            SELECT ticker, event_date, kind, timing, detail,
+                   ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY event_date) AS seen
+            FROM calendar
+            WHERE event_date >= $on_or_after)
+        WHERE seen = 1
+        ORDER BY ticker;
+    ";
+
+    // Every name's close on the newest session it holds strictly before a night,
+    // which is the other half of a day change.
+    //
+    // Strictly before rather than the day before, because the session before a
+    // Monday is the Friday and no table here holds that relation. A name whose
+    // series starts on the night has no earlier close and is absent from this
+    // rather than carrying a zero: a day change against a close of zero is the
+    // price itself, stated as a change, which is the shape the earnings rule's
+    // own guard was written for.
+    const string PreviousCloses = @"
+        SELECT ticker, session_date, close
+        FROM (
+            SELECT ticker, session_date, close,
+                   ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY session_date DESC) AS seen
+            FROM bar
+            WHERE session_date < $session)
+        WHERE seen = 1
+        ORDER BY ticker;
     ";
 
     const string LadderForName = @"
@@ -847,6 +897,56 @@ public sealed class ReadApi : IComponent
                 reader.GetString(3),
                 reader.GetString(4))
             : null;
+    }
+
+    // Every name's next event on or after a date, in one read.
+    public async Task<IReadOnlyList<CalendarRow>> NextEventsAsync(DateOnly onOrAfter)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NextEventForEveryName;
+        command.Parameters.AddWithValue("$on_or_after", onOrAfter.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<CalendarRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new CalendarRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
+    // Every name's close on the newest session it holds before a night.
+    public async Task<IReadOnlyList<CloseRow>> PreviousClosesAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PreviousCloses;
+        command.Parameters.AddWithValue("$session", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<CloseRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new CloseRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(2))));
+        }
+
+        return rows;
     }
 
     public async Task<LadderRow?> LadderAsync(string ticker)

@@ -357,6 +357,7 @@ public static class NameScreen
             EventBook(ladder),
             Arithmetic(ladder),
             [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))],
+            TwelveMonths(bars),
             FiredReasons(listing),
             previousOnTheList,
             nextOnTheList);
@@ -370,14 +371,63 @@ public static class NameScreen
         MarkRenderer marks,
         string ticker,
         LadderRow? ladder,
-        decimal close)
+        decimal close,
+        IReadOnlyList<LevelRow> levels)
     {
         var rows = PlanRows(ladder);
 
-        return $"<section class=\"selected-name\" data-ticker=\"{ticker}\" data-plan-rows=\"{rows.Count}\">"
+        // The level summary beside the plan column, which is the other half of
+        // what section 15.7 states this region holds and which stood undrawn
+        // under the row's own PASS until 5.8. It is the name screen's own table,
+        // the same mark over the same stored bands, because the common case is
+        // checking a plan and a plan read without the levels it rests on is a
+        // list of prices.
+        //
+        // No absent-average row here. That is the name screen's statement about
+        // a name whose long average has no value over its stored year, and it
+        // needs the indicator series this region does not read; the name page is
+        // where it belongs and where it is drawn.
+        return $"<section class=\"selected-name\" data-ticker=\"{ticker}\" data-plan-rows=\"{rows.Count}\" data-bands=\"{levels.Count}\">"
             + marks.PlanColumn(ticker, close, rows)
             + marks.PlanTables(ticker, rows)
+            + marks.LevelSummary(
+                ticker,
+                [.. levels.Select(level => new SummaryBand(
+                    level.LowEdge,
+                    level.HighEdge,
+                    level.Role,
+                    level.Immediate,
+                    level.Strength,
+                    level.HasNonAverageAnchor,
+                    Members(level.Members)))],
+                [])
             + "</section>";
+    }
+
+    // The sessions of the last twelve months, which is what section 15.9's
+    // how-it-got-here region draws its picture over.
+    //
+    // Measured back from the newest stored session rather than from the clock,
+    // so a page opened on a Sunday draws the year to Friday and not a year to
+    // today with two blank days at the end of it. The bar history kept is a year
+    // (section 17), so on an ordinary name this is every stored bar; it is a
+    // filter rather than a pass-through because that is a limit the store is
+    // trusted to hold rather than one this region may assume.
+    public static IReadOnlyList<ChartBar> TwelveMonths(IReadOnlyList<BarRow> bars)
+    {
+        if (bars.Count == 0)
+        {
+            return [];
+        }
+
+        var from = bars[^1].SessionDate.AddYears(-1);
+
+        return
+        [
+            .. bars
+                .Where(bar => bar.SessionDate > from)
+                .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume)),
+        ];
     }
 
     // The reasons that fired for this name tonight, read back from the stored

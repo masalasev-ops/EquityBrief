@@ -120,7 +120,16 @@ public sealed record UniverseCell(
     // `LastListed` is null for a name that has never been on the list, which is
     // an absence rather than a date nobody has.
     DateOnly? LastListed = null,
-    IReadOnlyList<bool>? Evenings = null);
+    IReadOnlyList<bool>? Evenings = null,
+    // The sessions-until-earnings half, which arrived at 5.8 with the rest of
+    // the parts section 15 states and the pages did not draw. Null for a name
+    // with no dated event ahead of it, and for one whose event is past the end
+    // of the exchange closure table, which are two absences and are stated as
+    // two: a count nobody can take is not the same as no event to count to.
+    // owes: The exchange closure table extended before the nights reach its end
+    int? SessionsUntilEarnings = null,
+    DateOnly? NextEvent = null,
+    bool EventBeyondTheTable = false);
 
 // One of a name's biggest moves, as the table is given it. No cause: it is a
 // researched claim and arrives with the pass that writes it.
@@ -140,7 +149,15 @@ public sealed record ListingCell(
     int Strength,
     decimal? Close,
     IReadOnlyList<string> Reasons,
-    IReadOnlyList<FiredReason>? Fired = null);
+    IReadOnlyList<FiredReason>? Fired = null,
+    // The three section 15.7 states beside the name, the close and the reasons,
+    // drawn from 5.8. Each is absent rather than zero for a name the night
+    // computed nothing for. `Distance` carries the mark's own input rather than
+    // a copy of its three numbers, because the mark takes a universe cell and a
+    // second shape holding the same values is a second place they can disagree.
+    double? DayChangePct = null,
+    string? TrendState = null,
+    UniverseCell? Distance = null);
 
 // One reason that fired for a name, with the values that made it true.
 public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string> Values);
@@ -1075,13 +1092,39 @@ public sealed class MarkRenderer : IComponent
         }
 
         list.Append(Invariant, $"<table class=\"list-table\" data-rows=\"{shown.Length}\">");
-        list.Append("<tr><th>Name</th><th>Close</th><th>Reasons</th></tr>");
+        list.Append("<tr><th>Name</th><th>Close</th><th>Day</th><th>Trend</th><th>Distance</th><th>Reasons</th></tr>");
 
         foreach (var row in shown)
         {
-            list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\">");
-            list.Append(Invariant, $"<td>{Escaped(row.Ticker)}</td>");
+            list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
+            list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\">");
+
+            // The name, and the name is the link that selects this row. Section
+            // 15.7's selected-name region is for whichever row is selected, and
+            // a row a reader cannot select is a row the region can never be
+            // about. The href carries the night as well as the name, so a
+            // selected view of an earlier night is a link like every other view.
+            list.Append(Invariant, $"<td><a class=\"select\" data-selects=\"{Escaped(row.Ticker)}\" ");
+            list.Append(Invariant, $"href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>");
+
             list.Append(Invariant, $"<td>{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
+
+            // The day's change, signed and in words as well as by its sign. The
+            // two hues are support's and resistance's and a day is not allowed
+            // either of them, so the direction is the sign on the number and
+            // nothing else carries it.
+            // see: Support and resistance own two hues and nothing else uses them
+            list.Append(Invariant, $"<td class=\"day-change\">{ChangeReads(row.DayChangePct)}</td>");
+
+            // The trend state in a word, read off the ladder row rather than
+            // worked out here, and a name with no row says so rather than
+            // showing an empty cell.
+            list.Append(Invariant, $"<td class=\"trend-state\">{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>");
+
+            // The distance row mark, the same mark the universe table draws, so
+            // a shape means one thing on both screens.
+            list.Append(Invariant, $"<td>{(row.Distance is { } cell ? DistanceRow(cell) : "<span class=\"degraded\" data-distance=\"none\">no bands stored for this name</span>")}</td>");
+
             list.Append(Invariant, $"<td data-reasons=\"{Escaped(string.Join(", ", row.Reasons))}\">{ReasonsForRow(row, records)}</td>");
             list.Append("</tr>");
         }
@@ -1496,7 +1539,7 @@ public sealed class MarkRenderer : IComponent
     // the one number the twenty drawn rows cannot tell you. The quantities phase
     // 6 supplies are absent and say so rather than being drawn as zero, which
     // would read as a night that spent nothing because it did nothing.
-    public string NightHeader(DateOnly night, int index, int fired, string? duration)
+    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness)
     {
         var header = new StringBuilder();
 
@@ -1504,6 +1547,28 @@ public sealed class MarkRenderer : IComponent
         header.Append(Invariant, $"data-index=\"{index}\" data-fired=\"{fired}\">");
         header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} name(s) fired on {night:yyyy-MM-dd}</p>");
         header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration ?? "a time the run log does not record")}</p>");
+
+        // The harness verdict, which section 15.7 states in this header and
+        // which stood only on the run page until 5.8. It is the same four
+        // counts from the same report, drawn here in one line rather than in a
+        // region of its own: this header answers how the evening went, and
+        // whether the build that produced it is checked is part of that answer.
+        //
+        // Four counts and no total, for the reason the run page's own region
+        // gives: out of scope is counted apart from unexamined and only one of
+        // them is a defect.
+        if (harness is { } counts)
+        {
+            header.Append(Invariant, $"<p class=\"harness-verdict\" data-passed=\"{counts.Passed}\" data-failed=\"{counts.Failed}\" ");
+            header.Append(Invariant, $"data-unexamined=\"{counts.Unexamined}\" data-out-of-scope=\"{counts.OutOfScope}\">");
+            header.Append(Invariant, $"harness: {counts.Passed} passed, {counts.Failed} failed, {counts.Unexamined} unexamined, ");
+            header.Append(Invariant, $"{counts.OutOfScope} out of scope</p>");
+        }
+        else
+        {
+            header.Append("<p class=\"harness-verdict degraded\" data-report=\"none\">harness: no phase report has been written on this machine</p>");
+        }
+
         header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused, and spend, arrive with the research pass that produces them</p>");
         header.Append("</header>");
 
@@ -1548,11 +1613,28 @@ public sealed class MarkRenderer : IComponent
     // `research_section` with its source, so it arrives at 6.5 with the pass
     // that writes it. An absence stated and an absence drawn as emptiness are
     // different things, and only the first is readable.
-    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves)
+    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves, IReadOnlyList<ChartBar> year)
     {
         var table = new StringBuilder();
 
-        table.Append(Invariant, $"<section class=\"how-it-got-here\" data-ticker=\"{Escaped(ticker)}\" data-moves=\"{moves.Count}\">");
+        table.Append(Invariant, $"<section class=\"how-it-got-here\" data-ticker=\"{Escaped(ticker)}\" data-moves=\"{moves.Count}\" ");
+        table.Append(Invariant, $"data-picture-sessions=\"{year.Count}\">");
+
+        // The twelve-month picture, which section 15.9 puts in this region above
+        // the table of the biggest moves. It is the level chart mark given the
+        // year and no bands and no averages, rather than a drawing of its own:
+        // nothing on any screen is a one-off drawing, and what this region asks
+        // is what the year did, not where the levels are. The chart region below
+        // is the one about levels, and it draws the same mark with them.
+        // see: Marks are defined once and every screen draws from that list
+        //
+        // It degrades the way every mark does, by saying what it has: a name
+        // with fewer sessions than a chart needs gets the sentence stating the
+        // count rather than a picture drawn through nothing.
+        table.Append(Invariant, $"<figure class=\"twelve-months\" data-sessions=\"{year.Count}\">");
+        table.Append(LevelChart(ticker, year, [], []));
+        table.Append(Invariant, $"<figcaption>the twelve months to {(year.Count > 0 ? year[^1].SessionDate.ToString("yyyy-MM-dd", Invariant) : "no stored session")}</figcaption>");
+        table.Append("</figure>");
 
         if (moves.Count == 0)
         {
@@ -1657,6 +1739,18 @@ public sealed class MarkRenderer : IComponent
     static string Days(double? days) =>
         days is { } value ? value.ToString("0.##", CultureInfo.InvariantCulture) : "none";
 
+    // A day's change as an attribute, and as the words a reader takes it from.
+    // The sign is always drawn, because the sign is the only channel the
+    // direction has: hue is spoken for by support and resistance, and a change
+    // written without its sign is a magnitude.
+    static string Change(double? change) =>
+        change is { } value ? value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) : "none";
+
+    static string ChangeReads(double? change) =>
+        change is { } value
+            ? Formatted($"{value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}%")
+            : "<span class=\"degraded\">no earlier close stored</span>";
+
     static string Reads(double? days, string side) =>
         days is { } value
             ? Formatted($"{value:0.#} typical days to {side}")
@@ -1698,7 +1792,8 @@ public sealed class MarkRenderer : IComponent
         var table = new StringBuilder();
 
         table.Append(Formatted($"<table class=\"universe-table\" data-rows=\"{rows.Count}\">"));
-        table.Append("<tr><th>Name</th><th>Sector</th><th>Close</th><th>Trend</th><th>Distance</th><th>Last on the list</th><th>Sixty evenings</th></tr>");
+        table.Append("<tr><th>Name</th><th>Sector</th><th>Close</th><th>Trend</th><th>Distance</th>");
+        table.Append("<th>Sessions to earnings</th><th>Last on the list</th><th>Sixty evenings</th></tr>");
 
         foreach (var row in rows)
         {
@@ -1715,6 +1810,23 @@ public sealed class MarkRenderer : IComponent
             table.Append(Formatted(
                 $"<td>{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>"));
             table.Append(Formatted($"<td>{DistanceRow(row)}</td>"));
+
+            // The sessions until the name's next dated event, which section 15.8
+            // states as a column of this table. Two absences and they are stated
+            // as two: a name the calendar holds nothing for has no event to
+            // count to, and one whose event is past the end of the exchange
+            // closure table has an event nobody can count the sessions to. A
+            // column that drew both the same way would say the table had ended
+            // in the voice of a name with no earnings date.
+            // owes: The exchange closure table extended before the nights reach its end
+            table.Append(Invariant, $"<td class=\"to-earnings\" data-sessions=\"{(row.SessionsUntilEarnings is { } until ? until.ToString(Invariant) : "none")}\" ");
+            table.Append(Invariant, $"data-next-event=\"{(row.NextEvent is { } dated ? dated.ToString("yyyy-MM-dd", Invariant) : "none")}\">");
+            table.Append(row.SessionsUntilEarnings is { } sessions
+                ? Formatted($"{sessions}")
+                : row.EventBeyondTheTable
+                    ? "<span class=\"degraded\">past the end of the closure table</span>"
+                    : "<span class=\"degraded\">no dated event</span>");
+            table.Append("</td>");
 
             // The two right-hand columns count evenings a name appeared on the
             // list. They say nothing about index membership, which every name in
@@ -1739,6 +1851,62 @@ public sealed class MarkRenderer : IComponent
     //
     // Drawn from the rows rather than from a list written here, so a state or a
     // sector the store holds and this file has never heard of still gets a chip.
+    // The paging nav, section 15.8's "paged".
+    //
+    // The page is in the hash beside the filters, so a page of a filtered view
+    // is a link, and each link carries the filters it was drawn under rather
+    // than dropping them: a next-page link that cleared the chips would take a
+    // reader from a filtered page 1 to an unfiltered page 2 and look like paging.
+    //
+    // It states which page of how many over how many rows. A nav that drew only
+    // arrows says nothing about where a reader is or how much is left, which on
+    // five hundred rows is the only question paging raises.
+    public string UniversePaging(int rows, int page, int pageSize, string? trend, string? sector)
+    {
+        var pages = Math.Max(1, (rows + pageSize - 1) / pageSize);
+        var at = Math.Clamp(page, 1, pages);
+
+        var nav = new StringBuilder();
+
+        nav.Append(Invariant, $"<nav class=\"universe-paging\" data-page=\"{at}\" data-pages=\"{pages}\" ");
+        nav.Append(Invariant, $"data-rows=\"{rows}\" data-page-size=\"{pageSize}\">");
+
+        string Link(int to, string label, string rel) =>
+            Formatted($"<a class=\"page\" rel=\"{rel}\" data-page=\"{to}\" href=\"{Query(to, trend, sector)}\">{Escaped(label)}</a>");
+
+        nav.Append(at > 1
+            ? Link(at - 1, "previous", "prev")
+            : "<span class=\"page degraded\" data-page=\"none\" rel=\"prev\">previous</span>");
+
+        nav.Append(Invariant, $"<span class=\"page-of\">page {at} of {pages}, {rows} name(s)</span>");
+
+        nav.Append(at < pages
+            ? Link(at + 1, "next", "next")
+            : "<span class=\"page degraded\" data-page=\"none\" rel=\"next\">next</span>");
+
+        nav.Append("</nav>");
+
+        return nav.ToString();
+    }
+
+    // The universe route's hash, with the filters it was drawn under kept.
+    static string Query(int page, string? trend, string? sector)
+    {
+        var parts = new List<string> { Formatted($"page={page}") };
+
+        if (trend is { Length: > 0 })
+        {
+            parts.Add(Formatted($"trend={Uri.EscapeDataString(trend)}"));
+        }
+
+        if (sector is { Length: > 0 })
+        {
+            parts.Add(Formatted($"sector={Uri.EscapeDataString(sector)}"));
+        }
+
+        return "#/universe?" + string.Join("&amp;", parts);
+    }
+
     public string UniverseFilters(IReadOnlyList<UniverseCell> rows)
     {
         var states = rows
