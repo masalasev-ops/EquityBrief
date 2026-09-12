@@ -279,24 +279,36 @@ public sealed class ReadApi : IComponent
         ORDER BY ticker;
     ";
 
-    // Every name's close on the newest session it holds strictly before a night,
-    // which is the other half of a day change.
+    // Every name's two newest stored sessions at or before a night, which is what
+    // a day change is made of.
     //
-    // Strictly before rather than the day before, because the session before a
-    // Monday is the Friday and no table here holds that relation. A name whose
-    // series starts on the night has no earlier close and is absent from this
-    // rather than carrying a zero: a day change against a close of zero is the
-    // price itself, stated as a change, which is the shape the earnings rule's
-    // own guard was written for.
-    const string PreviousCloses = @"
+    // Both legs from one read, and both bounded by the night. They were two reads
+    // at 5.8 and only one of them was bounded: the close came from
+    // `Universe`, whose close column is the name's newest bar whatever night is
+    // asked for, and the previous close was the newest bar before the night. On
+    // any past night that subtracts two sessions that are not consecutive and are
+    // not the night's, and for a name with no bar on the night it subtracts one
+    // session from itself and draws exactly 0.00, which is the absence this
+    // surface states everywhere else. The sixth phase 5 sign-off review found
+    // both shapes.
+    //
+    // At or before rather than on the night, because whether the name traded that
+    // session is the question the caller has to answer and this hands back what
+    // the store holds. The projection draws a change only where the newer of the
+    // two is the night itself.
+    //
+    // Two rather than one, because the session before a Monday is the Friday and
+    // no table here holds that relation. A name whose series starts on the night
+    // has one row here and no change to draw.
+    const string ClosesToTheNight = @"
         SELECT ticker, session_date, close
         FROM (
             SELECT ticker, session_date, close,
                    ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY session_date DESC) AS seen
             FROM bar
-            WHERE session_date < $session)
-        WHERE seen = 1
-        ORDER BY ticker;
+            WHERE session_date <= $session)
+        WHERE seen <= 2
+        ORDER BY ticker, session_date DESC;
     ";
 
     const string LadderForName = @"
@@ -925,13 +937,14 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    // Every name's close on the newest session it holds before a night.
-    public async Task<IReadOnlyList<CloseRow>> PreviousClosesAsync(DateOnly night)
+    // Every name's two newest stored sessions at or before a night, newest first
+    // within each name.
+    public async Task<IReadOnlyList<CloseRow>> ClosesToTheNightAsync(DateOnly night)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = PreviousCloses;
+        command.CommandText = ClosesToTheNight;
         command.Parameters.AddWithValue("$session", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var rows = new List<CloseRow>();

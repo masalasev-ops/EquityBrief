@@ -148,17 +148,24 @@ public class PriceStorageForm
         // not a number that moved.
         //
         // Three are `Statistic`'s own and are the boundary proper. The other
-        // four each cross it and each reaches it through one of those three,
+        // three each cross it and each reaches it through one of those three,
         // which is what the rule asks: `PlotValue` is the chart's crossing and
         // says why it is separate, a coordinate being a position on a surface
         // rather than a statistic and never travelling back; `Y` is the local
-        // that calls it; `Distance` turns a gap between two prices into a count
-        // of typical days, through `Statistic.FromPrice`, and cast inline until
-        // the phase 5 sign-off; and `DayChange`, added at 5.8, turns two closes
-        // into the percentage section 15.7 states on every row of tonight's
-        // list. Its subtraction and its division are decimal, which is what
-        // keeps the money arithmetic in the money world, and only the finished
-        // ratio crosses.
+        // that calls it; and `Distance` turns a gap between two prices into a
+        // count of typical days, through `Statistic.FromPrice`. That last one
+        // cast inline until the phase 5 sign-off.
+        //
+        // `TonightScreen.DayChange` was in this set at 5.8 and is not now, and
+        // the reason is the signature rather than the arithmetic. It took two
+        // decimals and returned a double, so it crossed in the open; it takes
+        // the name's own sessions now and the two closes it subtracts never
+        // appear in its signature. It still crosses once, through
+        // `Statistic.FromPrice`, which is in this set and is the boundary. A
+        // method that reads decimals out of a record and hands the finished
+        // ratio to the boundary is not a crossing this reader can see, which is
+        // the limit stated in the roster row rather than a property lost here:
+        // the cast half of this check is what covers it.
         Assert.Equal(
             [
                 "MarkRenderer.cs: PlotValue",
@@ -166,7 +173,6 @@ public class PriceStorageForm
                 "Statistic.cs: FromPrice",
                 "Statistic.cs: FromRatio",
                 "Statistic.cs: ToPrice",
-                "TonightScreen.cs: DayChange",
                 "UniverseScreen.cs: Distance",
             ],
             crossings);
