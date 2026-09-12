@@ -25,6 +25,20 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-12 - BUILD_PLAN.md - the local model and the lane's shape settled
+Authorised by: The local lane is a configured list of section names, and the prose writer writes whatever the list holds
+Was:
+> | Which local model, and the section-to-lane assignment | The lane split is configuration by decision, and nothing says what the configuration's shape is | 6.0 |
+Now: the same row, marked settled, naming the three decisions the hole took rather than one, and naming the short-version contradiction as closed by the second of them.
+Why: the hole was one question and the answers fail differently. A wrong model identifier is a setting, a lane decided section by section in code is a setting that is not one, and a provider chosen by a fallback is a section whose author cannot be read off the record.
+
+### 2026-09-12 - BUILD_PLAN.md - the research recording's format settled
+Authorised by: A research pass is recorded per section call, keyed on the canonicalised request
+Was:
+> | How a research pass is recorded for a fixture | A pass must be reproducible without a network, which needs a recorded endpoint with a defined record format | 6.0 |
+Now: the same row, marked settled, stating the record as a captured request and response pair per section call, keyed on a hash of the canonicalised request rather than on call order.
+Why: section 19.2 asked for a recording model endpoint and said nothing about its shape, and the shape is what decides whether a replay is a check or a transcript of the run that made it. A sequence-keyed recording passes on that one run and fails on every other.
+
 ### 2026-09-11 - CLAUDE.md, BUILD_PLAN.md - two readers widened, and the closure table's end given a reminder
 Corrects: `clock-usage` did not read a raw interpolated literal and passed a literal handed to `string.Format` with a provider, which formats the literal before the provider is seen; `price-storage-form` did not read a nullable cast or a `Convert` call, and one of the second shipped in no stated set; and the exchange closure table ends 2027-12-31 with nothing saying so before the first weekday past it. Found by the phase 5 sign-off reviewer.
 Was:
