@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-12 - RUNBOOK.md - the archive's contact, which is a setting and not a key
+Authorised by: The archive declares a contact in its user agent, and a blank one refuses at startup
+Was:
+> | Provider | Key | Which projects need it |
+> |---|---|---|
+> | EODHD | `EquityBrief:Providers:Eodhd:ApiKey` | `EquityBrief.Worker` |
+Now: the table carries a second row for `EquityBrief:Providers:SecEdgar:Contact`, and a paragraph beneath says why a contact sits in a table of keys, what to put there and why a dedicated address rather than a personal mailbox.
+Why: the archive needs no key and refuses a request that names no user agent, so the setting is what a request declares about this installation rather than what authorises it. This section exists because a file written by hand needs its names written down, and a setting absent from it is one the first hand-written file will not carry.
+
 ### 2026-09-12 - BUILD_PLAN.md - the probe obligation discharged
 Corrects: nothing was wrong with the row; it is discharged because 6.1 did what it named. An open row whose due point the record shows as landed fails `obligation-reconciles`, which is what caught the moment the 6.1 entry was written and before the verifying run, since the record is what the reconciliation reads.
 Was:

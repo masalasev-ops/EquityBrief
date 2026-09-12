@@ -17,7 +17,16 @@ internal static class FixtureManifest
     // Anything that looks like a key in a captured query. A fixture is
     // committed, so a credential in one is published.
     internal static readonly string[] CredentialMarkers =
-        ["api_token", "api_key", "apikey", "access_token", "token=", "secret", "password"];
+        ["api_token", "api_key", "apikey", "access_token", "token=", "secret", "password", "EquityBrief/"];
+
+    // The last of those is the archive's own user agent rather than a credential,
+    // and it is in this list because of what the agent carries. The filings archive
+    // is sent a header naming the tool, its version and a configured contact, and a
+    // captured response echoing that header back would put the contact into the
+    // repository. The contact itself cannot be scanned for, since it is
+    // configuration this check does not read, so what is scanned for is the shape it
+    // travels in: the contact reaches a request only inside this header.
+    // see: The archive declares a contact in its user agent, and a blank one refuses at startup
 
     // Whether a marker appears in a body as a marker rather than inside a longer
     // word, which is the difference between a credential and the provider's prose.
