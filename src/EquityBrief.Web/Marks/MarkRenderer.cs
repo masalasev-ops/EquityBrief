@@ -1114,7 +1114,7 @@ public sealed class MarkRenderer : IComponent
             // either of them, so the direction is the sign on the number and
             // nothing else carries it.
             // see: Support and resistance own two hues and nothing else uses them
-            list.Append(Invariant, $"<td class=\"day-change\">{ChangeReads(row.DayChangePct)}</td>");
+            list.Append(Invariant, $"<td class=\"day-change\">{ChangeReads(row.DayChangePct, row.Close)}</td>");
 
             // The trend state in a word, read off the ladder row rather than
             // worked out here, and a name with no row says so rather than
@@ -1746,10 +1746,18 @@ public sealed class MarkRenderer : IComponent
     static string Change(double? change) =>
         change is { } value ? value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) : "none";
 
-    static string ChangeReads(double? change) =>
+    // Two absences, and they are stated as two. A name with no bar on the night
+    // has no close and no change to draw; a name with a close and no session
+    // before it has a first stored session. Drawn the same way they read as one
+    // thing, and the second is rare while the first is every stale member on
+    // every night, which is the pair the sixth phase 5 sign-off review found
+    // collapsed into a change of exactly 0.00.
+    static string ChangeReads(double? change, decimal? close) =>
         change is { } value
             ? Formatted($"{value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}%")
-            : "<span class=\"degraded\">no earlier close stored</span>";
+            : close is null
+                ? "<span class=\"degraded\" data-absence=\"no-bar\">no bar for this session</span>"
+                : "<span class=\"degraded\" data-absence=\"no-earlier-close\">no earlier close stored</span>";
 
     static string Reads(double? days, string side) =>
         days is { } value

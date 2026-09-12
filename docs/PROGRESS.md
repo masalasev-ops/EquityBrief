@@ -7164,6 +7164,74 @@ Notes:      the nine parts are ten claims, because the selection is stated on 15
             `BUILD_PLAN.md` says which, so the count is legible rather than arithmetic a reader has to
             do. ARCHITECTURE is unchanged: no row was edited to match a page, at 5.7 or here.
 
+### 5.8 - correction: the day change subtracted two different sessions   2026-09-12
+Corrects:   the 5.8 entry above records tonight's list carrying a day change. It carried a number
+            made of two closes from different sessions, and on a name with no bar on the night it
+            carried exactly 0.00, which the same entry says the surface never draws.
+Found:      by the sixth phase 5 sign-off review, through the read path rather than by reading the
+            SQL. `ReadApi`'s universe query takes each name's close from its newest bar with no
+            session bound, only the membership predicate uses the night, and 5.8 subtracted the
+            night-bounded previous close from it. On 2026-09-01 over the fixture, the route drew a
+            close of 319.97, which is AAPL's bar on 09-04, against a previous close of 316.85, which
+            is correct for the night, and reported +0.98 where the night's own closes give +2.61. The
+            second shape fires on the newest night: both legs of a stale member resolve to its last
+            stored bar, so NFLX made stale on 2026-09-04 drew 0.00 from 81.72 against 81.72.
+Why nothing saw it: the committed fixture holds listings on one night, so every assertion over
+            tonight's list ran on the one night where the two closes coincide for a name that is not
+            stale. 5.8's own absence assertion ran over a hand-built `ListingCell`, which carries
+            whatever the test puts in it and proves the renderer rather than the figures reaching it.
+            The same commit made every row a link carrying its night, so past-night views became
+            shareable in the commit that made them wrong.
+Repaired:   one read for the pair. `ClosesToTheNightAsync` hands back each name's two newest stored
+            sessions at or before the night, newest first, and both the close cell and the change are
+            read from it. A change is drawn only where the newer of the two is the night itself, so a
+            name with no bar on the night has no close and no change rather than a figure about a day
+            the page is not showing. The universe row's close is untouched and the universe screen
+            still reads it; a past night's bands and plan are the same shape and stay carried.
+            (owes: The phase 5 sign-off's remaining store-shape findings ruled or fixed)
+            The two absences are stated as two, a name with no bar on the session and a name whose
+            first stored session is the night, because drawn alike they read as one thing.
+Guarded:    over the read path, which is what the 5.8 assertion was not. A past night is constructed
+            by listing the same names again on an earlier session the store already holds bars for,
+            since nothing else in the suite reaches a second night, and every row's close is asserted
+            to be that night's and its change to be the one that night's closes make, with the figure
+            the defect drew asserted absent. The count of names whose newest close differs from the
+            night's is stated in advance and required to be at least one, because a sweep where the
+            two readings coincide proves nothing. A stale member is constructed by removing its bar
+            on the night, and its row is asserted to carry no close, no change, the no-bar sentence,
+            and neither 0.00 nor 0.00%.
+Mutated:    the rule, stated before the sweep: reinstate the finding and each guard the repair rests
+            on. Four mutations, four runs, in a worktree under the session scratchpad outside the
+            repository, reverted, and the worktree removed. The close taken from the universe row as
+            5.8 took it; the change drawn without the night guard; the pair read unbounded by the
+            night; and the two absences collapsed into one sentence. The first and the fourth turned
+            two tests red each, the second and the third one each. None of the properties added went
+            unmutated.
+Notes:      `TonightScreen.DayChange` leaves `price-storage-form`'s stated set of crossing helpers,
+            and the reason is the signature rather than the arithmetic: it took two decimals and
+            returned a double, and it takes the name's own sessions now, so the two closes it
+            subtracts never appear in its signature. It still crosses once, through
+            `Statistic.FromPrice`, which is in that set and is the boundary. The check's cast half is
+            what covers the inline form, and the roster row already states that limit.
+Tests:      552, from 550. `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, migrations 0 to
+            18, exit 0. `tools/verify-phase.ps1` green at 298 claims, 221 PASS, 0 FAIL, 77 out of
+            scope, 0 unexamined, 228 placements reconciled. No claim moved: the repair is to what a
+            drawn part carries rather than to which parts are drawn. Windows on this machine; the
+            matrix carries macOS and the Linux case-sensitivity job.
+
+### 5.8 - correction: the entry's out-of-scope split named the wrong phases   2026-09-12
+Corrects:   the 5.8 entry above states the 77 out-of-scope claims as "58 at phase 6 and 19 at phase
+            7". Both surfaces the phase report writes say 61 and 16.
+Found:      by the sixth phase 5 sign-off review. The figures came from a sweep of the report's notes
+            that took the last checkpoint each note names, and a note naming two, being "6.5 and
+            7.5", was counted at the later one. The corpus number is the report's.
+Repaired:   nothing in code. A record is corrected by a new dated entry rather than by editing the
+            old one, and this is that entry. The split is 61 at phase 6 and 16 at phase 7.
+Notes:      `stated-counts` exempts record entries as dated measurements, which is why the suite was
+            green over a figure that was wrong. That exemption is right and this is the cost of it:
+            a figure in a record is checked by a reader and by nothing else. The figure this
+            checkpoint turns on, that no out-of-scope claim names a checkpoint inside phase 5, is
+            unaffected and the review reproduced it.
 ### 5.7 - correction: the part matcher absorbed a clause that shared an element's wording   2026-09-12
 Corrects:   the 5.7 entry above records a row's parts coming from the row, with every part of a
             passing row held to have a verdict of its own. The matcher that decided whether a part
