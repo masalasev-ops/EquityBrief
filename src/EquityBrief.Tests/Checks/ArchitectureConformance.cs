@@ -1251,7 +1251,7 @@ public class ArchitectureConformance
 
                 // A row nothing claims yet says nothing yet. Its parts are owed
                 // with it, at the point its own due point names.
-                if (!subjects.Any(subject => Scope.For(heading, subject).Verdict == Verdict.Pass))
+                if (!PartsAreOwedFor(subjects.Select(subject => Scope.For(heading, subject).Verdict)))
                 {
                     continue;
                 }
@@ -1737,5 +1737,34 @@ public class ArchitectureConformance
             .ToArray();
 
         Assert.DoesNotContain(named, check => !answerable.Contains(check, StringComparer.Ordinal));
+    }
+
+    // Whether a row's parts are owed a verdict yet, which is the question the
+    // sweep above asks of every row in section 15.
+    //
+    // Any subject rather than every one, and the difference is fourteen parts.
+    // A row whose subjects carry mixed verdicts, one drawn and one owed at a
+    // later checkpoint, is a row whose drawn half has parts on a page now. The
+    // phase 5 sign-off narrowed this to every subject and all 556 tests stayed
+    // green while the reader dropped from 71 enumerated parts to 57: the
+    // fourteen it stopped reading are the parts of the four rows whose subjects
+    // are mixed today. Named here, and asserted over constructed verdicts, so
+    // the rule is not left to a live population that happens to exercise it.
+    internal static bool PartsAreOwedFor(IEnumerable<Verdict> subjects) =>
+        subjects.Any(verdict => verdict == Verdict.Pass);
+
+    [Fact]
+    public void ARowIsVisitedWhereAnySubjectPassesAndNotWhereNoneDoes()
+    {
+        // The mixed cases are the ones narrowing the filter would lose, and they
+        // are asserted both ways round so the order of a row's subjects cannot
+        // decide the answer.
+        Assert.True(PartsAreOwedFor([Verdict.Pass]));
+        Assert.True(PartsAreOwedFor([Verdict.Pass, Verdict.OutOfScope]));
+        Assert.True(PartsAreOwedFor([Verdict.OutOfScope, Verdict.Pass]));
+
+        Assert.False(PartsAreOwedFor([Verdict.OutOfScope]));
+        Assert.False(PartsAreOwedFor([Verdict.OutOfScope, Verdict.OutOfScope]));
+        Assert.False(PartsAreOwedFor([]));
     }
 }

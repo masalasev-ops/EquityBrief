@@ -227,17 +227,32 @@ public class PriceStorageForm
     {
         var code = SourceStatements.WithoutComments(source);
 
-        const string Operand = @"(?<operand>\(|[A-Za-z_][A-Za-z0-9_.]*(?:\[[^\]]*\])?)";
+        // Four more forms, from the phase 5 sign-off's own list and owed at 6.0.
+        // A negated or signed operand, `(double)-price`, and a numeric literal,
+        // `(decimal)0.1`, both start with a character the operand pattern did not
+        // admit, so the cast was not read at all. The framework's own type names,
+        // `(Double)` and `(Decimal)`, are the same cast spelled the other way.
+        // And `decimal.ToDouble(` is the decimal type's own conversion, which is
+        // a cast written as a call exactly as `Convert.ToDouble(` is.
+        //
+        // None of the four ships today, which is why all four survived: a reader
+        // blind to a form passes every use of it, and there were no uses to pass.
+        const string Operand = @"(?<operand>[-+]?\(|[-+]?[A-Za-z_][A-Za-z0-9_.]*(?:\[[^\]]*\])?|[-+]?[0-9][0-9_.]*[fFdDmM]?)";
 
         var casts = System.Text.RegularExpressions.Regex
-            .Matches(code, @"\((?<to>double|decimal)(?<nullable>\?)?\)\s*" + Operand)
+            .Matches(code, @"\((?<to>double|Double|decimal|Decimal)(?<nullable>\?)?\)\s*" + Operand)
             .Select(match => $"{Path.GetFileName(file)}: ({match.Groups["to"].Value}{match.Groups["nullable"].Value}){match.Groups["operand"].Value}");
 
         var conversions = System.Text.RegularExpressions.Regex
             .Matches(code, @"\bConvert\.To(?<to>Double|Decimal)\(\s*" + Operand)
             .Select(match => $"{Path.GetFileName(file)}: Convert.To{match.Groups["to"].Value}({match.Groups["operand"].Value}");
 
-        return [.. casts, .. conversions];
+        var ownConversions = System.Text.RegularExpressions.Regex
+            .Matches(code, @"(?<![\w.])(?<from>decimal|Decimal|double|Double)\.To(?<to>Double|Decimal)\(\s*" + Operand)
+            .Select(match =>
+                $"{Path.GetFileName(file)}: {match.Groups["from"].Value}.To{match.Groups["to"].Value}({match.Groups["operand"].Value}");
+
+        return [.. casts, .. conversions, .. ownConversions];
     }
 
     [Fact]
@@ -317,5 +332,32 @@ public class PriceStorageForm
 
         // And a conversion to an integer is neither world.
         Assert.Empty(CastsIn("var n = Convert.ToInt32(count);", "P.cs"));
+    }
+
+    // ---- the four forms the phase 5 sign-off named, owed at 6.0 ----
+
+    [Fact]
+    public void TheCastReaderSeesANegatedOperandANumericLiteralTheCapitalisedTypeAndTheDecimalsOwnConversion()
+    {
+        // Four shapes the reader was blind to, each a crossing between the two
+        // worlds written in a way its operand pattern or its type pattern did
+        // not reach. None of them ships today, which is why all four survived:
+        // a reader that misses a form passes every use of it, and the only uses
+        // there were to pass were none.
+        Assert.Single(CastsIn("var a = (double)-price;", "Probe.cs"));
+        Assert.Single(CastsIn("var b = (decimal)0.1;", "Probe.cs"));
+        Assert.Single(CastsIn("var c = (Double)price;", "Probe.cs"));
+        Assert.Single(CastsIn("var d = decimal.ToDouble(price);", "Probe.cs"));
+    }
+
+    [Fact]
+    public void TheWidenedCastReaderStillLeavesWhatIsNotACrossingAlone()
+    {
+        // The other direction, so the widening is not a matcher that matches
+        // everything. A cast to another type, a name that merely contains one of
+        // the words, and arithmetic on an int are not crossings.
+        Assert.Empty(CastsIn("var a = (int)price;", "Probe.cs"));
+        Assert.Empty(CastsIn("var b = doubled + decimals;", "Probe.cs"));
+        Assert.Empty(CastsIn("var c = ToDoubleCheck(price);", "Probe.cs"));
     }
 }

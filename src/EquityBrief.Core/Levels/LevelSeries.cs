@@ -118,7 +118,7 @@ public static class LevelSeries
         [
             .. Retracements.Select(fraction => new LevelMember(
                 MemberSource.Retracement,
-                $"retracement {fraction * 100:0.#}",
+                FormattableString.Invariant($"retracement {fraction * 100:0.#}"),
                 PriceForm.Round(upward ? high.Price - (fraction * span) : low.Price + (fraction * span)),
                 ended)),
         ];

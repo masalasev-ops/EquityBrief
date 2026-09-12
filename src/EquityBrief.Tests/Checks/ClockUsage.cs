@@ -184,12 +184,33 @@ public class ClockUsage
     // and a builder's `Append(Invariant,`.
     static readonly string[] DateComponents = ["yyyy", "MM-dd", "HH:mm", "HHmmss"];
 
+    // Two more from the phase 5 sign-off's own list, owed at 6.0.
+    //
+    // A bare `Invariant(` was admitted wherever it appeared, which passes a
+    // literal on the name of the thing before it rather than on what that thing
+    // does. The framework's call is named whole below, and the bare form is the
+    // page's own helper over a `FormattableString`, so it is admitted only in a
+    // source that declares that helper, read off the same text.
+    //
+    // A hole carrying a quoted string, being a `ToString` call inside it, cuts
+    // this reader's literal short at the inner quote and is not read here. It is
+    // not outside the check: the formatting reader above finds that exact shape,
+    // because a `ToString` with a date format and no provider is what it keys
+    // on, and a permanent proof below asserts both directions. Stated rather
+    // than closed, because reading it here needs a brace-depth scanner and the
+    // shape is already reached.
     const string PinnedBefore =
-        @"(?:(?<![\w.])(?:FormattableString\.)?Invariant\(|string\.Create\(\s*(?:CultureInfo\.)?InvariantCulture\s*,|\.Append\(\s*Invariant\s*,)\s*$";
+        @"(?:(?<![\w.])FormattableString\.Invariant\(|string\.Create\(\s*(?:CultureInfo\.)?InvariantCulture\s*,|\.Append\(\s*Invariant\s*,)\s*$";
+
+    const string PinnedByTheOwnHelper = @"(?<![\w.])Invariant\(\s*$";
+
+    const string DeclaresTheOwnHelper = @"static\s+string\s+Invariant\(\s*FormattableString";
 
     internal static IReadOnlyList<string> CultureFreeDateInterpolation(string source, string file)
     {
         var code = SourceStatements.WithoutComments(source);
+
+        var declaresTheOwnHelper = System.Text.RegularExpressions.Regex.IsMatch(code, DeclaresTheOwnHelper);
 
         var regular = System.Text.RegularExpressions.Regex
             .Matches(code, @"(?<before>[^\n]{0,48})\$@?""(?<body>(?:[^""\\\n]|\\.)*)""")
@@ -205,6 +226,8 @@ public class ClockUsage
             .Where(literal => HolesIn(literal.Body, literal.Braces).Any(format =>
                 DateComponents.Any(component => format.Contains(component, StringComparison.Ordinal))))
             .Where(literal => !System.Text.RegularExpressions.Regex.IsMatch(literal.Before, PinnedBefore))
+            .Where(literal => !(declaresTheOwnHelper
+                && System.Text.RegularExpressions.Regex.IsMatch(literal.Before, PinnedByTheOwnHelper)))
             .Select(literal => $"{Path.GetFileName(file)}: ${'"'}{literal.Body}{'"'}")
             .ToArray();
     }
@@ -380,5 +403,51 @@ public class ClockUsage
         // through as well.
         Assert.Empty(MachineClock.In("var today = clock.SessionDateAt(clock.UtcNow);"));
         Assert.Empty(MachineClock.In("var stamp = instant.UtcDateTime;"));
+    }
+
+    // ---- the three blind spots the phase 5 sign-off named, owed at 6.0 ----
+
+    [Fact]
+    public void TheInterpolationReaderSeesADateLiteralSharingALineWithALaterOne()
+    {
+        // Two interpolated literals on one line, the first pinned and the second
+        // not. The second is the use and the reader has to find it.
+        Assert.Single(CultureFreeDateInterpolation(
+            "var u = FormattableString.Invariant(" + "$\"a{from:yyyy-MM-dd}\") + " + "$\"b{to:yyyy-MM-dd}\";",
+            "Probe.cs"));
+    }
+
+    [Fact]
+    public void AHoleCarryingAQuotedStringIsReachedByTheFormattingReaderAndNotByThisOne()
+    {
+        // Stated rather than closed, and asserted in both directions so the
+        // statement cannot quietly stop being true. This reader's literal ends
+        // at the inner quote so it sees nothing, and the shape is still reached,
+        // because a `ToString` with a date format and no provider is what the
+        // formatting reader keys on. A later change that made the formatting
+        // reader miss it would leave the shape unreached by either and fail here.
+        const string source = "var u = " + "$\"on {day.ToString(\"yyyy-MM-dd\")} at noon\";";
+
+        Assert.Empty(CultureFreeDateInterpolation(source, "Probe.cs"));
+        Assert.Single(CultureFreeDateFormatting(source, "Probe.cs"));
+    }
+
+    [Fact]
+    public void TheInterpolationReaderRefusesABareInvariantThatIsNotTheFrameworksOwn()
+    {
+        // A local helper called Invariant is not FormattableString.Invariant, and
+        // passing a literal by the name of the thing before it is passing on a
+        // name rather than on what it does.
+        Assert.Single(CultureFreeDateInterpolation(
+            "var u = Invariant(" + "$\"a{from:yyyy-MM-dd}\");",
+            "Probe.cs"));
+    }
+
+    [Fact]
+    public void TheFormattingReaderCatchesTheQuotedHoleTheInterpolationReaderCutsShort()
+    {
+        Assert.Single(CultureFreeDateFormatting(
+            "var u = " + "$\"on {day.ToString(\"yyyy-MM-dd\")} at noon\";",
+            "Probe.cs"));
     }
 }

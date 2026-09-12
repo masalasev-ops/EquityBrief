@@ -488,7 +488,7 @@ public static class Nightly
                 [FirstStep],
                 at,
                 at,
-                NightClose.Failed,
+                NightClose.Refused,
                 "refused before the first step: " + message);
         }
         catch (Exception failure)

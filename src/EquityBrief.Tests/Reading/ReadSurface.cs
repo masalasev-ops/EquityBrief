@@ -25,6 +25,8 @@ using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Reading;
@@ -3627,4 +3629,159 @@ public class ReadSurface
     // `clock-usage` reads off the literal and refuses.
     static string Stamp(DateOnly session) =>
         session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    // ---- the routes, hosted in process, owed at 6.0 ----
+    //
+    // The phase 5 sign-off found that no test in the suite hosted a route, so
+    // every route body in the API's own file was unreached and each screen's
+    // PASS sat at the helper the route calls. It showed it by pointing the
+    // tonight route at the day before the one asked for and leaving all 556
+    // tests green. 6.0's ruling is that the suite hosts the API in process
+    // against a throwaway store, so a route's verdict sits at the route.
+    //
+    // In process rather than over a port. A listener on a real socket is a
+    // second thing that can fail, and a bound-time bound is a claim about the
+    // machine, which is the shape this corpus has already caught twice.
+    // Keyed on a public type from the API's own assembly rather than on its
+    // `Program`, which the factory only uses to find the assembly. The suite
+    // has a `Program` of its own for the phase report command, and both are in
+    // the global namespace, so naming that one is ambiguous and the compiler
+    // says so.
+    sealed class Host(string root) : WebApplicationFactory<ReadApi>
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+            builder.UseSetting(StoreLocation.DataRootKey, root);
+    }
+
+    // The night the store's listings are for, read off the store rather than
+    // written here, so a fixture whose year moves takes this with it.
+    static string NightIn(TemporaryStore store)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT MAX(session_date) FROM listing;";
+
+        return (string)command.ExecuteScalar()!;
+    }
+
+    [Fact]
+    public async Task TheTonightRouteServesTheNightItWasAskedForAndNotTheDayBefore()
+    {
+        // The mutation the sign-off demonstrated with, closed. Both directions:
+        // the night asked for is drawn and the day before it is not, so a route
+        // shifted by a day fails rather than serving a page that looks right.
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var night = NightIn(store);
+        var before = DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            .AddDays(-1)
+            .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        var body = await client.GetStringAsync($"/screens/tonight/{night}");
+
+        Assert.Contains(night, body, StringComparison.Ordinal);
+        Assert.DoesNotContain(before, body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheRunRouteServesTheNightItWasAskedFor()
+    {
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var night = NightIn(store);
+        var body = await client.GetStringAsync($"/screens/run/{night}");
+
+        Assert.Contains(night, body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheNameRouteServesTheNameItWasAskedForAndNotAnother()
+    {
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var body = await client.GetStringAsync($"/screens/name/{Name}");
+
+        Assert.Contains(Name, body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheUniverseRouteCarriesItsFilterThroughToWhatItDraws()
+    {
+        // A filter passed on the query string and honoured by the route. A route
+        // that dropped it would draw the whole index and read as correct.
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var all = await client.GetStringAsync("/screens/universe");
+        var filtered = await client.GetStringAsync("/screens/universe?trend=downtrend");
+
+        Assert.NotEqual(all, filtered);
+    }
+
+    [Fact]
+    public async Task TheMarkRouteHandsBackSvgForTheNameItWasAskedFor()
+    {
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var response = await client.GetAsync($"/marks/level-chart/{Name}");
+
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal("image/svg+xml", response.Content.Headers.ContentType?.MediaType);
+        Assert.Contains("<svg", await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheRootRouteServesTheShell()
+    {
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var response = await client.GetAsync("/");
+
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
+    }
+
+    [Fact]
+    public async Task TheRunPageOpensOnTheNightWrittenLastAndNotOnTheEarliestInstant()
+    {
+        // 6.0's repair for what the phase 5 sign-off found. A replay stamps the
+        // run log's instant from 21:10Z on the session it was given, so a night
+        // replayed for an older session after tonight's ran carries the older
+        // instant. Ordered by that instant, the page opened on a night whose
+        // list the store may not hold. The write order is the rowid, which is
+        // the one thing here that nothing can stamp.
+        //
+        // Constructed rows, because the thing under test is the ordering and a
+        // replay that produced this shape would be two full nights to build a
+        // two-row case.
+        using var store = await FixtureExpectations.WithListings();
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, " +
+            "network_requests, spend, detail) VALUES " +
+            "('night-later-session', 'close', '2026-09-04T21:10:00Z', '2026-09-04T21:11:00Z', 'ok', 1, 0, 0, '0', 'x');");
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, " +
+            "network_requests, spend, detail) VALUES " +
+            "('night-earlier-session', 'close', '2026-08-31T21:10:00Z', '2026-08-31T21:11:00Z', 'ok', 1, 0, 0, '0', 'x');");
+
+        var night = await Api(store).RunNightAsync();
+
+        // The row written last, whose instant is the earlier of the two.
+        Assert.Equal(new DateOnly(2026, 8, 31), night);
+    }
 }

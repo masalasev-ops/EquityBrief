@@ -324,7 +324,7 @@ public static class LadderSeries
 
         // Equal fractions over the traded exits, stated as the share rather than
         // computed into a quantity: what is held is the reader's.
-        var share = traded.Length == 0 ? "0" : $"1/{traded.Length}";
+        var share = traded.Length == 0 ? "0" : FormattableString.Invariant($"1/{traded.Length}");
 
         return
         [
@@ -340,7 +340,7 @@ public static class LadderSeries
                     isTraded ? share : "0",
                     isTraded
                         ? null
-                        : $"closer than {NearExitInTypicalDays} typical days' moves to the blended entry");
+                        : FormattableString.Invariant($"closer than {NearExitInTypicalDays} typical days' moves to the blended entry"));
             }),
         ];
     }
@@ -395,7 +395,7 @@ public static class LadderSeries
             setups.Add(new EventSetup(
                 "a breakout before the print",
                 date,
-                $"a daily close above {band.HighEdge} on volume above its fifty-day average, with the print still ahead",
+                FormattableString.Invariant($"a daily close above {band.HighEdge} on volume above its fifty-day average, with the print still ahead"),
                 entry,
                 StopBelow(band, typicalMove),
                 TargetAbove(resistance, entry, typicalMove)));
@@ -422,7 +422,7 @@ public static class LadderSeries
             setups.Add(new EventSetup(
                 "a flush after the print",
                 date,
-                $"the session after the print closes down more than {NearExitInTypicalDays} typical days and inside {band.LowEdge} to {band.HighEdge}, and the next session holds its low",
+                FormattableString.Invariant($"the session after the print closes down more than {NearExitInTypicalDays} typical days and inside {band.LowEdge} to {band.HighEdge}, and the next session holds its low"),
                 band.LowEdge,
                 StopBelow(band, typicalMove),
                 target));
@@ -440,7 +440,7 @@ public static class LadderSeries
             setups.Add(new EventSetup(
                 "a gap up after the print",
                 date,
-                $"the session after the print opens above {band.HighEdge} and closes above its own open",
+                FormattableString.Invariant($"the session after the print opens above {band.HighEdge} and closes above its own open"),
                 entry,
                 StopBelow(band, typicalMove),
                 TargetAbove(resistance, entry, typicalMove)));

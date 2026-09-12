@@ -1,3 +1,5 @@
+using System.Globalization;
+using EquityBrief.Core.Levels;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 
@@ -45,5 +47,40 @@ public class GlobalizationTests
             "InvariantGlobalization"));
 
         Assert.Null(ProjectFile.ValueOf("<Project />", "InvariantGlobalization"));
+    }
+
+    [Fact]
+    public void TheSentencesStoredInTheLevelAndLadderRowsCarryADotWhateverTheMachinesCultureIs()
+    {
+        // The phase 5 sign-off found numbers formatted in the machine's culture
+        // into stored text, in `LevelSeries` and `LadderSeries`. Both render a
+        // price or a count into a sentence that lands in `level.members` and
+        // `ladder.plan`, so the same store written on a machine whose decimal
+        // separator is a comma differs from one written here, and no column type
+        // refuses it: it is text either way.
+        //
+        // `clock-usage` never saw it, because that reader is keyed on date
+        // formats. This is the number half and it has no scan of its own, so the
+        // property is asserted by running the renderers under a culture that
+        // would show the fault.
+        var was = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            var members = LevelSeries.RetracementsBetween(
+                (200m, new DateOnly(2026, 3, 6)),
+                (100m, new DateOnly(2026, 3, 2)));
+
+            var kinds = string.Join(" ", members.Select(member => member.Kind));
+
+            Assert.Contains("38.2", kinds, StringComparison.Ordinal);
+            Assert.DoesNotContain("38,2", kinds, StringComparison.Ordinal);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = was;
+        }
     }
 }
