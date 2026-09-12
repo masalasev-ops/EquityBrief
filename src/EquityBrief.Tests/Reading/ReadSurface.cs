@@ -2,7 +2,9 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Configuration;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Ladders;
@@ -50,6 +52,19 @@ public class ReadSurface
             CheckReach.Key("15.4 The two surfaces", "The app, the single page"),
             CheckReach.Key("15.4 The two surfaces", "The app, routing"),
             CheckReach.Key("15.4 The two surfaces", "The app, filters"),
+            // The nine parts 5.8 draws, and the tenth claim the selection makes
+            // on the app's own row. Each is asserted off the markup rather than
+            // off the model behind it, which is what the checkpoint owed.
+            CheckReach.Key("15.4 The two surfaces", "The app, selection"),
+            CheckReach.Key("15.7 Tonight", "Night header, the harness verdict"),
+            CheckReach.Key("15.7 Tonight", "The list, day change"),
+            CheckReach.Key("15.7 Tonight", "The list, trend state in a word"),
+            CheckReach.Key("15.7 Tonight", "The list, the distance row mark"),
+            CheckReach.Key("15.7 Tonight", "Selected name, the level summary"),
+            CheckReach.Key("15.7 Tonight", "Selected name, whichever row is selected"),
+            CheckReach.Key("15.8 Universe", "The table, paged"),
+            CheckReach.Key("15.8 Universe", "The table, sessions until earnings"),
+            CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, Everything above the marker is a sale"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, everything below is a purchase"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, stops are horizontal rules"),
@@ -1170,7 +1185,10 @@ public class ReadSurface
         var api = Api(store);
         var moves = await api.MovesAsync(Name);
         var marks = new MarkRenderer();
-        var table = marks.MovesTable(Name, [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))]);
+        var table = marks.MovesTable(
+            Name,
+            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))],
+            NameScreen.TwelveMonths(await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue)));
 
         Assert.NotEmpty(moves);
         Assert.Contains($"data-moves=\"{moves.Count}\"", table, StringComparison.Ordinal);
@@ -1196,7 +1214,7 @@ public class ReadSurface
 
         // And a name with no stored moves says so rather than drawing an empty
         // table, which a reader would read as a name that never moved.
-        Assert.Contains("no moves are stored", marks.MovesTable("NOSUCH", []), StringComparison.Ordinal);
+        Assert.Contains("no moves are stored", marks.MovesTable("NOSUCH", [], []), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -1399,7 +1417,7 @@ public class ReadSurface
         Assert.Equal(listings.Count(listing => listing.FiredCount > 0), fired);
 
         var marks = new MarkRenderer();
-        var header = marks.NightHeader(night.Value, universe.Count, fired, "00:00:01");
+        var header = marks.NightHeader(night.Value, universe.Count, fired, "00:00:01", new HarnessCounts(211, 0, 0, 87));
 
         Assert.Contains($"data-fired=\"{fired}\"", header, StringComparison.Ordinal);
         Assert.Contains($"data-index=\"{universe.Count}\"", header, StringComparison.Ordinal);
@@ -1448,7 +1466,12 @@ public class ReadSurface
             strengths[listing.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }
 
-        var rows = TonightScreen.Rows(listings, strengths, new Dictionary<string, decimal?>(StringComparer.Ordinal));
+        var rows = TonightScreen.Rows(
+            listings,
+            strengths,
+            new Dictionary<string, decimal?>(StringComparer.Ordinal),
+            new Dictionary<string, UniverseCell>(StringComparer.Ordinal),
+            new Dictionary<string, decimal>(StringComparer.Ordinal));
 
         // Only the names that fired are drawn, which is what separates the list
         // from the universe screen.
@@ -1468,7 +1491,9 @@ public class ReadSurface
                 new ListingRow("BBBB", night, Fired(1), 1, "{}"),
             ],
             new Dictionary<string, int>(StringComparer.Ordinal) { ["AAAA"] = 3, ["BBBB"] = 9 },
-            new Dictionary<string, decimal?>(StringComparer.Ordinal));
+            new Dictionary<string, decimal?>(StringComparer.Ordinal),
+            new Dictionary<string, UniverseCell>(StringComparer.Ordinal),
+            new Dictionary<string, decimal>(StringComparer.Ordinal));
 
         Assert.Equal(["BBBB", "AAAA"], [.. tied.Select(row => row.Ticker)]);
     }
@@ -2605,7 +2630,9 @@ public class ReadSurface
         var rows = TonightScreen.Rows(
             listings,
             strengths,
-            universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal));
+            universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal),
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            (await api.PreviousClosesAsync(night)).ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal));
 
         Assert.NotEmpty(rows);
 
@@ -2892,6 +2919,522 @@ public class ReadSurface
         // And the route is a link, which is what makes the page shareable.
         Assert.Contains(SinglePageApp.RunRoute, new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
         Assert.Contains("/screens/run/", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
+    }
+
+    // 5.8's own assertions. Nine parts of five section 15 rows were stated by
+    // the document and drawn by no page, each sitting under a row-level PASS
+    // until the fifth phase 5 sign-off review found that a row's parts were the
+    // reader's rather than the document's. Every one of them is a claim about a
+    // surface, so every one is asserted off the markup the page draws rather
+    // than off the model behind it.
+    // owes: The screens' parts stated in section 15 and not drawn
+
+    [Fact]
+    public async Task TonightsListDrawsTheDayChangeTheTrendStateAndTheDistanceMarkBesideEachName()
+    {
+        // Section 15.7's list row states six things and the page drew three of
+        // them. These are the other three.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+        var universe = await api.UniverseAsync(Index, night);
+        var previous = (await api.PreviousClosesAsync(night))
+            .ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal);
+
+        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var row in universe)
+        {
+            var bands = await api.LevelsAsync(row.Ticker);
+
+            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+        }
+
+        var rows = TonightScreen.Rows(
+            listings,
+            strengths,
+            universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal),
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            previous);
+
+        Assert.NotEmpty(rows);
+
+        var list = new MarkRenderer().TonightList(rows, SinglePageApp.TonightDrawn);
+
+        // The day change, against the store rather than against the projection.
+        // The two closes are read back out of the bars the night wrote, and the
+        // percentage the markup carries is the one those two closes make.
+        var drawn = 0;
+
+        foreach (var row in rows)
+        {
+            var bars = await api.BarsAsync(row.Ticker, DateOnly.MinValue, night);
+
+            Assert.True(bars.Count >= 2, $"{row.Ticker} holds {bars.Count} sessions, expected at least 2.");
+
+            var today = bars[^1].Close;
+            var before = bars[^2].Close;
+            var change = Statistic.FromPrice((today - before) / before) * 100;
+            var reads = change.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture);
+
+            Assert.Contains(
+                $"data-ticker=\"{row.Ticker}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" data-day-change=\"{reads}\"",
+                list,
+                StringComparison.Ordinal);
+
+            // And in words, with its sign, because the sign is the only channel
+            // the direction has: the two hues belong to support and resistance
+            // and a day's change is not allowed either of them.
+            Assert.Contains($">{reads}%</td>", list, StringComparison.Ordinal);
+
+            // The trend state in a word, which is the ladder's own label.
+            var ladder = await api.LadderAsync(row.Ticker);
+
+            Assert.Contains(
+                $"data-trend-state=\"{ladder?.TrendState ?? "not classified"}\"",
+                list,
+                StringComparison.Ordinal);
+            Assert.Contains(
+                $"<td class=\"trend-state\">{(ladder?.TrendState ?? "not classified").Replace('_', ' ')}</td>",
+                list,
+                StringComparison.Ordinal);
+
+            drawn++;
+        }
+
+        // The distance row mark, one per drawn row and each carrying that row's
+        // own ticker, so the column is the mark and not one shape repeated.
+        Assert.Equal(drawn, Regex.Matches(list, "<svg class=\"distance-row\"").Count);
+
+        foreach (var row in rows)
+        {
+            Assert.NotNull(row.Distance);
+            Assert.Contains(
+                $"<svg class=\"distance-row\" role=\"img\" viewBox=\"0 0 120 18\" width=\"120\" height=\"18\" data-ticker=\"{row.Ticker}\"",
+                list,
+                StringComparison.Ordinal);
+        }
+
+        // Each of the three is an absence stated rather than a zero. A name with
+        // no earlier close, no ladder row and no bands says so three times, and
+        // says nothing that reads as a value.
+        var bare = new MarkRenderer().TonightList(
+            [new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone])],
+            SinglePageApp.TonightDrawn);
+
+        Assert.Contains("data-day-change=\"none\"", bare, StringComparison.Ordinal);
+        Assert.Contains("no earlier close stored", bare, StringComparison.Ordinal);
+        Assert.Contains("data-trend-state=\"not classified\"", bare, StringComparison.Ordinal);
+        Assert.Contains("data-distance=\"none\"", bare, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-day-change=\"0.00\"", bare, StringComparison.Ordinal);
+        Assert.DoesNotContain("<svg class=\"distance-row\"", bare, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheNightHeaderStatesTheHarnessVerdictAndSaysSoWhereNoReportHasBeenWritten()
+    {
+        // Section 15.7 puts the harness verdict in the night header. It stood on
+        // the run page alone until 5.8, which is a different screen answering a
+        // different question.
+        var marks = new MarkRenderer();
+        var night = new DateOnly(2026, 9, 5);
+
+        var header = marks.NightHeader(night, 4, 2, "00:00:01", new HarnessCounts(211, 0, 0, 87));
+
+        Assert.Contains("class=\"harness-verdict\"", header, StringComparison.Ordinal);
+        Assert.Contains("data-passed=\"211\"", header, StringComparison.Ordinal);
+        Assert.Contains("data-failed=\"0\"", header, StringComparison.Ordinal);
+        Assert.Contains("data-unexamined=\"0\"", header, StringComparison.Ordinal);
+        Assert.Contains("data-out-of-scope=\"87\"", header, StringComparison.Ordinal);
+        Assert.Contains("211 passed, 0 failed, 0 unexamined, 87 out of scope", header, StringComparison.Ordinal);
+
+        // Four counts and no total, which is the rule the run page's own region
+        // states: out of scope is counted apart from unexamined and only one of
+        // them is a defect. A header that summed them would read 87 as a failure
+        // to check.
+        Assert.DoesNotContain("298", header, StringComparison.Ordinal);
+
+        // A machine with no report says so rather than drawing four zeros, which
+        // would read as a build nothing has ever checked.
+        var none = marks.NightHeader(night, 4, 2, "00:00:01", null);
+
+        Assert.Contains("data-report=\"none\"", none, StringComparison.Ordinal);
+        Assert.Contains("no phase report has been written", none, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-passed=\"0\"", none, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheSelectedNameIsWhicheverRowTheReaderPickedAndCarriesTheLevelSummary()
+    {
+        // Section 15.7's selected-name region is for whichever row is selected.
+        // The composition fixed it at the first row until 5.8, which answered a
+        // question the reader had not asked, and drew the plan column without
+        // the level summary the row states beside it.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+        var universe = await api.UniverseAsync(Index, night);
+
+        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var row in universe)
+        {
+            var bands = await api.LevelsAsync(row.Ticker);
+
+            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+        }
+
+        var rows = TonightScreen.Rows(
+            listings,
+            strengths,
+            universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal),
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            (await api.PreviousClosesAsync(night)).ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal));
+
+        Assert.True(rows.Count >= 2, $"the night listed {rows.Count} names, and telling a selection from a default needs two.");
+
+        // The reader's pick, and it is not the first row, which is the whole
+        // point: a region fixed at the first satisfies every count on this page.
+        var picked = rows[^1];
+
+        Assert.NotEqual(rows[0].Ticker, picked.Ticker);
+        Assert.Equal(picked.Ticker, TonightScreen.Selected(rows, picked.Ticker)?.Ticker);
+
+        // No pick, and a pick that is not on tonight's list, both fall back to
+        // the first row rather than to nothing: the page opens with no name in
+        // the hash and an absent region would make the common case the empty one.
+        Assert.Equal(rows[0].Ticker, TonightScreen.Selected(rows, null)?.Ticker);
+        Assert.Equal(rows[0].Ticker, TonightScreen.Selected(rows, "NOSUCH")?.Ticker);
+
+        var page = new SinglePageApp();
+        var marks = new MarkRenderer();
+        var summary = await api.LevelsAsync(picked.Ticker);
+
+        var region = NameScreen.PlanRegion(
+            page,
+            marks,
+            picked.Ticker,
+            await api.LadderAsync(picked.Ticker),
+            picked.Close ?? 0m,
+            summary);
+
+        // The region is about the name the reader picked and about no other.
+        Assert.Contains($"class=\"selected-name\" data-ticker=\"{picked.Ticker}\"", region, StringComparison.Ordinal);
+        Assert.DoesNotContain($"data-ticker=\"{rows[0].Ticker}\"", region, StringComparison.Ordinal);
+
+        // The level summary beside the plan column, carrying the stored bands.
+        Assert.NotEmpty(summary);
+        Assert.Contains($"data-bands=\"{summary.Count}\"", region, StringComparison.Ordinal);
+        Assert.Contains("level-summary", region, StringComparison.Ordinal);
+
+        foreach (var band in summary)
+        {
+            Assert.Contains(band.LowEdge.ToString(CultureInfo.InvariantCulture), region, StringComparison.Ordinal);
+        }
+
+        // And the page states which row it is drawn for, so the selection is
+        // legible on the surface rather than only in the hash.
+        var tonight = page.TonightRegion(
+            marks, night, universe.Count, TonightScreen.Fired(listings), "00:00:01",
+            rows, [], region, null, picked.Ticker);
+
+        Assert.Contains($"data-selected=\"{picked.Ticker}\"", tonight, StringComparison.Ordinal);
+
+        // Every row is selectable, which is what makes "whichever row" true: a
+        // row with no way to pick it is a row the region can never be about.
+        var list = marks.TonightList(rows, SinglePageApp.TonightDrawn);
+
+        foreach (var row in rows)
+        {
+            Assert.Contains($"data-selects=\"{row.Ticker}\"", list, StringComparison.Ordinal);
+            Assert.Contains($"?name={row.Ticker}\"", list, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void TheAppCarriesSelectionInTheHashBesideItsRoutingAndItsFilters()
+    {
+        // Section 15.4 says the app is the single page with routing, filters and
+        // selection. The first two were drawn and the third was not, so the row
+        // passed while a third of what it names did not exist.
+        var shell = new SinglePageApp().Shell("EquityBrief");
+
+        // The hash is split into a path and a query before anything routes, so
+        // routing is the path and filters and selection are the query. Written
+        // the other way, each route sliced the whole hash and a front page
+        // carrying a selection matched no route at all.
+        Assert.Contains("const cut = hash.indexOf('?')", shell, StringComparison.Ordinal);
+        Assert.Contains("const path = cut < 0 ? hash : hash.slice(0, cut)", shell, StringComparison.Ordinal);
+        Assert.Contains("const query = cut < 0 ? '' : hash.slice(cut + 1)", shell, StringComparison.Ordinal);
+
+        // And the selection reaches the server, which is what makes it a link
+        // rather than a thing the browser keeps to itself.
+        Assert.Contains("'/screens/tonight' + night + (query ? '?' + query : '')", shell, StringComparison.Ordinal);
+        Assert.Contains("'/screens/universe' + (query ? '?' + query : '')", shell, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheUniverseTableIsPagedAndEveryPageLinkKeepsTheFiltersItWasDrawnUnder()
+    {
+        // Section 15.8 says the table is paged. It drew every name in the index
+        // on one page until 5.8, which on five hundred rows carrying a mark each
+        // is a screen nobody can name a place in.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var cells = UniverseScreen.Rows(await api.UniverseAsync(Index, await api.NewestNightAsync()));
+
+        Assert.NotEmpty(cells);
+
+        // The page size is asserted over constructed rows, because the committed
+        // fixture holds four names and four names are one page however it is cut.
+        var many = Enumerable.Range(0, 120)
+            .Select(at => new UniverseCell($"N{at:000}", at % 2 == 0 ? "Tech" : "Health", 100m, "uptrend", null, null, null, null, at))
+            .ToArray();
+
+        Assert.Equal(UniverseScreen.PageSize, UniverseScreen.Page(many, 1).Count);
+        Assert.Equal("N000", UniverseScreen.Page(many, 1)[0].Ticker);
+        Assert.Equal($"N{UniverseScreen.PageSize:000}", UniverseScreen.Page(many, 2)[0].Ticker);
+
+        // The pages partition the rows: every row is on exactly one page, in
+        // order, and none is on two. A slice that overlapped or skipped would
+        // still draw a plausible page.
+        var pages = (many.Length + UniverseScreen.PageSize - 1) / UniverseScreen.PageSize;
+
+        Assert.Equal(
+            [.. many.Select(row => row.Ticker)],
+            [.. Enumerable.Range(1, pages).SelectMany(at => UniverseScreen.Page(many, at)).Select(row => row.Ticker)]);
+
+        // A page number past the end gives the last page rather than an empty
+        // table, because an empty table is the picture a filter matching nothing
+        // draws and the two are different states.
+        Assert.Equal(pages, UniverseScreen.PageOf(many.Length, 99));
+        Assert.Equal(1, UniverseScreen.PageOf(many.Length, 0));
+        Assert.NotEmpty(UniverseScreen.Page(many, 99));
+
+        var marks = new MarkRenderer();
+        var nav = marks.UniversePaging(many.Length, 2, UniverseScreen.PageSize, "uptrend", "Tech");
+
+        Assert.Contains($"data-page=\"2\" data-pages=\"{pages}\"", nav, StringComparison.Ordinal);
+        Assert.Contains($"data-rows=\"{many.Length}\"", nav, StringComparison.Ordinal);
+        Assert.Contains($"page 2 of {pages}", nav, StringComparison.Ordinal);
+
+        // Every link carries the filters it was drawn under. A next-page link
+        // that dropped the chips would take a reader from a filtered page 1 to
+        // an unfiltered page 2 and look exactly like paging.
+        var links = Regex.Matches(nav, "href=\"([^\"]+)\"").Select(match => match.Groups[1].Value).ToArray();
+
+        Assert.Equal(2, links.Length);
+
+        foreach (var href in links)
+        {
+            Assert.Contains("trend=uptrend", href, StringComparison.Ordinal);
+            Assert.Contains("sector=Tech", href, StringComparison.Ordinal);
+            Assert.StartsWith(SinglePageApp.UniverseRoute + "?page=", href, StringComparison.Ordinal);
+        }
+
+        // The first page has no previous and the last has no next, and each says
+        // so rather than linking to a page that is not there.
+        Assert.Contains("data-page=\"none\" rel=\"prev\"", marks.UniversePaging(many.Length, 1, UniverseScreen.PageSize, null, null), StringComparison.Ordinal);
+        Assert.Contains("data-page=\"none\" rel=\"next\"", marks.UniversePaging(many.Length, pages, UniverseScreen.PageSize, null, null), StringComparison.Ordinal);
+
+        // The filters and the cut are one call, and the order between them is the
+        // property: the page is taken from what the filters left and never from
+        // the whole table. Cut the other way round and page 2 of a filter that
+        // matches half the names is half a page of the wrong names, which is a
+        // plausible screen no count on it contradicts.
+        var half = UniverseScreen.Rows(many, null, "Tech", 2);
+
+        Assert.Equal(many.Length / 2, half.Rows);
+        Assert.NotEmpty(half.Page);
+        Assert.All(half.Page, row => Assert.Equal("Tech", row.Sector));
+        Assert.Equal(
+            [.. many.Where(row => row.Sector == "Tech").Skip(UniverseScreen.PageSize).Take(UniverseScreen.PageSize).Select(row => row.Ticker)],
+            [.. half.Page.Select(row => row.Ticker)]);
+
+        // Unfiltered, the same page is a different set of names, which is what
+        // makes the assertion above about the order and not about paging.
+        Assert.NotEqual(
+            [.. UniverseScreen.Rows(many, null, null, 2).Page.Select(row => row.Ticker)],
+            [.. half.Page.Select(row => row.Ticker)]);
+
+        // A filter matching nothing leaves no rows rather than the first page of
+        // everything, and the page it reports is the first.
+        var none = UniverseScreen.Rows(many, null, "NoSuchSector", 3);
+
+        Assert.Empty(none.Page);
+        Assert.Equal(0, none.Rows);
+        Assert.Equal(1, none.At);
+
+        // And the region draws the page it was handed rather than every filtered
+        // row, which is the half that makes the table paged on the screen and
+        // not only in the projection.
+        var region = new SinglePageApp().UniverseRegion(
+            marks, many, UniverseScreen.Sectors(many), null, null, UniverseScreen.Page(many, 2), 2, UniverseScreen.PageSize);
+
+        Assert.Contains($"data-shown=\"{many.Length}\" data-drawn=\"{UniverseScreen.PageSize}\" data-page=\"2\"", region, StringComparison.Ordinal);
+        Assert.Equal(UniverseScreen.PageSize, Regex.Matches(region, "<tr data-ticker=\"").Count);
+        Assert.DoesNotContain("<tr data-ticker=\"N000\"", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheUniverseTableStatesTheSessionsUntilEachNamesNextDatedEvent()
+    {
+        // Section 15.8 names the column. It did not exist until 5.8, and the
+        // row's PASS covered it because the reader chose the row's parts.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var events = (await api.NextEventsAsync(night))
+            .ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
+
+        Assert.NotEmpty(events);
+
+        var cells = UniverseScreen.Rows(await api.UniverseAsync(Index, night), null, events, night);
+        var table = new MarkRenderer().UniverseTable(cells);
+
+        // The date agrees with the per-name read the fact strip uses, so the
+        // column and the strip cannot name two different events for one name.
+        foreach (var cell in cells)
+        {
+            var perName = await api.NextEventAsync(cell.Ticker, night);
+
+            Assert.Equal(perName?.EventDate, cell.NextEvent);
+
+            Assert.Contains(
+                $"data-sessions=\"{(cell.SessionsUntilEarnings is { } until ? until.ToString(CultureInfo.InvariantCulture) : "none")}\" " +
+                $"data-next-event=\"{(cell.NextEvent is { } dated ? dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none")}\"",
+                table,
+                StringComparison.Ordinal);
+        }
+
+        Assert.Contains(cells, cell => cell.SessionsUntilEarnings is > 0);
+
+        // The count itself, over dates the closure table answers for. A Friday
+        // to the Monday after it is one session, the weekend asking nothing of
+        // the table; a day to itself is none; and the week holding Thanksgiving
+        // is four sessions rather than five, which is what makes this the
+        // exchange's calendar rather than a subtraction.
+        Assert.Equal(0, UniverseScreen.SessionsUntil(new DateOnly(2026, 9, 11), new DateOnly(2026, 9, 11)));
+        Assert.Equal(1, UniverseScreen.SessionsUntil(new DateOnly(2026, 9, 11), new DateOnly(2026, 9, 14)));
+        Assert.Equal(4, UniverseScreen.SessionsUntil(new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 27)));
+
+        // Two absences, stated as two. A name with no dated event has nothing to
+        // count to; a name whose event is past the end of the closure table has
+        // an event nobody can count the sessions to, and the table refuses to
+        // guess the weekdays past its end rather than answering with a number.
+        Assert.Null(UniverseScreen.SessionsUntil(new DateOnly(2026, 9, 11), ExchangeClosures.CoveredThrough.AddDays(1)));
+
+        var neither = new UniverseCell("ZZZZ", "Tech", 10m, "uptrend", null, null, null, null, 0);
+        var beyond = neither with
+        {
+            Ticker = "YYYY",
+            NextEvent = ExchangeClosures.CoveredThrough.AddDays(1),
+            EventBeyondTheTable = true,
+        };
+
+        var stated = new MarkRenderer().UniverseTable([neither, beyond]);
+
+        Assert.Contains("no dated event", stated, StringComparison.Ordinal);
+        Assert.Contains("past the end of the closure table", stated, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-sessions=\"0\" data-next-event=\"none\"", stated, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HowItGotHereDrawsTheTwelveMonthPictureAboveTheTableOfMoves()
+    {
+        // Section 15.9 puts the twelve-month picture in this region, above the
+        // table of the biggest moves. The region drew the table alone until 5.8.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var bars = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        var moves = await api.MovesAsync(Name);
+        var year = NameScreen.TwelveMonths(bars);
+
+        Assert.NotEmpty(year);
+        Assert.NotEmpty(moves);
+
+        var region = new MarkRenderer().MovesTable(
+            Name,
+            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))],
+            year);
+
+        // The picture is inside the region the document puts it in, and above
+        // the table, which is the order the region is read in: the year first,
+        // then which moves made it.
+        Assert.Contains("class=\"twelve-months\"", region, StringComparison.Ordinal);
+        Assert.True(
+            region.IndexOf("class=\"twelve-months\"", StringComparison.Ordinal)
+                < region.IndexOf("<tr data-session-date=", StringComparison.Ordinal),
+            "the twelve-month picture is drawn below the table of moves.");
+
+        // It is the level chart mark rather than a drawing of its own, and it is
+        // given the year and no bands: nothing on any screen is a one-off
+        // drawing, and what this region asks is what the year did.
+        Assert.Contains($"data-picture-sessions=\"{year.Count}\"", region, StringComparison.Ordinal);
+        Assert.Contains($"class=\"level-chart\" data-ticker=\"{Name}\" data-sessions=\"{year.Count}\"", region, StringComparison.Ordinal);
+
+        // And no bands, which is what separates this picture from the chart
+        // region below it: that one is about where the levels are, this one is
+        // about what the year did.
+        Assert.DoesNotContain("class=\"level-bands\"", region, StringComparison.Ordinal);
+
+        // The window is twelve months back from the newest stored session and
+        // not from the machine clock, so a page opened on a Sunday draws the
+        // year to Friday.
+        Assert.Equal(bars[^1].SessionDate, year[^1].SessionDate);
+        Assert.All(year, bar => Assert.True(bar.SessionDate > bars[^1].SessionDate.AddYears(-1)));
+        Assert.Contains(bars[^1].SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), region, StringComparison.Ordinal);
+
+        // A session older than the window is outside the picture. The committed
+        // fixture holds a year and no more, so the boundary is constructed: one
+        // bar two years back and one on the newest session, and the picture is
+        // the second alone.
+        var older = NameScreen.TwelveMonths(
+            [
+                new BarRow(Name, bars[^1].SessionDate.AddYears(-2), 1m, 2m, 0.5m, 1.5m, 10),
+                bars[^1],
+            ]);
+
+        Assert.Equal([bars[^1].SessionDate], [.. older.Select(bar => bar.SessionDate)]);
+
+        // The window is measured from the newest stored session and from nothing
+        // else, asserted over a series that ended years ago. Measured from the
+        // machine clock this is empty, and over the committed fixture the two
+        // readings cannot be told apart: its newest session is days from today,
+        // so both windows hold the same bars and a picture drawn to the wrong
+        // year looks exactly right.
+        var settled = new DateOnly(2020, 6, 30);
+
+        var stale = NameScreen.TwelveMonths(
+            [
+                new BarRow(Name, settled.AddYears(-1).AddDays(-1), 1m, 2m, 0.5m, 1.5m, 10),
+                new BarRow(Name, settled.AddYears(-1).AddDays(1), 1m, 2m, 0.5m, 1.5m, 10),
+                new BarRow(Name, settled, 1m, 2m, 0.5m, 1.5m, 10),
+            ]);
+
+        Assert.Equal(
+            [settled.AddYears(-1).AddDays(1), settled],
+            [.. stale.Select(bar => bar.SessionDate)]);
+
+        // And a name with fewer sessions than a chart needs gets the sentence
+        // stating its count rather than a picture drawn through nothing, which
+        // is how every mark here degrades.
+        var sparse = new MarkRenderer().MovesTable("NOSUCH", [], [.. year.Take(MarkRenderer.FewestBars - 1)]);
+
+        Assert.Contains($"data-picture-sessions=\"{MarkRenderer.FewestBars - 1}\"", sparse, StringComparison.Ordinal);
+        Assert.Contains("and a chart needs at least", sparse, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"level-chart\"", sparse, StringComparison.Ordinal);
+
+        // A name with no stored session at all is the same shape rather than a
+        // caption naming a date nobody has.
+        Assert.Contains("no stored session", new MarkRenderer().MovesTable("NOSUCH", [], []), StringComparison.Ordinal);
     }
 
     static ChartBar[] Bars(IReadOnlyList<BarRow> served) =>

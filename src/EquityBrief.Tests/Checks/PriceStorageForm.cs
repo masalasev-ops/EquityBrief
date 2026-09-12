@@ -148,13 +148,17 @@ public class PriceStorageForm
         // not a number that moved.
         //
         // Three are `Statistic`'s own and are the boundary proper. The other
-        // three each cross it and each reaches it through one of those three,
+        // four each cross it and each reaches it through one of those three,
         // which is what the rule asks: `PlotValue` is the chart's crossing and
         // says why it is separate, a coordinate being a position on a surface
         // rather than a statistic and never travelling back; `Y` is the local
-        // that calls it; and `Distance` turns a gap between two prices into a
-        // count of typical days, through `Statistic.FromPrice`. That last one
-        // cast inline until the phase 5 sign-off.
+        // that calls it; `Distance` turns a gap between two prices into a count
+        // of typical days, through `Statistic.FromPrice`, and cast inline until
+        // the phase 5 sign-off; and `DayChange`, added at 5.8, turns two closes
+        // into the percentage section 15.7 states on every row of tonight's
+        // list. Its subtraction and its division are decimal, which is what
+        // keeps the money arithmetic in the money world, and only the finished
+        // ratio crosses.
         Assert.Equal(
             [
                 "MarkRenderer.cs: PlotValue",
@@ -162,6 +166,7 @@ public class PriceStorageForm
                 "Statistic.cs: FromPrice",
                 "Statistic.cs: FromRatio",
                 "Statistic.cs: ToPrice",
+                "TonightScreen.cs: DayChange",
                 "UniverseScreen.cs: Distance",
             ],
             crossings);

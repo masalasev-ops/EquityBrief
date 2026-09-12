@@ -2112,3 +2112,23 @@ Was:
 Now: the same row marked discharged, with the measurement and the two candidates either side of the figure.
 
 Why: the obligation was that one chart cannot fix a threshold, so a discharge that said the fixture is now four names wide would be a discharge that did not do the thing. The figure is asserted against its neighbours instead. At one even share, seven to ten of every name's twenty bands are shelves, which names most of the chart and discriminates nothing. At three, three of the four names have no shelf at all. At two, every name has one and it is a small minority of bands holding a fifth to a half of the period's volume. A threshold asserted alone agrees with itself; one asserted against its neighbours has to beat them.
+
+### 2026-09-12 - BUILD_PLAN.md - the screens' parts stated in section 15 and not drawn, discharged
+Corrects: the row's producer cell, which named what 5.8 would do and could not yet say what it did.
+
+Was:
+> | **The screens' parts stated in section 15 and not drawn** | 5.7 sign-off | 5.8 | nine parts of five section 15 rows are stated and not drawn: tonight's list's day change, trend state in a word and distance row mark; the night header's harness verdict; the selected name's level summary and the selection itself, which the composition fixes at the first row; the universe table's paging and its sessions until earnings; and the name page's twelve-month picture. Each is out of scope until 5.8, which draws them and has `read-surface` assert each off the markup. Filed at the fifth phase 5 sign-off review, whose blocking finding was that a row's parts were the reader's rather than the document's, so these nine sat under a PASS that covered the row |
+
+Now: the same row marked discharged, naming for each part the thing the assertion reads it back against.
+
+Why: the row's own rule is that a producer cell says what produces the evidence, and once the evidence exists the cell says where it is. Each of these nine is a claim about a surface, so a discharge saying the parts are drawn would be the discharge this row exists to refuse: what makes it true is that a check draws the surface and reads the part back off the markup, and the cell names what each is read against rather than that it is read.
+
+### 2026-09-12 - BUILD_PLAN.md - 5.8's nine parts are ten claims, and the paragraph says which
+Corrects: the checkpoint's own paragraph, which said nine parts and then listed ten items.
+
+Was:
+> and the app's selection is a thing the reader does rather than a position the composition fixes.
+
+Now: the same clause, saying that this is 15.4's own statement of the part 15.7 already names, and that the nine parts carry ten claims.
+
+Why: a claim is a row's part rather than a thing on a screen, and the selection is stated on two rows, so nine parts and ten claims are both right and the paragraph said only the first. A reader counting the list found ten against a stated nine, which is the shape `stated-counts` exists to catch and which that check cannot see here, the two numbers being about different populations. Written down rather than made to agree, because making them agree would mean calling the selection two parts or one claim, and it is neither.

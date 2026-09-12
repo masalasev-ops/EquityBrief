@@ -108,10 +108,17 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
         strengths[member.Ticker] = found.Count == 0 ? 0 : found.Max(band => band.Strength);
     }
 
+    // The neighbours on the list, in the order the list itself is drawn in. The
+    // walk is about position, so it takes the same ordering with the same inputs
+    // rather than a cheaper one that could order differently.
     var ordered = TonightScreen.Rows(
         listings,
         strengths,
-        universe.ToDictionary(member => member.Ticker, member => member.Close, StringComparer.Ordinal));
+        universe.ToDictionary(member => member.Ticker, member => member.Close, StringComparer.Ordinal),
+        UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+        night is { } on
+            ? (await read.PreviousClosesAsync(on)).ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal)
+            : new Dictionary<string, decimal>(StringComparer.Ordinal));
 
     var at = ordered.Select((row, position) => (row.Ticker, position))
         .Where(pair => pair.Ticker == ticker)
@@ -134,6 +141,23 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
         "text/html; charset=utf-8");
 });
 
+// The phase report the harness last wrote, read as text and handed to the
+// projection rather than opened by it, so nothing on the read surface reaches
+// the filesystem for a store it does not own. A machine with no report says so
+// rather than showing four zeros.
+//
+// Two screens read it since 5.8: section 15.10 gives the harness a region of its
+// own on the run page, and section 15.7 states the verdict in tonight's header.
+// One function rather than one per route, so the two cannot come to disagree
+// about which file is the report.
+static string? PhaseReport(WebApplicationBuilder builder)
+{
+    var path = builder.Configuration["EquityBrief:PhaseReport"]
+        ?? Path.Combine(builder.Environment.ContentRootPath, "artifacts", "phase-report.json");
+
+    return File.Exists(path) ? File.ReadAllText(path) : null;
+}
+
 // Tonight's list, section 15.7, read here and composed by the app.
 //
 // `/screens/tonight` resolves to the newest night the listings hold and
@@ -141,6 +165,7 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
 // name.
 app.MapGet("/screens/tonight/{night?}", async (
     string? night,
+    HttpRequest request,
     ReadApi read,
     MarkRenderer marks,
     SinglePageApp page) =>
@@ -184,13 +209,38 @@ app.MapGet("/screens/tonight/{night?}", async (
         strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
     }
 
+    // The three the row states beside the name, the close and the reasons. The
+    // distance mark takes the universe screen's own cell, so tonight's list and
+    // the universe table draw one shape from one set of numbers; the day change
+    // needs the session before the night, which is a second read rather than a
+    // column on any row.
+    var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
+
+    var previous = (await read.PreviousClosesAsync(dated))
+        .ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal);
+
     var rows = TonightScreen.Rows(
         listings,
         strengths,
-        universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal));
+        universe.ToDictionary(row => row.Ticker, row => row.Close, StringComparer.Ordinal),
+        cells,
+        previous);
 
-    var selected = rows.Count > 0
-        ? NameScreen.PlanRegion(page, marks, rows[0].Ticker, await read.LadderAsync(rows[0].Ticker), universe.FirstOrDefault(row => row.Ticker == rows[0].Ticker)?.Close ?? 0m)
+    // Whichever row the reader selected, from the hash, and the first row when
+    // they have selected none. Section 15.7's region is for whichever row is
+    // selected, and a composition fixed at the first answers a question nobody
+    // asked.
+    var asked = request.Query["name"].FirstOrDefault();
+    var selection = TonightScreen.Selected(rows, asked);
+
+    var selected = selection is { } chosen
+        ? NameScreen.PlanRegion(
+            page,
+            marks,
+            chosen.Ticker,
+            await read.LadderAsync(chosen.Ticker),
+            universe.FirstOrDefault(row => row.Ticker == chosen.Ticker)?.Close ?? 0m,
+            await read.LevelsAsync(chosen.Ticker))
         : string.Empty;
 
     // The record beside each reason and the evening's own totals, which are
@@ -212,6 +262,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             rows,
             [],
             selected,
+            RunScreen.Harness(PhaseReport(builder)),
+            selection?.Ticker,
             records,
             RunScreen.Tracks(TonightScreen.Totals(listings))),
         "text/html; charset=utf-8");
@@ -247,15 +299,37 @@ app.MapGet("/screens/universe", async (
         history[member.Ticker] = await read.ListingsAsync(member.Ticker, UniverseScreen.StripSessions);
     }
 
-    var cells = UniverseScreen.Rows(members, history);
+    // The night the column counts sessions from, and every name's next dated
+    // event in one read rather than five hundred.
+    var night = await read.NewestNightAsync();
+    var events = (await read.NextEventsAsync(night ?? DateOnly.MinValue))
+        .ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
+
+    var cells = UniverseScreen.Rows(members, history, events, night);
+
+    var trend = request.Query["trend"].FirstOrDefault();
+    var sector = request.Query["sector"].FirstOrDefault();
+
+    // The page, from the hash beside the filters. The filters and the cut are
+    // one call, because the order between them is the property: a page taken
+    // from the whole table and then filtered is a short page about the wrong
+    // names, and nothing on the screen contradicts it.
+    var shown = UniverseScreen.Rows(
+        cells,
+        trend,
+        sector,
+        int.TryParse(request.Query["page"].FirstOrDefault(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var asked) ? asked : null);
 
     return Results.Content(
         page.UniverseRegion(
             marks,
             cells,
             UniverseScreen.Sectors(cells),
-            request.Query["trend"].FirstOrDefault(),
-            request.Query["sector"].FirstOrDefault()),
+            trend,
+            sector,
+            shown.Page,
+            shown.At,
+            UniverseScreen.PageSize),
         "text/html; charset=utf-8");
 });
 
@@ -305,20 +379,8 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.BaseRates(returns),
             RunScreen.Nights(everyListing),
             await read.StaleNamesAsync(index, dated),
-            RunScreen.Harness(PhaseReport())),
+            RunScreen.Harness(PhaseReport(builder))),
         "text/html; charset=utf-8");
-
-    // The phase report the harness last wrote, read as text and handed to the
-    // projection rather than opened by it, so nothing on the read surface
-    // reaches the filesystem for a store it does not own. A machine with no
-    // report says so rather than showing four zeros.
-    string? PhaseReport()
-    {
-        var path = builder.Configuration["EquityBrief:PhaseReport"]
-            ?? Path.Combine(builder.Environment.ContentRootPath, "artifacts", "phase-report.json");
-
-        return File.Exists(path) ? File.ReadAllText(path) : null;
-    }
 });
 
 // One run log row for the surface coming up, which is the grain SCHEMA declares
