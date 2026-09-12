@@ -46,13 +46,44 @@ public class NightSourceTests
 
         Assert.True(feeds.ReachesTheNetwork);
 
-        // Every one of the five, and not merely the first. A sixth feed added
-        // live and left out of the check would read as one that cannot.
+        // Every one of the six, and not merely the first. A feed added live and
+        // left out of the check would read as one that cannot, which is what
+        // happened: this list said five and the record held six from 4.3 until
+        // 6.1, and the calendar was the one missing from both this and the reader.
         Assert.IsType<EodhdIndexMembershipFeed>(feeds.Membership);
         Assert.IsType<EodhdHistoricalBarFeed>(feeds.Historical);
         Assert.IsType<EodhdBulkPriceFeed>(feeds.Bulk);
         Assert.IsType<EodhdCorporateActionFeed>(feeds.Corporate);
+        Assert.IsType<EodhdEarningsCalendarFeed>(feeds.Calendar);
         Assert.IsType<EodhdNewsFeed>(feeds.News);
+    }
+
+    [Fact]
+    public void OneLiveFeedAmongCapturesIsASetThatReachesTheNetwork()
+    {
+        // The permanent proof that the reader can fail, and the test the omission
+        // above needed. Nothing configurable builds a mixed set, so the
+        // all-or-nothing pair either side of this cannot tell a reader that names
+        // five of six from one that names all six: both answer correctly when
+        // every feed is the same kind. Constructed rather than resolved, one
+        // member at a time, so a seventh member left out of the reader fails here.
+        var captures = NightFeeds.FromFixture(Folder());
+
+        Assert.False(captures.ReachesTheNetwork);
+
+        var live = NightFeeds.Live(null, Key);
+
+        NightFeeds[] mixed =
+        [
+            captures with { Membership = live.Membership },
+            captures with { Historical = live.Historical },
+            captures with { Bulk = live.Bulk },
+            captures with { Corporate = live.Corporate },
+            captures with { Calendar = live.Calendar },
+            captures with { News = live.News },
+        ];
+
+        Assert.All(mixed, feeds => Assert.True(feeds.ReachesTheNetwork));
     }
 
     [Fact]

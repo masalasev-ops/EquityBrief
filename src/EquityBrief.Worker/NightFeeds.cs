@@ -96,13 +96,17 @@ public sealed record NightFeeds(
 
     static ProviderCredentials Key(string? apiKey) => new(apiKey ?? string.Empty);
 
-    public const string SourceKey = "EquityBrief:Providers:Source";
+    // The four settings, which are `FeedSource`'s since 6.1 and are named here
+    // because the citations use these names. One value with two names is safe
+    // where the second is the first; two literals would be two places holding one
+    // fact.
+    public const string SourceKey = FeedSource.SourceKey;
 
-    public const string FixtureKey = "EquityBrief:Providers:Fixture";
+    public const string FixtureKey = FeedSource.FixtureKey;
 
-    public const string LiveSource = "live";
+    public const string LiveSource = FeedSource.Live;
 
-    public const string FixtureSource = "fixture";
+    public const string FixtureSource = FeedSource.Fixture;
 
     // Where tonight's feeds come from, decided before the night starts.
     //
@@ -120,53 +124,33 @@ public sealed record NightFeeds(
         string? source,
         string? fixtureFolder,
         string? baseAddress,
-        string? apiKey)
-    {
-        source = string.IsNullOrWhiteSpace(source) ? LiveSource : source.Trim();
-
-        if (string.Equals(source, LiveSource, StringComparison.OrdinalIgnoreCase))
-        {
-            // `Live` builds the credentials, which refuse a blank key by name.
-            // Nothing here catches that and reaches for a fixture.
-            return Live(baseAddress, apiKey);
-        }
-
-        if (!string.Equals(source, FixtureSource, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException(
-                $"'{SourceKey}' is '{source}', and the two it may be are '{LiveSource}' and " +
-                $"'{FixtureSource}'. A source that is neither is refused rather than guessed at, " +
-                "because either guess is a night that ran against something the operator did not " +
-                "ask for.");
-        }
-
-        if (string.IsNullOrWhiteSpace(fixtureFolder))
-        {
-            throw new InvalidOperationException(
-                $"'{SourceKey}' is '{FixtureSource}' and '{FixtureKey}' names no folder. A night " +
-                "over a capture has to be told which, and falling back to the provider would spend " +
-                "the allowance on a run that asked for a replay.");
-        }
-
-        return Directory.Exists(fixtureFolder)
-            ? FromFixture(fixtureFolder)
-            : throw new DirectoryNotFoundException(
-                $"'{FixtureKey}' names '{fixtureFolder}' and no such folder exists. A mistyped path " +
-                "is refused rather than resolved to the provider: the failure a fall-back would " +
-                "produce is a night that reached the network when a replay was meant, and it would " +
-                "look like a night that ran.");
-    }
+        string? apiKey) =>
+        FeedSource.Resolve(
+            source,
+            fixtureFolder,
+            FromFixture,
+            () => Live(baseAddress, apiKey),
+            "a night");
 
     // Whether a set of feeds can reach the network at all, asked of the objects
     // rather than of the setting that produced them.
     //
     // A fixture night makes no request because the recorded feeds hold no
-    // client, and this is what says so: the recorded doubles are named, so a
-    // sixth feed added live and forgotten here reads as one that can.
+    // client, and this is what says so: every recorded double is named, so a feed
+    // added live and forgotten here reads as one that cannot.
+    //
+    // The calendar was exactly that until 6.1. It arrived at 4.3 as the sixth
+    // member of this record and was left out of this reader and out of its test,
+    // both of which said five and meant six, so a set holding a live calendar and
+    // five captures answered that it reaches no network. Nothing configurable
+    // produces a mixed set, which is why it cost nothing today and why the proof
+    // that this reader can fail is now a constructed one rather than an
+    // all-or-nothing pair.
     public bool ReachesTheNetwork =>
         Membership is not RecordedIndexMembershipFeed
         || Historical is not RecordedHistoricalBarFeed
         || Bulk is not RecordedBulkPriceFeed
         || Corporate is not RecordedCorporateActionFeed
+        || Calendar is not RecordedEarningsCalendarFeed
         || News is not RecordedNewsFeed;
 }
