@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - ARCHITECTURE.html - the marketing marker is a pairing, after a live run refused three real articles
+
+Corrects: the admissibility row's marketing half rested on invitation language, and a live run over 411 real articles from one dated request refused three pieces of ordinary consumer-finance reporting. Two tripped on one invitation written twice, "sign up" and "signing up" counted as two. The third survived that repair: an article on how savers lose a retirement pot says "opening an account" and "sign up", which are two genuinely different invitations inside an article whose subject is accounts. Found by the demonstration this checkpoint ran, not by reading.
+Was:
+> A page carries an article where one paragraph of it runs to at least 3 sentences and at least 40 words, and 2 invitations to open an account mark a page that exists to open one
+Now: the paragraph rule is unchanged, and the marketing half reads that a page exists to open an account where it carries one regulatory risk warning, or a leveraged-product term beside an invitation to open one, with the row stating that invitation language alone is not a marker and naming what the 411 measured.
+Why: invitation language does not separate an article about accounts from a page selling one, and no amount of counting repairs that. What does separate them is the product: over the same 411 articles, "contract for difference" appears 0 times, "cfd" 0, "spread bet" twice and "trading platform" three times, and not one of those five carries any invitation at all, while both broker pages the by-hand measurement read carry the product and the invitation together. The number 2 leaves the row because the rule no longer counts anything, and the fixture's second broker page lost its risk warning in the same pass so the pairing is exercised by a committed document rather than only by constructed text.
+
 ### 2026-09-13 - BUILD_PLAN.md - 6.3's done condition amended, and the clause it cannot assert moved to 6.4
 
 Corrects: 6.3's done condition required that a pass finding no admissible source for a section leaves the section absent with one line saying so. That is a claim about a surface which draws a section, and nothing at 6.3 can draw one: `source_document` carries no ticker and no section, by design, because one document supports claims about several names and about a theme, so no store at 6.3 ties a document to the section it would be cited in. Found by the phase report, which left one claim out of scope at 6.3 after everything else had passed.

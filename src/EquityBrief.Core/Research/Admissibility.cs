@@ -159,18 +159,49 @@ public static class Admissibility
     // The regulatory risk warning is the reliable half and one occurrence is
     // enough: no article in the captured set warns its own reader about losing
     // money, and the two forms below are verbatim from the broker page the
-    // measurement read. The invitations are the other half and two are required,
-    // because a single "sign up" is in the navigation of half the web.
+    // measurement read. The invitations are the other half and two of different
+    // kinds are required, because a single "sign up" is in the navigation of half
+    // the web.
+    //
+    // An invitation on its own is not the other half, and the live run at 6.3 is
+    // why. Over 411 real articles from one dated request, the rule as first
+    // written refused three pieces of ordinary consumer-finance reporting. Two
+    // tripped on one invitation written twice, a piece on what retirees put off
+    // saying "sign up" and "signing up" about a benefit, which counting kinds
+    // rather than phrases repairs. The third survived that repair: an article on
+    // how savers lose a retirement pot says "opening an account" and "sign up",
+    // which are two genuinely different invitations inside an article whose
+    // subject is accounts. Invitation language separates an article about accounts
+    // from a page selling one not at all, so nothing here rests on it alone.
+    //
+    // What separates them is the product. The same 411 articles carry "contract
+    // for difference" 0 times, "cfd" 0, "spread bet" twice and "trading platform"
+    // three times, and not one of those five carries any invitation at all, while
+    // both broker pages the by-hand measurement read carry the product and the
+    // invitation together. So the second net is the pairing, and it is measured on
+    // the population it has to be quiet over rather than assumed to be.
     //
     // The cost of this rule is stated rather than left to be discovered: an
-    // article about the regulation of these products, quoting the warning, would
-    // be refused. That is one article refused against admitting pages whose whole
-    // content is marketing, and the preference for primary sources below is what
-    // a pass reaches for instead.
+    // article about the regulation of these products, quoting the warning or
+    // naming the product beside a sign-up line, would be refused. That is one
+    // article refused against admitting pages whose whole content is marketing,
+    // and the preference for primary sources below is what a pass reaches for
+    // instead.
     static bool IsMarketing(string text) =>
-        Names(text, RiskWarnings) || Count(text, AccountInvitations) >= InvitationsThatMarkAPage;
+        Names(text, RiskWarnings) || (Names(text, LeveragedProducts) && Invitations(text) >= 1);
 
-    public const int InvitationsThatMarkAPage = 2;
+    // The products a page of this kind sells, which is the half an article about
+    // saving does not carry. Both spellings of the first, because the plural is
+    // not a superstring of the singular and one of the pages measured uses it.
+    static readonly string[] LeveragedProducts =
+    [
+        "contract for difference",
+        "contracts for difference",
+        "cfd",
+        "spread bet",
+        "leverage of up to",
+        "margin trading",
+    ];
 
     static readonly string[] RiskWarnings =
     [
@@ -182,18 +213,19 @@ public static class Admissibility
         "spread bets and cfds",
     ];
 
-    static readonly string[] AccountInvitations =
+    // One row per kind of invitation, each row the ways that kind is written. A
+    // page asking twice in one way asked once.
+    public static readonly string[][] AccountInvitations =
     [
-        "open an account",
-        "open your account",
-        "create account",
-        "create an account",
-        "sign up",
-        "signing up",
-        "start trading",
-        "demo account",
-        "fund your account",
+        ["open an account", "open your account", "create account", "create an account", "opening an account"],
+        ["sign up", "signing up", "signup"],
+        ["start trading", "trade with us", "trade now"],
+        ["demo account", "practice account"],
+        ["fund your account", "fund it by card", "make a deposit"],
     ];
+
+    public static int Invitations(string text) =>
+        AccountInvitations.Count(kind => Names(text, kind));
 
     // A summary a system wrote and said so.
     //
@@ -363,9 +395,6 @@ public static class Admissibility
 
     static bool Names(string text, IReadOnlyList<string> markers) =>
         markers.Any(marker => text.Contains(marker, StringComparison.OrdinalIgnoreCase));
-
-    static int Count(string text, IReadOnlyList<string> markers) =>
-        markers.Count(marker => text.Contains(marker, StringComparison.OrdinalIgnoreCase));
 
     public static string Host(string url) =>
         Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.Host : string.Empty;

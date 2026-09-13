@@ -585,6 +585,64 @@ public class ClaimAdmissibility
     }
 
     [Fact]
+    public void InvitationLanguageAloneRefusesNothingAndThePairingIsWhatDoes()
+    {
+        // The two defects the live run at 6.3 found, kept as the cases that would
+        // have caught them. Over 411 real articles from one dated request the rule
+        // as first written refused three pieces of ordinary consumer-finance
+        // reporting, and it took two repairs rather than one.
+        //
+        // The first: one invitation written twice counted as two. A piece on what
+        // retirees put off says "sign up" and "signing up" about a benefit, which
+        // is one way of being asked, so the count is over kinds.
+        Assert.Equal(1, Admissibility.Invitations("You can sign up at 65, and signing up late costs you."));
+        Assert.Equal(2, Admissibility.Invitations("Create account in minutes. A demo account is available."));
+
+        // The second, and the one that survived the first repair: two genuinely
+        // different invitations inside an article whose subject is accounts. This
+        // is the article the live run refused after the counting was fixed, and it
+        // has to be admitted, which is what says invitation language separates an
+        // article about accounts from a page selling one not at all.
+        var article = Prose(
+            "Five ways savers lose a retirement pot",
+            "https://a.test/news/boomers-nest-egg/",
+            extra: " Opening an account late costs more than most people think. You can sign up in a morning.");
+
+        Assert.Equal(2, Admissibility.Invitations(article.Text!));
+        Assert.Equal(Admissibility.Accepted, Admissibility.Judge(article, From, To));
+
+        // The pairing is what refuses: the product beside an invitation. Measured
+        // on the same 411 before anything rested on it, where the five articles
+        // carrying a leveraged-product term carry no invitation between them.
+        Assert.Equal(
+            Admissibility.MarketingPage,
+            Admissibility.Judge(
+                Prose("Trade shares with us", "https://a.test/markets/shares/",
+                    extra: " Trade Apple as a contract for difference. Create account in minutes."),
+                From,
+                To));
+
+        // Each half alone admits, which is what makes the line above about the
+        // pairing. An article naming the product is reporting, and an article
+        // asking you to sign up for something is reporting.
+        Assert.Equal(
+            Admissibility.Accepted,
+            Admissibility.Judge(
+                Prose("The regulator looks at leveraged products", "https://a.test/news/regulator/",
+                    extra: " A contract for difference is what the consultation covers."),
+                From,
+                To));
+
+        // And the kinds are a partition rather than a list: every phrase sits in
+        // exactly one kind, so a phrase added to two of them would make one page
+        // count as two invitations again by another route.
+        var phrases = Admissibility.AccountInvitations.SelectMany(kind => kind).ToArray();
+
+        Assert.Equal(phrases.Length, phrases.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.True(Admissibility.AccountInvitations.Length >= 4);
+    }
+
+    [Fact]
     public void ASubjectIsNotADisclosureAndAShortArticleIsNotAQuotePage()
     {
         // Two near misses, each one a rule that would have been keyed on a word.
@@ -726,9 +784,11 @@ public class ClaimAdmissibility
             StringComparison.Ordinal);
 
         Assert.Contains(
-            $"{Admissibility.InvitationsThatMarkAPage} invitations to open an account",
+            "or a leveraged-product term beside an invitation to open one",
             value,
             StringComparison.Ordinal);
+
+        Assert.Contains("Invitation language alone is not a marker", value, StringComparison.Ordinal);
 
         // And the order, which the row states because a document failing two
         // gates is refused by one of them and the reader of a row needs to know
