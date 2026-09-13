@@ -8667,3 +8667,213 @@ Carried:    one obligation, due at 6.8, which makes the first paid pass and whos
             checkpoint holds the key under the provider's path, which nothing reads now: RUNBOOK names
             the path the settings read, and this machine's file carries both. This session has committed
             code and may not sign it off.
+
+### 6.8 - the research runner, the documents each section is handed, and the name page a pass writes to   2026-09-13
+Built:      one name's research pass, as a worker verb the name page's control starts. One name's news
+            for the stored year, paged, from the provider's news endpoint queried by ticker, behind an
+            interface of its own with a recorded double that refuses a name it holds no capture for;
+            the company's own results release read out of the filings archive as a document, with the
+            address it was read at, the file it was filed as and its filing date. A probe of the
+            research model's model list, which bills nothing. The rule that picks what each section is
+            handed, being at most two documents inside each stored move for the cause of that move,
+            the company's own release for what it sells and its segments, and the release with at
+            most six documents published since it for the sections built across the evidence, each
+            ranked on how few companies it names. A dated calendar item's date held to a document the
+            sentence cites and to the night. The research runner: it takes a lock per name beside the
+            store, asks the staleness judge which sections stand and writes the rest section by
+            section, asks the research model whether it answers before fetching where the paid lane
+            has work, fetches and tests every document for admissibility as it arrives and stores it
+            with its verdict, has the prose writer write the local lane and the spend cap make every
+            paid call, moves a section the machine cannot hold to the paid lane in the same pass, and
+            runs up to three rounds of writing and checking, a section refused once written again and
+            the short version last from the sections accepted, each round's rows named for it under
+            one run. Its own row on the run log says what the pass warranted, wrote and did not write
+            and why. A billed answer that cannot be stored priced on its row. The verb fetches the
+            name's fundamentals first and assembles the night's facts file again where that stored a
+            filing the night had not seen. A plain open on the day a pass for the name ran to the end
+            starts nothing.
+            The name page: every accepted section drawn where section 4 puts it, with its date and
+            model beneath and the documents its markers resolve to; dates and sources, being the
+            calendar from the newest session, the dated items as written, and every document the
+            written sections cite with its date and link; and in the research region what the newest
+            pass came to, and the controls each state offers, a plain pass where research is missing,
+            a rewrite where it is stale, and the paid model for the local lane's sections where the
+            local model could not write them, with the priced passes stated before them and none
+            while research is paused. The control posts to the read surface, which refuses a request
+            without the page's own header or for a name the index does not hold, starts the worker's
+            verb as a process of its own from its checkout with the data root it reads, and returns;
+            it writes nothing. Tonight's header counts reports carrying fresh prose against reused.
+            24 recorded model answers and one name's news, the research record expectation, and the
+            lane comparison. Four commits: the research runner, the name page's research, the
+            properties the sweep found unasserted, and this record.
+Settled:    eight decisions. A research pass hands each section the documents code picks for it, the
+            company's own filing first. A research pass does not start where the research model does
+            not answer. A dated calendar item's date rests on a document the sentence cites and falls
+            after the night the facts were computed for. The fixture comparison moved the cause of each
+            large move into the paid lane on this machine. A name's facts file is assembled again for
+            its night when an open fetches its fundamentals. The name page's control starts the
+            worker's research verb, and the read API writes nothing it starts. A name opened again on
+            the day its research pass ran starts no second pass unless the page asks for one. A pass
+            is started only by a request carrying the name page's own header.
+Measured:   one name's news for the stored year, fetched live at 17:16 UTC: one page of 3,785,800
+            bytes, 656 articles carrying 3,353,269 characters of text, 338 titled for the company and
+            207 attributed to no company but Keysight, the widest attributed to 50. It is recorded here
+            rather than committed, because a year of licensed articles is not this repository's to
+            hold, and the capture is the thirteen the rule hands a section or ranks just below. Over
+            KEYS's eight moves at most two a move picks six documents, five of the moves overlapping;
+            from its release on 2026-08-18 to the night 56 articles were published, and the six naming
+            the fewest companies name Keysight alone.
+            The lane comparison, over one evidence set of thirteen articles and the release: with every
+            section on the paid model, all eight it could write accepted, over 11 calls for
+            $0.025778823; with every section on the local model, three accepted, what the company
+            sells, the segment commentary and the key under each figure, over 14 calls, and the cause
+            of each large move, the dated calendar items, the two cases, the risks and the short
+            version left out. The local model wrote figures from the articles the facts file does not
+            hold for the cause, and wrote them again when told why. A pass in the default lanes wrote
+            all eight: four local calls and five paid, $0.020124825, in about two and a half minutes
+            live.
+            Over the first passes the paid model's answer budget of 8,192 tokens ran out four times,
+            the two cases and the short version among them, each call billed and nothing stored; at
+            32,768 none did, and the longest used 12,741. Three refusals the provider billed came to
+            $0.0136 the ledger did not hold until a billed refusal carried its price.
+Found:      a name's first open read a facts file written before its quarter was stored: over KEYS
+            the file held 55 facts and no revenue, margin or segment figure, and every section quoting
+            the quarter was refused for it, so the verb assembles the night's file again after a fetch
+            that stored a filing. The answer budget of 8,192 tokens was spent reasoning on four calls,
+            each billed and nothing stored, and it is 32,768. A billed refusal was written as costing
+            nothing, so the ledger held $0.0136 less than the provider charged, and SCHEMA said a
+            refused call spends nothing; a billed one carries its price. A section written again inside
+            one pass wrote a second row under a stage the run log's key already held, so a round's rows
+            carry the round in their stage. The research runner's catalogue row named neither the
+            research store it reads nor, from the second commit, the run log. One recording 6.6 had
+            committed under a key a 6.8 request produced carried a different body, so the capture was
+            taken again with 6.6's recordings seeded, and a request two checkpoints ask reads one body.
+            A pass the default lane runs wrote the cause of each large move on the local model, where
+            the comparison found it left out every time, and the default lane is three sections.
+            Three things the second commit found. The rule deciding a pass section by section makes a
+            second open free only where every warranted section got a row, and a section a pass had
+            nothing to write from gets none, so a second open of such a name fetched its year of news
+            and its release again for nothing; a plain open on the day a pass ran to the end starts
+            nothing. The name screen's Reads line named neither the calendar nor the run log it has
+            read since 6.6. And the first commit's suite figure was taken before its captures were
+            tracked: `banned-prose` counts the captures a manifest names among the tracked files, and
+            the twenty-five this checkpoint captured took the count from 34 to 59 against a ceiling of
+            40 the moment they were, so the tree as first committed held a red test the run that
+            recorded 813 could not see. The ceiling is 65 with the count stated.
+            And this record turned a test red on the run that verifies it: the record reader's negative
+            direction named 6.8 as a checkpoint far enough out that it would not have to be edited as
+            the build advanced, which is the fault the same assertion carried when it named 1.3, and it
+            reads the plan's last checkpoint now rather than naming one.
+Tested:     15 under `fixture-expectations` on the runner and the rule: the research record byte for
+            byte from the recordings, against the expectation derived from section 12's rules and the
+            lane configuration; opening a name twice, read off the run log; a name whose pass found
+            nothing to write from not fetched for again that day, while the paid model's option and a
+            later day still start one; the sections a pass warrants over one constructed version in
+            every state the rule reads, a rewrite the same day included, and an unanswered pass not
+            closing the day; the research model not answering, stopping a pass before it fetches, and
+            a pass with every section local not asking it; a second press refused while a first pass
+            is held inside a call; a pass at a cap naming every paid section with the cap's line; the
+            local model unavailable, the paid lane written; a section the machine cannot hold written
+            by the paid lane in the same pass; a section handed only refused documents left to the
+            checker without a call; the lane boundary both ways over one evidence set; the documents
+            each section is handed over constructed documents, with the invariant that every document
+            handed the cause is inside a move; the counts the specs state for them; a calendar item's
+            date held to its cited document and to the night, the night itself included; and a billed
+            answer priced on its row. 16 under `read-surface`: the stages, outcomes and reasons the
+            page reads against the worker's own; every section figure 12.2 names placed once; the short
+            version at the top with its date and model; the sections in section 4's order; dates and
+            sources against queries of the test's own; the control and its cost where research is
+            missing, the most one pass cost told from the most one call cost and a billed refusal
+            priced; stale and paused names under their own dates with what each offers; the cloud model
+            not answering, both ways; the paid model offered for a section the machine cannot hold and
+            for an unavailable local model; a pass the cap stopped short of a reached cap stated in the
+            cap's words; a press that did nothing leaving the pass that did on the page; the control's
+            route, refusing a request without the page's header or for a name outside the index and
+            writing nothing; the starter's command against RUNBOOK's, as a list, with the data root;
+            and tonight's fresh prose against reused. 6 on the providers: one name's news paged over its
+            window, read the same live and replayed, refused by name where no capture is held, and
+            carrying no key or address in a failure; the release handed over as a document; and the
+            research model's probe on the live feed. 839 tests, from 802 at 6.7.
+Mutated:    the rule, stated before the sweep: mutate every property this checkpoint added whose failure
+            would let a pass spend, fetch or write where it should not, hand a section other documents
+            than the rule picks, keep a calendar date the rule should refuse, or make the name page, its
+            control or tonight's header state or start something other than what the store holds and the
+            press asked for. Forty-seven qualify and all forty-seven were mutated, in a detached
+            worktree under the session scratchpad outside this repository, over an unmutated baseline of
+            836 passing, each reverted before the next, and the worktree removed.
+            Thirty-five went red on the first run. The runner: a pass with paid work fetching without
+            asking whether the research model answers, 3 tests red; a pass with every section local
+            stopped by it, 1; a plain open on the day a pass ran starting a second one, 1; the paid
+            model's option refused on that day, 1; a section left out today written again, 1; a section
+            waiting on the checker written again, 1; an accepted section gone stale not written, 2; the
+            industry cycle counted as work with no theme record, 5; a section the machine cannot hold
+            not left for the paid path, 1; a pass the cap stopped still asking, 2; a section refused
+            once not written again, 8; the short version written from none of the sections accepted, 14.
+            What a call costs: a billed answer that cannot be stored costing nothing, 1; an answer cut
+            at its budget kept, 2. The documents a section is handed: three a move, 19; the latest in a
+            move rather than the earliest, 17; the company's own filing left out, 18; refused documents
+            handed beside admitted ones, 1; documents from before the filing handed across the evidence,
+            18; the documents naming the most companies first, 18. A calendar date no cited document
+            states kept, 3. One name's news: the next page asked for at the same offset, 1; articles
+            before the window handed on, 1. The name page: a section drawn under a date the store does
+            not hold, 6; section 4's order broken inside what the company sells, 1; the documents the
+            cause cites left out of the sources, 1; a control offered while research is paused, 1; a
+            plain control offered on the day a pass ran, 1; no paid option for a section the machine
+            cannot hold, 1; a pass the cap stopped short of a reached cap not stated, 1. The control: a
+            press without the page's header starting a pass, 1; a press for a name the index does not
+            hold starting one, 1; the two options swapped, 1; the paid model's option not handed to the
+            worker, 1; the worker handed no data root, so it writes whichever store its own directory
+            resolves, 1. That mutation's first form did not build, the data root going unread, which
+            warnings as errors refuse, so no test ran, and it was restated to read the data root and
+            hand the worker none; the first form is not counted among the forty-seven.
+            Twelve survived. Eleven went red once a test named them, run again at the commit that added
+            the tests over an unmutated baseline of 839 passing, and one is equivalent under an
+            invariant that is now asserted. One tautology: a second press was refused against a lock the
+            test took itself, which a runner sharing its lock could not open either, so the test now
+            holds a first pass inside a model call and presses again, 1 red. Ten missing properties: a
+            pass that did not run to the end closing the day, where every same-day open the tests made
+            followed a pass that did, 1; a section accepted today written again where it is stale, which
+            only a rewrite asked for on the day of a pass reaches, 1; a section handed only refused
+            documents paid for rather than left to the checker, 1; a billed refusal left out of the
+            passes priced, 1; a research model refusing its model list read as answering, where the
+            probe was run only against the recorded double, 1; a date on the night itself kept, where
+            the sentences tried were before the night and after it, 1; the most one pass cost read as
+            the most one call cost, where the dearest pass was a single call, 1; a press that did
+            nothing taken as the newest pass, 1; fresh prose counted by section rather than by report,
+            where every name with prose on the night had one section dated it, 1; and a report's prose
+            read as its newest accepted section whenever it was written, where no name had a section
+            accepted before the night and again after it, 1. One unproducible shape: a cause whose
+            admitted documents fall inside no move sent to a model anyway, which the rule handing the
+            cause its documents cannot produce, since it hands the cause only documents inside a move: a
+            cause with one admitted has one inside a move, and a cause with none admitted is left to the
+            checker by the guard after it. The invariant is written down and asserted over the
+            constructed documents, every document handed the cause falling inside a move, and the
+            mutation stays green at the commit that asserts it, being equivalent under it.
+            Properties added and not mutated, named because the next sweep has to find them: the
+            recorded news double refusing a name it holds no capture for, and a news failure carrying no
+            key or address; the release handed over with the address it was read at, its file and its
+            filing date; a probe counted apart from a call; the company's own release handed to what it
+            sells and its segments, at most six documents since it, and the fewest companies first
+            inside a move; every fetched document stored with its verdict as it arrives; the third round
+            the last, and a round's rows carrying the round in their stage; the pass's own row stating
+            what it warranted, wrote and did not write; the facts file assembled again after a fetch
+            that stored a filing; the model beneath a written section, paragraphs split on a blank line,
+            the calendar read from the newest session and the sources newest first; a rewrite offered
+            where research is stale, and the cost line where nothing is priced; the checkout found by
+            walking up to the solution file, a starter with no checkout refusing, and the route writing
+            nothing.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 839 of 839 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 346 claims, 309 PASS, 0 fail, 37 out of scope, 0 unexamined,
+            316 placements and verdicts reconciled against a floor of 34, 34 of 35 roster checks carried
+            and all 34 run. Migrations 0 to 21, this checkpoint adding none. The 37 read twice, by the
+            first checkpoint each note names and by the last, give 21 at phase 6 and 16 at phase 7 both
+            ways: 10 at 6.9, 7 at 6.10 and 4 at 6.11.
+            The claim pair stays at 346 and 330: no claim arrived, and the nineteen owed at 6.8 pass.
+            The operator's store under `data/` was not touched by either gate.
+Carried:    nothing new. Three obligations are discharged here, each marked in the plan with the text
+            it read before: a dated calendar item's date held to something that can carry it, a pass
+            the spend cap refuses short of a reached cap stated on the name page, and the research lane
+            boundary measured against the fixture both ways. The operating row that sets both caps
+            stays open, read at twenty research passes carrying a recorded cost on the run page's
+            operational header. This session has committed code and may not sign it off.

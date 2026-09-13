@@ -465,8 +465,14 @@ public class ArchitectureConformance
         // of it named 1.3, which was true when it was written and false an hour
         // later when 1.3's entry landed: a negative direction keyed on the
         // checkpoint in hand is one that has to be rewritten to stay true, and
-        // one rewritten that often stops being read.
-        Assert.DoesNotContain("6.8", built);
+        // one rewritten that often stops being read. The second named 6.8, which
+        // was far enough out until 6.8's own entry landed, so it is read from the
+        // plan now: its last checkpoint, which no entry records while any work in
+        // it is still to build. The reader refuses a plan of fewer than thirty
+        // checkpoints, so this is not the last of a parse that read nothing.
+        var last = PlanCheckpoints.All()[^1].Id;
+
+        Assert.DoesNotContain(last, built);
         Assert.DoesNotContain("9.9", built);
     }
 
