@@ -899,6 +899,32 @@ internal static class Scope
             Verdict.Pass,
             "every document refused, with the category that refused each, the count per category the run log line states, and the order that decides which of two failed gates the row records",
             ByAdmissibility),
+        // 6.5, the staleness judge. The component, section 17's trigger row, and
+        // figure 12.1's three questions, each over the fixture's own dates.
+        [CheckReach.Key(CatalogueTable, "Staleness judge")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the research store, facts, calendar, news pulse and fundamentals it reads and the run log it writes, and no feed, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Staleness judge")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, which is where the judge's writing nothing but the run log is a claim",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "Research staleness triggers")] = new Scoped(
+            Verdict.Pass,
+            "one test per trigger, each with the case that must not fire beside the case that must, the news window's floor, multiple and baseline read off this row against the constants the rules use, and a spike dated by the session its run began so a story over several days does not fire twice",
+            ByExpectations),
+        [CheckReach.Key("Figure 12.1", "Is there a research record?")] = new Scoped(
+            Verdict.Pass,
+            "a name with no accepted section is answered as missing rather than as stale, with every trigger firing, and a name whose sections only ever fell back is missing too",
+            ByExpectations),
+        [CheckReach.Key("Figure 12.1", "Does it still stand?")] = new Scoped(
+            Verdict.Pass,
+            "the shipped judge over the fixture's own stored filing, earnings date and facts night reaches the verdict the staleness expectation worked out by hand for each of four sections, and each trigger is attributed to the sections it reaches",
+            ByExpectations),
+        [CheckReach.Key("Figure 12.1", "All four no")] = new Scoped(
+            Verdict.Pass,
+            "a record whose sections were all written after every event stands, and the judge's own run log rows record no request, no model call and no spend, over a class that declares no feed and takes no client",
+            ByExpectations),
         // 6.4, the claim checker. The component and its two tables' surfaces, the
         // limits row and the two expected rejections, and figure 12.1's two boxes.
         [CheckReach.Key(CatalogueTable, "Claim checker")] = new Scoped(

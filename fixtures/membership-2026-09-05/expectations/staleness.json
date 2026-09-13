@@ -1,0 +1,29 @@
+{
+  "stage": "staleness",
+  "derivation": "derived",
+  "derivedFrom": "the decision that research goes stale on an event dated after the section was written and that a news spike is dated by the session it began, taken with section 17's research staleness row and the fixture's own stored dates for KEYS: its newest filing on 2026-09-02, its newest passed earnings date on 2026-08-18 filed as after the close, and its facts night on 2026-09-08. Each verdict below was worked from those dates and the rules by hand before the judge was run. The sections are inserted at test time as accepted, each on the as-of date named here, because nothing writes a section before 6.6.",
+  "tables": [],
+  "awaits": {
+    "table": "research_section",
+    "writtenAt": "6.6",
+    "why": "the judge reads sections and writes none, and the replay populates research_section only once a writer runs in it, which is the prose writer at 6.6. Until then the sections this file judges are inserted as accepted by the test. The day the replay writes one, this entry fails until the table moves to the tables list above."
+  },
+  "ticker": "KEYS",
+  "night": "2026-09-08",
+  "newestFiling": "2026-09-02",
+  "newestPassedEarnings": { "date": "2026-08-18", "timing": "after" },
+  "sections": {
+    "written after both": { "asOf": "2026-09-05", "stale": false, "firedBy": [] },
+    "written between the print and the filing": { "asOf": "2026-08-25", "stale": true, "firedBy": ["NewFiling"] },
+    "written before both": { "asOf": "2026-08-10", "stale": true, "firedBy": ["NewFiling", "EarningsPassed"] },
+    "written on the day of an after-close print": { "asOf": "2026-08-18", "stale": true, "firedBy": ["NewFiling", "EarningsPassed"] }
+  },
+  "recordState": "Stale",
+  "withOnlyTheSectionWrittenAfterBoth": "Stands",
+  "withARefresh": "Stale",
+  "aNameWithNoRecord": { "ticker": "MSFT", "state": "Missing" },
+  "pulseOverTheFixture": { "sessions": 1, "baselineWindows": 0, "above": false },
+  "sectionSeventeen": { "windowSessions": 5, "articleFloor": 5, "baselineMultiple": 3, "baselineDays": 90 },
+  "spentByAJudgement": { "requests": 0, "modelCalls": 0 },
+  "note": "the fixture holds one night of news pulse, so the news trigger over the fixture has no baseline and does not fire, which is the rule for a name whose pulse began tonight rather than a pulse nobody counted. The trigger's firing is asserted over a constructed series with a baseline, as the gap stop's hole is, because a year of committed pulse would be a year of captured news."
+}
