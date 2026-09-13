@@ -85,8 +85,15 @@ public partial class ReadSurface
 
         Assert.DoesNotContain("class=\"research-paused\"", await NamePageAt(store, "KEYS", now), StringComparison.Ordinal);
 
+        // Half a cent below the day cap: still none. The page judges where research stands
+        // with no call in hand, so it states a pause from the moment a cap is reached; a
+        // call refused inside its own ceiling of a cap is the cap's row on the run page.
+        Spend(store, "later", "research call: The short version", "2026-09-15T18:30:00Z", "3.995");
+
+        Assert.DoesNotContain("class=\"research-paused\"", await NamePageAt(store, "KEYS", now), StringComparison.Ordinal);
+
         // At the day cap, counted off the store by a query of the test's own.
-        Spend(store, "later", "research call: The short version", "2026-09-15T18:30:00Z", "4.00");
+        Spend(store, "last", "research call: The risks, each with what would confirm it", "2026-09-15T19:00:00Z", "0.005");
 
         Assert.Equal(10.00m, Summed(store, "started_at >= '2026-09-15T00:00:00Z' AND started_at < '2026-09-16T00:00:00Z'"));
 
@@ -150,6 +157,28 @@ public partial class ReadSurface
         Assert.Contains("research spent $0.25 of the $10.00 day cap on 2026-09-08", WebUtility.HtmlDecode(line.Groups[5].Value), StringComparison.Ordinal);
 
         Assert.DoesNotContain("data-spend=\"absent\"", header, StringComparison.Ordinal);
+
+        // The projection bounds the rows itself rather than leaning on the window they were
+        // read over: handed the next day's three dollars as well, it counts neither more on
+        // the night nor more in its month.
+        var handed = TonightScreen.Spend(
+            night,
+            [.. await api.SpentRowsAsync(from, to), new SpentRow(DateTimeOffset.Parse("2026-09-09T00:00:00Z", CultureInfo.InvariantCulture), 3.00m)],
+            SpendCaps.Default);
+
+        Assert.Equal(spent.OnTheDay, handed.OnTheDay);
+        Assert.Equal(spent.MonthToDate, handed.MonthToDate);
+
+        // And a night on the last day of a month reads that month rather than the one its
+        // end opens: August's seven dollars on the 31st, stated in advance and counted off
+        // the store.
+        var lastOfAugust = new DateOnly(2026, 8, 31);
+        var (augustFrom, augustTo) = TonightScreen.SpendWindow(lastOfAugust);
+        var august = TonightScreen.Spend(lastOfAugust, await api.SpentRowsAsync(augustFrom, augustTo), SpendCaps.Default);
+
+        Assert.Equal(Summed(store, "started_at >= '2026-08-01T00:00:00Z' AND started_at < '2026-09-01T00:00:00Z'"), august.MonthToDate);
+        Assert.Equal(7.00m, august.MonthToDate);
+        Assert.Equal(7.00m, august.OnTheDay);
     }
 
     [Fact]

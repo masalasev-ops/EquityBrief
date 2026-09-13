@@ -313,6 +313,18 @@ public class ResearchModelFeedTests
 
         Assert.Contains(ResearchModelSettings.ApiKeyKey, blankKey.Message, StringComparison.Ordinal);
 
+        // A key written into a file and left empty, or holding only spaces, is the likelier
+        // mistake than no key at all, and it is refused the same way.
+        foreach (var blank in new[] { "", "   " })
+        {
+            var written = new ConfigurationBuilder()
+                .AddJsonFile(ShippedConfiguration)
+                .AddInMemoryCollection([new KeyValuePair<string, string?>(ResearchModelSettings.ApiKeyKey, blank)])
+                .Build();
+
+            Assert.Contains(ResearchModelSettings.ApiKeyKey, Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(written)).Message, StringComparison.Ordinal);
+        }
+
         string Refusal(string key, string value) =>
             Assert.Throws<InvalidOperationException>(() => Shipped(null, (key, value))).Message;
 

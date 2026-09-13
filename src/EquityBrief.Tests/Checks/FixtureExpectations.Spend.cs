@@ -94,6 +94,15 @@ public partial class FixtureExpectations
             DateTimeOffset.Parse("2026-12-20T09:00:00Z", CultureInfo.InvariantCulture));
 
         Assert.Equal(DateTimeOffset.Parse("2027-01-01T00:00:00Z", CultureInfo.InvariantCulture), december.ResumesAt);
+
+        // And a month is a month of a year: last September's fifty is not this
+        // September's. Every read that fills a ledger starts at the month's first instant,
+        // so no shipped path hands it a row a year old, and the ledger holds the year
+        // itself rather than leaning on those reads.
+        var yearEarlier = new SpendLedger([Spent("2025-09-10T12:00:00Z", "50.00")]);
+
+        Assert.Equal(0m, yearEarlier.SpentIn(2026, 9));
+        Assert.False(SpendRule.Judge(yearEarlier, SpendCaps.Default, DateTimeOffset.Parse("2026-09-15T20:00:00Z", CultureInfo.InvariantCulture)).Paused);
     }
 
     [Fact]
