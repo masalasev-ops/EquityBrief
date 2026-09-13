@@ -3839,7 +3839,7 @@ public class ReadSurface
     // A store the fetcher filled rather than rows this test wrote, because what is
     // being asserted is that the figures on the page are the figures in the store,
     // and a test that wrote both would be comparing itself with itself.
-    static async Task<TemporaryStore> WithFundamentals()
+    static async Task<TemporaryStore> WithFundamentals(bool withTheArchive = false)
     {
         var store = await WithLadders();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -3847,7 +3847,9 @@ public class ReadSurface
         await new FundamentalsFetcher(
             RecordedFundamentalsFeed.FromFolder(FixtureFolder()),
             clock,
-            store.DatabaseFile).RunAsync(Name, null, "run-fundamentals");
+            store.DatabaseFile,
+            withTheArchive ? new RecordedFilingsArchiveFeed(FixtureFolder()) : null)
+            .RunAsync(Name, null, "run-fundamentals");
 
         return store;
     }
@@ -3944,27 +3946,121 @@ public class ReadSurface
     }
 
     [Fact]
-    public async Task WhatTheProviderDoesNotFileIsMarkedAbsentAndNeverDrawnBlank()
+    public async Task WhatTheArchiveWasNotReadForIsMarkedAbsentWithThatReasonAndNeverDrawnBlank()
     {
         using var store = await WithFundamentals();
 
         var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
 
         // Section 18's row: a filing not parsed for a name shows what the provider
-        // has and marks the segment table absent, because a blank cell reads as a
-        // zero. The endpoint files no segment table and no management guidance for
-        // any name, so both are stated for every one.
+        // has and marks the rest absent, because a blank cell reads as a zero. This
+        // fetch had no archive, so the two parts it supplies are absent and the
+        // reason drawn beside each is that the archive was not read, which is not
+        // the same statement as a provider that files none.
         Assert.Contains("data-absent=\"segments\"", region, StringComparison.Ordinal);
         Assert.Contains("data-absent=\"guidance\"", region, StringComparison.Ordinal);
+        Assert.Contains(
+            FormattableString.Invariant($"data-reason=\"{FundamentalsFetcher.NotRead}\""),
+            region,
+            StringComparison.Ordinal);
 
-        // And the consensus estimate standing where the guided quarter would be is
-        // named for what it is rather than presented as a guide.
+        Assert.DoesNotContain(FundamentalsFetcher.Archive, region, StringComparison.Ordinal);
+
+        // And the consensus estimate is named for what it is rather than presented
+        // as a guide, which it is not: one is what analysts expect and the other is
+        // what management said.
         Assert.Contains("consensus estimate", region, StringComparison.Ordinal);
         Assert.Contains("data-estimated-quarter=", region, StringComparison.Ordinal);
 
         // No empty cell anywhere in the section, which is the property rather than
         // the two absences above: a figure the filing does not carry says so.
         Assert.DoesNotContain("<td></td>", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheSegmentTableIsDrawnFromTheStoreForTheQuarterTheTableStates()
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+
+        var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
+
+        using var payload = JsonDocument.Parse(StoredPayload(store, Name));
+
+        var segments = payload.RootElement.GetProperty("segments");
+
+        // Drawn from the store rather than computed: the report it came from, the
+        // period it covers and every figure are the stored ones.
+        Assert.Contains(
+            FormattableString.Invariant($"data-report=\"{segments.GetProperty("report").GetString()}\""),
+            region,
+            StringComparison.Ordinal);
+
+        Assert.Contains("data-months=\"3\"", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-absent=\"segments\"", region, StringComparison.Ordinal);
+
+        // Every group the table carries, in the order it carries them, because two
+        // groups of one captured table share a member and two labels repeat: a
+        // screen keyed on the label would draw one and drop the other.
+        foreach (var group in segments.GetProperty("groups").EnumerateArray())
+        {
+            Assert.Contains(
+                FormattableString.Invariant($"data-segment=\"{group.GetProperty("label").GetString()}\""),
+                region,
+                StringComparison.Ordinal);
+        }
+
+        // And the quarter's own figures, matched against the store figure by figure
+        // for the period drawn.
+        var newest = segments.GetProperty("periods").EnumerateArray()
+            .Where(period => period.GetProperty("months").GetInt32() == 3)
+            .Max(period => period.GetProperty("ended").GetString())!;
+
+        var drawn = segments.GetProperty("consolidated").EnumerateArray()
+            .Where(figure => figure.GetProperty("months").GetInt32() == 3
+                && figure.GetProperty("ended").GetString() == newest
+                && figure.GetProperty("value").ValueKind == JsonValueKind.String)
+            .ToArray();
+
+        Assert.NotEmpty(drawn);
+        Assert.All(drawn, figure => Assert.Contains(figure.GetProperty("value").GetString()!, region, StringComparison.Ordinal));
+
+        // The nine-month column is not drawn, which is what makes the period a
+        // selection: one end date under two spans is two columns, and showing both
+        // would put three quarters of a year beside one quarter with nothing saying
+        // which was which.
+        Assert.Contains(
+            FormattableString.Invariant($"data-period-end=\"{newest}\""),
+            region,
+            StringComparison.Ordinal);
+
+        Assert.Contains("line(s).", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GuidanceIsDrawnAsManagementsWordsAndTheExhibitItCameFrom()
+    {
+        // The filer whose release states none under any heading, which is the
+        // absence this surface must not draw as a company that guided nothing.
+        // see: Guidance is stored as management's own prose and never parsed into a figure
+        using var store = await WithFundamentals(withTheArchive: true);
+
+        var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
+
+        using var payload = JsonDocument.Parse(StoredPayload(store, Name));
+
+        var guidance = payload.RootElement.GetProperty("guidance");
+
+        Assert.False(guidance.GetProperty("located").GetBoolean());
+        Assert.Contains("data-guidance=\"not located\"", region, StringComparison.Ordinal);
+        Assert.Contains(
+            FormattableString.Invariant($"data-exhibit=\"{guidance.GetProperty("document").GetString()}\""),
+            region,
+            StringComparison.Ordinal);
+
+        // The distinction on the surface a person reads, in words: the exhibit is
+        // stored and no heading located a passage in it.
+        Assert.Contains("is stored and no heading in it locates a guidance passage", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-guidance=\"located\"", region, StringComparison.Ordinal);
     }
 
     [Fact]

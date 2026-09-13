@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - BUILD_PLAN.md - two scope obligations filed, and the momentum panel put to 7.0 to decide
+Corrects: two scope decisions the operator took during 6.1 existed only in the conversation, which is a hole in the record: anything issued in conversation that will later be cited has to land in the repo when it is issued. The momentum panel's own gap is the third and it is not an obligation, because nothing produces evidence for it.
+Was:
+> | **The computed fundamental panel, and whether a fundamental state may fire a reason or gate a tranche** | 6.1 | 7.0 | 7.0 is the planning pass that reads what phase 6 produced before phase 7 builds on it, and what it needs is in hand by then rather than produced by it: 6.1 stores twelve filings a name, and 6.4 onward writes the first researched reports to read a panel against
+>
+> Decides what a computed panel over the twelve stored filings states, and the two questions that rest on it
+Now: the fundamental row states the four readings it decides, being the computed trajectory, the guide record, earnings quality and the valuation position over the twelve stored quarters, each with the range it is placed in and the count of quarters behind it, and the three questions of a panel, a seventh reason on a state transition and a computed tranche precondition. A second row narrows what the volume profile is allowed to claim to a price region at the resolution of a day's range, with a treatment for a session whose range exceeds a multiple of the typical daily move and a count of the sessions that sets aside. 7.0's text cites both back and states that it decides what the momentum panel is for rather than carrying it further.
+Why: the fundamental row's name is kept as 6.1 filed it, because 6.1's own record cites that name and a record is corrected by a new entry rather than edited, so a rename would leave the citation resolving to nothing. That is the precedent the bulk-payload row and the route row both set. The volume profile row is new: a published caution holds that a daily volume profile is not a volume profile, that caution is about a feature scored against a forward return, and narrowing what the claim says is what makes it not apply, so the narrowing belongs in the corpus before anything scores it. The momentum panel is decided rather than carried because the panel has been drawn since 3.5 and the open question is what the corpus intends by it, not what a measurement would show.
+
+### 2026-09-12 - RUNBOOK.md - the archive's contact, which is a setting and not a key
+Authorised by: The archive declares a contact in its user agent, and a blank one refuses at startup
+Was:
+> | Provider | Key | Which projects need it |
+> |---|---|---|
+> | EODHD | `EquityBrief:Providers:Eodhd:ApiKey` | `EquityBrief.Worker` |
+Now: the table carries a second row for `EquityBrief:Providers:SecEdgar:Contact`, and a paragraph beneath says why a contact sits in a table of keys, what to put there and why a dedicated address rather than a personal mailbox.
+Why: the archive needs no key and refuses a request that names no user agent, so the setting is what a request declares about this installation rather than what authorises it. This section exists because a file written by hand needs its names written down, and a setting absent from it is one the first hand-written file will not carry.
+
 ### 2026-09-12 - BUILD_PLAN.md - the probe obligation discharged
 Corrects: nothing was wrong with the row; it is discharged because 6.1 did what it named. An open row whose due point the record shows as landed fails `obligation-reconciles`, which is what caught the moment the 6.1 entry was written and before the verifying run, since the record is what the reconciliation reads.
 Was:
@@ -2245,3 +2263,23 @@ Was:
 Now: the same clause, saying that this is 15.4's own statement of the part 15.7 already names, and that the nine parts carry ten claims.
 
 Why: a claim is a row's part rather than a thing on a screen, and the selection is stated on two rows, so nine parts and ten claims are both right and the paragraph said only the first. A reader counting the list found ten against a stated nine, which is the shape `stated-counts` exists to catch and which that check cannot see here, the two numbers being about different populations. Written down rather than made to agree, because making them agree would mean calling the selection two parts or one claim, and it is neither.
+
+### 2026-09-12 - ARCHITECTURE.html - the fundamentals fetcher's reads, at the checkpoint the cell promised
+Corrects: the catalogue row's Reads cell and its own description, which named the archive as joining at 6.2 and now has to say what joining looked like.
+
+Was:
+> company financials feed, fundamentals | fundamentals | fetches the quarters and the balance sheet when the stored copy predates the name's latest filing, and marks the segment table and the guidance absent, which is what this provider files for nobody. The filings archive joins its reads at 6.2, which is the checkpoint that reaches an archive; the two parts it supplies were named here before either existed (see: Fundamentals are stored with the filing date they came from)
+
+Now: the archive in the Reads cell, and a description saying that the two providers fail apart and what the guidance is stored as.
+
+Why: the cell's own text promised the read at 6.2, and 6.2 has made it. What the promise did not say is what happens when one of two providers answers and the other does not, which is the part a component reading two feeds has to state: the archive's three parts are named as unread on the row and the other eight are stored, because refusing the fetch would lose eight figures to recover two.
+
+### 2026-09-12 - SCHEMA.md - the fundamentals payload, with two providers behind one row
+Corrects: the payload note, which described one provider's parts and said the archive would supply two more from 6.2.
+
+Was:
+> `payload` holds the quarter's figures, the balance sheet, and the margin computed from that filing's own revenue and gross profit, with `source` naming which of the three each part came from. The earnings bases, the valuation on each of them, and the next print's consensus estimate sit on the newest filing's row alone, because a ratio has a price in it and a price moves every session. `segments` and `guidance` are present and null: the company financials endpoint files neither for any name, so the absence is the provider's rather than this name's, and the filings archive supplies both from 6.2.
+
+Now: the same two paragraphs, followed by what the second provider puts on the row, why its parts sit on the newest filing alone, and the three reasons `source` distinguishes.
+
+Why: the note said `source` names which of three each part came from, and from 6.2 there are three reasons a part can be empty rather than three sources: the provider files it for nobody, the archive served none, and the archive was not read. A column that could not tell the third from the first would report a company with no segments after a failed fetch, which is the same class of fault as a blank cell reading as a zero. The `facts` part is new to the note because it is new to the row.

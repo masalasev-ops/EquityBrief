@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FilingSummary>
+  <Version>3.26.1</Version>
+  <ProcessingTime/>
+  <ReportFormat>html</ReportFormat>
+  <ContextCount>424</ContextCount>
+  <ElementCount>379</ElementCount>
+  <EntityCount>1</EntityCount>
+  <FootnotesReported>false</FootnotesReported>
+  <SegmentCount>68</SegmentCount>
+  <ScenarioCount>0</ScenarioCount>
+  <TuplesReported>false</TuplesReported>
+  <UnitCount>7</UnitCount>
+  <MyReports>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R1.htm</HtmlFileName>
+      <LongName>0000001 - Document - Cover Page</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/CoverPage</Role>
+      <ShortName>Cover Page</ShortName>
+      <MenuCategory>Cover</MenuCategory>
+      <Position>1</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R2.htm</HtmlFileName>
+      <LongName>9952151 - Statement - CONDENSED CONSOLIDATED STATEMENT OF OPERATIONS (Unaudited)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/CONDENSEDCONSOLIDATEDSTATEMENTOFOPERATIONSUnaudited</Role>
+      <ShortName>CONDENSED CONSOLIDATED STATEMENT OF OPERATIONS (Unaudited)</ShortName>
+      <MenuCategory>Statements</MenuCategory>
+      <Position>2</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R3.htm</HtmlFileName>
+      <LongName>9952152 - Statement - CONDENSED CONSOLIDATED STATEMENT OF COMPREHENSIVE INCOME (Unaudited)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/CONDENSEDCONSOLIDATEDSTATEMENTOFCOMPREHENSIVEINCOMEUnaudited</Role>
+      <ShortName>CONDENSED CONSOLIDATED STATEMENT OF COMPREHENSIVE INCOME (Unaudited)</ShortName>
+      <MenuCategory>Statements</MenuCategory>
+      <Position>3</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R4.htm</HtmlFileName>
+      <LongName>9952153 - Statement - CONDENSED CONSOLIDATED STATEMENT OF COMPREHENSIVE INCOME (Unaudited) (Parenthetical)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/CONDENSEDCONSOLIDATEDSTATEMENTOFCOMPREHENSIVEINCOMEUnauditedParenthetical</Role>
+      <ShortName>CONDENSED CONSOLIDATED STATEMENT OF COMPREHENSIVE INCOME (Unaudited) (Parenthetical)</ShortName>
+      <MenuCategory>Statements</MenuCategory>
+      <Position>4</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R5.htm</HtmlFileName>
+      <LongName>9952154 - Statement - CONDENSED CONSOLIDATED BALANCE SHEET (Unaudited)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/CONDENSEDCONSOLIDATEDBALANCESHEETUnaudited</Role>
+      <ShortName>CONDENSED CONSOLIDATED BALANCE SHEET (Unaudited)</ShortName>
+      <MenuCategory>Statements</MenuCategory>
+      <Position>5</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R23.htm</HtmlFileName>
+      <LongName>9952172 - Disclosure - SEGMENT INFORMATION</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/SEGMENTINFORMATION</Role>
+      <ShortName>SEGMENT INFORMATION</ShortName>
+      <MenuCategory>Notes</MenuCategory>
+      <Position>23</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R38.htm</HtmlFileName>
+      <LongName>9955524 - Disclosure - SEGMENT INFORMATION (Tables)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/SEGMENTINFORMATIONTables</Role>
+      <ShortName>SEGMENT INFORMATION (Tables)</ShortName>
+      <MenuCategory>Tables</MenuCategory>
+      <ParentRole>http://www.keysight.com/role/SEGMENTINFORMATION</ParentRole>
+      <Position>38</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R85.htm</HtmlFileName>
+      <LongName>9955574 - Disclosure - SEGMENT INFORMATION Profitability (Details)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/SEGMENTINFORMATIONProfitabilityDetails</Role>
+      <ShortName>SEGMENT INFORMATION Profitability (Details)</ShortName>
+      <MenuCategory>Details</MenuCategory>
+      <Position>85</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R86.htm</HtmlFileName>
+      <LongName>9955575 - Disclosure - SEGMENT INFORMATION Reconciliation of Reportable Results (Details)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/SEGMENTINFORMATIONReconciliationofReportableResultsDetails</Role>
+      <ShortName>SEGMENT INFORMATION Reconciliation of Reportable Results (Details)</ShortName>
+      <MenuCategory>Details</MenuCategory>
+      <Position>86</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R87.htm</HtmlFileName>
+      <LongName>9955576 - Disclosure - SEGMENT INFORMATION ASSETS (Details)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/SEGMENTINFORMATIONASSETSDetails</Role>
+      <ShortName>SEGMENT INFORMATION ASSETS (Details)</ShortName>
+      <MenuCategory>Details</MenuCategory>
+      <Position>87</Position>
+    </Report>
+    <Report instance="keys-20260731.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R88.htm</HtmlFileName>
+      <LongName>9955577 - Disclosure - SEGMENT INFORMATION ASSETS RECON (Details)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.keysight.com/role/SEGMENTINFORMATIONASSETSRECONDetails</Role>
+      <ShortName>SEGMENT INFORMATION ASSETS RECON (Details)</ShortName>
+      <MenuCategory>Details</MenuCategory>
+      <Position>88</Position>
+    </Report>
+    </MyReports>
+  <InputFiles>
+    <File doctype="10-Q" isDefinitelyFs="true" isUsgaap="true" original="keys-20260731.htm">keys-20260731.htm</File>
+    <File>keys-20260731.xsd</File>
+    <File>keys-20260731_cal.xml</File>
+    <File>keys-20260731_def.xml</File>
+    <File>keys-20260731_lab.xml</File>
+    <File>keys-20260731_pre.xml</File>
+  </InputFiles>
+  <SupplementalFiles/>
+  <BaseTaxonomies>
+    <BaseTaxonomy items="2">http://fasb.org/srt/2026</BaseTaxonomy>
+    <BaseTaxonomy items="1476">http://fasb.org/us-gaap/2026</BaseTaxonomy>
+    <BaseTaxonomy items="29">http://xbrl.sec.gov/dei/2026</BaseTaxonomy>
+    <BaseTaxonomy items="4">http://xbrl.sec.gov/ecd/2026</BaseTaxonomy>
+  </BaseTaxonomies>
+  <HasPresentationLinkbase>true</HasPresentationLinkbase>
+  <HasCalculationLinkbase>true</HasCalculationLinkbase>
+</FilingSummary>

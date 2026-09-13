@@ -93,7 +93,8 @@ static async Task<int> FundamentalsFetch(string[] args)
                 : configuration[FeedSource.SourceKey],
             Argument(args, "--fixture") ?? configuration[FeedSource.FixtureKey],
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
-            configuration[ProviderCredentials.ApiKeyName]);
+            configuration[ProviderCredentials.ApiKeyName],
+            configuration[ArchiveAgent.ContactName]);
     }
     catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
     {
@@ -107,15 +108,19 @@ static async Task<int> FundamentalsFetch(string[] args)
 
     var clock = SystemClock.ForUnitedStatesSessions();
 
-    var outcome = await new FundamentalsFetcher(feeds.Fundamentals, clock, store.DatabaseFile)
+    var outcome = await new FundamentalsFetcher(feeds.Fundamentals, clock, store.DatabaseFile, feeds.Archive)
         .RunAsync(
             ticker,
             filed,
             FormattableString.Invariant($"fundamentals-{clock.UtcNow:yyyyMMddTHHmmssZ}-{ticker}"));
 
+    // The weighted figure is one provider's. The archive is free, so what it cost
+    // is stated as the documents it fetched rather than folded into an allowance it
+    // does not draw on.
     Console.WriteLine(
         FundamentalsFetcher.Detail(outcome)
-        + FormattableString.Invariant($", {feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}"));
+        + FormattableString.Invariant($", {feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}")
+        + ", and the archive is free");
 
     return 0;
 }

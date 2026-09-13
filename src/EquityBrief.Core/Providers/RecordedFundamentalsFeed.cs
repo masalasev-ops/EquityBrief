@@ -146,6 +146,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
         return new CompanyFundamentals(
             Text(general, "Code") ?? ticker,
             Text(general, "CurrencyCode") ?? string.Empty,
+            Text(general, "CIK") ?? string.Empty,
             [.. filed.OrderByDescending(quarter => quarter.PeriodEnd)],
             Estimated(history),
             Bases(root),

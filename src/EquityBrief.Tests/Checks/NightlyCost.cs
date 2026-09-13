@@ -86,7 +86,27 @@ public class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
+        "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
     ];
+
+    // What makes a shipped file a provider implementation, which is what the list
+    // above has to hold exactly.
+    //
+    // Read as a shape rather than as a prefix. It was a prefix until 6.2: the seven
+    // files were all named for one provider, so the reverse direction asserted that
+    // the list equalled the files matching `/Providers/Eodhd`, and the first
+    // provider with another name would have failed a check that had nothing wrong
+    // with it. A feed file that is neither an interface nor a recorded double is an
+    // implementation whatever the provider is called.
+    internal static bool IsAProviderImplementation(string file)
+    {
+        var name = file[(file.LastIndexOf('/') + 1)..];
+
+        return file.Contains("/Providers/", StringComparison.Ordinal)
+            && name.EndsWith("Feed.cs", StringComparison.Ordinal)
+            && !name.StartsWith("Recorded", StringComparison.Ordinal)
+            && !(name.Length > 1 && name[0] == 'I' && char.IsAsciiLetterUpper(name[1]));
+    }
 
     // Which of the scanned files carries something it is not permitted to.
     //
@@ -202,26 +222,62 @@ public class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         Assert.True(
-            MayHoldAClient.Length <= 7,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are seven feeds. " +
-            "An eighth is a file that is not a feed, or a feed nobody declared.");
+            MayHoldAClient.Length <= 8,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are eight feed " +
+            "implementations. A ninth is a file that is not one, or a feed nobody declared.");
 
-        // And the list holds exactly the feed implementations, in both
-        // directions, so a file added to it that is not a feed fails rather than
+        // And the list holds exactly the provider implementations, in both
+        // directions, so a file added to it that is not one fails rather than
         // passing quietly. It was six against five before 4.3 added the calendar,
-        // and seven against six before 6.1 added the fundamentals endpoint, which
-        // is the first of the seven that no night calls.
+        // seven against six before 6.1 added the fundamentals endpoint, which is
+        // the first that no night calls, and eight before 6.2 added the filings
+        // archive, which is the first from another provider.
         var live = Repository.SourceFiles()
             .Select(file => file[Repository.Root.Length..].Replace(Path.DirectorySeparatorChar, '/').TrimStart('/'))
-            .Where(file => file.Contains("/Providers/Eodhd", StringComparison.Ordinal))
+            .Where(IsAProviderImplementation)
             .OrderBy(file => file, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(
-            live.Where(file => file.EndsWith("Feed.cs", StringComparison.Ordinal)),
-            MayHoldAClient.OrderBy(file => file, StringComparer.Ordinal));
+        Assert.Equal(live, MayHoldAClient.OrderBy(file => file, StringComparer.Ordinal));
 
         Assert.Empty(Offences(sources, MayHoldAClient));
+    }
+
+    [Fact]
+    public void AProviderImplementationIsAFeedFileThatIsNeitherAnInterfaceNorADouble()
+    {
+        // The permanent proof for the reader the reverse direction uses, in both
+        // directions and over names rather than over the tree. It replaced a prefix
+        // at 6.2, and a prefix over one provider's name is a reader that would have
+        // failed on the first provider called something else with nothing wrong in
+        // the check.
+        Assert.All(
+            new[]
+            {
+                "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
+                "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
+            },
+            file => Assert.True(IsAProviderImplementation(file), file));
+
+        Assert.All(
+            new[]
+            {
+                // An interface, which declares a feed and holds nothing.
+                "src/EquityBrief.Core/Providers/IFundamentalsFeed.cs",
+                // A recorded double, which answers from a capture.
+                "src/EquityBrief.Core/Providers/RecordedFilingsArchiveFeed.cs",
+                // A file in the folder that is not a feed at all.
+                "src/EquityBrief.Core/Providers/ProviderCredentials.cs",
+                // A feed-shaped name outside the folder, so the folder is doing
+                // work and the suffix is not carrying the whole test.
+                "src/EquityBrief.Worker/Bars/BackfillFeed.cs",
+            },
+            file => Assert.False(IsAProviderImplementation(file), file));
+
+        // And a name beginning with a capital I that is not an interface is an
+        // implementation, which is the case the interface test could swallow:
+        // `IndexMembership` starts with the same letter.
+        Assert.True(IsAProviderImplementation("src/EquityBrief.Core/Providers/IndexArchiveFeed.cs"));
     }
 
     [Fact]

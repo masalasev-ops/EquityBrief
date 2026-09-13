@@ -97,6 +97,118 @@
       "query": "fundamentals/NFLX.US?fmt=json",
       "fetchedAt": "2026-09-12T21:39:22Z",
       "trimmedTo": "the same cut as fundamentals-AAPL.json. Its fiscal year ends in December, which with AAPL's September, MSFT's June and KEYS's October gives four fiscal calendars over four names."
+    },
+    {
+      "file": "filings-AAPL.json",
+      "endpoint": "submissions/CIK0000320193.json",
+      "query": "https://data.sec.gov/submissions/CIK0000320193.json",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "the envelope whole and the recent-filings arrays cut to 14 of the 1,000 the index returns. Cut in the shape the index arrives in, which is the thing a parser gets wrong: `filings.recent` is not an array of filings but a set of parallel arrays, one per field, so every array here holds the same 14 positions and a reader taking it for a list of objects finds none. The 14 are every filing the four document kinds are reached through, being the recent 10-Q and 10-K and the two 8-K filings whose `items` carry 2.02, plus six of the forms the filter has to reject, so the population is not only what is wanted. The `filings.files` pointer to older filings is kept as sent and the files it names are not captured, because a fixture holding those would be capturing the whole filing history."
+    },
+    {
+      "file": "filings-KEYS.json",
+      "endpoint": "submissions/CIK0001601046.json",
+      "query": "https://data.sec.gov/submissions/CIK0001601046.json",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "the envelope whole and the recent-filings arrays cut to 14 of the 1,000 the index returns. Cut in the shape the index arrives in, which is the thing a parser gets wrong: `filings.recent` is not an array of filings but a set of parallel arrays, one per field, so every array here holds the same 14 positions and a reader taking it for a list of objects finds none. The 14 are every filing the four document kinds are reached through, being the recent 10-Q and 10-K and the two 8-K filings whose `items` carry 2.02, plus six of the forms the filter has to reject, so the population is not only what is wanted. The `filings.files` pointer to older filings is kept as sent and the files it names are not captured, because a fixture holding those would be capturing the whole filing history. This name is captured beside the first because its release carries guidance and the first's does not, and because its fiscal quarter ends on a calendar month end where the first's does not."
+    },
+    {
+      "file": "filing-index-AAPL-10q.json",
+      "endpoint": "Archives/edgar/data/320193/000032019326000020/index.json",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/index.json",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "nothing. The whole directory listing for the 10-Q, which is here for what it does not carry: its `type` field is a display icon, `text.gif`, and says nothing about which document is which exhibit. A parser reading a document kind out of this file would read the name of an image."
+    },
+    {
+      "file": "filing-types-AAPL-8k.htm",
+      "endpoint": "Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "nothing. The filing's own index page, which is where a document kind can be read: it carries a Type column in which the earnings release appears as EX-99.1, where the directory listing beside it carries only an icon name. Two tables rather than one, the document formats and the data files, and rows with empty cells in both, which is the shape a reader has to survive."
+    },
+    {
+      "file": "report-list-AAPL-10q.xml",
+      "endpoint": "Archives/edgar/data/320193/000032019326000020/FilingSummary.xml",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/FilingSummary.xml",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "9 of the filing's 47 reports, being the four whose names mention segments and five others so the choice is made against a population. Four is the point: a reader taking the first report whose name matches takes the narrative note, and the figures are in the fourth, 'Segment Information - Information by Reportable Segment (Details)'. Every element, attribute and nesting is the archive's."
+    },
+    {
+      "file": "segment-report-AAPL-R46.htm",
+      "endpoint": "Archives/edgar/data/320193/000032019326000020/R46.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/R46.htm",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "nothing. The segment table itself, whole, and the reason it is whole is that every trap in it is a property of the markup. It is served inside the archive's own SGML document envelope, which the request for a bare file name does not remove, so a reader that took the response for HTML would parse a `<TYPE>` and a `<FILENAME>` line before the page. The figures are in millions and the scale is stated once, in the table's own title cell, so a reader taking them at face value is out by a factor of a million. Negatives are parenthesised rather than signed, thousands are separated, empty cells are non-breaking spaces, the dates read 'Jun. 27, 2026' rather than as dates, and there are four value columns, being three months and nine months against this year and last, each column belonging to the period header above it by that header's own column span. Line-item labels repeat under a second grouping, so a reader keyed on the label alone takes whichever section came last. Named for the report it is rather than for the filing, because the route asks the archive for a report by name and two of this filing's reports are captured."
+    },
+    {
+      "file": "release-AAPL.htm",
+      "endpoint": "Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "nothing. The earnings release exhibit whole, and it is the absence case: this company files no guidance at all. The words guidance, outlook and expects appear zero times in its text, so a reader that found guidance here would have invented it."
+    },
+    {
+      "file": "release-KEYS.htm",
+      "endpoint": "Archives/edgar/data/1601046/000160104626000029/exhibit991-q326pressrelease.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000029/exhibit991-q326pressrelease.htm",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "nothing. The earnings release exhibit whole, and it is the presence case. Guidance is prose under a heading reading Outlook, stated as a range rather than as a figure, and in no structured field anywhere in the filing, which is why the corpus says the guidance is read from this exhibit rather than from data the archive does not carry. The word guidance appears once in the whole document and it is inside the forward-looking-statements boilerplate, so a reader keyed on that word extracts the legal disclaimer instead of the figures."
+    },
+    {
+      "file": "company-facts-AAPL.json",
+      "endpoint": "api/xbrl/companyfacts/CIK0000320193.json",
+      "query": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json",
+      "fetchedAt": "2026-09-13T00:11:11Z",
+      "trimmedTo": "5 of the 503 us-gaap concepts and the last 8 facts of each, with both dei concepts whole, from a payload of 3.8 megabytes. Every key and every nesting level is the archive's. The five concepts are the same five in the other filer's capture, because the contrast between the two is the thing worth keeping: a filer files revenue under several concepts at once and does not keep them all current. Over the whole of both payloads, this archive carries Apple's `Revenues` to 2018-09-29 in 11 facts and its `RevenueFromContractWithCustomerExcludingAssessedTax` to 2026-06-27 in 117, while Keysight's `Revenues` runs to 2026-07-31 in 118 facts and its `RevenueFromContractWithCustomerExcludingAssessedTax` holds 14 beginning 2024-07-31; both retired `SalesRevenueNet` in 2018. So a reader keyed on one concept name reads an eight-year-old revenue for one filer or two years of history for the other, which is why the facts are stored under the concept each was filed against rather than mapped to a revenue figure here. Three more things this capture is here for: it carries no segment dimension at all, which is why the segment figures come from the filing's own report pages and not from here; its `cik` is an unpadded number where the submissions index sends the same value as a zero-padded string; and each fact carries both `end`, the fiscal period end, and `frame`, the calendar quarter, which is how the two dates this quarter has stop being a contradiction. A period appears twice where a later filing restated it, under two accession numbers, so a reader that does not take the later filing counts one quarter twice."
+    },
+    {
+      "file": "segment-report-AAPL-R45.htm",
+      "endpoint": "Archives/edgar/data/320193/000032019326000020/R45.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/R45.htm",
+      "fetchedAt": "2026-09-13T00:33:54Z",
+      "trimmedTo": "nothing. The whole report page, and it is the candidate the route rejects. The filing's report list names four reports whose short name mentions segments and two of those sit in the Details category, so a route that took the first Details report by name would take this one: it carries one period column, an abstract row and a single boolean, and not one figure by segment. What rejects it is a property of the table rather than of its name, which is why this is captured beside the report the route does accept."
+    },
+    {
+      "file": "segment-report-KEYS-R85.htm",
+      "endpoint": "Archives/edgar/data/1601046/000160104626000036/R85.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000036/R85.htm",
+      "fetchedAt": "2026-09-13T00:33:54Z",
+      "trimmedTo": "nothing. The second filer's segment table, whole, and it is here because a parser written against one filer's markup is a parser written against one filer. Four things it carries that the first does not. Its date header cells carry a unit after the date, reading 'Jul. 31, 2026 USD ($)' and in one column 'USD ($) segment', so a reader parsing the whole cell as a date fails on every column. One of its rows is not money at all: a count of reportable segments, marked by a unit after its label, which a reader applying the table's stated scale would record as two million segments. Its first cell's class is a list rather than a name, so a reader keyed on equality misses the rows carrying an extra class. And four of its groups share one axis and member in the markup while their labels differ, with two labels appearing twice, so neither the label nor the concept is a unique key and the groups are an ordered sequence rather than a set."
+    },
+    {
+      "file": "filing-types-KEYS-8k.htm",
+      "endpoint": "Archives/edgar/data/1601046/000160104626000029/0001601046-26-000029-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000029/0001601046-26-000029-index.htm",
+      "fetchedAt": "2026-09-13T00:33:54Z",
+      "trimmedTo": "nothing. The second filer's own index page, which is the route to the release exhibit whose guidance the first filer's does not carry."
+    },
+    {
+      "file": "report-list-KEYS-10q.xml",
+      "endpoint": "Archives/edgar/data/1601046/000160104626000036/FilingSummary.xml",
+      "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000036/FilingSummary.xml",
+      "fetchedAt": "2026-09-13T00:33:54Z",
+      "trimmedTo": "11 of the filing's 89 reports, being the six whose names mention segments and five others so the choice is made against a population. Six against the first filer's four, and four of the six sit in the Details category where the first filer has two, so the route's fallback order is exercised from both ends: this filer's first Details candidate is the one that carries the figures and the other filer's is not."
+    },
+    {
+      "file": "company-facts-KEYS.json",
+      "endpoint": "api/xbrl/companyfacts/CIK0001601046.json",
+      "query": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001601046.json",
+      "fetchedAt": "2026-09-13T00:33:54Z",
+      "trimmedTo": "5 of the 649 us-gaap concepts and the last 8 facts of each, with both dei concepts whole, from a payload of 3.5 megabytes. Every key and every nesting level is the archive's. The five concepts are the same five in the other filer's capture, because the contrast between the two is the thing worth keeping: a filer files revenue under several concepts at once and does not keep them all current. Over the whole of both payloads, this archive carries Apple's `Revenues` to 2018-09-29 in 11 facts and its `RevenueFromContractWithCustomerExcludingAssessedTax` to 2026-06-27 in 117, while Keysight's `Revenues` runs to 2026-07-31 in 118 facts and its `RevenueFromContractWithCustomerExcludingAssessedTax` holds 14 beginning 2024-07-31; both retired `SalesRevenueNet` in 2018. So a reader keyed on one concept name reads an eight-year-old revenue for one filer or two years of history for the other, which is why the facts are stored under the concept each was filed against rather than mapped to a revenue figure here. Its fiscal quarters end on calendar month ends where the other filer's do not, so the `end` and `frame` pair differs between them on every row."
+    },
+    {
+      "file": "filing-types-HON-8k.htm",
+      "endpoint": "Archives/edgar/data/773840/000077384026000120/0000773840-26-000120-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/773840/000077384026000120/0000773840-26-000120-index.htm",
+      "fetchedAt": "2026-09-13T00:33:54Z",
+      "trimmedTo": "nothing. An index page from a third filer, captured for one cell: its earnings release is typed `EX-99` with no point suffix where the other two type theirs `EX-99.1`. A reader keyed on the longer spelling finds no release for this filer and reports that none was filed, which was true of two of the twelve filers probed at 6.2. Nothing else in this filer is captured, because the page is the whole of what it is here for."
+    },
+    {
+      "file": "filing-types-CAT-8k.htm",
+      "endpoint": "Archives/edgar/data/18230/000001823026000040/0000018230-26-000040-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/18230/000001823026000040/0000018230-26-000040-index.htm",
+      "fetchedAt": "2026-09-13T00:33:54Z",
+      "trimmedTo": "nothing. An index page from a fourth filer, captured because it lists two documents typed `EX-99` rather than one, so the rule that picks the release has a population to pick from. The release is the lower sequence number and the second exhibit is something else, which is the same shape a filed transcript would arrive in and the reason the rule is stated by sequence rather than by taking the only match."
     }
   ]
 }

@@ -283,13 +283,16 @@ public static class NameScreen
     // table is keyed on (see: Fundamentals are stored with the filing date they
     // came from).
     //
-    // Three absences are stated rather than left blank, because a blank cell reads
-    // as a zero. The segment table and the guidance are absent for every name,
-    // since the company financials endpoint files neither and the filings archive
-    // supplies both from 6.2. The guided quarter is absent for the same reason, and
-    // what stands in its place is named for what it is: the consensus estimate the
-    // provider files, which is what analysts expect rather than what management
-    // said.
+    // Every absence is stated rather than left blank, because a blank cell reads as
+    // a zero, and each says which of the three reasons it was: a part the company
+    // financials endpoint files for nobody, a part the archive answered about and
+    // did not serve, and a part the archive was not read for at all. The three are
+    // different mornings and the source column beside the payload carries which.
+    //
+    // The guided quarter is management's own passage rather than a figure, and the
+    // consensus estimate is drawn beside it and named for what it is: what analysts
+    // expect rather than what management said.
+    // see: Guidance is stored as management's own prose and never parsed into a figure
     public static string Numbers(IReadOnlyList<FilingRow> filings)
     {
         var html = new System.Text.StringBuilder();
@@ -345,11 +348,7 @@ public static class NameScreen
 
         html.Append("</table>");
 
-        // The guided quarter, which this provider does not file, and the consensus
-        // estimate that is not it.
-        html.Append(
-            "<p class=\"degraded\" data-absent=\"guidance\">Management guidance is not filed by this " +
-            "provider, so the guided quarter is absent. What follows is the consensus estimate.</p>");
+        html.Append(Guidance(newest.RootElement, Attribution(filings[0].Source)));
 
         if (newest.RootElement.TryGetProperty("estimated", out var estimated)
             && estimated.ValueKind == JsonValueKind.Object)
@@ -369,15 +368,191 @@ public static class NameScreen
 
         html.Append(Sheet(newest.RootElement, filings[0].FilingDate));
         html.Append(Valuation(newest.RootElement));
-
-        html.Append(
-            "<p class=\"degraded\" data-absent=\"segments\">The segment table is not filed by this " +
-            "provider, so it is absent rather than empty.</p>");
+        html.Append(Segments(newest.RootElement, Attribution(filings[0].Source)));
 
         html.Append("</section>");
 
         return html.ToString();
     }
+
+    // Which provider each part of the row came from, read off the stored source
+    // column. A screen that guessed would be a screen deciding what an absence
+    // meant, and the three reasons a part can be absent are exactly what this
+    // column exists to tell apart.
+    // see: A screen reads and renders, and computes nothing
+    static IReadOnlyDictionary<string, string> Attribution(string source)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(source);
+
+            return document.RootElement.EnumerateObject()
+                .ToDictionary(part => part.Name, part => part.Value.GetString() ?? string.Empty, StringComparer.Ordinal);
+        }
+        catch (JsonException)
+        {
+            // A row written before the column held an object. Nothing is drawn from
+            // it rather than the section refusing, because the figures beside it are
+            // still the store's.
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+    }
+
+    // Management's own forecast, as filed, with the exhibit and the date it came
+    // from. Never a figure: the release states it in a sentence and a range pulled
+    // out of prose by pattern is neither computed from stored data nor copied from a
+    // payload with its filing date.
+    // see: Guidance is stored as management's own prose and never parsed into a figure
+    static string Guidance(JsonElement payload, IReadOnlyDictionary<string, string> source)
+    {
+        if (!payload.TryGetProperty("guidance", out var guidance) || guidance.ValueKind != JsonValueKind.Object)
+        {
+            return Unavailable("guidance", source, "the guided quarter");
+        }
+
+        var document = Text(guidance, "document") ?? string.Empty;
+        var filedOn = Text(guidance, "filedOn") ?? string.Empty;
+
+        if (!guidance.TryGetProperty("located", out var located) || !located.GetBoolean())
+        {
+            // Not the same statement as a company that guided nothing, and the
+            // exhibit named beside it is the evidence for which of the two it was.
+            // A heading locates the passage for five of twelve filers measured.
+            return "<p class=\"degraded\" data-absent=\"guidance\" data-guidance=\"not located\""
+                + FormattableString.Invariant($" data-exhibit=\"{document}\" data-filed=\"{filedOn}\">")
+                + "The earnings release filed on " + filedOn + " is stored and no heading in it locates a "
+                + "guidance passage, which is not the same as this company stating none. The exhibit is "
+                + document + ".</p>";
+        }
+
+        var heading = Text(guidance, "heading") ?? string.Empty;
+        var passage = Text(guidance, "passage") ?? string.Empty;
+
+        return "<blockquote class=\"guidance\" data-guidance=\"located\""
+            + FormattableString.Invariant($" data-exhibit=\"{document}\" data-filed=\"{filedOn}\"")
+            + FormattableString.Invariant($" data-heading=\"{heading}\">")
+            + "<p class=\"guidance-heading\">" + heading + ", as management filed it on " + filedOn + "</p>"
+            + "<p class=\"guidance-passage\">" + Escaped(passage) + "</p>"
+            + "<p class=\"guidance-source\">From " + document + ", the exhibit to that day's results "
+            + "announcement. Management's own words, not a figure this report computed.</p></blockquote>";
+    }
+
+    // The segment table, as the archive rendered it, for the newest period the
+    // table states.
+    //
+    // Every group the table carries, in the order it carries them, because two
+    // groups of one captured table share a member and two labels repeat: a screen
+    // that keyed on the label would draw one of them and drop the other.
+    static string Segments(JsonElement payload, IReadOnlyDictionary<string, string> source)
+    {
+        if (!payload.TryGetProperty("segments", out var segments) || segments.ValueKind != JsonValueKind.Object)
+        {
+            return Unavailable("segments", source, "the segment table");
+        }
+
+        var report = Text(segments, "report") ?? string.Empty;
+        var periods = segments.GetProperty("periods").EnumerateArray().ToArray();
+
+        // The shortest period the table states, which is the quarter. A table
+        // carrying three months and nine months under the same end date would
+        // otherwise show three quarters of a year as one.
+        var shortest = periods.Length == 0
+            ? 0
+            : periods.Min(period => period.GetProperty("months").GetInt32());
+
+        var ended = periods
+            .Where(period => period.GetProperty("months").GetInt32() == shortest)
+            .Select(period => period.GetProperty("ended").GetString() ?? string.Empty)
+            .DefaultIfEmpty(string.Empty)
+            .Max(StringComparer.Ordinal)!;
+
+        var html = new System.Text.StringBuilder();
+
+        html.Append("<table class=\"numbers-segments\"")
+            .Append(FormattableString.Invariant($" data-report=\"{report}\" data-months=\"{shortest}\""))
+            .Append(FormattableString.Invariant($" data-period-end=\"{ended}\">"));
+
+        html.Append("<tr><th>Segment</th><th>Line</th><th>Figure</th></tr>");
+
+        var rows = 0;
+
+        foreach (var (label, figures) in Grouped(segments))
+        {
+            foreach (var figure in figures)
+            {
+                if (figure.GetProperty("months").GetInt32() != shortest
+                    || (figure.GetProperty("ended").GetString() ?? string.Empty) != ended)
+                {
+                    continue;
+                }
+
+                var value = figure.GetProperty("value");
+
+                html.Append(FormattableString.Invariant($"<tr data-segment=\"{label}\">"))
+                    .Append("<td>").Append(label).Append("</td>")
+                    .Append("<td>").Append(figure.GetProperty("lineItem").GetString()).Append("</td>")
+                    .Append(value.ValueKind == JsonValueKind.String
+                        ? "<td>" + value.GetString() + Suffix(figure) + "</td>"
+                        : "<td class=\"degraded\" data-segment-figure=\"absent\">not filed</td>")
+                    .Append("</tr>");
+
+                rows++;
+            }
+        }
+
+        html.Append("</table>");
+        html.Append("<p class=\"segments-source\">")
+            .Append(FormattableString.Invariant(
+                $"The {shortest} month(s) to {ended}, from {report} of that filing, {rows} line(s)."))
+            .Append("</p>");
+
+        return html.ToString();
+    }
+
+    // The consolidated rows first, labelled for what they are, then every group in
+    // the order the table states them.
+    static IEnumerable<(string Label, IReadOnlyList<JsonElement> Figures)> Grouped(JsonElement segments)
+    {
+        yield return ("The company", [.. segments.GetProperty("consolidated").EnumerateArray()]);
+
+        foreach (var group in segments.GetProperty("groups").EnumerateArray())
+        {
+            yield return (
+                group.GetProperty("label").GetString() ?? string.Empty,
+                [.. group.GetProperty("figures").EnumerateArray()]);
+        }
+    }
+
+    // A figure that is not in the table's currency carries the unit it is in, which
+    // is how a count of two segments stops reading as two million of them.
+    static string Suffix(JsonElement figure) =>
+        figure.GetProperty("unit").ValueKind == JsonValueKind.String
+            ? " " + figure.GetProperty("unit").GetString()
+            : string.Empty;
+
+    // A part the archive supplies and this row does not carry, with the reason read
+    // off the source column rather than assumed. A read that did not happen and a
+    // provider that served nothing are different mornings, and neither is a blank.
+    static string Unavailable(string part, IReadOnlyDictionary<string, string> source, string what)
+    {
+        var reason = source.TryGetValue(part, out var stated) ? stated : string.Empty;
+
+        return "<p class=\"degraded\" data-absent=\"" + part + "\""
+            + FormattableString.Invariant($" data-reason=\"{reason}\">")
+            + Capitalised(what) + " is absent rather than empty, and the row says why: "
+            + (reason.Length > 0 ? reason : "no source is recorded for this part") + ".</p>";
+    }
+
+    static string Capitalised(string what) =>
+        what.Length == 0 ? what : char.ToUpperInvariant(what[0]) + what[1..];
+
+    // The archive's own text, drawn as text. A release exhibit is a filer's prose
+    // and this report quotes it, so the markup it might carry is shown rather than
+    // rendered.
+    static string Escaped(string text) =>
+        text.Replace("&", "&amp;", StringComparison.Ordinal)
+            .Replace("<", "&lt;", StringComparison.Ordinal)
+            .Replace(">", "&gt;", StringComparison.Ordinal);
 
     // The balance sheet, from the newest filing and labelled with its date. The
     // figures on this block are as of a filing rather than as of the fetch, which is

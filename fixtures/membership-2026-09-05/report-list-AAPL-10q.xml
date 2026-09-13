@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FilingSummary>
+  <Version>3.26.1</Version>
+  <ProcessingTime/>
+  <ReportFormat>html</ReportFormat>
+  <ContextCount>161</ContextCount>
+  <ElementCount>222</ElementCount>
+  <EntityCount>1</EntityCount>
+  <FootnotesReported>false</FootnotesReported>
+  <SegmentCount>54</SegmentCount>
+  <ScenarioCount>0</ScenarioCount>
+  <TuplesReported>false</TuplesReported>
+  <UnitCount>6</UnitCount>
+  <MyReports>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R1.htm</HtmlFileName>
+      <LongName>0000001 - Document - Cover Page</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/CoverPage</Role>
+      <ShortName>Cover Page</ShortName>
+      <MenuCategory>Cover</MenuCategory>
+      <Position>1</Position>
+    </Report>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R2.htm</HtmlFileName>
+      <LongName>9952151 - Statement - CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS (Unaudited)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/CONDENSEDCONSOLIDATEDSTATEMENTSOFOPERATIONSUnaudited</Role>
+      <ShortName>CONDENSED CONSOLIDATED STATEMENTS OF OPERATIONS (Unaudited)</ShortName>
+      <MenuCategory>Statements</MenuCategory>
+      <Position>2</Position>
+    </Report>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R3.htm</HtmlFileName>
+      <LongName>9952152 - Statement - CONDENSED CONSOLIDATED STATEMENTS OF COMPREHENSIVE INCOME (Unaudited)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/CONDENSEDCONSOLIDATEDSTATEMENTSOFCOMPREHENSIVEINCOMEUnaudited</Role>
+      <ShortName>CONDENSED CONSOLIDATED STATEMENTS OF COMPREHENSIVE INCOME (Unaudited)</ShortName>
+      <MenuCategory>Statements</MenuCategory>
+      <Position>3</Position>
+    </Report>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R4.htm</HtmlFileName>
+      <LongName>9952153 - Statement - CONDENSED CONSOLIDATED BALANCE SHEETS (Unaudited)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/CONDENSEDCONSOLIDATEDBALANCESHEETSUnaudited</Role>
+      <ShortName>CONDENSED CONSOLIDATED BALANCE SHEETS (Unaudited)</ShortName>
+      <MenuCategory>Statements</MenuCategory>
+      <Position>4</Position>
+    </Report>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R5.htm</HtmlFileName>
+      <LongName>9952154 - Statement - CONDENSED CONSOLIDATED BALANCE SHEETS (Unaudited) (Parenthetical)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/CONDENSEDCONSOLIDATEDBALANCESHEETSUnauditedParenthetical</Role>
+      <ShortName>CONDENSED CONSOLIDATED BALANCE SHEETS (Unaudited) (Parenthetical)</ShortName>
+      <MenuCategory>Statements</MenuCategory>
+      <Position>5</Position>
+    </Report>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R17.htm</HtmlFileName>
+      <LongName>9952166 - Disclosure - Segment Information</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/SegmentInformation</Role>
+      <ShortName>Segment Information</ShortName>
+      <MenuCategory>Notes</MenuCategory>
+      <Position>17</Position>
+    </Report>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R27.htm</HtmlFileName>
+      <LongName>9955519 - Disclosure - Segment Information (Tables)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/SegmentInformationTables</Role>
+      <ShortName>Segment Information (Tables)</ShortName>
+      <MenuCategory>Tables</MenuCategory>
+      <ParentRole>http://www.apple.com/role/SegmentInformation</ParentRole>
+      <Position>27</Position>
+    </Report>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R45.htm</HtmlFileName>
+      <LongName>9955538 - Disclosure - Segment Information - Additional Information (Details)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/SegmentInformationAdditionalInformationDetails</Role>
+      <ShortName>Segment Information - Additional Information (Details)</ShortName>
+      <MenuCategory>Details</MenuCategory>
+      <Position>45</Position>
+    </Report>
+    <Report instance="aapl-20260627.htm">
+      <IsDefault>false</IsDefault>
+      <HasEmbeddedReports>false</HasEmbeddedReports>
+      <HtmlFileName>R46.htm</HtmlFileName>
+      <LongName>9955539 - Disclosure - Segment Information - Information by Reportable Segment (Details)</LongName>
+      <ReportType>Sheet</ReportType>
+      <Role>http://www.apple.com/role/SegmentInformationInformationbyReportableSegmentDetails</Role>
+      <ShortName>Segment Information - Information by Reportable Segment (Details)</ShortName>
+      <MenuCategory>Details</MenuCategory>
+      <Position>46</Position>
+    </Report>
+    </MyReports>
+  <InputFiles>
+    <File doctype="10-Q" isDefinitelyFs="true" isUsgaap="true" original="aapl-20260627.htm">aapl-20260627.htm</File>
+    <File>aapl-20260627.xsd</File>
+    <File>aapl-20260627_cal.xml</File>
+    <File>aapl-20260627_def.xml</File>
+    <File>aapl-20260627_lab.xml</File>
+    <File>aapl-20260627_pre.xml</File>
+  </InputFiles>
+  <SupplementalFiles>
+    <File>aapl-20260627_g1.jpg</File>
+  </SupplementalFiles>
+  <BaseTaxonomies>
+    <BaseTaxonomy items="753">http://fasb.org/us-gaap/2025</BaseTaxonomy>
+    <BaseTaxonomy items="47">http://xbrl.sec.gov/dei/2025</BaseTaxonomy>
+    <BaseTaxonomy items="19">http://xbrl.sec.gov/ecd/2025</BaseTaxonomy>
+  </BaseTaxonomies>
+  <HasPresentationLinkbase>true</HasPresentationLinkbase>
+  <HasCalculationLinkbase>true</HasCalculationLinkbase>
+</FilingSummary>

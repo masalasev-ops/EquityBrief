@@ -7773,3 +7773,216 @@ Carried:    the filings archive joins the fetcher's reads at 6.2, which is the c
             reaches an archive, and the catalogue row says so rather than naming a feed no component
             declares. The segment table and the guidance arrive with it. This session has committed
             code and may not sign it off.
+
+### 6.2 - the filings archive, the segment table and management's own words   2026-09-12
+Built:      the archive probed and captured before its reader, `IFilingsArchiveFeed` with its
+            `Requests` member, the reader for the four document kinds, the recorded double, the live
+            client the archive's transport rule refuses without an agent, the fundamentals fetcher's
+            archive read, and the segment table and guidance on the name page. Six commits: the
+            transport rule, the captures, two scope obligations filed, the reader with its tests, the
+            fetcher and the surface, and the filing choice with its reason.
+Probed:     thirteen captured responses from four filers, and two measurements beside them.
+            Two filers are captured whole, being every document one read walks, and two more for one
+            cell each: an index page typing its release `EX-99` with no suffix, and an index page
+            listing two documents typed `EX-99` rather than one. A reader written against one filer
+            is a reader written against one filer, which is why the second whole one is here: its
+            first segment candidate carries the figures and the other filer's does not.
+            The guidance measurement, over the most recent results announcement of twelve index
+            members, all twelve filing an exhibit: five state guidance under an emphasised block
+            whose whole text ends in the word outlook or guidance, four of those five state at least
+            one numeric range in the prose under it, one states none, and at least two of the seven
+            with no such heading state guidance inside an ordinary paragraph or a quotation. None
+            carries it in a structured field anywhere in the filing.
+            The transcript measurement, over the same twelve: none filed one. Four of the twelve have
+            their index page committed and none of the four indexes a transcript.
+Settled:    ten things the endpoint names and this corpus's own description of the archive would each
+            have got wrong, which is what capturing first is for. Each has a test of its own, because
+            a single test over one filer passes on the parts that happen to be uniform.
+            The company's filing index is not a list of filings. `filings.recent` is one array per
+            field, so a reader taking it for a list of objects finds none and reports a company that
+            has never filed.
+            A filing's directory listing types every document as a display icon, `text.gif`. What a
+            document is is stated on the filing's own index page and nowhere else, so the route
+            fetches a page a reader would not think to ask for. The listing is committed for what it
+            does not carry.
+            The release is typed `EX-99.1` by two of the four captured filers and `EX-99` by the
+            other two, so a reader keyed on the longer spelling finds no release for a sixth of the
+            index and reports that none was filed. And one filing indexes two of them, so the release
+            is the lower sequence and never the only match, which is also the shape a filed
+            transcript would arrive in.
+            A filing's documents are served inside the archive's own SGML envelope, which a request
+            for a bare file name does not remove. Its type line reads as body text, so a reader
+            looking for an exhibit type in a document's text finds one.
+            Which rendered report holds figures by segment is a property of the table and not of its
+            name. One filing lists 47 reports and four mention segments; the other lists 89 and six
+            do. Narrowing to the Details category leaves two and four, and the first of those two is
+            a narrative page carrying one boolean while the first of those four carries the figures,
+            so a route taking the first by name is right for one filer and wrong for the other. Both
+            candidates of the first filing are committed for that reason.
+            The segment table's scale is stated once, in its own title cell, and the figures are in
+            millions. Negatives are parenthesised rather than signed and an empty cell is a
+            non-breaking space.
+            One row of a money table is not money. A count of reportable segments sits in one filer's
+            table marked by a unit after its label, and a reader applying the table's scale records
+            two million segments.
+            A period column belongs to the header whose column span reaches it. One table carries the
+            same end date under a three-month span and a nine-month one, so a reader keyed on the
+            date takes three quarters of a year for one quarter.
+            Neither the row label nor the concept identifies a group. Four groups of one table share
+            one axis and member in the markup while their labels differ, and two labels appear twice,
+            so the groups are a sequence in the order the table states them and never a set.
+            The archive files revenue under several concepts at once and keeps none of them current
+            for every filer. Over both captured payloads whole, one carries `Revenues` to 2018-09-29
+            in 11 facts and `RevenueFromContractWithCustomerExcludingAssessedTax` to 2026-06-27 in
+            117, and the other is the reverse with 118 and 14; both retired `SalesRevenueNet` in
+            2018. So a reader keyed on one concept name reads an eight-year-old revenue for one filer
+            or two years of history for the other.
+Ruled:      the guided quarter is management's own passage and never a figure, which the measurement
+            settled rather than one filer's wording. A heading locates the passage for five of twelve
+            and a pattern over the prose produces a figure for four, so a guided-quarter column
+            filled that way is empty for two thirds of the index while reading as a company that
+            guided nothing. A range extracted from a sentence is neither computed from stored data
+            nor copied from a payload with its filing date, and the same pattern that finds it in one
+            filer's wording misses it in the next. A passage no heading located is recorded as not
+            located and never as guidance not given, because the exhibit is the evidence for which of
+            the two it was and most of the seven are the first.
+            (see: Guidance is stored as management's own prose and never parsed into a figure)
+            The live demonstration found this decision's own case on a filer that was never captured.
+            Its exhibit carries a heading reading Business Outlook, the passage under it is located,
+            and the passage states no figure at all: it says management will give guidance on the
+            call. A figure extractor would have produced nothing there and nothing is
+            indistinguishable from a company that gave none.
+Stored:     the archive's three parts go into the fundamentals payload on the newest filing's row
+            alone. `segments` holds the report the figures were read from, the scale the table stated,
+            its period columns and its groups in the order it states them; `guidance` holds the
+            passage, its heading, the exhibit and the date it was filed on; `facts` holds the
+            archive's own filed figures under the concept each was filed against. On the newest row
+            for the reason the ratios are and one of its own: a segment table is read from one
+            filing's report page and the guidance from one announcement's exhibit, so writing either
+            onto a historical row would state that an older quarter's segments were this quarter's,
+            and deriving them per filing would cost a request per row for figures nothing reads.
+            The facts kept are seven named concepts over twelve quarters rather than everything the
+            archive holds, which is 503 and 649 concepts for the two captured filers. The set is what
+            the numbers section's own figures correspond to, so the archive's filed figure for a
+            period sits beside the vendor's for the same period from the primary source. Three of the
+            seven are revenue, in the three spellings the archive uses for it, which is the measured
+            reason the set is a set rather than one concept. Twelve quarters because that is the
+            window the filings are stored over, asserted against that constant rather than stated
+            twice.
+Decided:    two providers fill one row and `source` says which filled what, part by part, and it
+            distinguishes three reasons a part can be empty rather than three sources. The provider
+            files it for nobody; the archive answered and served none; the archive was not read. A
+            column that could not tell the third from the first would report a company with no
+            segments after a failed fetch, on a row that looks exactly like a company that has none.
+            The two providers fail apart. An archive that refuses leaves its three parts named as
+            unread and the other eight stored, because refusing the whole fetch would lose eight
+            figures to recover two. The refusal is caught, which is only legitimate because it is
+            reported on the row and on the run log, and the fetcher's catalogue row says so.
+            The CIK is passed into the feed rather than resolved inside it. The archive is addressed
+            by CIK and nothing else and the caller already holds one by the time it needs it, the
+            company financials payload carrying it zero-padded for every name. Resolving it in the
+            feed would mean a whole-index file or a lookup on every read, and a feed that guessed at
+            an identifier would address another company's filings while looking like it worked. A
+            read with no identifier is refused before a request is composed.
+            The periodic filing read is the most recent one, which is not always a quarter. The live
+            demonstration's third filer had a 10-K as its newest, so its table carries three
+            twelve-month columns and no quarter. Taking an older quarterly filing would be older
+            information for a shorter period, and what makes either safe is that the table states the
+            period it covers and the store and the screen both carry it.
+Read:       the recorded double runs the same route over the same reader as the live client and
+            differs in one place, where the live one composes a URL and it finds the capture. So the
+            route's own derivations are exercised by a replay rather than asserted separately and
+            hoped to be what the live feed does, and the paths it composed are checked against the
+            addresses the manifest records for the same captures. It serves by document kind and not
+            by path, because a mapping from six addresses to a folder of files is a table of rules
+            with a fall-through, which is the prefix matcher this repository has repaired four times.
+            A capture it does not hold refuses by name rather than answering with nothing, and a
+            prefix answering two files refuses rather than taking whichever the folder listed first.
+Drawn:      the numbers section's own prose had stopped being true and this is what replaced it. It
+            drew "the segment table is not filed by this provider" for every name; it now draws the
+            table for a name whose archive was read, every group in the order the table states them
+            because two of one table's labels repeat and a screen keyed on the label would draw one
+            and drop the other, at the shortest period the table states because one end date under
+            two spans is two columns. The absence for a name whose archive was not read carries the
+            reason off the stored source column rather than a guess, since deciding what an absence
+            means is the thing that column exists to answer.
+            The guidance is drawn as management's own words with the exhibit and the date beside
+            them. A passage no heading located says in words that the exhibit is stored and no
+            heading in it locates a passage, which is the distinction the measurement forced put on
+            the surface a person reads.
+Repaired:   one defect the captures found on their way in, and one reader generalised.
+            Every balance-sheet figure is as of an instant, and the archive sends no start date at
+            all for one and marks its frame with an I after the quarter. The reader required both
+            dates, so it dropped the whole class in silence: a reading that looked complete held
+            revenue and earnings and not one asset or liability line. Both forms are read now and the
+            two statements are asserted against each other, so a payload that stopped agreeing with
+            itself fails rather than being resolved one way. This is the defect capture-before-parse
+            exists for and it was found by a count in an expectation disagreeing with the code.
+            `nightly-cost`'s reverse direction asserted that the client allowance equalled the
+            shipped files matching `/Providers/Eodhd`, which the first provider called something else
+            would have failed with nothing wrong in the check. A feed file that is neither an
+            interface nor a recorded double is a provider implementation whatever the provider is
+            called, with its own permanent proof in both directions including a name beginning with
+            the same capital letter an interface does.
+Claims:     323 claims and 237 PASS, from 322 and 236 at 6.1, with 86 out of scope, 0 unexamined and
+            0 fail. One arrived that 6.0's prediction did not name, and the prediction said none would
+            at this checkpoint: section 19.1's `archive extracts` row, which is this checkpoint's own
+            expectation and the row done condition 7 requires. No claim was placed at 6.2 by the
+            resplit, because the checkpoint did not exist when the placements were written, so the
+            arrival is an addition and not a movement. The captured archive responses needed no input
+            row of their own: 19.1's `fundamentals` row has said since 0.7 that it holds the provider
+            payload and the filing extracts as they stood on the fixture date, so the input half was
+            named before either half existed. **So the pair after phase 6 is 323 and 307**, which is
+            322 and 306 plus the one, and 6.11 checks the pair that was taken rather than the one
+            predicted.
+Guarded:    47 tests added, 679 from 632 at the 6.1 merge. Thirty-two on the reader, one per finding
+            the captures produced plus the route walked end to end over each of the two whole filers,
+            the archive's own not-there answer, and the two refusals the transport rule carries.
+            Seven on the fetcher and the store, being the archive's parts attributed to the archive,
+            those parts on the newest row alone, the stored segment figures, the guidance located and
+            not located, an archive that refuses losing three parts and not eight, and what the run
+            log says about what the archive cost. Three on the two surfaces, each reading a figure
+            back off the markup against the store. One on the generalised client reader, in both
+            directions. And the archive extracts expectation, which derives the figure rather than
+            stating it: the file gives the cell as the archive rendered it and the test applies the
+            scale itself, so a component that wrote the right shape and the wrong multiplier fails.
+Mutated:    the rule, stated before the sweep: mutate the property a capture forced that nothing else
+            in the corpus would have caught, and where several qualify, the one whose failure would be
+            silent rather than loud. Silent means a reading that still looks complete, which is the
+            class this corpus calls survivorship. Three qualify and all three were mutated, in a
+            detached worktree under the session scratchpad outside this repository, each reverted
+            before the next so one mutation was in the tree at a time, and the worktree removed.
+            All three red. The instant fact required to carry a start date, which drops every
+            balance-sheet figure and leaves revenue and earnings looking complete: 2 tests red. The
+            segment groups collapsed to one per label, which drops two of one table's nine groups
+            with no gap anywhere to see: 2 tests red. And the archive not read collapsed into the
+            provider filing none, which reports a company with no segments after a failed fetch: 4
+            tests red. Each was caught by its own test and by the archive extracts expectation, which
+            is the pair condition 7 and condition 9 are meant to make.
+            Properties added and not mutated, named because the next sweep has to find them: the
+            exhibit type read as a prefix rather than its longer spelling; the release chosen by
+            sequence where a filing carries two; the segment report chosen by reading the table
+            rather than by its name; the scale applied per row and withheld from a row stating its own
+            unit; the period column belonging to the header whose span reaches it; the SGML envelope
+            stripped where the archive sent one; the guidance heading as a short emphasised block
+            ending in the word; the recorded feed refusing a capture nobody committed; and the guided
+            quarter never parsed into a figure.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 679 of 679 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 323 claims, 237 PASS, 0 fail, 86 out of scope, 0
+            unexamined, 244 placements and verdicts reconciled against a floor of 34, 33 of 35 roster
+            checks carried and all 33 run. Migrations 0 to 19, this checkpoint adding none.
+            The deliverable was demonstrated running over three filers and a store under the session
+            scratchpad, never `data/`. Two from the captures, one request each and 12 of 14 filings
+            stored, one taking two report pages to find its figures and the other one. One live
+            against both providers on a filer the fixture holds no archive capture for at all: 164
+            filings returned, 12 stored, 7 archive documents, the segment figures read from a report
+            page neither capture holds, and the three segments' revenue summing to the consolidated
+            figure to the dollar and their operating income doing the same, which is the arithmetic
+            that says the reading landed the right way round. A second open of that name with the
+            held filing date made zero requests. The operator's store under `data/` was not touched by
+            either gate or by the demonstration.
+Carried:    nothing new. The archive's own availability is not carried as an obligation: section 18's
+            filing-not-parsed row already states what a surface does when a part is missing, and this
+            checkpoint's reason column now distinguishes the three ways it can be. This session has
+            committed code and may not sign it off.
