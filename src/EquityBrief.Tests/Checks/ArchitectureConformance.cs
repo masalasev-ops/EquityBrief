@@ -903,8 +903,9 @@ public class ArchitectureConformance
         // rows into three parts each. Two leave and six arrive, and the parts owed at
         // 6.8 arrive with their own due points rather than inheriting the row's.
         // 116 from 114 at 6.6, which decomposed the provenance footer into the three
-        // kinds of part its row enumerates. One leaves and three arrive.
-        Assert.Equal(116, inDocument.Length);
+        // kinds of part its row enumerates. One leaves and three arrive. 117 at 6.7,
+        // which decomposed research paused into its line and its sections.
+        Assert.Equal(117, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -971,7 +972,9 @@ public class ArchitectureConformance
         // rows, each read as the line this checkpoint draws and the parts the
         // research runner draws. 120 from 107 at 6.6, thirteen being section 18's
         // two local lane rows at five parts each and the provenance footer's three.
-        Assert.Equal(120, checkedElements);
+        // 124 at 6.7, being section 18's spend cap row and section 15.9's research
+        // paused row at two parts each.
+        Assert.Equal(124, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

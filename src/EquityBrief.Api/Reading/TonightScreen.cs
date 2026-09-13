@@ -1,3 +1,4 @@
+using EquityBrief.Core.Spending;
 using System.Text.Json;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Shortlist;
@@ -199,4 +200,28 @@ public static class TonightScreen
     // table has by definition.
     public static IReadOnlyList<bool> Strip(IReadOnlyList<ListingRow> history) =>
         [.. history.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)];
+
+    // What research spent on a night: its UTC day, and its month up to the end of that
+    // day, from the rows the month holds, beside the caps. Summed from the rows as the
+    // spend cap sums them, so the header and the cap read one ledger.
+    public static NightSpend Spend(DateOnly night, IReadOnlyList<SpentRow> rows, SpendCaps caps)
+    {
+        var ledger = new SpendLedger(rows);
+        var endOfDay = new DateTimeOffset(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+        return new NightSpend(
+            ledger.SpentOn(night),
+            rows.Where(row => row.StartedAt < endOfDay && row.StartedAt >= SpendLedger.MonthStart(endOfDay.AddTicks(-1))).Sum(row => row.Spend),
+            caps.Day,
+            caps.Month);
+    }
+
+    // The window a night's spend is read over: the first instant of its UTC month to
+    // the end of its UTC day.
+    public static (DateTimeOffset From, DateTimeOffset To) SpendWindow(DateOnly night)
+    {
+        var to = new DateTimeOffset(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+        return (SpendLedger.MonthStart(to.AddTicks(-1)), to);
+    }
 }

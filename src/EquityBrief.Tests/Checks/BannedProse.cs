@@ -211,9 +211,12 @@ public class BannedProse
         Assert.Contains(scanned, file => file.EndsWith("manifest.json", StringComparison.Ordinal));
 
         // The excluded set is small and named, rather than whatever happened to
-        // be in a folder. Nine captured inputs today across one fixture.
+        // be in a folder. Thirty-four captured inputs at 6.7 across one fixture,
+        // from twenty-nine at 6.6: each is a file a manifest entry declares, and the
+        // ceiling is raised by hand when a checkpoint captures more, so an exclusion
+        // that grew without anyone adding a capture is what fails.
         var excluded = Repository.TrackedFiles().Count(IsCapture);
 
-        Assert.True(excluded is >= 5 and <= 30, $"Excluded {excluded} captured responses, expected between 5 and 30.");
+        Assert.True(excluded is >= 5 and <= 40, $"Excluded {excluded} captured responses, expected between 5 and 40.");
     }
 }

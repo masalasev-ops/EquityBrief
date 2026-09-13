@@ -1,5 +1,6 @@
 using EquityBrief.Core.Indicators;
 using System.Globalization;
+using EquityBrief.Core.Spending;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
@@ -261,6 +262,27 @@ public sealed class ReadApi : IComponent
         this.databaseFile = databaseFile;
         this.clock = clock;
     }
+
+    // The stage and outcome the spend cap writes a paid call under. The worker's own
+    // constants cannot be referenced from here, so they are stated and `read-surface`
+    // asserts the two agree.
+    public const string PaidCallStage = "research call";
+    public const string PaidOutcome = "ok";
+
+    // What the run log says was spent between two instants, as stored.
+    const string SpentBetween = @"
+        SELECT started_at, spend
+        FROM run_log
+        WHERE started_at >= $from AND started_at < $to;
+    ";
+
+    // Every paid call the log carries a cost for: the spend cap's rows that were
+    // answered, by the stage's own prefix and the outcome the cap writes.
+    const string PaidCallSpends = @"
+        SELECT run_id, spend
+        FROM run_log
+        WHERE substr(stage, 1, length($prefix)) = $prefix AND outcome = $paid;
+    ";
 
     // The newest accepted version of each of a name's sections.
     const string WrittenSectionsForName = @"
@@ -1278,6 +1300,56 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
+    // The spend rows between two instants, handed back as stored. What they come to,
+    // and whether a cap has stopped research, is judged by the screen with the rule the
+    // spend cap judges a call by, so the page and the refusal are one rule.
+    // see: The spend cap counts a UTC day and a UTC month, and refuses a call that could take spend past either
+    public async Task<IReadOnlyList<SpentRow>> SpentRowsAsync(DateTimeOffset from, DateTimeOffset to)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SpentBetween;
+        command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+
+        var rows = new List<SpentRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new SpentRow(
+                DateTimeOffset.Parse(reader.GetString(0), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                decimal.Parse(reader.GetString(1), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture)));
+        }
+
+        return rows;
+    }
+
+    // What every answered paid call cost, one amount per call with the run it was made
+    // under, as stored.
+    public async Task<IReadOnlyList<(string RunId, decimal Spend)>> PaidCallSpendsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PaidCallSpends;
+        command.Parameters.AddWithValue("$prefix", PaidCallStage + ":");
+        command.Parameters.AddWithValue("$paid", PaidOutcome);
+
+        var spends = new List<(string, decimal)>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            spends.Add((reader.GetString(0), decimal.Parse(reader.GetString(1), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture)));
+        }
+
+        return spends;
+    }
+
     // A name's written sections, one per section, each the newest the checker
     // accepted.
     public async Task<IReadOnlyList<WrittenSectionRow>> WrittenSectionsAsync(string ticker)
@@ -1463,7 +1535,7 @@ public sealed class ReadApi : IComponent
 
     // The operational record of the read surface coming up, which section
     // 15.10's run page reads. Appended rather than updated, because the run log
-    // has no updater declared and every component appends to it.
+    // has no updater declared and every component that writes appends to it.
     public async Task RecordStartAsync(string runId, string detail)
     {
         await using var connection = Open();

@@ -1,0 +1,103 @@
+{
+  "stage": "spend",
+  "derivation": "derived",
+  "derivedFrom": "the decision that the spend cap counts a UTC day and a UTC month and refuses a call that could take spend past either, the decision that the research model is named only in configuration and a call is priced at the configured rates its own timestamp falls in, the provider's page as read on 2026-09-13 at 14:57 UTC, which the shipped configuration's rates for its model were copied from, and the two recorded calls' own token counts. Every price and every verdict below was worked by hand from those before the tests that read this file were run. It names the run log because spend is the one figure that table carries a page states: tonight's header, the run page and a paused name all read it, and the replay's other figures are elsewhere.",
+  "tables": [
+    "run_log"
+  ],
+  "rates": {
+    "model": "deepseek-flash",
+    "cacheHit": "0.003",
+    "cacheMiss": "0.15",
+    "output": "0.60"
+  },
+  "peakWindows": [
+    {
+      "from": 1,
+      "to": 4
+    },
+    {
+      "from": 6,
+      "to": 10
+    }
+  ],
+  "peakDays": [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday"
+  ],
+  "peakMultiple": "2",
+  "recordedCalls": [
+    {
+      "options": null,
+      "cacheHitTokens": 0,
+      "cacheMissTokens": 182,
+      "completionTokens": 243,
+      "created": "2026-09-13T15:40:45Z",
+      "peak": false,
+      "price": "0.0001731",
+      "priceWorked": "182 uncached prompt tokens at 0.15 and 243 completion tokens at 0.60, a million each, on a Sunday: 27.3 and 145.8, 173.1 in a million"
+    },
+    {
+      "options": "{\"thinking\":{\"type\":\"disabled\"}}",
+      "cacheHitTokens": 0,
+      "cacheMissTokens": 157,
+      "completionTokens": 8,
+      "created": "2026-09-13T15:40:47Z",
+      "peak": false,
+      "price": "0.00002835",
+      "priceWorked": "157 uncached prompt tokens at 0.15 and 8 completion tokens at 0.60: 23.55 and 4.8, 28.35 in a million"
+    }
+  ],
+  "verdicts": [
+    {
+      "case": "the day cap reached today, the month below",
+      "now": "2026-09-15T20:00:00Z",
+      "rows": [
+        [
+          "2026-09-15T14:00:00Z",
+          "6.00"
+        ],
+        [
+          "2026-09-15T18:30:00Z",
+          "4.00"
+        ]
+      ],
+      "paused": true,
+      "cap": "day",
+      "resumesAt": "2026-09-16T00:00:00Z"
+    },
+    {
+      "case": "the month cap reached on earlier days, nothing today",
+      "now": "2026-09-15T20:00:00Z",
+      "rows": [
+        [
+          "2026-09-02T10:00:00Z",
+          "30.00"
+        ],
+        [
+          "2026-09-09T10:00:00Z",
+          "20.00"
+        ]
+      ],
+      "paused": true,
+      "cap": "month",
+      "resumesAt": "2026-10-01T00:00:00Z"
+    },
+    {
+      "case": "the same day's ten dollars read a second after midnight",
+      "now": "2026-09-16T00:00:01Z",
+      "rows": [
+        [
+          "2026-09-15T14:00:00Z",
+          "10.00"
+        ]
+      ],
+      "paused": false,
+      "cap": null,
+      "resumesAt": null
+    }
+  ]
+}

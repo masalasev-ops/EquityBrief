@@ -8503,3 +8503,167 @@ Carried:    one obligation, due at 6.8, which writes the first dated calendar it
             A small whole number that is neither a window nor a fact can still pass on a coincidence.
             And the first night after this lands reports each name's eight move starts as facts that
             appeared, once. This session has committed code and may not sign it off.
+
+### 6.7 - the spend cap, the research model named in configuration alone, and a ceiling fifty-eight calls wide   2026-09-13
+Built:      the spend cap as a rule over a ledger: a UTC day and a UTC month, each refusing on its own,
+            research paused where spend has reached either cap or where the most the call in hand
+            could cost would take spend past either, and resumed at the next UTC midnight or the first
+            instant of the next UTC month, with the month named where both stop it. The spend cap as a
+            component, the one that makes a paid call: it holds the research model, judges each call
+            against the run log's own rows before making it, and writes one row per call under the
+            pass's run, stage `research call: <section>`, as answered, paused, refused or unavailable,
+            with the price as TEXT and never rounded. The research model behind one interface, over the
+            OpenAI chat completions format, with nothing about the provider in code: the format, the
+            address, the model, the provider's own request options, the timeout, the answer's budget,
+            the key and the prices are settings, the shipped `appsettings.json` names DeepSeek's flash
+            model at the rates its page gave, and a missing or blank key is refused by name at startup.
+            Its recorded double, keyed on the whole request as the local model's is, with the options
+            inside the model's identity. And three surfaces: research paused on the name page, in the
+            words the cap refuses a call with; what research spent in tonight's header, on the night and
+            in its month to that night, beside both caps; and the passes priced on the run page's
+            operational header, which is where the operating row that settles the caps is read. Eight
+            commits: the rule before any paid client, the feed and the cap, the three surfaces, the
+            research model moved into configuration at the operator's ruling, the plan's two sentences,
+            the five properties the sweep found unasserted, the name page's gap carried to 6.8, and this
+            record. Nothing in production calls the cap yet: the research runner does from 6.8.
+Settled:    four decisions. The spend cap counts a UTC day and a UTC month, and refuses a call that
+            could take spend past either: a rolling twenty-four hours has no instant a page can say
+            research resumes at, and a gate asking only whether a cap had been reached lets the call
+            that reaches it spend past it. Every paid call is made through the spend cap, which holds
+            the research model: a check inside each runner holds only while every runner remembers to
+            ask. The research model is named only in configuration, and a call is priced at the
+            configured rates its own timestamp falls in, superseding the entry this checkpoint wrote
+            first, which put the provider, its two models and their rates in one feed file named for
+            the provider; the operator ruled the same day that the model is to be switchable to any
+            model, and switching is now a change to settings. And two models for two jobs, and which
+            research model answers is configuration, superseding the entry whose name said the research
+            model is DeepSeek V4, because a name like that makes a setting the operator is meant to
+            change contradict a decision.
+Measured:   the provider's page, read on 2026-09-13 at 14:57 UTC and captured before anything rested on
+            it: peak from 01:00 to 04:00 and from 06:00 to 10:00 UTC on weekdays at twice the rate, and
+            the flash model at 0.003, 0.15 and 0.60 dollars a million cached prompt, uncached prompt
+            and output tokens. Three probes against the provider before its parser: its model list,
+            one answer in its default mode and one with thinking off. The default is thinking, the
+            reasoning arrives beside the answer and is counted inside the completion, the prompt is
+            split into cached and uncached counts the provider prices apart, and thinking's template
+            adds 25 prompt tokens to the same text.
+            Over the two recorded calls, one request to the shipped model asked two ways at 15:40 UTC on
+            a Sunday, off-peak, with nothing cached: in the default mode 182 prompt tokens and 243
+            completion tokens, 233 of them reasoning, priced at $0.0001731; with thinking off 157 and
+            8, at $0.00002835. The ceiling for that request, every one of its 669 bytes and a 256-token
+            template allowance as uncached prompt and the whole 8,192-token budget as output, at the
+            peak multiple, is $0.0101079, and the budget is 97 per cent of it. That is 58 times what the
+            default-mode call cost and 357 times the other, so a cap refuses research about a cent
+            before it is reached.
+            The same request in the default mode was recorded twice, 29 minutes apart, once through the
+            feed as first written and once through the feed as it stands: 187 completion tokens, 178
+            of them reasoning, for $0.0001395, and then 243, 233 of them reasoning, for $0.0001731,
+            24 per cent more, with a different sentence. With thinking off both recordings came to 157
+            and 8 tokens, the same sentence and the same price. The prompt counted 182 and 157 both
+            times, so what moves a thinking call's price is how long it reasons, which nothing before
+            the call can know, and that is what the ceiling is for.
+Found:      the research model's feed as first written named its provider in its type, held the
+            provider's two models and their rates as constants beside its wire, and chose thinking by
+            a setting only that provider takes. The operator ruled it has to be generic, so a
+            different model is a switch rather than a change. The feed is named for its wire format
+            now, the provider's own fields travel as options that may not replace the four the feed
+            writes, a cached prompt is read from the format's own field as well as that provider's,
+            and every price is configuration held to the page by the fixture. The two recordings were
+            captured again through the request the feed now sends, since a recording keyed on a
+            request nothing sends any longer answers nothing. The scan that keeps a model off the
+            night reads every shipped source file for the provider's name and finds it in none, where
+            two of the three files it carved carried the name.
+            Five things the corpus or the tree held that this checkpoint found wrong. The run log's
+            catalogue row and SCHEMA's ownership row said every component appends, and the single page
+            app, the mark renderer and the trend classifier write nothing: both say every component
+            that writes appends, which is asserted over the components in code. The operating row
+            that settles the caps counts research passes and the run page's line first counted calls,
+            which fires after a handful of passes, so it counts both and names the passes as the runs
+            the calls were made under; RUNBOOK said twenty paid calls and says twenty passes. 6.8 held
+            the live transport this checkpoint had to write, because a price is only as good as the
+            counts for the request actually sent, and 6.7 said the run log's `model_calls` carries a
+            figure for the first time here, where 6.6's lane counts its calls: both sentences are
+            amended with their prior text in CHANGELOG. The checkpoint's done condition was not
+            amended. A page's ledger read to a tick past the instant it was read at, and the store
+            keeps seconds, so a call stamped in the same second was left out; it reads to the next
+            second. And every captured call arrived with nothing cached, so the cached rate was a
+            term no recording could fail, and a constructed answer with most of its prompt cached
+            holds it.
+Tested:     12 under `fixture-expectations` on the cap: the day cap alone and when it resumes; the month
+            cap alone, when it resumes, and a month of a year; both reached naming the month; a call
+            refused by its ceiling before either cap is reached; a cap read from configuration and
+            refused where it is not money; a call below both caps made once with its price written as
+            TEXT; a pass at the day cap refused before any call; a pass at the month cap on its own; the
+            ceiling judged against a ledger read off the store with another stage's spend in it; a
+            failed call written as an attempt that spent nothing; the spend expectation against the
+            configured rates hour by hour over a week and against the two recorded calls priced by
+            hand; section 17's row read against the constants. 25 on the research model's feed, 11 of
+            them one theory's cases over the peak windows: both probes, the format's own cached field,
+            an answer that cannot be priced or was cut short, the price by hand with a cached case, the
+            ceiling over both recordings, the request as sent with and without options, switching model
+            by configuration alone, the key in the header and never the address, nothing listening, the
+            settings refused by name with a blank key among them, the shipped model in the provider's
+            own list, RUNBOOK's table against the shipped configuration, and the recording. 4 under
+            `read-surface`: the stage and outcome the page reads against the cap's own; research paused
+            on the name page, drawn at a cap and not half a cent short of it, for the day and for the
+            month; tonight's header against the store, bounded on its own and on a month's last day; the
+            run page's priced line counting answered calls and the passes they were made under. 1 under
+            `component-access`: every component that writes appends to the run log and none that
+            writes nothing does. 802 tests, from 760 at 6.6.
+Mutated:    the rule, stated before the sweep: mutate every property this checkpoint added whose failure
+            would let research spend past a cap, make a page state a pause or a spend other than the one
+            the ledger holds, or price a call other than the configured rates price it. Twenty-eight
+            qualify and all twenty-eight were mutated, in a detached worktree under the session
+            scratchpad outside this repository, over an unmutated baseline of 802 passing, each reverted
+            before the next, and the worktree removed.
+            Twenty-three went red on the first run. The rule: a ceiling ignored for the day, 2 tests
+            red, and for the month, 1; spend equal to a cap read as short of it, 3; the month cap never
+            refusing, 6; a day pause resuming twenty-four hours after the refusal rather than at the next
+            UTC midnight, 6; a month pause resuming a month after it rather than on the first, 5; the day
+            named where both caps stop research, 1; a day's spend summing every earlier day with it, 5.
+            The component: a paused call made anyway, 3; a call judged without its ceiling, 1; a ledger
+            reading only the cap's own rows, 1; a price rounded to the cent on its row, 1. The price: the
+            peak multiple dropped, 1; the cached term dropped, 1; a window's end hour counted inside it,
+            3; peak on every day of the week, 3; a ceiling without the answer's budget, 1; a ceiling taken
+            off-peak, 1. The settings: an option allowed to set a field the feed writes, 1; a model with
+            no prices given rates of a millionth of a dollar, 1; a prompt reported only in the format's field
+            read as wholly uncached, 1. The run page: paused and failed calls priced, 1; calls counted as
+            passes, 1.
+            Five survived, each a missing property, and each went red once a test named it, run again at
+            the commit that added the tests: a month read without its year, which no shipped read can
+            hand a ledger because every one starts at the month's first instant, 1 red; a key written
+            and left blank, where only a missing one was tried, 1; a pause drawn a cent before the cap,
+            where the page was tried only well below a cap and at it, 1; a night's month to date read
+            past the night's end, which the window it is read over already bounds, 1; and the month to
+            date taken from the month a night's end opens, which only a night on a month's last day
+            shows while the test's night was the 8th, 1. The third found what is carried below.
+            Properties added and not mutated, named because the next sweep has to find them: a cap
+            refused where it is not money or not above zero; a failed call written as an attempt with
+            nothing spent; a format nothing implements, an address that is not absolute and options that
+            are not an object, each refused; a timeout and a budget that are not whole numbers refused;
+            the key withheld from the settings' own text; the recording refusing a request it does not
+            hold; the page and the refusal stating one line; money drawn to a hundredth of a cent below
+            one; the multiple read as one where no peak hours are named.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 802 of 802 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 346 claims, 290 PASS, 0 fail, 56 out of scope, 0
+            unexamined, 297 placements and verdicts reconciled against a floor of 34, 34 of 35 roster
+            checks carried and all 34 run. Migrations 0 to 21, this checkpoint adding none: the run
+            log carried `spend` and `model_calls` from migration 1. The 56 read twice, by the first
+            checkpoint each note names and by the last, give 40 at phase 6 and 16 at phase 7 both
+            ways: 19 at 6.8, 10 at 6.9, 7 at 6.10 and 4 at 6.11.
+            The claim pair moves to 346 and 330, from 342 and 326. The four that arrived are the spend
+            cap's catalogue and matrix rows, which the component needed, and section 18's spend cap row
+            and section 15.9's research paused row at two parts each where there was one. All eight
+            claims owed at 6.7 pass, and the part of research paused drawn with written sections is
+            placed at 6.8, which is the one more that 6.8 holds than it did.
+            The operator's store under `data/` was not touched by either gate.
+Carried:    one obligation, due at 6.8, which makes the first paid pass and whose text cites it (owes: A
+            pass the spend cap refuses short of a reached cap stated on the name page). The operating row
+            that settles both caps is read on the run page's operational header this checkpoint built,
+            at twenty research passes, and nothing has priced a pass yet. The provider's other model is
+            not configured and was not recorded: the lane comparison 6.8 owes is a second value in
+            configuration and a second recording rather than code. A secrets file written before this
+            checkpoint holds the key under the provider's path, which nothing reads now: RUNBOOK names
+            the path the settings read, and this machine's file carries both. This session has committed
+            code and may not sign it off.

@@ -74,6 +74,10 @@ public class ComponentAccess
             // reconciled against the class's own declaration in both directions.
             CheckReach.Key(Scope.CatalogueTable, "Fundamentals fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Fundamentals fetcher"),
+            // 6.7, the spend cap, and the run log's row it makes true.
+            CheckReach.Key(Scope.CatalogueTable, "Spend cap"),
+            CheckReach.Key(Scope.MatrixTable, "Spend cap"),
+            CheckReach.Key(Scope.CatalogueTable, "Run log"),
             // 6.6, the prose writer.
             CheckReach.Key(Scope.CatalogueTable, "Prose writer"),
             CheckReach.Key(Scope.MatrixTable, "Prose writer"),
@@ -353,6 +357,57 @@ public class ComponentAccess
 
         Assert.Empty(faults);
         Assert.True(checkedWrites >= 2, $"Checked {checkedWrites} declared writes, expected at least 2.");
+    }
+
+    [Fact]
+    public void EveryComponentThatWritesAppendsToTheRunLogAndNoneThatWritesNothingDoes()
+    {
+        // The run log's catalogue row, from 6.7: every component that writes appends,
+        // read over the declarations in both directions. A component changing a store
+        // and leaving no row of its own is a night nobody can read back, and a
+        // component declaring a run log touch while its catalogue row says it writes
+        // nothing is a row that contradicts its class.
+        var components = ShippedComponents.All();
+        var catalogue = Catalogue();
+
+        Assert.True(components.Count >= 20, $"Read {components.Count} declaring components, expected at least 20.");
+
+        var faults = new List<string>();
+        var silent = 0;
+
+        foreach (var component in components)
+        {
+            var writes = component.Access.Stores.Any(touch => touch.Store != DataStore.RunLog && touch.Touch is not Touch.Read and not Touch.None);
+            var appends = component.Access.On(DataStore.RunLog).HasFlag(Touch.Insert);
+
+            if (writes && !appends)
+            {
+                faults.Add($"{component.Name} writes a store and declares no row of its own on the run log.");
+            }
+
+            if (!writes && !appends)
+            {
+                silent++;
+
+                var row = catalogue.Single(entry => Matches(entry.Component, component.Name));
+
+                if (!string.IsNullOrWhiteSpace(row.Writes) && !row.Writes.StartsWith("none", StringComparison.OrdinalIgnoreCase))
+                {
+                    faults.Add($"{component.Name} declares no write and its Writes cell reads '{row.Writes}'.");
+                }
+            }
+        }
+
+        Assert.Empty(faults);
+
+        // The three that write nothing, stated in advance: the page, the renderer and
+        // the trend classifier, which hands its label to the ladder builder.
+        Assert.Equal(3, silent);
+
+        // And the row's own words, read off the document, are the words this holds.
+        Assert.Equal(
+            "every component that writes appends",
+            Catalogue().Single(entry => entry.Component == "Run log").Reads);
     }
 
     [Fact]

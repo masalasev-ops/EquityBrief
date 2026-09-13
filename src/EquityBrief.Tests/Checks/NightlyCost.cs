@@ -96,6 +96,7 @@ public class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
+        "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
     ];
 
     // The shipped files permitted to reach a model, each by its path, which is the
@@ -108,10 +109,20 @@ public class NightlyCost
     // and the queue that will call this lane from the night is 6.10's, where the
     // second half says which lane the night may call. A file here that reaches a
     // model and is not a model feed fails, for the reason a client belongs in a feed.
+    //
+    // Two from 6.7, which adds the research model's live feed, the second file that
+    // sends the wire path. Its recorded double reaches no model and carries no pattern,
+    // reading the live feed's parser by the feed's own name. And no shipped file names
+    // the paid provider: the provider is named in configuration alone, and the first
+    // pattern is what holds that, because a file naming it is a file this scan reports.
+    // It was three for one commit, while the feed was named for the provider and the
+    // double carried the name by calling it.
     // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
+    // see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in
     internal static readonly string[] MayHoldAModel =
     [
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
+        "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
     ];
 
     // What makes a shipped file a provider implementation, which is what the list
@@ -251,20 +262,22 @@ public class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         Assert.True(
-            MayHoldAClient.Length <= 9,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are nine feed " +
-            "implementations. A tenth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 10,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are ten feed " +
+            "implementations. An eleventh is a file that is not one, or a feed nobody declared.");
 
-        // The model list, stated the same way: one file, the local lane's client.
-        Assert.Single(MayHoldAModel);
+        // The model list, stated the same way: two files, the local lane's client and
+        // the research model's live feed.
+        Assert.Equal(2, MayHoldAModel.Length);
 
         // And the list holds exactly the provider implementations, in both
         // directions, so a file added to it that is not one fails rather than
         // passing quietly. It was six against five before 4.3 added the calendar,
         // seven against six before 6.1 added the fundamentals endpoint, which is
         // the first that no night calls, and eight before 6.2 added the filings
-        // archive, which is the first from another provider, and nine at 6.6, the
-        // local model, which is the first that reaches a model.
+        // archive, which is the first from another provider, nine at 6.6, the
+        // local model, which is the first that reaches a model, and ten at 6.7, the
+        // research model, which is the first that is paid.
         var live = Repository.SourceFiles()
             .Select(file => file[Repository.Root.Length..].Replace(Path.DirectorySeparatorChar, '/').TrimStart('/'))
             .Where(IsAProviderImplementation)

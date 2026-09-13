@@ -185,7 +185,7 @@ public class StoreWrites
                     .Split(',')
                     .Select(name => name.Trim())
                     // A component name. "none" is not one, and neither is the
-                    // run log's "every component appends", which is prose the
+                    // run log's "every component that writes appends", which is prose the
                     // file uses deliberately and which the next test handles.
                     .Where(name => Regex.IsMatch(name, "^[A-Z][A-Za-z]+$"))
                     .Select(name => (entry.Table, entry.Operation, Owner: name))))
@@ -193,7 +193,7 @@ public class StoreWrites
     }
 
     // The one cell in the ownership table that names no component. SCHEMA gives
-    // run_log's Insert to "every component appends", deliberately, because the
+    // run_log's Insert to "every component that writes appends", deliberately, because the
     // run log is the one store every stage writes its own row to. Read from the
     // document rather than hardcoded, so the exemption disappears the day the
     // cell is changed to name an owner.
@@ -266,7 +266,7 @@ public class StoreWrites
             _ => row.Groups[3].Value,
         };
 
-        return cell.Contains("every component appends", StringComparison.OrdinalIgnoreCase);
+        return cell.Contains("every component that writes appends", StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

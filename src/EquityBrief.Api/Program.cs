@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -23,6 +24,12 @@ builder.Services.AddSingleton(services => new ReadApi(
     services.GetRequiredService<StoreLocation>().DatabaseFile,
     services.GetRequiredService<IClock>()));
 builder.Services.AddSingleton<MarkRenderer>();
+
+// The two spend caps, read once at startup so a cap that is not an amount of money
+// refuses the surface rather than a page, and handed to the screens that state them.
+builder.Services.AddSingleton(_ => SpendCaps.From(
+    builder.Configuration[SpendCaps.DayKey],
+    builder.Configuration[SpendCaps.MonthKey]));
 builder.Services.AddSingleton<SinglePageApp>();
 
 var app = builder.Build();
@@ -80,7 +87,7 @@ app.MapGet("/marks/level-chart/{ticker}", async (
 // asserts the shipped path rather than a copy of it. A route that assembled the
 // region itself would be a second composer, and the one thing a test could then
 // prove is that the test agrees with itself.
-app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
+app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
 {
     var bars = await read.BarsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
     var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
@@ -153,9 +160,28 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
             await read.SectionStatesAsync(ticker, DateOnly.MaxValue),
             await read.StalenessAsync(ticker),
             await read.WrittenSectionsAsync(ticker),
-            await read.NewestProsePassAsync(ticker)),
+            await read.NewestProsePassAsync(ticker),
+            await SpendNow(read, caps, clock)),
         "text/html; charset=utf-8");
 });
+
+// Where research stands against the caps now, which is what a name page states a
+// pause from. The month's rows to this instant, judged by the rule the spend cap
+// refuses a call by, with no call in hand.
+static async Task<SpendVerdict> SpendNow(ReadApi read, SpendCaps caps, IClock clock)
+{
+    var now = clock.UtcNow;
+
+    return NameScreen.Spend(await read.SpentRowsAsync(SpendLedger.MonthStart(now), now.AddSeconds(1)), caps, now);
+}
+
+// A night's spend rows, over its UTC month to the end of its UTC day.
+static async Task<IReadOnlyList<SpentRow>> SpentOn(ReadApi read, DateOnly night)
+{
+    var (from, to) = TonightScreen.SpendWindow(night);
+
+    return await read.SpentRowsAsync(from, to);
+}
 
 // The phase report the harness last wrote, read as text and handed to the
 // projection rather than opened by it, so nothing on the read surface reaches
@@ -184,7 +210,8 @@ app.MapGet("/screens/tonight/{night?}", async (
     HttpRequest request,
     ReadApi read,
     MarkRenderer marks,
-    SinglePageApp page) =>
+    SinglePageApp page,
+    SpendCaps caps) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
@@ -280,7 +307,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             RunScreen.Harness(PhaseReport(builder)),
             selection?.Ticker,
             records,
-            RunScreen.Tracks(TonightScreen.Totals(listings))),
+            RunScreen.Tracks(TonightScreen.Totals(listings)),
+            TonightScreen.Spend(dated, await SpentOn(read, dated), caps)),
         "text/html; charset=utf-8");
 });
 
@@ -396,7 +424,8 @@ app.MapGet("/screens/run/{night?}", async (
             await read.StaleNamesAsync(index, dated),
             RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
             RunScreen.FellBack(await read.FellBackAsync(dated)),
-            RunScreen.Harness(PhaseReport(builder))),
+            RunScreen.Harness(PhaseReport(builder)),
+            RunScreen.Priced(await read.PaidCallSpendsAsync())),
         "text/html; charset=utf-8");
 });
 

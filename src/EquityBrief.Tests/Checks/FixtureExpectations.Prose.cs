@@ -136,7 +136,7 @@ public partial class FixtureExpectations
         Assert.DoesNotContain(
             typeof(RecordedLocalModelFeed).GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public),
             field => typeof(HttpClient).IsAssignableFrom(field.FieldType) || typeof(HttpMessageHandler).IsAssignableFrom(field.FieldType));
-        Assert.False(OnDemandFeeds.FromFixture(Folder()).ReachesTheNetwork);
+        Assert.False(OnDemandFeeds.FromFixture(Folder(), Providers.ResearchModelFeedTests.Shipped()).ReachesTheNetwork);
 
         Assert.Equal(names.Length * replay.GetProperty("modelCallsPerName").GetInt32(), feed.Requests);
 

@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Research;
+using EquityBrief.Core.Spending;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
@@ -763,7 +764,8 @@ public static class NameScreen
         IReadOnlyList<SectionStateRow>? sections = null,
         StalenessVerdict? staleness = null,
         IReadOnlyList<WrittenSectionRow>? written = null,
-        string? prosePass = null)
+        string? prosePass = null,
+        SpendVerdict? spend = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -861,8 +863,21 @@ public static class NameScreen
                 ticker,
                 bars.Count > 0 ? bars[^1].SessionDate : null,
                 filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
-                [.. accepted.Select(section => new WrittenPart(section.Section, section.AsOf, section.Model))]));
+                [.. accepted.Select(section => new WrittenPart(section.Section, section.AsOf, section.Model))]),
+            spend is null ? null : Paused(spend));
     }
+
+    // The pause as the page draws it, where the spend cap has stopped research, and
+    // nothing where it has not. Judged by the screen's caller with the rule the cap
+    // refuses a call by, and handed here as a verdict so this states and computes nothing.
+    public static ResearchPausedLine? Paused(SpendVerdict verdict) =>
+        verdict.Paused ? new ResearchPausedLine(verdict.Cap!, verdict.ResumesAt!.Value, verdict.Line) : null;
+
+    // Where research stands against the caps at an instant, from the rows a month
+    // holds: the rule itself, with no call in hand, so a page states a pause from the
+    // moment a cap is reached.
+    public static SpendVerdict Spend(IReadOnlyList<SpentRow> rows, SpendCaps caps, DateTimeOffset now) =>
+        SpendRule.Judge(new SpendLedger(rows), caps, now);
 
     // The moves table's rows with the cause of each, where a cause section has been
     // accepted for the name.

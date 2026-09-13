@@ -293,6 +293,11 @@ public static class RunScreen
                 .Select(reason => reason.GetProperty("name").GetString()!),
         ];
     }
+
+    // The paid calls the log carries a recorded cost for, counted, their passes counted
+    // by the run each was made under, and summed, off the rows the read surface handed back.
+    public static PricedCalls Priced(IReadOnlyList<(string RunId, decimal Spend)> spends) =>
+        new(spends.Count, spends.Select(call => call.RunId).Distinct(StringComparer.Ordinal).Count(), spends.Sum(call => call.Spend));
 }
 
 // One resolved setup, as the record counts it.
