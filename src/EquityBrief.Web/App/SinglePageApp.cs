@@ -150,7 +150,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<FiredReason> firedReasons,
         string? previousOnTheList,
         string? nextOnTheList,
-        IReadOnlyList<LeftOutSection>? leftOut = null)
+        IReadOnlyList<LeftOutSection>? leftOut = null,
+        ResearchStateLine? researchState = null)
     {
         var region = new StringBuilder();
 
@@ -198,7 +199,7 @@ public sealed class SinglePageApp : IComponent
         // ones. At 6.4 what is drawn is the sections left out, each with its line,
         // because that is what the claim checker produces and nothing writes a
         // section a reader could be shown before 6.8.
-        region.Append(marks.LeftOut(ticker, leftOut ?? []));
+        region.Append(marks.LeftOut(ticker, leftOut ?? [], researchState));
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));

@@ -251,6 +251,10 @@ public sealed record RefusedDocument(string Category, string Title, string Url);
 // own page, where the name is the page.
 public sealed record LeftOutSection(string Subject, string Section, string Reason);
 
+// Where a name's research stands, as the page draws it: missing, stands or stale,
+// and the one line that says so in the judge's own words.
+public sealed record ResearchStateLine(string State, string Line);
+
 // One line of the sector strip.
 public sealed record SectorLine(string Sector, int Names, int InUptrend, int OnTheList);
 
@@ -1544,11 +1548,22 @@ public sealed class MarkRenderer : IComponent
     // Only the sections left out are drawn here. A written section is drawn from
     // 6.8 with its own date and model beside it, and a section still waiting on
     // its retry is neither written nor left out, so this page says nothing of it.
-    public string LeftOut(string ticker, IReadOnlyList<LeftOutSection> leftOut)
+    public string LeftOut(string ticker, IReadOnlyList<LeftOutSection> leftOut, ResearchStateLine? state = null)
     {
         var region = new StringBuilder();
 
         region.Append(Invariant, $"<section class=\"research\" data-ticker=\"{Escaped(ticker)}\" data-left-out=\"{leftOut.Count}\">");
+
+        // Where the research stands, first, because it is the answer to the
+        // question a reader opens the page with. Section 15.9's research-state
+        // rows: missing with one line saying the sections have not been written,
+        // or stale with one line naming which of the four triggers fired. The
+        // control that writes them and the sections themselves under their dates
+        // arrive with the research runner.
+        if (state is not null)
+        {
+            region.Append(Invariant, $"<p class=\"research-state\" data-state=\"{Escaped(state.State)}\">{Escaped(state.Line)}</p>");
+        }
 
         foreach (var section in leftOut)
         {

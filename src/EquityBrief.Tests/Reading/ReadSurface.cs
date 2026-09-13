@@ -155,6 +155,13 @@ public class ReadSurface
             // out, which is what section 18's two rows about the checker say a
             // reader sees.
             CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back"),
+
+            // 6.5, the two research-state lines section 15.9 names, each the part
+            // of its row the staleness verdict draws, and the computed sections the
+            // missing line is drawn beside.
+            CheckReach.Key("15.9 Name", "Research not yet written, the researched sections absent with one line saying they have not been written"),
+            CheckReach.Key("15.9 Name", "Research not yet written, beside the computed sections rendered whole"),
+            CheckReach.Key("15.9 Name", "Research stale, one line naming which of the four triggers fired"),
             CheckReach.Key(Scope.FailureTable, "Claim checker rejects twice"),
             CheckReach.Key(Scope.FailureTable, "A pass finds no admissible source for a section"),
 
@@ -2928,6 +2935,107 @@ public class ReadSurface
         Assert.Equal(
             states.Count(state => state.Status == EquityBrief.Worker.Research.ClaimChecker.Fallback),
             Regex.Matches(region, "<p class=\"left-out\"").Count);
+    }
+
+    // ---- 6.5, where a name's research stands ----
+
+    static async Task<string> NamePageWithStaleness(TemporaryStore store, string ticker)
+    {
+        var api = Api(store);
+
+        return NameScreen.Region(
+            new SinglePageApp(),
+            new MarkRenderer(),
+            ticker,
+            await api.BarsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue),
+            await api.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue),
+            await api.LevelsAsync(ticker),
+            await api.ProfileAsync(ticker),
+            await api.LadderAsync(ticker),
+            await api.NextEventAsync(ticker, DateOnly.MinValue),
+            await api.MovesAsync(ticker),
+            await api.FundamentalsAsync(ticker),
+            sections: await api.SectionStatesAsync(ticker, DateOnly.MaxValue),
+            staleness: await api.StalenessAsync(ticker));
+    }
+
+    [Fact]
+    public async Task ANameWithNoResearchSaysSoBesideTheComputedSectionsRenderedWhole()
+    {
+        // Section 15.9's research-not-yet-written row, the two parts this checkpoint
+        // draws. The line saying the sections have not been written, and the computed
+        // sections beside it in full on the same markup, because a page that said
+        // research was missing and drew nothing else would be a page that failed.
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        var region = await NamePageWithStaleness(store, "KEYS");
+
+        var line = Regex.Match(region, "<p class=\"research-state\" data-state=\"([a-z]+)\">([^<]*)</p>");
+
+        Assert.True(line.Success);
+        Assert.Equal("missing", line.Groups[1].Value);
+        Assert.Equal(EquityBrief.Core.Research.Staleness.NotYetWritten, line.Groups[2].Value);
+
+        foreach (var computed in new[] { "class=\"fact-strip\"", "class=\"level-chart\"", "class=\"level-summary\"", "class=\"numbers\"", "<section class=\"how-it-got-here\"" })
+        {
+            Assert.Contains(computed, region, StringComparison.Ordinal);
+        }
+
+        // Whole rather than present: the numbers section draws its five quarters for
+        // a name the fetcher stored filings for, and the chart draws every stored
+        // session, so a region that drew a placeholder beside the line would fail
+        // here rather than read as rendered.
+        var api = Api(store);
+
+        // Counted inside the level chart alone: the moves region draws its own
+        // twelve-month picture from the same bars, and a count over the page would
+        // count both.
+        var chartStart = region.IndexOf("class=\"level-chart\"", StringComparison.Ordinal);
+        var chart = region[chartStart..region.IndexOf("</svg>", chartStart, StringComparison.Ordinal)];
+
+        Assert.Equal(
+            (await api.BarsAsync("KEYS", DateOnly.MinValue, DateOnly.MaxValue)).Count,
+            Regex.Matches(chart, "class=\"candle\"").Count);
+
+        Assert.Contains("class=\"numbers-quarters\"", region, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AStaleNameIsDrawnWithOneLineNamingTheTriggersInTheWordsTheJudgeWrites()
+    {
+        // Section 15.9's research-stale row, the line this checkpoint draws. KEYS's
+        // stored filing is dated 2026-09-02 and its newest passed print 2026-08-18
+        // after the close, so a section written on 2026-08-10 is stale on both.
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        Insert(
+            store,
+            "INSERT INTO research_section VALUES ('KEYS', 'What the company sells', 1, '2026-08-10', 'a writer', 'accepted', 'prose', '[]', NULL);");
+
+        var region = await NamePageWithStaleness(store, "KEYS");
+        var line = Regex.Match(region, "<p class=\"research-state\" data-state=\"([a-z]+)\">([^<]*)</p>");
+
+        Assert.True(line.Success);
+        Assert.Equal("stale", line.Groups[1].Value);
+        Assert.Contains("a filing dated 2026-09-02", line.Groups[2].Value, StringComparison.Ordinal);
+        Assert.Contains("the earnings date 2026-08-18", line.Groups[2].Value, StringComparison.Ordinal);
+
+        // One line, and the judge's own words: the shipped judge over the same store
+        // writes the same line to the run log, so the page and the record of the
+        // decision cannot describe one verdict two ways.
+        var verdict = await new EquityBrief.Worker.Research.StalenessJudge(
+            FixedClock.At(new DateTimeOffset(2026, 9, 12, 14, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile).JudgeAsync("KEYS", refresh: false, "judge-page");
+
+        Assert.Equal(verdict.Line, System.Net.WebUtility.HtmlDecode(line.Groups[2].Value));
+        Assert.Single(Regex.Matches(region, "class=\"research-state\""));
+
+        // And a section rewritten after both is a record that stands, drawn as such.
+        Insert(
+            store,
+            "INSERT INTO research_section VALUES ('KEYS', 'What the company sells', 2, '2026-09-05', 'a writer', 'accepted', 'prose', '[]', NULL);");
+
+        Assert.Contains("data-state=\"stands\"", await NamePageWithStaleness(store, "KEYS"), StringComparison.Ordinal);
     }
 
     [Fact]

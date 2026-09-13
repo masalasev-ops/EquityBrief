@@ -899,7 +899,10 @@ public class ArchitectureConformance
         // and the multiples come from the fundamentals and no computed table holds
         // either, so a strip drawn earlier would have been five parts of seven with
         // a verdict covering all of them.
-        Assert.Equal(110, inDocument.Length);
+        // 114 from 110 at 6.5, which decomposed section 15.9's two research-state
+        // rows into three parts each. Two leave and six arrive, and the parts owed at
+        // 6.8 arrive with their own due points rather than inheriting the row's.
+        Assert.Equal(114, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -962,7 +965,10 @@ public class ArchitectureConformance
         // obligation 6.0 filed against that checkpoint. The reader that holds
         // these to the row's own words is the same one, because it was written
         // over every cell of a row rather than over one column.
-        Assert.Equal(101, checkedElements);
+        // 107 from 101 at 6.5, the six being section 15.9's two research-state
+        // rows, each read as the line this checkpoint draws and the parts the
+        // research runner draws.
+        Assert.Equal(107, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
