@@ -285,7 +285,7 @@
       "endpoint": "the research model provider's OpenAI-format API at https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "GET https://api.deepseek.com/models",
       "fetchedAt": "2026-09-13T14:58:02Z",
-      "trimmedTo": "nothing. The provider's own list of the models the key may call, captured before any setting named one, which is what the two priced models in the build are read against: deepseek-flash and deepseek-v4-pro."
+      "trimmedTo": "nothing. The provider's own list of the models the key may call, captured before any setting named one, which is what the model the shipped configuration names is read against: the list carries deepseek-flash and deepseek-v4-pro."
     },
     {
       "file": "research-probe-thinking.json",
@@ -302,18 +302,18 @@
       "trimmedTo": "nothing. The whole response with thinking off: no reasoning_content, no completion_tokens_details, and 25 fewer prompt tokens for the same text, which is what thinking's own template adds."
     },
     {
-      "file": "research-call-318d585940e2b51aa0cf4155a5629a77.json",
-      "endpoint": "the research model provider's OpenAI-format API at https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST https://api.deepseek.com/chat/completions for The two cases, the paid lane's call as the research feed builds it with thinking enabled: model deepseek-flash, the section instructions, one close, max_tokens 8192, keyed 318d585940e2b51aa0cf4155a5629a77",
-      "fetchedAt": "2026-09-13T15:11:59Z",
-      "trimmedTo": "nothing. The whole response to one paid call, 182 uncached prompt tokens and 187 completion tokens, 178 of them reasoning, created at 2026-09-13T15:11:59Z, off-peak, and priced at 0.0001395 dollars by the page's rates, named for the request's key so a replay asking the same request reads it."
+      "file": "research-call-6a03f6e0ca9af967f97cd12d006f1457.json",
+      "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
+      "query": "POST chat/completions for The two cases, the paid lane's call as the research feed builds it from the shipped configuration with the provider's default, which is thinking: model deepseek-flash, the section instructions, one close, max_tokens 8192, keyed 6a03f6e0ca9af967f97cd12d006f1457",
+      "fetchedAt": "2026-09-13T15:40:45Z",
+      "trimmedTo": "nothing. The whole response to one paid call, 182 uncached prompt tokens and 243 completion tokens, 233 of them reasoning, created at 2026-09-13T15:40:45Z, off-peak, and priced at 0.0001731 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-6a03f6e0ca9af967f97cd12d006f1457.json",
-      "endpoint": "the research model provider's OpenAI-format API at https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST https://api.deepseek.com/chat/completions for The two cases, the paid lane's call as the research feed builds it with thinking disabled: model deepseek-flash, the section instructions, one close, max_tokens 8192, keyed 6a03f6e0ca9af967f97cd12d006f1457",
-      "fetchedAt": "2026-09-13T15:12:01Z",
-      "trimmedTo": "nothing. The whole response to one paid call, 157 uncached prompt tokens and 8 completion tokens, 0 of them reasoning, created at 2026-09-13T15:12:01Z, off-peak, and priced at 0.00002835 dollars by the page's rates, named for the request's key so a replay asking the same request reads it."
+      "file": "research-call-34f4305f022c296f8260cf557e423fe7.json",
+      "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
+      "query": "POST chat/completions for The two cases, the paid lane's call as the research feed builds it from the shipped configuration with the options {\"thinking\":{\"type\":\"disabled\"}}: model deepseek-flash, the section instructions, one close, max_tokens 8192, keyed 34f4305f022c296f8260cf557e423fe7",
+      "fetchedAt": "2026-09-13T15:40:47Z",
+      "trimmedTo": "nothing. The whole response to one paid call, 157 uncached prompt tokens and 8 completion tokens, 0 of them reasoning, created at 2026-09-13T15:40:47Z, off-peak, and priced at 0.00002835 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     }
   ]
 }

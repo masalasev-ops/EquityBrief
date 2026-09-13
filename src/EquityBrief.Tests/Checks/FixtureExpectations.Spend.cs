@@ -167,9 +167,8 @@ public partial class FixtureExpectations
 
     // ---- the spend cap, the one component that makes a paid call ----
 
-    const string NotAKey = "a key no test sends";
-
-    static ResearchModelSettings Research(string? thinking = null) => new(null, null, thinking, null, NotAKey);
+    // The shipped configuration's research model, with a key no test sends.
+    static ResearchModelSettings Research(string? options = null) => Providers.ResearchModelFeedTests.Shipped(options);
 
     static IClock SpendClock(string instant) =>
         FixedClock.At(DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture), SessionZones.UnitedStates);
@@ -199,17 +198,17 @@ public partial class FixtureExpectations
         Assert.False(call.Paused);
         Assert.Equal(1, feed.Requests);
 
-        // The price is the recording's own counts at the page's rates, which the feed
-        // tests work out by hand, written as money in TEXT and never rounded.
-        Assert.Equal(0.0001395m, call.Price);
-        Assert.Equal(["research call: The two cases|ok|1|1|0.0001395"], CallRows(store, "pass-below"));
+        // The price is the recording's own counts at the configured rates, which the
+        // feed tests work out by hand, written as money in TEXT and never rounded.
+        Assert.Equal(0.0001731m, call.Price);
+        Assert.Equal(["research call: The two cases|ok|1|1|0.0001731"], CallRows(store, "pass-below"));
 
         // And the ledger the next call is judged by is the store's.
         await using var connection = store.Open();
 
         var ledger = await SpendCap.LedgerAsync(connection, DateTimeOffset.Parse("2026-09-15T20:00:00Z", CultureInfo.InvariantCulture));
 
-        Assert.Equal(0.0001395m, ledger.SpentOn(new DateOnly(2026, 9, 15)));
+        Assert.Equal(0.0001731m, ledger.SpentOn(new DateOnly(2026, 9, 15)));
     }
 
     [Fact]
@@ -264,7 +263,7 @@ public partial class FixtureExpectations
     {
         var settings = Research();
         var request = Providers.ResearchModelFeedTests.Recorded(settings);
-        var ceiling = DeepSeekModelFeed.CeilingOf(settings.Model, request);
+        var ceiling = settings.Pricing.Ceiling(request, settings.AnswerTokens);
 
         // Spend a stage other than the cap wrote counts, because the cap reads the store
         // rather than a figure of its own. Just below the cap by less than the ceiling:
@@ -299,9 +298,9 @@ public partial class FixtureExpectations
 
         var settings = Research();
 
-        using var client = new HttpClient(new NothingListening()) { BaseAddress = new Uri(ResearchModelSettings.DefaultBaseAddress) };
+        using var client = new HttpClient(new NothingListening()) { BaseAddress = new Uri(settings.BaseAddress) };
 
-        var call = await new SpendCap(new DeepSeekModelFeed(client, settings), SpendCaps.Default, SpendClock("2026-09-15T20:00:00Z"), store.DatabaseFile)
+        var call = await new SpendCap(new OpenAiCompatibleResearchFeed(client, settings), SpendCaps.Default, SpendClock("2026-09-15T20:00:00Z"), store.DatabaseFile)
             .AskAsync(Providers.ResearchModelFeedTests.Recorded(settings), "pass-unreachable");
 
         Assert.False(call.Answered);
@@ -310,25 +309,22 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void TheSpendExpectationIsWhatThePagesRatesAndTheRuleProduce()
+    public void TheSpendExpectationIsWhatTheConfiguredRatesAndTheRuleProduce()
     {
         var expected = Expected("spend");
+        var pricing = Research().Pricing;
 
-        // The rates, in both directions against the feed's own table.
+        // The rates, against what the shipped configuration hands the pricing, for the
+        // model it names.
         var rates = expected.GetProperty("rates");
 
-        Assert.Equal(
-            rates.EnumerateObject().Select(model => model.Name).Order(StringComparer.Ordinal).ToArray(),
-            DeepSeekModelFeed.Rates.Keys.Order(StringComparer.Ordinal).ToArray());
+        decimal Rate(string name) => decimal.Parse(rates.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
 
-        foreach (var model in rates.EnumerateObject())
-        {
-            decimal Rate(string name) => decimal.Parse(model.Value.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
-
-            Assert.Equal(new ModelRates(Rate("cacheHit"), Rate("cacheMiss"), Rate("output")), DeepSeekModelFeed.Rates[model.Name]);
-        }
-
-        Assert.Equal(DeepSeekModelFeed.PeakMultiple, decimal.Parse(expected.GetProperty("peakMultiple").GetString()!, CultureInfo.InvariantCulture));
+        Assert.Equal(rates.GetProperty("model").GetString(), Research().Model);
+        Assert.Equal(Rate("cacheHit"), pricing.CacheHit);
+        Assert.Equal(Rate("cacheMiss"), pricing.CacheMiss);
+        Assert.Equal(Rate("output"), pricing.Output);
+        Assert.Equal(decimal.Parse(expected.GetProperty("peakMultiple").GetString()!, CultureInfo.InvariantCulture), pricing.PeakMultiple);
 
         // Peak, hour by hour over one week, against the windows and days the page states.
         var days = expected.GetProperty("peakDays").EnumerateArray().Select(day => Enum.Parse<DayOfWeek>(day.GetString()!)).ToHashSet();
@@ -336,31 +332,34 @@ public partial class FixtureExpectations
             .Select(window => (From: window.GetProperty("from").GetInt32(), To: window.GetProperty("to").GetInt32()))
             .ToArray();
 
+        Assert.Equal(windows, pricing.PeakHours);
+        Assert.Equal(days.Order(), pricing.PeakDays.Order());
+
         var hours = 0;
 
         for (var instant = DateTimeOffset.Parse("2026-09-14T00:30:00Z", CultureInfo.InvariantCulture); instant < DateTimeOffset.Parse("2026-09-21T00:00:00Z", CultureInfo.InvariantCulture); instant = instant.AddHours(1))
         {
             var byHand = days.Contains(instant.UtcDateTime.DayOfWeek) && windows.Any(window => instant.UtcDateTime.Hour >= window.From && instant.UtcDateTime.Hour < window.To);
 
-            Assert.Equal(byHand, DeepSeekModelFeed.IsPeak(instant));
+            Assert.Equal(byHand, pricing.IsPeak(instant));
             hours++;
         }
 
         Assert.Equal(168, hours);
 
-        // The two recorded calls, priced by hand in the file and by the feed here.
+        // The two recorded calls, priced by hand in the file and by the configured rates here.
         foreach (var call in expected.GetProperty("recordedCalls").EnumerateArray())
         {
-            var settings = Research(call.GetProperty("thinking").GetString());
+            var settings = Research(call.GetProperty("options").ValueKind == JsonValueKind.Null ? null : call.GetProperty("options").GetString());
             var request = Providers.ResearchModelFeedTests.Recorded(settings);
-            var answer = DeepSeekModelFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section);
+            var answer = OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section);
 
             Assert.Equal(call.GetProperty("cacheHitTokens").GetInt32(), answer.CacheHitTokens);
             Assert.Equal(call.GetProperty("cacheMissTokens").GetInt32(), answer.CacheMissTokens);
             Assert.Equal(call.GetProperty("completionTokens").GetInt32(), answer.CompletionTokens);
             Assert.Equal(call.GetProperty("created").GetString(), answer.Created.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-            Assert.Equal(call.GetProperty("peak").GetBoolean(), DeepSeekModelFeed.IsPeak(answer.Created));
-            Assert.Equal(decimal.Parse(call.GetProperty("price").GetString()!, CultureInfo.InvariantCulture), DeepSeekModelFeed.PriceOf(settings.Model, answer));
+            Assert.Equal(call.GetProperty("peak").GetBoolean(), settings.Pricing.IsPeak(answer.Created));
+            Assert.Equal(decimal.Parse(call.GetProperty("price").GetString()!, CultureInfo.InvariantCulture), settings.Pricing.Price(answer));
             Assert.False(string.IsNullOrWhiteSpace(call.GetProperty("priceWorked").GetString()));
         }
 

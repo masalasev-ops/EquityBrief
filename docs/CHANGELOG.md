@@ -25,6 +25,89 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - RUNBOOK.md - the research model's settings name its provider in configuration alone, and its key moves beside them
+
+Authorised by: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in
+Was:
+> | DeepSeek | the research model | peak rates are double; peak falls late at night in Eastern time, so reading after the close is never billed at peak |
+>
+> and in the secrets table:
+> | DeepSeek | `EquityBrief:Providers:DeepSeek:ApiKey` | `EquityBrief.Worker` |
+>
+> and under the research model's settings:
+> The research model is the one part of the system that costs money. Its key is in the table above and is refused by name at startup when it is blank, on a fixture run as on a live one. Everything else has a default.
+>
+> | Setting | Key | Default |
+> |---|---|---|
+> | which provider answers | `EquityBrief:Models:Research:Provider` | `deepseek` |
+> | which of its models | `EquityBrief:Models:Research:Model` | `deepseek-flash` |
+> | whether it thinks before answering | `EquityBrief:Models:Research:Thinking` | `enabled` |
+> | how long one call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
+> | the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
+> | the most research may spend in a UTC month, in dollars | `EquityBrief:Spend:MonthCap` | `50` |
+>
+> **A provider or a model the build has no price for is refused at startup**, rather than called and recorded as costing nothing. The models the build prices are the provider's own two, at the rates its page gave on 2026-09-13; when the provider changes a price, the rates in the research model's feed are what change.
+Now:
+> | the research model's provider, DeepSeek as shipped | the research model | named in configuration and nowhere in the code, so another provider is a change of settings; the shipped one's peak rates are double and its peak falls late at night in Eastern time, so reading after the close is never billed at peak |
+>
+> and in the secrets table:
+> | the research model's provider | `EquityBrief:Models:Research:ApiKey` | `EquityBrief.Worker` |
+>
+> and under the research model's settings:
+> The research model is the one part of the system that costs money, and nothing in the code says which model it is. The shipped `appsettings.json` beside the worker names the provider and the model this installation uses and the rates that provider charges for it; a different provider or model is different values, set in `appsettings.Secrets.json` or the environment, either of which wins over the shipped file. Its key is in the table above and is refused by name at startup when it is blank, on a fixture run as on a live one.
+>
+> | Setting | Key | As shipped |
+> |---|---|---|
+> | the wire format the provider serves | `EquityBrief:Models:Research:Format` | `openai` |
+> | where the provider answers | `EquityBrief:Models:Research:BaseAddress` | `https://api.deepseek.com/` |
+> | which model answers | `EquityBrief:Models:Research:Model` | `deepseek-flash` |
+> | the provider's own request fields, written as the JSON object it takes | `EquityBrief:Models:Research:Options` | none |
+> | how long one call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
+> | the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `8192` |
+> | dollars per million prompt tokens the provider serves from its cache | `EquityBrief:Models:Research:Prices:CacheHit` | `0.003` |
+> | dollars per million prompt tokens it does not | `EquityBrief:Models:Research:Prices:CacheMiss` | `0.15` |
+> | dollars per million output tokens, reasoning included | `EquityBrief:Models:Research:Prices:Output` | `0.60` |
+> | the UTC hours the rates are multiplied in, one entry per window written as a start and an end hour | `EquityBrief:Models:Research:Prices:PeakHours` | `01-04, 06-10` |
+> | the days those hours fall on, one entry per day | `EquityBrief:Models:Research:Prices:PeakDays` | `Monday, Tuesday, Wednesday, Thursday, Friday` |
+> | what the rates are multiplied by in those hours | `EquityBrief:Models:Research:Prices:PeakMultiple` | `2` |
+> | the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
+> | the most research may spend in a UTC month, in dollars | `EquityBrief:Spend:MonthCap` | `50` |
+>
+> **Switching model is a change to these values and the key, and to nothing else.** A provider serving the OpenAI chat completions format takes its address, its model and its key, and its rates from its own price page; a provider with no peak pricing names no peak hours, and its multiple is then read as one. Options are the provider's own fields sent beside the request, as the shipped provider takes `{"thinking":{"type":"disabled"}}` to answer without reasoning first. A model asked with options is recorded as a different writer from the same model asked without them, so a section says which model wrote it and how it was asked. The one format this build implements is `openai`, and another is refused at startup rather than answered by this one (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back).
+>
+> **A model with no prices is refused at startup**, rather than called and recorded as costing nothing, and so is a rate at or below zero for the uncached prompt or the output, a peak window whose start is not before its end, a multiple below one, a day that is not a day of the week, and options that set the model, the messages, the answer's budget or the stream, which the feed writes itself. The shipped rates are what the provider's page gave on 2026-09-13 for the shipped model. When the provider changes a price, these values are what change, and a call already made keeps the price its run log row recorded (see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in).
+Why: the operator ruled that the research model is to be switchable to any model, and a provider, a model list and a thinking mode written into the feed made switching a change to code. Every value the feed sends and every rate it prices at is now a setting the shipped configuration holds, so the table states what that file holds and a test reads the file to hold it there, and the key sits under the model's own settings rather than under a provider's name.
+
+### 2026-09-13 - RUNBOOK.md - the caps' obligation fires on research passes, as its own row counts them
+
+Corrects: the runbook said the obligation settling the caps fires once twenty paid calls carry a recorded cost, and the obligation's row in BUILD_PLAN.md counts research passes, which the run page's priced line counts as distinct runs rather than as calls. Found at 6.7 while the section beside it was rewritten.
+Was:
+> **Both caps are proposals**, marked so in section 17, and the obligation that settles them fires on the run page once twenty paid calls carry a recorded cost. A cap stops research rather than warning about it: a call is refused before it is made where the most it could cost would take the day or the month past its cap, research resumes when that UTC day or month ends, and the name page says research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
+Now:
+> **Both caps are proposals**, marked so in section 17, and the obligation that settles them fires on the run page once twenty research passes carry a recorded cost. A cap stops research rather than warning about it: a call is refused before it is made where the most it could cost would take the day or the month past its cap, research resumes when that UTC day or month ends, and the name page says research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
+Why: a pass asks for several sections and each is a call, so a trigger read as calls fires after a handful of passes and settles both caps from far fewer priced passes than the row asks for.
+
+### 2026-09-13 - ARCHITECTURE.html - section 5's sources box and section 6.1 name the research model as configuration
+
+Authorised by: Two models for two jobs, and which research model answers is configuration
+Was:
+> <div class="box src"><b>Language models</b>a local model on the operator's own GPU for prose; DeepSeek V4 for research. Neither can search the web on its own, so documents are fetched by the components below and handed to the model</div>
+>
+> <p>Two models are used for different jobs. A local model on the operator's GPU writes prose from numbers, which is a small job it does well and free. DeepSeek V4 does research, which is a large-context job a local model does badly. Its API accepts the OpenAI and Anthropic request formats, so the endpoint is configuration rather than a code path, and the report footer always says which model wrote what. (see: Two models for two jobs, and the research model is DeepSeek V4) (see: A research record is written and dated per section, not as a whole)</p>
+>
+> <p>One consequence shapes the research runner. DeepSeek offers no server-side web search, so the model cannot go and find things; it can only read what it is handed through tool calls (see: The model never fetches; components fetch and hand it documents). For a per-name pass that costs nothing, because the documents it needs are filings and news the system already fetches. For a theme record it matters, because an industry's own pricing cycle is published by research firms rather than filed with a regulator, and that is section 22's second question.</p>
+>
+> <p>Rates carry a peak and off-peak split, with peak at double. In Eastern time the peak windows fall late at night, so the market session and the hours just after the close are off-peak and interactive reading is never billed at the peak rate. Anything queued rather than interactive is scheduled into off-peak deliberately (see: Queued work runs off-peak, and every schedule is written in UTC).</p>
+Now:
+> <div class="box src"><b>Language models</b>a local model on the operator's own GPU for prose; a hosted model named in configuration for research. Neither can search the web on its own, so documents are fetched by the components below and handed to the model</div>
+>
+> <p>Two models are used for different jobs. A local model on the operator's GPU writes prose from numbers, which is a small job it does well and free. A hosted model does research, which is a large-context job a local model does badly. Which hosted model is configuration and not code: the wire format, the address, the model, the options it is asked with and the rates it is priced at are settings, the shipped configuration names DeepSeek V4, and switching model changes those settings and nothing else. The report footer always says which model wrote what, with the options it was asked with. (see: Two models for two jobs, and which research model answers is configuration) (see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in) (see: A research record is written and dated per section, not as a whole)</p>
+>
+> <p>One consequence shapes the research runner. The research model is given no web search of its own, whichever provider serves it, so the model cannot go and find things; it can only read what it is handed through tool calls (see: The model never fetches; components fetch and hand it documents). For a per-name pass that costs nothing, because the documents it needs are filings and news the system already fetches. For a theme record it matters, because an industry's own pricing cycle is published by research firms rather than filed with a regulator, and that is section 22's second question.</p>
+>
+> <p>The shipped provider's rates carry a peak and off-peak split, with peak at double, and the configuration states both. In Eastern time the peak windows fall late at night, so the market session and the hours just after the close are off-peak and interactive reading is never billed at the peak rate. Anything queued rather than interactive is scheduled into off-peak deliberately (see: Queued work runs off-peak, and every schedule is written in UTC).</p>
+Why: which hosted model does research is now the value the shipped configuration holds rather than a decision's name, so the document describes a hosted model named in configuration and says which one ships. The sentence that the provider's API accepts two request formats, so the endpoint is configuration rather than a code path, was already wrong when the wire format decision was taken, since two providers do not share a request shape, and it is removed rather than carried.
+
 ### 2026-09-13 - ARCHITECTURE.html, SCHEMA.md - the run log is appended to by every component that writes
 
 Corrects: the run log's catalogue row and SCHEMA's ownership row both said every component appends, and three do not: the single page app and the mark renderer touch no store, and the trend classifier returns its label to the ladder builder and writes nothing. Each of the three says "none" in its own Writes cell, so the corpus contradicted itself between rows. Found at 6.7, which is where the run log row is owed and where asserting it over the components in code showed the three.

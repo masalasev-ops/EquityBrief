@@ -99,7 +99,7 @@ Load with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.nightly.plist`,
 | EODHD | bulk end-of-day bars, index constituents, company fundamentals, the earnings calendar, ticker-tagged news | the daily allowance is 100,000 weighted calls; a normal night spends a few hundred |
 | SEC EDGAR | filings, segment tables, the earnings press release that carries guidance, and a call transcript where a company files one | free, no key, and the primary document rather than someone's summary of it |
 | Tavily | open web search, for theme material only | free tier is a thousand credits a month against a few hundred searches a year |
-| DeepSeek | the research model | peak rates are double; peak falls late at night in Eastern time, so reading after the close is never billed at peak |
+| the research model's provider, DeepSeek as shipped | the research model | named in configuration and nowhere in the code, so another provider is a change of settings; the shipped one's peak rates are double and its peak falls late at night in Eastern time, so reading after the close is never billed at peak |
 | a local model | prose, and the overnight queue's sections | on the operator's own machine, no marginal cost |
 
 **Per-name material never uses search.** A ticker-tagged feed is exhaustive over a date range and cannot return the wrong company. Search is for industry material, where the query names the industry rather than a ticker.
@@ -128,7 +128,7 @@ Moving to a new machine: copy the checkout, copy the store file, write the secre
 |---|---|---|
 | EODHD | `EquityBrief:Providers:Eodhd:ApiKey` | `EquityBrief.Worker` |
 | SEC EDGAR | `EquityBrief:Providers:SecEdgar:Contact` | `EquityBrief.Worker` |
-| DeepSeek | `EquityBrief:Providers:DeepSeek:ApiKey` | `EquityBrief.Worker` |
+| the research model's provider | `EquityBrief:Models:Research:ApiKey` | `EquityBrief.Worker` |
 
 **The archive's row is a contact and not a key, and it is written here for the same reason the key is.** The archive needs no key and refuses a request that names no user agent, and its fair-access policy asks that the agent carry contact details, so the setting is what a request declares about this installation rather than what authorises it. A blank one refuses at startup for the reason a blank key does. Put a dedicated address there, an alias or a plus-addressed variant rather than a personal mailbox: the value goes out in the header of every archive request for the life of the installation, and it sits in this file beside the keys, where anything identifying a person is one more thing that must never reach a captured fixture (see: The archive declares a contact in its user agent, and a blank one refuses at startup).
 
@@ -154,20 +154,30 @@ A lane naming a section figure 12.2 does not name is refused when the lane is re
 
 ### The research model's settings and the spend caps
 
-The research model is the one part of the system that costs money. Its key is in the table above and is refused by name at startup when it is blank, on a fixture run as on a live one. Everything else has a default.
+The research model is the one part of the system that costs money, and nothing in the code says which model it is. The shipped `appsettings.json` beside the worker names the provider and the model this installation uses and the rates that provider charges for it; a different provider or model is different values, set in `appsettings.Secrets.json` or the environment, either of which wins over the shipped file. Its key is in the table above and is refused by name at startup when it is blank, on a fixture run as on a live one.
 
-| Setting | Key | Default |
+| Setting | Key | As shipped |
 |---|---|---|
-| which provider answers | `EquityBrief:Models:Research:Provider` | `deepseek` |
-| which of its models | `EquityBrief:Models:Research:Model` | `deepseek-flash` |
-| whether it thinks before answering | `EquityBrief:Models:Research:Thinking` | `enabled` |
+| the wire format the provider serves | `EquityBrief:Models:Research:Format` | `openai` |
+| where the provider answers | `EquityBrief:Models:Research:BaseAddress` | `https://api.deepseek.com/` |
+| which model answers | `EquityBrief:Models:Research:Model` | `deepseek-flash` |
+| the provider's own request fields, written as the JSON object it takes | `EquityBrief:Models:Research:Options` | none |
 | how long one call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
+| the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `8192` |
+| dollars per million prompt tokens the provider serves from its cache | `EquityBrief:Models:Research:Prices:CacheHit` | `0.003` |
+| dollars per million prompt tokens it does not | `EquityBrief:Models:Research:Prices:CacheMiss` | `0.15` |
+| dollars per million output tokens, reasoning included | `EquityBrief:Models:Research:Prices:Output` | `0.60` |
+| the UTC hours the rates are multiplied in, one entry per window written as a start and an end hour | `EquityBrief:Models:Research:Prices:PeakHours` | `01-04, 06-10` |
+| the days those hours fall on, one entry per day | `EquityBrief:Models:Research:Prices:PeakDays` | `Monday, Tuesday, Wednesday, Thursday, Friday` |
+| what the rates are multiplied by in those hours | `EquityBrief:Models:Research:Prices:PeakMultiple` | `2` |
 | the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
 | the most research may spend in a UTC month, in dollars | `EquityBrief:Spend:MonthCap` | `50` |
 
-**A provider or a model the build has no price for is refused at startup**, rather than called and recorded as costing nothing. The models the build prices are the provider's own two, at the rates its page gave on 2026-09-13; when the provider changes a price, the rates in the research model's feed are what change.
+**Switching model is a change to these values and the key, and to nothing else.** A provider serving the OpenAI chat completions format takes its address, its model and its key, and its rates from its own price page; a provider with no peak pricing names no peak hours, and its multiple is then read as one. Options are the provider's own fields sent beside the request, as the shipped provider takes `{"thinking":{"type":"disabled"}}` to answer without reasoning first. A model asked with options is recorded as a different writer from the same model asked without them, so a section says which model wrote it and how it was asked. The one format this build implements is `openai`, and another is refused at startup rather than answered by this one (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back).
 
-**Both caps are proposals**, marked so in section 17, and the obligation that settles them fires on the run page once twenty paid calls carry a recorded cost. A cap stops research rather than warning about it: a call is refused before it is made where the most it could cost would take the day or the month past its cap, research resumes when that UTC day or month ends, and the name page says research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
+**A model with no prices is refused at startup**, rather than called and recorded as costing nothing, and so is a rate at or below zero for the uncached prompt or the output, a peak window whose start is not before its end, a multiple below one, a day that is not a day of the week, and options that set the model, the messages, the answer's budget or the stream, which the feed writes itself. The shipped rates are what the provider's page gave on 2026-09-13 for the shipped model. When the provider changes a price, these values are what change, and a call already made keeps the price its run log row recorded (see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in).
+
+**Both caps are proposals**, marked so in section 17, and the obligation that settles them fires on the run page once twenty research passes carry a recorded cost. A cap stops research rather than warning about it: a call is refused before it is made where the most it could cost would take the day or the month past its cap, research resumes when that UTC day or month ends, and the name page says research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
 
 ---
 

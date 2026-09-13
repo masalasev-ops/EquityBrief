@@ -96,7 +96,7 @@ public class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
-        "src/EquityBrief.Core/Providers/DeepSeekModelFeed.cs",
+        "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
     ];
 
     // The shipped files permitted to reach a model, each by its path, which is the
@@ -110,17 +110,19 @@ public class NightlyCost
     // second half says which lane the night may call. A file here that reaches a
     // model and is not a model feed fails, for the reason a client belongs in a feed.
     //
-    // Three from 6.7, which adds the research model: its live feed, which reaches the
-    // provider, and its recorded double, which names the provider's parser and prices
-    // to answer as the live feed does. Every file naming the paid provider is one of
-    // those two, because the provider's name is one of the patterns and a setting or a
-    // price naming it anywhere else would be a file this scan reports.
+    // Two from 6.7, which adds the research model's live feed, the second file that
+    // sends the wire path. Its recorded double reaches no model and carries no pattern,
+    // reading the live feed's parser by the feed's own name. And no shipped file names
+    // the paid provider: the provider is named in configuration alone, and the first
+    // pattern is what holds that, because a file naming it is a file this scan reports.
+    // It was three for one commit, while the feed was named for the provider and the
+    // double carried the name by calling it.
     // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
+    // see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in
     internal static readonly string[] MayHoldAModel =
     [
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
-        "src/EquityBrief.Core/Providers/DeepSeekModelFeed.cs",
-        "src/EquityBrief.Core/Providers/RecordedResearchModelFeed.cs",
+        "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
     ];
 
     // What makes a shipped file a provider implementation, which is what the list
@@ -264,9 +266,9 @@ public class NightlyCost
             $"{MayHoldAClient.Length} shipped files may hold a client, and there are ten feed " +
             "implementations. An eleventh is a file that is not one, or a feed nobody declared.");
 
-        // The model list, stated the same way: three files, the local lane's client and
-        // the research model's live feed and recorded double.
-        Assert.Equal(3, MayHoldAModel.Length);
+        // The model list, stated the same way: two files, the local lane's client and
+        // the research model's live feed.
+        Assert.Equal(2, MayHoldAModel.Length);
 
         // And the list holds exactly the provider implementations, in both
         // directions, so a file added to it that is not one fails rather than

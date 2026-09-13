@@ -1,21 +1,15 @@
 {
   "stage": "spend",
   "derivation": "derived",
-  "derivedFrom": "the decision that the spend cap counts a UTC day and a UTC month and refuses a call that could take spend past either, the decision that a paid call is priced from the provider's own token counts at the rate its own timestamp falls in, the provider's page as read on 2026-09-13 at 14:57 UTC, and the two recorded calls' own token counts. Every price and every verdict below was worked by hand from those before the tests that read this file were run. It names the run log because spend is the one figure that table carries a page states: tonight's header, the run page and a paused name all read it, and the replay's other figures are elsewhere.",
+  "derivedFrom": "the decision that the spend cap counts a UTC day and a UTC month and refuses a call that could take spend past either, the decision that the research model is named only in configuration and a call is priced at the configured rates its own timestamp falls in, the provider's page as read on 2026-09-13 at 14:57 UTC, which the shipped configuration's rates for its model were copied from, and the two recorded calls' own token counts. Every price and every verdict below was worked by hand from those before the tests that read this file were run. It names the run log because spend is the one figure that table carries a page states: tonight's header, the run page and a paused name all read it, and the replay's other figures are elsewhere.",
   "tables": [
     "run_log"
   ],
   "rates": {
-    "deepseek-flash": {
-      "cacheHit": "0.003",
-      "cacheMiss": "0.15",
-      "output": "0.60"
-    },
-    "deepseek-v4-pro": {
-      "cacheHit": "0.022",
-      "cacheMiss": "0.66",
-      "output": "1.98"
-    }
+    "model": "deepseek-flash",
+    "cacheHit": "0.003",
+    "cacheMiss": "0.15",
+    "output": "0.60"
   },
   "peakWindows": [
     {
@@ -37,21 +31,21 @@
   "peakMultiple": "2",
   "recordedCalls": [
     {
-      "thinking": "enabled",
+      "options": null,
       "cacheHitTokens": 0,
       "cacheMissTokens": 182,
-      "completionTokens": 187,
-      "created": "2026-09-13T15:11:59Z",
+      "completionTokens": 243,
+      "created": "2026-09-13T15:40:45Z",
       "peak": false,
-      "price": "0.0001395",
-      "priceWorked": "182 uncached prompt tokens at 0.15 and 187 completion tokens at 0.60, a million each, on a Sunday: 27.3 and 112.2, 139.5 in a million"
+      "price": "0.0001731",
+      "priceWorked": "182 uncached prompt tokens at 0.15 and 243 completion tokens at 0.60, a million each, on a Sunday: 27.3 and 145.8, 173.1 in a million"
     },
     {
-      "thinking": "disabled",
+      "options": "{\"thinking\":{\"type\":\"disabled\"}}",
       "cacheHitTokens": 0,
       "cacheMissTokens": 157,
       "completionTokens": 8,
-      "created": "2026-09-13T15:12:01Z",
+      "created": "2026-09-13T15:40:47Z",
       "peak": false,
       "price": "0.00002835",
       "priceWorked": "157 uncached prompt tokens at 0.15 and 8 completion tokens at 0.60: 23.55 and 4.8, 28.35 in a million"

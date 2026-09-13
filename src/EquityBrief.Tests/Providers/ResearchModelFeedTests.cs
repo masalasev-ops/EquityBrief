@@ -5,26 +5,42 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
+using EquityBrief.Core.Spending;
+using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Research;
 using Microsoft.Extensions.Configuration;
 
 namespace EquityBrief.Tests.Providers;
 
-// The research model's feed, read against the responses captured from the provider
-// before any of it was written, and priced by the rates read off the provider's page.
+// The research model's feed, read against the responses captured from the provider the
+// shipped configuration names before any of it was written, and priced at the rates that
+// configuration states. Nothing here, and nothing it tests, names a provider in code.
 public class ResearchModelFeedTests
 {
     static string Folder() => Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder);
 
     static string Captured(string file) => File.ReadAllText(Path.Combine(Folder(), file));
 
+    static string ShippedConfiguration => Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "appsettings.json");
+
     // A key no test sends anywhere. The settings refuse a blank one, so a test that
     // builds settings has to hand it something.
     const string NotAKey = "a key no test sends";
 
-    static ResearchModelSettings Settings(string? thinking = null, string? model = null) =>
-        new(null, model, thinking, null, NotAKey);
+    // The options the second recording was asked with.
+    internal const string ThinkingOff = "{\"thinking\":{\"type\":\"disabled\"}}";
+
+    // The settings the shipped configuration gives, with a key that is not one and the
+    // options a test asks for, read through the path the worker reads them through.
+    internal static ResearchModelSettings Shipped(string? options = null, params (string Key, string Value)[] overrides) =>
+        ResearchLane.Settings(new ConfigurationBuilder()
+            .AddJsonFile(ShippedConfiguration)
+            .AddInMemoryCollection(
+                overrides.Select(value => new KeyValuePair<string, string?>(value.Key, value.Value))
+                    .Append(new KeyValuePair<string, string?>(ResearchModelSettings.ApiKeyKey, NotAKey))
+                    .Append(new KeyValuePair<string, string?>(ResearchModelSettings.OptionsKey, options ?? string.Empty)))
+            .Build());
 
     // The request the two recordings answer, as the capture built it.
     internal static ModelRequest Recorded(ResearchModelSettings settings) =>
@@ -36,6 +52,9 @@ public class ResearchModelFeedTests
             SectionPrompt.Instructions,
             "Company: KEYS\nFacts:\n- close = 333.42\nSay what the close was, in one sentence.");
 
+    static ResearchAnswer RecordedAnswer(ResearchModelSettings settings) =>
+        OpenAiCompatibleResearchFeed.Parse(Captured(RecordedResearchModelFeed.FileFor(Recorded(settings))), "The two cases");
+
     // ---- the parser, over the captures ----
 
     [Fact]
@@ -45,7 +64,7 @@ public class ResearchModelFeedTests
 
         var root = capture.RootElement;
         var usage = root.GetProperty("usage");
-        var answer = DeepSeekModelFeed.Parse(Captured("research-probe-thinking.json"), "The two cases");
+        var answer = OpenAiCompatibleResearchFeed.Parse(Captured("research-probe-thinking.json"), "The two cases");
 
         Assert.Equal(root.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString(), answer.Text);
         Assert.DoesNotContain(root.GetProperty("choices")[0].GetProperty("message").GetProperty("reasoning_content").GetString()!, answer.Text, StringComparison.Ordinal);
@@ -65,7 +84,7 @@ public class ResearchModelFeedTests
     [Fact]
     public void TheThinkingOffCaptureCarriesNoReasoningAndIsReadWithNone()
     {
-        var answer = DeepSeekModelFeed.Parse(Captured("research-probe-answered.json"), "The two cases");
+        var answer = OpenAiCompatibleResearchFeed.Parse(Captured("research-probe-answered.json"), "The two cases");
 
         Assert.Equal(0, answer.ReasoningTokens);
         Assert.Equal(answer.CacheHitTokens + answer.CacheMissTokens, answer.PromptTokens);
@@ -73,59 +92,81 @@ public class ResearchModelFeedTests
     }
 
     [Fact]
+    public void AProviderReportingItsCachedPromptInTheFormatsOwnFieldIsReadTheSameWay()
+    {
+        // The captured provider sends its own cache fields and the format's; a provider
+        // sending only the format's is read from that, with the uncached prompt the rest.
+        var node = JsonNode.Parse(Captured("research-probe-answered.json"))!;
+        var usage = node["usage"]!.AsObject();
+
+        usage.Remove("prompt_cache_hit_tokens");
+        usage.Remove("prompt_cache_miss_tokens");
+        usage["prompt_tokens_details"] = new JsonObject { ["cached_tokens"] = 20 };
+
+        var answer = OpenAiCompatibleResearchFeed.Parse(node.ToJsonString(), "The two cases");
+
+        Assert.Equal(20, answer.CacheHitTokens);
+        Assert.Equal(answer.PromptTokens - 20, answer.CacheMissTokens);
+    }
+
+    [Fact]
     public void AnAnswerThatCannotBePricedOrWasCutShortIsRefused()
     {
-        // Each is the answered capture with one thing changed, keeping the shape the
-        // provider sends.
         var noUsage = JsonNode.Parse(Captured("research-probe-answered.json"))!;
         noUsage.AsObject().Remove("usage");
 
-        Assert.Contains("cannot be priced", Assert.Throws<ProviderRefusal>(() => DeepSeekModelFeed.Parse(noUsage.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
+        Assert.Contains("cannot be priced", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(noUsage.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
 
         var noInstant = JsonNode.Parse(Captured("research-probe-answered.json"))!;
         noInstant.AsObject().Remove("created");
 
-        Assert.Contains("creation instant", Assert.Throws<ProviderRefusal>(() => DeepSeekModelFeed.Parse(noInstant.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
+        Assert.Contains("creation instant", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(noInstant.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
 
         var cut = JsonNode.Parse(Captured("research-probe-answered.json"))!;
         cut["choices"]![0]!["finish_reason"] = "length";
 
-        Assert.Contains("stopped at its budget", Assert.Throws<ProviderRefusal>(() => DeepSeekModelFeed.Parse(cut.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
+        Assert.Contains("stopped at its budget", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(cut.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
 
         var empty = JsonNode.Parse(Captured("research-probe-thinking.json"))!;
         empty["choices"]![0]!["message"]!["content"] = "";
 
-        Assert.Contains("returned no answer", Assert.Throws<ProviderRefusal>(() => DeepSeekModelFeed.Parse(empty.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
+        Assert.Contains("returned no answer", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(empty.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
     }
 
-    // ---- the price, derived by hand from the page ----
+    // ---- the price, derived by hand from the configured rates ----
 
     [Fact]
-    public void ACallIsPricedFromItsOwnCountsAtThePagesRatesDoubledAtPeak()
+    public void ACallIsPricedFromItsOwnCountsAtTheConfiguredRatesMultipliedAtPeak()
     {
-        // The page, read on 2026-09-13: deepseek-flash at 0.003 a million cached prompt
-        // tokens, 0.15 uncached and 0.60 output, off-peak, and twice that at peak.
-        // Worked by hand from the recording's own counts rather than read back.
-        var thinking = DeepSeekModelFeed.Parse(Captured(RecordedResearchModelFeed.FileFor(Recorded(Settings()))), "The two cases");
+        // The shipped configuration's rates, from the provider's page read on 2026-09-13:
+        // 0.003 a million cached prompt tokens, 0.15 uncached and 0.60 output, doubled at
+        // peak. Worked by hand from the recording's own counts rather than read back.
+        var settings = Shipped();
+        var answer = RecordedAnswer(settings);
 
-        Assert.Equal(DayOfWeek.Sunday, thinking.Created.UtcDateTime.DayOfWeek);
-        Assert.False(DeepSeekModelFeed.IsPeak(thinking.Created));
+        Assert.Equal(DayOfWeek.Sunday, answer.Created.UtcDateTime.DayOfWeek);
+        Assert.False(settings.Pricing.IsPeak(answer.Created));
 
-        var byHand = (thinking.CacheHitTokens * 0.003m + thinking.CacheMissTokens * 0.15m + thinking.CompletionTokens * 0.60m) / 1_000_000m;
+        var byHand = (answer.CacheHitTokens * 0.003m + answer.CacheMissTokens * 0.15m + answer.CompletionTokens * 0.60m) / 1_000_000m;
 
-        Assert.Equal(byHand, DeepSeekModelFeed.PriceOf("deepseek-flash", thinking));
-        Assert.Equal(0.0001395m, byHand);
+        Assert.Equal(byHand, settings.Pricing.Price(answer));
+        Assert.Equal(0.0001731m, byHand);
 
-        // The same counts stamped inside a peak window cost twice as much, and the
-        // other model's rates apply to it where it was the model asked for.
-        var atPeak = thinking with { Created = DateTimeOffset.Parse("2026-09-14T01:30:00Z", CultureInfo.InvariantCulture) };
+        // The same counts stamped inside a peak window cost twice as much.
+        Assert.Equal(byHand * 2m, settings.Pricing.Price(answer with { Created = DateTimeOffset.Parse("2026-09-14T01:30:00Z", CultureInfo.InvariantCulture) }));
 
-        Assert.Equal(byHand * 2m, DeepSeekModelFeed.PriceOf("deepseek-flash", atPeak));
-        Assert.Equal(
-            (thinking.CacheHitTokens * 0.022m + thinking.CacheMissTokens * 0.66m + thinking.CompletionTokens * 1.98m) / 1_000_000m,
-            DeepSeekModelFeed.PriceOf("deepseek-v4-pro", thinking));
+        // Every captured call arrived with nothing cached, so the cached rate is held over
+        // the same answer with part of its prompt served from the cache: 150 of 182 cached
+        // is 150 at 0.003 and 32 at 0.15, beside the same 243 of output.
+        var cached = answer with { CacheHitTokens = 150, CacheMissTokens = 32 };
 
-        Assert.Throws<InvalidOperationException>(() => DeepSeekModelFeed.PriceOf("a model nobody priced", thinking));
+        Assert.Equal(0.00015105m, settings.Pricing.Price(cached));
+
+        // A provider with no peak pricing names no windows, and no instant is priced up.
+        var flat = new ResearchPricing(0.003m, 0.15m, 0.60m, [], [], 2m);
+
+        Assert.Equal(byHand, flat.Price(answer with { Created = DateTimeOffset.Parse("2026-09-14T01:30:00Z", CultureInfo.InvariantCulture) }));
+        Assert.Equal(1m, flat.PeakMultiple);
     }
 
     [Theory]
@@ -140,135 +181,176 @@ public class ResearchModelFeedTests
     [InlineData("2026-09-18T02:00:00Z", true)]
     [InlineData("2026-09-19T02:00:00Z", false)]
     [InlineData("2026-09-20T07:00:00Z", false)]
-    public void PeakIsTheTwoWeekdayWindowsThePageStatesInUtc(string instant, bool peak)
+    public void PeakIsTheConfiguredWindowsOnTheConfiguredDaysInUtc(string instant, bool peak)
     {
         // Monday the 14th, Friday the 18th, Saturday the 19th and Sunday the 20th.
-        Assert.Equal(peak, DeepSeekModelFeed.IsPeak(DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture)));
+        Assert.Equal(peak, Shipped().Pricing.IsPeak(DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture)));
     }
 
     [Fact]
     public void ACallsCeilingIsEveryByteAsATokenAndTheWholeBudgetAtPeakAndHoldsOverTheRecordings()
     {
-        var settings = Settings();
+        var settings = Shipped();
         var request = Recorded(settings);
 
         var bytes = Encoding.UTF8.GetByteCount(request.System) + Encoding.UTF8.GetByteCount(request.Prompt);
-        var byHand = ((bytes + DeepSeekModelFeed.TemplateTokens) * 0.15m + DeepSeekModelFeed.AnswerTokens * 0.60m) * 2m / 1_000_000m;
+        var byHand = ((bytes + ResearchPricing.TemplateTokens) * 0.15m + settings.AnswerTokens * 0.60m) * 2m / 1_000_000m;
 
-        Assert.Equal(byHand, DeepSeekModelFeed.CeilingOf("deepseek-flash", request));
+        Assert.Equal(byHand, settings.Pricing.Ceiling(request, settings.AnswerTokens));
 
-        // A ceiling that is not one would let a call spend past a cap, so it is held
-        // above what each recorded call cost, in both modes, as if it had been at peak.
-        foreach (var mode in new[] { ResearchModelSettings.Enabled, ResearchModelSettings.Disabled })
+        // A ceiling that is not one would let a call spend past a cap, so it is held above
+        // what each recorded call cost as if it had been at peak.
+        foreach (var options in new[] { (string?)null, ThinkingOff })
         {
-            var recorded = Recorded(Settings(mode));
-            var answer = DeepSeekModelFeed.Parse(Captured(RecordedResearchModelFeed.FileFor(recorded)), recorded.Section);
+            var asked = Shipped(options);
+            var recorded = Recorded(asked);
+            var answer = RecordedAnswer(asked);
 
-            Assert.True(answer.PromptTokens <= Encoding.UTF8.GetByteCount(recorded.System) + Encoding.UTF8.GetByteCount(recorded.Prompt) + DeepSeekModelFeed.TemplateTokens);
-            Assert.True(DeepSeekModelFeed.PriceOf("deepseek-flash", answer) * DeepSeekModelFeed.PeakMultiple <= DeepSeekModelFeed.CeilingOf("deepseek-flash", recorded));
+            Assert.True(answer.PromptTokens <= Encoding.UTF8.GetByteCount(recorded.System) + Encoding.UTF8.GetByteCount(recorded.Prompt) + ResearchPricing.TemplateTokens);
+            Assert.True(asked.Pricing.Price(answer) * asked.Pricing.PeakMultiple <= asked.Pricing.Ceiling(recorded, asked.AnswerTokens));
         }
     }
 
     // ---- the request and the transport ----
 
     [Fact]
-    public void TheRequestAsSentNamesTheProvidersModelAndItsModeAndTakesATemperatureOnlyWithoutThinking()
+    public void TheRequestAsSentCarriesTheConfiguredModelAndBudgetAndTheProvidersOptionsBesideThem()
     {
-        using var thinking = JsonDocument.Parse(DeepSeekModelFeed.Body(Recorded(Settings()), Settings()));
-        using var plain = JsonDocument.Parse(DeepSeekModelFeed.Body(Recorded(Settings(ResearchModelSettings.Disabled)), Settings(ResearchModelSettings.Disabled)));
+        using var plain = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(Shipped()), Shipped()));
+        using var asked = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(Shipped(ThinkingOff)), Shipped(ThinkingOff)));
 
-        Assert.Equal("deepseek-flash", thinking.RootElement.GetProperty("model").GetString());
-        Assert.Equal(ResearchModelSettings.Enabled, thinking.RootElement.GetProperty("thinking").GetProperty("type").GetString());
-        Assert.False(thinking.RootElement.TryGetProperty("temperature", out _));
+        // With no options, the four fields the feed owns and nothing else.
+        Assert.Equal(["model", "messages", "max_tokens", "stream"], plain.RootElement.EnumerateObject().Select(field => field.Name).ToArray());
+        Assert.Equal(Shipped().Model, plain.RootElement.GetProperty("model").GetString());
+        Assert.Equal(Shipped().AnswerTokens, plain.RootElement.GetProperty("max_tokens").GetInt32());
+        Assert.False(plain.RootElement.GetProperty("stream").GetBoolean());
+        Assert.Equal(["system", "user"], plain.RootElement.GetProperty("messages").EnumerateArray().Select(message => message.GetProperty("role").GetString()!).ToArray());
 
-        Assert.Equal(ResearchModelSettings.Disabled, plain.RootElement.GetProperty("thinking").GetProperty("type").GetString());
-        Assert.Equal(0, plain.RootElement.GetProperty("temperature").GetInt32());
+        // With options, the provider's own fields beside those four, exactly as written.
+        Assert.Equal("disabled", asked.RootElement.GetProperty("thinking").GetProperty("type").GetString());
 
-        Assert.All(new[] { thinking, plain }, body =>
-        {
-            Assert.Equal(DeepSeekModelFeed.AnswerTokens, body.RootElement.GetProperty("max_tokens").GetInt32());
-            Assert.False(body.RootElement.GetProperty("stream").GetBoolean());
-            Assert.Equal(["system", "user"], body.RootElement.GetProperty("messages").EnumerateArray().Select(message => message.GetProperty("role").GetString()!).ToArray());
-        });
-
-        // The identity a section stores carries the mode; the model sent does not.
-        Assert.Equal("deepseek-flash thinking", Settings().Identity);
-        Assert.Equal("deepseek-flash", Settings(ResearchModelSettings.Disabled).Identity);
-        Assert.NotEqual(Recorded(Settings()).Key, Recorded(Settings(ResearchModelSettings.Disabled)).Key);
+        // And the identity a section stores carries the options, so the two are two
+        // writers with two recordings.
+        Assert.Equal(Shipped().Model, Shipped().Identity);
+        Assert.Equal(Shipped().Model + " " + ThinkingOff, Shipped(ThinkingOff).Identity);
+        Assert.NotEqual(Recorded(Shipped()).Key, Recorded(Shipped(ThinkingOff)).Key);
     }
 
     [Fact]
-    public async Task TheLiveFeedSendsTheKeyInTheHeaderToTheCompletionsPathAndNeverInTheAddress()
+    public void SwitchingModelIsAChangeToConfigurationAlone()
     {
-        var seen = new Seeing(Captured(RecordedResearchModelFeed.FileFor(Recorded(Settings()))));
+        // Another provider, another model and other prices, named in configuration and
+        // nowhere else: the same feed sends to that address, asks for that model with that
+        // provider's options, and prices at those rates.
+        var elsewhere = Shipped(
+            "{\"reasoning_effort\":\"low\"}",
+            (ResearchModelSettings.BaseAddressKey, "https://models.example.test/v1"),
+            (ResearchModelSettings.ModelKey, "another-model"),
+            (ResearchModelSettings.CacheHitKey, "0.5"),
+            (ResearchModelSettings.CacheMissKey, "1.25"),
+            (ResearchModelSettings.OutputKey, "10"));
 
-        using var client = new HttpClient(seen) { BaseAddress = new Uri(ResearchModelSettings.DefaultBaseAddress) };
+        Assert.Equal("https://models.example.test/v1/", elsewhere.BaseAddress);
+        Assert.Equal("another-model {\"reasoning_effort\":\"low\"}", elsewhere.Identity);
+
+        using var body = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(elsewhere), elsewhere));
+
+        Assert.Equal("another-model", body.RootElement.GetProperty("model").GetString());
+        Assert.Equal("low", body.RootElement.GetProperty("reasoning_effort").GetString());
+
+        var answer = RecordedAnswer(Shipped());
+
+        Assert.Equal((answer.CacheMissTokens * 1.25m + answer.CompletionTokens * 10m) / 1_000_000m, elsewhere.Pricing.Price(answer));
+
+        var live = OpenAiCompatibleResearchFeed.Live(elsewhere);
+
+        Assert.Equal("another-model {\"reasoning_effort\":\"low\"}", live.Identity);
+        Assert.IsType<OpenAiCompatibleResearchFeed>(ResearchModelFeeds.Live(elsewhere));
+    }
+
+    [Fact]
+    public async Task TheLiveFeedSendsTheKeyInTheHeaderToTheConfiguredAddressAndNeverInTheAddress()
+    {
+        var settings = Shipped();
+        var seen = new Seeing(Captured(RecordedResearchModelFeed.FileFor(Recorded(settings))));
+
+        using var client = new HttpClient(seen) { BaseAddress = new Uri(settings.BaseAddress) };
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", NotAKey);
 
-        var feed = new DeepSeekModelFeed(client, Settings());
-        var answer = await feed.CompleteAsync(Recorded(Settings()));
+        var feed = new OpenAiCompatibleResearchFeed(client, settings);
+        var answer = await feed.CompleteAsync(Recorded(settings));
 
-        Assert.Equal("The close was 333.42.", answer.Text);
+        Assert.Equal("KEYS closed at 333.42.", answer.Text);
         Assert.Equal(1, feed.Requests);
-        Assert.Equal("https://api.deepseek.com/chat/completions", seen.Address);
+        Assert.Equal(settings.BaseAddress + OpenAiCompatibleResearchFeed.Path, seen.Address);
         Assert.DoesNotContain(NotAKey, seen.Address, StringComparison.Ordinal);
         Assert.Equal("Bearer", seen.Scheme);
 
-        // And the settings never render the key.
-        Assert.DoesNotContain(NotAKey, Settings().ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain(NotAKey, settings.ToString(), StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task NothingListeningIsItsOwnFailureAndARefusalCarriesTheProvidersWords()
     {
-        using var gone = new HttpClient(new Unreachable()) { BaseAddress = new Uri(ResearchModelSettings.DefaultBaseAddress) };
+        var settings = Shipped();
 
-        await Assert.ThrowsAsync<ResearchModelUnavailable>(() => new DeepSeekModelFeed(gone, Settings()).CompleteAsync(Recorded(Settings())));
+        using var gone = new HttpClient(new Unreachable()) { BaseAddress = new Uri(settings.BaseAddress) };
+
+        await Assert.ThrowsAsync<ResearchModelUnavailable>(() => new OpenAiCompatibleResearchFeed(gone, settings).CompleteAsync(Recorded(settings)));
 
         Assert.Equal(
             "The research model refused The two cases with status 402: Insufficient Balance",
-            DeepSeekModelFeed.Refused("The two cases", 402, """{"error":{"message":"Insufficient Balance","type":"unknown_error"}}"""));
-        Assert.Equal("The research model refused The two cases with status 500.", DeepSeekModelFeed.Refused("The two cases", 500, "<html></html>"));
+            OpenAiCompatibleResearchFeed.Refused("The two cases", 402, """{"error":{"message":"Insufficient Balance","type":"unknown_error"}}"""));
+        Assert.Equal("The research model refused The two cases with status 500.", OpenAiCompatibleResearchFeed.Refused("The two cases", 500, "<html></html>"));
     }
 
     // ---- the settings ----
 
     [Fact]
-    public void ABlankKeyIsRefusedByNameAtStartupAndSoIsAProviderOrAModelNothingImplements()
+    public void WhatNobodyConfiguredIsRefusedByNameAtStartup()
     {
-        var blank = Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(new ConfigurationBuilder().Build()));
+        var blankKey = Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(new ConfigurationBuilder().AddJsonFile(ShippedConfiguration).Build()));
 
-        Assert.Contains(ResearchModelSettings.ApiKeyName, blank.Message, StringComparison.Ordinal);
+        Assert.Contains(ResearchModelSettings.ApiKeyKey, blankKey.Message, StringComparison.Ordinal);
 
-        IConfiguration With(params (string Key, string Value)[] values) =>
-            new ConfigurationBuilder().AddInMemoryCollection(
-                values.Select(value => new KeyValuePair<string, string?>(value.Key, value.Value))
-                    .Append(new KeyValuePair<string, string?>(ResearchModelSettings.ApiKeyName, NotAKey))).Build();
+        string Refusal(string key, string value) =>
+            Assert.Throws<InvalidOperationException>(() => Shipped(null, (key, value))).Message;
 
-        Assert.Contains("'another provider'", Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(With((ResearchModelSettings.ProviderKey, "another provider")))).Message, StringComparison.Ordinal);
-        Assert.Contains("carries no price", Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(With((ResearchModelSettings.ModelKey, "deepseek-reasoner")))).Message, StringComparison.Ordinal);
-        Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(With((ResearchModelSettings.ThinkingKey, "sometimes"))));
-        Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(With((ResearchModelSettings.TimeoutKey, "10m"))));
+        Assert.Contains("'another format'", Refusal(ResearchModelSettings.FormatKey, "another format"), StringComparison.Ordinal);
+        Assert.Contains(ResearchModelSettings.BaseAddressKey, Refusal(ResearchModelSettings.BaseAddressKey, "api.example.test"), StringComparison.Ordinal);
+        Assert.Contains("'5m'", Refusal(ResearchModelSettings.TimeoutKey, "5m"), StringComparison.Ordinal);
+        Assert.Contains("'about a dollar'", Refusal(ResearchModelSettings.OutputKey, "about a dollar"), StringComparison.Ordinal);
+        Assert.Contains("'1am-4am'", Refusal(ResearchModelSettings.PeakHoursKey + ":0", "1am-4am"), StringComparison.Ordinal);
+        Assert.Contains("'Someday'", Refusal(ResearchModelSettings.PeakDaysKey + ":0", "Someday"), StringComparison.Ordinal);
 
-        // Named, the provider is read without regard to case, and every model the page
-        // prices is one a setting may name.
-        var named = ResearchLane.Settings(With((ResearchModelSettings.ProviderKey, "DeepSeek"), (ResearchModelSettings.ModelKey, "deepseek-v4-pro"), (ResearchModelSettings.ThinkingKey, "Disabled")));
+        Assert.Contains("not a JSON object", Assert.Throws<InvalidOperationException>(() => Shipped("[\"thinking\"]")).Message, StringComparison.Ordinal);
+        Assert.Contains("sets model", Assert.Throws<InvalidOperationException>(() => Shipped("{\"model\":\"something else\"}")).Message, StringComparison.Ordinal);
 
-        Assert.Equal("deepseek-v4-pro", named.Identity);
-        Assert.Equal(["deepseek-flash", "deepseek-v4-pro"], DeepSeekModelFeed.Rates.Keys.Order(StringComparer.Ordinal).ToArray());
+        // A model with no prices at all is refused rather than called at nothing.
+        var unpriced = new ConfigurationBuilder().AddInMemoryCollection(
+        [
+            new KeyValuePair<string, string?>(ResearchModelSettings.BaseAddressKey, "https://models.example.test/v1"),
+            new KeyValuePair<string, string?>(ResearchModelSettings.ModelKey, "another-model"),
+            new KeyValuePair<string, string?>(ResearchModelSettings.ApiKeyKey, NotAKey),
+        ]).Build();
 
-        // The models the build prices are the models the provider's own list carries.
-        using var listed = JsonDocument.Parse(Captured("research-probe-models.json"));
-
-        Assert.Equal(
-            listed.RootElement.GetProperty("data").EnumerateArray().Select(model => model.GetProperty("id").GetString()!).Order(StringComparer.Ordinal).ToArray(),
-            DeepSeekModelFeed.Rates.Keys.Order(StringComparer.Ordinal).ToArray());
+        Assert.Contains("No prices", Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(unpriced)).Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void TheRunbookStatesEachResearchSettingAndCapWithItsDefaultAsTheCodeHoldsThem()
+    public void TheShippedModelIsOneTheProvidersOwnListCarries()
     {
-        var runbook = Checks.Corpus.Read("docs/RUNBOOK.md");
+        using var listed = JsonDocument.Parse(Captured("research-probe-models.json"));
+
+        Assert.Contains(
+            Shipped().Model,
+            listed.RootElement.GetProperty("data").EnumerateArray().Select(model => model.GetProperty("id").GetString()!));
+    }
+
+    [Fact]
+    public void TheRunbookStatesEachResearchSettingAndCapWithTheValueTheShippedConfigurationHolds()
+    {
+        var runbook = Corpus.Read("docs/RUNBOOK.md");
 
         var rows = runbook.Split('\n')
             .Where(line => line.StartsWith("| ", StringComparison.Ordinal)
@@ -276,18 +358,42 @@ public class ResearchModelFeedTests
             .Select(line => line.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray())
             .ToArray();
 
-        string Default(string key) => Assert.Single(rows, row => row[1] == $"`{key}`")[2].Trim('`');
+        // Twelve research settings, two caps, and the key's row in the secrets table.
+        Assert.Equal(15, rows.Length);
 
-        Assert.Equal(6, rows.Length);
-        Assert.Equal(ResearchModelSettings.DeepSeek, Default(ResearchModelSettings.ProviderKey));
-        Assert.Equal(ResearchModelSettings.DefaultModel, Default(ResearchModelSettings.ModelKey));
-        Assert.Equal(ResearchModelSettings.Enabled, Default(ResearchModelSettings.ThinkingKey));
-        Assert.Equal(ResearchModelSettings.DefaultTimeoutSeconds.ToString(CultureInfo.InvariantCulture), Default(ResearchModelSettings.TimeoutKey));
-        Assert.Equal(Core.Spending.SpendCaps.DefaultDay, decimal.Parse(Default(Core.Spending.SpendCaps.DayKey), CultureInfo.InvariantCulture));
-        Assert.Equal(Core.Spending.SpendCaps.DefaultMonth, decimal.Parse(Default(Core.Spending.SpendCaps.MonthKey), CultureInfo.InvariantCulture));
+        var shipped = new ConfigurationBuilder().AddJsonFile(ShippedConfiguration).Build();
 
-        // The key row names the path the settings read.
-        Assert.Contains($"| DeepSeek | `{ResearchModelSettings.ApiKeyName}` | `EquityBrief.Worker` |", runbook, StringComparison.Ordinal);
+        string Stated(string key) => Assert.Single(rows, row => row[1] == $"`{key}`")[2].Trim('`');
+
+        foreach (var key in new[]
+        {
+            ResearchModelSettings.FormatKey,
+            ResearchModelSettings.BaseAddressKey,
+            ResearchModelSettings.ModelKey,
+            ResearchModelSettings.TimeoutKey,
+            ResearchModelSettings.AnswerTokensKey,
+            ResearchModelSettings.CacheHitKey,
+            ResearchModelSettings.CacheMissKey,
+            ResearchModelSettings.OutputKey,
+            ResearchModelSettings.PeakMultipleKey,
+        })
+        {
+            Assert.Equal(shipped[key], Stated(key));
+        }
+
+        Assert.Equal(
+            string.Join(", ", shipped.GetSection(ResearchModelSettings.PeakHoursKey).GetChildren().Select(child => child.Value)),
+            Stated(ResearchModelSettings.PeakHoursKey));
+        Assert.Equal(
+            string.Join(", ", shipped.GetSection(ResearchModelSettings.PeakDaysKey).GetChildren().Select(child => child.Value)),
+            Stated(ResearchModelSettings.PeakDaysKey));
+
+        Assert.Equal(SpendCaps.DefaultDay, decimal.Parse(Stated(SpendCaps.DayKey), CultureInfo.InvariantCulture));
+        Assert.Equal(SpendCaps.DefaultMonth, decimal.Parse(Stated(SpendCaps.MonthKey), CultureInfo.InvariantCulture));
+
+        // The options row states none, and the key row names the path the settings read.
+        Assert.Equal("none", Stated(ResearchModelSettings.OptionsKey));
+        Assert.Contains($"`{ResearchModelSettings.ApiKeyKey}`", runbook, StringComparison.Ordinal);
     }
 
     // ---- the recording ----
@@ -295,11 +401,14 @@ public class ResearchModelFeedTests
     [Fact]
     public async Task TheRecordingAnswersTheRequestItHoldsAndRefusesByNameTheOneItDoesNot()
     {
-        var feed = new RecordedResearchModelFeed(Folder(), Settings());
+        var settings = Shipped();
+        var feed = new RecordedResearchModelFeed(Folder(), settings);
 
-        Assert.Equal("The close was 333.42.", (await feed.CompleteAsync(Recorded(Settings()))).Text);
+        // Each recording answers the request asked the way it was recorded.
+        Assert.Equal("KEYS closed at 333.42.", (await feed.CompleteAsync(Recorded(settings))).Text);
+        Assert.Equal("The close was 333.42.", (await new RecordedResearchModelFeed(Folder(), Shipped(ThinkingOff)).CompleteAsync(Recorded(Shipped(ThinkingOff)))).Text);
 
-        var unrecorded = Recorded(Settings()) with { Prompt = "a prompt nobody recorded" };
+        var unrecorded = Recorded(settings) with { Prompt = "a prompt nobody recorded" };
         var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => feed.CompleteAsync(unrecorded));
 
         Assert.Contains(unrecorded.Key, refused.Message, StringComparison.Ordinal);
