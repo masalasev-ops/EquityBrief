@@ -899,6 +899,48 @@ internal static class Scope
             Verdict.Pass,
             "every document refused, with the category that refused each, the count per category the run log line states, and the order that decides which of two failed gates the row records",
             ByAdmissibility),
+        // 6.4, the claim checker. The component and its two tables' surfaces, the
+        // limits row and the two expected rejections, and figure 12.1's two boxes.
+        [CheckReach.Key(CatalogueTable, "Claim checker")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the research store and the theme store it reads and updates, the facts and source documents it reads, and the declaration matches this row, repaired at 6.4 to name the theme store, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Claim checker")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "Claim rejection")] = new Scoped(
+            Verdict.Pass,
+            "a figure the facts file does not hold and a sentence naming no stored document are each refused over a replayed store, the retry is asserted to be one over six consecutive refusals read off the stored rows, and a section refused twice is left out with both attempts' offending text kept",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "a poisoned paragraph")] = new Scoped(
+            Verdict.Pass,
+            "the committed paragraph with one figure the facts file does not hold is refused naming exactly that figure, beside the same paragraph with the figure restored, which is accepted",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "an unsourced claim")] = new Scoped(
+            Verdict.Pass,
+            "the committed paragraph whose second sentence names no document is refused naming that sentence, and a sentence citing a stored row admissibility refused is refused as well, because stored is not enough",
+            ByAdmissibility),
+        [CheckReach.Key("Figure 12.1", "Check every claim")] = new Scoped(
+            Verdict.Pass,
+            "a number is checked against the facts file of the day the section was written, a claim against a stored and admitted document, and a section failing twice falls back rather than being retried a third time, each over the store",
+            ByAdmissibility),
+        [CheckReach.Key("Figure 12.1", "Store it")] = new Scoped(
+            Verdict.Pass,
+            "the checker moves a pending section and changes no column but the status and the reason, every earlier version is kept, and the update statement's own column set is read against SCHEMA's declaration",
+            ByAdmissibility),
+        [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = new Scoped(
+            Verdict.Pass,
+            "the sections the shipped checker left out on the night are read back off the region's markup with whose each was and the reason it stored, a theme's beside a name's, and one that fell back on another day is not drawn",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "Claim checker rejects twice")] = new Scoped(
+            Verdict.Pass,
+            "a section the shipped checker refused twice is absent from the name page with one line carrying the reason and the figure, and a section still waiting on its retry is drawn as neither written nor left out",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A pass finds no admissible source for a section")] = new Scoped(
+            Verdict.Pass,
+            "a section whose source list holds nothing admitted falls back on its first check and is absent from the name page with one line saying no admissible source was found, read back off the markup",
+            ByReadSurface),
         // 6.4, the research store and the theme store. Their columns against
         // SCHEMA, the theme table written out rather than described by
         // difference, and the status guarded by the store itself.

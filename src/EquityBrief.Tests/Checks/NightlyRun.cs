@@ -388,7 +388,7 @@ public class NightlyRun
 
         Assert.Equal(["fetch"], [.. failed.Select(stage => stage.Stage)]);
 
-        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, []);
+        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, [], []);
 
         Assert.Contains("data-stage=\"fetch\"", region, StringComparison.Ordinal);
         Assert.Contains("did not answer", region, StringComparison.Ordinal);
@@ -425,7 +425,7 @@ public class NightlyRun
         Assert.Equal(new DateOnly(2026, 9, 9), await api.RunNightAsync());
 
         var stages = EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync((await api.RunNightAsync())!.Value));
-        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], EquityBrief.Api.Reading.RunScreen.Failed(stages), []);
+        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], EquityBrief.Api.Reading.RunScreen.Failed(stages), [], []);
 
         Assert.Contains("data-stage=\"fetch\"", region, StringComparison.Ordinal);
         Assert.DoesNotContain("no stage of this night failed", region, StringComparison.Ordinal);
@@ -485,7 +485,7 @@ public class NightlyRun
         Assert.Equal(Nightly.FirstStep, stopped.Stage);
         Assert.Equal("stopped", stopped.Outcome);
 
-        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, []);
+        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, [], []);
 
         Assert.Contains("data-outcome=\"stopped\"", region, StringComparison.Ordinal);
         Assert.Contains("weighted call(s)", region, StringComparison.Ordinal);
