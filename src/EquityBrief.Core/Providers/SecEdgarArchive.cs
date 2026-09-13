@@ -898,6 +898,14 @@ public static class SecEdgarArchive
             return (null, 0);
         }
 
+        // The most recent periodic filing, which is not always a quarter. A filer
+        // whose newest one is the annual report has a segment table of three
+        // twelve-month columns and no quarter in it, which is what the live
+        // demonstration at 6.2 found on the third of three filers. Taking an older
+        // quarterly filing instead would be older information for a shorter period,
+        // and what makes either safe is that the table states the period it covers
+        // and the store and the screen both carry it: a figure that says which span
+        // it is over cannot be read as the other one.
         var filing = periodic.OrderByDescending(one => one.FilingDate).First();
         var list = await fetch(
             Request(ArchiveDocument.ReportList, padded, filing.Accession, ReportListFile),
