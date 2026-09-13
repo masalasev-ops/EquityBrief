@@ -15,9 +15,18 @@ namespace EquityBrief.Core.Providers;
 // delivered the article and not the outlet that wrote it: 1,173 of 1,253
 // articles arrived under one domain, and the writing outlet appears only inside
 // the text where it appears at all.
+//
+// Url is the link whole, and it was added at 6.3. The parser kept only the host
+// of it for five checkpoints, which was everything the news pulse and the
+// attribution need and one field short of what a source document is: the store
+// built at 6.3 requires the address a claim's source can be opened at, and a host
+// cannot be turned back into one. So an article could not have been stored as a
+// document a claim rests on, and nothing would have said so until the runner at
+// 6.8 tried.
 public sealed record NewsArticle(
     DateTimeOffset Published,
     string Title,
+    string Url,
     string Channel,
     IReadOnlyList<string> Symbols,
     string Text);
@@ -157,10 +166,13 @@ public sealed class RecordedNewsFeed(string response) : INewsFeed
                 .ToArray()
             : [];
 
+        var link = Text(entry, "link");
+
         return new NewsArticle(
             published,
             Text(entry, "title"),
-            Channel(Text(entry, "link")),
+            link,
+            Channel(link),
             symbols,
             Text(entry, "content"));
     }

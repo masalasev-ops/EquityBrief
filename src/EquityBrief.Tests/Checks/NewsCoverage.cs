@@ -37,6 +37,14 @@ public class NewsCoverage
         Assert.All(articles, article => Assert.False(string.IsNullOrWhiteSpace(article.Text)));
         Assert.All(articles, article => Assert.False(string.IsNullOrWhiteSpace(article.Title)));
         Assert.All(articles, article => Assert.NotEmpty(article.Symbols));
+
+        // The link whole, which is the field the source store needs and the
+        // parser dropped until 6.3. A claim naming a stored document has to name
+        // one a reader can open, and the host on its own cannot be turned back
+        // into an address.
+        Assert.All(articles, article => Assert.StartsWith("https://", article.Url, StringComparison.Ordinal));
+        Assert.All(articles, article => Assert.Contains(article.Channel, article.Url, StringComparison.Ordinal));
+        Assert.All(articles, article => Assert.NotEqual(article.Channel, article.Url));
     }
 
     [Fact]

@@ -49,6 +49,7 @@ internal static class Scope
     const string ByCost = "nightly-cost";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
+    const string ByAdmissibility = "claim-admissibility";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -840,6 +841,23 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, and the store is asserted to be one the file describes",
             ByMigration),
+        // 6.3, the admissibility test. The limits row and the two failure rows
+        // are the behavioural half and the store row below is the shape half,
+        // which fail apart: the store could hold the right columns while nothing
+        // refused anything, and every category could be refused into a table with
+        // no room for the reason.
+        [CheckReach.Key(LimitsTable, "Source admissibility")] = new Scoped(
+            Verdict.Pass,
+            "each of the four denied categories, the missing publish date and the unretrievable text is reached by a document the fixture holds, the six real documents it holds are admitted, a document failing two gates is refused by the kind rather than by the date, and the row's own four categories and three numbers are read off it against the constants the test uses",
+            ByAdmissibility),
+        [CheckReach.Key(FailureTable, "A source is returned but its text cannot be retrieved")] = new Scoped(
+            Verdict.Pass,
+            "the document with no text is refused for that and nothing else, the row it leaves carries no body, and the run log line names its address and the reason the fetch gave, which is the case the measurement produced rather than constructed",
+            ByAdmissibility),
+        [CheckReach.Key(FailureTable, "A document's publish date falls outside the window the pass asked for")] = new Scoped(
+            Verdict.Pass,
+            "one document is admitted for a window that holds its date and refused for one that does not, with both edges of the window asserted to be inside it, so the rule is about the window the pass asked for rather than about the document's own age",
+            ByAdmissibility),
         // 6.3, the source documents store. Its columns against SCHEMA as every
         // other table's are, plus the two that admit null, which is the first
         // table here where nullability carries a property rather than being a
@@ -1437,7 +1455,10 @@ internal static class Scope
         // The run page's stale-and-failed region, decomposed at the phase 5
         // sign-off. It was PASS whole from 5.6 while two of its parts describe
         // components phase 6 builds: sections that fell back are the claim
-        // checker's at 6.3 and documents refused by admissibility are 6.2's. A
+        // checker's at 6.4 and documents refused by admissibility are 6.3's. The
+        // two checkpoint numbers here read 6.3 and 6.2 until 6.3, which is the
+        // resplit 6.0 made moving every phase 6 due point by one and a comment
+        // the re-pointing did not reach, because a comment is not a placement. A
         // PASS over a row whose check reaches part of it is an unexamined claim
         // wearing a verdict, and the region itself says the research halves
         // are absent. The stage a night stopped on is the part the sign-off
@@ -1599,7 +1620,6 @@ internal static class Scope
         ["A condition has fired but nothing has resolved yet"] = "7.5",
         ["A search returns snippets rather than full page text"] = "6.9",
         ["A search returns a site the applicable list does not carry"] = "6.9",
-        ["A document's publish date falls outside the window the pass asked for"] = "6.3",
         ["The search tool is unavailable"] = "6.9",
         ["The local model is unavailable"] = "6.6",
         ["A theme refresh fails while a name's pass depends on it"] = "6.9",

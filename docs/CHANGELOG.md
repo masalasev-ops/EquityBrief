@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - CLAUDE.md - claim-admissibility promoted, and the half of its row that is still owed
+
+Authorised by: Each denied category is refused by a marker the document carries, and the domain is never one of them
+Was:
+> | `claim-admissibility` | from 6.3 | A poisoned paragraph, an unsourced claim, and each inadmissible document class are refused, and nothing resting on them is written |
+Now: the row runs on every CI run and its Asserts cell states what is asserted: each of the four denied categories, the missing publish date and the unretrievable text reached by a document the fixture holds, the real documents it holds admitted, a document failing two gates refused by the kind rather than by the date, and every refusal kept as a row with its reason and no body. The poisoned paragraph and the unsourced claim are named as the row's other half, asserted from 6.4.
+Why: the roster's Runs column admits three values and none of them says that half a row's property is built, so the split is stated in the cell where a reader will see it. Leaving the row at "from 6.3" was not available: a checkpoint row has to name a checkpoint the record does not show as landed, so the row fails `coverage-reported` the moment 6.3's entry is written. Stating the whole cell as running would be the wider defect, which this corpus has already had once when a roster row read wider than its check for two phases.
+
+### 2026-09-13 - ARCHITECTURE.html - the admissibility row states the order it judges in and the numbers it judges by
+
+Authorised by: Each denied category is refused by a marker the document carries, and the domain is never one of them
+Was:
+> a fetched document is stored only if it carries a publish date inside the window the pass asked for and is not on the denied-category list: algorithmic or AI-generated price forecasts, broker and platform marketing pages, AI-written summaries, and quote or hub pages with no article (see: A stored source is not automatically an admissible one)
+Now: the same sentence, followed by the order the gates are judged in, being the kind first and the date second with the measurement that decided it, and the three numbers the test uses: a paragraph of at least 3 sentences and at least 40 words is what makes a page an article, and 2 invitations to open an account mark a page that exists to open one.
+Why: the row is a claim about the code and it stated the rules without stating either the order or the numbers, so a document could be refused for two different reasons and the row would read as satisfied by whichever fired. The order is not a detail: three of the five refusable pages the 6.3 measurement read carried no publish date at all, so judging the date first would report almost nothing about the kinds. The numbers are stated here rather than in the record because a number in a record is not pinned to anything, and `claim-admissibility` reads these off the row against the constants the test uses.
+
 ### 2026-09-13 - SCHEMA.md - the two source document columns that admit null, and the url that is never a request
 
 Corrects: the source document table's own column notes contradicted the paragraph beneath them. `published_on` read "date; a document with none is not stored" while the paragraph requires that a document failing admissibility be kept as a row with its refusal reason, and having no publish date is one of the things admissibility refuses a document for. So the file declared a refusal it also declared unstorable. Found at 6.3 while writing the migration against the file.
