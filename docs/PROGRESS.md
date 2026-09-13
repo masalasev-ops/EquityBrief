@@ -7986,3 +7986,148 @@ Carried:    nothing new. The archive's own availability is not carried as an obl
             filing-not-parsed row already states what a surface does when a part is missing, and this
             checkpoint's reason column now distinguishes the three ways it can be. This session has
             committed code and may not sign it off.
+
+### 6.3 - the source store, the admissibility test and the markers a live run repaired   2026-09-13
+Built:      migration 20 creating `source_document`, the admissibility test judging every document
+            after the fetch, the row form a verdict leaves, the run log line a refusal is recorded
+            on, the run page's refused-documents region, and `claim-admissibility` implemented and
+            promoted off the roster's checkpoint column with the pending floor lowered to the one row
+            that remains. Six commits: the documents, the store, the test, the surface, the
+            expectation with the row read as six claims, and the repair the live run forced.
+            No shipped file inserts into this table and that is the ownership rather than an
+            omission. SCHEMA gives Insert on `source_document` to the two research runners and to
+            nobody else, a write is attributed to the file it appears in, so the statement cannot
+            live in a shared helper and cannot exist before the first runner does at 6.8. What this
+            checkpoint builds is everything that decides what a row says, so the runner has no
+            judgement of its own to make, and the expectation names the table under `awaits` with
+            the checkpoint whose writer will fill it.
+Measured:   eight pages asked for by hand on 2026-09-13 UTC, two per denied category, read against
+            the four captured articles and two release exhibits the fixture already holds. Seven
+            answered and one refused automated access, which produced section 18's unretrievable
+            case as a measurement rather than a construction.
+            Then one live news request, 411 articles, every one judged: 410 admitted and 1 refused,
+            the refusal an Amazon price prediction piece on the same host as everything else.
+            Four findings from the by-hand set decided the rules. The domain says nothing:
+            finance.yahoo.com delivered a page that must be refused, a price prediction piece with a
+            named author, a date and twelve paragraphs of prose, and a page that must be admitted,
+            an ordinary earnings preview, and it is the host the fixture's four articles arrive
+            under. A price forecast page need not say it is one: the forecast site read carries five
+            prose paragraphs, a table of yearly figures to 2050 and no algorithmic disclosure
+            anywhere, so the marker is the title and the address rather than the text, and it is a
+            price word paired with a prediction word because real reporting pairs forecast with
+            revenue constantly. Three of the five refusable pages carried no publish date at all,
+            which is why the kind is judged before the date: a build judging the date first refuses
+            most of what it refuses for the cheapest reason available and reports almost nothing
+            about the kinds. And the regulatory risk warning is the one reliable marker of a page
+            that exists to open an account, verbatim in two forms on the page read.
+            The paragraph thresholds are measured rather than chosen. The tightest of the four
+            captured articles carries exactly one paragraph of three sentences and fifty-two words,
+            so a threshold of four sentences would refuse a real article, and that thin margin is
+            why the shape is the second half of the quote page rule rather than the whole of it.
+Settled:    what each denied category is refused by, as a decision, with the two limits stated
+            rather than implied. Text a system wrote and nobody disclosed is not something a rule
+            over the text can find, so that marker catches what platforms say about themselves and
+            nothing more, and what stands behind it is the primacy preference and the claim checker.
+            An article about the regulation of leveraged products, quoting the warning, would be
+            refused, which is one article lost against admitting pages whose whole content is
+            marketing.
+            The preference for primary sources orders and never refuses, which is what keeps it from
+            becoming the publisher list this corpus has twice ruled out, and it ranks by the channel
+            rather than by the host because the host of a feed article is the aggregator.
+            SCHEMA's own source document notes contradicted the paragraph beneath them. The date
+            column read that a document with none is not stored, while the paragraph requires a
+            document failing admissibility be kept as a row with its reason, and carrying no date is
+            one of the things it fails for. Two columns admit null now and the file says why.
+            The news parser dropped the one field this store requires. It kept the host of each
+            article's link for five checkpoints, which is everything the pulse and the attribution
+            need, and a host cannot be turned back into an address, so an article could not have
+            been stored as a document a claim rests on and nothing would have said so until 6.8.
+Repaired:   the marketing rule, twice, and both repairs came from the live run rather than from
+            reading. It refused three of the 411 and all three are ordinary consumer-finance
+            reporting. Two tripped on one invitation written twice, a piece on what retirees put off
+            saying sign up and signing up about a benefit, which counting kinds rather than phrases
+            repairs. The third survived that repair: an article on how savers lose a retirement pot
+            says opening an account and sign up, two genuinely different invitations inside an
+            article whose subject is accounts. So invitation language does not separate an article
+            about accounts from a page selling one, and nothing rests on it alone: the second net is
+            a leveraged-product term beside an invitation, measured on the same 411 before anything
+            rested on it, where contract for difference appears 0 times, cfd 0, spread bet twice and
+            trading platform three times, and not one of those five carries any invitation at all.
+            The decision was extended with that finding in the same checkpoint rather than left
+            resting on the by-hand set alone, and the fixture's second broker page lost its risk
+            warning so the pairing is exercised by a committed document rather than only by
+            constructed text.
+Amended:    this checkpoint amends its own done condition. It required that a pass finding no
+            admissible source for a section leaves the section absent with one line saying so, which
+            is a claim about a surface that draws a section, and no store here ties a document to
+            one: `source_document` carries no ticker and no section by design, because one document
+            supports claims about several names and about a theme. The clause moves to 6.4, which
+            creates `research_section` and is the first checkpoint at which a section exists to be
+            absent and to carry the reason it is. 6.3 keeps the half it delivers, an intake that
+            admits nothing at all saying so in one reading a pass can gate on. Found by the phase
+            report rather than by reading: one claim stayed out of scope at 6.3 after everything else
+            had passed, and a claim owed at a checkpoint the record is about to show as landed is
+            what the reconciliation refuses.
+Discharged: the obligation 6.0 filed against this checkpoint. Section 19.1's inadmissible document
+            row is six claims rather than one, each naming the rule that refuses it, and the
+            discharge is the decomposition plus the direction that makes it a reading of the row
+            rather than a second statement of it: every part the row's own words enumerate is
+            declared, which a decomposition into four of six would fail. That needed the row's
+            rationale sentence reworded, because as written it formed a second comma run and the
+            reader picked up three items of prose from it. The reader stays scoped to section 15 and
+            this row rather than widened to every fixture row, which 6.0 declined to open.
+Tested:     19 on the admissibility test and the intake, being each kind refused by the rule its own
+            name states, the four categories reached in both directions, a document failing two
+            gates refused by the kind, the real documents admitted, the row an admission leaves
+            against the row a refusal leaves, the id as the url hashed, the window judged at both
+            edges, the run log naming the address and the reason, the credential guard in both
+            directions with the manifest's own marker list reconciled against it, the preference
+            ordering and refusing nothing, the forecast marker as a pairing over four real reporting
+            headlines, a subject that is not a disclosure and a short article that is not a quote
+            page, invitation language refusing nothing on its own, the prose reader counting
+            sentences rather than periods, and the captured articles the thresholds were measured
+            against. 2 on the store, being the columns against SCHEMA and the nullability in both
+            directions. 2 on the surface, reading the region back off its own markup against rows the
+            store holds and the night boundary the clock decides. 1 on the expectation split that
+            lets an expectation name a table nothing writes yet. 1 on the row's parts read off its
+            own words. 703 tests, from 702 before the live repair and 679 at 6.2.
+Mutated:    the rule, stated before the sweep: mutate a property the measurement bought, whose
+            failure would be silent rather than loud. Four qualify and all four were mutated, in
+            detached worktrees under the session scratchpad outside this repository, each reverted
+            before the next, and the worktrees removed. All four red.
+            The date judged before the kind, which reports almost nothing about the kinds while
+            refusing the same documents: 6 tests red. Either half of the quote page rule refusing on
+            its own, which takes a real article addressed as a symbol out of every pass: 7 tests red.
+            A refusal keeping the body, which stores the document the test said may not be used: 2
+            tests red. And the marketing net back to invitation counting, which is the live run's own
+            defect: 1 test red.
+            The last is thin and it is named as thin. One test catches it, because every refusable
+            document in the fixture is still refused by the older rule, and what the older rule gets
+            wrong is an admissible article: the fixture's admissible side is real documents carrying
+            no invitation at all, so the case lives in constructed text and in the live population.
+            Properties added and not mutated, named because the next sweep has to find them: the id
+            as the url hashed so a second fetch conflicts; the window's edges inside it; the primacy
+            order and its refusal of nothing; the two columns that admit null; the run log naming the
+            address and the reason for the unretrievable case; the credential guard reading the query
+            rather than the whole url; the `awaits` split asserting the table is empty and its
+            checkpoint unlanded; the decomposition's second direction; and the news article's url.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 703 of 703 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 328 claims, 250 PASS, 0 fail, 78 out of scope, 0
+            unexamined, 257 placements and verdicts reconciled against a floor of 34, 34 of 35 roster
+            checks carried and all 34 run. Migrations 0 to 20.
+            The claim pair moves to 328 and 312, from 323 and 307 at 6.2. The five that arrived are
+            the decomposition 6.0 deferred as an obligation and this checkpoint discharged, which
+            6.0's own prediction named and left out of list B for that reason. Of the nine claims
+            owed at 6.3, eight passed and one moved to 6.4 with the done condition that named it.
+            The deliverable was demonstrated over a store under the session scratchpad, never
+            `data/`: one live news request, 411 articles, 1 request, 410 admitted and 1 refused, the
+            rows written into a migrated store, and the run page's region rendered off what the read
+            API handed back rather than off the rows. Every stored refusal carries no body, every
+            admission carries one, no verdict fell outside the stated set, and the operator's store
+            under `data/` was not touched by either gate or by the demonstration.
+Carried:    one obligation created, due at 6.9: the denied-category markers tested against what the
+            search tool returns, because 6.3's markers were read off pages fetched by hand and a page
+            fetched by hand arrives as a reading tool's rendering rather than as the bytes a search
+            tool returns. 6.9's own text cites it back. This session has committed code and may not
+            sign it off.
