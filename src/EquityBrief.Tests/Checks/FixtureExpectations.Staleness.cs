@@ -139,6 +139,27 @@ public partial class FixtureExpectations
 
         Assert.False(Staleness.Pulse(StaleNight, silent).Above);
 
+        // The spike does not count toward its own baseline, asserted over a short and
+        // uneven history, because that is the only shape where it shows: sixty quiet
+        // windows hold their median whatever one more adds, and a pulse table a few
+        // weeks old does not. Two earlier windows of two and eight give a median of
+        // five and a window of twenty is above it; counted in with the windows around
+        // it, the median is fifteen and twenty is not three times that.
+        var sessions = Enumerable.Range(0, 11)
+            .Select(offset => StaleNight.AddDays(offset - 10))
+            .ToArray();
+
+        int[] counts = [0, 0, 1, 0, 1, 6, 4, 4, 4, 4, 4];
+
+        var shortHistory = Staleness.Pulse(
+            StaleNight,
+            [.. sessions.Select((session, index) => new PulseSession(session, counts[index]))]);
+
+        Assert.Equal(2, shortHistory.BaselineWindows);
+        Assert.Equal(5m, shortHistory.Baseline);
+        Assert.Equal(20, shortHistory.WindowArticles);
+        Assert.True(shortHistory.Above);
+
         // And no earlier window is no baseline and no reading, which is what the
         // fixture's one night of pulse is.
         var tonight = Staleness.Pulse(StaleNight, [new PulseSession(StaleNight, 40)]);
