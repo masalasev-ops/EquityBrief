@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - BUILD_PLAN.md - two scope obligations filed, and the momentum panel put to 7.0 to decide
+Corrects: two scope decisions the operator took during 6.1 existed only in the conversation, which is a hole in the record: anything issued in conversation that will later be cited has to land in the repo when it is issued. The momentum panel's own gap is the third and it is not an obligation, because nothing produces evidence for it.
+Was:
+> | **The computed fundamental panel, and whether a fundamental state may fire a reason or gate a tranche** | 6.1 | 7.0 | 7.0 is the planning pass that reads what phase 6 produced before phase 7 builds on it, and what it needs is in hand by then rather than produced by it: 6.1 stores twelve filings a name, and 6.4 onward writes the first researched reports to read a panel against
+>
+> Decides what a computed panel over the twelve stored filings states, and the two questions that rest on it
+Now: the fundamental row states the four readings it decides, being the computed trajectory, the guide record, earnings quality and the valuation position over the twelve stored quarters, each with the range it is placed in and the count of quarters behind it, and the three questions of a panel, a seventh reason on a state transition and a computed tranche precondition. A second row narrows what the volume profile is allowed to claim to a price region at the resolution of a day's range, with a treatment for a session whose range exceeds a multiple of the typical daily move and a count of the sessions that sets aside. 7.0's text cites both back and states that it decides what the momentum panel is for rather than carrying it further.
+Why: the fundamental row's name is kept as 6.1 filed it, because 6.1's own record cites that name and a record is corrected by a new entry rather than edited, so a rename would leave the citation resolving to nothing. That is the precedent the bulk-payload row and the route row both set. The volume profile row is new: a published caution holds that a daily volume profile is not a volume profile, that caution is about a feature scored against a forward return, and narrowing what the claim says is what makes it not apply, so the narrowing belongs in the corpus before anything scores it. The momentum panel is decided rather than carried because the panel has been drawn since 3.5 and the open question is what the corpus intends by it, not what a measurement would show.
+
 ### 2026-09-12 - RUNBOOK.md - the archive's contact, which is a setting and not a key
 Authorised by: The archive declares a contact in its user agent, and a blank one refuses at startup
 Was:
