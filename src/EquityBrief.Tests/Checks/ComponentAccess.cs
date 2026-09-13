@@ -74,6 +74,10 @@ public class ComponentAccess
             // reconciled against the class's own declaration in both directions.
             CheckReach.Key(Scope.CatalogueTable, "Fundamentals fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Fundamentals fetcher"),
+            // 6.7, the spend cap, and the run log's row it makes true.
+            CheckReach.Key(Scope.CatalogueTable, "Spend cap"),
+            CheckReach.Key(Scope.MatrixTable, "Spend cap"),
+            CheckReach.Key(Scope.CatalogueTable, "Run log"),
             // 6.6, the prose writer.
             CheckReach.Key(Scope.CatalogueTable, "Prose writer"),
             CheckReach.Key(Scope.MatrixTable, "Prose writer"),

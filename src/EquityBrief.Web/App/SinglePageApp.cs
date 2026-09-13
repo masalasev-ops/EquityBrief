@@ -154,7 +154,8 @@ public sealed class SinglePageApp : IComponent
         ResearchStateLine? researchState = null,
         CauseSource? causes = null,
         IReadOnlyList<LeftOutSection>? notWritten = null,
-        string? provenance = null)
+        string? provenance = null,
+        ResearchPausedLine? paused = null)
     {
         var region = new StringBuilder();
 
@@ -203,7 +204,7 @@ public sealed class SinglePageApp : IComponent
         // ones. At 6.4 what is drawn is the sections left out, each with its line,
         // because that is what the claim checker produces and nothing writes a
         // section a reader could be shown before 6.8.
-        region.Append(marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten));
+        region.Append(marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused));
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));
@@ -306,14 +307,15 @@ public sealed class SinglePageApp : IComponent
         HarnessCounts? harness,
         string? selectedTicker = null,
         IReadOnlyList<ReasonRecord>? records = null,
-        IReadOnlyList<ReasonTrackRow>? totals = null)
+        IReadOnlyList<ReasonTrackRow>? totals = null,
+        NightSpend? spend = null)
     {
         var region = new StringBuilder();
 
         region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\" "));
         region.Append(Invariant($"data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
-        region.Append(marks.NightHeader(night, index, fired, duration, harness));
+        region.Append(marks.NightHeader(night, index, fired, duration, harness, spend));
         region.Append(marks.WatchList(watched));
         region.Append(marks.TonightList(rows, TonightDrawn, records));
 
@@ -362,13 +364,14 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<string> stale,
         IReadOnlyList<RefusedDocument> refused,
         IReadOnlyList<LeftOutSection> fellBack,
-        HarnessCounts? harness)
+        HarnessCounts? harness,
+        PricedCalls? priced = null)
     {
         var region = new StringBuilder();
 
         region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-stages=\"{stages.Count}\">"));
 
-        region.Append(marks.OperationalHeader(night, stages));
+        region.Append(marks.OperationalHeader(night, stages, priced));
         region.Append(marks.ReasonRecords(records, tracks, baseRates, nights));
 
         region.Append("<section class=\"shadow-candidates\" data-shadow=\"absent\">");

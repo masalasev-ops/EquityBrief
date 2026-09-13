@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Spending;
 using System.Text;
 using EquityBrief.Core.Components;
 
@@ -142,6 +143,18 @@ public sealed record CauseSource(DateOnly AsOf, string Model);
 
 // One written part of a name's research, as the provenance footer states it.
 public sealed record WrittenPart(string Section, DateOnly AsOf, string Model);
+
+// What research spent on a night's UTC day and in its month to the end of that day,
+// beside the two caps it is held to.
+public sealed record NightSpend(decimal OnTheDay, decimal MonthToDate, decimal DayCap, decimal MonthCap);
+
+// A pause as a name page draws it: which cap stopped research, when it resumes, and
+// the line the spend cap itself states.
+public sealed record ResearchPausedLine(string Cap, DateTimeOffset ResumesAt, string Line);
+
+// The paid calls the run log carries a recorded cost for, the passes they were made
+// in, and what they came to.
+public sealed record PricedCalls(int Count, int Passes, decimal Total);
 
 // One row of tonight's list, already projected.
 //
@@ -1418,7 +1431,7 @@ public sealed class MarkRenderer : IComponent
     //
     // Per stage rather than in one total, because a night that landed inside its
     // limit by one step doing nothing is legible only if the steps are apart.
-    public string OperationalHeader(DateOnly night, IReadOnlyList<StageRow> stages)
+    public string OperationalHeader(DateOnly night, IReadOnlyList<StageRow> stages, PricedCalls? priced = null)
     {
         var header = new StringBuilder();
 
@@ -1469,6 +1482,19 @@ public sealed class MarkRenderer : IComponent
         // steps are what is read first.
         header.Append(Invariant, $"<p class=\"total\" data-seconds=\"{Number(stages.Sum(stage => stage.Seconds))}\">");
         header.Append(Invariant, $"{stages.Count} stage(s), {Number(stages.Sum(stage => stage.Seconds))} second(s) of stage time</p>");
+
+        // Every paid call the run log carries a recorded cost for, over every night
+        // rather than this one, the research passes they were made in, and what they
+        // came to. It is the surface the operating row that settles the two caps is
+        // read on, and that row fires at twenty passes, so passes are stated beside
+        // calls rather than left to be counted off them.
+        // owes: The spend cap set from the passes the ledger has priced
+        if (priced is { } calls)
+        {
+            header.Append(Invariant, $"<p class=\"priced-calls\" data-calls=\"{calls.Count}\" data-passes=\"{calls.Passes}\" data-spend=\"{calls.Total}\">");
+            header.Append(Invariant, $"paid calls with a recorded cost: {calls.Count} over {calls.Passes} research pass(es), costing {SpendVerdict.Money(calls.Total)} in all</p>");
+        }
+
         header.Append("</header>");
 
         return header.ToString();
@@ -1566,7 +1592,8 @@ public sealed class MarkRenderer : IComponent
         string ticker,
         IReadOnlyList<LeftOutSection> leftOut,
         ResearchStateLine? state = null,
-        IReadOnlyList<LeftOutSection>? notWritten = null)
+        IReadOnlyList<LeftOutSection>? notWritten = null,
+        ResearchPausedLine? paused = null)
     {
         var region = new StringBuilder();
         var unwritten = notWritten ?? [];
@@ -1582,6 +1609,16 @@ public sealed class MarkRenderer : IComponent
         if (state is not null)
         {
             region.Append(Invariant, $"<p class=\"research-state\" data-state=\"{Escaped(state.State)}\">{Escaped(state.Line)}</p>");
+        }
+
+        // Research paused, section 15.9's state, from 6.7: one line saying research is
+        // paused and when it resumes, in the words the spend cap refuses a call with,
+        // so the page and the run log cannot describe one pause two ways.
+        // see: The spend cap is a stop, not an allowance
+        if (paused is not null)
+        {
+            region.Append(Invariant, $"<p class=\"research-paused\" data-cap=\"{Escaped(paused.Cap)}\" data-resumes-at=\"{paused.ResumesAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\">");
+            region.Append(Invariant, $"{Escaped(paused.Line)}</p>");
         }
 
         foreach (var section in leftOut)
@@ -1759,7 +1796,7 @@ public sealed class MarkRenderer : IComponent
     // the one number the twenty drawn rows cannot tell you. The quantities phase
     // 6 supplies are absent and say so rather than being drawn as zero, which
     // would read as a night that spent nothing because it did nothing.
-    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness)
+    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null)
     {
         var header = new StringBuilder();
 
@@ -1789,7 +1826,24 @@ public sealed class MarkRenderer : IComponent
             header.Append("<p class=\"harness-verdict degraded\" data-report=\"none\">harness: no phase report has been written on this machine</p>");
         }
 
-        header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused, and spend, arrive with the research pass that produces them</p>");
+        // What research spent, from 6.7, which is where anything first spends: the
+        // night's UTC day and its month to the end of that day, each beside its cap,
+        // read off the run log's own rows. A night that spent nothing says so in the
+        // same words, because nothing spent is a figure and not an absence.
+        // see: The spend cap counts a UTC day and a UTC month, and refuses a call that could take spend past either
+        if (spend is { } spent)
+        {
+            header.Append(Invariant, $"<p class=\"night-spend\" data-spent-day=\"{spent.OnTheDay}\" data-spent-month=\"{spent.MonthToDate}\" ");
+            header.Append(Invariant, $"data-day-cap=\"{spent.DayCap}\" data-month-cap=\"{spent.MonthCap}\">");
+            header.Append(Invariant, $"research spent {SpendVerdict.Money(spent.OnTheDay)} of the {SpendVerdict.Money(spent.DayCap)} day cap on {night:yyyy-MM-dd}, ");
+            header.Append(Invariant, $"and {SpendVerdict.Money(spent.MonthToDate)} of the {SpendVerdict.Money(spent.MonthCap)} month cap in its month to that day</p>");
+        }
+        else
+        {
+            header.Append("<p class=\"degraded\" data-spend=\"absent\">what research spent is not read on this page</p>");
+        }
+
+        header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused arrives with the research pass that produces it</p>");
         header.Append("</header>");
 
         return header.ToString();

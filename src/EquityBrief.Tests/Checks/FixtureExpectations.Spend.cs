@@ -310,6 +310,79 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TheSpendExpectationIsWhatThePagesRatesAndTheRuleProduce()
+    {
+        var expected = Expected("spend");
+
+        // The rates, in both directions against the feed's own table.
+        var rates = expected.GetProperty("rates");
+
+        Assert.Equal(
+            rates.EnumerateObject().Select(model => model.Name).Order(StringComparer.Ordinal).ToArray(),
+            DeepSeekModelFeed.Rates.Keys.Order(StringComparer.Ordinal).ToArray());
+
+        foreach (var model in rates.EnumerateObject())
+        {
+            decimal Rate(string name) => decimal.Parse(model.Value.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
+
+            Assert.Equal(new ModelRates(Rate("cacheHit"), Rate("cacheMiss"), Rate("output")), DeepSeekModelFeed.Rates[model.Name]);
+        }
+
+        Assert.Equal(DeepSeekModelFeed.PeakMultiple, decimal.Parse(expected.GetProperty("peakMultiple").GetString()!, CultureInfo.InvariantCulture));
+
+        // Peak, hour by hour over one week, against the windows and days the page states.
+        var days = expected.GetProperty("peakDays").EnumerateArray().Select(day => Enum.Parse<DayOfWeek>(day.GetString()!)).ToHashSet();
+        var windows = expected.GetProperty("peakWindows").EnumerateArray()
+            .Select(window => (From: window.GetProperty("from").GetInt32(), To: window.GetProperty("to").GetInt32()))
+            .ToArray();
+
+        var hours = 0;
+
+        for (var instant = DateTimeOffset.Parse("2026-09-14T00:30:00Z", CultureInfo.InvariantCulture); instant < DateTimeOffset.Parse("2026-09-21T00:00:00Z", CultureInfo.InvariantCulture); instant = instant.AddHours(1))
+        {
+            var byHand = days.Contains(instant.UtcDateTime.DayOfWeek) && windows.Any(window => instant.UtcDateTime.Hour >= window.From && instant.UtcDateTime.Hour < window.To);
+
+            Assert.Equal(byHand, DeepSeekModelFeed.IsPeak(instant));
+            hours++;
+        }
+
+        Assert.Equal(168, hours);
+
+        // The two recorded calls, priced by hand in the file and by the feed here.
+        foreach (var call in expected.GetProperty("recordedCalls").EnumerateArray())
+        {
+            var settings = Research(call.GetProperty("thinking").GetString());
+            var request = Providers.ResearchModelFeedTests.Recorded(settings);
+            var answer = DeepSeekModelFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section);
+
+            Assert.Equal(call.GetProperty("cacheHitTokens").GetInt32(), answer.CacheHitTokens);
+            Assert.Equal(call.GetProperty("cacheMissTokens").GetInt32(), answer.CacheMissTokens);
+            Assert.Equal(call.GetProperty("completionTokens").GetInt32(), answer.CompletionTokens);
+            Assert.Equal(call.GetProperty("created").GetString(), answer.Created.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+            Assert.Equal(call.GetProperty("peak").GetBoolean(), DeepSeekModelFeed.IsPeak(answer.Created));
+            Assert.Equal(decimal.Parse(call.GetProperty("price").GetString()!, CultureInfo.InvariantCulture), DeepSeekModelFeed.PriceOf(settings.Model, answer));
+            Assert.False(string.IsNullOrWhiteSpace(call.GetProperty("priceWorked").GetString()));
+        }
+
+        // The verdicts, each worked by hand from its rows and its instant.
+        var verdicts = expected.GetProperty("verdicts").EnumerateArray().ToArray();
+
+        Assert.Equal(3, verdicts.Length);
+
+        foreach (var verdict in verdicts)
+        {
+            var ledger = new SpendLedger(verdict.GetProperty("rows").EnumerateArray().Select(row => Spent(row[0].GetString()!, row[1].GetString()!)));
+            var judged = SpendRule.Judge(ledger, SpendCaps.Default, DateTimeOffset.Parse(verdict.GetProperty("now").GetString()!, CultureInfo.InvariantCulture));
+
+            Assert.True(verdict.GetProperty("paused").GetBoolean() == judged.Paused, verdict.GetProperty("case").GetString());
+            Assert.Equal(verdict.GetProperty("cap").ValueKind == JsonValueKind.Null ? null : verdict.GetProperty("cap").GetString(), judged.Cap);
+            Assert.Equal(
+                verdict.GetProperty("resumesAt").ValueKind == JsonValueKind.Null ? null : verdict.GetProperty("resumesAt").GetString(),
+                judged.ResumesAt?.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        }
+    }
+
+    [Fact]
     public void SectionSeventeensSpendCapRowStatesTheFiguresTheCapHolds()
     {
         // Read off the row rather than restated beside the constants.

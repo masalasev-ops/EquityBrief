@@ -165,6 +165,12 @@ public partial class ReadSurface
             CheckReach.Key(Scope.FailureTable, "Claim checker rejects twice"),
             CheckReach.Key(Scope.FailureTable, "A pass finds no admissible source for a section"),
 
+            // 6.7, what research spent in tonight's header, and research paused on the
+            // name page, which is the page's half of section 18's spend cap row.
+            CheckReach.Key("15.7 Tonight", "Night header, spend"),
+            CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes"),
+            CheckReach.Key(Scope.FailureTable, "Spend cap reached, the name says research is paused and when it resumes"),
+
             // 6.6, the two regions of the name page a written section first reaches,
             // and the page's half of section 18's two local lane rows.
             CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written"),

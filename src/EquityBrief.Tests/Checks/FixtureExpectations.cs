@@ -59,6 +59,11 @@ public partial class FixtureExpectations
             // figure 12.1's three questions.
             CheckReach.Key(Scope.LimitsTable, "Research staleness triggers"),
 
+            // 6.7, section 17's spend cap and the cap's half of section 18's row about
+            // reaching it, over constructed ledgers and the shipped component.
+            CheckReach.Key(Scope.LimitsTable, "Spend cap"),
+            CheckReach.Key(Scope.FailureTable, "Spend cap reached, research pauses for the period"),
+
             // 6.6, the writer's half of section 18's two local lane rows, over the
             // recorded model and a transport with nothing listening.
             CheckReach.Key(Scope.FailureTable, "A section is assigned to the local lane that the machine cannot hold, the pass is refused before it starts"),

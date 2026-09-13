@@ -911,6 +911,41 @@ internal static class Scope
             Verdict.Pass,
             "a name whose section predates its stored filing and its passed earnings date is drawn with one line naming both, which is the line the shipped judge writes to the run log over the same store, and a name whose research stands is drawn as standing",
             ByReadSurface),
+        // 6.7, the spend cap and the paid lane. The component, the run log's row it
+        // makes true, section 17's cap, section 18's row about reaching it in its two
+        // halves, and the two pages that state what research spent and that it paused.
+        [CheckReach.Key(CatalogueTable, "Spend cap")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the run log it reads and appends to and the research model it holds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source, with the two runners' rows no longer reading the model",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Spend cap")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, which is where the cap reading and writing the run log and touching no other store is a claim",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Run log")] = new Scoped(
+            Verdict.Pass,
+            "every shipped component that writes a store declares a row of its own on the run log and the three that write nothing declare none, read in both directions over the declarations and against each row's Writes cell, with the row's own words read off the document; the spend the log carries is written by the spend cap for every paid call, asserted over the store",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "Spend cap")] = new Scoped(
+            Verdict.Pass,
+            "the day cap and the month cap each refuse on their own over constructed ledgers, at the UTC edges either side, a call that could take spend past either is refused before it is made, the ledger is read off the run log rather than kept, and the row's proposed figures are read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "Spend cap reached, research pauses for the period")] = new Scoped(
+            Verdict.Pass,
+            "at the day cap and at the month cap on its own the shipped spend cap refuses before the call, the recorded model is asked nothing, the refusal is a row carrying no call and no spend, and the period it names ends at the next UTC midnight or the first of the next UTC month",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "Spend cap reached, the name says research is paused and when it resumes")] = new Scoped(
+            Verdict.Pass,
+            "a name page over a store whose run log reaches a cap draws one line saying research is paused, naming the cap and the instant it resumes in the words the cap refuses a call with, read back off the markup, and draws none below the cap",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Night header, spend")] = new Scoped(
+            Verdict.Pass,
+            "the header states what research spent on the night's UTC day and in its month to that day beside both caps, each read back off the markup against sums of the run log by a query of the test's own, over rows either side of both edges",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes")] = new Scoped(
+            Verdict.Pass,
+            "a name page over a store whose run log reaches a cap draws one line saying research is paused and the instant it resumes, the day cap and the month cap each on its own, read back off the markup against sums of the run log by a query of the test's own, and draws none below both caps",
+            ByReadSurface),
         // 6.6, the prose writer. The component, the two regions of the name page a
         // written section first reaches, and the parts of section 18's two local
         // lane rows this checkpoint can draw, each over the recorded model.
@@ -1338,12 +1373,6 @@ internal static class Scope
         // arrives with the research pass at 6.1.
         ["Source lists"] = "6.9",
 
-        // 1.2 names the run log, because that is where the backfill's request
-        // count first reaches it. The catalogue row is not about one stage: its
-        // Reads cell says "every component that writes appends", so the row is a claim about
-        // every component, and the last of them lands in phase 6.
-        ["Run log"] = "6.7",
-
         // 1.2 builds the backfill, and this row is the limit on it rather than
         // the component. Its own Asserted by column names the run log's request
         // count against the names lacking history, which is nightly-cost reading
@@ -1548,7 +1577,11 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Research stale, the stored sections rendered with their own dates")] = "6.8",
         [CheckReach.Key("15.9 Name", "Research stale, one line naming which of the four triggers fired")] = "6.5",
         [CheckReach.Key("15.9 Name", "Research stale, the option to have them rewritten")] = "6.8",
-        [CheckReach.Key("15.9 Name", "Research paused")] = "6.7",
+        // Decomposed at 6.7, which draws the line and none of the sections: a written
+        // section is drawn under its own date from 6.8, which is where research is first
+        // written to be shown.
+        [CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes")] = "6.7",
+        [CheckReach.Key("15.9 Name", "Research paused, with the stored sections still rendered under their own dates")] = "6.8",
         [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
         [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
         // 7.5 is "Reason verdicts on the run page" and 7.4 is "The shadow
@@ -1761,6 +1794,18 @@ internal static class Scope
         // through the phase that builds it.
         [CheckReach.Key(FailureTable, "Earnings date missing")] =
             ["the earnings reason", "the calendar"],
+
+        // Section 15.9's research paused row, decomposed at 6.7 for contradiction F's
+        // argument: the line is the spend cap's and is drawn here, and the stored sections
+        // under their own dates are drawn when a section is first written to be shown.
+        [CheckReach.Key("15.9 Name", "Research paused")] =
+            ["one line saying that research is paused and when it resumes", "with the stored sections still rendered under their own dates"],
+
+        // Section 18's spend cap row, decomposed at 6.7, where both halves are built:
+        // the cap refusing a call is the component's, and the line on the name page is
+        // a surface, and a claim that something is visible is a claim about a surface.
+        [CheckReach.Key(FailureTable, "Spend cap reached")] =
+            ["research pauses for the period", "the name says research is paused and when it resumes"],
 
         // The name page's provenance footer, decomposed at 6.6, which is the first
         // checkpoint to draw it. Its row enumerates the three kinds of part a page
