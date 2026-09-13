@@ -150,7 +150,8 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
             listings.FirstOrDefault(listing => listing.Ticker == ticker),
             at is > 0 ? ordered[at.Value - 1].Ticker : null,
             at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null,
-            await read.SectionStatesAsync(ticker, DateOnly.MaxValue)),
+            await read.SectionStatesAsync(ticker, DateOnly.MaxValue),
+            await read.StalenessAsync(ticker)),
         "text/html; charset=utf-8");
 });
 

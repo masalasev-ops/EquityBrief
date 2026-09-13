@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Research;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
@@ -759,7 +760,8 @@ public static class NameScreen
         ListingRow? listing = null,
         string? previousOnTheList = null,
         string? nextOnTheList = null,
-        IReadOnlyList<SectionStateRow>? sections = null)
+        IReadOnlyList<SectionStateRow>? sections = null,
+        StalenessVerdict? staleness = null)
     {
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
@@ -845,8 +847,14 @@ public static class NameScreen
             FiredReasons(listing),
             previousOnTheList,
             nextOnTheList,
-            LeftOut(sections ?? []));
+            LeftOut(sections ?? []),
+            staleness is null ? null : ResearchState(staleness));
     }
+
+    // The verdict as the page draws it, in the words the judge writes. Nothing is
+    // computed here: the state is the verdict's and the line is the verdict's.
+    public static ResearchStateLine ResearchState(StalenessVerdict verdict) =>
+        new(verdict.State.ToString().ToLowerInvariant(), verdict.Line);
 
     // The status a checker leaves a section in when it is left out. The worker's
     // own constant cannot be referenced from here, since the read surface holds no

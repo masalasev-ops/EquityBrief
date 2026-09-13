@@ -74,6 +74,9 @@ public class ComponentAccess
             // reconciled against the class's own declaration in both directions.
             CheckReach.Key(Scope.CatalogueTable, "Fundamentals fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Fundamentals fetcher"),
+            // 6.5, the staleness judge.
+            CheckReach.Key(Scope.CatalogueTable, "Staleness judge"),
+            CheckReach.Key(Scope.MatrixTable, "Staleness judge"),
             // 6.4, the claim checker, whose catalogue row was repaired to name the
             // theme store SCHEMA and the matrix already gave it.
             CheckReach.Key(Scope.CatalogueTable, "Claim checker"),

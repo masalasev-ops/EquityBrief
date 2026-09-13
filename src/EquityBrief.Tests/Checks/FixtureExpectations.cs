@@ -48,12 +48,20 @@ namespace EquityBrief.Tests.Checks;
 // Phase 1's stages are membership and the backfill. The seven expected outputs
 // section 19.1 also names arrive with the components that compute them, and
 // each is owed at its own checkpoint rather than at this one.
-public class FixtureExpectations
+public partial class FixtureExpectations
 {
     internal static CheckReach Reach => new(
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 6.5, the staleness judge: section 17's trigger row read off the
+            // document, the catalogue's judge over the fixture's own dates, and
+            // figure 12.1's three questions.
+            CheckReach.Key(Scope.LimitsTable, "Research staleness triggers"),
+            CheckReach.Key("Figure 12.1", "Is there a research record?"),
+            CheckReach.Key("Figure 12.1", "Does it still stand?"),
+            CheckReach.Key("Figure 12.1", "All four no"),
+
             // 5.5, the forward returns and the news pulse.
             CheckReach.Key(Scope.FixtureTable, "forward returns"),
             CheckReach.Key(Scope.FixtureTable, "news pulse"),
@@ -2002,7 +2010,7 @@ public class FixtureExpectations
         // rather than about whether anything reads them.
         Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
 
-        // Twelve stand unread and each is named rather than counted, because a
+        // Thirteen stand unread and each is named rather than counted, because a
         // number here would drift silently as keys are added. `rowsInFile` is
         // the count of rows in the captured bulk payload, which the fetch
         // expectation states so a reader can see what the membership filter cut
@@ -2015,10 +2023,11 @@ public class FixtureExpectations
         // caught that. The gap stop file added its note at 6.0 and it caught
         // that, on the run that added the file, the archive extracts file added
         // its note at 6.2 and it caught that, the admissibility file added its note
-        // at 6.3 and it caught that, and the claims file added its note at 6.4 and
-        // it caught that. Which is what it is for.
+        // at 6.3 and it caught that, the claims file added its note at 6.4 and it
+        // caught that, and the staleness file added its note at 6.5 and it caught
+        // that. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note", "stored-filings.note"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note", "staleness.note", "stored-filings.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

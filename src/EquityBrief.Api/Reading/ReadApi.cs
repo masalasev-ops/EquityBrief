@@ -265,6 +265,27 @@ public sealed class ReadApi : IComponent
         ORDER BY r.section;
     ";
 
+    // A name's earnings events, every one the calendar holds, which the staleness
+    // rules read for the newest print on or before the night.
+    const string EarningsForName = @"
+        SELECT event_date, timing FROM calendar
+        WHERE ticker = $ticker AND kind = 'earnings'
+        ORDER BY event_date;
+    ";
+
+    // A name's news pulse, every session the table keeps.
+    const string PulseForName = @"
+        SELECT session_date, article_count FROM news_pulse
+        WHERE ticker = $ticker
+        ORDER BY session_date;
+    ";
+
+    // The newest night the store computed a facts file for this name, which is what
+    // the staleness verdict is as of on the page as it is in the judge.
+    const string NewestFactsNight = @"
+        SELECT MAX(session_date) FROM facts WHERE ticker = $ticker;
+    ";
+
     // The sections that fell back on one night, from both stores. By the date
     // each was written, which is a date rather than an instant and needs no clock.
     const string FellBackOnNight = @"
@@ -1214,6 +1235,76 @@ public sealed class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    // Whether a name's research stands, read here by the rules the judge applies,
+    // so the page and the judge's run log reach one verdict from one store. The
+    // judge writes the run log and nothing else, which is why this is derived on
+    // read rather than read back from a stored state.
+    // see: Research goes stale on an event dated after the section was written, and a news spike is dated by the session it began
+    public async Task<StalenessVerdict> StalenessAsync(string ticker)
+    {
+        await using var connection = Open();
+
+        var sections = (await SectionStatesAsync(ticker, DateOnly.MaxValue))
+            .Select(state => new SectionStanding(state.Section, state.AsOf, state.Status))
+            .ToArray();
+
+        var earnings = new List<EarningsEvent>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = EarningsForName;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                earnings.Add(new EarningsEvent(
+                    DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    reader.GetString(1)));
+            }
+        }
+
+        var pulse = new List<PulseSession>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = PulseForName;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                pulse.Add(new PulseSession(
+                    DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    reader.GetInt32(1)));
+            }
+        }
+
+        DateOnly night;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = NewestFactsNight;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            night = await command.ExecuteScalarAsync() is string stored
+                ? DateOnly.ParseExact(stored, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                : clock.SessionDateAt(clock.UtcNow);
+        }
+
+        var filings = await FundamentalsAsync(ticker);
+
+        return Staleness.Judge(
+            night,
+            sections,
+            filings.Count == 0 ? null : filings.Max(filing => filing.FilingDate),
+            earnings,
+            pulse,
+            refresh: false);
     }
 
     // The sections that fell back on one night, a name's and a theme's together.

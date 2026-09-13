@@ -899,6 +899,44 @@ internal static class Scope
             Verdict.Pass,
             "every document refused, with the category that refused each, the count per category the run log line states, and the order that decides which of two failed gates the row records",
             ByAdmissibility),
+        [CheckReach.Key("15.9 Name", "Research not yet written, the researched sections absent with one line saying they have not been written")] = new Scoped(
+            Verdict.Pass,
+            "a name with no accepted section is drawn with the line saying its researched sections have not been written, read back off the markup, over a store whose other names carry research",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Research not yet written, beside the computed sections rendered whole")] = new Scoped(
+            Verdict.Pass,
+            "the same page carries the chart, the level summary, the plan tables and the numbers section in full beside that line, asserted on the markup that carries the line",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Research stale, one line naming which of the four triggers fired")] = new Scoped(
+            Verdict.Pass,
+            "a name whose section predates its stored filing and its passed earnings date is drawn with one line naming both, which is the line the shipped judge writes to the run log over the same store, and a name whose research stands is drawn as standing",
+            ByReadSurface),
+        // 6.5, the staleness judge. The component, section 17's trigger row, and
+        // figure 12.1's three questions, each over the fixture's own dates.
+        [CheckReach.Key(CatalogueTable, "Staleness judge")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the research store, facts, calendar, news pulse and fundamentals it reads and the run log it writes, and no feed, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Staleness judge")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, which is where the judge's writing nothing but the run log is a claim",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "Research staleness triggers")] = new Scoped(
+            Verdict.Pass,
+            "one test per trigger, each with the case that must not fire beside the case that must, the news window's floor, multiple and baseline read off this row against the constants the rules use, and a spike dated by the session its run began so a story over several days does not fire twice",
+            ByExpectations),
+        [CheckReach.Key("Figure 12.1", "Is there a research record?")] = new Scoped(
+            Verdict.Pass,
+            "a name with no accepted section is answered as missing rather than as stale, with every trigger firing, and a name whose sections only ever fell back is missing too",
+            ByExpectations),
+        [CheckReach.Key("Figure 12.1", "Does it still stand?")] = new Scoped(
+            Verdict.Pass,
+            "the shipped judge over the fixture's own stored filing, earnings date and facts night reaches the verdict the staleness expectation worked out by hand for each of four sections, and each trigger is attributed to the sections it reaches",
+            ByExpectations),
+        [CheckReach.Key("Figure 12.1", "All four no")] = new Scoped(
+            Verdict.Pass,
+            "a record whose sections were all written after every event stands, and the judge's own run log rows record no request, no model call and no spend, over a class that declares no feed and takes no client",
+            ByExpectations),
         // 6.4, the claim checker. The component and its two tables' surfaces, the
         // limits row and the two expected rejections, and figure 12.1's two boxes.
         [CheckReach.Key(CatalogueTable, "Claim checker")] = new Scoped(
@@ -1446,8 +1484,18 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.8",
         [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
         [CheckReach.Key("15.9 Name", "Provenance footer")] = "6.6",
-        [CheckReach.Key("15.9 Name", "Research not yet written")] = "6.5",
-        [CheckReach.Key("15.9 Name", "Research stale")] = "6.5",
+        // Decomposed at 6.5, each into the part the judge's verdict draws and the
+        // parts the research runner draws. The line saying research is missing or
+        // naming the trigger that fired is a reading of the stores this checkpoint
+        // judges; a control that writes research with its cost stated, and the stored
+        // sections rendered with their dates, need the runner and the prose it
+        // writes, which arrive at 6.8.
+        [CheckReach.Key("15.9 Name", "Research not yet written, the researched sections absent with one line saying they have not been written")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Research not yet written, a control that writes them with its cost stated before it is pressed")] = "6.8",
+        [CheckReach.Key("15.9 Name", "Research not yet written, beside the computed sections rendered whole")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Research stale, the stored sections rendered with their own dates")] = "6.8",
+        [CheckReach.Key("15.9 Name", "Research stale, one line naming which of the four triggers fired")] = "6.5",
+        [CheckReach.Key("15.9 Name", "Research stale, the option to have them rewritten")] = "6.8",
         [CheckReach.Key("15.9 Name", "Research paused")] = "6.7",
         [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
         [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
@@ -1563,6 +1611,25 @@ internal static class Scope
         // repaired, since until then no night could put one there.
         [CheckReach.Key("15.10 Run", "Stale and failed")] =
             ["names carrying yesterday's bars", "the stage a night stopped on", "sections that fell back", "documents refused by admissibility"],
+
+        // Section 15.9's two research-state rows, decomposed at 6.5 for the reason
+        // contradiction F gives: each states a line the judge's verdict draws now and
+        // parts only the research runner can draw, being a control that writes the
+        // sections and the sections themselves under their dates. Read whole, each
+        // row would be owed at 6.8 and the line that works would sit unasserted for
+        // three checkpoints.
+        [CheckReach.Key("15.9 Name", "Research not yet written")] =
+        [
+            "the researched sections absent with one line saying they have not been written",
+            "a control that writes them with its cost stated before it is pressed",
+            "beside the computed sections rendered whole",
+        ],
+        [CheckReach.Key("15.9 Name", "Research stale")] =
+        [
+            "the stored sections rendered with their own dates",
+            "one line naming which of the four triggers fired",
+            "the option to have them rewritten",
+        ],
 
         // Section 19.1's inadmissible document row, decomposed at 6.3, which is
         // the obligation 6.0 filed against this checkpoint rather than a choice
