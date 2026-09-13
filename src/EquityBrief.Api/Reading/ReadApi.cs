@@ -83,6 +83,16 @@ public sealed record FilingRow(string Ticker, DateOnly FilingDate, string Payloa
 // where each carries its own date and model beside it.
 public sealed record SectionStateRow(string Section, int Version, DateOnly AsOf, string Status, string? Reason);
 
+// The version of one of a name's sections a reader is shown: the newest the
+// claim checker accepted, with the date it was written on and the model that
+// wrote it. A newer version still waiting on its retry, or refused, does not take
+// its place, because what a reader is shown is what passed.
+//
+// The prose and the source list are handed back as stored. What 6.6 draws from
+// them is the cause of each move, in the moves table, and the provenance footer's
+// date and model; the sections themselves are drawn from 6.8.
+public sealed record WrittenSectionRow(string Section, int Version, DateOnly AsOf, string Model, string Prose, string SourceIds);
+
 // One section that fell back on a night, from either store. `Subject` is a
 // ticker for a name's section and a theme for a theme's, which is what the run
 // page names beside the section.
@@ -251,6 +261,37 @@ public sealed class ReadApi : IComponent
         this.databaseFile = databaseFile;
         this.clock = clock;
     }
+
+    // The newest accepted version of each of a name's sections.
+    const string WrittenSectionsForName = @"
+        SELECT r.section, r.version, r.as_of, r.model, r.prose, r.source_ids
+        FROM research_section r
+        WHERE r.ticker = $ticker
+          AND r.status = 'accepted'
+          AND r.version = (
+              SELECT MAX(s.version) FROM research_section s
+              WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted')
+        ORDER BY r.section;
+    ";
+
+    // The stage the prose writer records itself under. The worker's own constant
+    // cannot be referenced from here, since the read surface holds no reference to
+    // the worker, so the word is stated and `read-surface` asserts the two agree.
+    public const string ProseStage = "prose";
+
+    // The newest prose pass the run log holds for one name, as the writer recorded
+    // it. The name sits inside the detail rather than in a column, so it is read
+    // with the store's own JSON function over the rows the prose stage wrote, and
+    // newest by the order the rows were written, which is the ordering the run page
+    // takes for the reason 6.0 gave. A detail that is not JSON is passed over rather
+    // than read, since every other stage writes a sentence there.
+    const string NewestProsePassForName = @"
+        SELECT detail FROM run_log
+        WHERE stage = $stage
+          AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.ticker') END = $ticker
+        ORDER BY rowid DESC
+        LIMIT 1;
+    ";
 
     // The newest version of each of a name's sections, on or before the night the
     // page is about, so an earlier night's page shows what the report said then.
@@ -1235,6 +1276,48 @@ public sealed class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    // A name's written sections, one per section, each the newest the checker
+    // accepted.
+    public async Task<IReadOnlyList<WrittenSectionRow>> WrittenSectionsAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = WrittenSectionsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var rows = new List<WrittenSectionRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new WrittenSectionRow(
+                reader.GetString(0),
+                reader.GetInt32(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5)));
+        }
+
+        return rows;
+    }
+
+    // The detail of the newest prose pass for a name, as stored, or none where no
+    // pass has run for it. Handed back unread, for the reason a filing's payload is.
+    public async Task<string?> NewestProsePassAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestProsePassForName;
+        command.Parameters.AddWithValue("$stage", ProseStage);
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        return await command.ExecuteScalarAsync() as string;
     }
 
     // Whether a name's research stands, read here by the rules the judge applies,

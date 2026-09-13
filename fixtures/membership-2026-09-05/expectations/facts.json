@@ -37,27 +37,35 @@
    "trend state"
   ],
   "fromMove": [
+   "largest move measured from",
    "largest move per cent",
    "largest move session",
    "largest move sessions",
+   "move 2 measured from",
    "move 2 per cent",
    "move 2 session",
    "move 2 sessions",
+   "move 3 measured from",
    "move 3 per cent",
    "move 3 session",
    "move 3 sessions",
+   "move 4 measured from",
    "move 4 per cent",
    "move 4 session",
    "move 4 sessions",
+   "move 5 measured from",
    "move 5 per cent",
    "move 5 session",
    "move 5 sessions",
+   "move 6 measured from",
    "move 6 per cent",
    "move 6 session",
    "move 6 sessions",
+   "move 7 measured from",
    "move 7 per cent",
    "move 7 session",
    "move 7 sessions",
+   "move 8 measured from",
    "move 8 per cent",
    "move 8 session",
    "move 8 sessions"
@@ -69,7 +77,7 @@
    "next dated event"
   ],
   "note": "ordinal order, which is what the payload is written in: sma200 sorts before sma50 because a string comparison reads the third character and not the number.",
-  "movesNote": "every move the annotator stores, which is section 17's eight a name, from 6.6: the largest keeps the name it has carried since 5.3 and the other seven are named for their rank, three facts each. They arrived because a local model writing the cause of each move names each move's date, and a date in prose has to be one this file holds. Every fixture name holds eight moves over its stored year, which is what makes the count per name the same for all four."
+  "movesNote": "every move the annotator stores, which is section 17's eight a name, from 6.6: the largest keeps the name it has carried since 5.3 and the other seven are named for their rank, four facts each. They arrived because a local model writing the cause of each move names each move's date, and a date in prose has to be one this file holds. The fourth, the session a move was measured from, arrived later in the same checkpoint, because a cause may rest only on a document published inside the move and a span with one edge holds nothing; each is derived here from the exchange calendar, as the session that many sessions before the one the move ended on, rather than read back off the bars. Every fixture name holds eight moves over its stored year, which is what makes the count per name the same for all four."
  },
  "properties": {
   "everyFactNamesItsSource": "a number in written prose must exist here, and the source is what says which stage computed it",

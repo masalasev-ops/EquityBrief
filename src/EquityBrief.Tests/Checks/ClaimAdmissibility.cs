@@ -130,6 +130,12 @@ public partial class ClaimAdmissibility
     // the archive's reader, and the url is the address the manifest recorded the
     // capture against, so the primacy rule is asserted over a real address rather
     // than over one written here.
+    //
+    // The publish date is the filing date the archive's own index gives the filing
+    // the exhibit belongs to, from 6.6. It was a date written here until then, the
+    // same for both, which nothing read closely: from 6.6 a cause of a move rests on
+    // a document published inside the move, and a written date would put the release
+    // inside or outside a move by what the test said rather than by when it was filed.
     internal static IReadOnlyList<FetchedDocument> Exhibits()
     {
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(Folder(), "manifest.json")));
@@ -149,9 +155,30 @@ public partial class ClaimAdmissibility
                 DocumentChannel.FilingsArchive,
                 capture.Url,
                 "Results release exhibit, " + capture.File,
-                new DateOnly(2026, 8, 20),
+                FiledOn(capture.File, capture.Url),
                 SecEdgarArchive.Plain(File.ReadAllText(Path.Combine(Folder(), capture.File))))),
         ];
+    }
+
+    // The filing date of the filing an exhibit address sits under, read from the
+    // captured submissions index for the name the exhibit file is named for. The
+    // address carries the accession number without its dashes as a folder, which is
+    // how the archive lays out every filing.
+    internal static DateOnly FiledOn(string exhibitFile, string url)
+    {
+        var ticker = Path.GetFileNameWithoutExtension(exhibitFile)["release-".Length..];
+
+        using var index = JsonDocument.Parse(File.ReadAllText(Path.Combine(Folder(), $"filings-{ticker}.json")));
+
+        var recent = index.RootElement.GetProperty("filings").GetProperty("recent");
+        var accessions = recent.GetProperty("accessionNumber").EnumerateArray().Select(value => value.GetString()!).ToArray();
+        var dates = recent.GetProperty("filingDate").EnumerateArray().Select(value => value.GetString()!).ToArray();
+
+        var at = Array.FindIndex(accessions, accession => url.Contains("/" + accession.Replace("-", string.Empty, StringComparison.Ordinal) + "/", StringComparison.Ordinal));
+
+        Assert.True(at >= 0, $"{exhibitFile}'s address names no filing the captured index for {ticker} holds.");
+
+        return DateOnly.ParseExact(dates[at], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     // ---- each kind refused, and nothing resting on it written ----

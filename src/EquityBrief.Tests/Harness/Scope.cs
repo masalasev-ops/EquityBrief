@@ -911,6 +911,53 @@ internal static class Scope
             Verdict.Pass,
             "a name whose section predates its stored filing and its passed earnings date is drawn with one line naming both, which is the line the shipped judge writes to the run log over the same store, and a name whose research stands is drawn as standing",
             ByReadSurface),
+        // 6.6, the prose writer. The component, the two regions of the name page a
+        // written section first reaches, and the parts of section 18's two local
+        // lane rows this checkpoint can draw, each over the recorded model.
+        [CheckReach.Key(CatalogueTable, "Prose writer")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the facts it reads, the research store it reads and inserts into, the run log it writes and the local model it calls, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Prose writer")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, which is where the writer reading no source document is a claim: the documents a section rests on are handed to it by the component that fetched them",
+            ByAccess),
+        [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = new Scoped(
+            Verdict.Pass,
+            "a name whose cause section the shipped checker accepted over the recorded model draws that section's sentence in the row of the one move it names and states no cause in every other row, with the date and model read back off the markup against the store, and a name with none draws the column as absent",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Provenance footer, computed tonight")] = new Scoped(
+            Verdict.Pass,
+            "the footer states the newest session the store holds for the name, which is what every computed part is read from, against a query of the test's own, and says so where no session is stored",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date")] = new Scoped(
+            Verdict.Pass,
+            "the footer states the newest filing date the fundamentals store holds for the name, against a query of the test's own, and says so where no filing is stored",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Provenance footer, research as of a date and the model that wrote it")] = new Scoped(
+            Verdict.Pass,
+            "the footer names each written section with the date it was written and the model that wrote it, being the newest version the checker accepted of each, against a query of the test's own over a store the recorded model wrote, and says so where nothing has been written",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A section is assigned to the local lane that the machine cannot hold, the pass is refused before it starts")] = new Scoped(
+            Verdict.Pass,
+            "at a context the release's prompts cannot fit, the three sections carrying it are refused while the section that fits is asked, and none of the three reaches the model although a recording answers each, so the refusal came before a call rather than after one failed",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A section is assigned to the local lane that the machine cannot hold, the run log names the section and the reason")] = new Scoped(
+            Verdict.Pass,
+            "the prose stage's run log row names each refused section with the estimate and the context it was refused against, read off the stored detail",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A section is assigned to the local lane that the machine cannot hold, the section is absent as usual")] = new Scoped(
+            Verdict.Pass,
+            "a refused section has no stored row, the name page draws no written section for it, and the line it does draw carries the reason the run log stored",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "The local model is unavailable, the sections in the local lane are left unwritten")] = new Scoped(
+            Verdict.Pass,
+            "a runtime with nothing listening leaves every section in the lane unwritten after one call, stores no row and records the pass as unavailable, through the shipped feed over a transport that refuses",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The local model is unavailable, the local-lane sections absent with their reason")] = new Scoped(
+            Verdict.Pass,
+            "each section the pass could not write is drawn on the name page with the reason the writer recorded, read back off the markup against the stored run log detail",
+            ByReadSurface),
         // 6.5, the staleness judge. The component, section 17's trigger row, and
         // figure 12.1's three questions, each over the fixture's own dates.
         [CheckReach.Key(CatalogueTable, "Staleness judge")] = new Scoped(
@@ -1483,7 +1530,12 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "The short version")] = "6.8",
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.8",
         [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
-        [CheckReach.Key("15.9 Name", "Provenance footer")] = "6.6",
+        // Decomposed at 6.6, where all three parts are first drawn together. The row
+        // enumerates three kinds of part and a verdict over the row would have passed
+        // a footer stating one of them.
+        [CheckReach.Key("15.9 Name", "Provenance footer, computed tonight")] = "6.6",
+        [CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date")] = "6.6",
+        [CheckReach.Key("15.9 Name", "Provenance footer, research as of a date and the model that wrote it")] = "6.6",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
         // parts the research runner draws. The line saying research is missing or
         // naming the trigger that fired is a reading of the stores this checkpoint
@@ -1709,6 +1761,40 @@ internal static class Scope
         // through the phase that builds it.
         [CheckReach.Key(FailureTable, "Earnings date missing")] =
             ["the earnings reason", "the calendar"],
+
+        // The name page's provenance footer, decomposed at 6.6, which is the first
+        // checkpoint to draw it. Its row enumerates the three kinds of part a page
+        // carries, and the part reader refuses a row that passes whole over parts it
+        // enumerates.
+        [CheckReach.Key("15.9 Name", "Provenance footer")] =
+        [
+            "computed tonight",
+            "fundamentals as of a filing date",
+            "research as of a date and the model that wrote it",
+        ],
+
+        // Section 18's two local lane rows, decomposed at 6.6 for contradiction F's
+        // argument. Each names what the writer does and what the page draws, which
+        // this checkpoint builds, beside what the paid path does with the section, the
+        // control that asks it to, and what the overnight queue records, which arrive
+        // at 6.8 and 6.10. Read whole, each row would be owed at the last of those and
+        // the parts that work would sit unasserted for four checkpoints.
+        [CheckReach.Key(FailureTable, "A section is assigned to the local lane that the machine cannot hold")] =
+        [
+            "the pass is refused before it starts",
+            "the section is left for the paid path",
+            "the run log names the section and the reason",
+            "the section is absent as usual",
+            "the option to have it written",
+        ],
+        [CheckReach.Key(FailureTable, "The local model is unavailable")] =
+        [
+            "the sections in the local lane are left unwritten",
+            "the overnight queue records that it could not run",
+            "a pass on demand writes the paid lane's sections and leaves the local lane's absent",
+            "the local-lane sections absent with their reason",
+            "the option to have the paid model write them",
+        ],
     };
 
     // The claim subjects a row yields. One, itself, unless the row decomposes.
@@ -1809,7 +1895,14 @@ internal static class Scope
         ["A search returns snippets rather than full page text"] = "6.9",
         ["A search returns a site the applicable list does not carry"] = "6.9",
         ["The search tool is unavailable"] = "6.9",
-        ["The local model is unavailable"] = "6.6",
+        // Section 18's two local lane rows, decomposed at 6.6. Each states what the
+        // writer does and what the page draws, which arrive here, beside what the
+        // paid path, its control and the overnight queue do, which arrive with those.
+        ["A section is assigned to the local lane that the machine cannot hold, the section is left for the paid path"] = "6.8",
+        ["A section is assigned to the local lane that the machine cannot hold, the option to have it written"] = "6.8",
+        ["The local model is unavailable, the overnight queue records that it could not run"] = "6.10",
+        ["The local model is unavailable, a pass on demand writes the paid lane's sections and leaves the local lane's absent"] = "6.8",
+        ["The local model is unavailable, the option to have the paid model write them"] = "6.8",
         ["A theme refresh fails while a name's pass depends on it"] = "6.9",
         ["Something tries to edit or delete a register row"] = "7.3",
         ["The candidate register and the correction disagree"] = "7.3",

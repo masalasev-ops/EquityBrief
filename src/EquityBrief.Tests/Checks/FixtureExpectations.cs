@@ -58,6 +58,12 @@ public partial class FixtureExpectations
             // document, the catalogue's judge over the fixture's own dates, and
             // figure 12.1's three questions.
             CheckReach.Key(Scope.LimitsTable, "Research staleness triggers"),
+
+            // 6.6, the writer's half of section 18's two local lane rows, over the
+            // recorded model and a transport with nothing listening.
+            CheckReach.Key(Scope.FailureTable, "A section is assigned to the local lane that the machine cannot hold, the pass is refused before it starts"),
+            CheckReach.Key(Scope.FailureTable, "A section is assigned to the local lane that the machine cannot hold, the run log names the section and the reason"),
+            CheckReach.Key(Scope.FailureTable, "The local model is unavailable, the sections in the local lane are left unwritten"),
             CheckReach.Key("Figure 12.1", "Is there a research record?"),
             CheckReach.Key("Figure 12.1", "Does it still stand?"),
             CheckReach.Key("Figure 12.1", "All four no"),
@@ -2010,12 +2016,13 @@ public partial class FixtureExpectations
         // rather than about whether anything reads them.
         Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
 
-        // Thirteen stand unread and each is named rather than counted, because a
+        // Fourteen stand unread and each is named rather than counted, because a
         // number here would drift silently as keys are added. `rowsInFile` is
         // the count of rows in the captured bulk payload, which the fetch
         // expectation states so a reader can see what the membership filter cut
         // from; `index` is the index code; `facts.frozen` says that nothing in
-        // that file is frozen; and the notes are sentences.
+        // that file is frozen, and `prose.frozen` says which one thing in that file
+        // is; and the notes are sentences.
         // None is a figure the pipeline produces, which is why nothing asserts
         // them. The series state file added two keys when it landed and this
         // assertion caught both on the same run; the ladder file added its note
@@ -2024,10 +2031,11 @@ public partial class FixtureExpectations
         // that, on the run that added the file, the archive extracts file added
         // its note at 6.2 and it caught that, the admissibility file added its note
         // at 6.3 and it caught that, the claims file added its note at 6.4 and it
-        // caught that, and the staleness file added its note at 6.5 and it caught
-        // that. Which is what it is for.
+        // caught that, the staleness file added its note at 6.5 and it caught
+        // that, and the prose file added its statement of what it froze at 6.6 and
+        // it caught that. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note", "staleness.note", "stored-filings.note"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "prose.frozen", "series-state.note", "staleness.note", "stored-filings.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

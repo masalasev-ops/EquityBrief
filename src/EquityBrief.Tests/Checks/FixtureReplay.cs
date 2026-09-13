@@ -1,5 +1,6 @@
 using System.Text.Json;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
@@ -12,6 +13,7 @@ using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.News;
+using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Returns;
 using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
@@ -53,7 +55,7 @@ public class FixtureReplay
     // Every stage that exists, in the order the night runs them. A stage added
     // to the night and not here is a stage this check does not replay, which
     // the count below is what catches.
-    internal static async Task<TemporaryStore> ReplayedAsync()
+    internal static async Task<TemporaryStore> ReplayedAsync(RecordedLocalModelFeed? model = null)
     {
         var store = new TemporaryStore().Migrated();
         var backfill = FixedClock.At(Backfilled, SessionZones.UnitedStates);
@@ -111,15 +113,83 @@ public class FixtureReplay
         // a table no expectation can be read against. The ordering says which kind
         // of stage it is: a night that fetched fundamentals would be a night making
         // a per-name request, which is the one thing the limits table forbids.
+        //
+        // The archive is handed over for the names it holds a capture for, from 6.6,
+        // because the segment commentary is written from the segment table the archive
+        // supplies and a replay without it could never write one. Withheld for the
+        // others, since asking the recording for a capture nobody committed refuses by
+        // name rather than reading as an archive with nothing in it.
+        var archived = new RecordedFilingsArchiveFeed(Folder()).Names;
+
         foreach (var ticker in RecordedFundamentalsFeed.FromFolder(Folder()).Names)
         {
             await new FundamentalsFetcher(
                 RecordedFundamentalsFeed.FromFolder(Folder()),
                 night,
-                store.DatabaseFile).RunAsync(ticker, null, "replay-fundamentals-" + ticker);
+                store.DatabaseFile,
+                archived.Contains(ticker, StringComparer.OrdinalIgnoreCase)
+                    ? new RecordedFilingsArchiveFeed(Folder())
+                    : null).RunAsync(ticker, null, "replay-fundamentals-" + ticker);
         }
 
+        // The prose writer and the claim checker, from 6.6, on demand and after the
+        // night for the reason the fundamentals fetch is. Over the recorded local model,
+        // which holds no client, so the replay reaches no network.
+        //
+        // Handed no documents, because the store holds none before 6.8 fetches one
+        // through admissibility, so what it writes is the section the lane holds that
+        // rests on the facts file alone and what it records is the three that were
+        // handed nothing. For every name holding a facts file tonight except the one
+        // the research expectations construct their own sections for, whose versions
+        // start at one and would collide with a version this wrote.
+        foreach (var ticker in ProsePassNames(store))
+        {
+            await new ProseWriter(
+                model ?? new RecordedLocalModelFeed(Folder()),
+                new LocalModelSettings(null, null, null, null, null),
+                ProseWriter.DefaultLane,
+                night,
+                store.DatabaseFile).WriteAsync(ticker, new Dictionary<string, IReadOnlyList<StoredDocument>>(), "replay-prose-" + ticker);
+        }
+
+        await new ClaimChecker(night, store.DatabaseFile).RunAsync("replay-claims");
+
         return store;
+    }
+
+    // The names the replay's prose pass is for: those holding a facts file on the
+    // replayed night, less the name the prose fixture writes its own sections for.
+    // Read from the store and from that fixture rather than listed, so a name added
+    // to the fixture is a name the pass reaches.
+    internal static IReadOnlyList<string> ProsePassNames(TemporaryStore store)
+    {
+        using var prose = JsonDocument.Parse(File.ReadAllText(Path.Combine(Folder(), "research-prose.json")));
+
+        var constructed = prose.RootElement.GetProperty("ticker").GetString()!;
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT ticker FROM facts WHERE session_date = $night ORDER BY ticker;";
+        command.Parameters.AddWithValue(
+            "$night",
+            ((IClock)FixedClock.At(Night, SessionZones.UnitedStates)).SessionDateAt(Night).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+
+        var names = new List<string>();
+
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            if (!string.Equals(reader.GetString(0), constructed, StringComparison.Ordinal))
+            {
+                names.Add(reader.GetString(0));
+            }
+        }
+
+        return names;
     }
 
     static IReadOnlyList<string> Populated(TemporaryStore store)

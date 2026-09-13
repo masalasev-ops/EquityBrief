@@ -54,12 +54,20 @@ public class NightlyCost
         "Socket(",
     ];
 
+    // The last is the wire path every OpenAI-compatible model runtime serves, and it
+    // was added at 6.6 with the first model client. The other four were written
+    // before any client existed and are names a client might have had; the one the
+    // tree actually holds is named for its feed and carries none of them, so a scan
+    // over the four would have passed over the one model client it exists to find.
+    // A path a client cannot avoid sending is the shape rather than a guess at a
+    // name, which is the repair 6.2 made to the provider reader for the same reason.
     static readonly string[] Model =
     [
         "deepseek",
         "ChatCompletion",
         "CompletionRequest",
         "IModelClient",
+        "chat/completions",
     ];
 
     // The shipped files permitted to hold an outward-request type, each by its
@@ -87,6 +95,23 @@ public class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
+        "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
+    ];
+
+    // The shipped files permitted to reach a model, each by its path, which is the
+    // carve by name the decision states rather than the patterns dropped.
+    //
+    // The first half of that carve, and it lands at 6.6 because 6.6 is where the
+    // first model client lands. What the carve names is the file a model may be
+    // reached from, and it says nothing about the night: no nightly step holds a
+    // model feed, which component-access asserts over each stage's declared feeds,
+    // and the queue that will call this lane from the night is 6.10's, where the
+    // second half says which lane the night may call. A file here that reaches a
+    // model and is not a model feed fails, for the reason a client belongs in a feed.
+    // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
+    internal static readonly string[] MayHoldAModel =
+    [
+        "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
     ];
 
     // What makes a shipped file a provider implementation, which is what the list
@@ -116,7 +141,8 @@ public class NightlyCost
     // already load-bearing, which is the wrong order for a guard.
     internal static IReadOnlyList<string> Offences(
         IReadOnlyDictionary<string, string> sources,
-        IReadOnlyCollection<string> mayHoldAClient)
+        IReadOnlyCollection<string> mayHoldAClient,
+        IReadOnlyCollection<string>? mayHoldAModel = null)
     {
         var offences = new List<string>();
 
@@ -134,13 +160,16 @@ public class NightlyCost
                     .Select(pattern => $"{name} carries {pattern}"));
             }
 
-            // The model half takes no exemption at all. A feed holds a client by
-            // definition and nothing on this path holds a model, so an exemption
-            // covering both would let the first live feed authorise the one
-            // figure the limits table puts at zero and never carves out.
-            offences.AddRange(Model
-                .Where(pattern => text.Contains(pattern, StringComparison.OrdinalIgnoreCase))
-                .Select(pattern => $"{name} carries {pattern}"));
+            // The model half takes no exemption from the client list. A feed holds a
+            // client by definition, so an exemption covering both would let the first
+            // live feed authorise the one figure the limits table puts at zero. It is
+            // carved by its own list instead, naming the model feeds alone.
+            if (!(mayHoldAModel ?? []).Contains(name, StringComparer.Ordinal))
+            {
+                offences.AddRange(Model
+                    .Where(pattern => text.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                    .Select(pattern => $"{name} carries {pattern}"));
+            }
         }
 
         return offences;
@@ -222,16 +251,20 @@ public class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         Assert.True(
-            MayHoldAClient.Length <= 8,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are eight feed " +
-            "implementations. A ninth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 9,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are nine feed " +
+            "implementations. A tenth is a file that is not one, or a feed nobody declared.");
+
+        // The model list, stated the same way: one file, the local lane's client.
+        Assert.Single(MayHoldAModel);
 
         // And the list holds exactly the provider implementations, in both
         // directions, so a file added to it that is not one fails rather than
         // passing quietly. It was six against five before 4.3 added the calendar,
         // seven against six before 6.1 added the fundamentals endpoint, which is
         // the first that no night calls, and eight before 6.2 added the filings
-        // archive, which is the first from another provider.
+        // archive, which is the first from another provider, and nine at 6.6, the
+        // local model, which is the first that reaches a model.
         var live = Repository.SourceFiles()
             .Select(file => file[Repository.Root.Length..].Replace(Path.DirectorySeparatorChar, '/').TrimStart('/'))
             .Where(IsAProviderImplementation)
@@ -240,7 +273,65 @@ public class NightlyCost
 
         Assert.Equal(live, MayHoldAClient.OrderBy(file => file, StringComparer.Ordinal));
 
-        Assert.Empty(Offences(sources, MayHoldAClient));
+        Assert.Empty(Offences(sources, MayHoldAClient, MayHoldAModel));
+
+        // And the model list holds model feeds and nothing else.
+        Assert.Empty(NotModelFeeds(sources, MayHoldAModel));
+    }
+
+    // A file earns the model carve by implementing a model feed, read against the
+    // interfaces the source declares rather than taken on its name.
+    internal static IReadOnlyList<string> NotModelFeeds(
+        IReadOnlyDictionary<string, string> sources,
+        IReadOnlyCollection<string> mayHoldAModel)
+    {
+        var feeds = FeedInterfaces(sources).Where(feed => feed.EndsWith("ModelFeed", StringComparison.Ordinal)).ToArray();
+        var wrong = new List<string>();
+
+        foreach (var name in mayHoldAModel)
+        {
+            if (!sources.TryGetValue(name, out var source))
+            {
+                wrong.Add($"{name} is permitted to reach a model and no such shipped file was scanned.");
+
+                continue;
+            }
+
+            if (!feeds.Any(feed => Regex.IsMatch(source, @"\b(class|record|struct)\s+\w+[^{;]*:\s*[^{;]*\b" + Regex.Escape(feed) + @"\b")))
+            {
+                wrong.Add($"{name} is permitted to reach a model and implements no model feed. A model belongs in one.");
+            }
+        }
+
+        return wrong;
+    }
+
+    [Fact]
+    public void TheModelCarveCoversTheModelFeedItNamesAndNothingElse()
+    {
+        // Both directions over constructed sources. The wire path in a file on the
+        // model list passes, the same path anywhere else fails, the client list does
+        // not carve a model, and a file on the model list that is not a model feed is
+        // reported.
+        var sources = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["src/EquityBrief.Core/Providers/ILocalModelFeed.cs"] = "public interface ILocalModelFeed { int Requests { get; } }",
+            ["src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs"] =
+                "public sealed class OpenAiCompatibleModelFeed(HttpClient client) : ILocalModelFeed { const string P = \"chat/completions\"; }",
+            ["src/EquityBrief.Worker/Bars/BarFetcher.cs"] = "public sealed class BarFetcher { const string P = \"chat/completions\"; }",
+        };
+
+        string[] client = ["src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs"];
+        string[] model = ["src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs"];
+
+        var offences = Offences(sources, client, model);
+
+        Assert.Equal("src/EquityBrief.Worker/Bars/BarFetcher.cs carries chat/completions", Assert.Single(offences));
+
+        Assert.Equal(2, Offences(sources, client).Count);
+
+        Assert.Empty(NotModelFeeds(sources, model));
+        Assert.Single(NotModelFeeds(sources, ["src/EquityBrief.Worker/Bars/BarFetcher.cs"]));
     }
 
     [Fact]

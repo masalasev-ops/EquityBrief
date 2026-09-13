@@ -151,7 +151,9 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
             at is > 0 ? ordered[at.Value - 1].Ticker : null,
             at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null,
             await read.SectionStatesAsync(ticker, DateOnly.MaxValue),
-            await read.StalenessAsync(ticker)),
+            await read.StalenessAsync(ticker),
+            await read.WrittenSectionsAsync(ticker),
+            await read.NewestProsePassAsync(ticker)),
         "text/html; charset=utf-8");
 });
 

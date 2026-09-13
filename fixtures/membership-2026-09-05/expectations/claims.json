@@ -2,12 +2,9 @@
   "stage": "claims",
   "derivation": "derived",
   "derivedFrom": "the decision that a claim is a sentence and every sentence in a researched section names the document it rests on, taken with the two decisions it reads, that every number in written prose exists in the facts file and every researched claim names a stored source, and with SCHEMA's statement of the four statuses. Each verdict below was written from those rules and from what each paragraph in research-prose.json says it carries, not from a run of the checker: the poisoned paragraph changes one figure so its refusal names that figure, the unsourced claim adds one sentence with no citation and no digit so only the citation rule can refuse it, and the section with no admissible source cites only refused documents so it falls back before any sentence is read. The facts the figures are matched against are read back from a replayed store at test time and are not stated here.",
-  "tables": [],
-  "awaits": {
-    "table": "research_section",
-    "writtenAt": "6.6",
-    "why": "the checker moves sections and inserts none. SCHEMA gives Insert on research_section to the prose writer and the research runner and to nobody else, and the first of them arrives at 6.6, so the replay populates this table only once a writer runs in it. Until then the sections this file describes are inserted as pending by the test, as a writer would insert them, and moved by the shipped checker. The day the replay writes one, this entry fails until the table moves to the tables list above."
-  },
+  "tables": [
+    "research_section"
+  ],
   "ticker": "KEYS",
   "verdicts": {
     "a clean computed paragraph": { "status": "accepted", "reason": null },
@@ -15,7 +12,10 @@
     "a clean researched paragraph": { "status": "accepted", "reason": null },
     "an unsourced claim": { "status": "rejected", "reason": "a sentence naming no document", "offending": "Analysts expect the next design cycle to be the strongest in five years." },
     "a claim resting on a refused document": { "status": "rejected", "reason": "a citation to a document admissibility refused", "offending": "D2 (algorithmic price forecast)" },
-    "a section with no admissible source": { "status": "fallback", "reason": "no admissible source was found", "offending": null }
+    "a section with no admissible source": { "status": "fallback", "reason": "no admissible source was found", "offending": null },
+    "a cause citing a release filed after the move": { "status": "rejected", "reason": "a citation to a document published outside the move it gives the cause of", "offending": "D1 published 2026-08-18, outside the move ending 2026-02-24 measured from 2026-02-17" },
+    "a cause naming no move": { "status": "rejected", "reason": "a cause naming the session of no move the facts file holds", "offending": "Keysight shares moved on record third quarter revenue of $1.85 billion [D1]." },
+    "a cause of the move the release falls inside": { "status": "accepted", "reason": null }
   },
   "attempts": {
     "rejected twice": ["rejected", "fallback"],

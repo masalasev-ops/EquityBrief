@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-k4ecfg6w6hge1jhumwgoq",
+  "object": "chat.completion",
+  "created": 1789307151,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies sells technology solutions that serve as mission-critical design enablement partners for engineering challenges across end markets including AI infrastructure, communications, industrial automation, aerospace and defense, automotive, semiconductor, and general electronics [D1]. The company generates revenue from its Communications Solutions Group and Electronic Industrial Solutions Group, with the former reporting $1,345 million in revenue and the latter reporting $501 million for the third quarter ended July 31, 2026 [D1]. Customers rely on Keysight to bridge virtual design and physical reality, enabling confident decisions earlier in the product lifecycle [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 8300,
+    "completion_tokens": 128,
+    "total_tokens": 8428,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

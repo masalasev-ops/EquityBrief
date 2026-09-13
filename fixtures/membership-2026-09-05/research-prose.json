@@ -1,5 +1,5 @@
 {
-  "constructed": "Section prose for the claim checker, constructed rather than captured, because the model that writes a section arrives at 6.6 and nothing has written one yet. Every figure in it was written against the facts file this fixture produces for KEYS on 2026-09-08, which is read back at test time from a replayed store rather than stated here, so a paragraph whose figures stopped matching would fail as a rejection nobody expected rather than pass as a copy of a number. Citations are written as the marker the checker reads, a D followed by the position of the document in the section's own source list, and each source is named by the fixture file or the constructed document it resolves to. The clean paragraphs are here beside the rejected ones on purpose: a checker that only ever saw prose written to be refused would measure nothing about what it accepts, and what it wrongly refuses is a section left out of every report. KEYS rather than AAPL, and the reason is a property of the replay: its corporate action check refetches AAPL's year as of the action's own session, so AAPL's stored series ends on 2026-08-10 and the replay writes no facts file for it on the fixture night at all. KEYS is refetched by nothing and holds the same facts file in every chain the suite replays.",
+  "constructed": "Section prose for the claim checker, constructed rather than captured until 6.6, because the model that writes a section arrives there. The three cause paragraphs arrived at 6.6, and two of them are the local model's own sentences from the first pass it wrote over this fixture, one cut to the fault it is kept for. Every figure in it was written against the facts file this fixture produces for KEYS on 2026-09-08, which is read back at test time from a replayed store rather than stated here, so a paragraph whose figures stopped matching would fail as a rejection nobody expected rather than pass as a copy of a number. Citations are written as the marker the checker reads, a D followed by the position of the document in the section's own source list, and each source is named by the fixture file or the constructed document it resolves to. The clean paragraphs are here beside the rejected ones on purpose: a checker that only ever saw prose written to be refused would measure nothing about what it accepts, and what it wrongly refuses is a section left out of every report. KEYS rather than AAPL, and the reason is a property of the replay: its corporate action check refetches AAPL's year as of the action's own session, so AAPL's stored series ends on 2026-08-10 and the replay writes no facts file for it on the fixture night at all. KEYS is refetched by nothing and holds the same facts file in every chain the suite replays.",
   "ticker": "KEYS",
   "asOf": "2026-09-08",
   "sections": [
@@ -54,6 +54,33 @@
       ],
       "prose": "",
       "carries": "a section whose whole source list was refused, which is what a pass leaves when it fetched documents and admitted none of them. It goes to fallback on the first check rather than being given a retry, because a rewrite cannot create a source, and what the name page draws for it is one line saying no admissible source was found."
+    },
+    {
+      "name": "a cause citing a release filed after the move",
+      "section": "The cause of each large move",
+      "sources": [
+        "release-KEYS.htm"
+      ],
+      "prose": "The largest move, of 28.62 per cent, ended on 2026-02-24 and was driven by the company reporting third quarter revenue of $1.85 billion [D1].",
+      "carries": "the first draft a local model wrote for this section at 6.6, with the one date it quoted that the facts file does not hold taken out so that only the rule this paragraph is for can refuse it. Every figure is a rounding of a fact and the citation resolves to an admitted document, which is everything the checker asked of a sentence before 6.6. What it states is false: the release was filed on 2026-08-18 and the move it is cited for was measured from 2026-02-17 to 2026-02-24."
+    },
+    {
+      "name": "a cause naming no move",
+      "section": "The cause of each large move",
+      "sources": [
+        "release-KEYS.htm"
+      ],
+      "prose": "Keysight shares moved on record third quarter revenue of $1.85 billion [D1].",
+      "carries": "a cause with a citation and a sound figure that names no stored move's session, so nothing says which move it is about and no span exists to hold its document against."
+    },
+    {
+      "name": "a cause of the move the release falls inside",
+      "section": "The cause of each large move",
+      "sources": [
+        "release-KEYS.htm"
+      ],
+      "prose": "The move from 2026-08-17 to 2026-08-24 was driven by record third quarter results with revenue of $1.85 billion and GAAP net income of $397 million, as detailed in the results release exhibit [D1].",
+      "carries": "the sentence the local model wrote on its first draft once the writer handed it the one move the release falls inside, captured at 6.6 and accepted: the release was filed on 2026-08-18, inside the move measured from 2026-08-17 and ended on 2026-08-24. Accepted is not the same as true, and this paragraph carries that too: the checker holds when the document was published and every figure in the sentence, and not that a company's own release says why its shares fell."
     }
   ],
   "attempts": [

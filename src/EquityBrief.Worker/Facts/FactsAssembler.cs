@@ -67,6 +67,14 @@ public sealed class FactsAssembler : IComponent
     public const string FromCalendar = "calendar";
     public const string FromFundamentals = "fundamental";
 
+    // How a move's facts are named, stated once, because the claim checker reads
+    // a move's span back by these names and a name spelled twice is a span that
+    // stops being found without anything failing.
+    public static string MovePrefix(int rank) =>
+        rank == 1 ? MoveWindows.Largest : MoveWindows.Ranked + " " + rank.ToString(CultureInfo.InvariantCulture);
+
+    public const string MeasuredFromSuffix = MoveWindows.MeasuredFrom;
+
     // The newest filing this name has stored, and the figures on it. Newest by
     // filing date rather than by period end, because a restatement is filed later
     // than the quarter it restates and the later filing is what is now known.
@@ -143,6 +151,25 @@ public sealed class FactsAssembler : IComponent
         FROM move
         WHERE ticker = $ticker
         ORDER BY rank;
+    ";
+
+    // The session a move's change was measured from: the stored session as many
+    // sessions before the one it ended on as the move spans, which is the close
+    // the annotator divided by. Counted in stored sessions rather than calendar
+    // days, for the reason the read surface counts a move's extremes that way.
+    //
+    // A selection of a stored column rather than a derivation, as the extremes
+    // are: which bar is chosen is set by the move row, and its date is handed back
+    // unchanged. It is here because a cause of a move can only rest on a document
+    // published inside the move, and a file holding only the session a move ended
+    // on cannot say where that span began.
+    // see: A cause of a move rests only on a document published inside that move
+    const string MeasuredFrom = @"
+        SELECT session_date
+        FROM bar
+        WHERE ticker = $ticker AND session_date < $ended
+        ORDER BY session_date DESC
+        LIMIT 1 OFFSET $offset;
     ";
 
     const string NextEventFor = @"
@@ -365,18 +392,39 @@ public sealed class FactsAssembler : IComponent
         await ReadAsync(connection, LadderFor, ticker, cancellation, reader =>
             facts.Add(new Fact("trend state", reader.GetString(0), FromLadder)));
 
+        var moves = new List<(string Prefix, string Ended, int Sessions)>();
+
         await ReadAsync(connection, MovesFor, ticker, cancellation, reader =>
         {
             // The largest keeps the name it has carried since 5.3, so a night after
             // this change reports no material change to the one move every file
             // already held, and the others are named for their rank.
             var rank = reader.GetInt32(3);
-            var prefix = rank == 1 ? "largest move" : "move " + rank.ToString(CultureInfo.InvariantCulture);
+            var prefix = MovePrefix(rank);
 
             facts.Add(new Fact(prefix + " session", reader.GetString(0), FromMoves));
             facts.Add(new Fact(prefix + " sessions", reader.GetInt32(1).ToString(CultureInfo.InvariantCulture), FromMoves));
             facts.Add(new Fact(prefix + " per cent", reader.GetDouble(2).ToString("0.######", CultureInfo.InvariantCulture), FromMoves));
+
+            moves.Add((prefix, reader.GetString(0), reader.GetInt32(1)));
         });
+
+        foreach (var (prefix, ended, sessions) in moves)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = MeasuredFrom;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$ended", ended);
+            command.Parameters.AddWithValue("$offset", sessions - 1);
+
+            // A move whose first close has left the stored year carries no start
+            // rather than a guessed one, and a cause of it can then rest on nothing.
+            if (await command.ExecuteScalarAsync(cancellation) is string from)
+            {
+                facts.Add(new Fact(prefix + " " + MeasuredFromSuffix, from, FromMoves));
+            }
+        }
 
         await using (var command = connection.CreateCommand())
         {
@@ -479,7 +527,7 @@ public sealed class FactsAssembler : IComponent
     // the archive does for one filer the fixture holds, and a facts file names each
     // fact once, so a repeated name carries the group's position in the table.
     // owes: The facts file carries the figures a local lane section quotes
-    internal static IReadOnlyList<Fact> Segments(JsonElement root)
+    public static IReadOnlyList<Fact> Segments(JsonElement root)
     {
         if (!root.TryGetProperty("segments", out var segments) || segments.ValueKind != JsonValueKind.Object)
         {

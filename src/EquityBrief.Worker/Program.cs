@@ -5,6 +5,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Fundamentals;
+using EquityBrief.Worker.Research;
 using Microsoft.Extensions.Configuration;
 
 // The nightly run and the overnight queue. Scheduling lives outside the
@@ -94,7 +95,8 @@ static async Task<int> FundamentalsFetch(string[] args)
             Argument(args, "--fixture") ?? configuration[FeedSource.FixtureKey],
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName],
-            configuration[ArchiveAgent.ContactName]);
+            configuration[ArchiveAgent.ContactName],
+            LocalLane.Settings(configuration));
     }
     catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
     {
