@@ -154,6 +154,109 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task ANameWhosePassFoundNothingToWriteFromIsNotFetchedForAgainOnTheSameDay()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        // A year with no article and no release: the pass writes the key under each
+        // figure, which rests on the facts file alone, and hands every other section
+        // nothing, so none of them gets a row a second open could read as written.
+        var first = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: new NoArticles()).RunAsync("KEYS", "research-nothing");
+
+        Assert.Equal(ResearchRunner.Written, first.Outcome);
+        Assert.Equal(["The key under each figure"], first.Written.Select(section => section.Section).Distinct().ToArray());
+        Assert.Equal(
+            ["What the company sells", "The segment commentary", "The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version"],
+            first.NotWritten.Where(line => line.Reason == ProseWriter.NothingHanded).Select(line => line.Section).ToArray());
+
+        // Opened again the same day: nothing fetched, nothing asked, and the pass's row
+        // says why and counts no request.
+        var news = new NoArticles();
+        var archive = new NoRelease();
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+
+        var again = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: archive, news: news).RunAsync("KEYS", "research-nothing-again");
+
+        Assert.Equal(ResearchRunner.NotWarranted, again.Outcome);
+        Assert.Equal(ResearchRunner.RanToday, again.Reason);
+        Assert.Equal(0, news.Requests + archive.Requests + paid.Probes + paid.Requests);
+        Assert.Equal([$"{ResearchRunner.NotWarranted}|0"], Query(store, "SELECT outcome, network_requests FROM run_log WHERE run_id = 'research-nothing-again' AND stage = 'research';"));
+
+        // The page's explicit ask still starts a pass, which fetches again, and what it
+        // writes is still decided section by section: the key accepted today is not paid for.
+        var asked = new NoArticles();
+        var paidForLocal = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: asked)
+            .RunAsync("KEYS", "research-nothing-paid-for-local", new ResearchPassRequest(PaidForLocal: true));
+
+        Assert.Equal(ResearchRunner.Written, paidForLocal.Outcome);
+        Assert.Equal(1, asked.Requests);
+        Assert.DoesNotContain("The key under each figure", paidForLocal.Warranted);
+        Assert.Empty(paidForLocal.Written);
+
+        // And a day later a plain open starts one, since the day's pass is what closed it.
+        var nextDay = new NoArticles();
+        var tomorrow = await FixtureReplay.Researcher(store, FixedClock.At(ResearchNight.AddDays(1), SessionZones.UnitedStates), archive: new NoRelease(), news: nextDay)
+            .RunAsync("KEYS", "research-nothing-next-day");
+
+        Assert.NotEqual(ResearchRunner.RanToday, tomorrow.Reason);
+        Assert.Equal(1, nextDay.Requests);
+    }
+
+    [Fact]
+    public async Task APassIsWarrantedForTheSectionsItsNewestVersionsLeaveUnwrittenOrStaleAndForNoOther()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        // One section in each state the rule reads, for a pass on 2026-09-08. The newest
+        // filing the store holds for the name is dated after 2026-08-01, so a section
+        // accepted on that day has gone stale, and one accepted on the pass's own day has not.
+        store.Execute(
+            "INSERT INTO research_section VALUES " +
+            "('KEYS', 'What the company sells', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL), " +
+            "('KEYS', 'The segment commentary', 1, '2026-09-01', 'a writer', 'pending', 'prose', '[]', NULL), " +
+            "('KEYS', 'The key under each figure', 1, '2026-09-08', 'a writer', 'fallback', 'prose', '[]', 'left out'), " +
+            "('KEYS', 'The dated calendar items', 1, '2026-09-01', 'a writer', 'fallback', 'prose', '[]', 'left out'), " +
+            "('KEYS', 'The two cases', 1, '2026-09-08', 'a writer', 'rejected', 'prose', '[]', 'refused'), " +
+            "('KEYS', 'The risks, each with what would confirm it', 1, '2026-08-01', 'a writer', 'accepted', 'prose', '[]', NULL), " +
+            "('KEYS', 'The short version', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL);");
+
+        // A research model that does not answer, so the pass records what it warranted
+        // and stops before it fetches or writes anything.
+        var unreachable = "The research model could not be reached: nothing is listening.";
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable);
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid).RunAsync("KEYS", "research-warranted");
+
+        // Warranted: never written, left out on an earlier day, refused, and accepted and
+        // gone stale. Not: accepted today, waiting on the checker, left out today. The
+        // industry cycle rests on a theme record the store does not hold, so it is named
+        // rather than counted as work.
+        string[] warranted = ["The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"];
+
+        Assert.Equal(ResearchRunner.Unavailable, outcome.Outcome);
+        Assert.Equal(warranted, outcome.Warranted);
+
+        var detail = JsonDocument.Parse(Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-warranted' AND stage = 'research';").Single()).RootElement;
+
+        Assert.Equal(warranted, detail.GetProperty("warranted").EnumerateArray().Select(section => section.GetString()!).ToArray());
+        Assert.Equal(
+            [$"The industry cycle|{ResearchRunner.NoThemeRecord}"],
+            detail.GetProperty("notWritten").EnumerateArray().Select(line => $"{line.GetProperty("section").GetString()}|{line.GetProperty("reason").GetString()}").ToArray());
+
+        // The stale one is stale for the reason the rule gives, read off the judge's own row
+        // against the newest filing the store holds, which is after 2026-08-01 and on or
+        // before the night.
+        var filed = Query(store, "SELECT MAX(filing_date) FROM fundamentals WHERE ticker = 'KEYS';").Single();
+
+        Assert.InRange(string.CompareOrdinal(filed, "2026-08-01"), 1, int.MaxValue);
+        Assert.InRange(string.CompareOrdinal(filed, "2026-09-08"), int.MinValue, 0);
+        Assert.Contains(
+            $"a filing dated {filed} arrived after it was written",
+            Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-warranted' AND stage = 'staleness';").Single(),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task AResearchModelThatDoesNotAnswerStopsThePassBeforeItFetchesAnything()
     {
         using var store = await FixtureReplay.ReplayedAsync();
@@ -387,6 +490,36 @@ public partial class FixtureExpectations
         Assert.False(Evidence.ForSections(facts, documents, null).ContainsKey(Evidence.Sells));
     }
 
+    [Fact]
+    public void TheCountsTheSpecsStateForWhatASectionIsHandedAreTheOnesTheRulePicksBy()
+    {
+        // Stated in section 12.2's lane table and in RUNBOOK.md, and set in the rule, so a
+        // count moved in one place and not the others fails here rather than leaving a
+        // document describing a pass nothing runs.
+        string[] words = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+
+        var architecture = Corpus.Read("docs/ARCHITECTURE.html");
+        var cause = System.Text.RegularExpressions.Regex.Match(architecture, "<tr><td>The cause of each large move</td>.*?</tr>").Value;
+        var twoCases = System.Text.RegularExpressions.Regex.Match(architecture, "<tr><td>The two cases</td>.*?</tr>").Value;
+
+        Assert.Contains($"at most {words[Evidence.DocumentsPerMove]} a move", cause, StringComparison.Ordinal);
+        Assert.Contains($"at most {words[Evidence.DocumentsSinceTheFiling]} documents published since it", twoCases, StringComparison.Ordinal);
+
+        var runbook = Corpus.Read("docs/RUNBOOK.md");
+
+        Assert.Contains($"{words[Evidence.DocumentsPerMove]} a move for the cause of each move, and {words[Evidence.DocumentsSinceTheFiling]} since the release", runbook, StringComparison.Ordinal);
+
+        // What a pass over the fixture cost, as RUNBOOK states it, to the hundredth of a cent
+        // of what the research record's paid calls came to.
+        var spend = decimal.Parse(Expected("research-record").GetProperty("spend").GetString()!, CultureInfo.InvariantCulture);
+
+        Assert.Contains($"through the spend cap for ${decimal.Round(spend, 4).ToString(CultureInfo.InvariantCulture)}", runbook, StringComparison.Ordinal);
+
+        // And the window, which both state as the stored year.
+        Assert.Equal(1, ResearchRunner.WindowYears);
+        Assert.Contains("fetches the name's news for the stored year", runbook, StringComparison.Ordinal);
+    }
+
     // ---- a dated calendar item's date ----
 
     [Fact]
@@ -466,8 +599,34 @@ public partial class FixtureExpectations
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
     }
 
+    // A name's year with no article in it.
+    internal sealed class NoArticles : INameNewsFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<NewsArticle>> ArticlesAsync(string ticker, DateOnly from, DateOnly to, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult<IReadOnlyList<NewsArticle>>([]);
+        }
+    }
+
+    // An archive that answers for the company and files no results release.
+    internal sealed class NoRelease : IFilingsArchiveFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<ArchiveFilings> FilingsAsync(string ticker, string cik, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult(new ArchiveFilings(ticker, cik, [], [], null, null, [], null, [], 0));
+        }
+    }
+
     // A local runtime with nothing listening, as the transport reports it.
-    sealed class NothingAnsweringLocal : ILocalModelFeed
+    internal sealed class NothingAnsweringLocal : ILocalModelFeed
     {
         public int Requests { get; private set; }
 

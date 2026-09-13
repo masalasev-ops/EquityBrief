@@ -207,14 +207,16 @@ public class FixtureReplay
         IResearchModelFeed? paid = null,
         Core.Spending.SpendCaps? caps = null,
         ILocalModelFeed? localModel = null,
-        LocalModelSettings? localSettings = null) =>
+        LocalModelSettings? localSettings = null,
+        IFilingsArchiveFeed? archive = null,
+        INameNewsFeed? news = null) =>
         new(
             new StalenessJudge(clock, store.DatabaseFile),
             sections => new ProseWriter(localModel ?? local ?? new RecordedLocalModelFeed(Folder()), localSettings ?? new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
             new SpendCap(paid ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile),
             new ClaimChecker(clock, store.DatabaseFile),
-            new RecordedFilingsArchiveFeed(Folder()),
-            new RecordedNameNewsFeed(Folder()),
+            archive ?? new RecordedFilingsArchiveFeed(Folder()),
+            news ?? new RecordedNameNewsFeed(Folder()),
             lane ?? ProseWriter.DefaultLane,
             clock,
             store.DatabaseFile);

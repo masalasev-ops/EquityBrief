@@ -59,6 +59,16 @@ public partial class FixtureExpectations
             // figure 12.1's three questions.
             CheckReach.Key(Scope.LimitsTable, "Research staleness triggers"),
 
+            // 6.8, the research runner over the fixture's recordings: the record one
+            // pass writes, one pass an open, figure 12.1's two boxes the runner is, and
+            // the paid path's half of section 18's two local lane rows.
+            CheckReach.Key(Scope.FixtureTable, "research record"),
+            CheckReach.Key(Scope.LimitsTable, "Research passes per name per open"),
+            CheckReach.Key("Figure 12.1", "A pass is warranted"),
+            CheckReach.Key("Figure 12.1", "Write the sections"),
+            CheckReach.Key(Scope.FailureTable, "A section is assigned to the local lane that the machine cannot hold, the section is left for the paid path"),
+            CheckReach.Key(Scope.FailureTable, "The local model is unavailable, a pass on demand writes the paid lane's sections and leaves the local lane's absent"),
+
             // 6.7, section 17's spend cap and the cap's half of section 18's row about
             // reaching it, over constructed ledgers and the shipped component.
             CheckReach.Key(Scope.LimitsTable, "Spend cap"),

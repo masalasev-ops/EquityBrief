@@ -62,7 +62,7 @@ public partial class ReadSurface
             sections: await api.SectionStatesAsync(ticker, DateOnly.MaxValue),
             staleness: await api.StalenessAsync(ticker),
             written: await api.WrittenSectionsAsync(ticker),
-            prosePass: await api.NewestProsePassAsync(ticker),
+            pass: await api.NewestPassAsync(ticker),
             spend: verdict);
     }
 

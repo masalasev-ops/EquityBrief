@@ -44,6 +44,16 @@ public sealed class SinglePageApp : IComponent
     // because a run that starts after the close in New York carries tomorrow's.
     public const string RunRoute = "#/run/";
 
+    // Where the name page's control sends a press, and the header the page's own script
+    // puts on it. A form another site's page submits to this address carries no such
+    // header, and a request carrying one from another origin is one the browser asks
+    // about first and this surface never answers, so a pass is started by this page and
+    // not by any page that can reach the machine.
+    // see: A pass is started only by a request carrying the name page's own header
+    public const string PassRoute = "/passes/";
+    public const string PassHeader = "X-EquityBrief-Pass";
+    public const string PassHeaderValue = "name-page";
+
     // The hash route, so one document serves every screen and the browser never
     // asks the server for a page it already has.
     //
@@ -107,6 +117,22 @@ public sealed class SinglePageApp : IComponent
           screen.innerHTML = await response.text();
         }
         addEventListener('hashchange', show);
+        // A research control is a form, sent here with the page's own header so the
+        // surface knows the press came from this page, and what the surface said back is
+        // put beside the control. The pass runs as a process of its own and lands on the
+        // run log, so the page is read again when the operator returns to it.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('research-control')) { return; }
+          event.preventDefault();
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            headers: { '{{PassHeader}}': '{{PassHeaderValue}}' },
+            body: new URLSearchParams(new FormData(form)),
+          });
+          form.insertAdjacentHTML('afterend', await response.text());
+        });
         show();
         </script>
         </body>
@@ -155,9 +181,29 @@ public sealed class SinglePageApp : IComponent
         CauseSource? causes = null,
         IReadOnlyList<LeftOutSection>? notWritten = null,
         string? provenance = null,
-        ResearchPausedLine? paused = null)
+        ResearchPausedLine? paused = null,
+        IReadOnlyList<WrittenCell>? written = null,
+        IReadOnlyList<SourceCell>? sources = null,
+        IReadOnlyList<DateCell>? dates = null,
+        ResearchPassLine? pass = null,
+        IReadOnlyList<ResearchControl>? controls = null,
+        ResearchCost? cost = null)
     {
         var region = new StringBuilder();
+        var sections = written ?? [];
+        var documents = sources ?? [];
+
+        // The written sections drawn in one place, each where section 4 puts it.
+        void Draw(IReadOnlyList<string> placed)
+        {
+            foreach (var name in placed)
+            {
+                if (sections.FirstOrDefault(section => string.Equals(section.Section, name, StringComparison.Ordinal)) is { } section)
+                {
+                    region.Append(marks.WrittenSection(ticker, section, documents));
+                }
+            }
+        }
 
         region.Append(Invariant($"<section class=\"name\" data-ticker=\"{Escaped(ticker)}\">"));
 
@@ -181,6 +227,15 @@ public sealed class SinglePageApp : IComponent
         // present only when the name is on tonight's list.
         region.Append(marks.WhyItIsHere(ticker, firedReasons));
 
+        // Where the research stands, what the newest pass came to, the sections left out
+        // or not written with the reason for each, and the controls with what research
+        // has cost stated beside them. Above the short version, because it is the answer
+        // to whether there is research to read at all.
+        region.Append(marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused, pass, controls, cost));
+
+        // The short version, section 4's first section, with its date and model beneath.
+        Draw(AtTheTop);
+
         region.Append(marks.LevelChart(ticker, bars, averages, bands));
 
         if (bars.Count > 0 && profile.Count > 0)
@@ -194,20 +249,23 @@ public sealed class SinglePageApp : IComponent
         // table rather than in every row.
         region.Append(marks.MovesTable(ticker, moves, twelveMonths, causes));
 
+        // What the company sells, section 4's third section, before the numbers.
+        Draw(BeforeTheNumbers);
+
         // The numbers, which section 4 puts fourth and which section 15.9 draws
         // after the table of moves. It arrives already written, for the reason the
         // event book does: what it holds is stored figures and the sentences that
         // state an absence, rather than a mark.
         region.Append(numbers);
 
-        // The researched sections, which section 4 interleaves with the computed
-        // ones. At 6.4 what is drawn is the sections left out, each with its line,
-        // because that is what the claim checker produces and nothing writes a
-        // section a reader could be shown before 6.8.
-        region.Append(marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused));
+        // The industry cycle and the two cases, section 4's fifth and sixth.
+        Draw(AfterTheNumbers);
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));
+
+        // The key under each figure, beneath the figures it explains.
+        Draw(UnderTheFigures);
 
         // The plan region, which section 15.9 puts after the chart: the plan
         // column and the two tables it is read beside.
@@ -224,6 +282,17 @@ public sealed class SinglePageApp : IComponent
         // event book does.
         region.Append(arithmetic);
 
+        // What would make this wrong, section 4's ninth, after the plan it is about.
+        Draw(AfterThePlan);
+
+        // Dates and sources, section 4's last two: the calendar, the dated items a pass
+        // read out of the documents, and every document the written sections cite.
+        region.Append(marks.DatesAndSources(
+            ticker,
+            dates ?? [],
+            sections.FirstOrDefault(section => string.Equals(section.Section, InTheDates, StringComparison.Ordinal)),
+            documents));
+
         // The walk, which section 15.9 puts last: previous and next on tonight's
         // list, so an evening's reading is one pass through with no return to
         // the list.
@@ -238,6 +307,20 @@ public sealed class SinglePageApp : IComponent
 
         return region.ToString();
     }
+
+    // Where each written section is drawn, which is section 4's order: the short version
+    // at the top, what the company sells before the numbers, the cycle and the two cases
+    // after them, the key beneath the figures, the risks after the plan, and the dated
+    // items with the dates. The cause of each large move is drawn in the moves table, in
+    // the row of the move each sentence names, and `read-surface` asserts every section
+    // figure 12.2 names is placed exactly once across these and that table.
+    public static readonly string[] AtTheTop = ["The short version"];
+    public static readonly string[] BeforeTheNumbers = ["What the company sells", "The segment commentary"];
+    public static readonly string[] AfterTheNumbers = ["The industry cycle", "The two cases"];
+    public static readonly string[] UnderTheFigures = ["The key under each figure"];
+    public static readonly string[] AfterThePlan = ["The risks, each with what would confirm it"];
+    public const string InTheDates = "The dated calendar items";
+    public const string InTheMovesTable = "The cause of each large move";
 
     // The universe screen's three regions, composed from stored values.
     //
@@ -308,14 +391,15 @@ public sealed class SinglePageApp : IComponent
         string? selectedTicker = null,
         IReadOnlyList<ReasonRecord>? records = null,
         IReadOnlyList<ReasonTrackRow>? totals = null,
-        NightSpend? spend = null)
+        NightSpend? spend = null,
+        NightProse? prose = null)
     {
         var region = new StringBuilder();
 
         region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\" "));
         region.Append(Invariant($"data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
-        region.Append(marks.NightHeader(night, index, fired, duration, harness, spend));
+        region.Append(marks.NightHeader(night, index, fired, duration, harness, spend, prose));
         region.Append(marks.WatchList(watched));
         region.Append(marks.TonightList(rows, TonightDrawn, records));
 

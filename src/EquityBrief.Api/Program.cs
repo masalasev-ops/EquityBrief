@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Api.Passes;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
@@ -31,6 +32,12 @@ builder.Services.AddSingleton(_ => SpendCaps.From(
     builder.Configuration[SpendCaps.DayKey],
     builder.Configuration[SpendCaps.MonthKey]));
 builder.Services.AddSingleton<SinglePageApp>();
+
+// What the name page's control starts: the worker's research verb, from the checkout this
+// surface's build sits in, told to write the store this surface reads.
+builder.Services.AddSingleton<IPassStarter>(services => new WorkerPassStarter(
+    WorkerPassStarter.Checkout(AppContext.BaseDirectory),
+    services.GetRequiredService<StoreLocation>().DataRoot));
 
 var app = builder.Build();
 
@@ -149,6 +156,10 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     // the strip says so rather than drawing a blank.
     var extremes = await read.MoveExtremesAsync(ticker);
 
+    // The written sections and the documents they cite, which the dates-and-sources
+    // region draws with the calendar from the newest stored session on.
+    var written = await read.WrittenSectionsAsync(ticker);
+
     return Results.Content(
         NameScreen.Region(
             page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
@@ -159,10 +170,55 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
             at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null,
             await read.SectionStatesAsync(ticker, DateOnly.MaxValue),
             await read.StalenessAsync(ticker),
-            await read.WrittenSectionsAsync(ticker),
-            await read.NewestProsePassAsync(ticker),
-            await SpendNow(read, caps, clock)),
+            written,
+            await read.NewestPassAsync(ticker),
+            await SpendNow(read, caps, clock),
+            await read.CitedDocumentsAsync(NameScreen.Cited(written)),
+            await read.EventsAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
+            await read.PaidCallSpendsAsync(),
+            clock.SessionDateAt(clock.UtcNow)),
         "text/html; charset=utf-8");
+});
+
+// A press of the name page's control: start the worker's research verb for the name, and
+// return at once with the line the page puts beside the control.
+//
+// Refused without the page's own header, so another site's page cannot start a pass, and
+// refused for a name the index does not hold, before anything is started. Nothing here
+// writes a store: the pass is the worker's, and its rows are what the page reads next.
+// see: The name page's control starts the worker's research verb, and the read API writes nothing it starts
+// see: A pass is started only by a request carrying the name page's own header
+app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IPassStarter starter) =>
+{
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Results.Content(
+            "<p class=\"pass-refused\" data-refused=\"header\">no pass was started: the request did not come from the name page</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+
+    if (!await read.IsMemberAsync(index, ticker))
+    {
+        return Results.Content(
+            $"<p class=\"pass-refused\" data-refused=\"membership\">no pass was started: {System.Net.WebUtility.HtmlEncode(ticker)} is not a member of the index</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status404NotFound);
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+
+    var started = starter.Start(new PassRequest(
+        ticker,
+        string.Equals(form?["refresh"].FirstOrDefault(), "true", StringComparison.Ordinal),
+        string.Equals(form?["paidForLocal"].FirstOrDefault(), "true", StringComparison.Ordinal)));
+
+    return Results.Content(
+        $"<p class=\"pass-started\" data-started=\"{(started.Started ? "true" : "false")}\">{System.Net.WebUtility.HtmlEncode(started.Line)}</p>",
+        "text/html; charset=utf-8",
+        statusCode: started.Started ? StatusCodes.Status202Accepted : StatusCodes.Status500InternalServerError);
 });
 
 // Where research stands against the caps now, which is what a name page states a
@@ -308,7 +364,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             selection?.Ticker,
             records,
             RunScreen.Tracks(TonightScreen.Totals(listings)),
-            TonightScreen.Spend(dated, await SpentOn(read, dated), caps)),
+            TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
+            TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated))),
         "text/html; charset=utf-8");
 });
 

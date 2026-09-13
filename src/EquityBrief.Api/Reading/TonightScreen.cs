@@ -216,6 +216,23 @@ public static class TonightScreen
             caps.Month);
     }
 
+    // Reports carrying fresh prose against reused, on a night: of the names with an
+    // accepted section as of the night, those with one written on the night, and those
+    // whose every accepted section was written before it. The rows are bounded here as
+    // well as by the read, so a row after the night counts for neither, and a name is
+    // counted once however many sections it carries.
+    public static NightProse Prose(DateOnly night, IReadOnlyList<WrittenOnRow> rows)
+    {
+        var byName = rows
+            .Where(row => row.AsOf <= night)
+            .GroupBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToArray();
+
+        var fresh = byName.Count(name => name.Any(row => row.AsOf == night));
+
+        return new NightProse(fresh, byName.Length - fresh, byName.Length);
+    }
+
     // The window a night's spend is read over: the first instant of its UTC month to
     // the end of its UTC day.
     public static (DateTimeOffset From, DateTimeOffset To) SpendWindow(DateOnly night)

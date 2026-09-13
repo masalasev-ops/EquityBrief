@@ -68,7 +68,7 @@ public sealed class ResearchRunner(
             new StoreTouch(Store.ResearchSection, Touch.Read | Touch.Insert),
             new StoreTouch(Store.ThemeSection, Touch.Read),
             new StoreTouch(Store.SourceDocument, Touch.Read | Touch.Insert),
-            new StoreTouch(Store.RunLog, Touch.Insert),
+            new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: [Feed.FilingsArchive, Feed.News]);
 
@@ -86,6 +86,9 @@ public sealed class ResearchRunner(
     // The reasons a paid section is not written, stated once so the run log and the
     // page say them the same way.
     public const string NoThemeRecord = "no theme record is stored for the name's industry";
+
+    // Why a plain open on the day a pass ran starts nothing.
+    public const string RanToday = "a research pass for this name already ran today, and opening it again writes nothing until a later day or a rewrite";
 
     // The window a pass reads, which is the stored year: a move's cause rests on a
     // document inside that move, and no stored move is older than the bars kept.
@@ -119,6 +122,17 @@ public sealed class ResearchRunner(
 
     const string AcceptedThemes = @"
         SELECT COUNT(*) FROM theme_section WHERE status = 'accepted';
+    ";
+
+    // A pass for this name that ran to the end on this session. The name is inside the
+    // detail rather than in a column, so it is read with the store's own JSON function,
+    // and a detail that is not JSON is passed over, since other stages write a sentence.
+    const string RanOnSession = @"
+        SELECT COUNT(*) FROM run_log
+        WHERE stage = $stage
+          AND outcome = $written
+          AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.ticker') END = $ticker
+          AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.asOf') END = $as_of;
     ";
 
     const string InsertDocument = @"
@@ -180,6 +194,20 @@ public sealed class ResearchRunner(
         }
 
         var verdict = await judge.JudgeAsync(ticker, asked.Refresh, runId, cancellation);
+
+        // A plain open on the day a pass for the name ran to the end starts nothing. The
+        // rule below makes a second open free only where every section the first pass
+        // warranted got a row, and a section that pass found nothing to write from has
+        // none, so a second open would fetch the year's news and the release again to
+        // find the same nothing. A pass the cap paused or the model did not answer did
+        // not run to the end, and the page's two explicit asks run because each asks for
+        // something the first pass did not do.
+        // see: A name opened again on the day its research pass ran starts no second pass unless the page asks for one
+        if (!asked.Refresh && !asked.PaidForLocal && await RanTodayAsync(connection, ticker, asOf, cancellation))
+        {
+            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NotWarranted, verdict.State, [], RanToday), 0, 0, cancellation);
+        }
+
         var newest = await NewestAsync(connection, ticker, cancellation);
         var themes = await CountAsync(connection, AcceptedThemes, null, null, cancellation);
 
@@ -727,6 +755,19 @@ public sealed class ResearchRunner(
         return await reader.ReadAsync(cancellation)
             ? (FactsFile.Read(reader.GetString(0)), DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture))
             : (null, asOf);
+    }
+
+    static async Task<bool> RanTodayAsync(SqliteConnection connection, string ticker, DateOnly asOf, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RanOnSession;
+        command.Parameters.AddWithValue("$stage", Stage);
+        command.Parameters.AddWithValue("$written", Written);
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return Convert.ToInt64(await command.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture) > 0;
     }
 
     // The company's identifier at the archive, off the newest filing the store holds.

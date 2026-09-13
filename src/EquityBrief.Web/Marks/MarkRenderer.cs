@@ -148,6 +148,11 @@ public sealed record WrittenPart(string Section, DateOnly AsOf, string Model);
 // beside the two caps it is held to.
 public sealed record NightSpend(decimal OnTheDay, decimal MonthToDate, decimal DayCap, decimal MonthCap);
 
+// A night's research prose, as tonight's header states it: of the names whose report
+// carries a written section as of the night, how many carry one written on the night
+// and how many carry only sections written before it.
+public sealed record NightProse(int Fresh, int Reused, int Names);
+
 // A pause as a name page draws it: which cap stopped research, when it resumes, and
 // the line the spend cap itself states.
 public sealed record ResearchPausedLine(string Cap, DateTimeOffset ResumesAt, string Line);
@@ -275,6 +280,29 @@ public sealed record LeftOutSection(string Subject, string Section, string Reaso
 // Where a name's research stands, as the page draws it: missing, stands or stale,
 // and the one line that says so in the judge's own words.
 public sealed record ResearchStateLine(string State, string Line);
+
+// One written section as a page draws it: the section, the prose as stored, the date it
+// was written on, the model that wrote it, and the ids its markers resolve to, in the
+// order its source list holds them, so [D1] is the first.
+public sealed record WrittenCell(string Section, string Prose, DateOnly AsOf, string Model, IReadOnlyList<string> SourceIds);
+
+// One document a written section cites, as a page draws it.
+public sealed record SourceCell(string Id, string Title, string Url, DateOnly? PublishedOn);
+
+// One dated event the calendar holds for a name, as the dates-and-sources region draws it.
+public sealed record DateCell(DateOnly Date, string Kind, string Timing);
+
+// What the newest pass for a name came to, as the research region states it: its
+// outcome, the session it ran on, and the one line that says what happened.
+public sealed record ResearchPassLine(string Outcome, DateOnly AsOf, string Line);
+
+// A control that starts a research pass for the name, and what it asks for.
+public sealed record ResearchControl(string Kind, string Label, bool Refresh, bool PaidForLocal);
+
+// What research has cost, stated beside a control before it is pressed: the passes the
+// run log has priced, what they came to, the most one came to, and the line saying where
+// research stands against the caps now.
+public sealed record ResearchCost(int Passes, decimal Total, decimal Most, string Verdict);
 
 // One line of the sector strip.
 public sealed record SectorLine(string Sector, int Names, int InUptrend, int OnTheList);
@@ -1579,36 +1607,52 @@ public sealed class MarkRenderer : IComponent
     // The line is the reason the checker stored, so the page and the run log
     // cannot describe one refusal two ways.
     //
-    // Only the sections left out are drawn here. A written section is drawn from
-    // 6.8 with its own date and model beside it, and a section still waiting on
-    // its retry is neither written nor left out, so this page says nothing of it.
+    // Only the sections left out are drawn here. A written section is drawn in its
+    // own place on the page with its date and model beneath it, and a section still
+    // waiting on its retry is neither written nor left out, so this says nothing of it.
     //
-    // From 6.6 it also draws the local lane's sections the newest pass did not write,
-    // each with the reason the writer recorded: the machine could not hold it, the
-    // local model was unavailable, or the pass was handed nothing for it. Section 18
-    // says those are absent with their reason, and a section absent with nothing
-    // beside it reads as one nobody tried.
+    // From 6.6 it also draws the sections the newest pass did not write, each with the
+    // reason the pass recorded: the machine could not hold it, the local model was
+    // unavailable, the pass was handed nothing for it, or from 6.8 the spend cap
+    // stopped the call. Section 18 says those are absent with their reason, and a
+    // section absent with nothing beside it reads as one nobody tried.
+    //
+    // From 6.8 it carries what the newest pass came to and the controls that start
+    // one, with what research has cost stated beside them before they are pressed.
     public string LeftOut(
         string ticker,
         IReadOnlyList<LeftOutSection> leftOut,
         ResearchStateLine? state = null,
         IReadOnlyList<LeftOutSection>? notWritten = null,
-        ResearchPausedLine? paused = null)
+        ResearchPausedLine? paused = null,
+        ResearchPassLine? pass = null,
+        IReadOnlyList<ResearchControl>? controls = null,
+        ResearchCost? cost = null)
     {
         var region = new StringBuilder();
         var unwritten = notWritten ?? [];
 
-        region.Append(Invariant, $"<section class=\"research\" data-ticker=\"{Escaped(ticker)}\" data-left-out=\"{leftOut.Count}\" data-not-written=\"{unwritten.Count}\">");
+        // A control is drawn only with its cost, because a control whose cost is not
+        // stated before it is pressed is the one section 15.9 says the page does not draw.
+        var offered = cost is null ? [] : controls ?? [];
+
+        region.Append(Invariant, $"<section class=\"research\" data-ticker=\"{Escaped(ticker)}\" data-left-out=\"{leftOut.Count}\" data-not-written=\"{unwritten.Count}\" data-controls=\"{offered.Count}\">");
 
         // Where the research stands, first, because it is the answer to the
         // question a reader opens the page with. Section 15.9's research-state
         // rows: missing with one line saying the sections have not been written,
-        // or stale with one line naming which of the four triggers fired. The
-        // control that writes them and the sections themselves under their dates
-        // arrive with the research runner.
+        // or stale with one line naming which of the four triggers fired.
         if (state is not null)
         {
             region.Append(Invariant, $"<p class=\"research-state\" data-state=\"{Escaped(state.State)}\">{Escaped(state.Line)}</p>");
+        }
+
+        // What the newest pass came to, where it says something the state does not: a
+        // research model that did not answer, a cap that stopped the pass, a pass that
+        // ran today. In the words the page projection assembles from the pass's own row.
+        if (pass is not null)
+        {
+            region.Append(Invariant, $"<p class=\"research-pass\" data-outcome=\"{Escaped(pass.Outcome)}\" data-as-of=\"{pass.AsOf:yyyy-MM-dd}\">{Escaped(pass.Line)}</p>");
         }
 
         // Research paused, section 15.9's state, from 6.7: one line saying research is
@@ -1633,11 +1677,160 @@ public sealed class MarkRenderer : IComponent
             region.Append(Invariant, $"{Escaped(section.Section)} is not written: {Escaped(section.Reason)}</p>");
         }
 
-        region.Append("<p class=\"degraded\" data-written=\"absent\">the written sections, each with its own date and the model that wrote it, arrive with the research pass at 6.8</p>");
+        // The controls, each a form the page's own script sends, with what it asks for on
+        // the form so a test reads what a press would send rather than the label beside it.
+        // The cost is stated once, before any of them, because it is the same statement
+        // for each: the local lane costs nothing and every other call goes through the cap.
+        // see: The name page's control starts the worker's research verb, and the read API writes nothing it starts
+        if (offered.Count > 0 && cost is not null)
+        {
+            // Before the controls, so it is read before any of them is pressed.
+            region.Append(Invariant, $"<p class=\"research-cost\" data-passes=\"{cost.Passes}\" data-spend=\"{cost.Total}\" data-most=\"{cost.Most}\">");
+            region.Append(Escaped(CostLine(cost))).Append("</p>");
+        }
+
+        foreach (var control in offered)
+        {
+            region.Append(Invariant, $"<form class=\"research-control\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(ticker)}\" ");
+            region.Append(Invariant, $"data-kind=\"{Escaped(control.Kind)}\" data-refresh=\"{Flag(control.Refresh)}\" data-paid-for-local=\"{Flag(control.PaidForLocal)}\">");
+            region.Append(Invariant, $"<input type=\"hidden\" name=\"refresh\" value=\"{Flag(control.Refresh)}\">");
+            region.Append(Invariant, $"<input type=\"hidden\" name=\"paidForLocal\" value=\"{Flag(control.PaidForLocal)}\">");
+            region.Append(Invariant, $"<button type=\"submit\">{Escaped(control.Label)}</button></form>");
+        }
+
         region.Append("</section>");
 
         return region.ToString();
     }
+
+    // What research has cost, in one sentence. Every figure is the run log's: the passes
+    // it priced and what they came to. A pass's price is known only once it has been
+    // made, so what is stated before a press is what the passes before it cost and the
+    // cap that stops the next one, rather than an estimate nothing measured.
+    // see: The spend cap is a stop, not an allowance
+    public static string CostLine(ResearchCost cost) =>
+        cost.Passes == 0
+            ? "A pass writes the local lane's sections for nothing and asks the paid model for the rest through the spend cap, which refuses a call that could take spend past a cap. No research pass has a recorded cost yet. " + Capitalised(cost.Verdict) + "."
+            : Formatted($"A pass writes the local lane's sections for nothing and asks the paid model for the rest through the spend cap, which refuses a call that could take spend past a cap. The {cost.Passes} research pass(es) the run log has priced cost {SpendVerdict.Money(cost.Total)} in all, and the most one cost was {SpendVerdict.Money(cost.Most)}. ") + Capitalised(cost.Verdict) + ".";
+
+    static string Flag(bool value) => value ? "true" : "false";
+
+    static string Capitalised(string line) =>
+        line.Length == 0 ? line : char.ToUpperInvariant(line[0]) + line[1..];
+
+    // One written section, under its own heading, with the date it was written on and the
+    // model that wrote it beneath the prose, and the documents its markers resolve to.
+    //
+    // The prose is drawn as stored, a paragraph at each blank line, and as text: a model's
+    // words are quoted rather than rendered, so markup inside them is shown rather than
+    // run. Each marker is listed with the document it names, because a sentence resting on
+    // [D2] is checkable only where [D2] says which document it is.
+    // see: A research record is written and dated per section, not as a whole
+    // see: Every researched claim must name a stored source document
+    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents)
+    {
+        var drawn = new StringBuilder();
+
+        drawn.Append(Invariant, $"<section class=\"written-section\" data-ticker=\"{Escaped(ticker)}\" data-section=\"{Escaped(section.Section)}\" ");
+        drawn.Append(Invariant, $"data-as-of=\"{section.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(section.Model)}\">");
+        drawn.Append(Invariant, $"<h3>{Escaped(section.Section)}</h3>");
+
+        foreach (var paragraph in section.Prose.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            drawn.Append("<p class=\"prose\">").Append(Escaped(paragraph)).Append("</p>");
+        }
+
+        drawn.Append(Invariant, $"<p class=\"written-by\">written on {section.AsOf:yyyy-MM-dd} by {Escaped(section.Model)}</p>");
+
+        if (section.SourceIds.Count > 0)
+        {
+            drawn.Append(Invariant, $"<ol class=\"section-sources\" data-cites=\"{section.SourceIds.Count}\">");
+
+            for (var at = 0; at < section.SourceIds.Count; at++)
+            {
+                var id = section.SourceIds[at];
+                var document = documents.FirstOrDefault(one => string.Equals(one.Id, id, StringComparison.Ordinal));
+
+                drawn.Append(Invariant, $"<li data-marker=\"D{at + 1}\" data-document=\"{Escaped(id)}\">[D{at + 1}] ");
+                drawn.Append(document is null ? "a document the store does not hold" : Link(document));
+                drawn.Append("</li>");
+            }
+
+            drawn.Append("</ol>");
+        }
+
+        drawn.Append("</section>");
+
+        return drawn.ToString();
+    }
+
+    // Dates and sources, section 15.9's region and section 4's last two sections: the
+    // calendar, the dated items a pass read out of the documents, and every document the
+    // written sections cite with its date and link.
+    //
+    // The calendar is the provider's and the dated items are a model's, and the two are
+    // drawn apart for that reason: an earnings date is filed and a conference date is a
+    // sentence resting on a document, and a reader has to be able to tell which is which.
+    // A region with nothing in a part says so rather than drawing it empty.
+    public string DatesAndSources(string ticker, IReadOnlyList<DateCell> dates, WrittenCell? items, IReadOnlyList<SourceCell> documents)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"dates-and-sources\" data-ticker=\"{Escaped(ticker)}\" data-events=\"{dates.Count}\" data-documents=\"{documents.Count}\">");
+
+        if (dates.Count == 0)
+        {
+            region.Append("<p class=\"degraded\" data-events=\"none\">the calendar holds no dated event for this name from its newest session</p>");
+        }
+        else
+        {
+            region.Append("<table class=\"calendar-dates\"><tr><th>Date</th><th>Event</th><th>Timing</th></tr>");
+
+            foreach (var date in dates)
+            {
+                region.Append(Invariant, $"<tr data-date=\"{date.Date:yyyy-MM-dd}\" data-kind=\"{Escaped(date.Kind)}\">");
+                region.Append(Invariant, $"<td>{date.Date:yyyy-MM-dd}</td><td>{Escaped(date.Kind)}</td><td>{Escaped(date.Timing)}</td></tr>");
+            }
+
+            region.Append("</table>");
+        }
+
+        if (items is not null)
+        {
+            region.Append(WrittenSection(ticker, items, documents));
+        }
+
+        if (documents.Count == 0)
+        {
+            region.Append("<p class=\"degraded\" data-documents=\"none\">no written section cites a document</p>");
+        }
+        else
+        {
+            region.Append("<ol class=\"sources\">");
+
+            foreach (var document in documents)
+            {
+                region.Append(Invariant, $"<li data-document=\"{Escaped(document.Id)}\" data-published-on=\"{Published(document)}\" data-url=\"{Escaped(document.Url)}\">");
+                region.Append(Link(document)).Append("</li>");
+            }
+
+            region.Append("</ol>");
+        }
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // A document as a link with the date it was published beside it, or the words saying
+    // no date is on file, which admissibility refuses a document for, so a cited one
+    // carries a date unless its row is older than the rule.
+    static string Link(SourceCell document) =>
+        "<a href=\"" + Escaped(document.Url) + "\">" + Escaped(document.Title) + "</a>"
+        + (document.PublishedOn is not null ? ", published on " + Published(document) : ", with no publish date on file");
+
+    static string Published(SourceCell document) =>
+        document.PublishedOn is { } on ? on.ToString("yyyy-MM-dd", Invariant) : "none";
 
     // The provenance footer, section 15.9's last region: for every part of the page,
     // where it came from.
@@ -1796,7 +1989,7 @@ public sealed class MarkRenderer : IComponent
     // the one number the twenty drawn rows cannot tell you. The quantities phase
     // 6 supplies are absent and say so rather than being drawn as zero, which
     // would read as a night that spent nothing because it did nothing.
-    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null)
+    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null)
     {
         var header = new StringBuilder();
 
@@ -1843,7 +2036,24 @@ public sealed class MarkRenderer : IComponent
             header.Append("<p class=\"degraded\" data-spend=\"absent\">what research spent is not read on this page</p>");
         }
 
-        header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused arrives with the research pass that produces it</p>");
+        // Reports carrying fresh prose against reused, from 6.8, which is where a pass
+        // first writes a section a reader is shown. Fresh is a report with a section
+        // written on the night, reused is one whose every section predates it and was
+        // shown again for nothing, and the population is stated beside the two: the names
+        // with any written section as of the night, which is every report that carries
+        // prose at all.
+        // see: Deciding not to spend must not cost anything
+        if (prose is { } written)
+        {
+            header.Append(Invariant, $"<p class=\"night-prose\" data-fresh=\"{written.Fresh}\" data-reused=\"{written.Reused}\" data-names=\"{written.Names}\">");
+            header.Append(Invariant, $"research prose: {written.Fresh} report(s) carry prose written on {night:yyyy-MM-dd} and {written.Reused} carry only prose written before it, ");
+            header.Append(Invariant, $"of the {written.Names} name(s) with a written section</p>");
+        }
+        else
+        {
+            header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused is not read on this page</p>");
+        }
+
         header.Append("</header>");
 
         return header.ToString();

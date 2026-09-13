@@ -911,6 +911,87 @@ internal static class Scope
             Verdict.Pass,
             "a name whose section predates its stored filing and its passed earnings date is drawn with one line naming both, which is the line the shipped judge writes to the run log over the same store, and a name whose research stands is drawn as standing",
             ByReadSurface),
+        // 6.8, the research runner. The component, the record one pass writes over the
+        // fixture's recordings, one pass an open, figure 12.1's two boxes the runner is,
+        // section 18's cloud model row and the halves of its two local lane rows the
+        // paid path and the page's option make true, and the name page's regions a
+        // written section is drawn in, with tonight's count of fresh prose against reused.
+        [CheckReach.Key(CatalogueTable, "Research runner")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the facts, fundamentals, research store, theme store, source documents and run log it reads, the research store and source documents it inserts into and the filings archive and news feed it reads, and the declaration matches this row, repaired at 6.8 to name the research store and the run log, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Research runner")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, which is where the runner writing no fundamentals and no facts is a claim: it reads the quarter a fetch stored and never writes one",
+            ByAccess),
+        [CheckReach.Key(FixtureTable, "research record")] = new Scoped(
+            Verdict.Pass,
+            "the pass over the fixture's recordings stores every version with the lane that wrote it and the checker's verdict, each draft byte for byte the recording its request is keyed on, the documents fetched, admitted and refused, what each section was handed in order, the stages in the order they landed and what the paid calls cost, against the expectation derived from section 12's rules and the lane configuration, with the lane comparison run both ways over one evidence set",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Research passes per name per open")] = new Scoped(
+            Verdict.Pass,
+            "a second open of a researched name writes, asks and fetches nothing and its row says so, read off the run log rather than a return value, and so does a second open of a name whose pass found nothing to write from, which the per-section rule alone let fetch again; a pass the page asks for explicitly still runs, and a later day's open still does",
+            ByExpectations),
+        [CheckReach.Key("Figure 12.1", "A pass is warranted")] = new Scoped(
+            Verdict.Pass,
+            "over constructed versions of every state the rule reads, a pass warrants the sections never written, left out on an earlier day, refused, and accepted and gone stale by the judge's own trigger, and not those accepted today, waiting on the checker or left out today, read off the pass's own row, with the industry cycle named rather than warranted where no theme record is stored",
+            ByExpectations),
+        [CheckReach.Key("Figure 12.1", "Write the sections")] = new Scoped(
+            Verdict.Pass,
+            "each section is written by the lane the configuration assigns it, asserted from both ends over the requests each recorded model was asked, a section refused once is written again in the same pass and the short version last from the sections accepted, and every stored draft is the recording its request is keyed on",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A section is assigned to the local lane that the machine cannot hold, the section is left for the paid path")] = new Scoped(
+            Verdict.Pass,
+            "at a context too small for the two sections handed the release, neither reaches the local model and both are asked of the paid model in the same pass, while the writer's own row names each with the reason",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The local model is unavailable, a pass on demand writes the paid lane's sections and leaves the local lane's absent")] = new Scoped(
+            Verdict.Pass,
+            "with the local model not answering, a pass writes exactly the paid lane's sections through the paid model and stores no row by the local one, and names each local lane section with the reason the writer recorded",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A section is assigned to the local lane that the machine cannot hold, the option to have it written")] = new Scoped(
+            Verdict.Pass,
+            "a name whose section the machine could not hold is drawn with a control asking the paid model to write the local lane's sections, the option read off the form a press would send, with the cost stated before it",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "The local model is unavailable, the option to have the paid model write them")] = new Scoped(
+            Verdict.Pass,
+            "after a pass the local model did not answer, each local lane section is drawn absent with its reason and the page offers the control asking the paid model to write them, read off the form a press would send",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "Cloud model unavailable")] = new Scoped(
+            Verdict.Pass,
+            "a rewrite asked with the research model not answering stores no section and fetches no document, and the page still draws every stored section under the date the store holds with a line saying the pass did not start, and a name with nothing stored is drawn with the control that writes it later",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The short version")] = new Scoped(
+            Verdict.Pass,
+            "the accepted short version is drawn above the chart, the table of moves and every other written section, its paragraphs the stored prose drawn as text and its date and model beneath them read back against the store, and a name with none draws none",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = new Scoped(
+            Verdict.Pass,
+            "every accepted section is drawn once in section 4's order, what the company sells and its segments before the numbers, the two cases after them, the key beneath the figures and the risks after the plan, each with the date and model the store holds, every section figure 12.2 names placed exactly once, and the cycle, which rests on the theme record 6.9 writes, drawn absent with the reason the pass stored",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dates and sources")] = new Scoped(
+            Verdict.Pass,
+            "the region draws every calendar event from the newest session, the dated items as written, and every document a written section cites once each with its date and link, against queries of the test's own, and each section's markers resolve in its stored source order",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Research not yet written, a control that writes them with its cost stated before it is pressed")] = new Scoped(
+            Verdict.Pass,
+            "a name with no research draws a control asking a plain pass for it, preceded by the priced passes the run log holds, what they cost and the most one cost, read against sums of the store's own rows, and the route the control reaches starts the worker's verb with what the form asks, refuses a request without the page's header or for a name the index does not hold, and writes nothing",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Research stale, the stored sections rendered with their own dates")] = new Scoped(
+            Verdict.Pass,
+            "a name whose sections predate its newest filing draws every accepted section under the date the store holds beside the stale line",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Research stale, the option to have them rewritten")] = new Scoped(
+            Verdict.Pass,
+            "the same page offers a control that rewrites the stale sections, with the cost before it, and offers none on the day a pass ran, where a second plain pass writes nothing",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Research paused, with the stored sections still rendered under their own dates")] = new Scoped(
+            Verdict.Pass,
+            "at the day cap the page draws the pause line and every accepted section under the date the store holds, and no control, since a press would be refused",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused")] = new Scoped(
+            Verdict.Pass,
+            "the header counts the names with a section accepted on the night against those whose accepted sections all predate it, over the names with any accepted section as of the night, against counts of the test's own and figures stated in advance over rows either side of the night and in every status, and the tonight route draws it",
+            ByReadSurface),
         // 6.7, the spend cap and the paid lane. The component, the run log's row it
         // makes true, section 17's cap, section 18's row about reaching it in its two
         // halves, and the two pages that state what research spent and that it paused.
@@ -1940,14 +2021,10 @@ internal static class Scope
         ["A search returns snippets rather than full page text"] = "6.9",
         ["A search returns a site the applicable list does not carry"] = "6.9",
         ["The search tool is unavailable"] = "6.9",
-        // Section 18's two local lane rows, decomposed at 6.6. Each states what the
-        // writer does and what the page draws, which arrive here, beside what the
-        // paid path, its control and the overnight queue do, which arrive with those.
-        ["A section is assigned to the local lane that the machine cannot hold, the section is left for the paid path"] = "6.8",
-        ["A section is assigned to the local lane that the machine cannot hold, the option to have it written"] = "6.8",
+        // Section 18's two local lane rows, decomposed at 6.6. The writer's parts and
+        // the page's arrived there, the paid path's and the page's option at 6.8, and
+        // what the overnight queue records arrives with the queue.
         ["The local model is unavailable, the overnight queue records that it could not run"] = "6.10",
-        ["The local model is unavailable, a pass on demand writes the paid lane's sections and leaves the local lane's absent"] = "6.8",
-        ["The local model is unavailable, the option to have the paid model write them"] = "6.8",
         ["A theme refresh fails while a name's pass depends on it"] = "6.9",
         ["Something tries to edit or delete a register row"] = "7.3",
         ["The candidate register and the correction disagree"] = "7.3",
