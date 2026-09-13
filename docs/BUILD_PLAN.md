@@ -619,16 +619,16 @@ A section is assigned to the local lane that the machine cannot hold: the pass i
 ### 6.7 The spend cap and the paid lane
 **The cap lands before any paid client, in its own commit**, for the reason 2.1 states: a gate built in the same commit as the thing it gates has no run in which the gate was absent.
 
-`IResearchModelFeed` with its recorded double and configuration naming which provider answers (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back), its key in the secrets file under its own path and refused by name at startup when blank, which is the refusal `RUNBOOK.md` promises for the one key the tree holds today.
+`IResearchModelFeed` with its recorded double and configuration naming which provider answers (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back), its key in the secrets file under its own path and refused by name at startup when blank, which is the refusal `RUNBOOK.md` promises for the one key the tree holds today. The live transport behind the interface lands here as well, because the recorded calls the cap is priced against are captured through the request the feed itself sends, and counts captured from any other request price a call nothing makes.
 
 The spend ledger read off the run log's own `spend` column, denominated in money because the same token count costs twice as much at peak, decimal in code and TEXT in storage. The day cap and the month cap each refuse on their own, at the figures section 17 states as proposals, and this checkpoint builds the surface the row that settles them is read on (owes: The spend cap set from the passes the ledger has priced). Spend cap reached: research pauses for the period and the name says that research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
 
-The run log's `spend` and `model_calls` carry a figure other than zero for the first time here, which is what that store row has promised since migration 1 and nothing has written.
+The run log's `spend` carries a figure other than zero for the first time here, which is what that store row has promised since migration 1 and nothing has written. Its `model_calls` first carried one at 6.6, where the local lane's calls are counted.
 
 **Done when** a pass at the cap is refused before it makes a call rather than after, both caps refuse on their own asserted per cap rather than in one figure over the two, the page states that research is paused and when it resumes read back off its markup, the ledger's total is measured off the store rather than self-reported, and a blank key is refused by name at startup.
 
 ### 6.8 The research runner
-Filings and news read by ticker, the theme record read, the narrative sections written, and every document stored as it is fetched through 6.3's test. The live implementation behind 6.7's interface, and the recording written as the pass runs.
+Filings and news read by ticker, the theme record read, the narrative sections written, and every document stored as it is fetched through 6.3's test. The recording written as the pass runs, through the live transport 6.7 put behind its interface.
 
 A pass is warranted, and then the runner reads this name's filings since the last record, its news since then, and its theme record, refreshing the theme first where that is what went stale. Write the sections: the short version, what the company sells, the industry cycle, the two cases, the risks, the cause column of the moves table and the dated calendar items, each through the lane its own configuration assigns it.
 

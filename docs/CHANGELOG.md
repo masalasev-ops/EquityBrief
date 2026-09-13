@@ -25,6 +25,25 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - BUILD_PLAN.md - the research model's live transport is 6.7's, and 6.6 counted the first model call
+
+Corrects: two sentences in phase 6's checkpoints that were wrong when 6.0 wrote them. 6.8 held the live implementation behind 6.7's interface, and 6.7's own deliverable prices a call from the provider's counts for the request as sent, which can only be captured through the transport that sends it, so 6.7 wrote the transport and 6.8's text described work already done. And 6.7 said the run log's `model_calls` carries a figure other than zero for the first time there, where 6.6's local lane counts every call it makes. Found at 6.7, the first while the recordings were captured through the feed and the second while its PROGRESS entry was checked against the store.
+Was:
+> `IResearchModelFeed` with its recorded double and configuration naming which provider answers (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back), its key in the secrets file under its own path and refused by name at startup when blank, which is the refusal `RUNBOOK.md` promises for the one key the tree holds today.
+>
+> The run log's `spend` and `model_calls` carry a figure other than zero for the first time here, which is what that store row has promised since migration 1 and nothing has written.
+>
+> and at 6.8:
+> Filings and news read by ticker, the theme record read, the narrative sections written, and every document stored as it is fetched through 6.3's test. The live implementation behind 6.7's interface, and the recording written as the pass runs.
+Now:
+> `IResearchModelFeed` with its recorded double and configuration naming which provider answers (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back), its key in the secrets file under its own path and refused by name at startup when blank, which is the refusal `RUNBOOK.md` promises for the one key the tree holds today. The live transport behind the interface lands here as well, because the recorded calls the cap is priced against are captured through the request the feed itself sends, and counts captured from any other request price a call nothing makes.
+>
+> The run log's `spend` carries a figure other than zero for the first time here, which is what that store row has promised since migration 1 and nothing has written. Its `model_calls` first carried one at 6.6, where the local lane's calls are counted.
+>
+> and at 6.8:
+> Filings and news read by ticker, the theme record read, the narrative sections written, and every document stored as it is fetched through 6.3's test. The recording written as the pass runs, through the live transport 6.7 put behind its interface.
+Why: a plan that places work after the checkpoint that did it leaves 6.8 owing a deliverable that exists, and a sentence claiming a first that an earlier checkpoint had already produced is a figure a reader would take as measured.
+
 ### 2026-09-13 - RUNBOOK.md - the research model's settings name its provider in configuration alone, and its key moves beside them
 
 Authorised by: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in
