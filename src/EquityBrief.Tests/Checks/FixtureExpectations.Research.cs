@@ -254,6 +254,64 @@ public partial class FixtureExpectations
             $"a filing dated {filed} arrived after it was written",
             Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-warranted' AND stage = 'staleness';").Single(),
             StringComparison.Ordinal);
+
+        // A pass the research model did not answer did not run to the end, so it does not
+        // close the day: an open the same day once the model answers starts one and fetches,
+        // which the 6.8 sweep found no test showing.
+        var news = new NoArticles();
+        var later = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: news).RunAsync("KEYS", "research-warranted-answered");
+
+        Assert.NotEqual(ResearchRunner.NotWarranted, later.Outcome);
+        Assert.Equal(1, news.Requests);
+
+        // A rewrite asked the same day writes what went stale and nothing accepted that day,
+        // so the rewrite control pays for no section twice in a day. The judge makes every
+        // accepted section stale for a rewrite, which is what leaves this to the rule.
+        var rewrite = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable))
+            .RunAsync("KEYS", "research-warranted-rewrite", new ResearchPassRequest(Refresh: true));
+
+        Assert.Equal(warranted, rewrite.Warranted);
+    }
+
+    [Fact]
+    public async Task ASectionHandedOnlyRefusedDocumentsIsLeftToTheCheckerWithoutACall()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        // One article inside the largest move whose text could not be retrieved, and no
+        // release, so every section resting on a document is handed only a refusal.
+        var session = Query(store, "SELECT session_date FROM move WHERE ticker = 'KEYS' ORDER BY rank LIMIT 1;").Single();
+        var article = new NewsArticle(
+            DateTimeOffset.Parse(session + "T15:00:00Z", CultureInfo.InvariantCulture),
+            "Keysight shares move",
+            "https://example.test/keysight-move",
+            "example.test",
+            ["KEYS.US"],
+            string.Empty);
+
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: new Articles([article]))
+            .RunAsync("KEYS", "research-only-refused");
+
+        // No paid call: a section with nothing admitted is stored citing what it was handed,
+        // and the checker leaves it out, which code knew before a call could be paid for.
+        Assert.Equal(ResearchRunner.Written, outcome.Outcome);
+        Assert.Equal(0, paid.Requests);
+
+        var refused = Query(store, "SELECT id, admissibility FROM source_document;").Single().Split('|');
+
+        Assert.Equal(Admissibility.NoText, refused[1]);
+
+        foreach (var section in new[] { "The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version" })
+        {
+            var row = Query(store, $"SELECT prose, source_ids, status, reject_reason FROM research_section WHERE ticker = 'KEYS' AND section = '{section}';").Single().Split('|');
+
+            Assert.Equal(string.Empty, row[0]);
+            Assert.Equal($"[\"{refused[0]}\"]", row[1]);
+            Assert.Equal(ClaimChecker.Fallback, row[2]);
+            Assert.Contains(ClaimRules.NoAdmissibleSource, row[3], StringComparison.Ordinal);
+        }
     }
 
     [Fact]
@@ -292,21 +350,34 @@ public partial class FixtureExpectations
     [Fact]
     public async Task ASecondPressWhileAPassRunsIsRefusedByName()
     {
-        using var store = await FixtureReplay.ReplayedAsync();
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
 
-        // The lock a running pass holds, taken here the way the runner takes it.
+        // A first pass held inside its first model call, so the lock in force is the one
+        // the runner itself took rather than one this test took for it. The 6.8 sweep
+        // found the difference: a lock taken here more strictly than the runner takes its
+        // own refuses a second pass whatever the runner does.
+        var held = new HeldLocal();
+        var first = FixtureReplay.Researcher(store, ResearchClock, lane: ClaimRules.Sections, localModel: held, archive: new NoRelease(), news: new NoArticles())
+            .RunAsync("KEYS", "research-running");
+
+        await held.Entered.WaitAsync(TimeSpan.FromMinutes(1));
+
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var news = new NoArticles();
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: news).RunAsync("KEYS", "research-while-running");
+
+        Assert.Equal(ResearchRunner.AlreadyRunning, outcome.Outcome);
+        Assert.Equal(0, paid.Probes + paid.Requests + news.Requests);
+        Assert.Equal([$"research|{ResearchRunner.AlreadyRunning}"], Query(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'research-while-running';"));
+
+        // Released with the pass: the first runs to its end, and the lock goes with it.
+        held.Release();
+
+        Assert.Equal(ResearchRunner.Written, (await first).Outcome);
+
         using (new FileStream(store.DatabaseFile + ".research-KEYS.lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
         {
-            var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
-            var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid).RunAsync("KEYS", "research-while-running");
-
-            Assert.Equal(ResearchRunner.AlreadyRunning, outcome.Outcome);
-            Assert.Equal(0, paid.Probes + paid.Requests);
-            Assert.Equal([$"research|{ResearchRunner.AlreadyRunning}"], Query(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'research-while-running';"));
         }
-
-        // Released with the handle, a pass for another name was never held up by it.
-        Assert.Equal("0", Query(store, "SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS';").Single());
     }
 
     [Fact]
@@ -467,6 +538,19 @@ public partial class FixtureExpectations
             ["company-alone-early-february", "company-alone-late-february", "own-filing", "company-alone-august"],
             handed[Evidence.CauseSection].Select(document => document.Id).ToArray());
 
+        // The invariant that makes the runner's refusal of a cause with no document inside a
+        // move a guard rather than a path: every document the rule hands the cause is inside
+        // a move the prompt pairs it with, so a cause handed an admitted document always has
+        // a move to be about. The 6.8 sweep's mutation of that refusal survived for this
+        // reason, and this is where the reason is asserted.
+        var causeDocuments = handed[Evidence.CauseSection]
+            .Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, document.Body ?? string.Empty))
+            .ToArray();
+
+        Assert.Equal(
+            causeDocuments.Length,
+            SectionPrompt.MovesWithDocuments(facts, causeDocuments).SelectMany(move => move.Markers).Distinct().Count());
+
         Assert.Equal(["own-filing"], handed[Evidence.Sells].Select(document => document.Id));
         Assert.Equal(["own-filing"], handed[Evidence.Segments].Select(document => document.Id));
 
@@ -535,7 +619,12 @@ public partial class FixtureExpectations
             "The collaboration was announced on September 3, 2026.",
             Admissibility.Accepted);
 
-        StoredDocument?[] sources = [conferences, collaboration];
+        var meeting = new StoredDocument(
+            "meeting", "https://example.test/meeting", "A board meeting", new DateOnly(2026, 9, 8), DateTimeOffset.UnixEpoch,
+            "The board met on September 8, 2026.",
+            Admissibility.Accepted);
+
+        StoredDocument?[] sources = [conferences, collaboration, meeting];
         var night = new DateOnly(2026, 9, 8);
 
         string Reasons(string prose) =>
@@ -548,8 +637,10 @@ public partial class FixtureExpectations
         // The same date cited to a document that does not state it.
         Assert.Equal(ClaimRules.DateNoCitedDocumentCarries, Reasons("Keysight presents on September 11, 2026 [D2]."));
 
-        // A date the cited document states that is on or before the night.
+        // A date the cited document states that is on or before the night, the night itself
+        // included, which the 6.8 sweep found no sentence reaching.
         Assert.Equal(ClaimRules.DateNotAfterTheNight, Reasons("The collaboration was announced on September 3, 2026 [D2]."));
+        Assert.Equal(ClaimRules.DateNotAfterTheNight, Reasons("The board met on September 8, 2026 [D3]."));
 
         // A date nobody stated.
         Assert.Equal(ClaimRules.DateNoCitedDocumentCarries, Reasons("Keysight reports on December 1, 2026 [D1]."));
@@ -597,6 +688,43 @@ public partial class FixtureExpectations
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+    }
+
+    // A local runtime that takes the first call and answers none until it is released,
+    // and then reports that it is not answering, which ends a pass's local lane.
+    sealed class HeldLocal : ILocalModelFeed
+    {
+        readonly TaskCompletionSource entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        readonly TaskCompletionSource released = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int Requests { get; private set; }
+
+        public Task Entered => entered.Task;
+
+        public void Release() => released.TrySetResult();
+
+        public async Task<ModelAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default)
+        {
+            Requests++;
+            entered.TrySetResult();
+
+            await released.Task.WaitAsync(TimeSpan.FromMinutes(1), cancellation);
+
+            throw new LocalModelUnavailable("released");
+        }
+    }
+
+    // A name's year holding the given articles and no others.
+    sealed class Articles(IReadOnlyList<NewsArticle> articles) : INameNewsFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<NewsArticle>> ArticlesAsync(string ticker, DateOnly from, DateOnly to, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult(articles);
+        }
     }
 
     // A name's year with no article in it.

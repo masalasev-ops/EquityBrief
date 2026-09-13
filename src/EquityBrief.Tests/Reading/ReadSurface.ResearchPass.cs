@@ -288,11 +288,14 @@ public partial class ReadSurface
     {
         using var store = await FixtureReplay.ReplayedAsync();
 
-        // Three priced calls over two passes before this page is opened, and a paused one
-        // that is not a price.
+        // Four priced calls over two passes before this page is opened, one of them an answer
+        // the provider billed and that could not be stored, and a paused call that is not a
+        // price. The most one pass cost is not the most one call cost, which the 6.8 sweep
+        // found the data this test first held could not tell apart.
         Spend(store, "research-a", "research call: The two cases", "2026-09-14T19:00:00Z", "0.012");
         Spend(store, "research-a", "research call: The short version, round 2", "2026-09-14T19:02:00Z", "0.004");
-        Spend(store, "research-b", "research call: The two cases", "2026-09-15T18:00:00Z", "0.021");
+        Spend(store, "research-b", "research call: The two cases", "2026-09-15T18:00:00Z", "0.011");
+        Spend(store, "research-b", "research call: The two cases, round 2", "2026-09-15T18:05:00Z", "0.010", outcome: "refused");
         Spend(store, "research-c", "research call: The two cases", "2026-09-15T18:30:00Z", "0", outcome: "paused");
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
@@ -344,6 +347,33 @@ public partial class ReadSurface
 
         Assert.DoesNotContain("research-control", costless, StringComparison.Ordinal);
         Assert.Contains("data-state=\"missing\"", costless, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task APressThatFoundNothingToDoLeavesThePageDrawingThePassThatDid()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        IClock night = FixedClock.At(DateTimeOffset.Parse("2026-09-08T21:10:00Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates);
+
+        // A pass with no article and no release, which writes what rests on the facts file
+        // and names every other section as not written, and an open the same day after it,
+        // which starts nothing and says so on its own row.
+        await FixtureReplay.Researcher(store, night, archive: new FixtureExpectations.NoRelease(), news: new FixtureExpectations.NoArticles()).RunAsync("KEYS", "research-nothing-page");
+
+        var again = await FixtureReplay.Researcher(store, night, archive: new FixtureExpectations.NoRelease(), news: new FixtureExpectations.NoArticles()).RunAsync("KEYS", "research-nothing-again-page");
+
+        Assert.Equal(ResearchRunner.NotWarranted, again.Outcome);
+
+        // The page still draws what the pass that ran came to and the sections it could not
+        // write, rather than the press that did nothing, which the 6.8 sweep found no test
+        // telling apart.
+        var page = await ResearchedPage(store, "KEYS", AWeekLater);
+
+        Assert.Contains("<p class=\"research-pass\" data-outcome=\"ok\" data-as-of=\"2026-09-08\">the newest research pass for this name ran on 2026-09-08</p>", page, StringComparison.Ordinal);
+        Assert.Equal(
+            $"The two cases is not written: {ProseWriter.NothingHanded}",
+            WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The two cases\">([^<]*)</p>").Groups[1].Value));
     }
 
     [Fact]
@@ -682,7 +712,10 @@ public partial class ReadSurface
         // AAAA rewrote a section on the night; BBBB's research is all from before it; CCCC's
         // only accepted section is from after the night and its section on the night fell
         // back; DDDD has a pending draft on the night over an older accepted one; EEEE has
-        // two sections, one on the night and one before.
+        // two sections, one on the night and one before; FFFF wrote two sections on the
+        // night, which is one report; and GGGG's section was accepted before the night and
+        // again after it, so as of the night its prose is the older version. The last two
+        // are what the 6.8 sweep found the rows could not tell apart.
         store.Execute(
             "INSERT INTO research_section VALUES " +
             "('AAAA', 'The two cases', 1, '2026-09-01', 'm', 'accepted', 'p', '[]', NULL), " +
@@ -693,7 +726,11 @@ public partial class ReadSurface
             "('DDDD', 'The two cases', 1, '2026-08-20', 'm', 'accepted', 'p', '[]', NULL), " +
             "('DDDD', 'The two cases', 2, '2026-09-08', 'm', 'pending', 'p', '[]', NULL), " +
             "('EEEE', 'The two cases', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL), " +
-            "('EEEE', 'The short version', 1, '2026-09-03', 'm', 'accepted', 'p', '[]', NULL);");
+            "('EEEE', 'The short version', 1, '2026-09-03', 'm', 'accepted', 'p', '[]', NULL), " +
+            "('FFFF', 'The two cases', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL), " +
+            "('FFFF', 'The short version', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL), " +
+            "('GGGG', 'The two cases', 1, '2026-09-01', 'm', 'accepted', 'p', '[]', NULL), " +
+            "('GGGG', 'The two cases', 2, '2026-09-10', 'm', 'accepted', 'p', '[]', NULL);");
 
         var prose = TonightScreen.Prose(night, await Api(store).WrittenOnOrBeforeAsync(night));
         var header = new MarkRenderer().NightHeader(night, 503, 4, "00:03:10", null, null, prose);
@@ -710,11 +747,11 @@ public partial class ReadSurface
         Assert.Equal(names, line.Groups[3].Value);
 
         // Stated in advance, so a count that read every row would not agree with itself.
-        Assert.Equal("2", line.Groups[1].Value);
-        Assert.Equal("2", line.Groups[2].Value);
-        Assert.Equal("4", line.Groups[3].Value);
+        Assert.Equal("3", line.Groups[1].Value);
+        Assert.Equal("3", line.Groups[2].Value);
+        Assert.Equal("6", line.Groups[3].Value);
         Assert.Equal(
-            "research prose: 2 report(s) carry prose written on 2026-09-08 and 2 carry only prose written before it, of the 4 name(s) with a written section",
+            "research prose: 3 report(s) carry prose written on 2026-09-08 and 3 carry only prose written before it, of the 6 name(s) with a written section",
             WebUtility.HtmlDecode(line.Groups[4].Value));
         Assert.DoesNotContain("data-prose=\"absent\"", header, StringComparison.Ordinal);
 
