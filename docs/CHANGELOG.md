@@ -25,6 +25,19 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - SCHEMA.md - the two source document columns that admit null, and the url that is never a request
+
+Corrects: the source document table's own column notes contradicted the paragraph beneath them. `published_on` read "date; a document with none is not stored" while the paragraph requires that a document failing admissibility be kept as a row with its refusal reason, and having no publish date is one of the things admissibility refuses a document for. So the file declared a refusal it also declared unstorable. Found at 6.3 while writing the migration against the file.
+Was:
+> | `id` | TEXT | |
+> | `url` | TEXT | |
+> | `title` | TEXT | |
+> | `published_on` | TEXT | date; a document with none is not stored |
+> | `fetched_at` | TEXT | UTC instant |
+> | `body` | TEXT | the full text, not a snippet |
+Now: `published_on` is a date that is null where the document carries none, and a row with none is a refusal carrying that reason. `body` is null on a refusal. `id` states its derivation, being the document's own url hashed so a second fetch of the same address conflicts rather than writing a second row. `url` states that it is the document's own address and never a provider request url. Two paragraphs follow the table: one saying that neither null is an absence of data and that an admitted row carries both, which the check asserts in both directions, and one applying the hard rule about request urls to this table and stating that the intake refuses a url carrying a credential marker rather than storing it.
+Why: the contradiction had only one resolution that keeps both halves of the file. A not-null date column makes the refusal for a missing date unrecordable, which makes that refusal invisible, which is the one thing the paragraph about keeping refusals exists to prevent. The other direction, dropping the requirement to keep such a row, would leave the most common refusal in the measured set silent: three of the five refusable pages the 6.3 measurement read carried no publish date at all.
+
 ### 2026-09-13 - BUILD_PLAN.md - two scope obligations filed, and the momentum panel put to 7.0 to decide
 Corrects: two scope decisions the operator took during 6.1 existed only in the conversation, which is a hole in the record: anything issued in conversation that will later be cited has to land in the repo when it is issued. The momentum panel's own gap is the third and it is not an obligation, because nothing produces evidence for it.
 Was:

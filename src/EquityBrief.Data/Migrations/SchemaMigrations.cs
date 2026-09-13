@@ -417,6 +417,37 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // One row per fetched document, and the one table here whose rows are kept
+    // for two opposite reasons. An admitted document is kept because a claim
+    // whose source is missing is not rendered, so the body a sentence rests on
+    // has to still be there. A refused one is kept because a refusal that left
+    // no row would be invisible, and the only surface that can show what was
+    // refused is one reading these rows.
+    //
+    // `published_on` and `body` both admit null and neither is an absence of
+    // data. A document refused for carrying no publish date is a row with none,
+    // and a document refused for anything is a row with no body: that is what
+    // the refusal being kept means. An admitted row carries both, which is a
+    // property of the test rather than of the column and is asserted as one.
+    //
+    // `admissibility` holds either the acceptance or the category that refused
+    // it, so one column answers both questions and a reader never has to pair a
+    // verdict with a reason. Kept forever and never updated: a second fetch of
+    // the same url conflicts on the id and leaves the first row standing, which
+    // is what makes the verdict a record of what was decided at the time.
+    const string CreateSourceDocument = @"
+        CREATE TABLE source_document (
+            id             TEXT NOT NULL,
+            url            TEXT NOT NULL,
+            title          TEXT NOT NULL,
+            published_on   TEXT,
+            fetched_at     TEXT NOT NULL,
+            body           TEXT,
+            admissibility  TEXT NOT NULL,
+            PRIMARY KEY (id)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -438,6 +469,7 @@ public static class SchemaMigrations
         new Migration(17, "create forward_return", CreateForwardReturn),
         new Migration(18, "create news_pulse", CreateNewsPulse),
         new Migration(19, "create fundamentals", CreateFundamentals),
+        new Migration(20, "create source_document", CreateSourceDocument),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

@@ -840,6 +840,15 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, and the store is asserted to be one the file describes",
             ByMigration),
+        // 6.3, the source documents store. Its columns against SCHEMA as every
+        // other table's are, plus the two that admit null, which is the first
+        // table here where nullability carries a property rather than being a
+        // detail: a refusal is kept as a row with no body, and one of the things
+        // a document is refused for is carrying no publish date.
+        [CheckReach.Key(StoresTable, "Source documents")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and exactly two of them are asserted to admit null in both directions, being the date a refusal for a missing date has to record and the body a refusal never carries",
+            ByMigration),
         [CheckReach.Key(CatalogueTable, "Fundamentals fetcher")] = new Scoped(
             Verdict.Pass,
             "the class declares both feeds and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
