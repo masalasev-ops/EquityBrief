@@ -49,6 +49,7 @@ internal static class Scope
     const string ByCost = "nightly-cost";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
+    const string ByAdmissibility = "claim-admissibility";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -840,6 +841,73 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, and the store is asserted to be one the file describes",
             ByMigration),
+        [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = new Scoped(
+            Verdict.Pass,
+            "the refusals are read back off the region's own markup against the rows the store holds, with the category beside each document and its address drawn rather than counted, the count per category above them, the admitted documents in the same table on the same night not drawn, and no body drawn for any of them",
+            ByReadSurface),
+        // 6.3, the admissibility test. The limits row and the two failure rows
+        // are the behavioural half and the store row below is the shape half,
+        // which fail apart: the store could hold the right columns while nothing
+        // refused anything, and every category could be refused into a table with
+        // no room for the reason.
+        [CheckReach.Key(LimitsTable, "Source admissibility")] = new Scoped(
+            Verdict.Pass,
+            "each of the four denied categories, the missing publish date and the unretrievable text is reached by a document the fixture holds, the six real documents it holds are admitted, a document failing two gates is refused by the kind rather than by the date, and the row's own four categories and three numbers are read off it against the constants the test uses",
+            ByAdmissibility),
+        [CheckReach.Key(FailureTable, "A source is returned but its text cannot be retrieved")] = new Scoped(
+            Verdict.Pass,
+            "the document with no text is refused for that and nothing else, the row it leaves carries no body, and the run log line names its address and the reason the fetch gave, which is the case the measurement produced rather than constructed",
+            ByAdmissibility),
+        [CheckReach.Key(FailureTable, "A document's publish date falls outside the window the pass asked for")] = new Scoped(
+            Verdict.Pass,
+            "one document is admitted for a window that holds its date and refused for one that does not, with both edges of the window asserted to be inside it, so the rule is about the window the pass asked for rather than about the document's own age",
+            ByAdmissibility),
+        // 6.3's three fixture rows. The inadmissible document row is six claims
+        // rather than one, decomposed here at the checkpoint the six documents
+        // arrive at, and each names the rule that refuses it rather than the
+        // document that trips it: a document is what the fixture holds and the
+        // rule is what the row claims.
+        [CheckReach.Key(FixtureTable, "an inadmissible document, a machine-generated price forecast")] = new Scoped(
+            Verdict.Pass,
+            "refused on a price word paired with a prediction word in the title or the address, on an address whose last segment is the forecast, or on a stated algorithmic projection in the text, with four real reporting headlines pairing forecast with revenue asserted to be admitted",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "an inadmissible document, a broker marketing page")] = new Scoped(
+            Verdict.Pass,
+            "refused on one regulatory risk warning in the two forms the measured page carried it, or on two invitations to open an account, with the cost of the rule stated rather than left to be found",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "an inadmissible document, a summary written by another AI system")] = new Scoped(
+            Verdict.Pass,
+            "refused where the page declares that a system wrote it, and only then, with a captured article titled for the subject asserted to be admitted so the marker is a phrase rather than the two letters",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "an inadmissible document, a quote page carrying no article")] = new Scoped(
+            Verdict.Pass,
+            "refused where the address or the title says it is a symbol page and no paragraph of it runs to the measured length, both halves required, with the same address carrying an article asserted to be admitted",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "an inadmissible document, a page with no publish date")] = new Scoped(
+            Verdict.Pass,
+            "refused for the absence alone, over a document written to be admissible in every other respect, so the date rule is what refuses it rather than something else firing first",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "an inadmissible document, a page whose text cannot be retrieved")] = new Scoped(
+            Verdict.Pass,
+            "refused before anything else is judged, because a document with no text is nothing to judge, and the run log names its address and the reason the fetch gave",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "source documents")] = new Scoped(
+            Verdict.Pass,
+            "every document the intake stored, with the verdict the rules reach on it and the body kept on an admission and dropped on a refusal, diffed against what those rules produce over the documents the fixture holds",
+            ByAdmissibility),
+        [CheckReach.Key(FixtureTable, "refused documents")] = new Scoped(
+            Verdict.Pass,
+            "every document refused, with the category that refused each, the count per category the run log line states, and the order that decides which of two failed gates the row records",
+            ByAdmissibility),
+        // 6.3, the source documents store. Its columns against SCHEMA as every
+        // other table's are, plus the two that admit null, which is the first
+        // table here where nullability carries a property rather than being a
+        // detail: a refusal is kept as a row with no body, and one of the things
+        // a document is refused for is carrying no publish date.
+        [CheckReach.Key(StoresTable, "Source documents")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md, and exactly two of them are asserted to admit null in both directions, being the date a refusal for a missing date has to record and the body a refusal never carries",
+            ByMigration),
         [CheckReach.Key(CatalogueTable, "Fundamentals fetcher")] = new Scoped(
             Verdict.Pass,
             "the class declares both feeds and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
@@ -1336,6 +1404,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = "6.4",
+        // Still here with the region's other parts although 6.3 reached it. This
+        // map is the whole population of section 15's rows and their parts, in
+        // both directions, rather than only the ones nothing asserts yet: a part
+        // with no entry would inherit nothing, which is what contradiction D was.
         [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.3",
 
         [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "7.5",
@@ -1428,13 +1500,39 @@ internal static class Scope
         // The run page's stale-and-failed region, decomposed at the phase 5
         // sign-off. It was PASS whole from 5.6 while two of its parts describe
         // components phase 6 builds: sections that fell back are the claim
-        // checker's at 6.3 and documents refused by admissibility are 6.2's. A
+        // checker's at 6.4 and documents refused by admissibility are 6.3's. The
+        // two checkpoint numbers here read 6.3 and 6.2 until 6.3, which is the
+        // resplit 6.0 made moving every phase 6 due point by one and a comment
+        // the re-pointing did not reach, because a comment is not a placement. A
         // PASS over a row whose check reaches part of it is an unexamined claim
         // wearing a verdict, and the region itself says the research halves
         // are absent. The stage a night stopped on is the part the sign-off
         // repaired, since until then no night could put one there.
         [CheckReach.Key("15.10 Run", "Stale and failed")] =
             ["names carrying yesterday's bars", "the stage a night stopped on", "sections that fell back", "documents refused by admissibility"],
+
+        // Section 19.1's inadmissible document row, decomposed at 6.3, which is
+        // the obligation 6.0 filed against this checkpoint rather than a choice
+        // made here. The row names six kinds the test refuses and carried one
+        // verdict over all of them, so five could have been missing and the row
+        // would still have passed, which is the fault the fifth phase 5 sign-off
+        // review found on section 15's rows. 6.0 widened the row's text and left
+        // the decomposition, because the reader that reads parts off a row is
+        // scoped to section 15 and widening it would have made every fixture row
+        // enumerating three or more items owe parts in the same pass. What
+        // discharges it instead is this decomposition plus a check that reads
+        // this row's parts off its own words in both directions, which is why
+        // the row's rationale sentence was reworded at 6.3: as written it formed
+        // a second comma run and the reader picked up three items of prose.
+        [CheckReach.Key(FixtureTable, "an inadmissible document")] =
+        [
+            "a machine-generated price forecast",
+            "a broker marketing page",
+            "a summary written by another AI system",
+            "a quote page carrying no article",
+            "a page with no publish date",
+            "a page whose text cannot be retrieved",
+        ],
 
         // The name page's how-it-got-here row, decomposed at 5.2 for the reason
         // the universe screen's two were at 5.0. Its table of the biggest moves
@@ -1590,7 +1688,6 @@ internal static class Scope
         ["A condition has fired but nothing has resolved yet"] = "7.5",
         ["A search returns snippets rather than full page text"] = "6.9",
         ["A search returns a site the applicable list does not carry"] = "6.9",
-        ["A document's publish date falls outside the window the pass asked for"] = "6.3",
         ["The search tool is unavailable"] = "6.9",
         ["The local model is unavailable"] = "6.6",
         ["A theme refresh fails while a name's pass depends on it"] = "6.9",

@@ -390,6 +390,7 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.BaseRates(returns),
             RunScreen.Nights(everyListing),
             await read.StaleNamesAsync(index, dated),
+            RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
             RunScreen.Harness(PhaseReport(builder))),
         "text/html; charset=utf-8");
 });

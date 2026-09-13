@@ -26,6 +26,13 @@ public class SchemaColumns
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),
 
+            // 6.3, the source documents store: migration 20's columns and types,
+            // and the two columns that admit null because a refusal is kept as a
+            // row. Nothing else in the suite reads a column's nullability, and
+            // this table is the first where it carries a property rather than
+            // being a detail of the declaration.
+            CheckReach.Key(Scope.StoresTable, "Source documents"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.StoresTable, "Listings"),
 
@@ -114,6 +121,68 @@ public class SchemaColumns
         using var store = new TemporaryStore().Migrated();
 
         Assert.Equal(declared, StoreSchema.Built(store, "run_log"));
+    }
+
+    [Fact]
+    public void SourceDocumentMatchesWhatSchemaDeclaresAndAdmitsNullOnlyWhereARefusalNeedsIt()
+    {
+        var schema = Corpus.Read("docs/SCHEMA.md");
+        var declared = StoreSchema.Declared(schema, "source_document");
+
+        // Seven, stated exactly. The test above compares every table in the
+        // store against the file, so what this adds is the count and the
+        // nullability, and the nullability is the half nothing else reads.
+        Assert.Equal(7, declared.Count);
+
+        using var store = new TemporaryStore().Migrated();
+
+        Assert.Equal(declared, StoreSchema.Built(store, "source_document"));
+
+        // A refusal is kept as a row with its reason and no body, and one of the
+        // things it is refused for is carrying no publish date. So exactly two
+        // columns admit null, and which two is the property: a not null date
+        // column makes the most common refusal in the measured set unrecordable,
+        // and a not null body makes every refusal unrecordable.
+        var admitsNull = AdmitsNull(store, "source_document");
+
+        Assert.Equal(["published_on", "body"], admitsNull);
+
+        // The other direction, because a migration that left every column
+        // nullable would satisfy the line above by containing those two.
+        Assert.All(
+            new[] { "id", "url", "title", "fetched_at", "admissibility" },
+            column => Assert.DoesNotContain(column, admitsNull));
+
+        // And the file says the same thing in prose, which is the document the
+        // store is asserted against everywhere else here. SCHEMA carries no
+        // nullability column, so the statement is a sentence and this is what
+        // holds the sentence to the store.
+        Assert.Contains(
+            "Two columns admit null and neither is an absence of data",
+            schema,
+            StringComparison.Ordinal);
+    }
+
+    // Which of a built table's columns admit null, read off the store rather
+    // than off the migration text, because what admits a row is the table.
+    static IReadOnlyList<string> AdmitsNull(TemporaryStore store, string table)
+    {
+        using var connection = store.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA table_info({table});";
+
+        var columns = new List<string>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            if (reader.GetInt32(3) == 0)
+            {
+                columns.Add(reader.GetString(1));
+            }
+        }
+
+        return columns;
     }
 
     [Fact]

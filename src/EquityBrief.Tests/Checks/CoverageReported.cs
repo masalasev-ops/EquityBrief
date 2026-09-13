@@ -56,6 +56,7 @@ public class CoverageReported
         ["fixture-expectations"] = "FixtureExpectations",
         ["fixture-replay"] = "FixtureReplay",
         ["listings-coverage"] = "ListingsCoverage",
+        ["claim-admissibility"] = "ClaimAdmissibility",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
     };
@@ -166,13 +167,13 @@ public class CoverageReported
         // The floor is low on purpose and falls as checks are promoted. Its
         // size is a fact about how much is built rather than about the
         // property, which is that every remaining row names a checkpoint that
-        // has not landed. It was 5 until 1.4 promoted nightly-cost.
-        // Two, from three at 5.4 when listings-coverage was promoted. The floor
+        // has not landed. It was 5 until 1.4 promoted nightly-cost, then three
+        // until 5.4 promoted listings-coverage, then two until 6.3 promoted
+        // claim-admissibility. One remains, the register at 7.1, and the floor
         // is exact enough to say what is left rather than generous enough to
-        // survive anything: what remains is the admissibility check at 6.1 and
-        // the register at 7.1, and a run finding none would pass this half over
-        // an empty set.
-        Assert.True(pending.Length >= 2, $"Read {pending.Length} checkpoint rows, expected at least 2.");
+        // survive anything: a run finding none would pass this half over an
+        // empty set.
+        Assert.True(pending.Length >= 1, $"Read {pending.Length} checkpoint rows, expected at least 1.");
 
         foreach (var row in pending)
         {

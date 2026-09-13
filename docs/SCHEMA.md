@@ -373,17 +373,21 @@ Grain: one row per fetched document.
 
 | Column | Type | Notes |
 |---|---|---|
-| `id` | TEXT | |
-| `url` | TEXT | |
+| `id` | TEXT | the document's own url, hashed, so a second fetch of the same address conflicts with the row it already has rather than writing a second one |
+| `url` | TEXT | the document's own address, never a provider request url |
 | `title` | TEXT | |
-| `published_on` | TEXT | date; a document with none is not stored |
+| `published_on` | TEXT | date, null where the document carries none. A row with none is a refusal carrying that reason |
 | `fetched_at` | TEXT | UTC instant |
-| `body` | TEXT | the full text, not a snippet |
+| `body` | TEXT | the full text, not a snippet, null on a refusal |
 | `admissibility` | TEXT | `accepted`, or the denied category that refused it |
 
 Primary key: `id`.
 
 A document that fails admissibility is not stored with a body. The row is kept with its refusal reason so a later reader can see what was rejected and why, which is the only way a refusal is visible at all.
+
+**Two columns admit null and neither is an absence of data.** `published_on` is null where the document carried no publish date, which is one of the things admissibility refuses a document for, so the row that records that refusal is a row with no date in it. `body` is null on every refusal, which is what keeping the refusal without storing the document means. Both were declared not null in this file's own notes until 6.3, and the two notes contradicted the paragraph above them: a document with no date was said not to be stored at all, while the refusal it fails is one the file requires be kept as a row. An admitted row carries both, which is a property of the test rather than of the column, and `claim-admissibility` asserts it as one in both directions.
+
+**The url stored is the document's, and no request url reaches this table.** A provider request carries its key in the query string, so the hard rule that no request url reaches a log line or a store row holds here as it does everywhere: what is stored is the address the document is published at, which a reader can open. The intake refuses a url carrying a credential marker rather than storing it, because such a url could only have come from a fetcher handing over its own request, and that is a defect in the fetcher rather than a property of the document.
 
 **The test is applied by whichever runner fetched the document, and never by the checker.** Ruled at 6.0. The catalogue said the claim checker refuses to store a document that fails the test while the matrix gave the checker a read of this table and no write, so the component that decided could not store the verdict and the component that stored was not the one deciding. The test runs on a document as it is fetched, which is where the runners are, so each runner applies it and writes the verdict into `admissibility`, and the checker reads that column to decide whether a claim resting on the document may be written. The ownership row above already said this and the architecture did not: Insert here is the two runners and nobody else, which is what forced the question.
 

@@ -25,6 +25,67 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - ARCHITECTURE.html - the marketing marker is a pairing, after a live run refused three real articles
+
+Corrects: the admissibility row's marketing half rested on invitation language, and a live run over 411 real articles from one dated request refused three pieces of ordinary consumer-finance reporting. Two tripped on one invitation written twice, "sign up" and "signing up" counted as two. The third survived that repair: an article on how savers lose a retirement pot says "opening an account" and "sign up", which are two genuinely different invitations inside an article whose subject is accounts. Found by the demonstration this checkpoint ran, not by reading.
+Was:
+> A page carries an article where one paragraph of it runs to at least 3 sentences and at least 40 words, and 2 invitations to open an account mark a page that exists to open one
+Now: the paragraph rule is unchanged, and the marketing half reads that a page exists to open an account where it carries one regulatory risk warning, or a leveraged-product term beside an invitation to open one, with the row stating that invitation language alone is not a marker and naming what the 411 measured.
+Why: invitation language does not separate an article about accounts from a page selling one, and no amount of counting repairs that. What does separate them is the product: over the same 411 articles, "contract for difference" appears 0 times, "cfd" 0, "spread bet" twice and "trading platform" three times, and not one of those five carries any invitation at all, while both broker pages the by-hand measurement read carry the product and the invitation together. The number 2 leaves the row because the rule no longer counts anything, and the fixture's second broker page lost its risk warning in the same pass so the pairing is exercised by a committed document rather than only by constructed text.
+
+### 2026-09-13 - BUILD_PLAN.md - 6.3's done condition amended, and the clause it cannot assert moved to 6.4
+
+Corrects: 6.3's done condition required that a pass finding no admissible source for a section leaves the section absent with one line saying so. That is a claim about a surface which draws a section, and nothing at 6.3 can draw one: `source_document` carries no ticker and no section, by design, because one document supports claims about several names and about a theme, so no store at 6.3 ties a document to the section it would be cited in. Found by the phase report, which left one claim out of scope at 6.3 after everything else had passed.
+Was:
+> **Done when** each denied category is refused by a fixture document and nothing resting on it is written, a source is returned but its text cannot be retrieved and the result is discarded rather than cited with the url and the reason on the run log, a pass finds no admissible source for a section and the section is absent with one line saying so, and each refusal is read back off the run page's own markup rather than off the model behind it.
+Now: the clause is replaced by the half 6.3 does deliver, being an intake that admits nothing at all saying so in one reading a pass can gate on and recording what was fetched and why each document was refused, with a paragraph beneath the condition stating that it was amended and why. The moved clause is added to 6.4's done condition, naming 6.3 as the checkpoint that could not assert it, because 6.4 creates `research_section` and is the first point at which a section exists to be absent and to carry the reason it is.
+Why: the alternative was to draw the surface from something that does not exist, which is the one thing a done condition must not buy. A checkpoint amending its own done condition is legitimate and the rule about it is that the amendment cannot be invisible, so it is here and it is in 6.3's PROGRESS entry in the words CLAUDE.md asks for.
+
+### 2026-09-13 - ARCHITECTURE.html - the inadmissible document row's rationale loses its commas so the row's parts can be read off it
+
+Corrects: the row's second sentence formed a comma run of its own, so the reader that takes a row's parts from its own words picked up three items of prose from it alongside the six documents. Found at 6.3 while discharging the obligation to read that row's parts off the row, which is the direction a decomposition into four of six would otherwise pass.
+Was:
+> Six, because section 17 names four denied categories and a date rule and section 18 names the unretrievable case, and this cell named three of those until 6.0
+Now: Six because section 17 names four denied categories and a date rule and section 18 names the unretrievable case. This cell named three of those until 6.0 and carried one verdict over all six until 6.3, where each became a claim of its own read off this row's own words.
+Why: the reader is a run of three or more comma-separated items, which is what these rows use to enumerate. A rationale sentence written with commas is indistinguishable from an enumeration, so either the reader learns about sentences or the sentence stops looking like a list. The second is cheaper and it is the one the row can carry: the reader is shared with every decomposed row in section 15 and teaching it to skip a trailing clause would change what it reads for all of them.
+
+### 2026-09-13 - BUILD_PLAN.md - the inadmissible document obligation discharged, and one created against 6.9
+
+Authorised by: Each denied category is refused by a marker the document carries, and the domain is never one of them
+Was:
+> | **The inadmissible document row's parts read off the document** | 6.0 | 6.3 | 6.3 is where the six documents arrive, which is what makes the row's parts readable off the row rather than chosen by a reader. Section 19.1's row names six kinds the test refuses and carries one verdict over them, so five could be missing and the row would still pass, which is the fault the fifth phase 5 sign-off review found on section 15's rows. 6.0 widened the text and left the decomposition, because the reader that reads parts off a document is scoped to section 15's tables and widening it would make every fixture row enumerating three or more items owe parts in the same pass |
+Now: the row is marked discharged and states what discharged it, with its prior text kept in the row as that table's convention requires. A second row is created, due at 6.9, for the markers being tested against what the search tool returns, and 6.9's own text cites it back.
+Why: the discharge is a decomposition plus the assertion that makes it a reading of the row rather than a second statement of it. The new obligation exists because 6.3's markers were measured on pages fetched by hand: that is real evidence and it is not the same evidence a search tool produces, and the difference is worth chasing from one end rather than being remembered.
+
+### 2026-09-13 - CLAUDE.md - claim-admissibility promoted, and the half of its row that is still owed
+
+Authorised by: Each denied category is refused by a marker the document carries, and the domain is never one of them
+Was:
+> | `claim-admissibility` | from 6.3 | A poisoned paragraph, an unsourced claim, and each inadmissible document class are refused, and nothing resting on them is written |
+Now: the row runs on every CI run and its Asserts cell states what is asserted: each of the four denied categories, the missing publish date and the unretrievable text reached by a document the fixture holds, the real documents it holds admitted, a document failing two gates refused by the kind rather than by the date, and every refusal kept as a row with its reason and no body. The poisoned paragraph and the unsourced claim are named as the row's other half, asserted from 6.4.
+Why: the roster's Runs column admits three values and none of them says that half a row's property is built, so the split is stated in the cell where a reader will see it. Leaving the row at "from 6.3" was not available: a checkpoint row has to name a checkpoint the record does not show as landed, so the row fails `coverage-reported` the moment 6.3's entry is written. Stating the whole cell as running would be the wider defect, which this corpus has already had once when a roster row read wider than its check for two phases.
+
+### 2026-09-13 - ARCHITECTURE.html - the admissibility row states the order it judges in and the numbers it judges by
+
+Authorised by: Each denied category is refused by a marker the document carries, and the domain is never one of them
+Was:
+> a fetched document is stored only if it carries a publish date inside the window the pass asked for and is not on the denied-category list: algorithmic or AI-generated price forecasts, broker and platform marketing pages, AI-written summaries, and quote or hub pages with no article (see: A stored source is not automatically an admissible one)
+Now: the same sentence, followed by the order the gates are judged in, being the kind first and the date second with the measurement that decided it, and the three numbers the test uses: a paragraph of at least 3 sentences and at least 40 words is what makes a page an article, and 2 invitations to open an account mark a page that exists to open one.
+Why: the row is a claim about the code and it stated the rules without stating either the order or the numbers, so a document could be refused for two different reasons and the row would read as satisfied by whichever fired. The order is not a detail: three of the five refusable pages the 6.3 measurement read carried no publish date at all, so judging the date first would report almost nothing about the kinds. The numbers are stated here rather than in the record because a number in a record is not pinned to anything, and `claim-admissibility` reads these off the row against the constants the test uses.
+
+### 2026-09-13 - SCHEMA.md - the two source document columns that admit null, and the url that is never a request
+
+Corrects: the source document table's own column notes contradicted the paragraph beneath them. `published_on` read "date; a document with none is not stored" while the paragraph requires that a document failing admissibility be kept as a row with its refusal reason, and having no publish date is one of the things admissibility refuses a document for. So the file declared a refusal it also declared unstorable. Found at 6.3 while writing the migration against the file.
+Was:
+> | `id` | TEXT | |
+> | `url` | TEXT | |
+> | `title` | TEXT | |
+> | `published_on` | TEXT | date; a document with none is not stored |
+> | `fetched_at` | TEXT | UTC instant |
+> | `body` | TEXT | the full text, not a snippet |
+Now: `published_on` is a date that is null where the document carries none, and a row with none is a refusal carrying that reason. `body` is null on a refusal. `id` states its derivation, being the document's own url hashed so a second fetch of the same address conflicts rather than writing a second row. `url` states that it is the document's own address and never a provider request url. Two paragraphs follow the table: one saying that neither null is an absence of data and that an admitted row carries both, which the check asserts in both directions, and one applying the hard rule about request urls to this table and stating that the intake refuses a url carrying a credential marker rather than storing it.
+Why: the contradiction had only one resolution that keeps both halves of the file. A not-null date column makes the refusal for a missing date unrecordable, which makes that refusal invisible, which is the one thing the paragraph about keeping refusals exists to prevent. The other direction, dropping the requirement to keep such a row, would leave the most common refusal in the measured set silent: three of the five refusable pages the 6.3 measurement read carried no publish date at all.
+
 ### 2026-09-13 - BUILD_PLAN.md - two scope obligations filed, and the momentum panel put to 7.0 to decide
 Corrects: two scope decisions the operator took during 6.1 existed only in the conversation, which is a hole in the record: anything issued in conversation that will later be cited has to land in the repo when it is issued. The momentum panel's own gap is the third and it is not an obligation, because nothing produces evidence for it.
 Was:

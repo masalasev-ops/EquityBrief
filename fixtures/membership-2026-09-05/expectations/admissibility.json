@@ -1,0 +1,46 @@
+{
+  "stage": "admissibility",
+  "derivation": "derived",
+  "derivedFrom": "the decision that each denied category is refused by a marker the document carries, taken with the decision that admissibility is judged per document after the fetch and never per publisher, and with section 17's own row. Nothing here is frozen from a run. Every verdict below was written from the rules and from the marker each document states it carries, before the test that produces them was run, and the two numbers the rules turn on are read back against the constants the code uses rather than restated here as figures that happen to agree.",
+  "tables": [],
+  "awaits": {
+    "table": "source_document",
+    "writtenAt": "6.8",
+    "why": "the rows this file describes are the shape of storing rather than the storing itself. SCHEMA gives Insert on source_document to the two research runners and to nobody else, and a write is attributed to the file it appears in, so the statement cannot live in a shared helper and cannot exist before the first runner does. 6.3 builds the test, the row form, the read and the surface, and the replay populates nothing here until 6.8 fetches a document through it. The day it does, this entry fails until the table moves to the tables list above, which is what stops the exemption outliving its reason."
+  },
+  "documentsHeld": 7,
+  "kindsRefused": 6,
+  "refusedBy": {
+    "a machine-generated price forecast": "algorithmic price forecast",
+    "a broker marketing page": "broker or platform marketing",
+    "a summary written by another AI system": "AI-written summary",
+    "a quote page carrying no article": "quote or hub page with no article",
+    "a page with no publish date": "no publish date",
+    "a page whose text cannot be retrieved": "text could not be retrieved",
+    "a broker marketing page with no publish date": "broker or platform marketing"
+  },
+  "gatesInOrder": ["text could not be retrieved", "the four denied categories", "no publish date", "published outside the window"],
+  "documentFailingTwoGates": {
+    "name": "a broker marketing page with no publish date",
+    "refusedBy": "broker or platform marketing",
+    "why": "the kind is judged before the date, so what is stored is the statement about what the document is. Three of the five refusable pages the measurement read carried no publish date at all, so a build judging the date first would refuse most of what it refuses for the cheapest reason available and would report almost nothing about the kinds."
+  },
+  "realDocumentsAdmitted": 6,
+  "realDocuments": {
+    "articles": 4,
+    "releaseExhibits": 2,
+    "sharedHostWithARefusedPage": "yahoo.com"
+  },
+  "rowAfterARefusal": {
+    "body": null,
+    "publishedOnWhereTheRefusalIsTheDate": null,
+    "admissibility": "the category that refused it"
+  },
+  "rowAfterAnAdmission": {
+    "body": "the document's own text, whole",
+    "admissibility": "accepted"
+  },
+  "verdicts": 8,
+  "tightestArticleQualifyingParagraphs": 1,
+  "note": "the seventh document is not a seventh kind. It is the order case, and it is the only document here that would be refused either way, so the only thing that says which rule refused it is the verdict stored on its row. The admissible half of this file is deliberately real rather than constructed: four captured articles and two release exhibits, because a test that only ever saw documents written to be refused would measure nothing about what it admits, and the admitting half is where a wrong marker costs something."
+}

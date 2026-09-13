@@ -237,6 +237,15 @@ public sealed record StageRow(
     string Outcome,
     string Detail);
 
+// One refused document, as the run page draws it: the category that refused it,
+// what it was called, and where it is.
+//
+// No body and no date. The store holds no body for a refusal, which is the point
+// of the row rather than a gap in it, and one class of refusal is that the
+// document carried no publish date, so a date drawn beside each row would be
+// blank for exactly the rows whose reason is the blank.
+public sealed record RefusedDocument(string Category, string Title, string Url);
+
 // One line of the sector strip.
 public sealed record SectorLine(string Sector, int Names, int InUptrend, int OnTheList);
 
@@ -1456,7 +1465,10 @@ public sealed class MarkRenderer : IComponent
     // halves, being the sections that fell back and the documents refused by
     // admissibility, arrive with the pass that produces them and are stated as
     // absent rather than drawn as empty lists.
-    public string StaleAndFailed(IReadOnlyList<string> stale, IReadOnlyList<StageRow> failed)
+    public string StaleAndFailed(
+        IReadOnlyList<string> stale,
+        IReadOnlyList<StageRow> failed,
+        IReadOnlyList<RefusedDocument> refused)
     {
         var region = new StringBuilder();
 
@@ -1476,7 +1488,62 @@ public sealed class MarkRenderer : IComponent
             region.Append(Invariant, $"{Escaped(stage.Stage)}: {Escaped(stage.Outcome)}. {Escaped(stage.Detail)}</p>");
         }
 
-        region.Append("<p class=\"degraded\" data-research=\"absent\">the sections that fell back and the documents refused by admissibility arrive with the research pass that produces them</p>");
+        region.Append(Refused(refused));
+
+        // The other research half of this region, which is the sections a claim
+        // rejection made fall back. It needs a written section to fall back, so it
+        // arrives with the claim checker at 6.4. Stated rather than drawn empty,
+        // because an empty list reads as a night that rejected nothing.
+        region.Append("<p class=\"degraded\" data-fallbacks=\"absent\">the sections that fell back arrive with the claim checker that rejects them</p>");
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The documents admissibility refused, with the category that refused each.
+    //
+    // Listed rather than counted, and the address drawn, because the address is
+    // the thing a person can act on: a region saying four documents were refused
+    // says nothing a reader can follow up. The count per category is stated above
+    // the list, so a search returning marketing reads as one thing rather than as
+    // four unrelated refusals.
+    //
+    // A night with no refusals says so. It is the ordinary case, and drawn as an
+    // empty list it would read as a region that failed to load.
+    string Refused(IReadOnlyList<RefusedDocument> refused)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"refused-documents\" data-refused=\"{refused.Count}\">");
+
+        if (refused.Count == 0)
+        {
+            region.Append("<p data-refused=\"none\">no document was refused by admissibility on this night</p>");
+            region.Append("</section>");
+
+            return region.ToString();
+        }
+
+        // Counted off the same list this draws, so the header and the rows cannot
+        // disagree about how many of a kind there were.
+        var byCategory = refused
+            .GroupBy(document => document.Category, StringComparer.Ordinal)
+            .OrderBy(group => group.Key, StringComparer.Ordinal)
+            .Select(group => (Category: group.Key, Documents: group.Count()))
+            .ToArray();
+
+        region.Append(Formatted($"<p data-categories=\"{byCategory.Length}\">{refused.Count} document(s) refused: "));
+        region.Append(Escaped(string.Join(", ", byCategory.Select(group =>
+            group.Category + " " + group.Documents.ToString(CultureInfo.InvariantCulture)))));
+        region.Append("</p>");
+
+        foreach (var document in refused)
+        {
+            region.Append(Invariant, $"<p class=\"refused\" data-category=\"{Escaped(document.Category)}\" ");
+            region.Append(Invariant, $"data-url=\"{Escaped(document.Url)}\">");
+            region.Append(Invariant, $"{Escaped(document.Category)}: {Escaped(document.Title)}, {Escaped(document.Url)}</p>");
+        }
+
         region.Append("</section>");
 
         return region.ToString();

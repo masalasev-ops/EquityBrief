@@ -1,0 +1,69 @@
+{
+  "constructed": "Seven documents, constructed rather than captured, one per kind the admissibility test refuses plus one that fails two gates at once so the order the test judges in is assertable. They are constructed for a reason this file states rather than leaves to be worked out: the search tool that fetches open-web documents arrives at 6.9, so no capture taken today comes through the path the product will use, and a page fetched by hand arrives as a reading tool's rendering rather than as the page's own bytes, which is not a capture. What is not constructed is the markers. Each was read off a real page on 2026-09-12 and the measurement is recorded in PROGRESS.md with its population: eight pages asked for by hand, seven answered and one refused automated access, against the four articles this fixture already holds. The re-test against what the search tool actually returns is carried as an obligation to 6.9. The admissible side of the test is not here at all, deliberately: it is the four captured articles in news-2026-09-08.json and the release exhibits, which are real, because a test that only ever saw documents written to be refused would measure nothing about what it admits.",
+  "documents": [
+    {
+      "name": "a machine-generated price forecast",
+      "channel": "search tool",
+      "url": "https://forecast-example.test/stocks/AAPL/forecast",
+      "title": "AAPL - Apple Inc Stock Price Forecast 2026, 2027, 2030 to 2050",
+      "publishedOn": "2026-08-20",
+      "text": "Apple Inc stock could reach 299.14 by 2030, 1,221.47 by 2040 and 1,589.26 by 2050. The long term outlook is built from historical price trends, volatility patterns and moving averages, extended year by year to the end of the projection window. Each yearly figure carries a low, an average and a high, and the table below sets them out to 2050.\n\nThe model is rebuilt every session and the figures move with the close, so a reader returning next week will find a different set. Past performance of the projection is not shown.",
+      "carries": "the title pairs a price word with a prediction word and names four future years. The real page this shape was read off states no algorithmic disclosure anywhere in its text, which is the finding that decided the marker: a rule keyed on the text alone would have admitted it. It carries a publish date and four prose paragraphs, so neither the date rule nor the shape rule can be what refuses it."
+    },
+    {
+      "name": "a broker marketing page",
+      "channel": "search tool",
+      "url": "https://broker-example.test/en/shares-cfd/apple-us",
+      "title": "AAPL.US, Apple Inc CFD",
+      "publishedOn": "2026-07-14",
+      "text": "Trade Apple Inc as a contract for difference, with leverage of up to 1 to 5 and no commission on the first ten trades of each month. Create account in minutes and fund it by card, wallet or bank transfer. A demo account is available for anyone who wants to try the platform first.\n\nCFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. 74% of retail investor accounts lose money when trading CFDs with this provider. You should consider whether you understand how these products work.",
+      "carries": "the regulatory risk warning, in the two forms the measured page carried it, and three invitations to open an account. The warning is the reliable half: no article in the captured set carries a warning about its own reader losing money, and the invitations are what a page that only markets carries several of."
+    },
+    {
+      "name": "a summary written by another AI system",
+      "channel": "search tool",
+      "url": "https://summaries-example.test/news/AAPL/quarter",
+      "title": "Apple quarterly results, summarised",
+      "publishedOn": "2026-08-01",
+      "text": "AI-generated summary. Apple reported quarterly revenue above the range it had guided to, with services growing faster than hardware for the fourth consecutive quarter. Management repeated its expectation of double digit growth for the December quarter and said supply constraints had eased. The summary below was produced by an automated system from the filing and the call, and may contain inaccuracies or omissions.\n\nThe figures in this summary are drawn from the company's own filing. Nothing here has been read by a person before publication.",
+      "carries": "the disclosure the platforms that publish these carry about themselves, in the wording the measured page used. Only a declared summary is refused here: text a system wrote and nobody disclosed is not something a rule over the text can find, which the decision states rather than implying the marker catches more than it does."
+    },
+    {
+      "name": "a quote page carrying no article",
+      "channel": "search tool",
+      "url": "https://quotes-example.test/quote/AAPL",
+      "title": "Apple (AAPL) Stock Price & Overview",
+      "publishedOn": "2026-09-11",
+      "text": "Price 241.62\nChange 1.84 (0.77%)\nMarket cap 3.58T\nPE ratio 32.4\nEPS 7.46\nDividend yield 0.43%\nVolume 41,204,118\nAverage volume 52,880,410\n52 week high 260.10\n52 week low 169.21\nAnalyst target 324.40\n\nAbout: Apple Inc designs and sells consumer electronics, software and services.",
+      "carries": "a symbol page path and a title that names a price and an overview, with no paragraph of running prose anywhere in it. Both halves are required, because a page with a quote page's title and a real article under it is an article, and a short page with an ordinary title is a short article."
+    },
+    {
+      "name": "a page with no publish date",
+      "channel": "search tool",
+      "url": "https://undated-example.test/analysis/apple-services-margin",
+      "title": "Where Apple's services margin actually comes from",
+      "publishedOn": null,
+      "text": "The services line carries a gross margin in the mid seventies against high thirties for the hardware it attaches to, and the gap has widened in each of the last eight quarters. Three quarters of the line is subscription revenue that renews without a device sale, which is why the mix shift moves the whole company's margin rather than one segment's.\n\nThe piece that is hardest to read from outside is the payments the company receives for default placement, which sit inside services and are disclosed nowhere. An estimate of them moves the margin by more than any other single assumption.",
+      "carries": "nothing but the absence. It is written to be admissible in every other respect, with prose, no markers and an ordinary title, so the date rule is what refuses it and the test cannot pass this case by refusing it for something else. A year old piece carrying a previous fiscal year's guidance reads as current to anything that only checks provenance, which is why the rule is a requirement rather than a preference."
+    },
+    {
+      "name": "a page whose text cannot be retrieved",
+      "channel": "search tool",
+      "url": "https://gated-example.test/2026/07/30/apple-earnings-live-updates.html",
+      "title": "Apple earnings, live updates",
+      "publishedOn": "2026-07-30",
+      "text": null,
+      "retrievalFailure": "the site answered 403 and returned no body",
+      "carries": "the case the measurement produced on its own: one of the eight pages asked for refused automated access and returned no text, so this is the one document here whose shape was met rather than chosen. A result with no text is discarded rather than cited, and the url and the reason go to the run log."
+    },
+    {
+      "name": "a broker marketing page with no publish date",
+      "channel": "search tool",
+      "url": "https://broker-example.test/en/markets/shares-trading",
+      "title": "Open CFD Share Trading Account",
+      "publishedOn": null,
+      "text": "Open an account and trade shares as contracts for difference across sixty markets. Start trading with a deposit of fifty and no commission for the first month. A demo account is available for anyone who wants to try first.\n\nSixty markets, one platform, and an app that works offline. Deposits clear the same day by card or bank transfer.",
+      "carries": "two things, which is why it is here. It carries two gates at once: three of the five refusable pages the measurement read carried no publish date at all, so a build that judged the date first would refuse most of what it refuses for the cheapest reason available and would report almost nothing about the kinds. The test judges the kind first and this document is what asserts that, because it would be refused either way and only the stored reason says which rule did it. And it carries no regulatory risk warning, deliberately, so it is the document that exercises the other half of the marketing rule: the leveraged product named beside an invitation to open an account. The live run at 6.3 is why that half is a pairing rather than invitation language alone, and the page above this one carries the warning, so without this one the pairing would rest on constructed text in a test and on nothing in the fixture."
+    }
+  ]
+}

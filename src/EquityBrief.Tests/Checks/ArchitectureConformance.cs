@@ -956,8 +956,13 @@ public class ArchitectureConformance
         // table were split at the listing store 5.1 does not have and the run
         // page's reason record was split between the counts 5.6 draws and the
         // verdicts that need resolved setups.
-        // 95 from 88 at 6.1, the seven being the fact strip's own parts.
-        Assert.Equal(95, checkedElements);
+        // 95 from 88 at 6.1, the seven being the fact strip's own parts. 101 from
+        // 95 at 6.3, the six being section 19.1's inadmissible document row,
+        // which is the first row outside section 15 to be decomposed and the
+        // obligation 6.0 filed against that checkpoint. The reader that holds
+        // these to the row's own words is the same one, because it was written
+        // over every cell of a row rather than over one column.
+        Assert.Equal(101, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
@@ -1284,6 +1289,46 @@ public class ArchitectureConformance
             ". A row passes for what it says, so every part it enumerates is a claim.");
 
         Assert.True(checkedParts >= 40, $"Read {checkedParts} enumerated parts, expected at least 40.");
+    }
+
+    [Fact]
+    public void TheInadmissibleDocumentRowsPartsAreReadOffItsOwnWordsInBothDirections()
+    {
+        // The obligation 6.0 filed against 6.3, discharged. Section 19.1's row
+        // names six kinds the test refuses and carried one verdict over all of
+        // them, so five could have been missing and the row would still have
+        // passed, which is the fault the fifth phase 5 sign-off review found on
+        // section 15's rows.
+        //
+        // One direction is the shared reader above: every element a decomposition
+        // names appears in the row it decomposes. This is the other, and it is the
+        // one that matters here, because a decomposition into four of six would
+        // pass the first: every part the row's own words enumerate is a claim.
+        //
+        // Scoped to this row rather than to section 19.1, which is why the row's
+        // rationale sentence was reworded at 6.3 rather than the reader widened.
+        // Widening it to every fixture row would make each row enumerating three
+        // or more items owe parts in the same pass, which 6.0 declined to do and
+        // which this checkpoint has no evidence for either.
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+        var table = Assert.Single(tables, candidate => candidate.Heading == Scope.FixtureTable);
+
+        var row = Assert.Single(
+            table.Body,
+            candidate => candidate.Count > 1 && candidate[0] == "an inadmissible document");
+
+        var stated = EnumeratedParts(row[1]);
+        var declared = Scope.ElementsOf(CheckReach.Key(Scope.FixtureTable, "an inadmissible document"));
+
+        // Exactly the six, in the row's own order, with nothing the rationale
+        // sentence contributes. The rationale is what a comma run in it would add,
+        // and this is the assertion that would report it.
+        Assert.Equal(6, stated.Count);
+        Assert.Equal(stated, declared);
+
+        // And the row says six in its own words, which is the count this holds it
+        // to rather than a number kept here.
+        Assert.Contains("Six because", row[1], StringComparison.Ordinal);
     }
 
     [Fact]

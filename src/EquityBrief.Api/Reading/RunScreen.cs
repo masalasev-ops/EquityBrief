@@ -221,6 +221,27 @@ public static class RunScreen
             && !string.Equals(stage.Outcome, NoSession, StringComparison.Ordinal)),
     ];
 
+    // The documents a night's passes refused, grouped by the category that
+    // refused each.
+    //
+    // Listed rather than counted, for the reason the stale names are: a page that
+    // says four documents were refused and does not say which is a page nobody
+    // can act on, and the thing a person acts on is the address. Grouped by
+    // category and then ordered by the address inside a group, so four refusals
+    // of one kind read as a search returning marketing rather than as four
+    // unrelated events.
+    //
+    // No date is drawn beside a row. One class of refusal is that the document
+    // carried no publish date, so a column of dates would be blank for exactly
+    // the rows whose reason is the blank.
+    public static IReadOnlyList<RefusedDocument> Refused(IReadOnlyList<RefusedDocumentRow> rows) =>
+    [
+        .. rows
+            .OrderBy(row => row.Category, StringComparer.Ordinal)
+            .ThenBy(row => row.Url, StringComparer.Ordinal)
+            .Select(row => new RefusedDocument(row.Category, row.Title, row.Url)),
+    ];
+
     // The verdict counts from the last phase report, read out of the report the
     // harness wrote rather than counted here.
     //
