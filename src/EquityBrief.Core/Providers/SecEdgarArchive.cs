@@ -625,11 +625,15 @@ public static class SecEdgarArchive
                 {
                     foreach (var fact in unit.Value.EnumerateArray())
                     {
+                        // The start is optional and the end is not. An instant
+                        // fact carries no start at all, which every balance-sheet
+                        // figure is, so requiring both drops that whole class and
+                        // leaves a reading that looks complete.
                         var start = Day(Stated(fact, "start"));
                         var end = Day(Stated(fact, "end"));
                         var filed = Day(Stated(fact, "filed"));
 
-                        if (start is not { } from || end is not { } to || filed is not { } on
+                        if (end is not { } to || filed is not { } on
                             || !fact.TryGetProperty("val", out var value)
                             || value.ValueKind != JsonValueKind.Number)
                         {
@@ -637,7 +641,7 @@ public static class SecEdgarArchive
                         }
 
                         facts.Add(new ArchiveFact(
-                            concept.Name, unit.Name, from, to, on,
+                            concept.Name, unit.Name, start, to, on,
                             Stated(fact, "frame"), Stated(fact, "accn") ?? string.Empty,
                             value.GetDecimal()));
                     }
@@ -648,26 +652,85 @@ public static class SecEdgarArchive
         return facts;
     }
 
-    // The facts the archive marks as a calendar quarter of their own, with a
-    // period restated by a later filing taken at the later filing.
+    // The facts the archive marks as a quarter of their own, with a period restated
+    // by a later filing taken at the later filing.
     //
-    // Two readings the payload makes necessary. A fiscal period label sits on a
-    // three-month figure and on the nine months that contain it, so the label
-    // cannot say which; the frame the archive assigns names a calendar quarter and
-    // only ever sits on the shorter one. And one period appears twice under two
-    // accession numbers where a filing restated it, so a reader that does not take
-    // the later filing counts one quarter twice.
+    // Three readings the payload makes necessary. A fiscal period label sits on a
+    // three-month figure and on the nine months that contain it, so the label cannot
+    // say which; the frame the archive assigns names a calendar quarter and only ever
+    // sits on the shorter one. One period appears twice under two accession numbers
+    // where a filing restated it, so a reader that does not take the later filing
+    // counts one quarter twice. And the frame comes in two forms, a span and an
+    // instant, the second written with an I after the quarter: every balance-sheet
+    // figure is an instant, so a reader that matched the span form alone would keep
+    // revenue and earnings and drop every asset and liability line without saying so.
     public static IReadOnlyList<ArchiveFact> Quarterly(IReadOnlyList<ArchiveFact> facts) =>
     [
         .. facts
+            .Where(fact => Kept.Contains(fact.Concept, StringComparer.Ordinal))
             .Where(fact => fact.Frame is { } frame && QuarterFrame.IsMatch(frame))
             .GroupBy(fact => (fact.Concept, fact.Unit, fact.Start, fact.End))
             .Select(period => period.OrderByDescending(fact => fact.Filed).First())
+            .GroupBy(fact => (fact.Concept, fact.Unit))
+            .SelectMany(concept => concept.OrderByDescending(fact => fact.End).Take(QuartersKept))
             .OrderBy(fact => fact.Concept, StringComparer.Ordinal)
             .ThenBy(fact => fact.End),
     ];
 
-    static readonly Regex QuarterFrame = new("^CY[0-9]{4}Q[1-4]$", RegexOptions.Compiled);
+    // Which concepts are kept, named rather than taken whole.
+    //
+    // The archive holds 503 and 649 concepts for the two captured filers, and
+    // keeping every quarterly fact of every one would put megabytes of a payload on
+    // one store row for figures nothing reads. So the set is what the numbers
+    // section's own figures correspond to, which is what makes these facts worth
+    // keeping at all: the archive's filed figure for a period sits beside the
+    // vendor's for the same period, from the primary source, with the filing that
+    // stated it (see: Code owns every number).
+    //
+    // Revenue is three concepts rather than one and that is the measured reason the
+    // set is a set. Over both captured payloads whole, one filer carries `Revenues`
+    // to 2018 and its contract revenue to 2026 while the other is the reverse, and
+    // both retired `SalesRevenueNet` in 2018. Picking one spelling reads an
+    // eight-year-old revenue for one filer, and mapping the three into a revenue is
+    // a choice this checkpoint does not make: each is kept under the concept it was
+    // filed against.
+    //
+    // A concept added here needs a capture that carries it, because a member nothing
+    // exercises is a member that can be misspelled without anything failing. The
+    // committed captures were trimmed to exactly this set for that reason.
+    public static readonly string[] Kept =
+    [
+        // Revenue, in the three spellings the archive uses for it.
+        "Revenues",
+        "RevenueFromContractWithCustomerExcludingAssessedTax",
+        "SalesRevenueNet",
+        // Earnings.
+        "NetIncomeLoss",
+        // The balance sheet's own total, which is an instant and not a span.
+        "Assets",
+        // The share count the market value rests on, and the float, both filed
+        // under the entity taxonomy rather than the accounting one.
+        "EntityCommonStockSharesOutstanding",
+        "EntityPublicFloat",
+    ];
+
+    // How many quarters of each concept are kept.
+    //
+    // The same window the filings are stored over, so a reading across twelve
+    // quarters has both providers' figures for the same span rather than one
+    // provider's twelve against the other's whatever-the-payload-held. The ruling
+    // that sets the number is the store's and this is the archive agreeing with it,
+    // which a test asserts rather than a comment claiming.
+    // see: Twelve filings are stored and five are shown
+    public const int QuartersKept = 12;
+
+    static readonly Regex QuarterFrame = new("^CY[0-9]{4}Q[1-4]I?$", RegexOptions.Compiled);
+
+    // Whether a fact is as of an instant rather than over a span, which the archive
+    // says twice: by sending no start date, and by the I on the frame. Both are
+    // asserted against each other, so a payload that stopped agreeing with itself
+    // fails rather than being resolved one way.
+    public static bool IsAnInstant(ArchiveFact fact) => fact.Start is null;
 
     static string? Stated(JsonElement fact, string field) =>
         fact.TryGetProperty(field, out var value) && value.ValueKind == JsonValueKind.String

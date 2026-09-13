@@ -138,10 +138,17 @@ public sealed record FiledGuidance(
 
 // One figure the archive holds, under the concept it was filed against.
 //
-// `Frame` is the calendar quarter the archive assigns, present only on the facts
-// it treats as canonical for a period, and absent on a cumulative one. `Start`
-// and `End` are what actually say how long a fact covers, and a nine-month figure
-// sits beside a three-month one under the same fiscal period label.
+// `Frame` is the period the archive assigns, present only on the facts it treats
+// as canonical for one, and in two forms: a calendar quarter, and a calendar
+// quarter with an I after it for a figure as of an instant rather than over a
+// span. `Start` and `End` are what actually say how long a fact covers, and a
+// nine-month figure sits beside a three-month one under the same fiscal period
+// label.
+//
+// `Start` is null for an instant, which every balance-sheet figure is. The archive
+// sends no start date at all for one, so a reader requiring both dates drops the
+// whole class in silence: that is what the captures caught at 6.2, where a reading
+// that looked complete held revenue and earnings and not one balance-sheet line.
 //
 // `Accession` is which filing stated it. A period appears twice where a later
 // filing restated it, so a reader that does not take the later filing counts one
@@ -149,7 +156,7 @@ public sealed record FiledGuidance(
 public sealed record ArchiveFact(
     string Concept,
     string Unit,
-    DateOnly Start,
+    DateOnly? Start,
     DateOnly End,
     DateOnly Filed,
     string? Frame,

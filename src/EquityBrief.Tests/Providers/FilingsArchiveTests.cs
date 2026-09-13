@@ -544,9 +544,9 @@ public class FilingsArchiveTests
         // shorter one. And one period appears twice under two accession numbers
         // where a filing restated it.
         var facts = SecEdgarArchive.FactsOf(Captured("company-facts-AAPL.json"));
-        var income = facts.Where(fact => fact.Concept == "NetIncomeLoss").ToArray();
+        var income = facts.Where(fact => fact.Concept == "NetIncomeLoss").Where(fact => fact.Start is not null).ToArray();
 
-        var cumulative = income.Where(fact => (fact.End.DayNumber - fact.Start.DayNumber) > 180).ToArray();
+        var cumulative = income.Where(fact => (fact.End.DayNumber - fact.Start!.Value.DayNumber) > 180).ToArray();
 
         Assert.NotEmpty(cumulative);
 
@@ -570,7 +570,7 @@ public class FilingsArchiveTests
         // latest filing of each.
         var quarterly = SecEdgarArchive.Quarterly(facts).Where(fact => fact.Concept == "NetIncomeLoss").ToArray();
 
-        Assert.All(quarterly, fact => Assert.True((fact.End.DayNumber - fact.Start.DayNumber) < 120));
+        Assert.All(quarterly, fact => Assert.True((fact.End.DayNumber - fact.Start!.Value.DayNumber) < 120));
         Assert.Equal(
             quarterly.Length,
             quarterly.Select(fact => (fact.Start, fact.End)).Distinct().Count());
@@ -579,6 +579,43 @@ public class FilingsArchiveTests
 
         Assert.Equal(new DateOnly(2026, 7, 31), june.Filed);
         Assert.Equal("CY2025Q2", june.Frame);
+    }
+
+    [Fact]
+    public void AnInstantFactCarriesNoStartDateAndIsKeptAnyway()
+    {
+        // The finding the captures forced, and the one a reader would lose in
+        // silence. Every balance-sheet figure is as of an instant: the archive sends
+        // no start date for one at all and writes its frame with an I after the
+        // quarter. A reader requiring both dates keeps revenue and earnings and drops
+        // every asset and liability line while looking complete, and a reader
+        // matching the span frame alone does the same one step later.
+        var facts = SecEdgarArchive.FactsOf(Captured("company-facts-AAPL.json"));
+        var assets = facts.Where(fact => fact.Concept == "Assets").ToArray();
+
+        Assert.NotEmpty(assets);
+        Assert.All(assets, fact => Assert.True(SecEdgarArchive.IsAnInstant(fact)));
+        Assert.All(assets, fact => Assert.Null(fact.Start));
+
+        // The archive says it twice and the two agree: no start date, and an I on
+        // the frame wherever it assigns one.
+        Assert.All(
+            assets.Where(fact => fact.Frame is not null),
+            fact => Assert.EndsWith("I", fact.Frame!, StringComparison.Ordinal));
+
+        // And a span fact never carries the instant form, which is the other
+        // direction of the same statement.
+        Assert.All(
+            facts.Where(fact => fact.Start is not null).Where(fact => fact.Frame is not null),
+            fact => Assert.False(fact.Frame!.EndsWith("I", StringComparison.Ordinal)));
+
+        // So the quarterly reading keeps both kinds. Five concepts over this filer's
+        // capture, one of them an instant: a reading of four would be the defect.
+        var quarterly = SecEdgarArchive.Quarterly(facts);
+
+        Assert.Equal(SecEdgarArchive.Kept.Length, quarterly.Select(fact => fact.Concept).Distinct(StringComparer.Ordinal).Count());
+        Assert.Contains(quarterly, fact => fact.Concept == "Assets");
+        Assert.Equal(3, quarterly.Where(SecEdgarArchive.IsAnInstant).Select(fact => fact.Concept).Distinct(StringComparer.Ordinal).Count());
     }
 
     [Fact]

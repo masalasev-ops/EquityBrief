@@ -2263,3 +2263,23 @@ Was:
 Now: the same clause, saying that this is 15.4's own statement of the part 15.7 already names, and that the nine parts carry ten claims.
 
 Why: a claim is a row's part rather than a thing on a screen, and the selection is stated on two rows, so nine parts and ten claims are both right and the paragraph said only the first. A reader counting the list found ten against a stated nine, which is the shape `stated-counts` exists to catch and which that check cannot see here, the two numbers being about different populations. Written down rather than made to agree, because making them agree would mean calling the selection two parts or one claim, and it is neither.
+
+### 2026-09-12 - ARCHITECTURE.html - the fundamentals fetcher's reads, at the checkpoint the cell promised
+Corrects: the catalogue row's Reads cell and its own description, which named the archive as joining at 6.2 and now has to say what joining looked like.
+
+Was:
+> company financials feed, fundamentals | fundamentals | fetches the quarters and the balance sheet when the stored copy predates the name's latest filing, and marks the segment table and the guidance absent, which is what this provider files for nobody. The filings archive joins its reads at 6.2, which is the checkpoint that reaches an archive; the two parts it supplies were named here before either existed (see: Fundamentals are stored with the filing date they came from)
+
+Now: the archive in the Reads cell, and a description saying that the two providers fail apart and what the guidance is stored as.
+
+Why: the cell's own text promised the read at 6.2, and 6.2 has made it. What the promise did not say is what happens when one of two providers answers and the other does not, which is the part a component reading two feeds has to state: the archive's three parts are named as unread on the row and the other eight are stored, because refusing the fetch would lose eight figures to recover two.
+
+### 2026-09-12 - SCHEMA.md - the fundamentals payload, with two providers behind one row
+Corrects: the payload note, which described one provider's parts and said the archive would supply two more from 6.2.
+
+Was:
+> `payload` holds the quarter's figures, the balance sheet, and the margin computed from that filing's own revenue and gross profit, with `source` naming which of the three each part came from. The earnings bases, the valuation on each of them, and the next print's consensus estimate sit on the newest filing's row alone, because a ratio has a price in it and a price moves every session. `segments` and `guidance` are present and null: the company financials endpoint files neither for any name, so the absence is the provider's rather than this name's, and the filings archive supplies both from 6.2.
+
+Now: the same two paragraphs, followed by what the second provider puts on the row, why its parts sit on the newest filing alone, and the three reasons `source` distinguishes.
+
+Why: the note said `source` names which of three each part came from, and from 6.2 there are three reasons a part can be empty rather than three sources: the provider files it for nobody, the archive served none, and the archive was not read. A column that could not tell the third from the first would report a company with no segments after a failed fetch, which is the same class of fault as a blank cell reading as a zero. The `facts` part is new to the note because it is new to the row.

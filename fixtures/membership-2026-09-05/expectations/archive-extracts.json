@@ -1,0 +1,85 @@
+{
+ "stage": "archive-extracts",
+ "derivation": "derived",
+ "derivedFrom": "what the archive's own renderer states about the documents it serves, and not from a run. The segment figures are derived rather than listed: the file states the scale the table declares and the test reads the rendered cell out of the capture, applies the scale itself and compares that with what the store holds, so a reader that wrote the right shape and the wrong multiplier fails. The report chosen is derived the same way, from the rule that a segment table is a Details report grouping rows under a dimension with a figure under one of them, so the counts below are what that rule picks out of the candidates each filing offers rather than the page a session happened to like. The guidance is derived from the ruling that it is stored as management's prose and never parsed into a figure, which is why this file states the fields the stored passage carries and asserts that no figure is among them.",
+ "tables": [
+  "fundamentals"
+ ],
+ "namesWithACapture": [
+  "AAPL",
+  "KEYS"
+ ],
+ "namesWithoutOne": [
+  "MSFT",
+  "NFLX"
+ ],
+ "candidatesOffered": {
+  "AAPL": 2,
+  "KEYS": 4
+ },
+ "segmentReportsRead": {
+  "AAPL": 2,
+  "KEYS": 1
+ },
+ "segmentReportChosen": {
+  "AAPL": "R46.htm",
+  "KEYS": "R85.htm"
+ },
+ "documentsPerRead": {
+  "AAPL": 7,
+  "KEYS": 6
+ },
+ "scale": 1000000,
+ "periodsPerTable": 4,
+ "shortestPeriodMonths": 3,
+ "groupsPerTable": {
+  "AAPL": 6,
+  "KEYS": 9
+ },
+ "repeatedGroupLabels": {
+  "AAPL": 0,
+  "KEYS": 2
+ },
+ "rowsStatingTheirOwnUnit": {
+  "AAPL": 0,
+  "KEYS": 1
+ },
+ "renderedCellIsScaled": {
+  "AAPL": {
+   "lineItem": "Net sales",
+   "rendered": "$ 109,417",
+   "months": 3
+  },
+  "KEYS": {
+   "lineItem": "Revenues, Total",
+   "rendered": "$ 1,846",
+   "months": 3
+  }
+ },
+ "guidanceLocated": {
+  "AAPL": false,
+  "KEYS": true
+ },
+ "guidanceHeading": {
+  "KEYS": "Outlook"
+ },
+ "guidanceFields": [
+  "document",
+  "filedOn",
+  "located",
+  "heading",
+  "passage"
+ ],
+ "archiveSupplies": [
+  "segments",
+  "guidance",
+  "facts"
+ ],
+ "factConceptsPerName": 7,
+ "quarterlyFactsCarryAQuarterFrame": true,
+ "instantFactsCarryNoStartDate": true,
+ "instantConceptsPerName": 3,
+ "transcriptsFiled": 0,
+ "note": "the two filers are captured whole and the other two names of the fixture are not, which is the split this file is mostly about: a name the archive was read for carries the three parts attributed to the archive, and a name it was not read for carries them as unread, which is a different row from a provider that files none. The segment report chosen is not the first candidate for one filer and is for the other, so the route's fallback is exercised from both ends by the captures rather than by a constructed page. Twelve filers were probed for the transcript and none filed one, which is why nothing depends on it. The fact concepts are five and one of them is an instant, which is the finding the captures forced: the archive sends no start date at all for a balance-sheet figure and marks its frame with an I, so a reader requiring both dates keeps revenue and earnings and drops every asset line while looking complete. The concepts kept are seven and named in code rather than taken whole, because the archive holds 503 and 649 of them for these two filers and keeping every quarterly fact of every one would put megabytes on one store row; three of the seven are revenue in the three spellings the archive uses, which is the measured reason the set is a set rather than one concept.",
+ "quartersKeptPerConcept": 12
+}

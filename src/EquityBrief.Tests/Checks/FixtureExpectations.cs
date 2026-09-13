@@ -91,6 +91,12 @@ public class FixtureExpectations
             // capture against the store, which is what reaches both.
             CheckReach.Key(Scope.FixtureTable, "fundamentals"),
             CheckReach.Key(Scope.FixtureTable, "stored filings"),
+            // 6.2, the archive. One row rather than two, because the captured
+            // archive responses fall under the fundamentals input row: that row has
+            // said since 0.7 that it holds the provider payload and the filing
+            // extracts as they stood on the fixture date, so the input half was
+            // named before either half existed.
+            CheckReach.Key(Scope.FixtureTable, "archive extracts"),
             CheckReach.Key(Scope.FailureTable, "Earnings date missing, the calendar"),
             CheckReach.Key(Scope.LimitsTable, "Earnings horizon"),
             CheckReach.Key(Scope.LimitsTable, "Tranches, exits"),
@@ -1996,7 +2002,7 @@ public class FixtureExpectations
         // rather than about whether anything reads them.
         Assert.True(keys >= 40, $"Swept {keys} expectation keys, expected at least 40.");
 
-        // Nine stand unread and each is named rather than counted, because a
+        // Ten stand unread and each is named rather than counted, because a
         // number here would drift silently as keys are added. `rowsInFile` is
         // the count of rows in the captured bulk payload, which the fetch
         // expectation states so a reader can see what the membership filter cut
@@ -2007,9 +2013,10 @@ public class FixtureExpectations
         // assertion caught both on the same run; the ladder file added its note
         // at 4.1 and it caught that too; the sector note arrived at 5.1 and it
         // caught that. The gap stop file added its note at 6.0 and it caught
-        // that, on the run that added the file. Which is what it is for.
+        // that, on the run that added the file, and the archive extracts file added
+        // its note at 6.2 and it caught that. Which is what it is for.
         Assert.Equal(
-            ["facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note", "stored-filings.note"],
+            ["archive-extracts.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "series-state.note", "stored-filings.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 
@@ -5355,12 +5362,26 @@ public class FixtureExpectations
         // per name and three of the four would otherwise go unread. On demand and
         // after the night rather than inside it, which is where this fetch happens:
         // the night makes no per-name request.
+        //
+        // The archive is handed over for the two names it holds a capture for and
+        // withheld for the other two, which is the split the archive extracts file
+        // is about. Handing it over for all four would ask the replay for a capture
+        // nobody committed, and that refuses by name rather than reading as an
+        // archive with nothing in it.
+        var archive = new RecordedFilingsArchiveFeed(Folder());
+        var captured = archive.Names;
+
         foreach (var ticker in Expected("stored-filings").GetProperty("names").EnumerateArray())
         {
+            var name = ticker.GetString()!;
+
             await new FundamentalsFetcher(
                 RecordedFundamentalsFeed.FromFolder(Folder()),
                 clock,
-                store.DatabaseFile).RunAsync(ticker.GetString()!, null, "replay-fundamentals-" + ticker.GetString());
+                store.DatabaseFile,
+                captured.Contains(name, StringComparer.OrdinalIgnoreCase)
+                    ? new RecordedFilingsArchiveFeed(Folder())
+                    : null).RunAsync(name, null, "replay-fundamentals-" + name);
         }
 
         return store;
@@ -5460,16 +5481,24 @@ public class FixtureExpectations
                 }
 
                 // What this provider files for nobody, said on every row's source
-                // rather than inferred from a missing key.
+                // rather than inferred from a missing key. From 6.2 those two parts
+                // come from the archive instead, so what this asserts is that the
+                // company financials provider is never named as their source: the
+                // archive is, or one of the two reasons it could not be.
                 using var source = JsonDocument.Parse(rows[at].Source);
 
-                foreach (var part in expected.GetProperty("partsNotCarried").EnumerateArray())
+                foreach (var part in expected.GetProperty("providerFilesForNobody").EnumerateArray())
                 {
-                    Assert.Equal(
-                        FundamentalsFetcher.NotFiled,
+                    Assert.NotEqual(
+                        FundamentalsFetcher.Provider,
                         source.RootElement.GetProperty(part.GetString()!).GetString());
+                }
 
-                    Assert.Equal(JsonValueKind.Null, root.GetProperty(part.GetString()!).ValueKind);
+                foreach (var part in expected.GetProperty("suppliedByTheArchiveInstead").EnumerateArray())
+                {
+                    Assert.Contains(
+                        source.RootElement.GetProperty(part.GetString()!).GetString(),
+                        new[] { FundamentalsFetcher.Archive, FundamentalsFetcher.NotFiled, FundamentalsFetcher.NotRead });
                 }
             }
 
@@ -5486,6 +5515,216 @@ public class FixtureExpectations
                 filesNone ? JsonValueKind.Null : JsonValueKind.Object,
                 newest.RootElement.GetProperty("estimated").ValueKind);
         }
+    }
+
+    // ---- 6.2, the filings archive ----
+
+    [Fact]
+    public async Task TheArchiveExtractsAreWhatItsOwnRenderingRulesProduce()
+    {
+        var expected = Expected("archive-extracts");
+        var scale = expected.GetProperty("scale").GetInt32();
+        var months = expected.GetProperty("shortestPeriodMonths").GetInt32();
+
+        using var store = await WithFundamentals();
+
+        // The scale the file states against the code's own reading of the table's
+        // title, so the multiplier lives in one place.
+        Assert.Equal(scale, SecEdgarArchive.Scale("Something (Details) - USD ($) $ in Millions"));
+
+        foreach (var ticker in expected.GetProperty("namesWithACapture").EnumerateArray().Select(name => name.GetString()!))
+        {
+            var rows = StoredFilings(store, ticker);
+
+            using var newest = JsonDocument.Parse(rows[0].Payload);
+            using var source = JsonDocument.Parse(rows[0].Source);
+
+            var segments = newest.RootElement.GetProperty("segments");
+
+            // Which report the route chose, and how many it had to read to choose
+            // it. The two filers differ, which is what makes the choice a property
+            // of the table rather than a constant.
+            Assert.Equal(
+                expected.GetProperty("segmentReportChosen").GetProperty(ticker).GetString(),
+                segments.GetProperty("report").GetString());
+
+            var candidates = SecEdgarArchive.SegmentCandidates(
+                File.ReadAllText(Path.Combine(Folder(), "report-list-" + ticker + "-10q.xml")));
+
+            Assert.Equal(expected.GetProperty("candidatesOffered").GetProperty(ticker).GetInt32(), candidates.Count);
+
+            var feed = new RecordedFilingsArchiveFeed(Folder());
+            var read = await feed.FilingsAsync(ticker, SecEdgarArchive.CikOf(
+                File.ReadAllText(Path.Combine(Folder(), "filings-" + ticker + ".json"))));
+
+            Assert.Equal(expected.GetProperty("segmentReportsRead").GetProperty(ticker).GetInt32(), read.SegmentReportsRead);
+            Assert.Equal(expected.GetProperty("documentsPerRead").GetProperty(ticker).GetInt32(), feed.Asked.Count);
+
+            Assert.Equal(scale, segments.GetProperty("scale").GetInt32());
+            Assert.Equal(expected.GetProperty("periodsPerTable").GetInt32(), segments.GetProperty("periods").GetArrayLength());
+            Assert.Equal(
+                expected.GetProperty("groupsPerTable").GetProperty(ticker).GetInt32(),
+                segments.GetProperty("groups").GetArrayLength());
+
+            // Two groups sharing a label are two groups, which is what a reader
+            // keyed on the label would collapse.
+            var labels = segments.GetProperty("groups").EnumerateArray()
+                .Select(group => group.GetProperty("label").GetString()!)
+                .ToArray();
+
+            Assert.Equal(
+                expected.GetProperty("repeatedGroupLabels").GetProperty(ticker).GetInt32(),
+                labels.GroupBy(label => label, StringComparer.Ordinal).Count(same => same.Count() > 1));
+
+            var figures = segments.GetProperty("consolidated").EnumerateArray()
+                .Concat(segments.GetProperty("groups").EnumerateArray().SelectMany(group => group.GetProperty("figures").EnumerateArray()))
+                .ToArray();
+
+            Assert.Equal(
+                expected.GetProperty("rowsStatingTheirOwnUnit").GetProperty(ticker).GetInt32(),
+                figures
+                    .Where(figure => figure.GetProperty("unit").ValueKind == JsonValueKind.String)
+                    .Select(figure => figure.GetProperty("lineItem").GetString()!)
+                    .Distinct(StringComparer.Ordinal)
+                    .Count());
+
+            // The figure derived here rather than stated. The file gives the cell as
+            // the archive rendered it and this test applies the scale itself, so a
+            // component that wrote the right shape and the wrong multiplier fails.
+            var cell = expected.GetProperty("renderedCellIsScaled").GetProperty(ticker);
+            var rendered = cell.GetProperty("rendered").GetString()!;
+            var line = cell.GetProperty("lineItem").GetString()!;
+
+            Assert.Contains(
+                rendered,
+                File.ReadAllText(Path.Combine(
+                    Folder(),
+                    "segment-report-" + ticker + "-" + Path.GetFileNameWithoutExtension(segments.GetProperty("report").GetString()!) + ".htm")),
+                StringComparison.Ordinal);
+
+            var derived = SecEdgarArchive.Figure(rendered) * scale;
+
+            var stored = segments.GetProperty("consolidated").EnumerateArray().First(figure =>
+                figure.GetProperty("lineItem").GetString() == line
+                && figure.GetProperty("months").GetInt32() == cell.GetProperty("months").GetInt32());
+
+            Assert.Equal(
+                derived,
+                decimal.Parse(stored.GetProperty("value").GetString()!, CultureInfo.InvariantCulture));
+
+            Assert.Equal(months, segments.GetProperty("periods").EnumerateArray().Min(period => period.GetProperty("months").GetInt32()));
+
+            // The guidance: located for one filer and not for the other, and stored
+            // as the passage either way with the exhibit and date beside it.
+            var guidance = newest.RootElement.GetProperty("guidance");
+            var located = expected.GetProperty("guidanceLocated").GetProperty(ticker).GetBoolean();
+
+            Assert.Equal(located, guidance.GetProperty("located").GetBoolean());
+            Assert.Equal(
+                expected.GetProperty("guidanceFields").EnumerateArray().Select(field => field.GetString()),
+                guidance.EnumerateObject().Select(field => field.Name));
+
+            if (located)
+            {
+                Assert.Equal(
+                    expected.GetProperty("guidanceHeading").GetProperty(ticker).GetString(),
+                    guidance.GetProperty("heading").GetString());
+
+                // The whole of what is stored is prose, which is the ruling. A range
+                // in the passage is management's sentence and not a figure this
+                // report struck.
+                // see: Guidance is stored as management's own prose and never parsed into a figure
+                Assert.Equal(JsonValueKind.String, guidance.GetProperty("passage").ValueKind);
+            }
+            else
+            {
+                Assert.Equal(JsonValueKind.Null, guidance.GetProperty("passage").ValueKind);
+            }
+
+            // The facts, under the concept each was filed against, over a window
+            // the store's own ruling sets rather than one this file states twice.
+            var facts = newest.RootElement.GetProperty("facts").EnumerateArray().ToArray();
+
+            Assert.Equal(
+                expected.GetProperty("factConceptsPerName").GetInt32(),
+                facts.Select(fact => fact.GetProperty("concept").GetString()!).Distinct(StringComparer.Ordinal).Count());
+
+            Assert.Equal(SecEdgarArchive.QuartersKept, expected.GetProperty("quartersKeptPerConcept").GetInt32());
+            Assert.Equal(SecEdgarArchive.QuartersKept, FundamentalsFetcher.StoredFilings);
+
+            Assert.All(
+                facts.GroupBy(fact => fact.GetProperty("concept").GetString()!, StringComparer.Ordinal),
+                concept => Assert.True(
+                    concept.Count() <= SecEdgarArchive.QuartersKept,
+                    FormattableString.Invariant($"{ticker} holds {concept.Count()} facts of {concept.Key}.")));
+
+            if (expected.GetProperty("quarterlyFactsCarryAQuarterFrame").GetBoolean())
+            {
+                Assert.All(facts, fact => Assert.Matches("^CY[0-9]{4}Q[1-4]I?$", fact.GetProperty("frame").GetString()!));
+            }
+
+            // An instant fact carries no start date at all, which is every
+            // balance-sheet figure and what a reader requiring both dates loses in
+            // silence. The two statements are asserted against each other: no start,
+            // and an I on the frame.
+            if (expected.GetProperty("instantFactsCarryNoStartDate").GetBoolean())
+            {
+                var instants = facts
+                    .Where(fact => fact.GetProperty("start").ValueKind == JsonValueKind.Null)
+                    .ToArray();
+
+                Assert.Equal(
+                    expected.GetProperty("instantConceptsPerName").GetInt32(),
+                    instants.Select(fact => fact.GetProperty("concept").GetString()!).Distinct(StringComparer.Ordinal).Count());
+
+                Assert.All(instants, fact => Assert.EndsWith("I", fact.GetProperty("frame").GetString()!, StringComparison.Ordinal));
+
+                Assert.All(
+                    facts.Where(fact => fact.GetProperty("start").ValueKind == JsonValueKind.String),
+                    fact => Assert.False(fact.GetProperty("frame").GetString()!.EndsWith("I", StringComparison.Ordinal)));
+            }
+
+            // And the three parts are attributed to the archive on this row.
+            foreach (var part in expected.GetProperty("archiveSupplies").EnumerateArray())
+            {
+                Assert.Equal(
+                    FundamentalsFetcher.Archive,
+                    source.RootElement.GetProperty(part.GetString()!).GetString());
+            }
+
+            Assert.Null(read.Transcript);
+        }
+
+        // The other half of the split. A name the archive was not read for carries
+        // the three parts as unread on every row, which is a different statement
+        // from a provider that files none, and the payload holds null rather than
+        // an empty object.
+        foreach (var ticker in expected.GetProperty("namesWithoutOne").EnumerateArray().Select(name => name.GetString()!))
+        {
+            foreach (var row in StoredFilings(store, ticker))
+            {
+                using var payload = JsonDocument.Parse(row.Payload);
+                using var source = JsonDocument.Parse(row.Source);
+
+                foreach (var part in expected.GetProperty("archiveSupplies").EnumerateArray())
+                {
+                    Assert.Equal(
+                        FundamentalsFetcher.NotRead,
+                        source.RootElement.GetProperty(part.GetString()!).GetString());
+
+                    Assert.Equal(JsonValueKind.Null, payload.RootElement.GetProperty(part.GetString()!).ValueKind);
+                }
+            }
+        }
+
+        // Measured over twelve filers at 6.2 and none filed one, which is why
+        // nothing depends on it.
+        // see: Transcripts are opportunistic, never a dependency
+        Assert.Equal(
+            expected.GetProperty("transcriptsFiled").GetInt32(),
+            Directory
+                .GetFiles(Folder(), "filing-types-*.htm")
+                .Count(page => SecEdgarArchive.Transcript(SecEdgarArchive.Documents(File.ReadAllText(page))) is not null));
     }
 
     sealed record StoredFiling(DateOnly Filed, string Payload, string Source);

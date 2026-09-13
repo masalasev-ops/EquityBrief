@@ -102,9 +102,16 @@ public sealed record MarketValue(decimal? Capitalisation);
 // the four captured names files a quarter with no filing date at all, and this
 // table's grain is one row per filing date, so such a quarter cannot be stored
 // and the count is what says so on the run log.
+//
+// `Cik` is the company's identifier at the filings archive, which this payload
+// carries for every captured name and which the archive is addressed by and
+// nothing else. It is read here rather than resolved at the archive because the
+// caller already holds it by the time it needs one, and the alternative was a
+// second whole-index file or a per-name lookup on every read.
 public sealed record CompanyFundamentals(
     string Ticker,
     string Currency,
+    string Cik,
     IReadOnlyList<FiledQuarter> Filed,
     EstimatedQuarter? Estimated,
     EpsBases Bases,

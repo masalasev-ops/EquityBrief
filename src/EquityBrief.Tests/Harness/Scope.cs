@@ -842,7 +842,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(CatalogueTable, "Fundamentals fetcher")] = new Scoped(
             Verdict.Pass,
-            "the class declares the feed and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares both feeds and the stores it touches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Fundamentals fetcher")] = new Scoped(
             Verdict.Pass,
@@ -850,7 +850,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(FailureTable, "Filing not yet parsed for a name")] = new Scoped(
             Verdict.Pass,
-            "the numbers section is drawn over a store the fetcher filled and read back off its own markup: the segment table and the guidance are marked absent for every name, since this provider files neither, and no cell anywhere in the section is drawn empty",
+            "the numbers section is drawn over a store the fetcher filled and read back off its own markup, over a name whose archive was read and a name whose was not: the segment table and the guidance are drawn for the first and marked absent for the second with the reason the row states, and no cell anywhere in the section is drawn empty",
             ByReadSurface),
         [CheckReach.Key("Figure 12.1", "Computed sections appear")] = new Scoped(
             Verdict.Pass,
@@ -882,7 +882,15 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FixtureTable, "stored filings")] = new Scoped(
             Verdict.Pass,
-            "twelve of the fourteen filings each capture holds, asserted to be the twelve most recent by filing date, with the margin divided by the test rather than read from the expectation and the three as-of-the-fetch parts asserted to sit on the newest filing alone",
+            "twelve of the fourteen filings each capture holds, asserted to be the twelve most recent by filing date, with the margin divided by the test rather than read from the expectation, the three as-of-the-fetch parts asserted to sit on the newest filing alone, and the company financials provider asserted never to be named as the source of a part the archive supplies",
+            ByExpectations),
+        // 6.2, the archive. One row rather than two: the captured archive responses
+        // fall under the fundamentals input row, which has said since 0.7 that it
+        // holds the provider payload and the filing extracts as they stood on the
+        // fixture date, so the input half was named before either existed.
+        [CheckReach.Key(FixtureTable, "archive extracts")] = new Scoped(
+            Verdict.Pass,
+            "the store is diffed against what the archive's own rendering rules produce over thirteen captures: the report the route chose and how many it read to choose it, the scale applied by the test rather than read from the expectation, two groups sharing a label kept as two, a row stating its own unit left out of the scale, the guidance located for one filer and not for the other and stored as the passage either way, and the balance-sheet fact kept although the archive sends it no start date",
             ByExpectations),
         [CheckReach.Key(FixtureTable, "calendar")] = new Scoped(
             Verdict.Pass,

@@ -21,10 +21,6 @@
   "KEYS": 1,
   "NFLX": 0
  },
- "partsNotCarried": [
-  "segments",
-  "guidance"
- ],
  "marginIsComputedFrom": [
   "grossProfit",
   "revenue"
@@ -41,5 +37,14 @@
  "namesFilingNoEstimate": [
   "KEYS"
  ],
- "note": "the capture holds fourteen filings and the window takes twelve, which is what makes the window a selection rather than everything the file happened to hold. KEYS carries fifteen rows of which fourteen are filings, the fifteenth being a quarter the provider files no filing date for at all: this table's grain is one row per filing date, so that row cannot be keyed and is counted on the run log instead. The window is counted in filings rather than over a date range, so that name gets the same twelve as a name that filed on time. Section 4 shows five of the twelve, and the two figures being different is the ruling rather than an oversight: five stored quarters yields one year-over-year comparison and twelve yields eight."
+ "note": "the capture holds fourteen filings and the window takes twelve, which is what makes the window a selection rather than everything the file happened to hold. KEYS carries fifteen rows of which fourteen are filings, the fifteenth being a quarter the provider files no filing date for at all: this table's grain is one row per filing date, so that row cannot be keyed and is counted on the run log instead. The window is counted in filings rather than over a date range, so that name gets the same twelve as a name that filed on time. Section 4 shows five of the twelve, and the two figures being different is the ruling rather than an oversight: five stored quarters yields one year-over-year comparison and twelve yields eight. From 6.2 the two parts this endpoint files for nobody arrive from the filings archive instead, so the source column on a row carries two providers and says which filled what; the parts themselves and the split between the names the archive was read for are stated in the archive extracts file rather than restated here.",
+ "providerFilesForNobody": [
+  "segments",
+  "guidance"
+ ],
+ "suppliedByTheArchiveInstead": [
+  "segments",
+  "guidance",
+  "facts"
+ ]
 }

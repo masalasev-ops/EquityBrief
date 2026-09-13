@@ -22,7 +22,10 @@ public sealed record FundamentalsOutcome(
     int Held,
     int QuartersWithNoFilingDate,
     IReadOnlyList<string> PartsNotCarried,
-    int Requests);
+    int Requests,
+    int ArchiveDocuments,
+    string? SegmentReport,
+    bool GuidanceLocated);
 
 // The fundamentals fetcher. One name's quarters and balance sheet, fetched when
 // the stored copy predates a filing and not otherwise.
@@ -55,7 +58,7 @@ public sealed class FundamentalsFetcher : IComponent
             new StoreTouch(Store.Fundamentals, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
-        Feeds: [Feed.CompanyFinancials]);
+        Feeds: [Feed.CompanyFinancials, Feed.FilingsArchive]);
 
     public const string Stage = "fundamentals";
 
@@ -127,13 +130,36 @@ public sealed class FundamentalsFetcher : IComponent
             $rows_written, 0, $network_requests, '0', $detail);
     ";
 
+    // Which provider each part of a row came from, for the parts the archive
+    // supplies. The company financials endpoint files neither for anybody, which is
+    // why they are a second feed and not a column that happened to be empty.
+    public const string Archive = "sec edgar filings archive";
+
+    // What the archive could not be asked for, said as a value rather than left as
+    // a missing key. It is not the same statement as `NotFiled`: one is a provider
+    // that files a part for nobody and the other is a read that did not happen, and
+    // a row that could not tell them apart would report a company with no segments.
+    public const string NotRead = "the archive was not read";
+
     readonly IFundamentalsFeed feed;
+    readonly IFilingsArchiveFeed? archive;
     readonly IClock clock;
     readonly string databaseFile;
 
-    public FundamentalsFetcher(IFundamentalsFeed feed, IClock clock, string databaseFile)
+    // The archive is optional because the two feeds fail apart. A name whose
+    // filings could not be read still has its quarters, its balance sheet and its
+    // valuation, and the numbers section marks the two parts the archive supplies
+    // as absent with the reason rather than withholding the whole section. The
+    // alternative, refusing the fetch, would lose eight stored figures to recover
+    // two (see: Fundamentals are stored with the filing date they came from).
+    public FundamentalsFetcher(
+        IFundamentalsFeed feed,
+        IClock clock,
+        string databaseFile,
+        IFilingsArchiveFeed? archive = null)
     {
         this.feed = feed;
+        this.archive = archive;
         this.clock = clock;
         this.databaseFile = databaseFile;
     }
@@ -159,7 +185,7 @@ public sealed class FundamentalsFetcher : IComponent
         {
             var nothing = new FundamentalsOutcome(
                 ticker, false, held, 0, 0, 0, 0,
-                await CountAsync(connection, ticker, cancellation), 0, [], 0);
+                await CountAsync(connection, ticker, cancellation), 0, [], 0, 0, null, false);
 
             await RecordAsync(connection, runId, startedAt, nothing, cancellation);
 
@@ -167,6 +193,12 @@ public sealed class FundamentalsFetcher : IComponent
         }
 
         var fetched = await feed.FundamentalsAsync(ticker, cancellation).ConfigureAwait(false);
+
+        // After the fundamentals, because the archive is addressed by the CIK that
+        // payload carries, and before the write, because both providers' parts go
+        // into one row and this table is never updated.
+        var filings = await ArchiveAsync(ticker, fetched.Cik, cancellation).ConfigureAwait(false);
+
         var alreadyHeld = await FilingsAsync(connection, ticker, cancellation);
 
         var written = 0;
@@ -201,8 +233,8 @@ public sealed class FundamentalsFetcher : IComponent
                 command.Parameters.AddWithValue("$ticker", ticker);
                 command.Parameters.AddWithValue("$filing_date", Stored(quarter.FilingDate));
                 command.Parameters.AddWithValue("$fetched_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-                command.Parameters.AddWithValue("$payload", Payload(fetched, quarter, quarter.FilingDate == newest));
-                command.Parameters.AddWithValue("$source", Source(fetched));
+                command.Parameters.AddWithValue("$payload", Payload(fetched, quarter, quarter.FilingDate == newest, filings));
+                command.Parameters.AddWithValue("$source", Source(fetched, filings));
 
                 await command.ExecuteNonQueryAsync(cancellation);
 
@@ -222,13 +254,80 @@ public sealed class FundamentalsFetcher : IComponent
             repeats,
             await CountAsync(connection, ticker, cancellation),
             fetched.QuartersWithNoFilingDate,
-            fetched.PartsNotCarried,
-            feed.Requests);
+            Absent(fetched, filings),
+            feed.Requests + (archive?.Requests ?? 0),
+            filings is null ? 0 : Documents(),
+            filings?.Segments?.Report,
+            filings?.Guidance?.Located ?? false);
 
         await RecordAsync(connection, runId, startedAt, outcome, cancellation);
 
         return outcome;
     }
+
+    // One read of the archive, or nothing where there is none to read.
+    //
+    // A failure here is not a failure of the fetch. The archive is a second
+    // provider with its own transport rule and its own availability, and the parts
+    // it supplies are two of the ten a row carries, so an archive that refused
+    // leaves those two named as unread and the other eight stored. Section 18's own
+    // row for this says the numbers section shows what the provider has and marks
+    // the rest absent, which is a statement about a part and not about a section.
+    async Task<ArchiveFilings?> ArchiveAsync(string ticker, string cik, CancellationToken cancellation)
+    {
+        if (archive is null || string.IsNullOrWhiteSpace(cik))
+        {
+            return null;
+        }
+
+        try
+        {
+            return await archive.FilingsAsync(ticker, cik, cancellation).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (ProviderRefusal)
+        {
+            // Swallowed here and reported on the row and on the run log, which is
+            // the only place a caught refusal may go: a part recorded as unread is
+            // visible on the surface the operator reads, and a part recorded as not
+            // filed would not be.
+            return null;
+        }
+    }
+
+    // How many documents the archive was asked for, where the feed counts them.
+    // The live one does, because the archive's fair-access policy is stated in
+    // requests a second; the recorded one answers from a folder and counts none.
+    int Documents() => archive is SecEdgarFilingsArchiveFeed live ? live.Documents : 0;
+
+    // Which parts the archive was meant to supply and did not, with the two reasons
+    // kept apart. No archive at all is a read that did not happen; an archive that
+    // answered and served no segment table is the archive's own absence, which it
+    // names itself.
+    static IReadOnlyList<string> NotCarried(ArchiveFilings? filings) =>
+        filings is null ? ArchiveParts : filings.PartsNotCarried;
+
+    // The parts the archive supplies, which is what the source column answers about
+    // when there was no archive to read.
+    public static readonly string[] ArchiveParts =
+        [SecEdgarArchive.Segments, SecEdgarArchive.Guidance, SecEdgarArchive.Facts];
+
+    // Which parts of a row are absent, over both feeds and counted once.
+    //
+    // The company financials feed reports the segment table and the guidance as
+    // parts it does not carry, and from 6.2 that is not an absence: it is the reason
+    // a second provider supplies them. So its answer about those two is dropped and
+    // the archive's stands, which is the same rule the source column follows. Taking
+    // the union instead would name segments twice on a row where neither provider
+    // had it, and a reader counting absences would count five where there are three.
+    static IReadOnlyList<string> Absent(CompanyFundamentals fetched, ArchiveFilings? filings) =>
+    [
+        .. fetched.PartsNotCarried.Where(part => !ArchiveParts.Contains(part, StringComparer.Ordinal)),
+        .. NotCarried(filings),
+    ];
 
     // Whether the stored copy predates a filing, which is the sentence section
     // 15.12 states and the only question this component asks.
@@ -252,7 +351,11 @@ public sealed class FundamentalsFetcher : IComponent
     // was today's, and leaving them out of every row would put the valuation
     // nowhere. Section 4 asks for the valuation on each earnings basis, and the
     // basis a valuation is stated against is the latest one.
-    internal static string Payload(CompanyFundamentals fetched, FiledQuarter quarter, bool newest) =>
+    internal static string Payload(
+        CompanyFundamentals fetched,
+        FiledQuarter quarter,
+        bool newest,
+        ArchiveFilings? filings = null) =>
         JsonSerializer.Serialize(new
         {
             periodEnd = Stored(quarter.PeriodEnd),
@@ -322,23 +425,97 @@ public sealed class FundamentalsFetcher : IComponent
                 timing = Filed(next.Timing),
                 epsEstimate = Money(next.EpsEstimate),
             } : null,
-            // Named as absent rather than left out, because a key that is not
-            // there reads as this name having none and what is true is that the
-            // provider files none for anybody.
-            segments = (string?)null,
-            guidance = (string?)null,
+            // The two parts the company financials endpoint files for nobody,
+            // supplied by the filings archive and on the newest filing's row
+            // alone. A segment table is read from one filing's own report page and
+            // the guidance from one announcement's exhibit, so writing either onto
+            // a historical row would state that the 2024 quarter's segments were
+            // this quarter's, and deriving them per filing would cost a request
+            // per row for figures nothing reads.
+            //
+            // Null rather than left out where there is nothing, because a key that
+            // is not there reads as this name having none, and the source column
+            // beside this one says which of the three reasons it was.
+            segments = newest && filings?.Segments is { } breakdown ? new
+            {
+                report = breakdown.Report,
+                title = breakdown.Title,
+                scale = breakdown.Scale,
+                periods = breakdown.Periods.Select(period => new
+                {
+                    months = period.Months,
+                    ended = Stored(period.Ended),
+                }),
+                consolidated = Lines(breakdown.Consolidated),
+                groups = breakdown.Groups.Select(group => new
+                {
+                    label = group.Label,
+                    dimension = group.Dimension,
+                    figures = Lines(group.Figures),
+                }),
+            } : null,
+            // Management's own words, with the exhibit and the date they were filed
+            // on, and never a figure taken out of them. A heading locates the
+            // passage for five of twelve filers measured, so a passage nobody
+            // located is recorded as not located and never as guidance not given.
+            // see: Guidance is stored as management's own prose and never parsed into a figure
+            guidance = newest && filings?.Guidance is { } guided ? new
+            {
+                document = guided.Document,
+                filedOn = Stored(guided.FiledOn),
+                located = guided.Located,
+                heading = guided.Heading,
+                passage = guided.Passage,
+            } : null,
+            // The archive's own figures, under the concept each was filed against.
+            // Kept rather than mapped to a revenue, because the archive files
+            // revenue under several concepts at once and keeps none of them current
+            // for every filer (see: Code owns every number).
+            facts = newest && filings is { Facts.Count: > 0 } ? filings.Facts.Select(fact => new
+            {
+                concept = fact.Concept,
+                unit = fact.Unit,
+                // Null for an instant, which is what a balance-sheet figure is.
+                // The archive sends no start date for one at all, so a key holding
+                // a zero date would state a span the filer never filed.
+                start = fact.Start is { } from ? Stored(from) : null,
+                end = Stored(fact.End),
+                filed = Stored(fact.Filed),
+                frame = fact.Frame,
+                accession = fact.Accession,
+                value = Money(fact.Value),
+            }) : null,
+        });
+
+    // One table's rows as the payload holds them. Money as text in the invariant
+    // form, which is the storage form money takes, and the unit beside a figure
+    // that is not in the table's currency.
+    static object Lines(IReadOnlyList<SegmentFigure> figures) =>
+        figures.Select(figure => new
+        {
+            concept = figure.Concept,
+            lineItem = figure.LineItem,
+            unit = figure.Unit,
+            months = figure.Period.Months,
+            ended = Stored(figure.Period.Ended),
+            value = Money(figure.Value),
         });
 
     // Which provider each part came from, which is what SCHEMA's `source` column
     // is for. The two parts this feed does not file say so by name, so a row can
     // be read later without knowing which endpoint filled it.
-    internal static string Source(CompanyFundamentals fetched)
+    internal static string Source(CompanyFundamentals fetched, ArchiveFilings? filings = null)
     {
         var sources = new Dictionary<string, string>(StringComparer.Ordinal);
+        var fromArchive = NotCarried(filings);
 
         foreach (var part in Parts)
         {
             sources[part] = part == Margin ? Computed
+                : ArchiveParts.Contains(part, StringComparer.Ordinal)
+                    ? fromArchive.Contains(part, StringComparer.Ordinal)
+                        ? filings is null ? NotRead : NotFiled
+                        : Archive
                 : fetched.PartsNotCarried.Contains(part, StringComparer.Ordinal) ? NotFiled
                 : Provider;
         }
@@ -352,7 +529,7 @@ public sealed class FundamentalsFetcher : IComponent
     public static readonly string[] Parts =
     [
         "quarter", "margin", "balanceSheet", "earnings", "epsBases", "valuation",
-        "marketCapitalisation", "estimated", "segments", "guidance",
+        "marketCapitalisation", "estimated", "segments", "guidance", "facts",
     ];
 
     public const string Margin = "margin";
@@ -488,9 +665,25 @@ public sealed class FundamentalsFetcher : IComponent
                 + " quarter(s) the provider filed no filing date for";
         }
 
+        if (outcome.ArchiveDocuments > 0)
+        {
+            detail += ", " + outcome.ArchiveDocuments.ToString(CultureInfo.InvariantCulture)
+                + " archive document(s)";
+        }
+
+        if (outcome.SegmentReport is { } report)
+        {
+            detail += ", segments from " + report;
+        }
+
+        if (outcome.GuidanceLocated)
+        {
+            detail += ", guidance located";
+        }
+
         if (outcome.PartsNotCarried.Count > 0)
         {
-            detail += ", not filed by this provider: " + string.Join(", ", outcome.PartsNotCarried);
+            detail += ", absent: " + string.Join(", ", outcome.PartsNotCarried);
         }
 
         return detail;

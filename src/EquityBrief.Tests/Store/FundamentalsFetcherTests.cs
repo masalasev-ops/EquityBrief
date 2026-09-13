@@ -29,6 +29,29 @@ public class FundamentalsFetcherTests
     static FundamentalsFetcher Fetcher(TemporaryStore store, IFundamentalsFeed feed) =>
         new(feed, Clock(), store.DatabaseFile);
 
+    // The same fetcher with the filings archive behind it. A separate helper rather
+    // than a default, so every test written before 6.2 keeps reading a row the
+    // archive did not touch and the two worlds stay distinguishable.
+    static FundamentalsFetcher WithArchive(
+        TemporaryStore store,
+        IFundamentalsFeed feed,
+        IFilingsArchiveFeed? archive = null) =>
+        new(feed, Clock(), store.DatabaseFile, archive ?? new RecordedFilingsArchiveFeed(Folder()));
+
+    // An archive that refuses, which is the case the fixture cannot reach and the
+    // one the two providers failing apart is about.
+    sealed class Refusing : IFilingsArchiveFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<ArchiveFilings> FilingsAsync(string ticker, string cik, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            throw new ProviderRefusal("the archive could not be reached", transient: true);
+        }
+    }
+
     sealed record StoredRow(string Ticker, string FilingDate, string FetchedAt, string Payload, string Source);
 
     static IReadOnlyList<StoredRow> Rows(TemporaryStore store, string ticker)
@@ -159,7 +182,7 @@ public class FundamentalsFetcherTests
         // invites the wrong one. Constructed, because every captured name holds
         // more than twelve.
         var shortWindow = FundamentalsFetcher.Detail(
-            new FundamentalsOutcome("NEW", true, null, 3, 3, 3, 0, 3, 0, [], 1));
+            new FundamentalsOutcome("NEW", true, null, 3, 3, 3, 0, 3, 0, [], 1, 0, null, false));
 
         Assert.Contains("3 filing(s) held of 12 wanted", shortWindow, StringComparison.Ordinal);
     }
@@ -308,11 +331,190 @@ public class FundamentalsFetcherTests
         Assert.Equal(FundamentalsFetcher.Provider, parts["balanceSheet"]);
         Assert.Equal(FundamentalsFetcher.Provider, parts["valuation"]);
 
-        // The two this provider files for nobody, and the one this component works
-        // out rather than copying.
-        Assert.Equal(FundamentalsFetcher.NotFiled, parts["segments"]);
-        Assert.Equal(FundamentalsFetcher.NotFiled, parts["guidance"]);
+        // The one this component works out rather than copying.
         Assert.Equal(FundamentalsFetcher.Computed, parts["margin"]);
+
+        // And the three the archive supplies, which this fetch had no archive for.
+        // Not the same statement as the provider filing none: a read that did not
+        // happen and a provider that files a part for nobody are different rows, and
+        // one that could not tell them apart would report a company with no segments.
+        Assert.Equal(FundamentalsFetcher.NotRead, parts["segments"]);
+        Assert.Equal(FundamentalsFetcher.NotRead, parts["guidance"]);
+        Assert.Equal(FundamentalsFetcher.NotRead, parts["facts"]);
+    }
+
+    [Fact]
+    public async Task TheArchivesPartsAreAttributedToTheArchiveAndNotToTheProvider()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await WithArchive(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        using var source = JsonDocument.Parse(Rows(store, "AAPL")[0].Source);
+
+        var parts = source.RootElement.EnumerateObject().ToDictionary(part => part.Name, part => part.Value.GetString());
+
+        Assert.Equal(FundamentalsFetcher.Archive, parts["segments"]);
+        Assert.Equal(FundamentalsFetcher.Archive, parts["guidance"]);
+        Assert.Equal(FundamentalsFetcher.Archive, parts["facts"]);
+
+        // And the company financials provider still owns its own eight, so one row
+        // carrying two providers says which filled what.
+        Assert.Equal(FundamentalsFetcher.Provider, parts["quarter"]);
+        Assert.Equal(FundamentalsFetcher.Provider, parts["balanceSheet"]);
+    }
+
+    [Fact]
+    public async Task TheArchivesPartsSitOnTheNewestFilingAlone()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await WithArchive(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        var rows = Rows(store, "AAPL");
+
+        Assert.Equal(FundamentalsFetcher.StoredFilings, rows.Count);
+
+        using var newest = JsonDocument.Parse(rows[0].Payload);
+
+        // A segment table is read from one filing's own report page and the guidance
+        // from one announcement's exhibit, so writing either onto a historical row
+        // would state that a 2024 quarter's segments were this quarter's.
+        Assert.Equal(JsonValueKind.Object, newest.RootElement.GetProperty("segments").ValueKind);
+        Assert.Equal(JsonValueKind.Object, newest.RootElement.GetProperty("guidance").ValueKind);
+        Assert.Equal(JsonValueKind.Array, newest.RootElement.GetProperty("facts").ValueKind);
+
+        foreach (var row in rows.Skip(1))
+        {
+            using var older = JsonDocument.Parse(row.Payload);
+
+            Assert.Equal(JsonValueKind.Null, older.RootElement.GetProperty("segments").ValueKind);
+            Assert.Equal(JsonValueKind.Null, older.RootElement.GetProperty("guidance").ValueKind);
+            Assert.Equal(JsonValueKind.Null, older.RootElement.GetProperty("facts").ValueKind);
+        }
+    }
+
+    [Fact]
+    public async Task TheStoredSegmentFiguresAreTheOnesTheArchiveRendered()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await WithArchive(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        using var payload = JsonDocument.Parse(Rows(store, "AAPL")[0].Payload);
+
+        var segments = payload.RootElement.GetProperty("segments");
+
+        Assert.Equal("R46.htm", segments.GetProperty("report").GetString());
+        Assert.Equal(1_000_000, segments.GetProperty("scale").GetInt32());
+        Assert.Equal(4, segments.GetProperty("periods").GetArrayLength());
+        Assert.Equal(6, segments.GetProperty("groups").GetArrayLength());
+
+        // Money as text in the invariant form, which is the storage form money
+        // takes, and the scale already applied.
+        var sales = segments.GetProperty("consolidated").EnumerateArray().First(figure =>
+            figure.GetProperty("lineItem").GetString() == "Net sales"
+            && figure.GetProperty("months").GetInt32() == 3);
+
+        Assert.Equal("109417000000", sales.GetProperty("value").GetString());
+        Assert.Equal("2026-06-27", sales.GetProperty("ended").GetString());
+    }
+
+    [Fact]
+    public async Task GuidanceIsStoredAsThePassageAndNeverAsAFigure()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // The filer whose release carries guidance under a heading.
+        // see: Guidance is stored as management's own prose and never parsed into a figure
+        await WithArchive(store, Feed()).RunAsync("KEYS", null, "open-1");
+
+        using var payload = JsonDocument.Parse(Rows(store, "KEYS")[0].Payload);
+
+        var guidance = payload.RootElement.GetProperty("guidance");
+
+        Assert.True(guidance.GetProperty("located").GetBoolean());
+        Assert.Equal("Outlook", guidance.GetProperty("heading").GetString());
+        Assert.Equal("exhibit991-q326pressrelease.htm", guidance.GetProperty("document").GetString());
+        Assert.Equal("2026-08-18", guidance.GetProperty("filedOn").GetString());
+        Assert.Contains("$1.930 billion to $1.950 billion", guidance.GetProperty("passage").GetString()!, StringComparison.Ordinal);
+
+        // No figure anywhere in it. The passage is what was filed and the store
+        // holds no revenue or earnings guide struck from it.
+        Assert.Equal(
+            ["document", "filedOn", "located", "heading", "passage"],
+            guidance.EnumerateObject().Select(field => field.Name));
+    }
+
+    [Fact]
+    public async Task AnExhibitWithNoHeadingIsStoredAsNotLocatedRatherThanAsNoGuidance()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // The other filer, whose exhibit states none at all. Both rows carry the
+        // document and its date, because the exhibit is the evidence for which of
+        // the two it was.
+        await WithArchive(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        using var payload = JsonDocument.Parse(Rows(store, "AAPL")[0].Payload);
+
+        var guidance = payload.RootElement.GetProperty("guidance");
+
+        Assert.False(guidance.GetProperty("located").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, guidance.GetProperty("passage").ValueKind);
+        Assert.Equal("a8-kex991q3202606272026.htm", guidance.GetProperty("document").GetString());
+
+        // And the part is still attributed to the archive, because the archive
+        // answered: what it served was an exhibit with no guidance in it.
+        using var source = JsonDocument.Parse(Rows(store, "AAPL")[0].Source);
+
+        Assert.Equal(FundamentalsFetcher.Archive, source.RootElement.GetProperty("guidance").GetString());
+    }
+
+    [Fact]
+    public async Task AnArchiveThatRefusesLosesItsThreePartsAndNotTheOtherEight()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var refusing = new Refusing();
+        var outcome = await WithArchive(store, Feed(), refusing).RunAsync("AAPL", null, "open-1");
+
+        Assert.Equal(1, refusing.Requests);
+
+        // The fetch stood. Twelve filings stored, which is what the other provider
+        // supplied, because refusing the whole fetch would lose eight figures to
+        // recover two.
+        Assert.Equal(FundamentalsFetcher.StoredFilings, outcome.Held);
+        Assert.Equal(FundamentalsFetcher.StoredFilings, outcome.RowsWritten);
+
+        using var source = JsonDocument.Parse(Rows(store, "AAPL")[0].Source);
+
+        Assert.Equal(FundamentalsFetcher.NotRead, source.RootElement.GetProperty("segments").GetString());
+        Assert.Equal(FundamentalsFetcher.Provider, source.RootElement.GetProperty("quarter").GetString());
+
+        // And the operator reads it, which is what makes a caught refusal legitimate
+        // rather than swallowed.
+        Assert.Contains("absent: segments, guidance, facts", Detail(store), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheRunLogSaysWhatTheArchiveCostAndWhichReportItRead()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await WithArchive(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        var detail = Detail(store);
+
+        Assert.Contains("segments from R46.htm", detail, StringComparison.Ordinal);
+        Assert.DoesNotContain("guidance located", detail, StringComparison.Ordinal);
+
+        using var second = new TemporaryStore().Migrated();
+
+        await WithArchive(second, Feed()).RunAsync("KEYS", null, "open-1");
+
+        Assert.Contains("segments from R85.htm", Detail(second), StringComparison.Ordinal);
+        Assert.Contains("guidance located", Detail(second), StringComparison.Ordinal);
     }
 
     [Fact]
