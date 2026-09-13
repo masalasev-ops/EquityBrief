@@ -23,6 +23,10 @@ public static class SectionPrompt
 {
     public const string Lane = "local";
 
+    // The lane a paid section is asked in, which is part of its recording's key, so the
+    // same section over the same evidence asked of either model is two recordings.
+    public const string PaidLane = "paid";
+
     // What any section is written under. Held as constants because they are part of
     // every recording's key, so a word changed here is a pass nothing recorded.
     //
@@ -75,7 +79,8 @@ public static class SectionPrompt
         ["The industry cycle"] =
             "Say where the industry's own prices are in their cycle and the three things capping or driving them, using only the documents listed.",
         ["The dated calendar items"] =
-            "List, one sentence each, the dated events the documents name that fall after the latest session in the facts.",
+            "List, one sentence each, the dated events the documents name that fall after the session stated below, each with the date a listed document gives for it and ending with that document's marker. "
+            + "Write no event dated on or before that session, and no date no listed document states.",
         ["The two cases"] =
             "Write the bull case and the bear case side by side, each ending in what it needs to see at the next report.",
         ["The risks, each with what would confirm it"] =
@@ -89,7 +94,9 @@ public static class SectionPrompt
         string section,
         IReadOnlyList<Fact> facts,
         IReadOnlyList<PromptDocument> documents,
-        string? refusedBecause = null)
+        string? refusedBecause = null,
+        IReadOnlyList<(string Section, string Prose)>? written = null,
+        DateOnly? night = null)
     {
         if (!Asks.TryGetValue(section, out var ask))
         {
@@ -102,6 +109,13 @@ public static class SectionPrompt
         prompt.Append("Company: ").Append(ticker).Append('\n');
         prompt.Append("Section: ").Append(section).Append('\n');
         prompt.Append(ask).Append("\n\n");
+
+        // The night the facts were computed for, given to the one section whose dates are
+        // held after it, because nothing in the facts file states which night that is.
+        if (night is { } computed && string.Equals(section, ClaimRules.CalendarSection, StringComparison.Ordinal))
+        {
+            prompt.Append("Session: ").Append(computed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append("\n\n");
+        }
 
         if (string.Equals(section, ClaimRules.CauseSection, StringComparison.Ordinal))
         {
@@ -145,6 +159,19 @@ public static class SectionPrompt
             }
         }
 
+        // The sections the checker has already accepted, handed to the one section figure
+        // 12.2 says is written last and from them. Absent from every other prompt, so a
+        // recording made before any section was written is still the request it answers.
+        if (written is { Count: > 0 })
+        {
+            prompt.Append("\nSections already written:\n");
+
+            foreach (var (name, prose) in written)
+            {
+                prompt.Append(name).Append(":\n").Append(prose.Trim()).Append("\n\n");
+            }
+        }
+
         // The one retry, told why the first draft was refused, because a second draft
         // written blind would fail for the same reason.
         if (refusedBecause is { Length: > 0 })
@@ -163,8 +190,22 @@ public static class SectionPrompt
         string section,
         IReadOnlyList<Fact> facts,
         IReadOnlyList<PromptDocument> documents,
-        string? refusedBecause = null) =>
-        new(Lane, section, model, [.. documents.Select(document => document.Id)], System(documents), Prompt(ticker, section, facts, documents, refusedBecause));
+        string? refusedBecause = null,
+        IReadOnlyList<(string Section, string Prose)>? written = null,
+        DateOnly? night = null) =>
+        new(Lane, section, model, [.. documents.Select(document => document.Id)], System(documents), Prompt(ticker, section, facts, documents, refusedBecause, written, night));
+
+    // The same request asked in the paid lane.
+    public static ModelRequest PaidRequest(
+        string model,
+        string ticker,
+        string section,
+        IReadOnlyList<Fact> facts,
+        IReadOnlyList<PromptDocument> documents,
+        string? refusedBecause = null,
+        IReadOnlyList<(string Section, string Prose)>? written = null,
+        DateOnly? night = null) =>
+        Request(model, ticker, section, facts, documents, refusedBecause, written, night) with { Lane = PaidLane };
 
     // Each stored move that a handed document was published inside, with the markers
     // of those documents in the order the prompt lists them. A move no document falls

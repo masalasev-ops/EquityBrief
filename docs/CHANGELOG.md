@@ -25,6 +25,190 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - ARCHITECTURE.html - the name screen's reads name the calendar and the run log
+
+Corrects: the name screen has read the run log since 6.6, for the newest prose pass's sections not written, and since 6.7 for what research spent, and from 6.8 it reads the calendar for its dates and the newest research pass, and its Reads line named none of the three. Found at 6.8, where the page's research regions are drawn.
+Was:
+> <p><b>Reads:</b> the facts, ladder, levels, volume profile, moves and fundamentals for that name and date, every stored research section with its own date and model, and the source documents those sections cite, which the dates-and-sources region draws and this list did not name until 6.0.</p>
+Now:
+> <p><b>Reads:</b> the facts, ladder, levels, volume profile, moves and fundamentals for that name and date, every stored research section with its own date and model, the source documents those sections cite, which the dates-and-sources region draws and this list did not name until 6.0, the calendar that region draws beside them, and the run log, for what research has spent and cost and what the newest pass for the name came to, which the page has read since 6.6 and this list did not name until 6.8.</p>
+Why: a screen's Reads line is where a reader looks for what the page depends on, and a page whose research line comes from the run log looks, from that line, as if it could not have drawn it.
+
+### 2026-09-13 - ARCHITECTURE.html - the research runner's catalogue and matrix rows read the run log
+
+Authorised by: A name opened again on the day its research pass ran starts no second pass unless the page asks for one
+Was:
+> <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, research store, theme store, source documents</td><td>research store, source documents</td><td>writes the narrative sections pending the checker's verdict, tests every document it fetched for admissibility before storing it, keeps what it stored with the verdict that admitted or refused it, and has the spend cap make its every paid call</td></tr>
+>
+> <tr><td>Research runner</td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td><span class="w">W</span></td></tr>
+Now:
+> <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, research store, theme store, source documents, run log</td><td>research store, source documents</td><td>writes the narrative sections pending the checker's verdict, tests every document it fetched for admissibility before storing it, keeps what it stored with the verdict that admitted or refused it, and has the spend cap make its every paid call. It reads the run log for whether a pass for the name already ran that day, and starts no second plain pass where one did (see: A name opened again on the day its research pass ran starts no second pass unless the page asks for one)</td></tr>
+>
+> <tr><td>Research runner</td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td><span class="r">R</span> <span class="w">W</span></td></tr>
+Why: the runner reads the run log for whether a pass for the name ran to the end that day, and component-access reconciles the class's declaration against both rows cell by cell, so the catalogue's Reads cell and the matrix's run log cell say what the class declares.
+
+### 2026-09-13 - ARCHITECTURE.html - the read API's catalogue row names the one thing it starts
+
+Authorised by: The name page's control starts the worker's research verb, and the read API writes nothing it starts
+Was:
+> <td>read-only access for the app; performs no computation and no fetching</td></tr>
+Now:
+> <td>read-only access for the app; performs no computation and no fetching. The name page's control is the one thing it starts, the worker's research verb for that name as a process of its own, and it writes nothing that pass writes (see: The name page's control starts the worker's research verb, and the read API writes nothing it starts)</td></tr>
+Why: the row said the read API gives read-only access and fetches nothing, which stays true of every store, and from 6.8 it also starts the worker's verb when the name page's control is pressed, which a reader of the row would otherwise find only in the route.
+
+### 2026-09-13 - RUNBOOK.md - a second press on the same day starts nothing, and what a pass costs is stated beside the control
+
+Authorised by: A name opened again on the day its research pass ran starts no second pass unless the page asks for one
+Was:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote all eight sections it could write, three on the local model and five through the spend cap for $0.0201, in about two and a half minutes. A second press on the same day writes nothing, because every section it would write was written or left out today, and a press while a pass for the name is running is refused by name. The industry cycle waits for the theme record, which the theme research runner writes.
+Now:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote all eight sections it could write, three on the local model and five through the spend cap for $0.0201. The name page states what the passes before it cost beside its control, because a pass's price is known only once it has been made. A second press on the same day starts nothing, because a pass for the name already ran that day, and a press while a pass for the name is running is refused by name; the page's rewrite and its option to have the paid model write the local lane's sections still start one (see: A name opened again on the day its research pass ran starts no second pass unless the page asks for one). The industry cycle waits for the theme record, which the theme research runner writes.
+Why: the paragraph gave the per-section rule as the reason a second press writes nothing, and that rule leaves a section a pass had nothing to write from without a row, so a second press would fetch again; the reason is now the pass that ran that day. The two and a half minutes went with it: a duration measured once on this machine is a record's figure rather than a spec's, and it is in PROGRESS.md's 6.8 entry, where the $0.0201 beside it is pinned to the research record.
+
+### 2026-09-13 - RUNBOOK.md - what the name page's control does
+
+Authorised by: A pass is started only by a request carrying the name page's own header
+Was:
+> **Where to look.** Every stage of a pass is a row on the run log under one run, `research-<instant>-<TICKER>`:
+Now:
+> **What the control does.** It sends the press with a header of the page's own, and the read surface refuses a request without one, so another site's page open in a browser on this machine cannot start a pass (see: A pass is started only by a request carrying the name page's own header). The surface refuses a name the index does not hold, then starts the command above from the checkout it runs in, telling the worker the data root it reads so the pass writes the store the page shows, and returns at once. It writes nothing itself: the page shows what the pass wrote when it is opened again.
+>
+> **Where to look.** Every stage of a pass is a row on the run log under one run, `research-<instant>-<TICKER>`:
+Why: the section said the control starts the command and nothing about what a press is refused for or which store the pass writes, which is what an operator reading the run log after a press that started nothing needs.
+
+### 2026-09-13 - BUILD_PLAN.md - the three obligations 6.8 produces the evidence for, discharged
+
+Corrects: nothing was wrong. Three carried obligations reached the checkpoint that produces their evidence, and each row records what was measured and ruled, in the form 6.6's discharge took.
+Was:
+> | **A dated calendar item's date held to something that can carry it** | 6.6 | 6.8 | 6.8 writes the first dated calendar items, the section of events a model reads out of stored filings and news that fall after the latest session. 6.4's checker holds every date in prose to one the facts file holds, and the file carries the provider's next dated event and nothing a document dates, so as built every date this section exists to state is refused and the section falls back on every name. Found at 6.6 while section 12.2's lane table was rewritten to say what each section must pass. What 6.8 produces is the first set of dated items a model wrote from stored documents, which is what shows whether such a date belongs in the facts file, read out of the document by code, or in a rule that holds a date to the document the sentence cites |
+>
+> | **A pass the spend cap refuses short of a reached cap stated on the name page** | 6.7 | 6.8 | 6.8 is the first checkpoint that makes a paid pass, and it makes it through the spend cap. The cap refuses a call where what has been spent and the most that call could cost would pass a cap, which for the request recorded at 6.7 starts $0.0101079 before the cap, and the name page states a pause from the moment a cap is reached, judged with no call in hand, because at 6.7 there is no pass for it to judge. So between a cap less one call's ceiling and the cap itself a call is refused, the run page carries the cap's row for it, and the name page draws nothing. Found at 6.7, by the mutation that drew a pause a cent before the cap, which survived until a case half a cent short of it was written. What 6.8 produces is a pass opened from the name page and refused by the cap, which is what shows whether the page states that pass's own refusal or a verdict it works out for itself |
+>
+> | **The research lane boundary measured against the fixture both ways** | authored with the architecture | 6.8 | 6.8 is where a pass over the fixture reproduces byte for byte from the recorded endpoint, which is what lets each section be run both ways and compared. The decision named phase 6 and this names the checkpoint inside it that produces the recording, which sharpens the point rather than moving it. It read 6.5 until 6.0, and 6.0's resplit moved the research runner from the fifth position to the eighth, so the point moved with the work rather than the work with the point |
+Now:
+> | **A dated calendar item's date held to something that can carry it** | 6.6 | 6.8, discharged | held to a rule rather than to the facts file (see: A dated calendar item's date rests on a document the sentence cites and falls after the night the facts were computed for). A date in this section is one a document the sentence cites states, read out of that document by the claim checker's own figure reader, and a full date falls after the night the facts file was computed for; every other section still holds a date to the facts file. The evidence was the first dated items a model wrote from stored documents: over the fixture's KEYS the paid model's first draft named two investor conferences, each dated by a document it cited and each after the night, and was accepted, while the local model's drafts in the lane comparison were left out. The facts file was the branch not taken, because a date read into the file by code would be a second reading of the document the sentence already rests on, and holding the date to that document is the same test with nothing to keep in step. Asserted over constructed sentences: a date the cited document states and after the night passes, the same date cited to a document that does not state it is refused, a stated date on or before the night is refused, and a date nobody stated is refused. What it read before: 6.8 writes the first dated calendar items, the section of events a model reads out of stored filings and news that fall after the latest session. 6.4's checker holds every date in prose to one the facts file holds, and the file carries the provider's next dated event and nothing a document dates, so as built every date this section exists to state is refused and the section falls back on every name. Found at 6.6 while section 12.2's lane table was rewritten to say what each section must pass. What 6.8 produces is the first set of dated items a model wrote from stored documents, which is what shows whether such a date belongs in the facts file, read out of the document by code, or in a rule that holds a date to the document the sentence cites |
+>
+> | **A pass the spend cap refuses short of a reached cap stated on the name page** | 6.7 | 6.8, discharged | the page states that pass's own refusal, and works out no verdict of its own for it. A pass stopped by the cap writes the cap's line for each section it did not reach on its own run log row, and the name page reads the newest pass: it draws one line saying the pass was stopped by the spend cap before a cap was reached, ending in the line the cap refused the first call with, and each section it did not reach with the same line, while its own verdict, judged with no call in hand, still draws no pause and offers the controls. Asserted over a pass at a day cap of one cent, whose first call the cap refused inside that call's ceiling: the page's line ends in the words of that call's own row, every paid section carries them, and no pause line is drawn. What it read before: 6.8 is the first checkpoint that makes a paid pass, and it makes it through the spend cap. The cap refuses a call where what has been spent and the most that call could cost would pass a cap, which for the request recorded at 6.7 starts $0.0101079 before the cap, and the name page states a pause from the moment a cap is reached, judged with no call in hand, because at 6.7 there is no pass for it to judge. So between a cap less one call's ceiling and the cap itself a call is refused, the run page carries the cap's row for it, and the name page draws nothing. Found at 6.7, by the mutation that drew a pause a cent before the cap, which survived until a case half a cent short of it was written. What 6.8 produces is a pass opened from the name page and refused by the cap, which is what shows whether the page states that pass's own refusal or a verdict it works out for itself |
+>
+> | **The research lane boundary measured against the fixture both ways** | authored with the architecture | 6.8, discharged | measured, and recorded in the research record's expectation, where a test reruns both passes from the recordings. Every section was run on both models over one evidence set, being KEYS's thirteen articles and its own release with the same documents handed each section either way: with every section on the paid model all eight it could write were accepted, over 11 calls for $0.025778823, and with every section on the local model three were, what the company sells, the segment commentary and the key under each figure, while the cause of each large move, the dated calendar items, the two cases, the risks and the short version were left out. The boundary moved on that evidence, and this machine's local lane is the three the local model wrote accepted (see: The fixture comparison moved the cause of each large move into the paid lane on this machine), a pass in the default lanes writing all eight for $0.020124825. What it read before: 6.8 is where a pass over the fixture reproduces byte for byte from the recorded endpoint, which is what lets each section be run both ways and compared. The decision named phase 6 and this names the checkpoint inside it that produces the recording, which sharpens the point rather than moving it. It read 6.5 until 6.0, and 6.0's resplit moved the research runner from the fifth position to the eighth, so the point moved with the work rather than the work with the point |
+Why: an obligation is closed in its own row, where the next reader of the table meets it, with the text it carried kept inside the row rather than lost.
+
+### 2026-09-13 - ARCHITECTURE.html - the research runner's Reads cell names the research store
+
+Corrects: the research runner's catalogue row did not list the research store among what it reads, while its matrix row already gave it R W on research and theme. The runner reads each section's newest version to decide what a pass writes and which version comes next, and component-access refused the declaration that says so against the Reads cell. Found at 6.8, where the runner is built.
+Was:
+> <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, theme store, source documents</td>
+Now:
+> <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, research store, theme store, source documents</td>
+Why: the catalogue row and the matrix row now agree with each other and with the class, which is what component-access reconciles cell by cell.
+
+### 2026-09-13 - ARCHITECTURE.html - the facts assembler and the change detector run again for their night when an open fetches a name's fundamentals
+
+Authorised by: A name's facts file is assembled again for its night when an open fetches its fundamentals
+Was:
+> <tr><td><b>Facts assembler</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td>
+>
+> <tr><td><b>Change detector</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td>
+Now:
+> <tr><td><b>Facts assembler</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name, and for its night again when an open fetches a name's fundamentals</td>
+>
+> <tr><td><b>Change detector</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name, and for its night again when an open fetches a name's fundamentals</td>
+Why: the research verb runs both again after a fetch that stored a filing the night had not seen, so their Runs cells say so rather than stating a nightly schedule the verb departs from.
+
+### 2026-09-13 - ARCHITECTURE.html - figure 12.2, its key, the lane table's cause row and why each section sits in its lane
+
+Authorised by: The fixture comparison moved the cause of each large move into the paid lane on this machine
+Was:
+> <text x="192" y="236" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Classify and extract</text>
+> <text x="192" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">what caused each big move;</text>
+> <text x="192" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the business explainer and segments</text>
+>
+> <text x="512" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the two cases, the risks,</text>
+> <text x="512" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the short version at the top</text>
+>
+> <desc>Components fetch every document, then classification and extraction work goes to the local model while synthesis goes to the paid model. Both outputs pass the claim checker into one stored research record.</desc>
+>
+>   <p>Where the line falls is decided by one test: is the answer inside a single document, or does it have to be built across several that disagree. Naming what caused a large move is reading the few documents published inside it, which code has already picked out. The business explainer and the segment commentary are extraction from a filing already fetched. Both are small jobs a local model does reliably, and each call carries a few thousand tokens rather than the whole evidence set, which is what makes a consumer graphics card sufficient for that lane at all. Only the right-hand lane needs every document in memory at once, which is why the paid model does it. (see: A research pass is split by section difficulty, not run wholesale on one model)</p>
+>
+>   <tr><td>The cause of each large move</td><td>local</td><td>the largest moves of the stored year from the bars, each with its percentage change, the session it ended on and the session its change was measured from; then, for each move, which documents fetched for the name were published inside it. A move with no document inside it is not put to the model, and a section with none at all is not written</td>
+>
+> <p><b>Why each section sits in its lane.</b> The four local sections each have
+> their answer in one place: the few documents inside one move, one filing, the
+> segment table, or values already computed. Each call carries only those, a few
+> thousand tokens, which is what makes a consumer graphics card enough for that
+> lane. The five paid sections are built across documents that disagree.
+Now:
+> <text x="192" y="236" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Extract</text>
+> <text x="192" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the business explainer, the segments</text>
+> <text x="192" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">and the key under each figure</text>
+>
+> <text x="512" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">each move's cause, the two cases,</text>
+> <text x="512" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the risks, the short version at the top</text>
+>
+> <desc>Components fetch every document, then extraction work goes to the local model while each move's cause and the synthesis go to the paid model. Both outputs pass the claim checker into one stored research record.</desc>
+>
+>   <p>Where the line falls is decided by one test: is the answer inside a single document, or does it have to be built across several that disagree. The business explainer and the segment commentary are extraction from a filing already fetched, and the key under each figure explains values already computed. Those are small jobs a local model does reliably, and each call carries a few thousand tokens rather than the whole evidence set, which is what makes a consumer graphics card sufficient for that lane at all. Naming what caused a large move reads the few documents code picked out inside it, which the test puts on the left, and the fixture comparison moved it right on this machine: over one evidence set the local model wrote figures from the articles that the facts file does not hold, again after being told why, where the paid model's first draft was accepted (see: The fixture comparison moved the cause of each large move into the paid lane on this machine). The right-hand lane needs every document in memory at once, which is why the paid model does it. (see: A research pass is split by section difficulty, not run wholesale on one model)</p>
+>
+>   <tr><td>The cause of each large move</td><td>paid</td><td>the largest moves of the stored year from the bars, each with its percentage change, the session it ended on and the session its change was measured from; then, for each move, the documents fetched for the name that were published inside it, at most two a move, naming the fewest companies and then the earliest (see: A research pass hands each section the documents code picks for it, the company's own filing first). A move with no document inside it is not put to the model, and a section with none at all is not written</td>
+>
+> <p><b>Why each section sits in its lane.</b> The three local sections each have
+> their answer in one place: one filing, the segment table, or values already
+> computed. Each call carries only those, a few thousand tokens, which is what makes
+> a consumer graphics card enough for that lane. The cause of each large move has its
+> answer in the few documents inside one move as well, and sits in the paid lane on
+> this machine because the comparison measured the local model failing it there. The
+> five other paid sections are built across documents that disagree.
+Why: the comparison ran every section both ways over one evidence set and the cause of each large move was accepted from the paid model and left out by the local one, so this machine's default lane is three sections and the figure, its key, the table's lane column and the paragraph beneath it say so. The cause row's first cell also says which documents a move is handed, which is the evidence decision's rule and is described here because it is the same row.
+
+### 2026-09-13 - ARCHITECTURE.html - the lane table's rows for the dated calendar items and the two cases say what each is handed and what a date is held to
+
+Authorised by: A research pass hands each section the documents code picks for it, the company's own filing first
+Was:
+>   <tr><td>The dated calendar items</td><td>paid</td><td>the name's stored filings and news. The provider's own earnings dates are on the calendar already and are not asked for again</td><td>one sentence per dated event the documents name that falls after the latest session</td><td>every sentence cites the stored document that dates the event, and every figure is a rounding of one in the facts file. The rule that a date must be one the facts file holds would refuse every date this section exists to state, since that file carries only the provider's next event, and what such a date is held to is settled when the first of these is written</td></tr>
+>
+>   <tr><td>The two cases</td><td>paid</td><td>the facts file, the name's stored filings and news, and the theme record, handed over together</td>
+Now:
+>   <tr><td>The dated calendar items</td><td>paid</td><td>the company's own filing and the documents published since it, as the two cases are handed, and the night the facts file was computed for. The provider's own earnings dates are on the calendar already and are not asked for again</td><td>one sentence per dated event the documents name that falls after that night</td><td>every date is one a document the sentence cites states, and falls after the night the facts file was computed for (see: A dated calendar item's date rests on a document the sentence cites and falls after the night the facts were computed for); every sentence cites that document; every figure is a rounding of one in the facts file</td></tr>
+>
+>   <tr><td>The two cases</td><td>paid</td><td>the facts file, the company's own filing and at most six documents published since it naming the fewest companies, and the theme record where one is stored, handed over together</td>
+Why: the two rows named the name's stored filings and news handed over together, which is not what a pass hands: a year of one name's news is millions of characters, so each section is handed what the rule picks. The calendar row's last cell also states the rule its dates are held to, which A dated calendar item's date rests on a document the sentence cites and falls after the night the facts were computed for settles, and which that cell had said would be settled when the first of these was written.
+
+### 2026-09-13 - RUNBOOK.md - the research model's answer budget is 32,768 tokens
+
+Corrects: the shipped answer budget of 8,192 tokens was too small for the research model with its reasoning on. Over 6.8's first passes, four of the paid calls ran to the end of the budget and returned nothing a section could store, the two cases and the short version among them, each still billed; at 32,768 none did, and the longest used 12,741. Found at 6.8, which makes the first passes.
+Was:
+> | the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `8192` |
+Now:
+> | the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
+Why: a budget a call reasons past returns no answer and is billed anyway, so the budget is set above what the measured calls used. The ceiling a call is judged by grows with it, which costs research refused inside a larger margin of a cap.
+
+### 2026-09-13 - RUNBOOK.md - the local lane's default is three sections
+
+Authorised by: The fixture comparison moved the cause of each large move into the paid lane on this machine
+Was:
+> | the sections the local lane holds | `EquityBrief:Models:LocalLane`, one entry per section in figure 12.2's own names | the cause of each large move, what the company sells, the segment commentary, the key under each figure |
+Now:
+> | the sections the local lane holds | `EquityBrief:Models:LocalLane`, one entry per section in figure 12.2's own names | what the company sells, the segment commentary, the key under each figure |
+Why: the table states the code's default and a test reads the two against each other.
+
+### 2026-09-13 - SCHEMA.md - a paid call's row is named for its round, and a refused call the provider billed carries its price
+
+Corrects: the paid call row said a refused call spends nothing, and 6.8's comparison measured three refusals the provider had counted and billed, $0.0136 of spend the ledger would not have held. It also said one section's call in one pass is one row, and a pass that writes a section again inside the same run writes a second call for it, which the run log's key refuses without the round in the stage. Found at 6.8, which makes the first passes.
+Was:
+> **A paid call is a row of its own, and the rows are the ledger.** The spend cap writes one row for every call it judges, under the pass's run, with the stage `research call:` followed by the section asked for, so one section's call in one pass is one row. `ok` carries what the call cost in `spend`, one model call and one network request; `paused` is a call a cap refused before it was made, counting nothing and spending nothing; `refused` and `unavailable` are calls the provider declined or did not answer, counting the attempt and spending nothing.
+Now:
+> **A paid call is a row of its own, and the rows are the ledger.** The spend cap writes one row for every call it judges, under the pass's run, with the stage `research call:` followed by the section asked for, and from 6.8 the round where a pass asks for a section again inside the same run, as `research call: The two cases, round 2`, so one section's call in one round of one pass is one row. `ok` carries what the call cost in `spend`, one model call and one network request; `paused` is a call a cap refused before it was made, counting nothing and spending nothing; `unavailable` is a call the provider did not answer, counting the attempt and spending nothing; `refused` is a call the provider declined, which spends nothing, or answered with nothing a section could store, which the provider counted and billed and which carries that price in `spend`.
+Why: a ledger that records a billed call as nothing lets research spend past a cap by what that call cost, and a stage that repeats inside a run is a row the store refuses.
+
+### 2026-09-13 - SCHEMA.md - the newest filing's payload carries the company's identifier at the archive
+
+Corrects: the payload's description named what it holds, and from 6.8 it also holds the identifier a research pass reads the company's own release from the archive by, which nothing else in the store carries. Found at 6.8, where the runner first needs it.
+Was:
+> `payload` holds the quarter's figures, the balance sheet, and the margin computed from that filing's own revenue and gross profit.
+Now:
+> `payload` holds the quarter's figures, the balance sheet, and the margin computed from that filing's own revenue and gross profit, and on the newest filing's row the company's identifier at the filings archive, from 6.8, which a research pass reads the company's own release by.
+Why: a column's description that omits a key its readers depend on is a key the next reader finds by accident.
+
 ### 2026-09-13 - BUILD_PLAN.md - the research model's live transport is 6.7's, and 6.6 counted the first model call
 
 Corrects: two sentences in phase 6's checkpoints that were wrong when 6.0 wrote them. 6.8 held the live implementation behind 6.7's interface, and 6.7's own deliverable prices a call from the provider's counts for the request as sent, which can only be captured through the transport that sends it, so 6.7 wrote the transport and 6.8's text described work already done. And 6.7 said the run log's `model_calls` carries a figure other than zero for the first time there, where 6.6's local lane counts every call it makes. Found at 6.7, the first while the recordings were captured through the feed and the second while its PROGRESS entry was checked against the store.

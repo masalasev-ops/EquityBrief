@@ -93,6 +93,7 @@ public class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdFundamentalsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdNameNewsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
@@ -262,9 +263,9 @@ public class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         Assert.True(
-            MayHoldAClient.Length <= 10,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are ten feed " +
-            "implementations. An eleventh is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 11,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are eleven feed " +
+            "implementations. A twelfth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: two files, the local lane's client and
         // the research model's live feed.
@@ -276,8 +277,10 @@ public class NightlyCost
         // seven against six before 6.1 added the fundamentals endpoint, which is
         // the first that no night calls, and eight before 6.2 added the filings
         // archive, which is the first from another provider, nine at 6.6, the
-        // local model, which is the first that reaches a model, and ten at 6.7, the
-        // research model, which is the first that is paid.
+        // local model, which is the first that reaches a model, ten at 6.7, the
+        // research model, which is the first that is paid, and eleven at 6.8, one name's
+        // own news, which is the night's news endpoint asked for one name and is the
+        // reason it holds a client of its own rather than a ticker on the night's.
         var live = Repository.SourceFiles()
             .Select(file => file[Repository.Root.Length..].Replace(Path.DirectorySeparatorChar, '/').TrimStart('/'))
             .Where(IsAProviderImplementation)

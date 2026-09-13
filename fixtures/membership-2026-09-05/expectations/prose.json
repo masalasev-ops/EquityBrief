@@ -1,12 +1,17 @@
 {
   "stage": "prose",
   "derivation": "derived",
-  "derivedFrom": "the decision that the local lane is a configured list of section names the writer takes whole, the decision that a cause of a move rests only on a document published inside that move, section 18's rows for a section the machine cannot hold and for the local model unavailable, and the fixture's own dates: the KEYS release exhibit filed on 2026-08-18 by the archive's own index, and KEYS's eight stored moves. Which sections a pass asks for, which it leaves unwritten and why, which move the release falls inside, and which sections a context of 8,000 tokens holds, were each worked out from those rules and dates before the tests that read this file were run. The local lane's half of section 19.1's research record, whose paid half is 6.8's.",
+  "derivedFrom": "the decision that the local lane is a configured list of section names the writer takes whole, the decision that a cause of a move rests only on a document published inside that move, section 18's rows for a section the machine cannot hold and for the local model unavailable, and the fixture's own dates: the KEYS release exhibit filed on 2026-08-18 by the archive's own index, and KEYS's eight stored moves. Which sections a pass asks for, which it leaves unwritten and why, which move the release falls inside, and which sections a context of 8,000 tokens holds, were each worked out from those rules and dates before the tests that read this file were run. The local lane's half of section 19.1's research record, whose paid half is 6.8's. The release passes are written over releaseLane, which held the cause of each large move until 6.8's fixture comparison moved that section to the paid lane on this machine; the writer takes whatever lane it is handed, so those passes read as they were recorded, and lane is the configured default the replay's pass and the research runner hand it.",
   "tables": [
     "research_section"
   ],
   "frozen": "the claim checker's verdict on each section the recorded model wrote, and nothing else. What a model writes is not a function of any rule here, so each verdict below is what the checker reached over the recorded answer, named as a reading of a recording rather than as a figure the rules produce. Every other value in this file is derived.",
   "lane": [
+    "What the company sells",
+    "The segment commentary",
+    "The key under each figure"
+  ],
+  "releaseLane": [
     "The cause of each large move",
     "What the company sells",
     "The segment commentary",
@@ -23,7 +28,6 @@
       "The key under each figure"
     ],
     "notWritten": {
-      "The cause of each large move": "no document was handed to the writer for it",
       "What the company sells": "no document was handed to the writer for it",
       "The segment commentary": "no document was handed to the writer for it"
     },

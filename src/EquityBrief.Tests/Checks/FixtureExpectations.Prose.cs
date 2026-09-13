@@ -63,6 +63,11 @@ public partial class FixtureExpectations
             reader.GetString(6)));
     }
 
+    // The lane the release passes were recorded over, which held the cause of each
+    // large move until 6.8's fixture comparison moved it to the paid lane. Read from the
+    // expectation, which says so beside it.
+    internal static string[] ReleaseLane => Listed(Expected("prose").GetProperty("releaseLane"));
+
     // What a caller hands the writer: the release, for every researched section the
     // lane holds.
     internal static Dictionary<string, IReadOnlyList<StoredDocument>> Handed(StoredDocument release) =>
@@ -80,7 +85,7 @@ public partial class FixtureExpectations
     {
         var (store, document) = await WithRelease();
 
-        var writer = new ProseWriter(new RecordedLocalModelFeed(Folder()), LocalSettings(), ProseWriter.DefaultLane, ProseClock, store.DatabaseFile);
+        var writer = new ProseWriter(new RecordedLocalModelFeed(Folder()), LocalSettings(), ReleaseLane, ProseClock, store.DatabaseFile);
         var checker = new ClaimChecker(ProseClock, store.DatabaseFile);
 
         for (var pass = 1; pass <= 2; pass++)
@@ -182,7 +187,7 @@ public partial class FixtureExpectations
             Assert.All(paired, pair => Assert.Equal(["D1"], pair.Markers));
 
             var feed = new RecordedLocalModelFeed(Folder());
-            var writer = new ProseWriter(feed, LocalSettings(), ProseWriter.DefaultLane, ProseClock, store.DatabaseFile);
+            var writer = new ProseWriter(feed, LocalSettings(), ReleaseLane, ProseClock, store.DatabaseFile);
             var checker = new ClaimChecker(ProseClock, store.DatabaseFile);
 
             var passes = release.GetProperty("passes").EnumerateArray().ToArray();
@@ -341,7 +346,7 @@ public partial class FixtureExpectations
         {
             var feed = new RecordedLocalModelFeed(Folder());
 
-            var outcome = await new ProseWriter(feed, LocalSettings(context), ProseWriter.DefaultLane, ProseClock, store.DatabaseFile)
+            var outcome = await new ProseWriter(feed, LocalSettings(context), ReleaseLane, ProseClock, store.DatabaseFile)
                 .WriteAsync("KEYS", Handed(document), "prose-cannot-hold");
 
             // Asked for the section that fits and for nothing else. Each refused section
@@ -393,7 +398,7 @@ public partial class FixtureExpectations
             var outcome = await new ProseWriter(
                     new OpenAiCompatibleModelFeed(client, LocalSettings()),
                     LocalSettings(),
-                    ProseWriter.DefaultLane,
+                    ReleaseLane,
                     ProseClock,
                     store.DatabaseFile)
                 .WriteAsync("KEYS", Handed(document), "prose-unavailable");
@@ -429,10 +434,21 @@ public partial class FixtureExpectations
     public async Task TheTokenEstimateIsAtOrAboveTheRuntimesOwnCountForEveryRecordedCall()
     {
         // The population is every section recording the fixture holds, reached by
-        // making the requests that recorded them: the replay's passes and the release's
-        // two. Both directions, so a recording nothing asks for is reported rather than
-        // kept, and a count is stated in advance.
+        // making the requests that recorded them: the replay's passes, the release's
+        // two, and from 6.8 the research pass with the configured lanes and the lane
+        // comparison's pass with every section local. Both directions, so a recording
+        // nothing asks for is reported rather than kept, and a count is stated in advance.
         var asked = new List<ModelRequest>();
+
+        foreach (var lane in new[] { (IReadOnlyList<string>)ProseWriter.DefaultLane, ClaimRules.Sections })
+        {
+            var researched = new RecordedLocalModelFeed(Folder());
+
+            using (await FixtureReplay.ResearchedAsync(lane: lane, local: researched))
+            {
+                asked.AddRange(researched.Asked);
+            }
+        }
 
         var replayed = new RecordedLocalModelFeed(Folder());
 
@@ -446,7 +462,7 @@ public partial class FixtureExpectations
         using (store)
         {
             var feed = new RecordedLocalModelFeed(Folder());
-            var writer = new ProseWriter(feed, LocalSettings(), ProseWriter.DefaultLane, ProseClock, store.DatabaseFile);
+            var writer = new ProseWriter(feed, LocalSettings(), ReleaseLane, ProseClock, store.DatabaseFile);
 
             await writer.WriteAsync("KEYS", Handed(document), "prose-measured-1");
             await new ClaimChecker(ProseClock, store.DatabaseFile).RunAsync("claims-measured-1");
@@ -457,7 +473,9 @@ public partial class FixtureExpectations
 
         var recorded = Directory.GetFiles(Folder(), RecordedLocalModelFeed.FilePrefix + "*.json").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
 
-        Assert.Equal(7, recorded.Length);
+        // Seven from 6.6, and twelve from 6.8's research pass and its comparison, the
+        // key under each figure's two being requests 6.6 had already recorded.
+        Assert.Equal(19, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

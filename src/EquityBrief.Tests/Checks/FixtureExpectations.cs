@@ -59,6 +59,16 @@ public partial class FixtureExpectations
             // figure 12.1's three questions.
             CheckReach.Key(Scope.LimitsTable, "Research staleness triggers"),
 
+            // 6.8, the research runner over the fixture's recordings: the record one
+            // pass writes, one pass an open, figure 12.1's two boxes the runner is, and
+            // the paid path's half of section 18's two local lane rows.
+            CheckReach.Key(Scope.FixtureTable, "research record"),
+            CheckReach.Key(Scope.LimitsTable, "Research passes per name per open"),
+            CheckReach.Key("Figure 12.1", "A pass is warranted"),
+            CheckReach.Key("Figure 12.1", "Write the sections"),
+            CheckReach.Key(Scope.FailureTable, "A section is assigned to the local lane that the machine cannot hold, the section is left for the paid path"),
+            CheckReach.Key(Scope.FailureTable, "The local model is unavailable, a pass on demand writes the paid lane's sections and leaves the local lane's absent"),
+
             // 6.7, section 17's spend cap and the cap's half of section 18's row about
             // reaching it, over constructed ledgers and the shipped component.
             CheckReach.Key(Scope.LimitsTable, "Spend cap"),
@@ -2037,10 +2047,11 @@ public partial class FixtureExpectations
         // its note at 6.2 and it caught that, the admissibility file added its note
         // at 6.3 and it caught that, the claims file added its note at 6.4 and it
         // caught that, the staleness file added its note at 6.5 and it caught
-        // that, and the prose file added its statement of what it froze at 6.6 and
-        // it caught that. Which is what it is for.
+        // that, the prose file added its statement of what it froze at 6.6 and
+        // it caught that, and the research record added its own at 6.8 and it caught
+        // that. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "prose.frozen", "series-state.note", "staleness.note", "stored-filings.note"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "prose.frozen", "research-record.frozen", "series-state.note", "staleness.note", "stored-filings.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

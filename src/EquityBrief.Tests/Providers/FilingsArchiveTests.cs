@@ -675,6 +675,42 @@ public class FilingsArchiveTests
     }
 
     [Fact]
+    public async Task TheReleaseIsHandedOverAsADocumentWithTheAddressItWasReadAtItsFilingDateAndItsText()
+    {
+        // 6.8's reading of the route: the exhibit a research pass rests the company's
+        // own claims on, as a document admissibility can test. The same exhibit the
+        // guidance was located in, filed the same day, at the address the manifest
+        // recorded for it, and its text rather than its markup.
+        var manifest = Captured("manifest.json");
+
+        foreach (var (ticker, cik) in new[] { ("KEYS", KeysightCik), ("AAPL", AppleCik) })
+        {
+            var filings = await Recorded().FilingsAsync(ticker, cik);
+            var release = filings.Release;
+
+            Assert.NotNull(release);
+            Assert.Equal(filings.Guidance!.Document, release.Document);
+            Assert.Equal(filings.Guidance.FiledOn, release.FiledOn);
+
+            var prefix = "https://" + SecEdgarArchive.DocumentHost + "/";
+
+            Assert.StartsWith(prefix, release.Url, StringComparison.Ordinal);
+            Assert.EndsWith("/" + release.Document, release.Url, StringComparison.Ordinal);
+            Assert.Contains("\"endpoint\": \"" + release.Url[prefix.Length..] + "\"", manifest, StringComparison.Ordinal);
+
+            Assert.NotEmpty(release.Text);
+            Assert.DoesNotContain("<td", release.Text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("<p", release.Text, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // The filer whose release carries guidance carries its heading in the text.
+        var keysight = await Recorded().FilingsAsync("KEYS", KeysightCik);
+
+        Assert.Equal(new DateOnly(2026, 8, 18), keysight.Release!.FiledOn);
+        Assert.Contains(keysight.Guidance!.Heading!, keysight.Release.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheAddressesTheRouteComposesAreTheOnesTheManifestRecorded()
     {
         // The half a replay cannot show by itself. The recorded feed answers by

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-alqxuuqc42ww9g6p6ni7i",
+  "object": "chat.completion",
+  "created": 1789324300,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The bull case relies on the latest quarter revenue of 1846000000.00 and net income of 397000000.00, supported by a forward price to earnings ratio of 20.6612 and a trailing price to earnings ratio of 45.8862, while the bear case points to immediate resistance at 366.41 and immediate support at 300.87 with a support strength of 59. The bull scenario requires seeing sustained order growth beyond the current level and confirmation that supply constraints do not limit revenue conversion in the next report. The bear scenario needs evidence of margin compression or a failure to meet the fourth quarter revenue guidance range of 1930000000.00 to 1950000000.00, which would invalidate the current uptrend state and trigger a move toward the support level.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 15512,
+    "completion_tokens": 207,
+    "total_tokens": 15719,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

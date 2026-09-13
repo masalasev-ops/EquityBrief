@@ -165,6 +165,22 @@ public partial class ReadSurface
             CheckReach.Key(Scope.FailureTable, "Claim checker rejects twice"),
             CheckReach.Key(Scope.FailureTable, "A pass finds no admissible source for a section"),
 
+            // 6.8, the name page once a pass has written what a reader is shown: the
+            // written sections, the dates and sources, what each research state offers
+            // and the cost beside it, the page's half of section 18's cloud model row
+            // and of its two local lane rows, and tonight's fresh prose against reused.
+            CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused"),
+            CheckReach.Key("15.9 Name", "The short version"),
+            CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks"),
+            CheckReach.Key("15.9 Name", "Dates and sources"),
+            CheckReach.Key("15.9 Name", "Research not yet written, a control that writes them with its cost stated before it is pressed"),
+            CheckReach.Key("15.9 Name", "Research stale, the stored sections rendered with their own dates"),
+            CheckReach.Key("15.9 Name", "Research stale, the option to have them rewritten"),
+            CheckReach.Key("15.9 Name", "Research paused, with the stored sections still rendered under their own dates"),
+            CheckReach.Key(Scope.FailureTable, "Cloud model unavailable"),
+            CheckReach.Key(Scope.FailureTable, "A section is assigned to the local lane that the machine cannot hold, the option to have it written"),
+            CheckReach.Key(Scope.FailureTable, "The local model is unavailable, the option to have the paid model write them"),
+
             // 6.7, what research spent in tonight's header, and research paused on the
             // name page, which is the page's half of section 18's spend cap row.
             CheckReach.Key("15.7 Tonight", "Night header, spend"),
@@ -2938,12 +2954,12 @@ public partial class ReadSurface
         Assert.Contains("no admissible source was found", none.Groups[1].Value, StringComparison.Ordinal);
 
         // The section waiting on its retry is not drawn as left out, and no prose
-        // from any of the three reaches the page, because nothing drawn at 6.4 is a
-        // written section.
+        // from any of the three reaches the page, because none of the three was
+        // accepted and only an accepted version is drawn as a written section.
         Assert.DoesNotContain("data-section=\"What the company sells\"", region, StringComparison.Ordinal);
         Assert.DoesNotContain("Analysts expect", region, StringComparison.Ordinal);
         Assert.DoesNotContain("Keysight closed at", region, StringComparison.Ordinal);
-        Assert.Contains("data-written=\"absent\"", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"written-section\"", region, StringComparison.Ordinal);
 
         // Exactly the store's fallback rows, counted from the store rather than
         // from the page, so a region drawing one of two looks as wrong as it is.

@@ -764,12 +764,18 @@ public static class NameScreen
         IReadOnlyList<SectionStateRow>? sections = null,
         StalenessVerdict? staleness = null,
         IReadOnlyList<WrittenSectionRow>? written = null,
-        string? prosePass = null,
-        SpendVerdict? spend = null)
+        string? pass = null,
+        SpendVerdict? spend = null,
+        IReadOnlyList<CitedDocumentRow>? cited = null,
+        IReadOnlyList<CalendarRow>? events = null,
+        IReadOnlyList<(string RunId, decimal Spend)>? priced = null,
+        DateOnly? today = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
         var (cells, causes) = Causes(moves, accepted);
+        var newest = Pass(pass);
+        var notWritten = NotWritten(pass, accepted, leftOut);
 
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
@@ -858,13 +864,167 @@ public static class NameScreen
             leftOut,
             staleness is null ? null : ResearchState(staleness),
             causes,
-            NotWritten(prosePass, accepted, leftOut),
+            notWritten,
             marks.ProvenanceFooter(
                 ticker,
                 bars.Count > 0 ? bars[^1].SessionDate : null,
                 filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
                 [.. accepted.Select(section => new WrittenPart(section.Section, section.AsOf, section.Model))]),
-            spend is null ? null : Paused(spend));
+            spend is null ? null : Paused(spend),
+            Written(accepted),
+            [.. (cited ?? []).Select(document => new SourceCell(document.Id, document.Title, document.Url, document.PublishedOn))],
+            [.. (events ?? []).Select(dated => new DateCell(dated.EventDate, dated.Kind, dated.Timing))],
+            PassLine(newest, spend, today),
+            Controls(staleness, newest, notWritten, spend, priced, today),
+            spend is null || priced is null ? null : Cost(priced, spend));
+    }
+
+    // The reasons the local lane records a section is not written for, which are what the
+    // option to have the paid model write it is offered on. The worker's own constants
+    // cannot be referenced from here, so the words are stated and `read-surface` asserts
+    // each agrees with the worker's.
+    public const string LocalUnavailable = "the local model is unavailable";
+    public const string CannotHold = "the machine cannot hold it";
+
+    // The line the spend cap refuses a call with, which is how a not-written reason from
+    // a paused pass is told from any other.
+    public const string PausedLine = "research is paused:";
+
+    // The newest pass for a name as the page reads it off the run log's detail: the stage
+    // that wrote it, the session it ran on, what it came to, and its reason.
+    public sealed record PassRecord(string Stage, DateOnly? AsOf, string Outcome, string? Reason, IReadOnlyList<(string Section, string Reason)> NotWritten);
+
+    public static PassRecord? Pass(string? detail)
+    {
+        if (string.IsNullOrWhiteSpace(detail))
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(detail);
+        var root = document.RootElement;
+
+        // A research pass's detail carries its outcome and the session it ran on; a prose
+        // pass's carries neither, and is read as the local lane writing on its own.
+        var research = root.TryGetProperty("outcome", out var outcome) && outcome.ValueKind == JsonValueKind.String;
+
+        return new PassRecord(
+            research ? ReadApi.ResearchStage : ReadApi.ProseStage,
+            root.TryGetProperty("asOf", out var asOf) && asOf.ValueKind == JsonValueKind.String
+                ? DateOnly.ParseExact(asOf.GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                : null,
+            research ? outcome.GetString()! : string.Empty,
+            root.TryGetProperty("reason", out var reason) && reason.ValueKind == JsonValueKind.String ? reason.GetString() : null,
+            root.TryGetProperty("notWritten", out var lines) && lines.ValueKind == JsonValueKind.Array
+                ? [.. lines.EnumerateArray().Select(line => (line.GetProperty("section").GetString()!, line.GetProperty("reason").GetString()!))]
+                : []);
+    }
+
+    // What the newest research pass came to, in one line, where it says something the
+    // research state does not. A pass that wrote what it could says when it ran; one the
+    // research model did not answer says the pass did not start and the stored research is
+    // shown as written; one the cap stopped short of a reached cap says so with the cap's
+    // own line, which is the refusal the page's verdict cannot see because it judges with
+    // no call in hand. A pause the page's own verdict states is not stated twice.
+    // owes: A pass the spend cap refuses short of a reached cap stated on the name page
+    public static ResearchPassLine? PassLine(PassRecord? pass, SpendVerdict? spend, DateOnly? today)
+    {
+        if (pass is not { Stage: ReadApi.ResearchStage, AsOf: { } ran })
+        {
+            return null;
+        }
+
+        var day = Day(ran);
+
+        string? line = pass.Outcome switch
+        {
+            ReadApi.PassWritten => ran == today
+                ? $"a research pass ran for this name on {day}, and opening it again today writes nothing"
+                : $"the newest research pass for this name ran on {day}",
+            ReadApi.PassUnavailable => $"the research model did not answer when a pass was asked for on {day}, so the pass did not start and the stored research is shown as written, with the sections not written offered to be written later. What the model's address said: {pass.Reason}",
+            ReadApi.PassPaused when spend is { Paused: true } => null,
+            ReadApi.PassPaused => $"the pass on {day} was stopped by the spend cap before a cap was reached, which the cap does where a call could take spend past it: {pass.NotWritten.Select(line => line.Reason).FirstOrDefault(reason => reason.StartsWith(PausedLine, StringComparison.Ordinal)) ?? pass.Reason}",
+            ReadApi.PassNoFactsFile => $"the pass asked for on {day} did not run: {pass.Reason}",
+            _ => null,
+        };
+
+        return line is null ? null : new ResearchPassLine(pass.Outcome, ran, line);
+    }
+
+    // The controls a page offers, each asking for what a press would do: write the
+    // research where none stands, rewrite what went stale, and have the paid model write
+    // the local lane's sections where the local model could not. None while the cap has
+    // paused research, since a press would be refused, and none that write or rewrite on
+    // the day a pass ran, since a second plain pass that day writes nothing. None at all
+    // where the page holds no cost to state beside them.
+    // see: A name opened again on the day its research pass ran starts no second pass unless the page asks for one
+    public static IReadOnlyList<ResearchControl> Controls(
+        StalenessVerdict? staleness,
+        PassRecord? pass,
+        IReadOnlyList<LeftOutSection> notWritten,
+        SpendVerdict? spend,
+        IReadOnlyList<(string RunId, decimal Spend)>? priced,
+        DateOnly? today)
+    {
+        if (spend is null || priced is null || spend.Paused)
+        {
+            return [];
+        }
+
+        var ranToday = pass is { Stage: ReadApi.ResearchStage, Outcome: ReadApi.PassWritten } && pass.AsOf == today;
+        var controls = new List<ResearchControl>();
+
+        if (!ranToday && staleness?.State == Core.Research.ResearchState.Missing)
+        {
+            controls.Add(new ResearchControl("write", "Write the researched sections", Refresh: false, PaidForLocal: false));
+        }
+
+        if (!ranToday && staleness?.State == Core.Research.ResearchState.Stale)
+        {
+            controls.Add(new ResearchControl("rewrite", "Rewrite the stale sections", Refresh: false, PaidForLocal: false));
+        }
+
+        if (notWritten.Any(line => line.Reason.StartsWith(LocalUnavailable, StringComparison.Ordinal) || line.Reason.StartsWith(CannotHold, StringComparison.Ordinal)))
+        {
+            controls.Add(new ResearchControl("paid-for-local", "Have the paid model write them", Refresh: false, PaidForLocal: true));
+        }
+
+        return controls;
+    }
+
+    // What research has cost, from the priced calls the run log carries: the passes they
+    // were made in, what they came to, and the most one pass came to, beside the line the
+    // spend cap states for where research stands now.
+    public static ResearchCost Cost(IReadOnlyList<(string RunId, decimal Spend)> priced, SpendVerdict spend)
+    {
+        var passes = priced
+            .GroupBy(call => call.RunId, StringComparer.Ordinal)
+            .Select(pass => pass.Sum(call => call.Spend))
+            .ToArray();
+
+        return new ResearchCost(passes.Length, passes.Sum(), passes.DefaultIfEmpty(0m).Max(), spend.Line);
+    }
+
+    // The written sections a page draws in their own places. The cause of each large move
+    // is drawn in the moves table, in the row of each move it names, so it is not drawn
+    // again as a section.
+    public static IReadOnlyList<WrittenCell> Written(IReadOnlyList<WrittenSectionRow> accepted) =>
+    [
+        .. accepted
+            .Where(section => !string.Equals(section.Section, ClaimRules.CauseSection, StringComparison.Ordinal))
+            .Select(section => new WrittenCell(section.Section, section.Prose, section.AsOf, section.Model, SourceIds(section.SourceIds))),
+    ];
+
+    // Every id the written sections cite, once each, which is what the dates-and-sources
+    // region reads the documents by.
+    public static IReadOnlyList<string> Cited(IReadOnlyList<WrittenSectionRow> accepted) =>
+        [.. accepted.SelectMany(section => SourceIds(section.SourceIds)).Distinct(StringComparer.Ordinal)];
+
+    static IReadOnlyList<string> SourceIds(string stored)
+    {
+        using var ids = JsonDocument.Parse(stored);
+
+        return [.. ids.RootElement.EnumerateArray().Select(id => id.GetString()!)];
     }
 
     // The pause as the page draws it, where the spend cap has stopped research, and
@@ -919,22 +1079,24 @@ public static class NameScreen
             new CauseSource(cause.AsOf, cause.Model));
     }
 
-    // The local lane's sections the newest prose pass for the name did not write,
-    // with the reason the writer recorded, less any section a reader is shown some
-    // other way: one with a written version is drawn as written, and one whose newest
-    // version was left out already carries the line the checker stored. The skips a
-    // pass records are not read at all, since each is a section with a row of its own.
+    // The sections the newest pass for the name did not write, with the reason the pass
+    // recorded, less any section a reader is shown some other way: one with a written
+    // version is drawn as written, and one whose newest version was left out already
+    // carries the line the checker stored. The skips a pass records are not read at all,
+    // since each is a section with a row of its own. The pass is a prose pass the local
+    // lane ran on its own or, from 6.8, a research pass, whose lines carry the local
+    // lane's and the paid lane's together.
     public static IReadOnlyList<LeftOutSection> NotWritten(
-        string? prosePass,
+        string? newestPass,
         IReadOnlyList<WrittenSectionRow> written,
         IReadOnlyList<LeftOutSection> leftOut)
     {
-        if (string.IsNullOrWhiteSpace(prosePass))
+        if (string.IsNullOrWhiteSpace(newestPass))
         {
             return [];
         }
 
-        using var pass = JsonDocument.Parse(prosePass);
+        using var pass = JsonDocument.Parse(newestPass);
 
         if (!pass.RootElement.TryGetProperty("notWritten", out var lines) || lines.ValueKind != JsonValueKind.Array)
         {

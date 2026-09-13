@@ -63,10 +63,17 @@ public sealed class ProseWriter(
     public const string Stage = "prose";
 
     // This machine's lane, which is the list's value and not a fact about the
-    // component: the short-prompt work figure 12.2 puts on the left.
+    // component: the extraction work figure 12.2 puts on the left.
+    //
+    // Three from 6.8, where the fixture comparison ran every section both ways over
+    // one evidence set and moved the cause of each large move to the paid lane. The
+    // local model left it out in every pass it wrote it in, having copied figures
+    // from the articles that the facts file does not hold and done so again when told
+    // why, while the paid model wrote it accepted on its first draft; the three that
+    // stay were accepted from the local model as they were from the paid one.
+    // see: The fixture comparison moved the cause of each large move into the paid lane on this machine
     public static readonly string[] DefaultLane =
     [
-        "The cause of each large move",
         "What the company sells",
         "The segment commentary",
         "The key under each figure",
@@ -87,7 +94,7 @@ public sealed class ProseWriter(
     public const string LeftOutToday = "it was left out today and a new pass is what writes it again";
 
     const string FactsFor = @"
-        SELECT payload FROM facts
+        SELECT payload, session_date FROM facts
         WHERE ticker = $ticker AND session_date <= $as_of AND payload != ''
         ORDER BY session_date DESC
         LIMIT 1;
@@ -142,10 +149,16 @@ public sealed class ProseWriter(
         return lane;
     }
 
+    // The stage a round of a pass writes its row under. A research pass writes a section
+    // refused on its first draft again inside the same pass, and the run log holds one
+    // row per run per stage, so the round is part of the stage rather than a second run.
+    public static string StageFor(string? round) => round is null ? Stage : Stage + ", " + round;
+
     public async Task<ProseOutcome> WriteAsync(
         string ticker,
         IReadOnlyDictionary<string, IReadOnlyList<StoredDocument>> documents,
         string runId,
+        string? round = null,
         CancellationToken cancellation = default)
     {
         Checked(lane);
@@ -162,7 +175,7 @@ public sealed class ProseWriter(
         var calls = 0;
 
         var before = await SectionsHeldAsync(connection, ticker, cancellation);
-        var facts = await FactsAsync(connection, ticker, asOf, cancellation);
+        var (facts, night) = await FactsAsync(connection, ticker, asOf, cancellation);
 
         // Every call is built and measured before the first is made, so a section
         // the machine cannot hold is refused before the pass starts rather than
@@ -227,7 +240,8 @@ public sealed class ProseWriter(
                 section,
                 facts,
                 Prompted(admitted),
-                retry ? newest!.Reason : null);
+                retry ? newest!.Reason : null,
+                night: night);
 
             if (ClaimRules.IsResearched(section) && admitted.Length == 0)
             {
@@ -330,7 +344,7 @@ public sealed class ProseWriter(
 
         record.CommandText = AppendRun;
         record.Parameters.AddWithValue("$run_id", runId);
-        record.Parameters.AddWithValue("$stage", Stage);
+        record.Parameters.AddWithValue("$stage", StageFor(round));
         record.Parameters.AddWithValue("$started_at", Instant(startedAt));
         record.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
         record.Parameters.AddWithValue("$outcome", unavailable ? "unavailable" : "ok");
@@ -393,7 +407,9 @@ public sealed class ProseWriter(
             : null;
     }
 
-    static async Task<IReadOnlyList<Fact>?> FactsAsync(SqliteConnection connection, string ticker, DateOnly asOf, CancellationToken cancellation)
+    // The facts file with the night it was computed for, which the one section whose
+    // dates are held after that night is told.
+    static async Task<(IReadOnlyList<Fact>? Facts, DateOnly? Night)> FactsAsync(SqliteConnection connection, string ticker, DateOnly asOf, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
@@ -401,7 +417,11 @@ public sealed class ProseWriter(
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
-        return await command.ExecuteScalarAsync(cancellation) is string payload ? FactsFile.Read(payload) : null;
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation)
+            ? (FactsFile.Read(reader.GetString(0)), DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture))
+            : (null, null);
     }
 
     static string Instant(DateTimeOffset instant) =>

@@ -122,15 +122,24 @@ public class ResearchModelFeedTests
 
         Assert.Contains("creation instant", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(noInstant.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
 
+        // An answer cut off at its budget, or with nothing in it, was still counted and
+        // billed, so it is refused carrying its counts for the spend cap to price.
         var cut = JsonNode.Parse(Captured("research-probe-answered.json"))!;
         cut["choices"]![0]!["finish_reason"] = "length";
 
-        Assert.Contains("stopped at its budget", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(cut.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
+        var stopped = Assert.Throws<UnusableResearchAnswer>(() => OpenAiCompatibleResearchFeed.Parse(cut.ToJsonString(), "The two cases"));
+
+        Assert.Contains("stopped at its budget", stopped.Message, StringComparison.Ordinal);
+        Assert.Equal(cut["usage"]!["prompt_cache_miss_tokens"]!.GetValue<int>(), stopped.Answer.CacheMissTokens);
+        Assert.Equal(cut["usage"]!["completion_tokens"]!.GetValue<int>(), stopped.Answer.CompletionTokens);
 
         var empty = JsonNode.Parse(Captured("research-probe-thinking.json"))!;
         empty["choices"]![0]!["message"]!["content"] = "";
 
-        Assert.Contains("returned no answer", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(empty.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
+        var nothing = Assert.Throws<UnusableResearchAnswer>(() => OpenAiCompatibleResearchFeed.Parse(empty.ToJsonString(), "The two cases"));
+
+        Assert.Contains("returned no answer", nothing.Message, StringComparison.Ordinal);
+        Assert.True(nothing.Answer.ReasoningTokens > 0);
     }
 
     // ---- the price, derived by hand from the configured rates ----
@@ -290,6 +299,46 @@ public class ResearchModelFeedTests
     }
 
     [Fact]
+    public async Task TheProbeAsksForTheModelListWithTheKeyInTheHeaderAndReadsOnlyAnAnswerAsAnswering()
+    {
+        // What a pass asks before it fetches anything. The 6.8 sweep found no test calling
+        // it on the live feed, so a probe that read every response as an answer passed.
+        var settings = Shipped();
+
+        async Task<(string? Line, Seeing Seen, OpenAiCompatibleResearchFeed Feed)> Probe(HttpStatusCode status, string body)
+        {
+            var seen = new Seeing(body, status);
+            var client = new HttpClient(seen) { BaseAddress = new Uri(settings.BaseAddress) };
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", NotAKey);
+
+            var feed = new OpenAiCompatibleResearchFeed(client, settings);
+
+            return (await feed.UnreachableAsync(), seen, feed);
+        }
+
+        var answered = await Probe(HttpStatusCode.OK, Captured("research-probe-models.json"));
+
+        Assert.Null(answered.Line);
+        Assert.Equal(settings.BaseAddress + OpenAiCompatibleResearchFeed.ModelsPath, answered.Seen.Address);
+        Assert.DoesNotContain(NotAKey, answered.Seen.Address, StringComparison.Ordinal);
+        Assert.Equal("Bearer", answered.Seen.Scheme);
+
+        // A probe is not a call: it is counted as a probe and bills nothing.
+        Assert.Equal(1, answered.Feed.Probes);
+        Assert.Equal(0, answered.Feed.Requests);
+
+        // A provider refusing the list is a model that does not answer, in its own words.
+        var refused = await Probe(HttpStatusCode.Unauthorized, """{"error":{"message":"Authentication Fails, Your api key is invalid","type":"authentication_error"}}""");
+
+        Assert.Equal("The research model refused the model list with status 401: Authentication Fails, Your api key is invalid", refused.Line);
+
+        // And nothing listening says so.
+        using var gone = new HttpClient(new Unreachable()) { BaseAddress = new Uri(settings.BaseAddress) };
+
+        Assert.StartsWith("The research model could not be reached: ", await new OpenAiCompatibleResearchFeed(gone, settings).UnreachableAsync(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task NothingListeningIsItsOwnFailureAndARefusalCarriesTheProvidersWords()
     {
         var settings = Shipped();
@@ -431,7 +480,7 @@ public class ResearchModelFeedTests
             field => typeof(HttpClient).IsAssignableFrom(field.FieldType) || typeof(HttpMessageHandler).IsAssignableFrom(field.FieldType));
     }
 
-    sealed class Seeing(string body) : HttpMessageHandler
+    sealed class Seeing(string body, HttpStatusCode status = HttpStatusCode.OK) : HttpMessageHandler
     {
         public string Address { get; private set; } = string.Empty;
 
@@ -442,7 +491,7 @@ public class ResearchModelFeedTests
             Address = request.RequestUri!.ToString();
             Scheme = request.Headers.Authorization?.Scheme ?? string.Empty;
 
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+            return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
         }
     }
 

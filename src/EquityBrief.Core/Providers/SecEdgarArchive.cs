@@ -126,12 +126,12 @@ public static class SecEdgarArchive
 
         var notCarried = new List<string>();
 
-        var (guidance, transcript) = await GuidanceAsync(fetch, padded, results, notCarried, cancellation).ConfigureAwait(false);
+        var (guidance, transcript, release) = await GuidanceAsync(fetch, padded, results, notCarried, cancellation).ConfigureAwait(false);
         var (segments, read) = await SegmentsAsync(fetch, padded, periodic, notCarried, cancellation).ConfigureAwait(false);
         var facts = await FactsAsync(fetch, padded, notCarried, cancellation).ConfigureAwait(false);
 
         return new ArchiveFilings(
-            ticker, padded, periodic, results, segments, guidance, facts, transcript, notCarried, read);
+            ticker, padded, periodic, results, segments, guidance, facts, transcript, notCarried, read, release);
     }
 
     // Whether a filing is a results announcement, which is an 8-K carrying item
@@ -178,6 +178,11 @@ public static class SecEdgarArchive
         "Archives/edgar/data/" + Bare(padded) + "/" + (accession ?? string.Empty).Replace("-", string.Empty, StringComparison.Ordinal);
 
     public const string ReportListFile = "FilingSummary.xml";
+
+    // A document's own address, which is where a reader opens it. The archive's
+    // documents carry no key and no query, so the address is the request's host and
+    // path and nothing else.
+    public static string Address(ArchiveRequest request) => "https://" + request.Host + "/" + request.Path;
 
     // ---- the company's filing index -------------------------------------------
 
@@ -833,7 +838,7 @@ public static class SecEdgarArchive
 
     // ---- the route ------------------------------------------------------------
 
-    static async Task<(FiledGuidance? Guidance, FiledDocument? Transcript)> GuidanceAsync(
+    static async Task<(FiledGuidance? Guidance, FiledDocument? Transcript, FiledRelease? Release)> GuidanceAsync(
         ArchiveFetch fetch,
         string padded,
         IReadOnlyList<IndexedFiling> results,
@@ -844,7 +849,7 @@ public static class SecEdgarArchive
         {
             notCarried.Add(Guidance);
 
-            return (null, null);
+            return (null, null, null);
         }
 
         var announcement = results.OrderByDescending(filing => filing.FilingDate).First();
@@ -856,7 +861,7 @@ public static class SecEdgarArchive
         {
             notCarried.Add(Guidance);
 
-            return (null, null);
+            return (null, null, null);
         }
 
         var documents = Documents(page);
@@ -867,21 +872,23 @@ public static class SecEdgarArchive
         {
             notCarried.Add(Guidance);
 
-            return (null, transcript);
+            return (null, transcript, null);
         }
 
-        var exhibit = await fetch(
-            Request(ArchiveDocument.ReleaseExhibit, padded, announcement.Accession, release.FileName),
-            cancellation).ConfigureAwait(false);
+        var request = Request(ArchiveDocument.ReleaseExhibit, padded, announcement.Accession, release.FileName);
+        var exhibit = await fetch(request, cancellation).ConfigureAwait(false);
 
         if (exhibit is null)
         {
             notCarried.Add(Guidance);
 
-            return (null, transcript);
+            return (null, transcript, null);
         }
 
-        return (Locate(exhibit, release.FileName, announcement.FilingDate), transcript);
+        return (
+            Locate(exhibit, release.FileName, announcement.FilingDate),
+            transcript,
+            new FiledRelease(Address(request), release.FileName, announcement.FilingDate, Plain(exhibit)));
     }
 
     static async Task<(SegmentBreakdown? Segments, int Read)> SegmentsAsync(

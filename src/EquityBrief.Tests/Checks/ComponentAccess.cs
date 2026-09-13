@@ -25,6 +25,10 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 6.8, the research runner.
+            CheckReach.Key(Scope.CatalogueTable, "Research runner"),
+            CheckReach.Key(Scope.MatrixTable, "Research runner"),
+
             // 5.5, the forward returns and the news pulse.
             CheckReach.Key(Scope.CatalogueTable, "Forward return filler"),
             CheckReach.Key(Scope.CatalogueTable, "News pulse counter"),

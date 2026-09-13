@@ -9,11 +9,24 @@ namespace EquityBrief.Core.Providers;
 //
 // A request the recording does not hold refuses by name, and the double holds no
 // client, so there is no network for it to reach instead.
-public sealed class RecordedResearchModelFeed(string folder, ResearchModelSettings settings) : IResearchModelFeed
+//
+// A recording answers a probe the way the provider did when the calls were recorded,
+// which is that it answered. `unreachable` stands for a provider that does not, so a
+// pass can be shown not to start without a network to fail.
+public sealed class RecordedResearchModelFeed(string folder, ResearchModelSettings settings, string? unreachable = null) : IResearchModelFeed
 {
     public const string FilePrefix = "research-call-";
 
     public int Requests { get; private set; }
+
+    public int Probes { get; private set; }
+
+    public Task<string?> UnreachableAsync(CancellationToken cancellation = default)
+    {
+        Probes++;
+
+        return Task.FromResult(unreachable);
+    }
 
     public string Identity => settings.Identity;
 

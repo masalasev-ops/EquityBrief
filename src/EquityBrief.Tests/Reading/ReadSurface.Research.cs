@@ -39,7 +39,7 @@ public partial class ReadSurface
             sections: await api.SectionStatesAsync(ticker, DateOnly.MaxValue),
             staleness: await api.StalenessAsync(ticker),
             written: await api.WrittenSectionsAsync(ticker),
-            prosePass: await api.NewestProsePassAsync(ticker));
+            pass: await api.NewestPassAsync(ticker));
     }
 
     static IReadOnlyList<string[]> Rows(TemporaryStore store, string sql)
@@ -199,7 +199,7 @@ public partial class ReadSurface
             await new ProseWriter(
                     new RecordedLocalModelFeed(Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder)),
                     FixtureExpectations.LocalSettings(FixtureExpectation.Of("prose").GetProperty("cannotHold").GetProperty("contextTokens").GetInt32()),
-                    ProseWriter.DefaultLane,
+                    FixtureExpectations.ReleaseLane,
                     FixtureExpectations.ProseClock,
                     store.DatabaseFile)
                 .WriteAsync("KEYS", FixtureExpectations.Handed(document), "prose-cannot-hold-page");
@@ -238,7 +238,7 @@ public partial class ReadSurface
             await new ProseWriter(
                     new OpenAiCompatibleModelFeed(client, FixtureExpectations.LocalSettings()),
                     FixtureExpectations.LocalSettings(),
-                    ProseWriter.DefaultLane,
+                    FixtureExpectations.ReleaseLane,
                     FixtureExpectations.ProseClock,
                     store.DatabaseFile)
                 .WriteAsync("KEYS", FixtureExpectations.Handed(document), "prose-unavailable-page");
@@ -246,7 +246,7 @@ public partial class ReadSurface
             var region = await NamePageWithResearch(store, "KEYS");
             var stored = NotWrittenOnTheRunLog(store, "prose-unavailable-page");
 
-            Assert.Equal(ProseWriter.DefaultLane, stored.Select(line => line.Section).ToArray());
+            Assert.Equal(FixtureExpectations.ReleaseLane, stored.Select(line => line.Section).ToArray());
 
             foreach (var (section, reason) in stored)
             {
@@ -261,7 +261,7 @@ public partial class ReadSurface
             // takes it off the page, because a written section is drawn as written.
             Assert.Empty(NameScreen.NotWritten(
                 Rows(store, "SELECT detail FROM run_log WHERE run_id = 'prose-unavailable-page';").Single()[0],
-                [.. ProseWriter.DefaultLane.Select(section => new WrittenSectionRow(section, 1, new DateOnly(2026, 9, 8), LocalModelSettings.DefaultModel, "prose", "[]"))],
+                [.. FixtureExpectations.ReleaseLane.Select(section => new WrittenSectionRow(section, 1, new DateOnly(2026, 9, 8), LocalModelSettings.DefaultModel, "prose", "[]"))],
                 []));
         }
     }

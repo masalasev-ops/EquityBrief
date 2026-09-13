@@ -111,6 +111,13 @@ public static class ClaimRules
     // see: A cause of a move rests only on a document published inside that move
     public const string CauseSection = "The cause of each large move";
 
+    // The one section whose every date is a document's rather than the facts file's,
+    // because what it lists is events a filing or an article dates that fall after the
+    // night the file was computed for, and the file carries none of them. A date in it is
+    // held to a document the sentence cites and to that night.
+    // see: A dated calendar item's date rests on a document the sentence cites and falls after the night the facts were computed for
+    public const string CalendarSection = "The dated calendar items";
+
     // ---- the reasons ----
 
     public const string UnmatchedFigure = "a figure the facts file does not hold";
@@ -124,6 +131,8 @@ public static class ClaimRules
     public const string NoAdmissibleSource = "no admissible source was found";
     public const string CauseNamingNoMove = "a cause naming the session of no move the facts file holds";
     public const string CauseOutsideItsMove = "a citation to a document published outside the move it gives the cause of";
+    public const string DateNoCitedDocumentCarries = "a date no document the sentence cites carries";
+    public const string DateNotAfterTheNight = "a date on or before the night the facts file was computed for";
 
     // ---- the check ----
 
@@ -134,7 +143,8 @@ public static class ClaimRules
         string section,
         string prose,
         IReadOnlyList<Fact> facts,
-        IReadOnlyList<StoredDocument?> sources)
+        IReadOnlyList<StoredDocument?> sources,
+        DateOnly? night = null)
     {
         var researched = IsResearched(section);
 
@@ -149,6 +159,7 @@ public static class ClaimRules
 
         var findings = new List<ClaimFinding>();
         var cause = string.Equals(section, CauseSection, StringComparison.Ordinal);
+        var calendar = string.Equals(section, CalendarSection, StringComparison.Ordinal);
         var moves = cause ? MoveWindows.In(facts) : [];
 
         foreach (var sentence in Sentences(prose))
@@ -185,6 +196,7 @@ public static class ClaimRules
                 {
                     FigureKind.Figure when !Matches(figure, facts) => UnmatchedFigure,
                     FigureKind.Window when !IsAWindow(figure, facts) => UnknownWindow,
+                    FigureKind.Date when calendar => CalendarDate(figure, sentence, sources, night),
                     FigureKind.Date when !IsADate(figure, facts) => UnknownDate,
                     FigureKind.Unmatchable => UnmatchableFigure,
                     _ => null,
@@ -257,6 +269,44 @@ public static class ClaimRules
             }
         }
     }
+
+    // ---- a dated calendar item ----
+
+    // One date of the calendar section, against the documents its sentence cites and
+    // the night the facts file was computed for.
+    //
+    // The date has to be one an admitted document the sentence cites states, read by the
+    // reader that reads the prose, so a date the model wrote from nowhere is refused
+    // however plausible, and a date in the form the document writes it matches in the
+    // form the sentence writes it. And a full date has to fall after the night, because
+    // the section lists what is coming: the first draft a model wrote for it named the
+    // day an article was published beside the days of the conferences it announced.
+    // A month and a day with no year are held to the documents alone, since which year
+    // they fall in is what they do not say.
+    // see: A dated calendar item's date rests on a document the sentence cites and falls after the night the facts were computed for
+    static string? CalendarDate(ProseFigure figure, ProseSentence sentence, IReadOnlyList<StoredDocument?> sources, DateOnly? night)
+    {
+        var carried = sentence.Citations
+            .Distinct()
+            .Where(cited => cited >= 1 && cited <= sources.Count)
+            .Select(cited => sources[cited - 1])
+            .OfType<StoredDocument>()
+            .Where(source => source.Admitted && source.Body is { Length: > 0 })
+            .Any(source => DatesIn(source.Body!).Any(date => figure.Date is { } full
+                ? date.Date == full || date.Date is null && date.Month == full.Month && date.Day == full.Day
+                : date.Month == figure.Month && date.Day == figure.Day));
+
+        if (!carried)
+        {
+            return DateNoCitedDocumentCarries;
+        }
+
+        return figure.Date is { } stated && night is { } computed && stated <= computed ? DateNotAfterTheNight : null;
+    }
+
+    // Every date a document's text states, read by the prose's own date reader.
+    static IEnumerable<ProseFigure> DatesIn(string body) =>
+        Figures(body).Where(figure => figure.Kind == FigureKind.Date);
 
     // ---- sentences and citations ----
 

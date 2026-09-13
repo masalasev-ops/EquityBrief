@@ -94,6 +94,15 @@ public sealed record SectionStateRow(string Section, int Version, DateOnly AsOf,
 // date and model; the sections themselves are drawn from 6.8.
 public sealed record WrittenSectionRow(string Section, int Version, DateOnly AsOf, string Model, string Prose, string SourceIds);
 
+// One document a written section cites, as stored, less the body: the dates-and-sources
+// region draws what it was, when it was published and where it is, and a reader follows
+// the link for the text.
+public sealed record CitedDocumentRow(string Id, string Url, string Title, DateOnly? PublishedOn, string Admissibility);
+
+// The date one of a name's accepted sections was written on, as of a night, which is
+// what tonight's header counts fresh prose against reused from.
+public sealed record WrittenOnRow(string Ticker, string Section, DateOnly AsOf);
+
 // One section that fell back on a night, from either store. `Subject` is a
 // ticker for a name's section and a theme for a theme's, which is what the run
 // page names beside the section.
@@ -269,6 +278,10 @@ public sealed class ReadApi : IComponent
     public const string PaidCallStage = "research call";
     public const string PaidOutcome = "ok";
 
+    // What the spend cap writes for a call that cost nothing, which is money as the
+    // invariant culture writes a zero.
+    public const string NothingSpent = "0";
+
     // What the run log says was spent between two instants, as stored.
     const string SpentBetween = @"
         SELECT started_at, spend
@@ -276,12 +289,15 @@ public sealed class ReadApi : IComponent
         WHERE started_at >= $from AND started_at < $to;
     ";
 
-    // Every paid call the log carries a cost for: the spend cap's rows that were
-    // answered, by the stage's own prefix and the outcome the cap writes.
+    // Every paid call the log carries a cost for: the spend cap's rows, by the stage's
+    // own prefix, that carry a price. That is every answered call and, from 6.8, every
+    // call the provider answered with nothing usable and billed all the same, which is a
+    // refusal carrying a cost. A call refused before it was made, or never answered,
+    // carries none.
     const string PaidCallSpends = @"
         SELECT run_id, spend
         FROM run_log
-        WHERE substr(stage, 1, length($prefix)) = $prefix AND outcome = $paid;
+        WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing;
     ";
 
     // The newest accepted version of each of a name's sections.
@@ -296,23 +312,75 @@ public sealed class ReadApi : IComponent
         ORDER BY r.section;
     ";
 
-    // The stage the prose writer records itself under. The worker's own constant
-    // cannot be referenced from here, since the read surface holds no reference to
-    // the worker, so the word is stated and `read-surface` asserts the two agree.
+    // The stages the prose writer and the research runner record themselves under.
+    // The worker's own constants cannot be referenced from here, since the read
+    // surface holds no reference to the worker, so the words are stated and
+    // `read-surface` asserts the two agree.
     public const string ProseStage = "prose";
+    public const string ResearchStage = "research";
 
-    // The newest prose pass the run log holds for one name, as the writer recorded
-    // it. The name sits inside the detail rather than in a column, so it is read
-    // with the store's own JSON function over the rows the prose stage wrote, and
-    // newest by the order the rows were written, which is the ordering the run page
-    // takes for the reason 6.0 gave. A detail that is not JSON is passed over rather
-    // than read, since every other stage writes a sentence there.
-    const string NewestProsePassForName = @"
+    // What a research pass came to, as its stage's outcome column holds it, stated for
+    // the reason the stages are.
+    public const string PassWritten = "ok";
+    public const string PassNotWarranted = "not warranted";
+    public const string PassUnavailable = "unavailable";
+    public const string PassPaused = "paused";
+    public const string PassAlreadyRunning = "already running";
+    public const string PassNoFactsFile = "no facts file";
+
+    // The newest pass the run log holds for one name, as its stage recorded it: a
+    // research pass, or a prose pass the local lane ran on its own. A research pass
+    // writes its prose stage's row before its own, so its own is the newer and
+    // carries what the whole pass did. The name sits inside the detail rather than in
+    // a column, so it is read with the store's own JSON function, and newest by the
+    // order the rows were written, which is the ordering the run page takes for the
+    // reason 6.0 gave. A detail that is not JSON is passed over rather than read,
+    // since every other stage writes a sentence there.
+    //
+    // A press that found nothing to do and one refused because a pass was running are
+    // passed over too. Neither wrote or tried anything, and read as the newest they
+    // would take the lines of the pass that did off the page.
+    const string NewestPassForName = @"
         SELECT detail FROM run_log
-        WHERE stage = $stage
+        WHERE stage IN ($prose, $research)
+          AND outcome NOT IN ($not_warranted, $already_running)
           AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.ticker') END = $ticker
         ORDER BY rowid DESC
         LIMIT 1;
+    ";
+
+    // The documents a set of sections cite, newest published first. The ids arrive as
+    // one JSON array, read by the store's own function, so the statement is one text
+    // however many a page cites. No body: a page links to a document rather than
+    // reprinting it.
+    const string CitedDocuments = @"
+        SELECT id, url, title, published_on, admissibility
+        FROM source_document
+        WHERE id IN (SELECT value FROM json_each($ids))
+        ORDER BY published_on DESC, id;
+    ";
+
+    // Every dated event the calendar holds for a name on or after a date, which is the
+    // calendar half of the dates-and-sources region.
+    const string EventsForName = @"
+        SELECT ticker, event_date, kind, timing, detail
+        FROM calendar
+        WHERE ticker = $ticker AND event_date >= $on_or_after
+        ORDER BY event_date, kind;
+    ";
+
+    // The date each name's accepted sections were written on, the newest accepted
+    // version of each on or before a night, which is what tonight's header reads a
+    // report's prose as fresh or reused from.
+    const string WrittenOnOrBefore = @"
+        SELECT r.ticker, r.section, r.as_of
+        FROM research_section r
+        WHERE r.status = 'accepted'
+          AND r.as_of <= $night
+          AND r.version = (
+              SELECT MAX(s.version) FROM research_section s
+              WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted' AND s.as_of <= $night)
+        ORDER BY r.ticker, r.section;
     ";
 
     // The newest version of each of a name's sections, on or before the night the
@@ -1336,7 +1404,7 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = PaidCallSpends;
         command.Parameters.AddWithValue("$prefix", PaidCallStage + ":");
-        command.Parameters.AddWithValue("$paid", PaidOutcome);
+        command.Parameters.AddWithValue("$nothing", NothingSpent);
 
         var spends = new List<(string, decimal)>();
 
@@ -1378,19 +1446,110 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    // The detail of the newest prose pass for a name, as stored, or none where no
-    // pass has run for it. Handed back unread, for the reason a filing's payload is.
-    public async Task<string?> NewestProsePassAsync(string ticker)
+    // The detail of the newest pass for a name, as stored, or none where no pass has
+    // run for it. Handed back unread, for the reason a filing's payload is.
+    public async Task<string?> NewestPassAsync(string ticker)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = NewestProsePassForName;
-        command.Parameters.AddWithValue("$stage", ProseStage);
+        command.CommandText = NewestPassForName;
+        command.Parameters.AddWithValue("$prose", ProseStage);
+        command.Parameters.AddWithValue("$research", ResearchStage);
+        command.Parameters.AddWithValue("$not_warranted", PassNotWarranted);
+        command.Parameters.AddWithValue("$already_running", PassAlreadyRunning);
         command.Parameters.AddWithValue("$ticker", ticker);
 
         return await command.ExecuteScalarAsync() as string;
     }
+
+    // The documents the given ids name, as stored. An id no row holds is not returned,
+    // and the page says so for it rather than drawing a link to nothing.
+    public async Task<IReadOnlyList<CitedDocumentRow>> CitedDocumentsAsync(IReadOnlyCollection<string> ids)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = CitedDocuments;
+        command.Parameters.AddWithValue("$ids", System.Text.Json.JsonSerializer.Serialize(ids));
+
+        var rows = new List<CitedDocumentRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new CitedDocumentRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.IsDBNull(3) ? null : DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
+    // Every dated event the calendar holds for one name on or after a date.
+    public async Task<IReadOnlyList<CalendarRow>> EventsAsync(string ticker, DateOnly onOrAfter)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = EventsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on_or_after", onOrAfter.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<CalendarRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new CalendarRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
+    // The date every name's accepted sections were written on, as of a night.
+    public async Task<IReadOnlyList<WrittenOnRow>> WrittenOnOrBeforeAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = WrittenOnOrBefore;
+        command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<WrittenOnRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new WrittenOnRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+        }
+
+        return rows;
+    }
+
+    // Whether the index holds a name today, which is what the name page's control is
+    // refused on before anything is started for it.
+    public async Task<bool> IsMemberAsync(string indexCode, string ticker) =>
+        (await UniverseAsync(indexCode)).Any(member => string.Equals(member.Ticker, ticker, StringComparison.Ordinal));
 
     // Whether a name's research stands, read here by the rules the judge applies,
     // so the page and the judge's run log reach one verdict from one store. The
