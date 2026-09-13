@@ -11,6 +11,9 @@ One folder per fixture name and date. Committed, never regenerated, and the expe
   inadmissible-documents.json   one document per kind the admissibility test refuses, constructed
                        rather than captured, each stating the marker it carries and where that
                        marker was read off a real page
+  research-prose.json  section prose for the claim checker, constructed because no model writes
+                       a section before 6.6, with every figure written against the facts file the
+                       fixture produces and the clean paragraphs beside the rejected ones
   expectations/        one file per stage, flat, each naming the tables it covers and how it
                        was derived
     indicators.json    swings.json    volume-profile.json
