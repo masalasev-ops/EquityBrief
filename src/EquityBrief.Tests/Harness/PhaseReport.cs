@@ -135,13 +135,21 @@ internal static class PhaseReport
         // section is written in, which is configuration rather than structure by
         // the paragraph above them, and the shape of that configuration is the
         // hole BUILD_PLAN settles at 6.0.
+        //
+        // Re-pointed at 6.6, which rewrote the table to say what code works out for
+        // each section, what the model is asked to write and what the section must
+        // pass, where it said only what goes in. The lanes, the section names, the
+        // prompts and the two rules a row names are asserted from 6.6 by
+        // claim-admissibility, which reads them against the configured default and
+        // the checker in both directions. What the paid rows say code works out is
+        // the research runner's at 6.8 and the theme runner's at 6.9, so the whole
+        // table is reached at the later of those and not before.
         ["What each lane actually writes"] = new Placement(
-            "the section-to-lane assignment, which is a configured default rather than a structure. " +
-            "6.0 settled the configuration's shape and the table now states this machine's default " +
-            "with the two sections it assigned no lane added, so what the rows say is a value and " +
-            "not a claim about code. It is asserted where the configuration exists, which is 6.6, " +
-            "and the due point was 6.0 until then, which is a point that never lands and so a " +
-            "placement nothing could ever discharge", Due: "6.6"),
+            "each section's lane, what code works out before a model is asked, what the model is asked " +
+            "to write and what the section must pass to be stored. The lane is a configured default, and " +
+            "the local rows' lanes, prompts and rules are asserted against the code from 6.6; the paid " +
+            "rows' inputs are built by the research runner at 6.8 and the theme runner at 6.9. The due " +
+            "point was 6.0 until 6.0, a point that never lands, and 6.6 until 6.6 rewrote the table", Due: "6.9"),
         ["13.2 Four things that can improve, shallowest first"] = new Placement(
             "a plan for phase 7, with nothing built to assert it against", Due: "7.1"),
         ["13.3 The guardrails"] = new Placement(

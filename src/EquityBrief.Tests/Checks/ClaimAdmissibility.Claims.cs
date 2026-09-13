@@ -598,16 +598,38 @@ public partial class ClaimAdmissibility
                 && candidate.Rows[0][0] == "Section"
                 && candidate.Rows[0][1] == "Lane");
 
-        var named = table.Body.Where(row => row.Count > 1).Select(row => row[0]).ToArray();
+        var rows = table.Body.Where(row => row.Count > 1).ToArray();
+        var named = rows.Select(row => row[0]).ToArray();
 
         Assert.Equal(named, ClaimRules.Sections);
         Assert.Contains(ClaimRules.ComputedSection, named);
 
-        // The computed section is the one the table places in the local lane with
-        // nothing to weigh, read off its own row.
-        var computed = table.Body.Single(row => row[0] == ClaimRules.ComputedSection);
+        // From 6.6 the table says what code works out, what the model is asked to
+        // write and what each section must pass, so the parts of a row the code
+        // carries are read against it in both directions. Five columns, the last
+        // being the rules.
+        Assert.All(rows, row => Assert.Equal(5, row.Count));
 
-        Assert.Contains("nothing to weigh", computed[3], StringComparison.Ordinal);
+        // The lane each row states is this machine's default, which is the list the
+        // writer is handed when configuration names none.
+        Assert.Equal(
+            ProseWriter.DefaultLane,
+            rows.Where(row => row[1] == "local").Select(row => row[0]).ToArray());
+        Assert.All(rows, row => Assert.Contains(row[1], new[] { "local", "paid" }));
+
+        // Every section a row says a model writes has a prompt to ask it in.
+        Assert.All(named, section => Assert.True(SectionPrompt.Asks.ContainsKey(section), section));
+
+        // The rules column, against the checker. The one section held to no citation
+        // is the one row saying it cites no document, and the one section held to its
+        // move's span is the one row naming a document published inside that move.
+        Assert.Equal(
+            [.. ClaimRules.Sections.Where(section => !ClaimRules.IsResearched(section))],
+            rows.Where(row => row[4].Contains("It cites no document", StringComparison.Ordinal)).Select(row => row[0]).ToArray());
+
+        Assert.Equal(
+            [ClaimRules.CauseSection],
+            rows.Where(row => row[4].Contains("published inside that move", StringComparison.Ordinal)).Select(row => row[0]).ToArray());
     }
 
     [Fact]
