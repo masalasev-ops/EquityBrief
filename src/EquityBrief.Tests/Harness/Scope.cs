@@ -841,6 +841,10 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md, and the store is asserted to be one the file describes",
             ByMigration),
+        [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = new Scoped(
+            Verdict.Pass,
+            "the refusals are read back off the region's own markup against the rows the store holds, with the category beside each document and its address drawn rather than counted, the count per category above them, the admitted documents in the same table on the same night not drawn, and no body drawn for any of them",
+            ByReadSurface),
         // 6.3, the admissibility test. The limits row and the two failure rows
         // are the behavioural half and the store row below is the shape half,
         // which fail apart: the store could hold the right columns while nothing
@@ -1363,6 +1367,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = "6.4",
+        // Still here with the region's other parts although 6.3 reached it. This
+        // map is the whole population of section 15's rows and their parts, in
+        // both directions, rather than only the ones nothing asserts yet: a part
+        // with no entry would inherit nothing, which is what contradiction D was.
         [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.3",
 
         [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "7.5",

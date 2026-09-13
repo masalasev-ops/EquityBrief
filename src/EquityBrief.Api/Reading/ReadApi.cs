@@ -1,6 +1,7 @@
 using EquityBrief.Core.Indicators;
 using System.Globalization;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -108,6 +109,24 @@ public sealed record RunStageRow(
     int NetworkRequests,
     string Spend,
     string Detail);
+
+// One document a pass fetched and did not store, as the store holds it.
+//
+// The row exists because the refusal would otherwise be invisible: nothing else
+// records that a document was fetched and refused, and the run page is the
+// surface that shows it. So the body is null by rule here rather than by absence,
+// and the column that would hold it is not read at all.
+//
+// `PublishedOn` is null on the refusal that is about the date being missing,
+// which is why the page states the category beside every row rather than a date
+// beside each: one class of refusal has no date to show.
+public sealed record RefusedDocumentRow(
+    string Id,
+    string Url,
+    string Title,
+    DateOnly? PublishedOn,
+    DateTimeOffset FetchedAt,
+    string Category);
 
 // One filled forward return, as the store holds it.
 //
@@ -498,6 +517,24 @@ public sealed class ReadApi : IComponent
         ORDER BY started_at, stage;
     ";
 
+    // Every document refused by admissibility inside a window of UTC days, which
+    // is what the run page's stale-and-failed region draws.
+    //
+    // The window and then the clock, exactly as the run log's own read works and
+    // for the same reason: this table has no session column either, a pass runs
+    // when a name is opened, and which session an instant belongs to is a
+    // question only the clock may answer.
+    //
+    // The body is not selected. A refused row carries none, and a query that
+    // asked for it would read as a page that could show one.
+    const string RefusedDocumentsInWindow = @"
+        SELECT id, url, title, published_on, fetched_at, admissibility
+        FROM source_document
+        WHERE admissibility != $accepted
+          AND fetched_at >= $from AND fetched_at < $to
+        ORDER BY fetched_at DESC, id;
+    ";
+
     // Every filled forward return, which is what the run page's reason records
     // count over and where the base rate is read from.
     const string ForwardReturns = @"
@@ -700,6 +737,49 @@ public sealed class ReadApi : IComponent
                 reader.GetInt32(7),
                 reader.GetString(8),
                 reader.IsDBNull(9) ? string.Empty : reader.GetString(9)));
+        }
+
+        return rows;
+    }
+
+    // The documents one night's passes refused, newest first.
+    //
+    // A pass is on demand rather than nightly, so what this bounds is the day the
+    // page is showing: the refusals of the evening a reader is looking at, which
+    // is the same period every other region of that page is about. The night is
+    // decided by the clock over each row's own fetch instant, as the run log's is.
+    public async Task<IReadOnlyList<RefusedDocumentRow>> RefusedDocumentsAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RefusedDocumentsInWindow;
+        command.Parameters.AddWithValue("$accepted", Admissibility.Accepted);
+        command.Parameters.AddWithValue("$from", night.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", night.AddDays(2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<RefusedDocumentRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var fetched = DateTimeOffset.Parse(reader.GetString(4), CultureInfo.InvariantCulture);
+
+            if (clock.SessionDateAt(fetched) != night)
+            {
+                continue;
+            }
+
+            rows.Add(new RefusedDocumentRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.IsDBNull(3)
+                    ? null
+                    : DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                fetched,
+                reader.GetString(5)));
         }
 
         return rows;

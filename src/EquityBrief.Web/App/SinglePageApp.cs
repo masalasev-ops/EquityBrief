@@ -343,6 +343,7 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<BaseRateLine> baseRates,
         int nights,
         IReadOnlyList<string> stale,
+        IReadOnlyList<RefusedDocument> refused,
         HarnessCounts? harness)
     {
         var region = new StringBuilder();
@@ -356,7 +357,7 @@ public sealed class SinglePageApp : IComponent
         region.Append("<p class=\"degraded\">registered candidates that are not on the list, and the correction divisor beside each threshold, arrive with the register at 7.4</p>");
         region.Append("</section>");
 
-        region.Append(marks.StaleAndFailed(stale, failed));
+        region.Append(marks.StaleAndFailed(stale, failed, refused));
         region.Append(marks.HarnessVerdicts(harness));
 
         region.Append("</section>");

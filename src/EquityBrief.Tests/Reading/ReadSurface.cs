@@ -10,6 +10,7 @@ using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
@@ -142,6 +143,12 @@ public class ReadSurface
             CheckReach.Key("15.7 Tonight", "Reasons, per row"),
             CheckReach.Key("15.7 Tonight", "Reason totals"),
             CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars"),
+
+            // 6.3, the third part of that region. The refusals are drawn from the
+            // store's own rows, with the category beside each, which is the only
+            // surface a refusal is visible on: nothing else records that a
+            // document was fetched and not stored.
+            CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility"),
 
             // The run page's own expectation file, which 5.6 added and section
             // 19.1 did not name until the phase 5 sign-off. It is reached here
@@ -2800,22 +2807,142 @@ public class ReadSurface
 
         Assert.Equal(["calendar"], [.. failed.Select(stage => stage.Stage)]);
 
-        var region = new MarkRenderer().StaleAndFailed(stale, failed);
+        var region = new MarkRenderer().StaleAndFailed(stale, failed, []);
 
         Assert.Contains("data-stale=\"1\"", region, StringComparison.Ordinal);
         Assert.Contains("NEWW", region, StringComparison.Ordinal);
         Assert.Contains("data-stage=\"calendar\"", region, StringComparison.Ordinal);
         Assert.Contains("the feed did not answer", region, StringComparison.Ordinal);
 
-        // The research halves are stated as absent rather than drawn as empty
-        // lists, which would read as a night that refused nothing.
-        Assert.Contains("data-research=\"absent\"", region, StringComparison.Ordinal);
+        // The one research half still absent is the sections a rejection made
+        // fall back, which needs a written section to reject and arrives with the
+        // claim checker. Stated rather than drawn empty, because an empty list
+        // reads as a night that rejected nothing.
+        Assert.Contains("data-fallbacks=\"absent\"", region, StringComparison.Ordinal);
 
-        // A clean night says both things rather than showing two empty regions.
-        var clean = new MarkRenderer().StaleAndFailed([], []);
+        // A clean night says each thing rather than showing three empty regions.
+        var clean = new MarkRenderer().StaleAndFailed([], [], []);
 
         Assert.Contains("no name is carrying yesterday's bars", clean, StringComparison.Ordinal);
         Assert.Contains("no stage of this night failed", clean, StringComparison.Ordinal);
+        Assert.Contains("no document was refused by admissibility on this night", clean, StringComparison.Ordinal);
+    }
+
+    // A refused document as the store holds one: the row form the intake produces
+    // for a document the test refused, written here rather than by a component
+    // because SCHEMA gives Insert on this table to the two research runners and to
+    // nobody else, and the first of them arrives at 6.8. What the row says is the
+    // shipped projection's, so the page is read against values the code produced.
+    static string RefusedRow(StoredDocument row) =>
+        "INSERT INTO source_document (id, url, title, published_on, fetched_at, body, admissibility) VALUES ('"
+        + row.Id + "', '" + row.Url + "', '" + row.Title.Replace("'", "''", StringComparison.Ordinal) + "', "
+        + (row.PublishedOn is { } published
+            ? "'" + published.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "'"
+            : "NULL")
+        + ", '" + row.FetchedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture) + "', "
+        + (row.Body is null ? "NULL" : "'" + row.Body.Replace("'", "''", StringComparison.Ordinal) + "'")
+        + ", '" + row.Admissibility + "');";
+
+    [Fact]
+    public async Task TheDocumentsRefusedByAdmissibilityAreDrawnWithTheCategoryThatRefusedEach()
+    {
+        // Section 15.10's fourth region, third part. A refusal is kept as a row
+        // precisely so it can be read on a surface, and this is the surface: the
+        // category beside each document, the address a person can follow, and the
+        // count per category above them.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var night = new DateOnly(2026, 9, 5);
+
+        // The rows the intake produces over the documents the fixture holds, at an
+        // instant that is half past nine in the evening in New York and the next
+        // day in UTC, which is the case a filter on the stored date gets wrong.
+        var intake = SourceDocuments.Of(
+            [.. ClaimAdmissibility.Refusable().Select(one => one.Document)],
+            new DateOnly(2026, 1, 1),
+            new DateOnly(2026, 9, 30),
+            Utc("2026-09-06T01:30:00Z"));
+
+        // An admitted document on the same night, which the region must not draw.
+        var admitted = SourceDocuments.Of(
+            [.. ClaimAdmissibility.Real()],
+            new DateOnly(2026, 1, 1),
+            new DateOnly(2026, 9, 30),
+            Utc("2026-09-06T01:31:00Z"));
+
+        Assert.Equal(7, intake.Refused.Count);
+        Assert.Equal(6, admitted.Admitted.Count);
+
+        foreach (var row in intake.Rows.Concat(admitted.Rows))
+        {
+            Insert(store, RefusedRow(row));
+        }
+
+        var read = await Api(store).RefusedDocumentsAsync(night);
+
+        // Only the refusals, and all of them. The admitted rows are in the same
+        // table on the same night, so a query that read the table would draw a
+        // document a claim may rest on into the region about refusals.
+        Assert.Equal(7, read.Count);
+        Assert.All(read, row => Assert.NotEqual(Admissibility.Accepted, row.Category));
+
+        var refused = RunScreen.Refused(read);
+        var region = new MarkRenderer().StaleAndFailed([], [], refused);
+
+        Assert.Contains("data-refused=\"7\"", region, StringComparison.Ordinal);
+
+        // Every category the fixture's documents reach is named on the markup,
+        // beside the document it refused, which is the claim the row makes.
+        foreach (var document in refused)
+        {
+            Assert.Contains($"data-category=\"{document.Category}\"", region, StringComparison.Ordinal);
+            Assert.Contains(document.Url, region, StringComparison.Ordinal);
+        }
+
+        Assert.Equal(
+            Admissibility.DeniedCategories.Length + 2,
+            refused.Select(document => document.Category).Distinct(StringComparer.Ordinal).Count());
+
+        // The count per category above the list, so four of one kind reads as a
+        // search returning marketing rather than as four unrelated refusals.
+        Assert.Contains($"{Admissibility.MarketingPage} 2", region, StringComparison.Ordinal);
+        Assert.Contains("7 document(s) refused", region, StringComparison.Ordinal);
+
+        // And no body reaches the page, because the store holds none for a
+        // refusal. The admitted documents' bodies are in the same table, so this
+        // is a statement about what the region draws rather than about what the
+        // store happens to hold.
+        foreach (var body in admitted.Admitted.Select(row => row.Body!))
+        {
+            Assert.DoesNotContain(body[..40], region, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public async Task ARefusalFromAnotherNightIsNotDrawnOnThisOne()
+    {
+        // The night is decided by the clock over each row's own fetch instant, as
+        // the run log's is, because this table has no session column either and a
+        // pass runs when a name is opened rather than on a schedule.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var one = ClaimAdmissibility.Refusable()[0].Document;
+
+        var tonight = SourceDocuments.Stored(one, Admissibility.PriceForecast, Utc("2026-09-06T01:30:00Z"));
+
+        var before = SourceDocuments.Stored(
+            one with { Url = one.Url + "?page=2" },
+            Admissibility.PriceForecast,
+            Utc("2026-09-04T21:00:00Z"));
+
+        Insert(store, RefusedRow(tonight));
+        Insert(store, RefusedRow(before));
+
+        var api = Api(store);
+
+        Assert.Equal([tonight.Id], [.. (await api.RefusedDocumentsAsync(new DateOnly(2026, 9, 5))).Select(row => row.Id)]);
+        Assert.Equal([before.Id], [.. (await api.RefusedDocumentsAsync(new DateOnly(2026, 9, 4))).Select(row => row.Id)]);
+        Assert.Empty(await api.RefusedDocumentsAsync(new DateOnly(2026, 9, 1)));
     }
 
     [Fact]
@@ -2921,6 +3048,7 @@ public class ReadSurface
             RunScreen.BaseRates(returns),
             RunScreen.Nights(listings),
             await api.StaleNamesAsync("GSPC"),
+            RunScreen.Refused(await api.RefusedDocumentsAsync(night)),
             RunScreen.Harness(null));
 
         foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "harness" })
