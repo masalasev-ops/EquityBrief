@@ -25,6 +25,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - ARCHITECTURE.html, SCHEMA.md - the run log is appended to by every component that writes
+
+Corrects: the run log's catalogue row and SCHEMA's ownership row both said every component appends, and three do not: the single page app and the mark renderer touch no store, and the trend classifier returns its label to the ladder builder and writes nothing. Each of the three says "none" in its own Writes cell, so the corpus contradicted itself between rows. Found at 6.7, which is where the run log row is owed and where asserting it over the components in code showed the three.
+Was:
+> <tr><td><b>Run log</b></td><td><span class="layer L-store">store</span></td><td>always</td><td>every component appends</td><td>run log</td><td>durations, counts, spend, failures by component name</td></tr>
+>
+> and in SCHEMA.md's ownership table:
+> | `run_log` | every component appends | RunLog | none |
+Now:
+> <tr><td><b>Run log</b></td><td><span class="layer L-store">store</span></td><td>always</td><td>every component that writes appends</td><td>run log</td><td>durations, counts, spend, failures by component name</td></tr>
+>
+> and in SCHEMA.md's ownership table:
+> | `run_log` | every component that writes appends | RunLog | none |
+Why: what the run log is owed is a row from every stage that changes a store, which is what makes a night and a pass readable afterwards; a renderer that changes nothing has nothing to record, and a statement that it appends is one no test could ever hold.
+
+### 2026-09-13 - ARCHITECTURE.html - the spend cap's catalogue and matrix rows, and the two runners reaching the research model through it
+
+Authorised by: Every paid call is made through the spend cap, which holds the research model
+Was:
+> <tr><td><b>Theme research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per theme</td><td>theme store, source documents, search tool, research model</td><td>theme store, source documents</td><td>researches an industry's own cycle once, so every name in that industry shares one paid pass, testing every document it fetched for admissibility before storing it as the per-name runner does</td></tr>
+>
+> <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, theme store, source documents, research model</td><td>research store, source documents</td><td>writes the narrative sections pending the checker's verdict, tests every document it fetched for admissibility before storing it, and keeps what it stored with the verdict that admitted or refused it</td></tr>
+Now:
+> <tr><td><b>Theme research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per theme</td><td>theme store, source documents, search tool</td><td>theme store, source documents</td><td>researches an industry's own cycle once, so every name in that industry shares one paid pass, testing every document it fetched for admissibility before storing it as the per-name runner does, and has the spend cap make its every paid call</td></tr>
+>
+> <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, theme store, source documents</td><td>research store, source documents</td><td>writes the narrative sections pending the checker's verdict, tests every document it fetched for admissibility before storing it, keeps what it stored with the verdict that admitted or refused it, and has the spend cap make its every paid call</td></tr>
+> <tr><td><b>Spend cap</b></td><td><span class="layer L-research">research</span></td><td>before every paid call</td><td>run log, research model</td><td>run log</td><td>the one component that makes a paid call. It reads what the run log says was spent today and this month, refuses a call before it is made where the most that call could cost would take spend past either cap, and records on a row of its own what each call it made did cost, so the ledger is what the store holds and neither runner can reach the research model except through it (see: Every paid call is made through the spend cap, which holds the research model)</td></tr>
+>
+> and in the read and write matrix, a row after the research runner's:
+> <tr><td>Spend cap</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td></tr>
+Why: the cap is a stop only if no paid call can be made around it, so the component that makes paid calls is the cap and the runners hold it rather than the model. Their Reads cells lose the research model for that reason, and the cap's row is where the model is read and the run log is both read and written.
+
 ### 2026-09-13 - ARCHITECTURE.html - section 12.2's lane table says what code works out, what the model writes and what each section must pass
 
 Corrects: the table said what each section is handed and why it sits in its lane, and nothing about what is worked out before a model is asked, what the model is asked to write or what the section must pass to be stored, so it did not explain what a pass does or calculates. Its cause row and the key above it described one date's headlines and that day's move, where a move spans sessions and, from 6.6, a cause may rest only on a document published inside its move, which code pairs before the model sees anything. Raised by the operator at 6.6, reading the table against what the checkpoint built. Writing the new last column found that the date rule would refuse every date the dated calendar items section exists to state, and the row says so rather than stating a rule that holds.

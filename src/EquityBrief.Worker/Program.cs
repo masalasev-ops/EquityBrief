@@ -96,7 +96,8 @@ static async Task<int> FundamentalsFetch(string[] args)
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName],
             configuration[ArchiveAgent.ContactName],
-            LocalLane.Settings(configuration));
+            LocalLane.Settings(configuration),
+            ResearchLane.Settings(configuration));
     }
     catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
     {

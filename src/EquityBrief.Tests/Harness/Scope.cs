@@ -1340,7 +1340,7 @@ internal static class Scope
 
         // 1.2 names the run log, because that is where the backfill's request
         // count first reaches it. The catalogue row is not about one stage: its
-        // Reads cell says "every component appends", so the row is a claim about
+        // Reads cell says "every component that writes appends", so the row is a claim about
         // every component, and the last of them lands in phase 6.
         ["Run log"] = "6.7",
 

@@ -81,7 +81,7 @@ internal static class ComponentVocabulary
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
-        ["every component appends"] = [DataStore.RunLog],
+        ["every component that writes appends"] = [DataStore.RunLog],
         ["the store's schema"] = [],
         ["the store's schema version"] = [],
         // Prose describing a hand-off rather than a store. The trend classifier

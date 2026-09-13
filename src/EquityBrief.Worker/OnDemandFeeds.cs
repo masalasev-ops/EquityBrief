@@ -24,7 +24,15 @@ namespace EquityBrief.Worker;
 // its own, so a night's model calls are attributable to the one resolution every
 // other call it makes goes through.
 // see: The on-demand feeds are resolved in one place, as the nightly feeds are
-public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchiveFeed Archive, ILocalModelFeed LocalModel)
+//
+// The fourth is the research model, from 6.7, which the spend cap holds for every
+// paid call: nothing takes it from this record but the cap.
+// see: Every paid call is made through the spend cap, which holds the research model
+public sealed record OnDemandFeeds(
+    IFundamentalsFeed Fundamentals,
+    IFilingsArchiveFeed Archive,
+    ILocalModelFeed LocalModel,
+    IResearchModelFeed ResearchModel)
 {
     // What the open cost, read off the feeds. A caller that wrote the figure
     // would be recording its own intention.
@@ -44,12 +52,16 @@ public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchi
     // The model calls an open made, apart from its requests: a call to the operator's
     // own runtime is not a provider request and is billed by nobody, and the run log
     // carries the two in columns of their own.
-    public int ModelCalls => LocalModel.Requests;
+    public int ModelCalls => LocalModel.Requests + ResearchModel.Requests;
 
-    public static OnDemandFeeds FromFixture(string folder) =>
-        new(RecordedFundamentalsFeed.FromFolder(folder), new RecordedFilingsArchiveFeed(folder), new RecordedLocalModelFeed(folder));
+    public static OnDemandFeeds FromFixture(string folder, ResearchModelSettings research) =>
+        new(
+            RecordedFundamentalsFeed.FromFolder(folder),
+            new RecordedFilingsArchiveFeed(folder),
+            new RecordedLocalModelFeed(folder),
+            new RecordedResearchModelFeed(folder, research));
 
-    public static OnDemandFeeds Live(string? baseAddress, string? apiKey, string? archiveContact, LocalModelSettings local) =>
+    public static OnDemandFeeds Live(string? baseAddress, string? apiKey, string? archiveContact, LocalModelSettings local, ResearchModelSettings research) =>
         new(
             EodhdFundamentalsFeed.Live(
                 string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress,
@@ -59,7 +71,8 @@ public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchi
             // with a refusal.
             // see: The archive declares a contact in its user agent, and a blank one refuses at startup
             SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(archiveContact ?? string.Empty)),
-            OpenAiCompatibleModelFeed.Live(local));
+            OpenAiCompatibleModelFeed.Live(local),
+            ResearchModelFeeds.Live(research));
 
     // The local lane's settings are taken on both paths, so a key configured for that
     // lane refuses a fixture run as it refuses a live one: the refusal is about the
@@ -71,12 +84,13 @@ public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchi
         string? baseAddress,
         string? apiKey,
         string? archiveContact,
-        LocalModelSettings local) =>
+        LocalModelSettings local,
+        ResearchModelSettings research) =>
         FeedSource.Resolve(
             source,
             fixtureFolder,
-            FromFixture,
-            () => Live(baseAddress, apiKey, archiveContact, local),
+            folder => FromFixture(folder, research),
+            () => Live(baseAddress, apiKey, archiveContact, local, research),
             "an open");
 
     // Whether this set can reach the network at all, asked of the objects rather
@@ -86,5 +100,6 @@ public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchi
     public bool ReachesTheNetwork =>
         Fundamentals is not RecordedFundamentalsFeed
         || Archive is not RecordedFilingsArchiveFeed
-        || LocalModel is not RecordedLocalModelFeed;
+        || LocalModel is not RecordedLocalModelFeed
+        || ResearchModel is not RecordedResearchModelFeed;
 }

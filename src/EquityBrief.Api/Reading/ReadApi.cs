@@ -1463,7 +1463,7 @@ public sealed class ReadApi : IComponent
 
     // The operational record of the read surface coming up, which section
     // 15.10's run page reads. Appended rather than updated, because the run log
-    // has no updater declared and every component appends to it.
+    // has no updater declared and every component that writes appends to it.
     public async Task RecordStartAsync(string runId, string detail)
     {
         await using var connection = Open();

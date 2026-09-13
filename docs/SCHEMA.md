@@ -51,7 +51,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `source_document` | ResearchRunner, ThemeResearchRunner | none | none |
 | `candidate_register` | CandidateRegistrar | none | none |
 | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
-| `run_log` | every component appends | RunLog | none |
+| `run_log` | every component that writes appends | RunLog | none |
 
 **`bar` has three inserters and two deleters, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars and drops the sessions that fall out of the retention window on the night they fall out of it. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices.
 
@@ -466,3 +466,5 @@ Grain: one row per run per stage.
 Primary key: `run_id`, `stage`.
 
 `rows_written` is measured rather than self-reported, because a stage's own count of what it wrote is the stage's opinion and the halt condition keys on that number.
+
+**A paid call is a row of its own, and the rows are the ledger.** The spend cap writes one row for every call it judges, under the pass's run, with the stage `research call:` followed by the section asked for, so one section's call in one pass is one row. `ok` carries what the call cost in `spend`, one model call and one network request; `paused` is a call a cap refused before it was made, counting nothing and spending nothing; `refused` and `unavailable` are calls the provider declined or did not answer, counting the attempt and spending nothing. `spend` is TEXT holding a decimal, written invariant and never rounded, and what the cap judges a call by is these rows summed by the UTC day and the UTC month each started in, so the ledger is measured off this table rather than kept by anything that spends (see: Every paid call is made through the spend cap, which holds the research model).

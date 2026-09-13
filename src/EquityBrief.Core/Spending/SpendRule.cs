@@ -153,7 +153,7 @@ public sealed record SpendVerdict(
 // midnight.
 // see: The spend cap is a stop, not an allowance
 // see: The spend cap counts a UTC day and a UTC month, and refuses a call that could take spend past either
-public static class SpendCap
+public static class SpendRule
 {
     public static SpendVerdict Judge(SpendLedger ledger, SpendCaps caps, DateTimeOffset now, decimal ceiling = 0m)
     {

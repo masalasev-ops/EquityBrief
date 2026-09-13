@@ -46,7 +46,7 @@ public class FixtureReplay
     static string Folder() => Path.Combine(Repository.Root, "fixtures", Fixture);
 
     // The run log is not a figure the pipeline produces. It is the operational
-    // record of having produced them, every component appends to it, and no
+    // record of having produced them, every component that writes appends to it, and no
     // expectation would be diffing anything about the fixture by naming it.
     // Named here rather than filtered silently, because an exclusion nobody
     // states is an exclusion nobody can argue with.

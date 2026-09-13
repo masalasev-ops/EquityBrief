@@ -204,7 +204,7 @@ public class LocalModelFeedTests
 
         // A fixture run refuses it too, because the refusal is about the configuration.
         Assert.Throws<InvalidOperationException>(() =>
-            OnDemandFeeds.Resolve("fixture", Folder(), null, null, null, LocalLane.Settings(configured)));
+            OnDemandFeeds.Resolve("fixture", Folder(), null, null, null, LocalLane.Settings(configured), new ResearchModelSettings(null, null, null, null, "a key the fixture never sends")));
 
         // And a number that is not one is refused rather than read as the default.
         var mistyped = new ConfigurationBuilder().AddInMemoryCollection(
@@ -226,7 +226,8 @@ public class LocalModelFeedTests
         // Pinned rather than restated: each row of RUNBOOK's table names the key the
         // code reads and the default it falls back to, read off the document.
         var rows = Corpus.Read("docs/RUNBOOK.md").Split('\n')
-            .Where(line => line.StartsWith("| ", StringComparison.Ordinal) && line.Contains("`EquityBrief:Models:", StringComparison.Ordinal))
+            .Where(line => line.StartsWith("| ", StringComparison.Ordinal)
+                && (line.Contains("`EquityBrief:Models:Local:", StringComparison.Ordinal) || line.Contains("`EquityBrief:Models:LocalLane`", StringComparison.Ordinal)))
             .Select(line => line.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray())
             .ToArray();
 

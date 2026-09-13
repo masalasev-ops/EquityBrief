@@ -128,6 +128,7 @@ Moving to a new machine: copy the checkout, copy the store file, write the secre
 |---|---|---|
 | EODHD | `EquityBrief:Providers:Eodhd:ApiKey` | `EquityBrief.Worker` |
 | SEC EDGAR | `EquityBrief:Providers:SecEdgar:Contact` | `EquityBrief.Worker` |
+| DeepSeek | `EquityBrief:Providers:DeepSeek:ApiKey` | `EquityBrief.Worker` |
 
 **The archive's row is a contact and not a key, and it is written here for the same reason the key is.** The archive needs no key and refuses a request that names no user agent, and its fair-access policy asks that the agent carry contact details, so the setting is what a request declares about this installation rather than what authorises it. A blank one refuses at startup for the reason a blank key does. Put a dedicated address there, an alias or a plus-addressed variant rather than a personal mailbox: the value goes out in the header of every archive request for the life of the installation, and it sits in this file beside the keys, where anything identifying a person is one more thing that must never reach a captured fixture (see: The archive declares a contact in its user agent, and a blank one refuses at startup).
 
@@ -150,6 +151,23 @@ The local model takes settings and never a key. Each has a default measured on t
 **A key at `EquityBrief:Models:Local:ApiKey` is refused, in either file and on a fixture run as well as a live one.** A local model that asks for a key is a model on somebody else's machine, and the overnight queue is allowed to call this lane because it costs nothing (see: The local model answers at an OpenAI-compatible endpoint, and which model answers is configuration).
 
 A lane naming a section figure 12.2 does not name is refused when the lane is read, and so is one naming a section twice.
+
+### The research model's settings and the spend caps
+
+The research model is the one part of the system that costs money. Its key is in the table above and is refused by name at startup when it is blank, on a fixture run as on a live one. Everything else has a default.
+
+| Setting | Key | Default |
+|---|---|---|
+| which provider answers | `EquityBrief:Models:Research:Provider` | `deepseek` |
+| which of its models | `EquityBrief:Models:Research:Model` | `deepseek-flash` |
+| whether it thinks before answering | `EquityBrief:Models:Research:Thinking` | `enabled` |
+| how long one call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
+| the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
+| the most research may spend in a UTC month, in dollars | `EquityBrief:Spend:MonthCap` | `50` |
+
+**A provider or a model the build has no price for is refused at startup**, rather than called and recorded as costing nothing. The models the build prices are the provider's own two, at the rates its page gave on 2026-09-13; when the provider changes a price, the rates in the research model's feed are what change.
+
+**Both caps are proposals**, marked so in section 17, and the obligation that settles them fires on the run page once twenty paid calls carry a recorded cost. A cap stops research rather than warning about it: a call is refused before it is made where the most it could cost would take the day or the month past its cap, research resumes when that UTC day or month ends, and the name page says research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
 
 ---
 
