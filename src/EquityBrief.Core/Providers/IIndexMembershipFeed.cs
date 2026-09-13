@@ -25,7 +25,11 @@ namespace EquityBrief.Core.Providers;
 // which is what the store already holds, and null is drawn as not on file rather
 // than falling into a bucket
 // (see: The universe is the S&P 500, and membership is fetched, not maintained).
-public sealed record IndexConstituent(string Ticker, DateOnly? Joined, DateOnly? Left, string? Sector = null);
+//
+// `Industry` is read from the same snapshot beside the sector and is null for the
+// same reason. It is the theme a name's industry research is shared under, from 6.9
+// (see: A theme is the industry the index names for a member, and one theme pass serves every member it names).
+public sealed record IndexConstituent(string Ticker, DateOnly? Joined, DateOnly? Left, string? Sector = null, string? Industry = null);
 
 // The index membership feed of section 5, behind an interface so the nightly
 // path and the suite meet the same shape.

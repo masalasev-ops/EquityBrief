@@ -76,8 +76,13 @@ public static class SectionPrompt
             "Write one sentence for each business segment whose figures are listed, saying what that segment reported for the quarter, using only the segment facts listed.",
         ["The key under each figure"] =
             "In three to five sentences, say what the close, the averages, the latest quarter and the valuation listed in the facts show, for a reader who has not seen the figures.",
+        // Asked with no figure and no full date, because a theme has no facts file and every
+        // figure in a theme section is refused: which way the industry's prices are moving
+        // and why, in words, each sentence resting on a document.
+        // see: A theme section states no figure, because nothing the store holds is computed for an industry
         ["The industry cycle"] =
-            "Say where the industry's own prices are in their cycle and the three things capping or driving them, using only the documents listed.",
+            "Say where the industry's own prices are in their cycle and the three things capping or driving them, using only the documents listed. "
+            + "No facts are listed for an industry, so write no figure and no date: say in words which way prices are moving and what is moving them.",
         ["The dated calendar items"] =
             "List, one sentence each, the dated events the documents name that fall after the session stated below, each with the date a listed document gives for it and ending with that document's marker. "
             + "Write no event dated on or before that session, and no date no listed document states.",
@@ -96,7 +101,23 @@ public static class SectionPrompt
         IReadOnlyList<PromptDocument> documents,
         string? refusedBecause = null,
         IReadOnlyList<(string Section, string Prose)>? written = null,
-        DateOnly? night = null)
+        DateOnly? night = null) =>
+        Build("Company", ticker, section, facts, documents, refusedBecause, written, night);
+
+    // The industry cycle for a theme, which is the one section asked of an industry rather
+    // than of a company, with no facts listed because a theme has none.
+    public static string ThemePrompt(string industry, IReadOnlyList<PromptDocument> documents, string? refusedBecause = null) =>
+        Build("Industry", industry, ClaimRules.CycleSection, [], documents, refusedBecause, null, null);
+
+    static string Build(
+        string label,
+        string subject,
+        string section,
+        IReadOnlyList<Fact> facts,
+        IReadOnlyList<PromptDocument> documents,
+        string? refusedBecause,
+        IReadOnlyList<(string Section, string Prose)>? written,
+        DateOnly? night)
     {
         if (!Asks.TryGetValue(section, out var ask))
         {
@@ -106,7 +127,7 @@ public static class SectionPrompt
 
         var prompt = new StringBuilder();
 
-        prompt.Append("Company: ").Append(ticker).Append('\n');
+        prompt.Append(label).Append(": ").Append(subject).Append('\n');
         prompt.Append("Section: ").Append(section).Append('\n');
         prompt.Append(ask).Append("\n\n");
 
@@ -194,6 +215,10 @@ public static class SectionPrompt
         IReadOnlyList<(string Section, string Prose)>? written = null,
         DateOnly? night = null) =>
         new(Lane, section, model, [.. documents.Select(document => document.Id)], System(documents), Prompt(ticker, section, facts, documents, refusedBecause, written, night));
+
+    // A theme's industry cycle, asked in the paid lane, which figure 12.2 puts it in.
+    public static ModelRequest ThemeRequest(string model, string industry, IReadOnlyList<PromptDocument> documents, string? refusedBecause = null) =>
+        new(PaidLane, ClaimRules.CycleSection, model, [.. documents.Select(document => document.Id)], System(documents), ThemePrompt(industry, documents, refusedBecause));
 
     // The same request asked in the paid lane.
     public static ModelRequest PaidRequest(

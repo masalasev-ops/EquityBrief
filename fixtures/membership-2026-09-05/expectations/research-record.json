@@ -1,7 +1,7 @@
 {
   "stage": "research-record",
   "derivation": "derived",
-  "derivedFrom": "section 12's rules and the lane configuration assigns each section, the decision that a research pass hands each section the documents code picks for it with the company's own filing first, the decision that a dated calendar item's date rests on a document the sentence cites, the decision that the fixture comparison moved the cause of each large move into the paid lane, and the fixture's own captures: KEYS's thirteen articles, its release filed on 2026-08-18, and its eight stored moves. Which lane writes each section, which sections a pass warrants, which documents are fetched, admitted, refused and handed to each section, and in which order, were worked out from those rules and captures outside this repository before the tests that read this file were run, by ranking each move's documents on the listings the provider attributes them to and then on their dates. Section 19.1's research record, whose local half 6.6's prose file carries.",
+  "derivedFrom": "section 12's rules and the lane configuration assigns each section, the decision that a research pass hands each section the documents code picks for it with the company's own filing first, the decision that a dated calendar item's date rests on a document the sentence cites, the decision that the fixture comparison moved the cause of each large move into the paid lane, the decision that a theme is the industry the index names for a member, and the fixture's own captures: KEYS's thirteen articles, its release filed on 2026-08-18, its eight stored moves, and the theme search for its industry, Scientific & Technical Instruments, which returned no page from the industry list, so the industry cycle is not written and says why. Which lane writes each section, which sections a pass warrants, which documents are fetched, admitted, refused and handed to each section, and in which order, were worked out from those rules and captures outside this repository before the tests that read this file were run, by ranking each move's documents on the listings the provider attributes them to and then on their dates. Section 19.1's research record, whose local half 6.6's prose file carries.",
   "tables": [
     "research_section",
     "source_document"
@@ -28,7 +28,7 @@
     ]
   },
   "notWritten": {
-    "The industry cycle": "no theme record is stored for the name's industry"
+    "The industry cycle": "the theme could not be refreshed: the search returned no page from the industry list with its text"
   },
   "documents": {
     "fetched": 14,
@@ -76,6 +76,7 @@
   ],
   "stages": [
     "staleness",
+    "theme research",
     "prose",
     "research call: The cause of each large move",
     "research call: The dated calendar items",

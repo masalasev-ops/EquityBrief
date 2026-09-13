@@ -195,7 +195,7 @@ public partial class FixtureExpectations
 
         // And a day later a plain open starts one, since the day's pass is what closed it.
         var nextDay = new NoArticles();
-        var tomorrow = await FixtureReplay.Researcher(store, FixedClock.At(ResearchNight.AddDays(1), SessionZones.UnitedStates), archive: new NoRelease(), news: nextDay)
+        var tomorrow = await FixtureReplay.Researcher(store, FixedClock.At(ResearchNight.AddDays(1), SessionZones.UnitedStates), archive: new NoRelease(), news: nextDay, search: new NoResults())
             .RunAsync("KEYS", "research-nothing-next-day");
 
         Assert.NotEqual(ResearchRunner.RanToday, tomorrow.Reason);
@@ -229,9 +229,10 @@ public partial class FixtureExpectations
 
         // Warranted: never written, left out on an earlier day, refused, and accepted and
         // gone stale. Not: accepted today, waiting on the checker, left out today. The
-        // industry cycle rests on a theme record the store does not hold, so it is named
-        // rather than counted as work.
-        string[] warranted = ["The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"];
+        // industry cycle is the theme's, and no pass has written the theme the name's
+        // industry is, so it is warranted by the same rule and the pass would refresh the
+        // theme before anything of the name's own.
+        string[] warranted = ["The cause of each large move", "The industry cycle", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"];
 
         Assert.Equal(ResearchRunner.Unavailable, outcome.Outcome);
         Assert.Equal(warranted, outcome.Warranted);
@@ -239,9 +240,10 @@ public partial class FixtureExpectations
         var detail = JsonDocument.Parse(Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-warranted' AND stage = 'research';").Single()).RootElement;
 
         Assert.Equal(warranted, detail.GetProperty("warranted").EnumerateArray().Select(section => section.GetString()!).ToArray());
-        Assert.Equal(
-            [$"The industry cycle|{ResearchRunner.NoThemeRecord}"],
-            detail.GetProperty("notWritten").EnumerateArray().Select(line => $"{line.GetProperty("section").GetString()}|{line.GetProperty("reason").GetString()}").ToArray());
+        // The pass did not start, so the theme was not refreshed either and nothing is named
+        // as not written: a pass that does not start writes nothing of the theme's.
+        Assert.Empty(detail.GetProperty("notWritten").EnumerateArray());
+        Assert.Empty(Query(store, "SELECT theme FROM theme_section;"));
 
         // The stale one is stale for the reason the rule gives, read off the judge's own row
         // against the newest filing the store holds, which is after 2026-08-01 and on or
@@ -343,8 +345,14 @@ public partial class FixtureExpectations
 
         var ran = await FixtureReplay.Researcher(localOnly, ResearchClock, lane: ClaimRules.Sections, paid: asked, localModel: new NothingAnsweringLocal()).RunAsync("KEYS", "research-local-only");
 
-        Assert.Equal(0, asked.Probes);
+        // The name's own sections ask it nothing. The industry cycle is the theme's, and the
+        // theme's pass has the spend cap make its call, so that pass asks once, finds the
+        // model not answering, and leaves the cycle named as not written while the name's
+        // own sections are written.
+        Assert.Equal(1, asked.Probes);
+        Assert.Equal(0, asked.Requests);
         Assert.Equal(ResearchRunner.Written, ran.Outcome);
+        Assert.Contains(ran.NotWritten, line => line.Section == ClaimRules.CycleSection && line.Reason == ResearchRunner.ThemeNotRefreshed + unreachable);
     }
 
     [Fact]
@@ -737,6 +745,20 @@ public partial class FixtureExpectations
             Requests++;
 
             return Task.FromResult<IReadOnlyList<NewsArticle>>([]);
+        }
+    }
+
+    // A search tool that answers and finds nothing, for a pass on a day the recordings were
+    // not taken for: a search on another day is another request, which the recording refuses.
+    internal sealed class NoResults : ISearchFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<SearchAnswer> SearchAsync(SearchQuery query, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult(new SearchAnswer([]));
         }
     }
 

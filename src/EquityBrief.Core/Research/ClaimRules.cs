@@ -118,6 +118,13 @@ public static class ClaimRules
     // see: A dated calendar item's date rests on a document the sentence cites and falls after the night the facts were computed for
     public const string CalendarSection = "The dated calendar items";
 
+    // The one section written per theme rather than per name, into the theme store, and
+    // read by every name whose industry the theme is. A theme has no facts file, so every
+    // figure in it is refused, which is the rule and not a gap in it.
+    // see: Industry research is per theme, not per name
+    // see: A theme section states no figure, because nothing the store holds is computed for an industry
+    public const string CycleSection = "The industry cycle";
+
     // ---- the reasons ----
 
     public const string UnmatchedFigure = "a figure the facts file does not hold";

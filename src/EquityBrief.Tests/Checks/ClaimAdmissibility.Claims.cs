@@ -451,10 +451,11 @@ public partial class ClaimAdmissibility
     [Fact]
     public async Task AThemeSectionIsHeldAgainstNoFactsFileSoEveryFigureInItIsRefused()
     {
-        // The rule as written, over the theme store, and the carried obligation
-        // asserted as it stands rather than left to be discovered: a theme has no
-        // facts file, so a figure in a theme section is refused.
-        // owes: A theme section's figures checked against a facts file a theme has
+        // The rule over the theme store, as 6.9 settled it: a theme has no facts
+        // file and nothing the store holds is computed for an industry, so a figure
+        // in a theme section is refused and a sentence of words citing a document is
+        // accepted. 6.4 wrote this as the carried rule and 6.9 kept it as the rule.
+        // see: A theme section states no figure, because nothing the store holds is computed for an industry
         using var store = await WithSources();
 
         var exhibit = SourceId("release-KEYS.htm");

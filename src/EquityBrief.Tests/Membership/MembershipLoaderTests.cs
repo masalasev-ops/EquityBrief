@@ -436,8 +436,53 @@ public class MembershipLoaderTests
         Assert.Equal("Utilities", Sector(store, "YYYY"));
     }
 
+    [Fact]
+    public async Task ANameThatLeavesTheIndexKeepsTheIndustryItWasLastSeenWith()
+    {
+        // The sector's property for the industry, which is what a theme is from 6.9:
+        // a name that left keeps the industry its research was shared under, and a
+        // name that joined carries its own, so the second night wrote industries.
+        using var store = new TemporaryStore().Migrated();
+
+        const string WhileAMember = """
+            {
+              "Components": { "0": { "Code": "ZZZZ", "Sector": "Technology", "Industry": "Semiconductors" } },
+              "HistoricalTickerComponents": {
+                "1": { "Code": "ZZZZ", "StartDate": "2020-01-02" }
+              }
+            }
+            """;
+
+        const string AfterLeaving = """
+            {
+              "Components": { "0": { "Code": "YYYY", "Sector": "Utilities", "Industry": "Utilities - Regulated Electric" } },
+              "HistoricalTickerComponents": {
+                "1": { "Code": "ZZZZ", "StartDate": "2020-01-02", "EndDate": "2026-09-08" },
+                "2": { "Code": "YYYY", "StartDate": "2021-01-04" }
+              }
+            }
+            """;
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new MembershipLoader(new RecordedIndexMembershipFeed(WhileAMember), clock, store.DatabaseFile)
+            .LoadAsync(Index, "night-one");
+
+        Assert.Equal("Semiconductors", Industry(store, "ZZZZ"));
+
+        await new MembershipLoader(new RecordedIndexMembershipFeed(AfterLeaving), clock, store.DatabaseFile)
+            .LoadAsync(Index, "night-two");
+
+        Assert.Equal("2026-09-08", Scalar(store, "SELECT \"left\" FROM membership WHERE ticker = 'ZZZZ';"));
+        Assert.Equal("Semiconductors", Industry(store, "ZZZZ"));
+        Assert.Equal("Utilities - Regulated Electric", Industry(store, "YYYY"));
+    }
+
     static string? Sector(TemporaryStore store, string ticker) =>
         Scalar(store, $"SELECT sector FROM membership WHERE ticker = '{ticker}';");
+
+    static string? Industry(TemporaryStore store, string ticker) =>
+        Scalar(store, $"SELECT industry FROM membership WHERE ticker = '{ticker}';");
 
     static string? Scalar(TemporaryStore store, string sql)
     {

@@ -49,11 +49,20 @@ public sealed record ResearchPassOutcome(
 // three rounds of writing and checking, each stage of each round a row of its own
 // under the one run. Opening a name twice runs one pass, because the second open finds
 // every section it would write already written today.
+//
+// The industry cycle is not one of the name's own sections. It is the theme's, written once
+// for the industry the index names the member in and read by every member of it, so where
+// the name's cycle is missing or stale the pass has the theme research runner refresh the
+// theme first, and a theme that could not be refreshed leaves the cycle named as not written
+// with its reason and every other section written.
+// see: Industry research is per theme, not per name
+// see: A theme is the industry the index names for a member, and one theme pass serves every member it names
 public sealed class ResearchRunner(
     StalenessJudge judge,
     Func<IReadOnlyList<string>, ProseWriter> writerFor,
     SpendCap cap,
     ClaimChecker checker,
+    ThemeResearchRunner themes,
     IFilingsArchiveFeed archive,
     INameNewsFeed news,
     IReadOnlyList<string> localLane,
@@ -63,6 +72,7 @@ public sealed class ResearchRunner(
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
             new StoreTouch(Store.ResearchSection, Touch.Read | Touch.Insert),
@@ -83,9 +93,10 @@ public sealed class ResearchRunner(
     public const string NoFactsFile = "no facts file";
     public const string AlreadyRunning = "already running";
 
-    // The reasons a paid section is not written, stated once so the run log and the
+    // The reasons the industry cycle is not written, stated once so the run log and the
     // page say them the same way.
-    public const string NoThemeRecord = "no theme record is stored for the name's industry";
+    public const string NoIndustry = "the index names no industry for the name, and a theme is an industry";
+    public const string ThemeNotRefreshed = "the theme could not be refreshed: ";
 
     // Why a plain open on the day a pass ran starts nothing.
     public const string RanToday = "a research pass for this name already ran today, and opening it again writes nothing until a later day or a rewrite";
@@ -120,8 +131,22 @@ public sealed class ResearchRunner(
           AND r.version = (SELECT MAX(s.version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section);
     ";
 
-    const string AcceptedThemes = @"
-        SELECT COUNT(*) FROM theme_section WHERE status = 'accepted';
+    // The industry the index last named for the member, which is the theme its cycle is
+    // read under.
+    const string IndustryFor = @"
+        SELECT industry FROM membership
+        WHERE ticker = $ticker AND industry IS NOT NULL
+        ORDER BY observed_at DESC
+        LIMIT 1;
+    ";
+
+    // The theme's newest industry cycle, which is what the name's cycle is judged by.
+    const string NewestThemeCycle = @"
+        SELECT version, as_of, status, reject_reason, prose
+        FROM theme_section
+        WHERE theme = $theme AND section = $section
+        ORDER BY version DESC
+        LIMIT 1;
     ";
 
     // A pass for this name that ran to the end on this session. The name is inside the
@@ -209,52 +234,92 @@ public sealed class ResearchRunner(
         }
 
         var newest = await NewestAsync(connection, ticker, cancellation);
-        var themes = await CountAsync(connection, AcceptedThemes, null, null, cancellation);
+        var industry = await IndustryAsync(connection, ticker, cancellation);
 
         var notWritten = new List<UnwrittenSection>();
         var warranted = new List<string>();
+        var themeWanted = false;
 
         foreach (var section in ClaimRules.Sections)
         {
-            if (!Warranted(section, newest.GetValueOrDefault(section), verdict, asOf))
+            // The industry cycle is judged by the theme's newest version, and it is never one
+            // of the name's own sections: a theme written today by another member of the
+            // industry is not bought again.
+            if (string.Equals(section, ClaimRules.CycleSection, StringComparison.Ordinal))
             {
+                if (industry is null)
+                {
+                    notWritten.Add(new UnwrittenSection(section, NoIndustry));
+                }
+                else if (ThemeWarranted(await NewestThemeAsync(connection, industry, cancellation), verdict, asOf))
+                {
+                    themeWanted = true;
+                }
+
                 continue;
             }
 
-            // The industry cycle rests on the theme record, which the theme research
-            // runner writes. With none stored there is nothing it could rest on, so it
-            // is named as not written rather than counted as work this pass could do.
-            if (string.Equals(section, IndustryCycle, StringComparison.Ordinal) && themes == 0)
+            if (Warranted(section, newest.GetValueOrDefault(section), verdict, asOf))
             {
-                notWritten.Add(new UnwrittenSection(section, NoThemeRecord));
-
-                continue;
+                warranted.Add(section);
             }
-
-            warranted.Add(section);
         }
 
-        if (warranted.Count == 0)
+        if (warranted.Count == 0 && !themeWanted)
         {
             return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NotWarranted, verdict.State, [], verdict.Line, notWritten), 0, 0, cancellation);
         }
+
+        // What the pass's row says it warranted, in figure 12.2's order: the name's own
+        // sections, and the cycle where the theme it is read under wanted a refresh.
+        IReadOnlyList<string> recorded = themeWanted
+            ? [.. ClaimRules.Sections.Where(section => section == ClaimRules.CycleSection || warranted.Contains(section, StringComparer.Ordinal))]
+            : warranted;
 
         var local = asked.PaidForLocal ? [] : warranted.Where(section => localLane.Contains(section, StringComparer.Ordinal)).ToList();
         var paid = warranted.Except(local, StringComparer.Ordinal).ToList();
 
         // A pass whose paid lane has work asks whether the research model answers before
-        // it fetches anything, and does not start where it does not.
+        // it fetches anything, and does not start where it does not. That includes the
+        // theme, which is part of the pass.
         // see: A research pass does not start where the research model does not answer
         if (paid.Count > 0 && await cap.UnreachableAsync(cancellation) is { } unreachable)
         {
-            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, Unavailable, verdict.State, warranted, unreachable, notWritten), 0, cap.Probes, cancellation);
+            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, Unavailable, verdict.State, recorded, unreachable, notWritten), 0, cap.Probes, cancellation);
+        }
+
+        // The theme next, where that is what went stale, and before the name's own documents,
+        // so a name's other sections do not wait on a theme that fails: a theme that could not
+        // be refreshed leaves its record as it was and the name's cycle named as not written
+        // with why. Its probes and its search are on its own row, not this one.
+        // see: Industry research is per theme, not per name
+        var themeProbes = 0;
+
+        if (themeWanted)
+        {
+            var probesBefore = cap.Probes;
+            var themed = await themes.RunAsync(industry!, runId, cancellation);
+
+            themeProbes = cap.Probes - probesBefore;
+
+            var stands = await NewestThemeAsync(connection, industry!, cancellation);
+
+            if (stands is not { Status: ClaimChecker.Accepted } || stands.AsOf != asOf)
+            {
+                notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, ThemeNotRefreshed + ThemeReason(themed, stands, asOf)));
+            }
+
+            if (warranted.Count == 0)
+            {
+                return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, Written, verdict.State, recorded, null, notWritten), 0, cap.Probes - themeProbes, cancellation);
+            }
         }
 
         var (facts, night) = await FactsAsync(connection, ticker, asOf, cancellation);
 
         if (facts is null)
         {
-            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NoFactsFile, verdict.State, warranted, "no facts file is stored for the name on or before today", notWritten), 0, cap.Probes, cancellation);
+            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NoFactsFile, verdict.State, recorded, "no facts file is stored for the name on or before today", notWritten), 0, cap.Probes - themeProbes, cancellation);
         }
 
         var documentsBefore = await CountAsync(connection, DocumentsHeld, null, null, cancellation);
@@ -443,7 +508,7 @@ public sealed class ResearchRunner(
             asOf,
             paused ? Paused : Written,
             verdict.State,
-            warranted,
+            recorded,
             written,
             notWritten,
             intake.Rows.Count,
@@ -456,10 +521,8 @@ public sealed class ResearchRunner(
         var rows = await CountAsync(connection, DocumentsHeld, null, null, cancellation) - documentsBefore
             + await CountAsync(connection, PaidSectionsHeld, ticker, cap.Model, cancellation) - paidBefore;
 
-        return await RecordAsync(connection, runId, startedAt, outcome, rows, news.Requests + archive.Requests + cap.Probes, cancellation, intake.Detail);
+        return await RecordAsync(connection, runId, startedAt, outcome, rows, news.Requests + archive.Requests + cap.Probes - themeProbes, cancellation, intake.Detail);
     }
-
-    const string IndustryCycle = "The industry cycle";
 
     // Whether this pass writes a section, from its newest version and the judge's
     // verdict. A section waiting on the checker, accepted today, or left out today is
@@ -472,6 +535,22 @@ public sealed class ResearchRunner(
             null => true,
             { Status: ClaimChecker.Pending } => false,
             { Status: ClaimChecker.Accepted } accepted => accepted.AsOf != asOf && verdict.StaleSections.Contains(section, StringComparer.Ordinal),
+            { Status: ClaimChecker.Fallback } left => left.AsOf != asOf,
+            _ => true,
+        };
+
+    // Whether a name's pass refreshes its theme, by the rule its own sections are judged by
+    // with one difference. The judge's triggers are the name's, and the theme is not one of
+    // the name's rows, so an accepted theme stands until a trigger the judge fired for this
+    // name is dated after the theme was written: a new filing, a passed earnings date or a
+    // news spike of the name's since then, or a rewrite asked for. A name opened for the
+    // first time fires nothing and reads the theme its industry already has.
+    static bool ThemeWarranted(Newest? theme, StalenessVerdict verdict, DateOnly asOf) =>
+        theme switch
+        {
+            null => true,
+            { Status: ClaimChecker.Pending } => false,
+            { Status: ClaimChecker.Accepted } accepted => accepted.AsOf != asOf && verdict.Fired.Any(fired => fired.Since > accepted.AsOf),
             { Status: ClaimChecker.Fallback } left => left.AsOf != asOf,
             _ => true,
         };
@@ -741,6 +820,44 @@ public sealed class ResearchRunner(
 
         return newest;
     }
+
+    static async Task<string?> IndustryAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndustryFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        return await command.ExecuteScalarAsync(cancellation) as string;
+    }
+
+    static async Task<Newest?> NewestThemeAsync(SqliteConnection connection, string theme, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestThemeCycle;
+        command.Parameters.AddWithValue("$theme", theme);
+        command.Parameters.AddWithValue("$section", ClaimRules.CycleSection);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation)
+            ? new Newest(
+                reader.GetInt32(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.IsDBNull(3) ? null : reader.GetString(3),
+                reader.GetString(4))
+            : null;
+    }
+
+    // Why a theme pass left the cycle unwritten: what it could not write and why, else the
+    // checker's reason where today's draft was refused, else why the pass did not run.
+    static string ThemeReason(ThemePassOutcome themed, Newest? newest, DateOnly asOf) =>
+        themed.NotWritten.FirstOrDefault()?.Reason
+        ?? (newest is { Status: ClaimChecker.Fallback or ClaimChecker.Rejected } refused && refused.AsOf == asOf ? refused.Reason : null)
+        ?? themed.Reason
+        ?? "the theme's industry cycle was not accepted today";
 
     static async Task<(IReadOnlyList<Fact>? Facts, DateOnly Night)> FactsAsync(SqliteConnection connection, string ticker, DateOnly asOf, CancellationToken cancellation)
     {

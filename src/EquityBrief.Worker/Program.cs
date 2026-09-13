@@ -103,6 +103,7 @@ static async Task<int> FundamentalsFetch(string[] args)
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName],
             configuration[ArchiveAgent.ContactName],
+            configuration[TavilySearchFeed.ApiKeyName],
             LocalLane.Settings(configuration),
             ResearchLane.Settings(configuration));
     }
@@ -173,14 +174,18 @@ static async Task<int> ResearchPass(string[] args)
 
     OnDemandFeeds feeds;
     LocalModelSettings local;
+    ResearchModelSettings research;
     IReadOnlyList<string> lane;
     SpendCaps caps;
+    SourceLists lists;
 
     try
     {
         local = LocalLane.Settings(configuration);
+        research = ResearchLane.Settings(configuration);
         lane = LocalLane.Sections(configuration);
         caps = ResearchLane.Caps(configuration);
+        lists = SourceLists.Read(Path.Combine(AppContext.BaseDirectory, SourceLists.FileName));
         feeds = OnDemandFeeds.Resolve(
             wantsLive ? FeedSource.Live
                 : wantsFixture ? FeedSource.Fixture
@@ -189,10 +194,11 @@ static async Task<int> ResearchPass(string[] args)
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName],
             configuration[ArchiveAgent.ContactName],
+            configuration[TavilySearchFeed.ApiKeyName],
             local,
-            ResearchLane.Settings(configuration));
+            research);
     }
-    catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+    catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException or FileNotFoundException)
     {
         Console.Error.WriteLine("research: " + refusal.Message);
 
@@ -220,11 +226,15 @@ static async Task<int> ResearchPass(string[] args)
         await new ChangeDetector(clock, database).RunAsync(runId);
     }
 
+    var cap = new SpendCap(feeds.ResearchModel, caps, clock, database);
+    var checker = new ClaimChecker(clock, database);
+
     var outcome = await new ResearchRunner(
         new StalenessJudge(clock, database),
         sections => new ProseWriter(feeds.LocalModel, local, sections, clock, database),
-        new SpendCap(feeds.ResearchModel, caps, clock, database),
-        new ClaimChecker(clock, database),
+        cap,
+        checker,
+        new ThemeResearchRunner(cap, checker, feeds.Search, lists.Industry, research.Pricing, clock, database),
         feeds.Archive,
         feeds.NameNews,
         lane,

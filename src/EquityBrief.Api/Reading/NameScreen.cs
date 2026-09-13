@@ -1103,7 +1103,17 @@ public static class NameScreen
             return [];
         }
 
-        var shown = written.Select(section => section.Section)
+        // A section drawn is not also named as not written, except a theme's cycle drawn from
+        // before the pass: that pass could not refresh it, so the page draws what is stored
+        // under its own date and the one line saying why it is not newer.
+        var passOn = pass.RootElement.TryGetProperty("asOf", out var on) && on.ValueKind == JsonValueKind.String
+            && DateOnly.TryParseExact(on.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day)
+                ? day
+                : (DateOnly?)null;
+
+        var shown = written
+            .Where(section => !(string.Equals(section.Section, ClaimRules.CycleSection, StringComparison.Ordinal) && passOn is { } asOf && section.AsOf < asOf))
+            .Select(section => section.Section)
             .Concat(leftOut.Select(section => section.Section))
             .ToHashSet(StringComparer.Ordinal);
 

@@ -249,10 +249,12 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
             sources.Add(await DocumentAsync(connection, transaction, id, cancellation));
         }
 
-        // A theme has no facts file, because a facts file is one per name. So a
-        // theme section is held against none and every figure in it is refused,
-        // which is the rule as written and is carried to the checkpoint that first
-        // writes one (owes: A theme section's figures checked against a facts file a theme has).
+        // A theme has no facts file, because a facts file is one per name, and
+        // nothing the store holds is computed for an industry. So a theme section
+        // is held against an empty one and every figure in it is refused, which is
+        // the rule 6.9 settled when it wrote the first theme section rather than a
+        // gap in it.
+        // see: A theme section states no figure, because nothing the store holds is computed for an industry
         var (facts, night) = theme
             ? ([], null)
             : await FactsAsync(connection, transaction, pending.Subject, pending.AsOf, cancellation);

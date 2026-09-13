@@ -101,11 +101,12 @@ public class SchemaColumns
         var schema = Corpus.Read("docs/SCHEMA.md");
         var declared = StoreSchema.Declared(schema, "membership");
 
-        // Six from 5.1, where the sector was added for the universe screen to
-        // filter on. Stated exactly rather than as a floor, so a column added
-        // to the store without being declared fails here as much as one
+        // Seven from 6.9, where the industry was added for a theme to be read
+        // under, and six from 5.1, where the sector was added for the universe
+        // screen to filter on. Stated exactly rather than as a floor, so a column
+        // added to the store without being declared fails here as much as one
         // declared without being built.
-        Assert.Equal(6, declared.Count);
+        Assert.Equal(7, declared.Count);
 
         using var store = new TemporaryStore().Migrated();
         var built = StoreSchema.Built(store, "membership");

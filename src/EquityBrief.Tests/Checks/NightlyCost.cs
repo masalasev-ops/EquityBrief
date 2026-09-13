@@ -98,6 +98,7 @@ public class NightlyCost
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
+        "src/EquityBrief.Core/Providers/TavilySearchFeed.cs",
     ];
 
     // The shipped files permitted to reach a model, each by its path, which is the
@@ -263,9 +264,9 @@ public class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         Assert.True(
-            MayHoldAClient.Length <= 11,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are eleven feed " +
-            "implementations. A twelfth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 12,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twelve feed " +
+            "implementations. A thirteenth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: two files, the local lane's client and
         // the research model's live feed.

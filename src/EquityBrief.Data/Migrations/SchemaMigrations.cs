@@ -217,6 +217,15 @@ public static class SchemaMigrations
         ALTER TABLE membership ADD COLUMN sector TEXT;
     ";
 
+    // The industry, on the membership row, added at 6.9 because that is where a theme
+    // is read: a theme is the industry the index names for a member, and every member
+    // the index puts in one industry reads the one record its pass wrote. Nullable for
+    // the sector's reason, since it comes from the same snapshot object.
+    // see: A theme is the industry the index names for a member, and one theme pass serves every member it names
+    const string AddMembershipIndustry = @"
+        ALTER TABLE membership ADD COLUMN industry TEXT;
+    ";
+
     // Whether a name's stored series can be trusted, at the grain the statement
     // is about, which is the name. Contradiction C: the failure table said a
     // name whose corporate action check failed is marked suspect and nothing
@@ -514,6 +523,7 @@ public static class SchemaMigrations
         new Migration(19, "create fundamentals", CreateFundamentals),
         new Migration(20, "create source_document", CreateSourceDocument),
         new Migration(21, "create research_section and theme_section", CreateResearchSections),
+        new Migration(22, "add membership.industry", AddMembershipIndustry),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

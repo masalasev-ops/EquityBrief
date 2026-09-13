@@ -64,11 +64,12 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
                 "every name that has left as one that never existed.");
         }
 
-        var sectors = Sectors(document.RootElement);
+        var sectors = Named(document.RootElement, "Sector");
+        var industries = Named(document.RootElement, "Industry");
 
         var constituents = components
             .EnumerateObject()
-            .Select(entry => Read(entry.Value, sectors))
+            .Select(entry => Read(entry.Value, sectors, industries))
             .OrderBy(constituent => constituent.Ticker, StringComparer.Ordinal)
             .ToArray();
 
@@ -80,7 +81,8 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
                 "leave date onto every name in the store.");
     }
 
-    // The sector, read from the snapshot object rather than from the spans.
+    // The sector and the industry, read from the snapshot object rather than from the
+    // spans.
     //
     // Two objects, read for two things, and only one of them is the index. The
     // spans are what membership is, and the guard above refuses a payload that
@@ -95,31 +97,31 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
     // object is.
     const string Snapshot = "Components";
 
-    static IReadOnlyDictionary<string, string> Sectors(JsonElement root)
+    static IReadOnlyDictionary<string, string> Named(JsonElement root, string field)
     {
         if (!root.TryGetProperty(Snapshot, out var snapshot))
         {
             return new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
-        var sectors = new Dictionary<string, string>(StringComparer.Ordinal);
+        var values = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var entry in snapshot.EnumerateObject())
         {
             if (entry.Value.TryGetProperty("Code", out var code)
                 && code.GetString() is { Length: > 0 } ticker
-                && entry.Value.TryGetProperty("Sector", out var sector)
-                && sector.ValueKind == JsonValueKind.String
-                && sector.GetString() is { Length: > 0 } named)
+                && entry.Value.TryGetProperty(field, out var value)
+                && value.ValueKind == JsonValueKind.String
+                && value.GetString() is { Length: > 0 } named)
             {
-                sectors[ticker] = named;
+                values[ticker] = named;
             }
         }
 
-        return sectors;
+        return values;
     }
 
-    static IndexConstituent Read(JsonElement entry, IReadOnlyDictionary<string, string> sectors)
+    static IndexConstituent Read(JsonElement entry, IReadOnlyDictionary<string, string> sectors, IReadOnlyDictionary<string, string> industries)
     {
         var ticker = entry.TryGetProperty("Code", out var code) ? code.GetString() : null;
 
@@ -136,7 +138,8 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
             ticker,
             Date(entry, "StartDate", ticker),
             Date(entry, "EndDate", ticker),
-            sectors.TryGetValue(ticker, out var sector) ? sector : null);
+            sectors.TryGetValue(ticker, out var sector) ? sector : null,
+            industries.TryGetValue(ticker, out var industry) ? industry : null);
     }
 
     // Three outcomes, kept apart on purpose.

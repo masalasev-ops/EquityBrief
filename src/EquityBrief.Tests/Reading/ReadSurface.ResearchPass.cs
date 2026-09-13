@@ -210,11 +210,12 @@ public partial class ReadSurface
         Assert.True(Section("The key under each figure") < At("<section class=\"plan-arithmetic\""));
         Assert.True(At("<section class=\"plan-arithmetic\"") < Section("The risks, each with what would confirm it"));
 
-        // The cycle rests on a theme record, which 6.9 writes, so it is not drawn and the
-        // page says why in the words the pass stored.
+        // The cycle is the theme's, and the theme search for the name's industry found no page
+        // from the industry list, so it is not drawn and the page says why in the words the
+        // pass stored.
         Assert.Equal(-1, Section("The industry cycle"));
         Assert.Equal(
-            $"The industry cycle is not written: {ResearchRunner.NoThemeRecord}",
+            $"The industry cycle is not written: {ResearchRunner.ThemeNotRefreshed}{ThemeResearchRunner.NothingFound}",
             WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The industry cycle\">([^<]*)</p>").Groups[1].Value));
     }
 

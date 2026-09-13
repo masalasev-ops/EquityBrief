@@ -15,9 +15,9 @@ namespace EquityBrief.Worker;
 // It resolves the way the night's does, through `FeedSource`, so a mistyped
 // fixture path refuses here for the same reason and with the same words.
 //
-// Three members. The search tool joins them at 6.9, and each is a feed with its own
-// `Requests` member for the reason the first one has: the cost of an open is read
-// off the feeds rather than stated by the caller.
+// Three members at first, and each is a feed with its own `Requests` member for the
+// reason the first one has: the cost of an open is read off the feeds rather than
+// stated by the caller.
 //
 // The third is the local lane's model, from 6.6, which is where it first exists.
 // The overnight queue takes it through this record rather than holding a client of
@@ -31,17 +31,22 @@ namespace EquityBrief.Worker;
 //
 // The fifth is one name's own news, from 6.8, which a research pass reads. It is here
 // and not on the night's record, whose news is one dated query for the whole market.
+//
+// The sixth is the search tool, from 6.9, which a theme pass reads. It is reached from an
+// open alone, and never from the night, for the reason the fifth is.
+// see: Theme material comes from a search tool, and per-name material never does
 public sealed record OnDemandFeeds(
     IFundamentalsFeed Fundamentals,
     IFilingsArchiveFeed Archive,
     ILocalModelFeed LocalModel,
     IResearchModelFeed ResearchModel,
-    INameNewsFeed NameNews)
+    INameNewsFeed NameNews,
+    ISearchFeed Search)
 {
     // What the open cost, read off the feeds. A caller that wrote the figure
     // would be recording its own intention. A probe of the research model is a
     // request as well, and billed by nobody.
-    public int Requests => Fundamentals.Requests + Archive.Requests + NameNews.Requests + ResearchModel.Probes;
+    public int Requests => Fundamentals.Requests + Archive.Requests + NameNews.Requests + ResearchModel.Probes + Search.Requests;
 
     // The same open in the units the provider bills in, which is one provider's
     // units and not both. The fundamentals endpoint weighs 10, measured at 6.1
@@ -50,7 +55,8 @@ public sealed record OnDemandFeeds(
     // is free and needs no key, so it weighs nothing against that allowance and
     // that is why it is named here as contributing zero rather than left out of the
     // arithmetic: a reader checking this figure against `Requests` should find the
-    // difference explained.
+    // difference explained. The search tool is another provider with an allowance
+    // of its own, counted in searches, and it contributes zero here for that reason.
     // see: The night's cost is counted in weighted calls against the stated daily allowance
     public int WeightedCalls => Fundamentals.Requests * ProviderWeights.Fundamentals + NameNews.Requests * ProviderWeights.News;
 
@@ -65,9 +71,10 @@ public sealed record OnDemandFeeds(
             new RecordedFilingsArchiveFeed(folder),
             new RecordedLocalModelFeed(folder),
             new RecordedResearchModelFeed(folder, research),
-            new RecordedNameNewsFeed(folder));
+            new RecordedNameNewsFeed(folder),
+            new RecordedSearchFeed(folder));
 
-    public static OnDemandFeeds Live(string? baseAddress, string? apiKey, string? archiveContact, LocalModelSettings local, ResearchModelSettings research) =>
+    public static OnDemandFeeds Live(string? baseAddress, string? apiKey, string? archiveContact, string? searchKey, LocalModelSettings local, ResearchModelSettings research) =>
         new(
             EodhdFundamentalsFeed.Live(
                 string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress,
@@ -81,7 +88,8 @@ public sealed record OnDemandFeeds(
             ResearchModelFeeds.Live(research),
             EodhdNameNewsFeed.Live(
                 string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress,
-                new ProviderCredentials(apiKey ?? string.Empty)));
+                new ProviderCredentials(apiKey ?? string.Empty)),
+            TavilySearchFeed.Live(searchKey));
 
     // The local lane's settings are taken on both paths, so a key configured for that
     // lane refuses a fixture run as it refuses a live one: the refusal is about the
@@ -93,13 +101,14 @@ public sealed record OnDemandFeeds(
         string? baseAddress,
         string? apiKey,
         string? archiveContact,
+        string? searchKey,
         LocalModelSettings local,
         ResearchModelSettings research) =>
         FeedSource.Resolve(
             source,
             fixtureFolder,
             folder => FromFixture(folder, research),
-            () => Live(baseAddress, apiKey, archiveContact, local, research),
+            () => Live(baseAddress, apiKey, archiveContact, searchKey, local, research),
             "an open");
 
     // Whether this set can reach the network at all, asked of the objects rather
@@ -111,5 +120,6 @@ public sealed record OnDemandFeeds(
         || Archive is not RecordedFilingsArchiveFeed
         || LocalModel is not RecordedLocalModelFeed
         || ResearchModel is not RecordedResearchModelFeed
-        || NameNews is not RecordedNameNewsFeed;
+        || NameNews is not RecordedNameNewsFeed
+        || Search is not RecordedSearchFeed;
 }

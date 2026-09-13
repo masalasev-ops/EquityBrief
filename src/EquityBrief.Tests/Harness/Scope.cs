@@ -911,6 +911,50 @@ internal static class Scope
             Verdict.Pass,
             "a name whose section predates its stored filing and its passed earnings date is drawn with one line naming both, which is the line the shipped judge writes to the run log over the same store, and a name whose research stands is drawn as standing",
             ByReadSurface),
+        // 6.9, the theme research runner and the search tool. The component, the record one
+        // theme pass writes and every member of its industry reads, section 17's three rows
+        // about a theme search, and section 18's four rows about what a search returns and a
+        // theme that could not be refreshed.
+        [CheckReach.Key(CatalogueTable, "Theme research runner")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the theme store and source documents it reads and inserts into, the run log it reads and appends to and the search tool it reads, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Theme research runner")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, which is where the runner reading no membership is a claim: the industry it researches is handed to it by the name's pass that read it",
+            ByAccess),
+        [CheckReach.Key(FixtureTable, "theme record")] = new Scoped(
+            Verdict.Pass,
+            "one theme pass over the fixture's recordings writes one record for the theme and the industry that maps to it, handed every page its search kept in the order the tool ranked them, its prose the recording its request is keyed on, and a second member of the industry opened the same evening searches and calls for nothing and draws the same record, against the expectation derived from section 12's rules and the capture's own bytes",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Theme search parameters")] = new Scoped(
+            Verdict.Pass,
+            "the request a theme pass made names the industry and no ticker, carries the quarter's two dates, names the industry list and no other site, and asks for the page's text and its publish date, read off the body the feed sends for that request and off the bytes a live feed sent over a handler",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Source lists")] = new Scoped(
+            Verdict.Pass,
+            "every page the whole replay's theme search stored is from a site the industry list carries, the result from a site it does not carry is nowhere in the store, and both lists carry a review date and sit under the tool's domain limit",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Scheduling of queued work")] = new Scoped(
+            Verdict.Pass,
+            "a theme refresh asked inside a peak window of the configured prices starts nothing, makes no request and names the UTC instant the window closes on its run log row, a name opened then is written without it, and the one paid call the whole replay's theme pass made started outside every configured window",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A search returns snippets rather than full page text")] = new Scoped(
+            Verdict.Pass,
+            "a search answering with a result that has no text and one whose text is shorter than its snippet stores no document and calls for nothing, the run log records each address as short of a document, and the cycle is absent with the reason every candidate failed that way",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A search returns a site the applicable list does not carry")] = new Scoped(
+            Verdict.Pass,
+            "the result from a site the industry list does not carry is dropped and its site named on the run log, and over the captured company search the seven results from sites the list does not carry are named for their site before their text is read, two of them having none",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The search tool is unavailable")] = new Scoped(
+            Verdict.Pass,
+            "with the search tool not answering, the theme pass does not start and the stored theme record is as it was, and the name's pass writes every section of its own from its filings and news with the cycle absent and its reason",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A theme refresh fails while a name's pass depends on it")] = new Scoped(
+            Verdict.Pass,
+            "with the search refused, every section of the name's own is written and stored, the theme record is as it was, and the page draws every section but the cycle and one line saying the theme could not be refreshed, read back off the markup, and a cycle written before that refresh under its own date beside the line",
+            ByReadSurface),
         // 6.8, the research runner. The component, the record one pass writes over the
         // fixture's recordings, one pass an open, figure 12.1's two boxes the runner is,
         // section 18's cloud model row and the halves of its two local lane rows the
@@ -918,7 +962,7 @@ internal static class Scope
         // written section is drawn in, with tonight's count of fresh prose against reused.
         [CheckReach.Key(CatalogueTable, "Research runner")] = new Scoped(
             Verdict.Pass,
-            "the class declares the facts, fundamentals, research store, theme store, source documents and run log it reads, the research store and source documents it inserts into and the filings archive and news feed it reads, and the declaration matches this row, repaired at 6.8 to name the research store and the run log, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the membership, facts, fundamentals, research store, theme store, source documents and run log it reads, the research store and source documents it inserts into and the filings archive and news feed it reads, and the declaration matches this row, repaired at 6.8 to name the research store and the run log and at 6.9 to name the membership its industry is read from, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Research runner")] = new Scoped(
             Verdict.Pass,
@@ -934,7 +978,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key("Figure 12.1", "A pass is warranted")] = new Scoped(
             Verdict.Pass,
-            "over constructed versions of every state the rule reads, a pass warrants the sections never written, left out on an earlier day, refused, and accepted and gone stale by the judge's own trigger, and not those accepted today, waiting on the checker or left out today, read off the pass's own row, with the industry cycle named rather than warranted where no theme record is stored",
+            "over constructed versions of every state the rule reads, a pass warrants the sections never written, left out on an earlier day, refused, and accepted and gone stale by the judge's own trigger, and not those accepted today, waiting on the checker or left out today, read off the pass's own row, with the industry cycle warranted for the theme the name's industry is where no theme pass has written it",
             ByExpectations),
         [CheckReach.Key("Figure 12.1", "Write the sections")] = new Scoped(
             Verdict.Pass,
@@ -966,7 +1010,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = new Scoped(
             Verdict.Pass,
-            "every accepted section is drawn once in section 4's order, what the company sells and its segments before the numbers, the two cases after them, the key beneath the figures and the risks after the plan, each with the date and model the store holds, every section figure 12.2 names placed exactly once, and the cycle, which rests on the theme record 6.9 writes, drawn absent with the reason the pass stored",
+            "every accepted section is drawn once in section 4's order, what the company sells and its segments before the numbers, the two cases after them, the key beneath the figures and the risks after the plan, each with the date and model the store holds, every section figure 12.2 names placed exactly once, and the cycle drawn from the theme record for the name's industry, or absent with the reason the pass stored where the theme's search found nothing to write it from",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Dates and sources")] = new Scoped(
             Verdict.Pass,
