@@ -8245,3 +8245,88 @@ Carried:    three obligations created. A whole-number figure tied to the fact it
             checked against a facts file a theme has, due at 6.9, where the first theme section is
             written. 6.6's and 6.9's own text cite them back. This session has committed code and
             may not sign it off.
+
+### 6.5 - the staleness judge, what "after" means, and a news spike dated by its first session   2026-09-13
+Built:      the staleness judge, answering for one name whether its stored research still stands
+            from the research store, facts, calendar, news pulse and fundamentals it reads, writing
+            the run log alone; the rules it answers by, applied on read by the name page as well; and
+            the page's research-state line, missing, stale or standing. Four commits: the judge with
+            its rules, the surface, the case the sweep found unasserted, and this record.
+            It holds no client, makes no request and calls no model, and whether research is stale is
+            derived on read rather than stored, which is the shape the gap state already has.
+Settled:    what "after" means for each of the four questions, as a decision, because the questions
+            were named and the comparison each makes was not. Each is a date against a section's own
+            as-of date, per section. A stored filing dated after it. The newest earnings date on or
+            before the night dated after it, or on its own date unless the provider filed the print
+            before the open, because a section dated the day of an after-close print was most likely
+            written before the numbers came out. A refresh makes every section stale. Judged as of
+            the newest night the store computed for the name, so a Saturday open is judged on
+            Friday's close.
+            The news trigger as windows. The last five sessions held, above where they hold at least
+            five articles and three times the median five-session sum over the ninety days before the
+            window begins, so a spike does not raise its own baseline. No earlier window is no
+            reading, because the floor alone fires on every name the market writes about; a baseline
+            over fewer than ninety days carries its window count, because the pulse table began at
+            5.5. A spike is dated by the session its unbroken run of windows above began, which is
+            what makes section 17's claim true that a story breaking over several days does not fire
+            twice.
+            A record is at least one accepted section, so a name whose sections only fell back is
+            missing rather than stale.
+Found:      section 15.9's two research-state rows each state a line this checkpoint draws and parts
+            only the research runner can draw, being a control that writes the sections with its cost
+            stated and the stored sections rendered under their dates. Both decomposed into three,
+            the line and the computed sections beside it at 6.5 and the other four parts at 6.8,
+            which is contradiction F's argument: read whole, each row would be owed at 6.8 and the
+            line that works would sit unasserted for three checkpoints.
+            Two readers of the corpus caught the new code on its first run. `clock-usage` refused two
+            date-formatted lines whose invariant call sat on the line above the literal, which is the
+            text its reader keys on, and both were joined. And a candle count over the name page
+            counted the twelve-month picture as well as the level chart, so it is scoped to the chart.
+Tested:     7 on the judge and its rules under `fixture-expectations`: one per trigger, each with the
+            case that must not fire beside the case that must, a name with no accepted section
+            missing whatever fires, the judge over the fixture's own stored filing, earnings date and
+            facts night reaching the verdicts worked out by hand for four sections with each trigger
+            attributed to the sections it reaches, its run log rows recording no request, no model
+            call and no spend over a class that declares no feed and takes no client, and section
+            17's figures read off the row against the constants. 2 on the surface, the missing line
+            beside the computed sections rendered whole and the stale line in the judge's own words,
+            each read back off the markup. 733 tests, from 724 at 6.4.
+Mutated:    the rule, stated before the sweep: mutate a property whose failure would either spend on
+            research nobody needed rewritten or leave research written before a print showing as
+            current, with nothing loud to show it. Five qualify and all five were mutated, in a
+            detached worktree under the session scratchpad outside this repository, each reverted
+            before the next, and the worktree removed.
+            A same-day after-close print not counted: 2 tests red. A spike dated by tonight rather
+            than by the session its run began, which fires twice on one story: 1 red. The spike's own
+            window counted into its baseline: survived, then 1 red. The floor alone firing where no
+            baseline is held: 1 red. And a name with no research answered as standing rather than
+            missing: 3 red.
+            The survivor was a missing property in the test rather than a defect in the code. Sixty
+            quiet windows hold their median whatever one more adds, so the test's series could not
+            show it. The shape that shows it is a short and uneven history, which is what the pulse
+            table is for its first weeks: two windows of two and eight give a median of five, and a
+            window of twenty counted in with its neighbours raises the median to fifteen. That case
+            is asserted now and the mutation was run again against it.
+            A fifth mutation as first written did not compile, and its run read the previous
+            mutation's build, so it is not counted; it was rewritten to compile and run again.
+            The three single-test catches are thin and named as thin: each rests on one constructed
+            series, because the fixture holds one night of pulse and no spike.
+            Properties added and not mutated, named because the next sweep has to find them: a filing
+            dated after the night ignored; the newest passed print chosen rather than any; the
+            judgement as of the facts night rather than the clock; a refresh reaching every section;
+            a name with only fallback sections missing; the page's verdict and the judge's line being
+            one string.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 733 of 733 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 332 claims, 271 PASS, 0 fail, 61 out of scope, 0
+            unexamined, 278 placements and verdicts reconciled against a floor of 34, 34 of 35 roster
+            checks carried and all 34 run. Migrations 0 to 21, this checkpoint adding none.
+            The claim pair moves to 332 and 316, from 328 and 312. The four that arrived are the two
+            decomposed rows, three parts each where there was one. Of the eight claims owed at 6.5
+            all eight pass as whole rows or as the parts this checkpoint draws, and the four runner
+            parts are placed at 6.8.
+            The operator's store under `data/` was not touched by either gate.
+Carried:    nothing new. The news trigger's short-history behaviour is decided rather than carried,
+            because the rule for fewer than ninety days is stated and asserted and nothing a later
+            checkpoint produces would change it. This session has committed code and may not sign it
+            off.
