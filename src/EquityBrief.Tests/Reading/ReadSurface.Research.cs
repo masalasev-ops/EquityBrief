@@ -135,8 +135,17 @@ public partial class ReadSurface
     {
         using var store = await FixtureExpectations.WithWrittenRelease();
 
+        // A newer draft of a written section still waiting on the checker, by another
+        // model on a later day. What a reader is shown is what passed, so the footer
+        // keeps naming the accepted version's date and model.
+        Insert(
+            store,
+            "INSERT INTO research_section VALUES ('KEYS', 'What the company sells', 2, '2026-09-09', 'another/model', 'pending', 'a draft', '[]', NULL);");
+
         var region = await NamePageWithResearch(store, "KEYS");
         var footer = Regex.Match(region, "<footer class=\"provenance\"[^>]*>(.*?)</footer>", RegexOptions.Singleline);
+
+        Assert.DoesNotContain("another/model", footer.Value, StringComparison.Ordinal);
 
         Assert.True(footer.Success);
 
