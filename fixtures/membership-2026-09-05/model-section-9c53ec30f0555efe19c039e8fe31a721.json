@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-snjb3427gjgia94e8idpei",
+  "object": "chat.completion",
+  "created": 1789307150,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The move from 2026-08-17 to 2026-08-24 was driven by record third quarter results with revenue of $1.85 billion and GAAP net income of $397 million, as detailed in the results release exhibit [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 8379,
+    "completion_tokens": 66,
+    "total_tokens": 8445,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

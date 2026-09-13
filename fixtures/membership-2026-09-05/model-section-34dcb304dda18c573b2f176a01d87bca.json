@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-3fwxhombgwgsdon7vaskd",
+  "object": "chat.completion",
+  "created": 1789307144,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 493.95, trading below the twenty-day simple moving average of 494.78 and above the five hundred day average of 429.39 within an identified uptrend. Immediate resistance is located between 507.98 and 517.78 while immediate support lies between 492.12 and 501.92, with the latter level showing significantly stronger support characteristics. The relative strength index stands at 56.17 and the MACD histogram is negative at -3.08 despite the MACD line remaining above its signal line. Volume for the session was 18.88 million shares compared to a twenty-day average of 22.38 million and a fifty-day average of 32.12 million.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1021,
+    "completion_tokens": 178,
+    "total_tokens": 1199,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

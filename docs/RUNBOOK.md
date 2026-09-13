@@ -133,6 +133,24 @@ Moving to a new machine: copy the checkout, copy the store file, write the secre
 
 The same path works as an environment variable, with a double underscore for each colon, and an environment variable wins. A blank or missing key is refused by name at startup rather than reaching the provider as an anonymous request, because a rejection from the provider names nothing.
 
+### The local model's settings
+
+The local model takes settings and never a key. Each has a default measured on the machine this was first built for, so a blank file runs; set one where the machine or the runtime differs. They are configuration rather than secrets and may sit in either file.
+
+| Setting | Key | Default |
+|---|---|---|
+| where the runtime answers | `EquityBrief:Models:Local:BaseAddress` | `http://127.0.0.1:1234/v1/` |
+| which model answers | `EquityBrief:Models:Local:Model` | `qwen/qwen3.5-9b` |
+| how long one section call may take, in seconds | `EquityBrief:Models:Local:TimeoutSeconds` | `300` |
+| the context the model is loaded with, in tokens | `EquityBrief:Models:Local:ContextTokens` | `50176` |
+| the sections the local lane holds | `EquityBrief:Models:LocalLane`, one entry per section in figure 12.2's own names | the cause of each large move, what the company sells, the segment commentary, the key under each figure |
+
+**Set the context to what the runtime reports for the loaded model**, not to what the model could hold. A section whose prompt and answer would not fit is refused before any call and left for the paid path, and the run log names it with the estimate it was refused on; a context set above what is loaded lets the call go out, and the runtime refuses it with a 400 naming its own count instead. A value that is not a whole number is refused rather than read as the default.
+
+**A key at `EquityBrief:Models:Local:ApiKey` is refused, in either file and on a fixture run as well as a live one.** A local model that asks for a key is a model on somebody else's machine, and the overnight queue is allowed to call this lane because it costs nothing (see: The local model answers at an OpenAI-compatible endpoint, and which model answers is configuration).
+
+A lane naming a section figure 12.2 does not name is refused when the lane is read, and so is one naming a section twice.
+
 ---
 
 ## Moving the installation

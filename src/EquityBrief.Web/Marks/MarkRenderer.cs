@@ -131,9 +131,17 @@ public sealed record UniverseCell(
     DateOnly? NextEvent = null,
     bool EventBeyondTheTable = false);
 
-// One of a name's biggest moves, as the table is given it. No cause: it is a
-// researched claim and arrives with the pass that writes it.
-public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank);
+// One of a name's biggest moves, as the table is given it. `Cause` is the text of
+// the accepted cause section that names this move, and null where no sentence of
+// it does: a researched claim, which arrives with the pass that writes it.
+public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank, string? Cause = null);
+
+// Where the causes in a moves table came from: the date the accepted cause section
+// was written on and the model that wrote it.
+public sealed record CauseSource(DateOnly AsOf, string Model);
+
+// One written part of a name's research, as the provenance footer states it.
+public sealed record WrittenPart(string Section, DateOnly AsOf, string Model);
 
 // One row of tonight's list, already projected.
 //
@@ -1548,11 +1556,22 @@ public sealed class MarkRenderer : IComponent
     // Only the sections left out are drawn here. A written section is drawn from
     // 6.8 with its own date and model beside it, and a section still waiting on
     // its retry is neither written nor left out, so this page says nothing of it.
-    public string LeftOut(string ticker, IReadOnlyList<LeftOutSection> leftOut, ResearchStateLine? state = null)
+    //
+    // From 6.6 it also draws the local lane's sections the newest pass did not write,
+    // each with the reason the writer recorded: the machine could not hold it, the
+    // local model was unavailable, or the pass was handed nothing for it. Section 18
+    // says those are absent with their reason, and a section absent with nothing
+    // beside it reads as one nobody tried.
+    public string LeftOut(
+        string ticker,
+        IReadOnlyList<LeftOutSection> leftOut,
+        ResearchStateLine? state = null,
+        IReadOnlyList<LeftOutSection>? notWritten = null)
     {
         var region = new StringBuilder();
+        var unwritten = notWritten ?? [];
 
-        region.Append(Invariant, $"<section class=\"research\" data-ticker=\"{Escaped(ticker)}\" data-left-out=\"{leftOut.Count}\">");
+        region.Append(Invariant, $"<section class=\"research\" data-ticker=\"{Escaped(ticker)}\" data-left-out=\"{leftOut.Count}\" data-not-written=\"{unwritten.Count}\">");
 
         // Where the research stands, first, because it is the answer to the
         // question a reader opens the page with. Section 15.9's research-state
@@ -1571,10 +1590,67 @@ public sealed class MarkRenderer : IComponent
             region.Append(Invariant, $"{Escaped(section.Section)} is left out: {Escaped(section.Reason)}</p>");
         }
 
+        foreach (var section in unwritten)
+        {
+            region.Append(Invariant, $"<p class=\"not-written\" data-section=\"{Escaped(section.Section)}\">");
+            region.Append(Invariant, $"{Escaped(section.Section)} is not written: {Escaped(section.Reason)}</p>");
+        }
+
         region.Append("<p class=\"degraded\" data-written=\"absent\">the written sections, each with its own date and the model that wrote it, arrive with the research pass at 6.8</p>");
         region.Append("</section>");
 
         return region.ToString();
+    }
+
+    // The provenance footer, section 15.9's last region: for every part of the page,
+    // where it came from.
+    //
+    // Three kinds of part and each states its own. The computed sections, as of the
+    // newest session the store holds for the name. The numbers, as of the filing
+    // they were read from. And each written section of the research, as of the day
+    // it was written and naming the model that wrote it, which is the first thing a
+    // reader of a paragraph a model wrote needs and the reason every section stores
+    // both (see: A research record is written and dated per section, not as a whole).
+    // A part with nothing behind it says so rather than being left out, for the
+    // reason every absence on these pages is stated.
+    public string ProvenanceFooter(string ticker, DateOnly? computedThrough, DateOnly? filedOn, IReadOnlyList<WrittenPart> written)
+    {
+        var footer = new StringBuilder();
+
+        footer.Append(Invariant, $"<footer class=\"provenance\" data-ticker=\"{Escaped(ticker)}\" data-written=\"{written.Count}\">");
+
+        if (computedThrough is { } through)
+        {
+            footer.Append(Invariant, $"<p data-part=\"computed\" data-as-of=\"{through:yyyy-MM-dd}\">the chart, the levels, the plan and the moves are computed from the stored sessions through {through:yyyy-MM-dd}</p>");
+        }
+        else
+        {
+            footer.Append("<p data-part=\"computed\" data-as-of=\"none\">no session is stored for this name, so nothing on the page is computed</p>");
+        }
+
+        if (filedOn is { } filed)
+        {
+            footer.Append(Invariant, $"<p data-part=\"fundamentals\" data-filed-on=\"{filed:yyyy-MM-dd}\">the numbers are as of the filing dated {filed:yyyy-MM-dd}</p>");
+        }
+        else
+        {
+            footer.Append("<p data-part=\"fundamentals\" data-filed-on=\"none\">no filing is stored for this name, so the numbers are as of nothing</p>");
+        }
+
+        if (written.Count == 0)
+        {
+            footer.Append("<p data-part=\"research\" data-section=\"none\">no section of this name's research has been written</p>");
+        }
+
+        foreach (var part in written)
+        {
+            footer.Append(Invariant, $"<p data-part=\"research\" data-section=\"{Escaped(part.Section)}\" data-as-of=\"{part.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(part.Model)}\">");
+            footer.Append(Invariant, $"{Escaped(part.Section)} was written on {part.AsOf:yyyy-MM-dd} by {Escaped(part.Model)}</p>");
+        }
+
+        footer.Append("</footer>");
+
+        return footer.ToString();
     }
 
     // The documents admissibility refused, with the category that refused each.
@@ -1752,12 +1828,15 @@ public sealed class MarkRenderer : IComponent
     // sessions it spans so a five-day run reads as one and not as a day that
     // moved twelve per cent.
     //
-    // The cause column is absent and the table says so once, rather than drawn
-    // as an empty cell in every row. A cause is a researched claim and lives in
-    // `research_section` with its source, so it arrives at 6.5 with the pass
-    // that writes it. An absence stated and an absence drawn as emptiness are
-    // different things, and only the first is readable.
-    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves, IReadOnlyList<ChartBar> year)
+    // The cause column, from 6.6. Where no cause section has been accepted for the
+    // name the column is absent and the table says so once, rather than drawn as an
+    // empty cell in every row, because an absence stated and an absence drawn as
+    // emptiness are different things and only the first is readable. Where one has,
+    // each row carries the sentences that name its move, and a row no sentence names
+    // says so: the section rests only on documents published inside a move, so a
+    // move no document fell inside is one nothing was written about.
+    // see: A cause of a move rests only on a document published inside that move
+    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves, IReadOnlyList<ChartBar> year, CauseSource? cause = null)
     {
         var table = new StringBuilder();
 
@@ -1787,8 +1866,17 @@ public sealed class MarkRenderer : IComponent
             return table.ToString();
         }
 
-        table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"absent\">");
-        table.Append("<tr><th>Session</th><th>Over</th><th>Change</th></tr>");
+        if (cause is null)
+        {
+            table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"absent\">");
+            table.Append("<tr><th>Session</th><th>Over</th><th>Change</th></tr>");
+        }
+        else
+        {
+            table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"written\" ");
+            table.Append(Invariant, $"data-cause-as-of=\"{cause.AsOf:yyyy-MM-dd}\" data-cause-model=\"{Escaped(cause.Model)}\">");
+            table.Append("<tr><th>Session</th><th>Over</th><th>Change</th><th>Cause</th></tr>");
+        }
 
         foreach (var move in moves)
         {
@@ -1797,11 +1885,29 @@ public sealed class MarkRenderer : IComponent
             table.Append(Invariant, $"<td>{move.SessionDate:yyyy-MM-dd}</td>");
             table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
             table.Append(Invariant, $"<td>{Number(move.ChangePct)}%</td>");
+
+            if (cause is not null)
+            {
+                if (move.Cause is { Length: > 0 } written)
+                {
+                    table.Append("<td class=\"cause\" data-cause=\"written\">").Append(Escaped(written)).Append("</td>");
+                }
+                else
+                {
+                    table.Append("<td class=\"cause\" data-cause=\"none\">no cause was written for this move</td>");
+                }
+            }
+
             table.Append("</tr>");
         }
 
         table.Append("</table>");
-        table.Append("<p class=\"degraded\" data-cause=\"absent\">the cause of each move arrives with the research pass that writes it, and is not stored here</p>");
+
+        if (cause is null)
+        {
+            table.Append("<p class=\"degraded\" data-cause=\"absent\">the cause of each move has not been written for this name</p>");
+        }
+
         table.Append("</section>");
 
         return table.ToString();

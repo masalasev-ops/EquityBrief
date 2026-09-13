@@ -1,0 +1,110 @@
+{
+  "stage": "prose",
+  "derivation": "derived",
+  "derivedFrom": "the decision that the local lane is a configured list of section names the writer takes whole, the decision that a cause of a move rests only on a document published inside that move, section 18's rows for a section the machine cannot hold and for the local model unavailable, and the fixture's own dates: the KEYS release exhibit filed on 2026-08-18 by the archive's own index, and KEYS's eight stored moves. Which sections a pass asks for, which it leaves unwritten and why, which move the release falls inside, and which sections a context of 8,000 tokens holds, were each worked out from those rules and dates before the tests that read this file were run. The local lane's half of section 19.1's research record, whose paid half is 6.8's.",
+  "tables": [
+    "research_section"
+  ],
+  "frozen": "the claim checker's verdict on each section the recorded model wrote, and nothing else. What a model writes is not a function of any rule here, so each verdict below is what the checker reached over the recorded answer, named as a reading of a recording rather than as a figure the rules produce. Every other value in this file is derived.",
+  "lane": [
+    "The cause of each large move",
+    "What the company sells",
+    "The segment commentary",
+    "The key under each figure"
+  ],
+  "replay": {
+    "names": [
+      "MSFT",
+      "NFLX"
+    ],
+    "namesNote": "every name holding a facts file on the replayed night except KEYS, which is the name the prose fixture constructs its own sections for from version one. AAPL holds none that night: the corporate action check refetches its year as of 2026-08-10, before the night's bar, and the assembler writes tonight's file for the names with a bar tonight.",
+    "handed": "nothing, because the store holds no document before 6.8 fetches one",
+    "written": [
+      "The key under each figure"
+    ],
+    "notWritten": {
+      "The cause of each large move": "no document was handed to the writer for it",
+      "What the company sells": "no document was handed to the writer for it",
+      "The segment commentary": "no document was handed to the writer for it"
+    },
+    "modelCallsPerName": 1,
+    "verdicts": {
+      "MSFT": "rejected",
+      "NFLX": "accepted"
+    }
+  },
+  "release": {
+    "ticker": "KEYS",
+    "exhibit": "release-KEYS.htm",
+    "filedOn": "2026-08-18",
+    "movesInside": [
+      {
+        "move": "move 8",
+        "measuredFrom": "2026-08-17",
+        "ended": "2026-08-24"
+      }
+    ],
+    "movesInsideNote": "the one stored move whose span holds the filing date. Each move is five sessions, so its start is the fifth exchange session before the one it ended on, and 2026-08-24 counts back through 08-21, 08-20, 08-19 and 08-18 to 08-17. The other seven end in November, December, February and March, months before the filing.",
+    "passes": [
+      {
+        "written": [
+          "The cause of each large move",
+          "What the company sells",
+          "The segment commentary",
+          "The key under each figure"
+        ],
+        "modelCalls": 4,
+        "verdicts": {
+          "The cause of each large move": "accepted",
+          "What the company sells": "accepted",
+          "The segment commentary": "accepted",
+          "The key under each figure": "rejected"
+        }
+      },
+      {
+        "written": [
+          "The key under each figure"
+        ],
+        "retried": [
+          "The key under each figure"
+        ],
+        "skipped": {
+          "The cause of each large move": "it was already written today",
+          "What the company sells": "it was already written today",
+          "The segment commentary": "it was already written today"
+        },
+        "modelCalls": 1,
+        "verdicts": {
+          "The key under each figure": "accepted"
+        }
+      }
+    ],
+    "causeNames": [
+      "2026-08-24"
+    ],
+    "causeNamesNote": "the sessions the accepted cause section names as a move's end, which is the one move the release falls inside and no other"
+  },
+  "cannotHold": {
+    "contextTokens": 8000,
+    "refused": [
+      "The cause of each large move",
+      "What the company sells",
+      "The segment commentary"
+    ],
+    "asked": [
+      "The key under each figure"
+    ],
+    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its 22,996 characters of text, of which at least 19,184 are neither digits nor outside ASCII, and those alone come to 6,976 tokens at 2.75 characters a token, so none fits in 8,000. The key under each figure carries the facts file alone, 6,411 characters in all, and fits whatever its share of digits, because no character in it counts as more than one token."
+  },
+  "unavailable": {
+    "modelCalls": 1,
+    "notWritten": [
+      "The cause of each large move",
+      "What the company sells",
+      "The segment commentary",
+      "The key under each figure"
+    ],
+    "outcome": "unavailable",
+    "why": "the first call finds nothing answering, and every section after it is left unwritten without being asked, because a runtime that is not answering does not answer the next call either and waiting out a timeout per section would spend the evening on it"
+  }
+}

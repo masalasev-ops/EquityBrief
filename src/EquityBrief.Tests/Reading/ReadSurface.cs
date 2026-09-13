@@ -37,7 +37,7 @@ namespace EquityBrief.Tests.Reading;
 // the claim the checkpoint owes runs through all three: the page draws the
 // fixture's sessions, the drawn candle count matches the stored row count, and
 // the API computes nothing.
-public class ReadSurface
+public partial class ReadSurface
 {
     // What this reaches, declared in the check itself. The three screens claims
     // are claims about a surface, so they are reached by a check that renders
@@ -164,6 +164,15 @@ public class ReadSurface
             CheckReach.Key("15.9 Name", "Research stale, one line naming which of the four triggers fired"),
             CheckReach.Key(Scope.FailureTable, "Claim checker rejects twice"),
             CheckReach.Key(Scope.FailureTable, "A pass finds no admissible source for a section"),
+
+            // 6.6, the two regions of the name page a written section first reaches,
+            // and the page's half of section 18's two local lane rows.
+            CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written"),
+            CheckReach.Key("15.9 Name", "Provenance footer, computed tonight"),
+            CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date"),
+            CheckReach.Key("15.9 Name", "Provenance footer, research as of a date and the model that wrote it"),
+            CheckReach.Key(Scope.FailureTable, "A section is assigned to the local lane that the machine cannot hold, the section is absent as usual"),
+            CheckReach.Key(Scope.FailureTable, "The local model is unavailable, the local-lane sections absent with their reason"),
 
             // The run page's own expectation file, which 5.6 added and section
             // 19.1 did not name until the phase 5 sign-off. It is reached here

@@ -15,10 +15,16 @@ namespace EquityBrief.Worker;
 // It resolves the way the night's does, through `FeedSource`, so a mistyped
 // fixture path refuses here for the same reason and with the same words.
 //
-// Two members. The search tool joins them at 6.9, and each is a feed with its own
+// Three members. The search tool joins them at 6.9, and each is a feed with its own
 // `Requests` member for the reason the first one has: the cost of an open is read
 // off the feeds rather than stated by the caller.
-public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchiveFeed Archive)
+//
+// The third is the local lane's model, from 6.6, which is where it first exists.
+// The overnight queue takes it through this record rather than holding a client of
+// its own, so a night's model calls are attributable to the one resolution every
+// other call it makes goes through.
+// see: The on-demand feeds are resolved in one place, as the nightly feeds are
+public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchiveFeed Archive, ILocalModelFeed LocalModel)
 {
     // What the open cost, read off the feeds. A caller that wrote the figure
     // would be recording its own intention.
@@ -35,10 +41,15 @@ public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchi
     // see: The night's cost is counted in weighted calls against the stated daily allowance
     public int WeightedCalls => Fundamentals.Requests * ProviderWeights.Fundamentals;
 
-    public static OnDemandFeeds FromFixture(string folder) =>
-        new(RecordedFundamentalsFeed.FromFolder(folder), new RecordedFilingsArchiveFeed(folder));
+    // The model calls an open made, apart from its requests: a call to the operator's
+    // own runtime is not a provider request and is billed by nobody, and the run log
+    // carries the two in columns of their own.
+    public int ModelCalls => LocalModel.Requests;
 
-    public static OnDemandFeeds Live(string? baseAddress, string? apiKey, string? archiveContact) =>
+    public static OnDemandFeeds FromFixture(string folder) =>
+        new(RecordedFundamentalsFeed.FromFolder(folder), new RecordedFilingsArchiveFeed(folder), new RecordedLocalModelFeed(folder));
+
+    public static OnDemandFeeds Live(string? baseAddress, string? apiKey, string? archiveContact, LocalModelSettings local) =>
         new(
             EodhdFundamentalsFeed.Live(
                 string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress,
@@ -47,19 +58,25 @@ public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchi
             // credential path: the archive answers a request naming no user agent
             // with a refusal.
             // see: The archive declares a contact in its user agent, and a blank one refuses at startup
-            SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(archiveContact ?? string.Empty)));
+            SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(archiveContact ?? string.Empty)),
+            OpenAiCompatibleModelFeed.Live(local));
 
+    // The local lane's settings are taken on both paths, so a key configured for that
+    // lane refuses a fixture run as it refuses a live one: the refusal is about the
+    // configuration, and a configuration that is wrong is wrong whatever it is run
+    // against.
     public static OnDemandFeeds Resolve(
         string? source,
         string? fixtureFolder,
         string? baseAddress,
         string? apiKey,
-        string? archiveContact) =>
+        string? archiveContact,
+        LocalModelSettings local) =>
         FeedSource.Resolve(
             source,
             fixtureFolder,
             FromFixture,
-            () => Live(baseAddress, apiKey, archiveContact),
+            () => Live(baseAddress, apiKey, archiveContact, local),
             "an open");
 
     // Whether this set can reach the network at all, asked of the objects rather
@@ -67,5 +84,7 @@ public sealed record OnDemandFeeds(IFundamentalsFeed Fundamentals, IFilingsArchi
     // feed added live and forgotten here reads as one that cannot, which is the
     // fault 6.1 found in the night's own reader.
     public bool ReachesTheNetwork =>
-        Fundamentals is not RecordedFundamentalsFeed || Archive is not RecordedFilingsArchiveFeed;
+        Fundamentals is not RecordedFundamentalsFeed
+        || Archive is not RecordedFilingsArchiveFeed
+        || LocalModel is not RecordedLocalModelFeed;
 }

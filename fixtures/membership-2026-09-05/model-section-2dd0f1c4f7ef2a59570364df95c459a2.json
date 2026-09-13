@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-18bwksk0nxqhtdqpa081qyj",
+  "object": "chat.completion",
+  "created": 1789307153,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The Communications Solutions Group reported revenue of $1,345 million and operating income of $458 million for the quarter ended July 31, 2026 [D1]. The Electronic Industrial Solutions Group reported revenue of $501 million and operating income of $155 million for the quarter ended July 31, 2026 [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 8306,
+    "completion_tokens": 82,
+    "total_tokens": 8388,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

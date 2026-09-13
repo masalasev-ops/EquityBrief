@@ -25,6 +25,100 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - ARCHITECTURE.html - section 12.2's lane table says what code works out, what the model writes and what each section must pass
+
+Corrects: the table said what each section is handed and why it sits in its lane, and nothing about what is worked out before a model is asked, what the model is asked to write or what the section must pass to be stored, so it did not explain what a pass does or calculates. Its cause row and the key above it described one date's headlines and that day's move, where a move spans sessions and, from 6.6, a cause may rest only on a document published inside its move, which code pairs before the model sees anything. Raised by the operator at 6.6, reading the table against what the checkpoint built. Writing the new last column found that the date rule would refuse every date the dated calendar items section exists to state, and the row says so rather than stating a rule that holds.
+Was:
+> <h4>What each lane actually writes</h4>
+> <p>The figure names these inside its boxes. They are set out here because the
+> key above explains where the line falls without saying what sits on either side
+> of it.</p>
+> <table>
+>   <tr><th style="width:20%">Section</th><th>Lane</th><th>What goes in</th><th>Why it sits there</th></tr>
+>   <tr><td>The cause of each large move</td><td>local</td><td>one date's headlines, and that day's percentage move</td><td>the answer is one of the headlines, so this is a choice among a set rather than a construction</td></tr>
+>   <tr><td>What the company sells</td><td>local</td><td>one section of one filing</td><td>extraction: the answer is in the document, close to verbatim</td></tr>
+>   <tr><td>The segment commentary</td><td>local</td><td>the segment table from the same filing</td><td>extraction again, one sentence per business unit</td></tr>
+>   <tr><td>The key under each figure</td><td>local</td><td>the numbers that figure was drawn from</td><td>a fixed explanation over known values, with nothing to weigh</td></tr>
+>   <tr><td>The industry cycle</td><td>paid</td><td>the theme record for this industry and nothing of the name's own</td><td>it is the one section written from a record shared by every name in the industry, and the record is built by a paid pass of its own (see: Industry research is per theme, not per name)</td></tr>
+>   <tr><td>The dated calendar items</td><td>paid</td><td>the stored news and filings, read for items that carry a date</td><td>a dated item is a claim resting on a source rather than a provider event, and deciding which of several documents dates a thing is a judgement across them rather than a lookup in one (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only)</td></tr>
+>   <tr><td>The two cases</td><td>paid</td><td>the facts file, the filings, every stored news item, the theme record</td><td>the answer is in no single document; it is the shape of the disagreement between them, and a small model given contradictory evidence produces something fluent that says nothing</td></tr>
+>   <tr><td>The risks, each with what would confirm it</td><td>paid</td><td>the same whole set</td><td>which risks are live now cannot be decided from one document</td></tr>
+>   <tr><td>The short version</td><td>paid</td><td>the same whole set, written last</td><td>it summarises sections that do not agree with each other</td></tr>
+> </table>
+> <p>Every local call carries only the documents its own section needs, a few
+> thousand tokens, which is what makes a consumer graphics card sufficient for
+> that lane. Only the paid lane holds the whole evidence set at once. After the
+> split the two are identical: both outputs pass the same claim checker, and both
+> land in the same research record carrying their own date and the model that
+> wrote them.</p>
+>
+> and in the key above the table:
+> Naming what caused a large move is a choice among that day's headlines.
+Now:
+> <h4>What each lane actually writes</h4>
+> <p>Every section is made in the same three steps. Code works out the figures and
+> picks the documents the section may rest on. A model writes the words around
+> them, and is never asked for a number or a date. The claim checker then refuses
+> the section unless every figure in it is one code computed and every sentence
+> rests on a document it is allowed to rest on (see: Code owns every number). The
+> table says what each step does for each section. The lane is this machine's
+> default and is a setting; the rest of a row stays the same when a section moves
+> lane.</p>
+> <table>
+>   <tr><th style="width:16%">Section</th><th>Lane</th><th>What code works out first</th><th>What the model is asked to write</th><th>What it must pass to be stored</th></tr>
+>   <tr><td>The cause of each large move</td><td>local</td><td>the largest moves of the stored year from the bars, each with its percentage change, the session it ended on and the session its change was measured from; then, for each move, which documents fetched for the name were published inside it. A move with no document inside it is not put to the model, and a section with none at all is not written</td><td>one sentence for each move that has a document inside it, saying what that document gives as the cause</td><td>each sentence names the session a move ended on and cites a stored, admitted document published inside that move (see: A cause of a move rests only on a document published inside that move); every figure is a rounding of one in the facts file</td></tr>
+>   <tr><td>What the company sells</td><td>local</td><td>the company's own filing, fetched by ticker and tested for admissibility, handed over only if it passed</td><td>two to four sentences on what the company sells and to whom</td><td>every sentence cites a stored, admitted document; every figure is a rounding of one in the facts file</td></tr>
+>   <tr><td>The segment commentary</td><td>local</td><td>the latest quarter of the segment table, read out of the filing into the facts file as one figure per business unit and line item, and the filing it came from</td><td>one sentence per business unit, saying what it reported for the quarter</td><td>every figure is a segment figure the facts file holds; every sentence cites the filing</td></tr>
+>   <tr><td>The key under each figure</td><td>local</td><td>nothing new: every value the figure draws, the close, the averages, the levels, momentum, the latest quarter and the valuation, is already computed and in the facts file</td><td>three to five sentences on what those values show, for a reader who has not seen the figure, with money rounded to millions or billions and margins written as percentages</td><td>every figure is a rounding of one in the facts file. It cites no document, because it explains values already known and has nothing to weigh</td></tr>
+>   <tr><td>The industry cycle</td><td>paid</td><td>a search per industry rather than per name, scoped to the industry's source list, a date range and full page text, with what passes admissibility stored as the theme record every name in the industry shares</td><td>where the industry's own prices are in their cycle, and the three things capping or driving them</td><td>every sentence cites a document in the theme record; every figure is one code computed for the industry</td></tr>
+>   <tr><td>The dated calendar items</td><td>paid</td><td>the name's stored filings and news. The provider's own earnings dates are on the calendar already and are not asked for again</td><td>one sentence per dated event the documents name that falls after the latest session</td><td>every sentence cites the stored document that dates the event, and every figure is a rounding of one in the facts file. The rule that a date must be one the facts file holds would refuse every date this section exists to state, since that file carries only the provider's next event, and what such a date is held to is settled when the first of these is written</td></tr>
+>   <tr><td>The two cases</td><td>paid</td><td>the facts file, the name's stored filings and news, and the theme record, handed over together</td><td>the bull case and the bear case side by side, each ending in what it needs to see at the next report</td><td>every figure is a rounding of one in the facts file; every sentence cites a stored, admitted document</td></tr>
+>   <tr><td>The risks, each with what would confirm it</td><td>paid</td><td>the same whole set</td><td>each risk the documents support, with the figure or event that would confirm it</td><td>the same two rules</td></tr>
+>   <tr><td>The short version</td><td>paid</td><td>the same whole set and the sections already written, handed over last</td><td>three or four paragraphs: what is true, what the market is arguing about, and what the plan therefore is</td><td>the same two rules</td></tr>
+> </table>
+> <p><b>Why each section sits in its lane.</b> The four local sections each have
+> their answer in one place: the few documents inside one move, one filing, the
+> segment table, or values already computed. Each call carries only those, a few
+> thousand tokens, which is what makes a consumer graphics card enough for that
+> lane. The five paid sections are built across documents that disagree. Which
+> risks are live, what the two cases are and what they come to cannot be read out
+> of one document, and a small model given contradictory evidence produces
+> something fluent that says nothing. A dated item is a claim resting on a source
+> rather than a provider event, and deciding which of several documents dates a
+> thing is a judgement across them (see: A calendar event is fetched once for the
+> whole index, and the calendar holds provider events only). The industry cycle is
+> paid for a reason of its own: it is written from a record every name in its
+> industry shares, and that record is built by a paid pass of its own (see:
+> Industry research is per theme, not per name). After the split the two lanes are
+> the same: both pass one claim checker and land in one research record, each
+> section carrying its own date and the model that wrote it.</p>
+>
+> and in the key above the table:
+> Naming what caused a large move is reading the few documents published inside it, which code has already picked out.
+Why: a reader of the table should be able to say, for any section, which part is arithmetic, which part is words and what stops a wrong one being stored. The reasons each section sits in its lane are kept, in a paragraph beneath the table rather than a column, with both decisions they cited.
+
+### 2026-09-13 - BUILD_PLAN.md - the model carve-out's first half, landed at 6.6 with the first model client
+
+Corrects: 6.10's text said the whole of the nightly model-call carve-out lands there, before the queue. The scan that finds a model client refuses one in every shipped file, so the checkpoint that ships the local lane's feed could not pass `nightly-cost` without naming that file, and 6.6 is that checkpoint. Found at 6.6, on the first run after the feed was written.
+Was:
+> **The nightly model-call carve-out lands first, in its own commit, before the queue**, for the reason 2.1 states (see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name).
+Now:
+> **The nightly model-call carve-out's second half lands first, in its own commit, before the queue**, for the reason 2.1 states (see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name). The first half landed at 6.6 with the first model client, because the scan that finds one refuses it in any shipped file and the local lane's feed could not ship otherwise: it names the one file a model may be reached from and asserts that file is a model feed. What lands here is the half about the night, which lane the night may call and that its calls come from step 17 alone.
+Why: the half that names a file and the half that names what the night may call are separable, and only the first was needed before a queue exists. The decision states the carve by name and says nothing about which checkpoint lands each part, so nothing it decides moves.
+
+### 2026-09-13 - BUILD_PLAN.md - the two obligations 6.4 filed against 6.6, discharged
+
+Corrects: nothing was wrong. Two carried obligations reached the checkpoint that produces their evidence, and each row records what was measured and ruled, in the form 6.3's discharge took.
+Was:
+> | **A whole-number figure tied to the fact it rounds, measured against written sections** | 6.4 | 6.6 | 6.6 writes the first sections a model produced from a facts file, and 6.6 is where the prompt that tells the model how to write a figure is written, so it is where the evidence and the only repair both first exist. 6.4 measured the claim checker's number rule over 11,727 figures from 411 live articles against AAPL's facts file of 38 values: 1,301 of 7,939 whole numbers pass by coincidence against 76 of 2,091 at one decimal and 14 of 1,547 at two. So the rule is strong for a figure stated with decimals and weak for a whole number, and what would close that is attribution, a figure tied to the fact it rounds rather than to any fact near it. What 6.6 produces is written sections to measure the coincidence rate over prose written from the file rather than prose written without it, and a prompt that can require a figure to name its fact |
+>
+> | **The facts file carries the figures a local lane section quotes** | 6.4 | 6.6 | 6.6 is where the prose writer first writes the local lane's sections. The segment commentary is one sentence per business unit from the segment table, and the facts file carries eleven fundamentals figures and none of the segment table, so every sentence the commentary could write fails the number rule as 6.4 built it and the section would fall back on every name. What 6.6 produces is the first segment commentary a model wrote, which is what shows which figures it quotes, and the facts assembler is where they would be added |
+Now:
+> | **A whole-number figure tied to the fact it rounds, measured against written sections** | 6.4 | 6.6, discharged | measured over the seven section answers the local model wrote from a facts file at 6.6, and ruled. Of the 58 figures in them none is unmatched and 12 are whole numbers. Eleven of the twelve are the fact they state, and the twelfth is the coincidence this row was filed for: an accepted key under each figure called the relative strength index "14 periods", and the 14 passed because a move of minus 13.89 per cent rounds to it. It was a window length, and the reader knew days, sessions and weeks as windows and not periods, so the repair is that a period is one, asserted on that sentence. Attribution is not built. Prose written from the file quoted money at a scale where the tolerance is half a million and wrote its small whole numbers as window lengths, so the weakness 6.4 measured over articles written without the file did not appear in prose written with it, and a prompt requiring every figure to carry the name of its fact would make every sentence a list. The residual is stated rather than closed: a small whole number that is neither a window nor a fact can still pass on a coincidence. What it read before: 6.6 writes the first sections a model produced from a facts file, and 6.6 is where the prompt that tells the model how to write a figure is written, so it is where the evidence and the only repair both first exist. 6.4 measured the claim checker's number rule over 11,727 figures from 411 live articles against AAPL's facts file of 38 values: 1,301 of 7,939 whole numbers pass by coincidence against 76 of 2,091 at one decimal and 14 of 1,547 at two. So the rule is strong for a figure stated with decimals and weak for a whole number, and what would close that is attribution, a figure tied to the fact it rounds rather than to any fact near it. What 6.6 produces is written sections to measure the coincidence rate over prose written from the file rather than prose written without it, and a prompt that can require a figure to name its fact |
+>
+> | **The facts file carries the figures a local lane section quotes** | 6.4 | 6.6, discharged | the facts assembler carries the latest quarter of the segment table the archive supplies, named by group, line item and period end, and every stored move with the session it was measured from beside the one it ended on. Measured over the first sections a model wrote from it: the segment commentary quoted four figures and what the company sells quoted two, each a segment's revenue or operating income for the quarter ended 2026-07-31 and each matched by exactly one segment fact, and both sections were accepted on their first draft. The move starts arrived because a cause may rest only on a document published inside its move (see: A cause of a move rests only on a document published inside that move). What it read before: 6.6 is where the prose writer first writes the local lane's sections. The segment commentary is one sentence per business unit from the segment table, and the facts file carries eleven fundamentals figures and none of the segment table, so every sentence the commentary could write fails the number rule as 6.4 built it and the section would fall back on every name. What 6.6 produces is the first segment commentary a model wrote, which is what shows which figures it quotes, and the facts assembler is where they would be added |
+Why: an obligation is closed in its own row, where the next reader of the table meets it, with the text it carried kept inside the row rather than lost.
+
 ### 2026-09-13 - ARCHITECTURE.html - the claim checker's catalogue row names the theme store it reads and writes
 
 Corrects: the catalogue row gave the claim checker the research store alone, while SCHEMA gives it Update on `theme_section`, the read and write matrix fills its Research and theme column, and section 12.2 says both runners' output passes one checker. So three of the four places the component is declared agreed and the fourth did not. Found at 6.4 by `component-access`, on the first run after the class declared what SCHEMA and the matrix already said.

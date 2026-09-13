@@ -314,9 +314,11 @@ public class EodhdBulkPriceFeedTests
         // stated rather than left to grow: a carve-out nobody counts is one that
         // widens a file at a time until it covers the tree.
         // Six until 6.1 added the fundamentals endpoint, which is the first of
-        // them no night calls, and seven until 6.2 added the filings archive,
-        // which is the first from a second provider.
-        Assert.Equal(8, Checks.NightlyCost.MayHoldAClient.Length);
+        // them no night calls, seven until 6.2 added the filings archive, which is
+        // the first from a second provider, and eight until 6.6 added the local
+        // model, which is the first that reaches a model and the only one the
+        // model list carves as well.
+        Assert.Equal(9, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));

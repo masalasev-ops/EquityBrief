@@ -761,8 +761,14 @@ public static class NameScreen
         string? previousOnTheList = null,
         string? nextOnTheList = null,
         IReadOnlyList<SectionStateRow>? sections = null,
-        StalenessVerdict? staleness = null)
+        StalenessVerdict? staleness = null,
+        IReadOnlyList<WrittenSectionRow>? written = null,
+        string? prosePass = null)
     {
+        var accepted = written ?? [];
+        var leftOut = LeftOut(sections ?? []);
+        var (cells, causes) = Causes(moves, accepted);
+
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
             .ToArray();
@@ -842,13 +848,95 @@ public static class NameScreen
             EventBook(ladder),
             Arithmetic(ladder),
             Numbers(filings),
-            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))],
+            cells,
             TwelveMonths(bars),
             FiredReasons(listing),
             previousOnTheList,
             nextOnTheList,
-            LeftOut(sections ?? []),
-            staleness is null ? null : ResearchState(staleness));
+            leftOut,
+            staleness is null ? null : ResearchState(staleness),
+            causes,
+            NotWritten(prosePass, accepted, leftOut),
+            marks.ProvenanceFooter(
+                ticker,
+                bars.Count > 0 ? bars[^1].SessionDate : null,
+                filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
+                [.. accepted.Select(section => new WrittenPart(section.Section, section.AsOf, section.Model))]));
+    }
+
+    // The moves table's rows with the cause of each, where a cause section has been
+    // accepted for the name.
+    //
+    // A sentence belongs to the move whose session it names, read by the claim
+    // checker's own reader, so the page and the checker agree about which move a
+    // sentence is about: the checker accepted the section on exactly that reading,
+    // holding every document the sentence cites inside that move. A move no sentence
+    // names carries no cause, and the table says so in its row. Nothing is worked
+    // out beyond that: the text is the stored prose, cut at its own sentences.
+    // see: A cause of a move rests only on a document published inside that move
+    public static (IReadOnlyList<MoveCell> Cells, CauseSource? Source) Causes(
+        IReadOnlyList<MoveRow> moves,
+        IReadOnlyList<WrittenSectionRow> written)
+    {
+        var cause = written.FirstOrDefault(section => string.Equals(section.Section, ClaimRules.CauseSection, StringComparison.Ordinal));
+
+        if (cause is null)
+        {
+            return ([.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))], null);
+        }
+
+        var sentences = ClaimRules.Sentences(cause.Prose)
+            .Select(sentence => (sentence.Text, Dates: ClaimRules.Figures(sentence.Text).Where(figure => figure.Kind == FigureKind.Date).ToArray()))
+            .ToArray();
+
+        static bool Names(ProseFigure[] dates, DateOnly session) =>
+            dates.Any(date => date.Date is { } full ? full == session : date.Month == session.Month && date.Day == session.Day);
+
+        return (
+            [
+                .. moves.Select(move =>
+                {
+                    var naming = sentences.Where(sentence => Names(sentence.Dates, move.SessionDate)).Select(sentence => sentence.Text).ToArray();
+
+                    return new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank, naming.Length == 0 ? null : string.Join(" ", naming));
+                }),
+            ],
+            new CauseSource(cause.AsOf, cause.Model));
+    }
+
+    // The local lane's sections the newest prose pass for the name did not write,
+    // with the reason the writer recorded, less any section a reader is shown some
+    // other way: one with a written version is drawn as written, and one whose newest
+    // version was left out already carries the line the checker stored. The skips a
+    // pass records are not read at all, since each is a section with a row of its own.
+    public static IReadOnlyList<LeftOutSection> NotWritten(
+        string? prosePass,
+        IReadOnlyList<WrittenSectionRow> written,
+        IReadOnlyList<LeftOutSection> leftOut)
+    {
+        if (string.IsNullOrWhiteSpace(prosePass))
+        {
+            return [];
+        }
+
+        using var pass = JsonDocument.Parse(prosePass);
+
+        if (!pass.RootElement.TryGetProperty("notWritten", out var lines) || lines.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var shown = written.Select(section => section.Section)
+            .Concat(leftOut.Select(section => section.Section))
+            .ToHashSet(StringComparer.Ordinal);
+
+        return
+        [
+            .. lines.EnumerateArray()
+                .Select(line => (Section: line.GetProperty("section").GetString()!, Reason: line.GetProperty("reason").GetString()!))
+                .Where(line => !shown.Contains(line.Section))
+                .Select(line => new LeftOutSection(string.Empty, line.Section, line.Reason)),
+        ];
     }
 
     // The verdict as the page draws it, in the words the judge writes. Nothing is

@@ -151,7 +151,10 @@ public sealed class SinglePageApp : IComponent
         string? previousOnTheList,
         string? nextOnTheList,
         IReadOnlyList<LeftOutSection>? leftOut = null,
-        ResearchStateLine? researchState = null)
+        ResearchStateLine? researchState = null,
+        CauseSource? causes = null,
+        IReadOnlyList<LeftOutSection>? notWritten = null,
+        string? provenance = null)
     {
         var region = new StringBuilder();
 
@@ -185,9 +188,10 @@ public sealed class SinglePageApp : IComponent
         }
 
         // How it got here, which section 15.9 puts after the chart region. Its
-        // cause column arrives at 6.5 and is absent rather than blank until
-        // then, stated once by the table rather than in every row.
-        region.Append(marks.MovesTable(ticker, moves, twelveMonths));
+        // cause column is drawn where a cause section has been accepted for the
+        // name and is absent rather than blank where none has, stated once by the
+        // table rather than in every row.
+        region.Append(marks.MovesTable(ticker, moves, twelveMonths, causes));
 
         // The numbers, which section 4 puts fourth and which section 15.9 draws
         // after the table of moves. It arrives already written, for the reason the
@@ -199,7 +203,7 @@ public sealed class SinglePageApp : IComponent
         // ones. At 6.4 what is drawn is the sections left out, each with its line,
         // because that is what the claim checker produces and nothing writes a
         // section a reader could be shown before 6.8.
-        region.Append(marks.LeftOut(ticker, leftOut ?? [], researchState));
+        region.Append(marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten));
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));
@@ -223,6 +227,11 @@ public sealed class SinglePageApp : IComponent
         // list, so an evening's reading is one pass through with no return to
         // the list.
         region.Append(marks.Walk(ticker, previousOnTheList, nextOnTheList));
+
+        // The provenance footer, which section 15.9 puts last, arriving written for
+        // the reason the event book does: what it holds is dates and names read off
+        // the stores rather than a mark over values.
+        region.Append(provenance ?? string.Empty);
 
         region.Append("</section>");
 

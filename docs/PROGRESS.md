@@ -8330,3 +8330,176 @@ Carried:    nothing new. The news trigger's short-history behaviour is decided r
             because the rule for fewer than ninety days is stated and asserted and nothing a later
             checkpoint produces would change it. This session has committed code and may not sign it
             off.
+
+### 6.6 - the local model and the prose writer, a cause held to its own move, and a checker that passed what it could not see   2026-09-13
+Built:      the local lane's client over an OpenAI-compatible endpoint, with its base address, model,
+            timeout and loaded context in configuration and a key refused on the live path and the
+            fixture path alike; its recorded double, one file per section call named for the hash of
+            the whole request, refusing by name a request it does not hold; the prompt a section is
+            asked in; the prose writer, taking the configured lane whole; the claim checker's third
+            rule, for the cause of each large move; the facts file's start session for every move;
+            the on-demand feed record carrying the local model; the canonical replay running the
+            writer and the checker over the recorded model; and three regions of the name page, the
+            moves table's cause column, the provenance footer, and the local lane's sections a pass
+            left unwritten with the reason it recorded. Seven commits: the facts file's moves and
+            segment table, the captures, the build, the plan and changelog, the footer's case the
+            sweep's rule found unasserted, section 12.2's lane table, and this record. Nothing in production calls the writer
+            yet: the research runner does from 6.8 and the overnight queue from 6.10, as the checker
+            had no caller at 6.4.
+            The feed was written against captures and stays that way. Reasoning is turned off by the
+            one request field of four the runtime honoured. An empty answer is refused with its finish
+            reason and how much reasoning arrived. An answer that stopped on its budget is refused as
+            cut short, because the part that arrived can pass the checker. A prompt past the loaded
+            context was captured before the feed read it: a 400 in 0.6 seconds whose error names the
+            prompt's token count and the context, and the feed carries those words to the run log.
+            Nothing answering is a type of its own rather than a refusal with particular words in it,
+            and a call past its own timeout is a refusal of that section rather than of the runtime.
+            The writer checks the lane against figure 12.2's names before anything is asked, builds
+            and measures every call before making the first, refuses a section the machine cannot
+            hold before the pass starts, stops asking after the first call that finds nothing
+            listening, keeps a section already written or waiting on the checker apart from one this
+            pass left absent, and counts the rows it wrote off the store.
+Settled:    a cause of a move rests only on a document published inside that move, as a decision,
+            because the first pass a local model wrote showed the checker passing what it could not
+            see. Handed Keysight's Q3 release, filed 2026-08-18, and asked for the cause of each move,
+            the model's first draft said the move of 2026-02-24 was driven by that release and was
+            refused only because the filing date it quoted was not a date the facts file holds. Its
+            retry cited the same release for all eight moves, named no cause, and was accepted: every
+            sentence cited an admitted document and every figure was in the file. A sentence of the
+            cause section now names a move by the session it ended on, and every admitted document it
+            cites has to be published on or after the session the move was measured from and on or
+            before the one it ended on, both edges inside because a publish date has no time.
+            Which document falls inside which move is worked out by code and handed over. Told each
+            span and asked to compare the dates itself, the model cited the release for the five
+            moves in February and March and wrote nothing for the one move it falls inside, from
+            2026-08-17 to 2026-08-24; handed the pairs, it wrote one sentence for that move and it was
+            accepted on the first draft. A cause section with no document inside any move is not sent
+            at all, because asked anyway the model wrote a paragraph on why it could not.
+            How many tokens a prompt comes to, in two halves, measured before it was set. Over the
+            seven section calls recorded, characters per prompt token ran from 3.57 where a prompt
+            carries the release to 2.36 where it carries a short facts file, because this model's
+            tokeniser reads a number a digit at a time, so the 3.5 written before the captures
+            undercounted every facts file and its comment saying it could not was false. A digit and
+            every byte outside ASCII now count as a token each, which a tokeniser over bytes cannot
+            exceed, and the rest of the text counts at 2.75 characters, under the lowest ratio
+            measured over that text alone, which ran from 3.16 to 4.54. A test holds the estimate at
+            or above the runtime's own count for all seven.
+            The two obligations 6.4 filed against this checkpoint, each discharged in its own row.
+            Whole-number attribution: over the 58 figures in the seven answers none is unmatched, 12
+            are whole numbers, and 11 of the 12 are the fact they state. The twelfth is the row's own
+            case, the 14 of a relative strength index written as "14 periods", passed because a move
+            of minus 13.89 per cent rounds to it. It was a window and the reader knew days, sessions
+            and weeks and not periods, so a period is one now. Attribution is not built, because prose
+            written from the file wrote its money at a scale whose tolerance is half a million and its
+            small whole numbers as windows, and the residual is stated in the row. The segment figures:
+            the commentary quoted four and what the company sells two, each a segment's revenue or
+            operating income for the quarter ended 2026-07-31, each matched by exactly one segment
+            fact.
+            The model carve-out's first half lands here rather than at 6.10, where the plan put all of
+            it: the scan that finds a model client refuses one in any shipped file, so the checkpoint
+            shipping the first could not pass without naming its file. What it names is that one file,
+            asserted to be a model feed. 6.10's text says so now, with the prior text in CHANGELOG.
+Found:      the prompt as first written produced the faults a checker is for, each measured on real
+            output and each repaired where it arose. The key under each figure quoted stored values
+            as stored, "revenue of 1846000000.00" and "a gross margin of 0.658722", accepted because
+            both are exact, and the instruction to round money to its unit, write a margin as a
+            percentage and anything else to two places arrived with it; the next key rounded, wrote
+            "twenty-day" and was refused for a number in words, and its retry was accepted. A section
+            handed no document was told how to cite one and cited a first document on every sentence,
+            so the citation instruction is given only where there is something to cite. MSFT's key
+            called its 50-day average of 445.9957 "445.99", which rounds to 446.00, and was refused;
+            that is the rule working and the replay expectation records it rejected.
+            Five things the tree held that this checkpoint made wrong or found wrong. The prose fixture's
+            two release exhibits carried a publish date written into the test, the same for both, and
+            a cause is now judged by that date, so it is read from the archive's own filing index: KEYS
+            filed on 2026-08-18. The claims and staleness expectations awaited `research_section` at
+            6.6, and the replay now writes it, so both name it. The writer counted its own rows where
+            SCHEMA says the column is measured. Section 18's two local lane rows each state what the
+            writer does, what the page draws, and what the paid path, its control and the overnight
+            queue do, so each is read as five parts, two or three here and the rest at 6.8 and 6.10.
+            And the provenance footer's row enumerates three kinds of part, so it is read as three,
+            which the part reader refused to let pass whole on the run that first drew it.
+            Figure 12.2's box says a local call carries a few thousand tokens. The seven carried from
+            1,008 to 8,379, which the figure's words hold at its upper end; it is not edited.
+            Section 12.2's lane table did not say what a pass does. The operator raised it at this
+            checkpoint: it listed what each section is handed and why it sits in its lane, and nothing
+            of what code works out, what the model is asked to write or what the section must pass to
+            be stored, and its cause row still described one date's headlines. It says those three
+            things per section now, the reasons for each lane sit in a paragraph beneath it with both
+            decisions they cited, and its rows are read against the configured lane, the prompts and
+            the checker's two per-section rules in both directions. Its placement was due at 6.6 and
+            would have been refused once this entry landed; it is due at 6.9 now, where the last of
+            the paid rows' inputs is built. Writing its last column found that the date rule refuses
+            every date the dated calendar items section exists to state, since the facts file carries
+            only the provider's next event, which is carried to 6.8 below.
+Tested:     8 under `fixture-expectations` on the writer and the facts file: the replay's pass for the
+            two names over the recorded model with no network, asked of the objects; the release pass
+            writing the one move's cause, retrying once, and counting its rows off the store; each
+            move's start derived from the exchange calendar for all 32 moves; the lane in both
+            directions, through configuration and through a lane of one; a section the machine cannot
+            hold refused before any call, with the expectation's arithmetic held against the prompts;
+            the model unavailable after one call; the estimate against the runtime's count for every
+            recording, with every recording one a request reaches; the segment table's latest quarter.
+            12 on the feed: both probes, a cut answer, inline reasoning, the overflow capture, a
+            refusal with no words, nothing listening, the request as sent, a missing recording, the
+            key over the whole request, a key refused wherever the lane is read, and RUNBOOK's settings
+            read against the code. 5 under `read-surface`: the cause in its own move's row and nowhere
+            else, the footer's three parts against queries of the test's own beside a newer pending
+            draft, each local lane absence with the reason the run log stored, for a section the
+            machine cannot hold and for an unavailable model, and the stage the page reads the
+            writer's pass under against the worker's own. 1 under `claim-admissibility` for a move's
+            span at both edges and through the checker, beside the period read as a window inside the
+            reader test that holds the other misreads, and three paragraphs in the claim fixture, two
+            of them the model's own sentences. 1 under `nightly-cost` for the model carve covering the
+            one feed it names and nothing else. 760 tests, from 733 at 6.5.
+Mutated:    the rule, stated before the sweep: mutate every property this checkpoint added whose failure
+            would put a wrong section, or a missing refusal, in front of a reader. Ten qualify and all
+            ten were mutated, in a detached worktree under the session scratchpad outside this
+            repository, over an unmutated baseline of 760 passing, each reverted before the next, and
+            the worktree removed.
+            A cause admitting a document published after its move ended: 8 tests red, among them the
+            claim verdicts, the release pass, whose prompt then paired the release with every move and
+            asked for a recording nobody made, and the page's cause column. A cause admitting a
+            document published before its move began: 1 red. A cause naming no move passing on its
+            citation alone: 2 red. A section the machine cannot hold attempted rather than refused
+            first: 2 red, the writer's and the page's. An unavailable model asked for every section in
+            turn: 1 red. An answer cut off at its budget stored: 1 red. The writer writing this
+            machine's default lane whatever lane it is handed: 1 red. A cause drawn in every move's
+            row: 1 red. A section shown as written also drawn as not written: 1 red. The footer naming
+            a section's newest version whatever the checker made of it: 1 red, and only because the
+            rule named that property before the sweep and nothing in the tree could fail it, so the
+            case beside a newer pending draft was written first, as a commit of its own.
+            None survived. The single catches are thin and named as thin. The start of a move's span is
+            reached by a constructed document alone, because the fixture's one real release was filed
+            inside the one move it falls inside and after every other move had ended, so no real
+            document sits just before a move began: an unreachable boundary in the fixture, which the
+            constructed case covers.
+            Properties added and not mutated, named because the next sweep has to find them: the
+            recording keyed on each field of the request; a key refused on the fixture path; a lane
+            naming a section twice refused; a call past its own timeout refused as that section's
+            rather than the runtime's; the runtime's own words carried at a length a line holds; bytes
+            outside ASCII counted as tokens; the replay's names read from the store less the prose
+            fixture's; the rows a pass wrote counted off the store; a period read as a window; the lane
+            table's rows read against the code.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 760 of 760 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 342 claims, 282 PASS, 0 fail, 60 out of scope, 0
+            unexamined, 289 placements and verdicts reconciled against a floor of 34, 34 of 35 roster
+            checks carried and all 34 run. Migrations 0 to 21, this checkpoint adding none. The 60 read
+            twice, by the first checkpoint each note names and by the last, give 44 at phase 6 and 16
+            at phase 7 both ways: 5 at 6.7, 18 at 6.8, 10 at 6.9, 7 at 6.10 and 4 at 6.11.
+            The claim pair moves to 342 and 326, from 332 and 316. The ten that arrived are the three
+            rows decomposed here, the footer's three parts where there was one and section 18's two
+            rows at five parts where there was one each. Of the six claims owed at 6.6 all six pass as
+            whole rows or as the parts this checkpoint draws, and the five parts the paid path and the
+            queue draw are placed at 6.8 and 6.10.
+            The operator's store under `data/` was not touched by either gate.
+Carried:    one obligation, due at 6.8, which writes the first dated calendar items and whose text
+            cites it (owes: A dated calendar item's date held to something that can carry it). And
+            three limits stated where a reader meets them rather than carried. The
+            checker holds when a cause's document was published and every figure in it, and not that
+            the document says why a price moved: the accepted cause reads that a fall of fourteen per
+            cent was driven by record results, which is the model's reading of a company's own release.
+            A small whole number that is neither a window nor a fact can still pass on a coincidence.
+            And the first night after this lands reports each name's eight move starts as facts that
+            appeared, once. This session has committed code and may not sign it off.

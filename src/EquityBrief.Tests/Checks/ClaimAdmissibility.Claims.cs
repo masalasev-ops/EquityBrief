@@ -385,13 +385,18 @@ public partial class ClaimAdmissibility
 
         var accepted = after.Where(row => row.Status == ClaimChecker.Accepted).Select(row => row.Prose).ToArray();
 
-        Assert.Equal(2, accepted.Length);
+        // Three clean paragraphs from 6.6, when the cause of the one move the
+        // release falls inside joined the two written at 6.4.
+        Assert.Equal(3, accepted.Length);
         Assert.Contains(SectionNamed("a clean computed paragraph").Prose, accepted);
         Assert.Contains(SectionNamed("a clean researched paragraph").Prose, accepted);
+        Assert.Contains(SectionNamed("a cause of the move the release falls inside").Prose, accepted);
 
         Assert.DoesNotContain(SectionNamed("a poisoned paragraph").Prose, accepted);
         Assert.DoesNotContain(SectionNamed("an unsourced claim").Prose, accepted);
         Assert.DoesNotContain(SectionNamed("a claim resting on a refused document").Prose, accepted);
+        Assert.DoesNotContain(SectionNamed("a cause citing a release filed after the move").Prose, accepted);
+        Assert.DoesNotContain(SectionNamed("a cause naming no move").Prose, accepted);
 
         // The statement itself names two columns, which is SCHEMA's declaration
         // read against the source rather than against a run that happened not to
@@ -593,16 +598,38 @@ public partial class ClaimAdmissibility
                 && candidate.Rows[0][0] == "Section"
                 && candidate.Rows[0][1] == "Lane");
 
-        var named = table.Body.Where(row => row.Count > 1).Select(row => row[0]).ToArray();
+        var rows = table.Body.Where(row => row.Count > 1).ToArray();
+        var named = rows.Select(row => row[0]).ToArray();
 
         Assert.Equal(named, ClaimRules.Sections);
         Assert.Contains(ClaimRules.ComputedSection, named);
 
-        // The computed section is the one the table places in the local lane with
-        // nothing to weigh, read off its own row.
-        var computed = table.Body.Single(row => row[0] == ClaimRules.ComputedSection);
+        // From 6.6 the table says what code works out, what the model is asked to
+        // write and what each section must pass, so the parts of a row the code
+        // carries are read against it in both directions. Five columns, the last
+        // being the rules.
+        Assert.All(rows, row => Assert.Equal(5, row.Count));
 
-        Assert.Contains("nothing to weigh", computed[3], StringComparison.Ordinal);
+        // The lane each row states is this machine's default, which is the list the
+        // writer is handed when configuration names none.
+        Assert.Equal(
+            ProseWriter.DefaultLane,
+            rows.Where(row => row[1] == "local").Select(row => row[0]).ToArray());
+        Assert.All(rows, row => Assert.Contains(row[1], new[] { "local", "paid" }));
+
+        // Every section a row says a model writes has a prompt to ask it in.
+        Assert.All(named, section => Assert.True(SectionPrompt.Asks.ContainsKey(section), section));
+
+        // The rules column, against the checker. The one section held to no citation
+        // is the one row saying it cites no document, and the one section held to its
+        // move's span is the one row naming a document published inside that move.
+        Assert.Equal(
+            [.. ClaimRules.Sections.Where(section => !ClaimRules.IsResearched(section))],
+            rows.Where(row => row[4].Contains("It cites no document", StringComparison.Ordinal)).Select(row => row[0]).ToArray());
+
+        Assert.Equal(
+            [ClaimRules.CauseSection],
+            rows.Where(row => row[4].Contains("published inside that move", StringComparison.Ordinal)).Select(row => row[0]).ToArray());
     }
 
     [Fact]
@@ -666,6 +693,57 @@ public partial class ClaimAdmissibility
     }
 
     [Fact]
+    public void AMovesSpanHoldsBothItsEdgesAndACauseCitingADocumentOutsideItIsRefused()
+    {
+        Fact[] facts =
+        [
+            new("move 8 measured from", "2026-08-17", "move"),
+            new("move 8 per cent", "-13.980341", "move"),
+            new("move 8 session", "2026-08-24", "move"),
+            new("move 8 sessions", "5", "move"),
+            new("largest move session", "2026-02-24", "move"),
+        ];
+
+        var windows = MoveWindows.In(facts);
+        var eighth = Assert.Single(windows, window => window.Name == "move 8");
+
+        Assert.Equal(new DateOnly(2026, 8, 17), eighth.From);
+        Assert.Equal(new DateOnly(2026, 8, 24), eighth.To);
+
+        // Both edges inside, a day either side outside.
+        Assert.False(MoveWindows.Holds(eighth, new DateOnly(2026, 8, 16)));
+        Assert.True(MoveWindows.Holds(eighth, new DateOnly(2026, 8, 17)));
+        Assert.True(MoveWindows.Holds(eighth, new DateOnly(2026, 8, 24)));
+        Assert.False(MoveWindows.Holds(eighth, new DateOnly(2026, 8, 25)));
+
+        // A move whose start the file does not carry holds nothing, its own end
+        // included, because a span with one edge cannot be shown to hold a date.
+        var startless = Assert.Single(windows, window => window.Name == "largest move");
+
+        Assert.Null(startless.From);
+        Assert.False(MoveWindows.Holds(startless, startless.To));
+
+        // And through the checker, the start half: a document published the session
+        // before a move began is refused for it, and one published on its first day
+        // is not.
+        StoredDocument Published(DateOnly on) =>
+            new("d1", "https://www.sec.gov/Archives/edgar/data/1/1/release.htm", "a release", on, FetchedAt, "text", Admissibility.Accepted);
+
+        const string Sentence = "The move ending 2026-08-24 fell 13.98 per cent after the release [D1].";
+
+        var early = ClaimRules.Check(ClaimRules.CauseSection, Sentence, facts, [Published(new DateOnly(2026, 8, 14))]);
+
+        Assert.Equal(ClaimRules.CauseOutsideItsMove, Assert.Single(early.Findings).Reason);
+        Assert.Equal("D1 published 2026-08-14, outside the move ending 2026-08-24 measured from 2026-08-17", early.Findings[0].Offending);
+
+        Assert.True(ClaimRules.Check(ClaimRules.CauseSection, Sentence, facts, [Published(new DateOnly(2026, 8, 17))]).Passes);
+
+        // The rule is the cause section's alone: the same sentence in another
+        // researched section is held to the citation and number rules and passes.
+        Assert.True(ClaimRules.Check("What the company sells", Sentence, facts, [Published(new DateOnly(2026, 8, 14))]).Passes);
+    }
+
+    [Fact]
     public void ThePercentageBeforeAWeekIsAFigureAndDigitsInsideANameAreNotRead()
     {
         // Two misreads of the live measurement, kept as the cases that caught
@@ -674,6 +752,18 @@ public partial class ClaimAdmissibility
         Assert.Equal(FigureKind.Window, Assert.Single(ClaimRules.Figures("the 52-week high")).Kind);
 
         Assert.Empty(ClaimRules.Figures("the iPhone17 and an H100 on 5G"));
+
+        // A third, from the first key a model wrote at 6.6: the length of an
+        // indicator's window written in periods, taken for a figure and passed
+        // because a move of 13.89 per cent rounds to 14. Read as a window, it holds
+        // where a figure's name carries it and is refused where none does.
+        var period = Assert.Single(
+            ClaimRules.Figures("the relative strength index for 14 periods sits at 45.43"),
+            figure => figure.Magnitude == 14m);
+
+        Assert.Equal(FigureKind.Window, period.Kind);
+        Assert.True(ClaimRules.IsAWindow(period, [new("rsi14", "45.431383", "indicator")]));
+        Assert.False(ClaimRules.IsAWindow(period, [new("move 6 per cent", "-13.888116", "move")]));
 
         var time = ClaimRules.Figures("a call at 2:00 p.m. PT");
 

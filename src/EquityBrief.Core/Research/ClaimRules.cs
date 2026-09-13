@@ -104,6 +104,13 @@ public static class ClaimRules
     public static bool IsResearched(string section) =>
         !string.Equals(section, ComputedSection, StringComparison.Ordinal);
 
+    // The one section held to a third rule, because every sentence in it is about a
+    // move the facts file dates. A document published months after a move cannot
+    // be what caused it, and the first draft a model wrote for this section said
+    // exactly that about a February move and an August release.
+    // see: A cause of a move rests only on a document published inside that move
+    public const string CauseSection = "The cause of each large move";
+
     // ---- the reasons ----
 
     public const string UnmatchedFigure = "a figure the facts file does not hold";
@@ -115,6 +122,8 @@ public static class ClaimRules
     public const string NotStored = "a citation to a document that is not stored";
     public const string RefusedSource = "a citation to a document admissibility refused";
     public const string NoAdmissibleSource = "no admissible source was found";
+    public const string CauseNamingNoMove = "a cause naming the session of no move the facts file holds";
+    public const string CauseOutsideItsMove = "a citation to a document published outside the move it gives the cause of";
 
     // ---- the check ----
 
@@ -139,9 +148,16 @@ public static class ClaimRules
         }
 
         var findings = new List<ClaimFinding>();
+        var cause = string.Equals(section, CauseSection, StringComparison.Ordinal);
+        var moves = cause ? MoveWindows.In(facts) : [];
 
         foreach (var sentence in Sentences(prose))
         {
+            if (cause)
+            {
+                findings.AddRange(CauseFindings(sentence, moves, sources));
+            }
+
             if (researched && sentence.Citations.Count == 0)
             {
                 findings.Add(new ClaimFinding(sentence.Text, sentence.Text, Uncited));
@@ -182,6 +198,64 @@ public static class ClaimRules
         }
 
         return new ClaimVerdict(findings, NoAdmissibleSource: false);
+    }
+
+    // ---- the cause of a move ----
+
+    // One sentence of the cause section against the moves the facts file dates.
+    //
+    // A sentence names a move by the session it ended on, which is how the section
+    // is asked for and the only date the file held for a move before 6.6. A sentence
+    // naming no move's session is about nothing a cause can be checked against, so
+    // it is refused rather than passed on its citation alone. And every admitted
+    // document it cites has to have been published inside every move it names,
+    // because a sentence naming two moves says the document caused both.
+    //
+    // Only admitted documents are read here. A citation that resolves to nothing, or
+    // to a refusal, is already a finding of the citation rule, and a second finding
+    // for the same marker would state one fault twice.
+    static IEnumerable<ClaimFinding> CauseFindings(
+        ProseSentence sentence,
+        IReadOnlyList<MoveWindow> moves,
+        IReadOnlyList<StoredDocument?> sources)
+    {
+        var dates = Figures(sentence.Text).Where(figure => figure.Kind == FigureKind.Date).ToArray();
+
+        var named = moves
+            .Where(move => dates.Any(date => date.Date is { } full
+                ? full == move.To
+                : date.Month == move.To.Month && date.Day == move.To.Day))
+            .ToArray();
+
+        if (named.Length == 0)
+        {
+            yield return new ClaimFinding(sentence.Text, sentence.Text, CauseNamingNoMove);
+
+            yield break;
+        }
+
+        foreach (var cited in sentence.Citations.Distinct())
+        {
+            if (cited < 1 || cited > sources.Count || sources[cited - 1] is not { Admitted: true } source)
+            {
+                continue;
+            }
+
+            foreach (var move in named.Where(move => source.PublishedOn is not { } published || !MoveWindows.Holds(move, published)))
+            {
+                var published = source.PublishedOn is { } on ? Iso(on) : "on no stated date";
+                var ended = Iso(move.To);
+
+                var span = move.From is { } from
+                    ? "the move ending " + ended + " measured from " + Iso(from)
+                    : "the move ending " + ended + ", whose start the facts file does not carry";
+
+                yield return new ClaimFinding(
+                    sentence.Text,
+                    "D" + cited.ToString(CultureInfo.InvariantCulture) + " published " + published + ", outside " + span,
+                    CauseOutsideItsMove);
+            }
+        }
     }
 
     // ---- sentences and citations ----
@@ -314,6 +388,12 @@ public static class ClaimRules
     // letter scale counts only where it is attached, because "5 m" is as likely to
     // be a sentence about a metre as about a million.
     //
+    // A period is a unit of time as the other three are, from 6.6: the first key a
+    // model wrote from a facts file called the relative strength index "14 periods",
+    // the reader took the 14 for a figure, and an unrelated move of 13.89 per cent
+    // rounded to it, which is the coincidence a whole number is weakest against,
+    // passed for the wrong reason.
+    //
     // A number is read only where it stands as one. Digits inside a name, the 17
     // of a phone or the 100 of a chip, are part of the name, so a number may not
     // start after a letter, a digit or a decimal point, and may not end before a
@@ -321,7 +401,7 @@ public static class ClaimRules
     static readonly Regex Number = new(
         @"(?<![A-Za-z0-9.,])(?<currency>[$€£])?(?<digits>\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)"
         + @"(?:(?<attached>tn|bn|t|k|m|b|x)(?![A-Za-z0-9])|\s?(?<percent>%|per\s?cent\b)|\s(?<word>trillion|billion|million|thousand)\b)?"
-        + @"(?<window>-(?:day|session|week)s?\b|\s(?:day|session|week)s?\b)?"
+        + @"(?<window>-(?:day|session|week|period)s?\b|\s(?:day|session|week|period)s?\b)?"
         + @"(?<ordinal>st|nd|rd|th)?"
         + @"(?![A-Za-z0-9]|\.\d)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -508,6 +588,8 @@ public static class ClaimRules
         DateValues(facts).Any(date => figure.Date is { } full
             ? date == full
             : date.Month == figure.Month && date.Day == figure.Day);
+
+    static string Iso(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static decimal Unit(int decimals)
     {

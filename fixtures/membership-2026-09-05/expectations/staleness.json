@@ -1,13 +1,10 @@
 {
   "stage": "staleness",
   "derivation": "derived",
-  "derivedFrom": "the decision that research goes stale on an event dated after the section was written and that a news spike is dated by the session it began, taken with section 17's research staleness row and the fixture's own stored dates for KEYS: its newest filing on 2026-09-02, its newest passed earnings date on 2026-08-18 filed as after the close, and its facts night on 2026-09-08. Each verdict below was worked from those dates and the rules by hand before the judge was run. The sections are inserted at test time as accepted, each on the as-of date named here, because nothing writes a section before 6.6.",
-  "tables": [],
-  "awaits": {
-    "table": "research_section",
-    "writtenAt": "6.6",
-    "why": "the judge reads sections and writes none, and the replay populates research_section only once a writer runs in it, which is the prose writer at 6.6. Until then the sections this file judges are inserted as accepted by the test. The day the replay writes one, this entry fails until the table moves to the tables list above."
-  },
+  "derivedFrom": "the decision that research goes stale on an event dated after the section was written and that a news spike is dated by the session it began, taken with section 17's research staleness row and the fixture's own stored dates for KEYS: its newest filing on 2026-09-02, its newest passed earnings date on 2026-08-18 filed as after the close, and its facts night on 2026-09-08. Each verdict below was worked from those dates and the rules by hand before the judge was run. The sections are inserted at test time as accepted, each on the as-of date named here, because a writer dates a section by the day it runs and these are dated by hand around the fixture's events. The replay's own sections, written by the prose writer from 6.6 for names other than KEYS, are not what this file judges.",
+  "tables": [
+    "research_section"
+  ],
   "ticker": "KEYS",
   "night": "2026-09-08",
   "newestFiling": "2026-09-02",

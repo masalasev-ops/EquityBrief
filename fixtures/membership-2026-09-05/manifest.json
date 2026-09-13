@@ -209,6 +209,76 @@
       "query": "https://www.sec.gov/Archives/edgar/data/18230/000001823026000040/0000018230-26-000040-index.htm",
       "fetchedAt": "2026-09-13T00:33:54Z",
       "trimmedTo": "nothing. An index page from a fourth filer, captured because it lists two documents typed `EX-99` rather than one, so the rule that picks the release has a population to pick from. The release is the lower sequence number and the second exhibit is something else, which is the same shape a filed transcript would arrive in and the reason the rule is stated by sequence rather than by taking the only match."
+    },
+    {
+      "file": "model-probe-thinking.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions with model qwen/qwen3.5-9b, a one-sentence system instruction, a user message stating one close, temperature 0, max_tokens 200 and no reasoning setting",
+      "fetchedAt": "2026-09-13T12:57:21Z",
+      "trimmedTo": "nothing. The whole response, captured before any parser for it was written, and kept because it is the shape a parser written from the chat completions specification gets wrong: the model is a thinking model, it spent the whole token budget in reasoning_content, returned an empty content and stopped on length. A parser reading content would store an empty section."
+    },
+    {
+      "file": "model-probe-answered.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "the same request as model-probe-thinking.json with reasoning_effort set to none",
+      "fetchedAt": "2026-09-13T06:03:57Z",
+      "trimmedTo": "nothing. The whole response to the one request field of four that turned reasoning off on this runtime: a /no_think marker in the prompt, reasoning.effort and chat_template_kwargs.enable_thinking were each accepted and ignored, and reasoning_effort none answered in 19 tokens and stopped on stop."
+    },
+    {
+      "file": "model-section-34dcb304dda18c573b2f176a01d87bca.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT, the replay's prose pass, handed no documents: the request SectionPrompt builds, keyed 34dcb304dda18c573b2f176a01d87bca, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-13T13:45:47Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1021 prompt tokens and 178 completion tokens, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "model-section-17ff1b4c1dc7696962cbc595318f5166.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX, the replay's prose pass, handed no documents: the request SectionPrompt builds, keyed 17ff1b4c1dc7696962cbc595318f5166, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-13T13:45:49Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1008 prompt tokens and 237 completion tokens, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "model-section-9c53ec30f0555efe19c039e8fe31a721.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS, the first pass over the replayed store with the KEYS release exhibit handed in: the request SectionPrompt builds, keyed 9c53ec30f0555efe19c039e8fe31a721, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-13T13:45:51Z",
+      "trimmedTo": "nothing. The whole response to one section call, 8379 prompt tokens and 66 completion tokens, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "model-section-d1bbfa30ea752c1b656b18fce1a8bef3.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS, the first pass over the replayed store with the KEYS release exhibit handed in: the request SectionPrompt builds, keyed d1bbfa30ea752c1b656b18fce1a8bef3, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-13T13:45:53Z",
+      "trimmedTo": "nothing. The whole response to one section call, 8300 prompt tokens and 128 completion tokens, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "model-section-2dd0f1c4f7ef2a59570364df95c459a2.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS, the first pass over the replayed store with the KEYS release exhibit handed in: the request SectionPrompt builds, keyed 2dd0f1c4f7ef2a59570364df95c459a2, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-13T13:45:56Z",
+      "trimmedTo": "nothing. The whole response to one section call, 8306 prompt tokens and 82 completion tokens, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "model-section-f3ce48e11347e91a37cb7c1ee9563ac5.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS, the first pass over the replayed store with the KEYS release exhibit handed in: the request SectionPrompt builds, keyed f3ce48e11347e91a37cb7c1ee9563ac5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-13T13:45:59Z",
+      "trimmedTo": "nothing. The whole response to one section call, 2420 prompt tokens and 211 completion tokens, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "model-section-ae49ccb8cb147a1471bbdc0cb35d1c06.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS, the second pass, the one retry, told why the checker refused the first draft: the request SectionPrompt builds, keyed ae49ccb8cb147a1471bbdc0cb35d1c06, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-13T13:46:02Z",
+      "trimmedTo": "nothing. The whole response to one section call, 2482 prompt tokens and 186 completion tokens, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "model-probe-overflow.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions with a user message of 300,059 characters, a one-sentence system instruction, temperature 0, max_tokens 16 and reasoning_effort none, against a model loaded with a context of 50,176 tokens",
+      "fetchedAt": "2026-09-13T13:34:30Z",
+      "trimmedTo": "nothing. The whole body of the runtime's refusal, captured before the feed read it, and kept because it is what a prompt the machine cannot hold produces: a 400 in 0.6 seconds whose error is a string wrapping the engine's own message, naming the prompt's token count and the loaded context, rather than an answer written from the part that fitted."
     }
   ]
 }

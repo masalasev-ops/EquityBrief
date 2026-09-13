@@ -67,6 +67,14 @@ public sealed class FactsAssembler : IComponent
     public const string FromCalendar = "calendar";
     public const string FromFundamentals = "fundamental";
 
+    // How a move's facts are named, stated once, because the claim checker reads
+    // a move's span back by these names and a name spelled twice is a span that
+    // stops being found without anything failing.
+    public static string MovePrefix(int rank) =>
+        rank == 1 ? MoveWindows.Largest : MoveWindows.Ranked + " " + rank.ToString(CultureInfo.InvariantCulture);
+
+    public const string MeasuredFromSuffix = MoveWindows.MeasuredFrom;
+
     // The newest filing this name has stored, and the figures on it. Newest by
     // filing date rather than by period end, because a restatement is filed later
     // than the quarter it restates and the later filing is what is now known.
@@ -132,12 +140,36 @@ public sealed class FactsAssembler : IComponent
 
     const string SwingCountFor = "SELECT COUNT(*) FROM swing WHERE ticker = $ticker;";
 
-    const string LargestMoveFor = @"
-        SELECT session_date, sessions, change_pct
+    // Every move the annotator stored, in rank order. The largest was the only one
+    // until 6.6, which is where a local model first writes the cause of each of
+    // them, and a cause names the move's date: a date in prose has to be one this
+    // file holds, so a cause section over one stored date could only ever speak of
+    // one move.
+    // owes: The facts file carries the figures a local lane section quotes
+    const string MovesFor = @"
+        SELECT session_date, sessions, change_pct, rank
         FROM move
         WHERE ticker = $ticker
-        ORDER BY rank
-        LIMIT 1;
+        ORDER BY rank;
+    ";
+
+    // The session a move's change was measured from: the stored session as many
+    // sessions before the one it ended on as the move spans, which is the close
+    // the annotator divided by. Counted in stored sessions rather than calendar
+    // days, for the reason the read surface counts a move's extremes that way.
+    //
+    // A selection of a stored column rather than a derivation, as the extremes
+    // are: which bar is chosen is set by the move row, and its date is handed back
+    // unchanged. It is here because a cause of a move can only rest on a document
+    // published inside the move, and a file holding only the session a move ended
+    // on cannot say where that span began.
+    // see: A cause of a move rests only on a document published inside that move
+    const string MeasuredFrom = @"
+        SELECT session_date
+        FROM bar
+        WHERE ticker = $ticker AND session_date < $ended
+        ORDER BY session_date DESC
+        LIMIT 1 OFFSET $offset;
     ";
 
     const string NextEventFor = @"
@@ -360,12 +392,39 @@ public sealed class FactsAssembler : IComponent
         await ReadAsync(connection, LadderFor, ticker, cancellation, reader =>
             facts.Add(new Fact("trend state", reader.GetString(0), FromLadder)));
 
-        await ReadAsync(connection, LargestMoveFor, ticker, cancellation, reader =>
+        var moves = new List<(string Prefix, string Ended, int Sessions)>();
+
+        await ReadAsync(connection, MovesFor, ticker, cancellation, reader =>
         {
-            facts.Add(new Fact("largest move session", reader.GetString(0), FromMoves));
-            facts.Add(new Fact("largest move sessions", reader.GetInt32(1).ToString(CultureInfo.InvariantCulture), FromMoves));
-            facts.Add(new Fact("largest move per cent", reader.GetDouble(2).ToString("0.######", CultureInfo.InvariantCulture), FromMoves));
+            // The largest keeps the name it has carried since 5.3, so a night after
+            // this change reports no material change to the one move every file
+            // already held, and the others are named for their rank.
+            var rank = reader.GetInt32(3);
+            var prefix = MovePrefix(rank);
+
+            facts.Add(new Fact(prefix + " session", reader.GetString(0), FromMoves));
+            facts.Add(new Fact(prefix + " sessions", reader.GetInt32(1).ToString(CultureInfo.InvariantCulture), FromMoves));
+            facts.Add(new Fact(prefix + " per cent", reader.GetDouble(2).ToString("0.######", CultureInfo.InvariantCulture), FromMoves));
+
+            moves.Add((prefix, reader.GetString(0), reader.GetInt32(1)));
         });
+
+        foreach (var (prefix, ended, sessions) in moves)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = MeasuredFrom;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$ended", ended);
+            command.Parameters.AddWithValue("$offset", sessions - 1);
+
+            // A move whose first close has left the stored year carries no start
+            // rather than a guessed one, and a cause of it can then rest on nothing.
+            if (await command.ExecuteScalarAsync(cancellation) is string from)
+            {
+                facts.Add(new Fact(prefix + " " + MeasuredFromSuffix, from, FromMoves));
+            }
+        }
 
         await using (var command = connection.CreateCommand())
         {
@@ -447,6 +506,79 @@ public sealed class FactsAssembler : IComponent
         {
             Add(facts, "trailing price to earnings", Text(valuation, "trailingPe"));
             Add(facts, "forward price to earnings", Text(valuation, "forwardPe"));
+        }
+
+        facts.AddRange(Segments(root));
+
+        return facts;
+    }
+
+    // The segment table on the newest filing, where the archive supplied one, for
+    // the latest quarter it covers.
+    //
+    // Added at 6.6, because the segment commentary is one sentence per business
+    // unit from this table and a figure in prose has to exist in this file: with the
+    // table outside it, every sentence that commentary could write failed the number
+    // rule and the section fell back on every name. The latest three-month period
+    // only, because the commentary is about the quarter and the table's other
+    // columns are the same quarter a year before and the year to date.
+    //
+    // Named by group, line item and period end. Two groups can share a label, which
+    // the archive does for one filer the fixture holds, and a facts file names each
+    // fact once, so a repeated name carries the group's position in the table.
+    // owes: The facts file carries the figures a local lane section quotes
+    public static IReadOnlyList<Fact> Segments(JsonElement root)
+    {
+        if (!root.TryGetProperty("segments", out var segments) || segments.ValueKind != JsonValueKind.Object)
+        {
+            return [];
+        }
+
+        var quarters = segments.GetProperty("periods").EnumerateArray()
+            .Where(period => period.GetProperty("months").GetInt32() == 3)
+            .Select(period => period.GetProperty("ended").GetString()!)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        if (quarters.Length == 0)
+        {
+            return [];
+        }
+
+        var ended = quarters[^1];
+        var facts = new List<Fact>();
+        var taken = new HashSet<string>(StringComparer.Ordinal);
+
+        void Take(string group, JsonElement lines, int position)
+        {
+            foreach (var line in lines.EnumerateArray())
+            {
+                if (line.GetProperty("months").GetInt32() != 3
+                    || line.GetProperty("ended").GetString() != ended
+                    || line.GetProperty("value").ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                var name = $"segment {group} {line.GetProperty("lineItem").GetString()} {ended}";
+
+                if (!taken.Add(name))
+                {
+                    name = $"segment {group} {position.ToString(CultureInfo.InvariantCulture)} {line.GetProperty("lineItem").GetString()} {ended}";
+                    taken.Add(name);
+                }
+
+                facts.Add(new Fact(name, line.GetProperty("value").GetString()!, FromFundamentals));
+            }
+        }
+
+        Take("total", segments.GetProperty("consolidated"), 0);
+
+        var index = 0;
+
+        foreach (var group in segments.GetProperty("groups").EnumerateArray())
+        {
+            Take(group.GetProperty("label").GetString()!, group.GetProperty("figures"), ++index);
         }
 
         return facts;

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-4mpjh0au5si65twep6tf2n",
+  "object": "chat.completion",
+  "created": 1789307147,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 76.77, trading within a session high of 77.73 and a low of 75.92 with volume of 33865470 shares. Technical indicators show the average true range over 14 days is 2.391062, while the relative strength index for 14 periods sits at 45.431383. Moving averages indicate the 20-day simple moving average is 79.334, the 50-day is 75.4994, and the 200-day is 86.6969. The MACD line stands at 1.257437 with a signal line of 1.640601 and a histogram value of -0.383163. Volume averages over 20 days are 28384331.6 and over 50 days are 38530162.64, reflecting the current range-bound trend state.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1008,
+    "completion_tokens": 237,
+    "total_tokens": 1245,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}
