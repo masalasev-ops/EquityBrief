@@ -22,7 +22,7 @@ namespace EquityBrief.Tests.Checks;
 // admits, and the admitting half is where the cost of a wrong rule falls: a
 // marker that fires on ordinary reporting takes the reporting this system exists
 // to read out of every pass, silently, and the pass looks like a quiet week.
-public class ClaimAdmissibility
+public partial class ClaimAdmissibility
 {
     internal static CheckReach Reach => new(
         "claim-admissibility",

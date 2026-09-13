@@ -53,7 +53,7 @@ public class FixtureReplay
     // Every stage that exists, in the order the night runs them. A stage added
     // to the night and not here is a stage this check does not replay, which
     // the count below is what catches.
-    static async Task<TemporaryStore> ReplayedAsync()
+    internal static async Task<TemporaryStore> ReplayedAsync()
     {
         var store = new TemporaryStore().Migrated();
         var backfill = FixedClock.At(Backfilled, SessionZones.UnitedStates);

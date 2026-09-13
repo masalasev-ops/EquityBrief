@@ -1,47 +1,57 @@
 {
-  "constructed": "Section prose for the claim checker, constructed rather than captured, because the model that writes a section arrives at 6.6 and nothing has written one yet. Every figure in it was written against the facts file this fixture produces for AAPL on 2026-09-08, which is read back at test time from a replayed store rather than stated here, so a paragraph whose figures stopped matching would fail as a rejection nobody expected rather than pass as a copy of a number. Citations are written as the marker the checker reads, a D followed by the position of the document in the section's own source list, and each source is named by the fixture file or the constructed document it resolves to. The clean paragraphs are here beside the rejected ones on purpose: a checker that only ever saw prose written to be refused would measure nothing about what it accepts, and what it wrongly refuses is a section left out of every report.",
-  "ticker": "AAPL",
+  "constructed": "Section prose for the claim checker, constructed rather than captured, because the model that writes a section arrives at 6.6 and nothing has written one yet. Every figure in it was written against the facts file this fixture produces for KEYS on 2026-09-08, which is read back at test time from a replayed store rather than stated here, so a paragraph whose figures stopped matching would fail as a rejection nobody expected rather than pass as a copy of a number. Citations are written as the marker the checker reads, a D followed by the position of the document in the section's own source list, and each source is named by the fixture file or the constructed document it resolves to. The clean paragraphs are here beside the rejected ones on purpose: a checker that only ever saw prose written to be refused would measure nothing about what it accepts, and what it wrongly refuses is a section left out of every report. KEYS rather than AAPL, and the reason is a property of the replay: its corporate action check refetches AAPL's year as of the action's own session, so AAPL's stored series ends on 2026-08-10 and the replay writes no facts file for it on the fixture night at all. KEYS is refetched by nothing and holds the same facts file in every chain the suite replays.",
+  "ticker": "KEYS",
   "asOf": "2026-09-08",
   "sections": [
     {
       "name": "a clean computed paragraph",
       "section": "The key under each figure",
       "sources": [],
-      "prose": "Apple closed at 316.22, above its 50-day average of 315.64 and well above the 200-day average of 283.69. Revenue for the quarter ended 2026-06-30 was $109.4 billion, with a gross margin of 50.1% and a net margin of 27.2%. The shares trade at 37.5 times trailing earnings of 8.87 a share.",
-      "carries": "every figure a rounding of one the facts file holds, at the precision the prose itself states: 315.64 of 315.641456, $109.4 billion of 109417000000.00, 50.1% of a margin stored as the fraction 0.500562, and 37.5 of 37.46. Two window lengths, which are numbers the facts file carries in the names of its averages rather than in their values, and one date. No citation, because this is the one section the lane table says is written from known values with nothing to weigh."
+      "prose": "Keysight closed at 333.42, above its 50-day average of 326.21 and well above the 200-day average of 289.31. Revenue for the quarter ended 2026-07-31 was $1.85 billion, with a gross margin of 65.9% and a net margin of 21.5%. The shares trade at 45.9 times trailing earnings of 7.38 a share.",
+      "carries": "every figure a rounding of one the facts file holds, at the precision the prose itself states: 326.21 of 326.213, $1.85 billion of 1846000000.00, 65.9% of a margin stored as the fraction 0.658722, and 45.9 of 45.8862. Two window lengths, which are numbers the facts file carries in the names of its averages rather than in their values, and one date. No citation, because this is the one section the lane table says is written from known values with nothing to weigh."
     },
     {
       "name": "a poisoned paragraph",
       "section": "The key under each figure",
       "sources": [],
-      "prose": "Apple closed at 316.22, above its 50-day average of 315.64 and well above the 200-day average of 283.69. Revenue for the quarter ended 2026-06-30 was $109.4 billion, with a gross margin of 52.4% and a net margin of 27.2%. The shares trade at 37.5 times trailing earnings of 8.87 a share.",
-      "carries": "the clean paragraph above with one figure changed, a gross margin of 52.4% where the facts file holds 0.500562. One and only one, so the rejection is asserted to name exactly that figure rather than to have found something wrong somewhere in a paragraph of eleven."
+      "prose": "Keysight closed at 333.42, above its 50-day average of 326.21 and well above the 200-day average of 289.31. Revenue for the quarter ended 2026-07-31 was $1.85 billion, with a gross margin of 68.4% and a net margin of 21.5%. The shares trade at 45.9 times trailing earnings of 7.38 a share.",
+      "carries": "the clean paragraph above with one figure changed, a gross margin of 68.4% where the facts file holds 0.658722. One and only one, so the rejection is asserted to name exactly that figure rather than to have found something wrong somewhere in a paragraph of eleven."
     },
     {
       "name": "a clean researched paragraph",
       "section": "What the company sells",
-      "sources": ["release-AAPL.htm"],
-      "prose": "Apple sells iPhone, Mac, iPad and wearables hardware, and a services business that sells subscriptions and takes a share of what is sold through its store [D1]. Revenue for the June quarter was $109.4 billion [D1].",
+      "sources": [
+        "release-KEYS.htm"
+      ],
+      "prose": "Keysight sells electronic design and test instruments, software and services to communications, aerospace, defence and semiconductor customers [D1]. Revenue for the July quarter was $1.85 billion [D1].",
       "carries": "a citation on every sentence, resolving to the release exhibit the filings archive holds, which is admitted, and one figure that is also in the facts file. A claim resting on a document has to name it and a figure in it has to be one code computed, and this paragraph satisfies both halves so neither can be what the rejections below turn on."
     },
     {
       "name": "an unsourced claim",
       "section": "What the company sells",
-      "sources": ["release-AAPL.htm"],
-      "prose": "Apple sells iPhone, Mac, iPad and wearables hardware, and a services business that sells subscriptions and takes a share of what is sold through its store [D1]. Analysts expect the next iPhone cycle to be the strongest in five years.",
+      "sources": [
+        "release-KEYS.htm"
+      ],
+      "prose": "Keysight sells electronic design and test instruments, software and services to communications, aerospace, defence and semiconductor customers [D1]. Analysts expect the next design cycle to be the strongest in five years.",
       "carries": "the same first sentence and a second that names no document at all. It carries no digit, so the number rule has nothing to say about it and the citation rule is the only thing that can refuse it, which is the shape of a confident wrong sentence the decision is about."
     },
     {
       "name": "a claim resting on a refused document",
       "section": "What the company sells",
-      "sources": ["release-AAPL.htm", "inadmissible: a machine-generated price forecast"],
-      "prose": "Apple sells iPhone, Mac, iPad and wearables hardware, and a services business that sells subscriptions and takes a share of what is sold through its store [D1]. The services business is expected to keep growing faster than hardware [D2].",
+      "sources": [
+        "release-KEYS.htm",
+        "inadmissible: a machine-generated price forecast"
+      ],
+      "prose": "Keysight sells electronic design and test instruments, software and services to communications, aerospace, defence and semiconductor customers [D1]. Its test business is expected to keep growing faster than its software [D2].",
       "carries": "a citation that resolves to a stored row admissibility refused. The document is stored, so a rule asking only whether a source exists would pass it, and the claim checker reads the verdict on the row rather than applying the test again, which 6.0 ruled."
     },
     {
       "name": "a section with no admissible source",
       "section": "The two cases",
-      "sources": ["inadmissible: a broker marketing page", "inadmissible: a page with no publish date"],
+      "sources": [
+        "inadmissible: a broker marketing page",
+        "inadmissible: a page with no publish date"
+      ],
       "prose": "",
       "carries": "a section whose whole source list was refused, which is what a pass leaves when it fetched documents and admitted none of them. It goes to fallback on the first check rather than being given a retry, because a rewrite cannot create a source, and what the name page draws for it is one line saying no admissible source was found."
     }
