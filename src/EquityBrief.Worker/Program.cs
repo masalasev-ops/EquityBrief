@@ -1,9 +1,12 @@
 using System.Globalization;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Research;
+using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker;
+using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Research;
 using Microsoft.Extensions.Configuration;
@@ -18,15 +21,19 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "migrate" => Migrate(),
     "nightly" => await NightlyRun(args),
     "fundamentals" => await FundamentalsFetch(args),
+    "research" => await ResearchPass(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Three are built: 'migrate' applies pending migrations, " +
-        "'nightly --fixture <folder>' runs the night's steps in order, and " +
-        "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet. '--live' " +
+        "EquityBrief.Worker: no verb given. Four are built: 'migrate' applies pending migrations, " +
+        "'nightly --fixture <folder>' runs the night's steps in order, " +
+        "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, and " +
+        "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
+        "stale, with '--refresh' to write every section again and '--paid-for-local' to have the paid model write the " +
+        "local lane's sections as well. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -126,6 +133,110 @@ static async Task<int> FundamentalsFetch(string[] args)
         + ", and the archive is free");
 
     return 0;
+}
+
+// One name's research, on demand: its fundamentals where the store holds none, and then
+// one pass.
+//
+// A verb of its own for the reason the fundamentals fetch has one: the night's per-name
+// request count is zero and its model call count is zero, and a pass is both. The name
+// page's control starts this verb for the name it is on, and the operator can run it by
+// hand for the same result.
+// see: Everything expensive happens when a name is opened
+// see: The name page's control starts the worker's research verb, and the read API writes nothing it starts
+static async Task<int> ResearchPass(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var ticker = Argument(args, "--ticker");
+
+    if (string.IsNullOrWhiteSpace(ticker))
+    {
+        Console.Error.WriteLine(
+            "research: no '--ticker' given. A pass is for one name, and a pass over every name would spend on " +
+            "research nobody opened.");
+
+        return 1;
+    }
+
+    var wantsLive = args.Contains("--live");
+    var wantsFixture = Argument(args, "--fixture") is not null;
+
+    if (wantsLive && wantsFixture)
+    {
+        Console.Error.WriteLine(
+            "research: '--live' and '--fixture' were both given. A pass runs against one source, and choosing " +
+            "between them here would be this command deciding what was meant.");
+
+        return 1;
+    }
+
+    OnDemandFeeds feeds;
+    LocalModelSettings local;
+    IReadOnlyList<string> lane;
+    SpendCaps caps;
+
+    try
+    {
+        local = LocalLane.Settings(configuration);
+        lane = LocalLane.Sections(configuration);
+        caps = ResearchLane.Caps(configuration);
+        feeds = OnDemandFeeds.Resolve(
+            wantsLive ? FeedSource.Live
+                : wantsFixture ? FeedSource.Fixture
+                : configuration[FeedSource.SourceKey],
+            Argument(args, "--fixture") ?? configuration[FeedSource.FixtureKey],
+            configuration[EodhdBulkPriceFeed.BaseAddressKey],
+            configuration[ProviderCredentials.ApiKeyName],
+            configuration[ArchiveAgent.ContactName],
+            local,
+            ResearchLane.Settings(configuration));
+    }
+    catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+    {
+        Console.Error.WriteLine("research: " + refusal.Message);
+
+        return 1;
+    }
+
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var runId = FormattableString.Invariant($"research-{clock.UtcNow:yyyyMMddTHHmmssZ}-{ticker}");
+    var database = store.DatabaseFile;
+
+    // The name's fundamentals first, where the store holds none, because the archive is
+    // addressed by the identifier that fetch stores and the pass reads the company's own
+    // release from there. Held fundamentals are left as they are.
+    var fundamentals = await new FundamentalsFetcher(feeds.Fundamentals, clock, database, feeds.Archive).RunAsync(ticker, null, runId);
+
+    // Where that fetch stored a filing the night had not seen, the night's facts file is
+    // assembled again and its changes read again before the pass, so the sections are
+    // written from the quarter just fetched rather than from a file that carries none of
+    // it. A re-run replaces only the files that now differ, which is this name's.
+    // see: A re-run replaces a night's facts file where the store now computes a different one
+    // see: A name's facts file is assembled again for its night when an open fetches its fundamentals
+    if (fundamentals.RowsWritten > 0)
+    {
+        await new FactsAssembler(clock, database).RunAsync(runId);
+        await new ChangeDetector(clock, database).RunAsync(runId);
+    }
+
+    var outcome = await new ResearchRunner(
+        new StalenessJudge(clock, database),
+        sections => new ProseWriter(feeds.LocalModel, local, sections, clock, database),
+        new SpendCap(feeds.ResearchModel, caps, clock, database),
+        new ClaimChecker(clock, database),
+        feeds.Archive,
+        feeds.NameNews,
+        lane,
+        clock,
+        database).RunAsync(ticker, runId, new ResearchPassRequest(args.Contains("--refresh"), args.Contains("--paid-for-local")));
+
+    Console.WriteLine(
+        FormattableString.Invariant($"research: {ticker} {outcome.Outcome}, {outcome.Written.Count} section(s) written, ")
+        + FormattableString.Invariant($"{outcome.NotWritten.Count} not written, {outcome.Fetched} document(s) fetched and {outcome.Admitted} admitted")
+        + (outcome.Reason is { } reason ? ": " + reason : string.Empty));
+
+    return outcome.Outcome == ResearchRunner.AlreadyRunning ? 1 : 0;
 }
 
 // The night, invoked by tools/nightly and by nothing else in this repository:

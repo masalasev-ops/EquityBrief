@@ -360,6 +360,11 @@ public sealed class FundamentalsFetcher : IComponent
         {
             periodEnd = Stored(quarter.PeriodEnd),
             currency = fetched.Currency,
+            // The company's identifier at the filings archive, on the newest row, from
+            // 6.8. The archive is addressed by it and nothing else, and a research pass
+            // reads the company's own release from there without asking the company
+            // financials endpoint for it a second time.
+            cik = newest ? fetched.Cik : null,
             quarter = new
             {
                 revenue = Money(quarter.Figures.Revenue),

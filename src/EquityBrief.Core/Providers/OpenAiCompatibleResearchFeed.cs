@@ -22,12 +22,22 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
 {
     public const string Path = "chat/completions";
 
+    // The format's own list of the models a key may call, which is what a probe asks
+    // for: it bills nothing and answers only where the address and the key both do.
+    public const string ModelsPath = "models";
+
+    // How long a probe waits. A list of models is a few hundred bytes, so a provider
+    // that has not answered one in thirty seconds is not going to answer a section.
+    public static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(30);
+
     // One attempt, for the local model's reason: a call that timed out may already be
     // billed, and a retry bills it again for the same answer.
     readonly ProviderRequest request = request
         ?? new ProviderRequest(new RetryPolicy(1, TimeSpan.Zero, settings.Timeout, settings.Timeout + settings.Timeout));
 
     public int Requests { get; private set; }
+
+    public int Probes { get; private set; }
 
     public string Identity => settings.Identity;
 
@@ -78,6 +88,31 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
             cancellation).ConfigureAwait(false);
 
         return Parse(body, wanted.Section);
+    }
+
+    public async Task<string?> UnreachableAsync(CancellationToken cancellation = default)
+    {
+        Probes++;
+
+        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        bounded.CancelAfter(ProbeTimeout);
+
+        try
+        {
+            using var response = await client.GetAsync(ModelsPath, bounded.Token).ConfigureAwait(false);
+
+            return response.IsSuccessStatusCode
+                ? null
+                : Refused("the model list", (int)response.StatusCode, await response.Content.ReadAsStringAsync(bounded.Token).ConfigureAwait(false));
+        }
+        catch (HttpRequestException unreachable)
+        {
+            return $"The research model could not be reached: {unreachable.Message}";
+        }
+        catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+        {
+            return $"The research model did not answer a request for its model list within {ProbeTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture)} seconds.";
+        }
     }
 
     // The request as it is sent: the configured model, the two messages, the answer's
@@ -152,23 +187,7 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
             ?? 0;
         var uncached = Count(usage, "prompt_cache_miss_tokens") ?? prompt - cached;
 
-        if (text.Length == 0)
-        {
-            throw new ProviderRefusal(
-                $"The research model returned no answer for {section}: the finish reason was {finish} after {completion} " +
-                $"completion token(s), {reasoning} of them reasoning. A section stored from this would be empty.",
-                transient: false);
-        }
-
-        if (string.Equals(finish, "length", StringComparison.Ordinal))
-        {
-            throw new ProviderRefusal(
-                $"The research model's answer for {section} stopped at its budget rather than ending, so what arrived is a " +
-                "section cut short and it is not stored.",
-                transient: false);
-        }
-
-        return new ResearchAnswer(
+        var answer = new ResearchAnswer(
             root.TryGetProperty("model", out var model) && model.ValueKind == JsonValueKind.String ? model.GetString()! : "unstated",
             text,
             prompt,
@@ -183,6 +202,26 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
                     $"The research model's response for {section} carries no creation instant, and whether it was billed at peak " +
                     "is read from that instant.",
                     transient: false));
+
+        // Nothing usable, and billed all the same: thrown with the counts, so the call is
+        // priced at what the provider charged for it rather than recorded as costing nothing.
+        if (text.Length == 0)
+        {
+            throw new UnusableResearchAnswer(
+                $"The research model returned no answer for {section}: the finish reason was {finish} after {completion} " +
+                $"completion token(s), {reasoning} of them reasoning. A section stored from this would be empty.",
+                answer);
+        }
+
+        if (string.Equals(finish, "length", StringComparison.Ordinal))
+        {
+            throw new UnusableResearchAnswer(
+                $"The research model's answer for {section} stopped at its budget rather than ending, so what arrived is a " +
+                "section cut short and it is not stored.",
+                answer);
+        }
+
+        return answer;
     }
 
     // A refusal from the provider, with its own words where it sent any, at a length a

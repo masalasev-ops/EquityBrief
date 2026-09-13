@@ -27,6 +27,19 @@ public sealed record ResearchAnswer(
 // local model's is: a pass stops asking on it and carries on past a refusal.
 public sealed class ResearchModelUnavailable(string message) : Exception(message);
 
+// The research model answered, the provider counted and billed the tokens, and what came
+// back cannot be stored: no answer at all, or an answer cut off at its budget.
+//
+// A type of its own and carrying the answer's counts, because a refusal of this kind is
+// spend. 6.8 measured it: asked every section of one pass in the paid lane, three calls
+// came back with nothing usable after 8,192, 8,192 and 2,546 completion tokens, $0.0136
+// the provider billed against $0.0183 the calls it answered cost, and a ledger that
+// recorded them as nothing would have let research spend past a cap by that much.
+public sealed class UnusableResearchAnswer(string message, ResearchAnswer answer) : Exception(message)
+{
+    public ResearchAnswer Answer { get; } = answer;
+}
+
 // The paid lane's model.
 //
 // One interface with an implementation per wire format, chosen by configuration and
@@ -47,6 +60,18 @@ public interface IResearchModelFeed
     string Identity { get; }
 
     Task<ResearchAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default);
+
+    // Whether the provider answers at all, asked before a pass starts with a request
+    // that bills nothing. Null where it answers, and what happened where it does not.
+    // A pass does not start against a model that is not there, because one that
+    // fetched its documents and wrote its free sections before finding out is a pass
+    // that stopped rather than one that did not start.
+    // see: A research pass does not start where the research model does not answer
+    Task<string?> UnreachableAsync(CancellationToken cancellation = default);
+
+    // How many times the provider was asked whether it answers, which is a request
+    // and not a model call, so it is counted apart from `Requests`.
+    int Probes { get; }
 
     // What an answer cost, in dollars, from its own token counts.
     decimal Price(ResearchAnswer answer);

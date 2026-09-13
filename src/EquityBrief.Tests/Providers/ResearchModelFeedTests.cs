@@ -122,15 +122,24 @@ public class ResearchModelFeedTests
 
         Assert.Contains("creation instant", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(noInstant.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
 
+        // An answer cut off at its budget, or with nothing in it, was still counted and
+        // billed, so it is refused carrying its counts for the spend cap to price.
         var cut = JsonNode.Parse(Captured("research-probe-answered.json"))!;
         cut["choices"]![0]!["finish_reason"] = "length";
 
-        Assert.Contains("stopped at its budget", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(cut.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
+        var stopped = Assert.Throws<UnusableResearchAnswer>(() => OpenAiCompatibleResearchFeed.Parse(cut.ToJsonString(), "The two cases"));
+
+        Assert.Contains("stopped at its budget", stopped.Message, StringComparison.Ordinal);
+        Assert.Equal(cut["usage"]!["prompt_cache_miss_tokens"]!.GetValue<int>(), stopped.Answer.CacheMissTokens);
+        Assert.Equal(cut["usage"]!["completion_tokens"]!.GetValue<int>(), stopped.Answer.CompletionTokens);
 
         var empty = JsonNode.Parse(Captured("research-probe-thinking.json"))!;
         empty["choices"]![0]!["message"]!["content"] = "";
 
-        Assert.Contains("returned no answer", Assert.Throws<ProviderRefusal>(() => OpenAiCompatibleResearchFeed.Parse(empty.ToJsonString(), "The two cases")).Message, StringComparison.Ordinal);
+        var nothing = Assert.Throws<UnusableResearchAnswer>(() => OpenAiCompatibleResearchFeed.Parse(empty.ToJsonString(), "The two cases"));
+
+        Assert.Contains("returned no answer", nothing.Message, StringComparison.Ordinal);
+        Assert.True(nothing.Answer.ReasoningTokens > 0);
     }
 
     // ---- the price, derived by hand from the configured rates ----

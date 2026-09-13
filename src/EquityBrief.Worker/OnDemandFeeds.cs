@@ -28,15 +28,20 @@ namespace EquityBrief.Worker;
 // The fourth is the research model, from 6.7, which the spend cap holds for every
 // paid call: nothing takes it from this record but the cap.
 // see: Every paid call is made through the spend cap, which holds the research model
+//
+// The fifth is one name's own news, from 6.8, which a research pass reads. It is here
+// and not on the night's record, whose news is one dated query for the whole market.
 public sealed record OnDemandFeeds(
     IFundamentalsFeed Fundamentals,
     IFilingsArchiveFeed Archive,
     ILocalModelFeed LocalModel,
-    IResearchModelFeed ResearchModel)
+    IResearchModelFeed ResearchModel,
+    INameNewsFeed NameNews)
 {
     // What the open cost, read off the feeds. A caller that wrote the figure
-    // would be recording its own intention.
-    public int Requests => Fundamentals.Requests + Archive.Requests;
+    // would be recording its own intention. A probe of the research model is a
+    // request as well, and billed by nobody.
+    public int Requests => Fundamentals.Requests + Archive.Requests + NameNews.Requests + ResearchModel.Probes;
 
     // The same open in the units the provider bills in, which is one provider's
     // units and not both. The fundamentals endpoint weighs 10, measured at 6.1
@@ -47,7 +52,7 @@ public sealed record OnDemandFeeds(
     // arithmetic: a reader checking this figure against `Requests` should find the
     // difference explained.
     // see: The night's cost is counted in weighted calls against the stated daily allowance
-    public int WeightedCalls => Fundamentals.Requests * ProviderWeights.Fundamentals;
+    public int WeightedCalls => Fundamentals.Requests * ProviderWeights.Fundamentals + NameNews.Requests * ProviderWeights.News;
 
     // The model calls an open made, apart from its requests: a call to the operator's
     // own runtime is not a provider request and is billed by nobody, and the run log
@@ -59,7 +64,8 @@ public sealed record OnDemandFeeds(
             RecordedFundamentalsFeed.FromFolder(folder),
             new RecordedFilingsArchiveFeed(folder),
             new RecordedLocalModelFeed(folder),
-            new RecordedResearchModelFeed(folder, research));
+            new RecordedResearchModelFeed(folder, research),
+            new RecordedNameNewsFeed(folder));
 
     public static OnDemandFeeds Live(string? baseAddress, string? apiKey, string? archiveContact, LocalModelSettings local, ResearchModelSettings research) =>
         new(
@@ -72,7 +78,10 @@ public sealed record OnDemandFeeds(
             // see: The archive declares a contact in its user agent, and a blank one refuses at startup
             SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(archiveContact ?? string.Empty)),
             OpenAiCompatibleModelFeed.Live(local),
-            ResearchModelFeeds.Live(research));
+            ResearchModelFeeds.Live(research),
+            EodhdNameNewsFeed.Live(
+                string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress,
+                new ProviderCredentials(apiKey ?? string.Empty)));
 
     // The local lane's settings are taken on both paths, so a key configured for that
     // lane refuses a fixture run as it refuses a live one: the refusal is about the
@@ -101,5 +110,6 @@ public sealed record OnDemandFeeds(
         Fundamentals is not RecordedFundamentalsFeed
         || Archive is not RecordedFilingsArchiveFeed
         || LocalModel is not RecordedLocalModelFeed
-        || ResearchModel is not RecordedResearchModelFeed;
+        || ResearchModel is not RecordedResearchModelFeed
+        || NameNews is not RecordedNameNewsFeed;
 }

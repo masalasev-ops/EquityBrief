@@ -25,6 +25,122 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - ARCHITECTURE.html - the research runner's Reads cell names the research store
+
+Corrects: the research runner's catalogue row did not list the research store among what it reads, while its matrix row already gave it R W on research and theme. The runner reads each section's newest version to decide what a pass writes and which version comes next, and component-access refused the declaration that says so against the Reads cell. Found at 6.8, where the runner is built.
+Was:
+> <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, theme store, source documents</td>
+Now:
+> <tr><td><b>Research runner</b></td><td><span class="layer L-research">research</span></td><td>on demand, per name</td><td>facts, fundamentals, filings archive, news feed, research store, theme store, source documents</td>
+Why: the catalogue row and the matrix row now agree with each other and with the class, which is what component-access reconciles cell by cell.
+
+### 2026-09-13 - ARCHITECTURE.html - the facts assembler and the change detector run again for their night when an open fetches a name's fundamentals
+
+Authorised by: A name's facts file is assembled again for its night when an open fetches its fundamentals
+Was:
+> <tr><td><b>Facts assembler</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td>
+>
+> <tr><td><b>Change detector</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name</td>
+Now:
+> <tr><td><b>Facts assembler</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name, and for its night again when an open fetches a name's fundamentals</td>
+>
+> <tr><td><b>Change detector</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, per name, and for its night again when an open fetches a name's fundamentals</td>
+Why: the research verb runs both again after a fetch that stored a filing the night had not seen, so their Runs cells say so rather than stating a nightly schedule the verb departs from.
+
+### 2026-09-13 - ARCHITECTURE.html - figure 12.2, its key, the lane table's cause row and why each section sits in its lane
+
+Authorised by: The fixture comparison moved the cause of each large move into the paid lane on this machine
+Was:
+> <text x="192" y="236" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Classify and extract</text>
+> <text x="192" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">what caused each big move;</text>
+> <text x="192" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the business explainer and segments</text>
+>
+> <text x="512" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the two cases, the risks,</text>
+> <text x="512" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the short version at the top</text>
+>
+> <desc>Components fetch every document, then classification and extraction work goes to the local model while synthesis goes to the paid model. Both outputs pass the claim checker into one stored research record.</desc>
+>
+>   <p>Where the line falls is decided by one test: is the answer inside a single document, or does it have to be built across several that disagree. Naming what caused a large move is reading the few documents published inside it, which code has already picked out. The business explainer and the segment commentary are extraction from a filing already fetched. Both are small jobs a local model does reliably, and each call carries a few thousand tokens rather than the whole evidence set, which is what makes a consumer graphics card sufficient for that lane at all. Only the right-hand lane needs every document in memory at once, which is why the paid model does it. (see: A research pass is split by section difficulty, not run wholesale on one model)</p>
+>
+>   <tr><td>The cause of each large move</td><td>local</td><td>the largest moves of the stored year from the bars, each with its percentage change, the session it ended on and the session its change was measured from; then, for each move, which documents fetched for the name were published inside it. A move with no document inside it is not put to the model, and a section with none at all is not written</td>
+>
+> <p><b>Why each section sits in its lane.</b> The four local sections each have
+> their answer in one place: the few documents inside one move, one filing, the
+> segment table, or values already computed. Each call carries only those, a few
+> thousand tokens, which is what makes a consumer graphics card enough for that
+> lane. The five paid sections are built across documents that disagree.
+Now:
+> <text x="192" y="236" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Extract</text>
+> <text x="192" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the business explainer, the segments</text>
+> <text x="192" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">and the key under each figure</text>
+>
+> <text x="512" y="255" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">each move's cause, the two cases,</text>
+> <text x="512" y="272" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">the risks, the short version at the top</text>
+>
+> <desc>Components fetch every document, then extraction work goes to the local model while each move's cause and the synthesis go to the paid model. Both outputs pass the claim checker into one stored research record.</desc>
+>
+>   <p>Where the line falls is decided by one test: is the answer inside a single document, or does it have to be built across several that disagree. The business explainer and the segment commentary are extraction from a filing already fetched, and the key under each figure explains values already computed. Those are small jobs a local model does reliably, and each call carries a few thousand tokens rather than the whole evidence set, which is what makes a consumer graphics card sufficient for that lane at all. Naming what caused a large move reads the few documents code picked out inside it, which the test puts on the left, and the fixture comparison moved it right on this machine: over one evidence set the local model wrote figures from the articles that the facts file does not hold, again after being told why, where the paid model's first draft was accepted (see: The fixture comparison moved the cause of each large move into the paid lane on this machine). The right-hand lane needs every document in memory at once, which is why the paid model does it. (see: A research pass is split by section difficulty, not run wholesale on one model)</p>
+>
+>   <tr><td>The cause of each large move</td><td>paid</td><td>the largest moves of the stored year from the bars, each with its percentage change, the session it ended on and the session its change was measured from; then, for each move, the documents fetched for the name that were published inside it, at most two a move, naming the fewest companies and then the earliest (see: A research pass hands each section the documents code picks for it, the company's own filing first). A move with no document inside it is not put to the model, and a section with none at all is not written</td>
+>
+> <p><b>Why each section sits in its lane.</b> The three local sections each have
+> their answer in one place: one filing, the segment table, or values already
+> computed. Each call carries only those, a few thousand tokens, which is what makes
+> a consumer graphics card enough for that lane. The cause of each large move has its
+> answer in the few documents inside one move as well, and sits in the paid lane on
+> this machine because the comparison measured the local model failing it there. The
+> five other paid sections are built across documents that disagree.
+Why: the comparison ran every section both ways over one evidence set and the cause of each large move was accepted from the paid model and left out by the local one, so this machine's default lane is three sections and the figure, its key, the table's lane column and the paragraph beneath it say so. The cause row's first cell also says which documents a move is handed, which is the evidence decision's rule and is described here because it is the same row.
+
+### 2026-09-13 - ARCHITECTURE.html - the lane table's rows for the dated calendar items and the two cases say what each is handed and what a date is held to
+
+Authorised by: A research pass hands each section the documents code picks for it, the company's own filing first
+Was:
+>   <tr><td>The dated calendar items</td><td>paid</td><td>the name's stored filings and news. The provider's own earnings dates are on the calendar already and are not asked for again</td><td>one sentence per dated event the documents name that falls after the latest session</td><td>every sentence cites the stored document that dates the event, and every figure is a rounding of one in the facts file. The rule that a date must be one the facts file holds would refuse every date this section exists to state, since that file carries only the provider's next event, and what such a date is held to is settled when the first of these is written</td></tr>
+>
+>   <tr><td>The two cases</td><td>paid</td><td>the facts file, the name's stored filings and news, and the theme record, handed over together</td>
+Now:
+>   <tr><td>The dated calendar items</td><td>paid</td><td>the company's own filing and the documents published since it, as the two cases are handed, and the night the facts file was computed for. The provider's own earnings dates are on the calendar already and are not asked for again</td><td>one sentence per dated event the documents name that falls after that night</td><td>every date is one a document the sentence cites states, and falls after the night the facts file was computed for (see: A dated calendar item's date rests on a document the sentence cites and falls after the night the facts were computed for); every sentence cites that document; every figure is a rounding of one in the facts file</td></tr>
+>
+>   <tr><td>The two cases</td><td>paid</td><td>the facts file, the company's own filing and at most six documents published since it naming the fewest companies, and the theme record where one is stored, handed over together</td>
+Why: the two rows named the name's stored filings and news handed over together, which is not what a pass hands: a year of one name's news is millions of characters, so each section is handed what the rule picks. The calendar row's last cell also states the rule its dates are held to, which A dated calendar item's date rests on a document the sentence cites and falls after the night the facts were computed for settles, and which that cell had said would be settled when the first of these was written.
+
+### 2026-09-13 - RUNBOOK.md - the research model's answer budget is 32,768 tokens
+
+Corrects: the shipped answer budget of 8,192 tokens was too small for the research model with its reasoning on. Over 6.8's first passes, four of the paid calls ran to the end of the budget and returned nothing a section could store, the two cases and the short version among them, each still billed; at 32,768 none did, and the longest used 12,741. Found at 6.8, which makes the first passes.
+Was:
+> | the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `8192` |
+Now:
+> | the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
+Why: a budget a call reasons past returns no answer and is billed anyway, so the budget is set above what the measured calls used. The ceiling a call is judged by grows with it, which costs research refused inside a larger margin of a cap.
+
+### 2026-09-13 - RUNBOOK.md - the local lane's default is three sections
+
+Authorised by: The fixture comparison moved the cause of each large move into the paid lane on this machine
+Was:
+> | the sections the local lane holds | `EquityBrief:Models:LocalLane`, one entry per section in figure 12.2's own names | the cause of each large move, what the company sells, the segment commentary, the key under each figure |
+Now:
+> | the sections the local lane holds | `EquityBrief:Models:LocalLane`, one entry per section in figure 12.2's own names | what the company sells, the segment commentary, the key under each figure |
+Why: the table states the code's default and a test reads the two against each other.
+
+### 2026-09-13 - SCHEMA.md - a paid call's row is named for its round, and a refused call the provider billed carries its price
+
+Corrects: the paid call row said a refused call spends nothing, and 6.8's comparison measured three refusals the provider had counted and billed, $0.0136 of spend the ledger would not have held. It also said one section's call in one pass is one row, and a pass that writes a section again inside the same run writes a second call for it, which the run log's key refuses without the round in the stage. Found at 6.8, which makes the first passes.
+Was:
+> **A paid call is a row of its own, and the rows are the ledger.** The spend cap writes one row for every call it judges, under the pass's run, with the stage `research call:` followed by the section asked for, so one section's call in one pass is one row. `ok` carries what the call cost in `spend`, one model call and one network request; `paused` is a call a cap refused before it was made, counting nothing and spending nothing; `refused` and `unavailable` are calls the provider declined or did not answer, counting the attempt and spending nothing.
+Now:
+> **A paid call is a row of its own, and the rows are the ledger.** The spend cap writes one row for every call it judges, under the pass's run, with the stage `research call:` followed by the section asked for, and from 6.8 the round where a pass asks for a section again inside the same run, as `research call: The two cases, round 2`, so one section's call in one round of one pass is one row. `ok` carries what the call cost in `spend`, one model call and one network request; `paused` is a call a cap refused before it was made, counting nothing and spending nothing; `unavailable` is a call the provider did not answer, counting the attempt and spending nothing; `refused` is a call the provider declined, which spends nothing, or answered with nothing a section could store, which the provider counted and billed and which carries that price in `spend`.
+Why: a ledger that records a billed call as nothing lets research spend past a cap by what that call cost, and a stage that repeats inside a run is a row the store refuses.
+
+### 2026-09-13 - SCHEMA.md - the newest filing's payload carries the company's identifier at the archive
+
+Corrects: the payload's description named what it holds, and from 6.8 it also holds the identifier a research pass reads the company's own release from the archive by, which nothing else in the store carries. Found at 6.8, where the runner first needs it.
+Was:
+> `payload` holds the quarter's figures, the balance sheet, and the margin computed from that filing's own revenue and gross profit.
+Now:
+> `payload` holds the quarter's figures, the balance sheet, and the margin computed from that filing's own revenue and gross profit, and on the newest filing's row the company's identifier at the filings archive, from 6.8, which a research pass reads the company's own release by.
+Why: a column's description that omits a key its readers depend on is a key the next reader finds by accident.
+
 ### 2026-09-13 - BUILD_PLAN.md - the research model's live transport is 6.7's, and 6.6 counted the first model call
 
 Corrects: two sentences in phase 6's checkpoints that were wrong when 6.0 wrote them. 6.8 held the live implementation behind 6.7's interface, and 6.7's own deliverable prices a call from the provider's counts for the request as sent, which can only be captured through the transport that sends it, so 6.7 wrote the transport and 6.8's text described work already done. And 6.7 said the run log's `model_calls` carries a figure other than zero for the first time there, where 6.6's local lane counts every call it makes. Found at 6.7, the first while the recordings were captured through the feed and the second while its PROGRESS entry was checked against the store.

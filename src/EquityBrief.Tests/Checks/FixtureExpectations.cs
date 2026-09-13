@@ -2037,10 +2037,11 @@ public partial class FixtureExpectations
         // its note at 6.2 and it caught that, the admissibility file added its note
         // at 6.3 and it caught that, the claims file added its note at 6.4 and it
         // caught that, the staleness file added its note at 6.5 and it caught
-        // that, and the prose file added its statement of what it froze at 6.6 and
-        // it caught that. Which is what it is for.
+        // that, the prose file added its statement of what it froze at 6.6 and
+        // it caught that, and the research record added its own at 6.8 and it caught
+        // that. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "prose.frozen", "series-state.note", "staleness.note", "stored-filings.note"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "prose.frozen", "research-record.frozen", "series-state.note", "staleness.note", "stored-filings.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

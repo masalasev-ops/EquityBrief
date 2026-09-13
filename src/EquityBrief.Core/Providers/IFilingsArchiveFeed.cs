@@ -136,6 +136,18 @@ public sealed record FiledGuidance(
     public bool Located => Passage is { Length: > 0 };
 }
 
+// The earnings release as a document a research pass may rest a claim on: the
+// address it is published at, the file it was filed as, the date the filing it is an
+// exhibit to was filed, and its text as the archive's reader turns the markup into
+// prose.
+//
+// Carried beside the guidance rather than instead of it, from 6.8. The route already
+// fetched the exhibit to locate management's own forecast, and the release is the
+// company's own account of the quarter, which is what the research runner's sections
+// rest on first. The address is the document's own on the archive's document host,
+// which a reader can open, and never a request url.
+public sealed record FiledRelease(string Url, string Document, DateOnly FiledOn, string Text);
+
 // One figure the archive holds, under the concept it was filed against.
 //
 // `Frame` is the period the archive assigns, present only on the facts it treats
@@ -182,7 +194,8 @@ public sealed record ArchiveFilings(
     IReadOnlyList<ArchiveFact> Facts,
     FiledDocument? Transcript,
     IReadOnlyList<string> PartsNotCarried,
-    int SegmentReportsRead);
+    int SegmentReportsRead,
+    FiledRelease? Release = null);
 
 // One name's filings, from the archive, on demand.
 //

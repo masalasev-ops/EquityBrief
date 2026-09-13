@@ -157,6 +157,68 @@ public class FixtureReplay
         return store;
     }
 
+    // The name the fixture's research pass is recorded for.
+    internal const string ResearchName = "KEYS";
+
+    // The whole pipeline a fixture can replay, the stages an open runs included: the
+    // night, the fundamentals the opens fetched, the night's facts assembled again once
+    // those are stored as the research verb does after a fetch, and one research pass for
+    // the name the recordings are for, over the recorded news, filings and both models.
+    // see: A name's facts file is assembled again for its night when an open fetches its fundamentals
+    //
+    // Apart from the replay above rather than inside it, because the claim and staleness
+    // expectations construct that name's sections from version one over the replayed
+    // store, and a pass that had written them first would collide with every one. The
+    // lane and the option are the comparison's: the same evidence asked with every
+    // section paid, or every section local, reads recordings of its own.
+    internal static async Task<TemporaryStore> ResearchedAsync(
+        IReadOnlyList<string>? lane = null,
+        bool paidForLocal = false,
+        RecordedLocalModelFeed? local = null,
+        RecordedResearchModelFeed? paid = null)
+    {
+        var store = await ReplayedForResearchAsync();
+
+        await Researcher(store, FixedClock.At(Night, SessionZones.UnitedStates), lane, local, paid).RunAsync(ResearchName, "replay-research", new ResearchPassRequest(PaidForLocal: paidForLocal));
+
+        return store;
+    }
+
+    // The store a research pass over the fixture starts from: the replay, and the night's
+    // facts assembled again and its changes read again once the opens' fundamentals are
+    // stored, which is what the research verb does after a fetch.
+    internal static async Task<TemporaryStore> ReplayedForResearchAsync()
+    {
+        var store = await ReplayedAsync();
+        var night = FixedClock.At(Night, SessionZones.UnitedStates);
+
+        await new FactsAssembler(night, store.DatabaseFile).RunAsync("replay-facts-after-fundamentals");
+        await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes-after-fundamentals");
+
+        return store;
+    }
+
+    // The research runner over the fixture's recordings, as the verb composes it.
+    internal static ResearchRunner Researcher(
+        TemporaryStore store,
+        IClock clock,
+        IReadOnlyList<string>? lane = null,
+        RecordedLocalModelFeed? local = null,
+        IResearchModelFeed? paid = null,
+        Core.Spending.SpendCaps? caps = null,
+        ILocalModelFeed? localModel = null,
+        LocalModelSettings? localSettings = null) =>
+        new(
+            new StalenessJudge(clock, store.DatabaseFile),
+            sections => new ProseWriter(localModel ?? local ?? new RecordedLocalModelFeed(Folder()), localSettings ?? new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            new SpendCap(paid ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile),
+            new ClaimChecker(clock, store.DatabaseFile),
+            new RecordedFilingsArchiveFeed(Folder()),
+            new RecordedNameNewsFeed(Folder()),
+            lane ?? ProseWriter.DefaultLane,
+            clock,
+            store.DatabaseFile);
+
     // The names the replay's prose pass is for: those holding a facts file on the
     // replayed night, less the name the prose fixture writes its own sections for.
     // Read from the store and from that fixture rather than listed, so a name added
@@ -285,7 +347,9 @@ public class FixtureReplay
         var awaited = Awaited();
 
         Assert.True(named.Count >= 5, $"Read {named.Count} expectations, expected at least 5.");
-        Assert.NotEmpty(awaited);
+
+        // Empty from 6.8, which wrote the one table an expectation awaited, and the loop
+        // below still holds any added later to the terms it held that one to.
 
         var covering = named
             .Where(entry => entry.Value.Length == 0 && !awaited.ContainsKey(entry.Key))
@@ -294,7 +358,7 @@ public class FixtureReplay
 
         Assert.DoesNotContain(covering, _ => true);
 
-        using var store = await ReplayedAsync();
+        using var store = await ResearchedAsync();
         var populated = Populated(store).ToHashSet(StringComparer.Ordinal);
         var declared = StoreSchema.DeclaredTables(Corpus.Read("docs/SCHEMA.md"));
         var plan = Corpus.Read("docs/BUILD_PLAN.md");
@@ -324,7 +388,7 @@ public class FixtureReplay
         var named = Named();
         var covered = named.Values.SelectMany(tables => tables).ToHashSet(StringComparer.Ordinal);
 
-        using var store = await ReplayedAsync();
+        using var store = await ResearchedAsync();
 
         var populated = Populated(store).Except(NotAFigure, StringComparer.Ordinal).ToArray();
 
@@ -349,7 +413,7 @@ public class FixtureReplay
 
         Assert.True(named.Count >= 4, $"Read {named.Count} expectations, expected at least 4.");
 
-        using var store = await ReplayedAsync();
+        using var store = await ResearchedAsync();
         var populated = Populated(store).ToHashSet(StringComparer.Ordinal);
 
         var missing = named
@@ -367,7 +431,7 @@ public class FixtureReplay
         // The permanent proof that the forward direction can fail, over
         // constructed input rather than by breaking the fixture. A table nobody
         // named is exactly what this check exists to find, so it is planted.
-        using var store = await ReplayedAsync();
+        using var store = await ResearchedAsync();
 
         var covered = Named().Values.SelectMany(tables => tables).ToHashSet(StringComparer.Ordinal);
         var populated = Populated(store).Except(NotAFigure, StringComparer.Ordinal).ToArray();

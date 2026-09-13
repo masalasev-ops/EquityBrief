@@ -144,7 +144,7 @@ The local model takes settings and never a key. Each has a default measured on t
 | which model answers | `EquityBrief:Models:Local:Model` | `qwen/qwen3.5-9b` |
 | how long one section call may take, in seconds | `EquityBrief:Models:Local:TimeoutSeconds` | `300` |
 | the context the model is loaded with, in tokens | `EquityBrief:Models:Local:ContextTokens` | `50176` |
-| the sections the local lane holds | `EquityBrief:Models:LocalLane`, one entry per section in figure 12.2's own names | the cause of each large move, what the company sells, the segment commentary, the key under each figure |
+| the sections the local lane holds | `EquityBrief:Models:LocalLane`, one entry per section in figure 12.2's own names | what the company sells, the segment commentary, the key under each figure |
 
 **Set the context to what the runtime reports for the loaded model**, not to what the model could hold. A section whose prompt and answer would not fit is refused before any call and left for the paid path, and the run log names it with the estimate it was refused on; a context set above what is loaded lets the call go out, and the runtime refuses it with a 400 naming its own count instead. A value that is not a whole number is refused rather than read as the default.
 
@@ -163,7 +163,7 @@ The research model is the one part of the system that costs money, and nothing i
 | which model answers | `EquityBrief:Models:Research:Model` | `deepseek-flash` |
 | the provider's own request fields, written as the JSON object it takes | `EquityBrief:Models:Research:Options` | none |
 | how long one call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
-| the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `8192` |
+| the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
 | dollars per million prompt tokens the provider serves from its cache | `EquityBrief:Models:Research:Prices:CacheHit` | `0.003` |
 | dollars per million prompt tokens it does not | `EquityBrief:Models:Research:Prices:CacheMiss` | `0.15` |
 | dollars per million output tokens, reasoning included | `EquityBrief:Models:Research:Prices:Output` | `0.60` |
@@ -178,6 +178,22 @@ The research model is the one part of the system that costs money, and nothing i
 **A model with no prices is refused at startup**, rather than called and recorded as costing nothing, and so is a rate at or below zero for the uncached prompt or the output, a peak window whose start is not before its end, a multiple below one, a day that is not a day of the week, and options that set the model, the messages, the answer's budget or the stream, which the feed writes itself. The shipped rates are what the provider's page gave on 2026-09-13 for the shipped model. When the provider changes a price, these values are what change, and a call already made keeps the price its run log row recorded (see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in).
 
 **Both caps are proposals**, marked so in section 17, and the obligation that settles them fires on the run page once twenty research passes carry a recorded cost. A cap stops research rather than warning about it: a call is refused before it is made where the most it could cost would take the day or the month past its cap, research resumes when that UTC day or month ends, and the name page says research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
+
+### Writing one name's research
+
+A pass writes one name's research: the sections not yet written, the ones gone stale, and the ones left out on an earlier day. The name page's control starts it, and so does this, from the repository root, which is all the control does:
+
+```
+dotnet run --project src/EquityBrief.Worker -- research --ticker KEYS
+```
+
+`--refresh` writes every section again, and `--paid-for-local` has the research model write the local lane's sections as well, which is the page's option where the local model is unavailable or cannot hold one. `--live` and `--fixture <folder>` choose the source for one run, as they do for the night.
+
+**What it does, in order.** It fetches the name's fundamentals where the store holds none, and where that stores a filing the night had not seen it assembles the night's facts file again, so the pass writes from the quarter it just fetched (see: A name's facts file is assembled again for its night when an open fetches its fundamentals). It asks the staleness judge which sections stand. Where the paid lane has work it asks the research model whether it answers, and does not start where it does not (see: A research pass does not start where the research model does not answer). It fetches the name's news for the stored year and its latest results release from the filings archive, tests each document for admissibility as it arrives and stores it with the verdict. It hands each section the documents code picks for it: two a move for the cause of each move, and six since the release beside the release itself for the sections built across the evidence (see: A research pass hands each section the documents code picks for it, the company's own filing first). The local lane writes its sections, the spend cap makes every paid call, and the claim checker reads each section; a section refused once is written once more in the same pass, and the short version is written last, from the sections already accepted.
+
+**What a pass costs.** Over the fixture's KEYS a pass wrote all eight sections it could write, three on the local model and five through the spend cap for $0.0201, in about two and a half minutes. A second press on the same day writes nothing, because every section it would write was written or left out today, and a press while a pass for the name is running is refused by name. The industry cycle waits for the theme record, which the theme research runner writes.
+
+**Where to look.** Every stage of a pass is a row on the run log under one run, `research-<instant>-<TICKER>`: `fundamentals`, `staleness`, `prose`, one `research call:` row per paid call, `claims`, the second and third rounds' rows named for their round, and `research` last, whose detail says what was written, what was not and why, and what the documents came to.
 
 ---
 

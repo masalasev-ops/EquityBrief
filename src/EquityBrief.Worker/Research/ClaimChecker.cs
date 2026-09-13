@@ -109,7 +109,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     // have been written from, and a later file carrying tomorrow's close would
     // refuse a sentence that was right when it was written.
     const string FactsFor = @"
-        SELECT payload
+        SELECT payload, session_date
         FROM facts
         WHERE ticker = $ticker AND session_date <= $as_of AND payload != ''
         ORDER BY session_date DESC
@@ -151,7 +151,11 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
             $rows_written, 0, 0, '0', $detail);
     ";
 
-    public async Task<ClaimCheckOutcome> RunAsync(string runId, CancellationToken cancellation = default)
+    // The stage a round of a pass writes its row under, for the reason the prose
+    // writer's is: one row per run per stage, and a pass checks more than once.
+    public static string StageFor(string? round) => round is null ? Stage : Stage + ", " + round;
+
+    public async Task<ClaimCheckOutcome> RunAsync(string runId, string? round = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
 
@@ -189,7 +193,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
 
         record.CommandText = AppendRun;
         record.Parameters.AddWithValue("$run_id", runId);
-        record.Parameters.AddWithValue("$stage", Stage);
+        record.Parameters.AddWithValue("$stage", StageFor(round));
         record.Parameters.AddWithValue("$started_at", Instant(startedAt));
         record.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
         record.Parameters.AddWithValue("$rows_written", written);
@@ -249,11 +253,11 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         // theme section is held against none and every figure in it is refused,
         // which is the rule as written and is carried to the checkpoint that first
         // writes one (owes: A theme section's figures checked against a facts file a theme has).
-        var facts = theme
-            ? []
+        var (facts, night) = theme
+            ? ([], null)
             : await FactsAsync(connection, transaction, pending.Subject, pending.AsOf, cancellation);
 
-        var verdict = ClaimRules.Check(pending.Section, pending.Prose, facts, sources);
+        var verdict = ClaimRules.Check(pending.Section, pending.Prose, facts, sources, night);
 
         if (verdict.Passes)
         {
@@ -355,7 +359,9 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
             : null;
     }
 
-    static async Task<IReadOnlyList<Fact>> FactsAsync(
+    // The facts file with the night it was computed for, which the calendar section's
+    // dates are held after.
+    static async Task<(IReadOnlyList<Fact> Facts, DateOnly? Night)> FactsAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         string ticker,
@@ -369,9 +375,11 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$as_of", asOf);
 
-        return await command.ExecuteScalarAsync(cancellation) is string payload
-            ? FactsFile.Read(payload)
-            : [];
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation)
+            ? (FactsFile.Read(reader.GetString(0)), DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture))
+            : ([], null);
     }
 
     static async Task<StoredDocument?> DocumentAsync(

@@ -65,9 +65,22 @@ public sealed class SpendCap(
             0, $model_calls, $network_requests, $spend, $detail);
     ";
 
-    public static string StageFor(string section) => Stage + ": " + section;
+    public static string StageFor(string section, string? round = null) =>
+        round is null ? Stage + ": " + section : Stage + ": " + section + ", " + round;
 
-    public async Task<PaidCall> AskAsync(ModelRequest request, string runId, CancellationToken cancellation = default)
+    // The model a paid section records as its writer, which is the model the cap holds
+    // and the options it is asked with. Read through the cap because nothing else holds
+    // the research model.
+    public string Model => model.Identity;
+
+    // Whether the research model answers, asked through the cap for the same reason.
+    // A probe bills nothing, so it is not judged against the caps and writes no row of
+    // its own: the pass that asked counts it among its requests.
+    public Task<string?> UnreachableAsync(CancellationToken cancellation = default) => model.UnreachableAsync(cancellation);
+
+    public int Probes => model.Probes;
+
+    public async Task<PaidCall> AskAsync(ModelRequest request, string runId, string? round = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
 
@@ -81,7 +94,7 @@ public sealed class SpendCap(
         {
             // Refused before the call, with the line the page states, so the run page
             // shows a pass that was stopped rather than a pass that did nothing.
-            await RecordAsync(connection, runId, request, startedAt, PausedOutcome, 0, 0m, new
+            await RecordAsync(connection, runId, request, round, startedAt, PausedOutcome, 0, 0m, new
             {
                 section = request.Section,
                 paused = verdict.Line,
@@ -99,13 +112,34 @@ public sealed class SpendCap(
         {
             answer = await model.CompleteAsync(request, cancellation).ConfigureAwait(false);
         }
+        catch (UnusableResearchAnswer unusable)
+        {
+            // Answered, billed, and not usable. The provider counted the tokens, so the
+            // row carries what they cost and the ledger the next call is judged by holds it.
+            var billed = model.Price(unusable.Answer);
+
+            await RecordAsync(connection, runId, request, round, startedAt, Refused, 1, billed, new
+            {
+                section = request.Section,
+                failed = unusable.Message,
+                model = model.Identity,
+                created = unusable.Answer.Created.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                cacheHitTokens = unusable.Answer.CacheHitTokens,
+                cacheMissTokens = unusable.Answer.CacheMissTokens,
+                completionTokens = unusable.Answer.CompletionTokens,
+                reasoningTokens = unusable.Answer.ReasoningTokens,
+                price = Money(billed),
+            }, cancellation);
+
+            return new PaidCall(null, billed, verdict, unusable.Message);
+        }
         catch (Exception failure) when (failure is ResearchModelUnavailable or ProviderRefusal)
         {
             // Nothing arrived, so nothing was counted and nothing is priced. The row says
             // a call was attempted, which is what the run page is for.
             var outcome = failure is ResearchModelUnavailable ? Unavailable : Refused;
 
-            await RecordAsync(connection, runId, request, startedAt, outcome, 1, 0m, new
+            await RecordAsync(connection, runId, request, round, startedAt, outcome, 1, 0m, new
             {
                 section = request.Section,
                 failed = failure.Message,
@@ -116,7 +150,7 @@ public sealed class SpendCap(
 
         var price = model.Price(answer);
 
-        await RecordAsync(connection, runId, request, startedAt, Paid, 1, price, new
+        await RecordAsync(connection, runId, request, round, startedAt, Paid, 1, price, new
         {
             section = request.Section,
             model = model.Identity,
@@ -158,6 +192,7 @@ public sealed class SpendCap(
         SqliteConnection connection,
         string runId,
         ModelRequest request,
+        string? round,
         DateTimeOffset startedAt,
         string outcome,
         int calls,
@@ -169,7 +204,7 @@ public sealed class SpendCap(
 
         command.CommandText = AppendCall;
         command.Parameters.AddWithValue("$run_id", runId);
-        command.Parameters.AddWithValue("$stage", StageFor(request.Section));
+        command.Parameters.AddWithValue("$stage", StageFor(request.Section, round));
         command.Parameters.AddWithValue("$started_at", startedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", outcome);

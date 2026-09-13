@@ -269,6 +269,10 @@ public sealed class ReadApi : IComponent
     public const string PaidCallStage = "research call";
     public const string PaidOutcome = "ok";
 
+    // What the spend cap writes for a call that cost nothing, which is money as the
+    // invariant culture writes a zero.
+    public const string NothingSpent = "0";
+
     // What the run log says was spent between two instants, as stored.
     const string SpentBetween = @"
         SELECT started_at, spend
@@ -276,12 +280,15 @@ public sealed class ReadApi : IComponent
         WHERE started_at >= $from AND started_at < $to;
     ";
 
-    // Every paid call the log carries a cost for: the spend cap's rows that were
-    // answered, by the stage's own prefix and the outcome the cap writes.
+    // Every paid call the log carries a cost for: the spend cap's rows, by the stage's
+    // own prefix, that carry a price. That is every answered call and, from 6.8, every
+    // call the provider answered with nothing usable and billed all the same, which is a
+    // refusal carrying a cost. A call refused before it was made, or never answered,
+    // carries none.
     const string PaidCallSpends = @"
         SELECT run_id, spend
         FROM run_log
-        WHERE substr(stage, 1, length($prefix)) = $prefix AND outcome = $paid;
+        WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing;
     ";
 
     // The newest accepted version of each of a name's sections.
@@ -1336,7 +1343,7 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = PaidCallSpends;
         command.Parameters.AddWithValue("$prefix", PaidCallStage + ":");
-        command.Parameters.AddWithValue("$paid", PaidOutcome);
+        command.Parameters.AddWithValue("$nothing", NothingSpent);
 
         var spends = new List<(string, decimal)>();
 
