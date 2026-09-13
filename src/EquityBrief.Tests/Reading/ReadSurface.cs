@@ -2907,7 +2907,7 @@ public class ReadSurface
 
         Assert.True(twice.Success);
         Assert.Contains("rejected twice", twice.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("68.4%", twice.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("66.3%", twice.Groups[1].Value, StringComparison.Ordinal);
 
         // No admissible source: the line says so in the words section 18 uses.
         var none = Regex.Match(region, "<p class=\"left-out\" data-section=\"The two cases\">([^<]*)</p>");
@@ -2961,7 +2961,7 @@ public class ReadSurface
         Assert.Contains("data-subject=\"KEYS\" data-section=\"The key under each figure\"", region, StringComparison.Ordinal);
         Assert.Contains("data-subject=\"KEYS\" data-section=\"The two cases\"", region, StringComparison.Ordinal);
         Assert.Contains("data-subject=\"test and measurement\" data-section=\"The industry cycle\"", region, StringComparison.Ordinal);
-        Assert.Contains("68.4%", region, StringComparison.Ordinal);
+        Assert.Contains("66.3%", region, StringComparison.Ordinal);
 
         // The day before is its own night.
         Assert.DoesNotContain("The risks, each with what would confirm it", region, StringComparison.Ordinal);

@@ -11,7 +11,7 @@
   "ticker": "KEYS",
   "verdicts": {
     "a clean computed paragraph": { "status": "accepted", "reason": null },
-    "a poisoned paragraph": { "status": "rejected", "reason": "a figure the facts file does not hold", "offending": "68.4%" },
+    "a poisoned paragraph": { "status": "rejected", "reason": "a figure the facts file does not hold", "offending": "66.3%" },
     "a clean researched paragraph": { "status": "accepted", "reason": null },
     "an unsourced claim": { "status": "rejected", "reason": "a sentence naming no document", "offending": "Analysts expect the next design cycle to be the strongest in five years." },
     "a claim resting on a refused document": { "status": "rejected", "reason": "a citation to a document admissibility refused", "offending": "D2 (algorithmic price forecast)" },

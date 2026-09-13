@@ -180,7 +180,7 @@ public partial class ClaimAdmissibility
         // Exactly that figure and nothing else, which is what the one change in
         // the fixture buys: a checker that found something wrong somewhere in
         // eleven figures would pass a looser assertion.
-        Assert.Equal($"{ClaimRules.UnmatchedFigure}: 68.4%", row.Reason);
+        Assert.Equal($"{ClaimRules.UnmatchedFigure}: 66.3%", row.Reason);
     }
 
     [Fact]
@@ -285,9 +285,9 @@ public partial class ClaimAdmissibility
         // Both attempts' offending text, the first on its own row and the second
         // on the fallback, and the run log line naming both, which is section
         // 18's promise.
-        Assert.Contains("68.4%", rows[0].Reason!, StringComparison.Ordinal);
+        Assert.Contains("66.3%", rows[0].Reason!, StringComparison.Ordinal);
         Assert.StartsWith(ClaimChecker.RejectedTwice, rows[1].Reason!, StringComparison.Ordinal);
-        Assert.Contains("68.4%", rows[1].Reason!, StringComparison.Ordinal);
+        Assert.Contains("66.3%", rows[1].Reason!, StringComparison.Ordinal);
 
         var detail = RunLogDetail(store, "check-second");
 

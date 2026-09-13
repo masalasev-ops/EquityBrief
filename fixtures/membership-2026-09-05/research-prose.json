@@ -14,8 +14,8 @@
       "name": "a poisoned paragraph",
       "section": "The key under each figure",
       "sources": [],
-      "prose": "Keysight closed at 333.42, above its 50-day average of 326.21 and well above the 200-day average of 289.31. Revenue for the quarter ended 2026-07-31 was $1.85 billion, with a gross margin of 68.4% and a net margin of 21.5%. The shares trade at 45.9 times trailing earnings of 7.38 a share.",
-      "carries": "the clean paragraph above with one figure changed, a gross margin of 68.4% where the facts file holds 0.658722. One and only one, so the rejection is asserted to name exactly that figure rather than to have found something wrong somewhere in a paragraph of eleven."
+      "prose": "Keysight closed at 333.42, above its 50-day average of 326.21 and well above the 200-day average of 289.31. Revenue for the quarter ended 2026-07-31 was $1.85 billion, with a gross margin of 66.3% and a net margin of 21.5%. The shares trade at 45.9 times trailing earnings of 7.38 a share.",
+      "carries": "the clean paragraph above with one figure changed, a gross margin of 66.3% where the facts file holds 0.658722. A near miss rather than an absurd figure, 0.43 of a point from the true margin, because the wrong figure a writer produces is a slip of rounding far more often than an invention, and a poison further away would be refused by a checker that had stopped reading the precision the prose states. One and only one, so the rejection is asserted to name exactly that figure rather than to have found something wrong somewhere in a paragraph of eleven."
     },
     {
       "name": "a clean researched paragraph",
