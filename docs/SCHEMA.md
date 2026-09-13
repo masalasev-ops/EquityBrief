@@ -352,21 +352,42 @@ Grain: one row per ticker, section and version.
 | Column | Type | Notes |
 |---|---|---|
 | `ticker` | TEXT | |
-| `section` | TEXT | which of the report's sections this is |
+| `section` | TEXT | which of the report's sections this is, named as figure 12.2's lane table names it |
 | `version` | INTEGER | increments; earlier versions are kept |
 | `as_of` | TEXT | date this section was written |
 | `model` | TEXT | which model wrote it |
 | `status` | TEXT | `pending`, `accepted`, `rejected`, `fallback` |
-| `prose` | TEXT | |
-| `source_ids` | TEXT | JSON list of `source_document` ids |
-| `reject_reason` | TEXT | null unless rejected |
+| `prose` | TEXT | empty where the section had no admissible source to be written from |
+| `source_ids` | TEXT | JSON list of `source_document` ids, in the order the prose cites them |
+| `reject_reason` | TEXT | null unless rejected or fallback |
 
 Primary key: `ticker`, `section`, `version`.
 
 **A record is written and dated per section, not as a whole.** Some sections are drafted overnight by the local model and others written days later by the paid model, so a single as-of date and a single model name for a whole record would be false.
 
+**The four statuses are two outcomes and two waypoints.** A writer inserts a version as `pending`, and only the checker moves it. `accepted` is a section a reader is shown. `rejected` is a first attempt the checker refused, which the writer may try once more as the next version. `fallback` is a section left out: a second consecutive refusal on the same as-of date, or a first check of a section whose source list holds no admitted document, which is sent there directly because rewriting cannot create a source. A version whose previous one is `fallback` is a fresh first attempt, so the retry is bounded per pass rather than per section for all time. The store refuses any other status, because a status nobody declared is a section no surface knows how to draw. Settled at 6.4, where the checker that moves them is built.
+
+**The checker writes two columns and no more.** Its update names `status` and `reject_reason`, so the prose, the model, the date and the source list a writer inserted are the ones a reader is shown, and a checker that rewrote any of them would be a second writer of the section. `claim-admissibility` asserts the statement's column set.
+
 ### theme_section
-Grain: one row per theme, section and version. Same columns as `research_section` with `theme` in place of `ticker`, plus `industries` holding the industries that map to this theme.
+Grain: one row per theme, section and version.
+
+| Column | Type | Notes |
+|---|---|---|
+| `theme` | TEXT | |
+| `section` | TEXT | which of the report's sections this is, named as figure 12.2's lane table names it |
+| `version` | INTEGER | increments; earlier versions are kept |
+| `as_of` | TEXT | date this section was written |
+| `model` | TEXT | which model wrote it |
+| `status` | TEXT | `pending`, `accepted`, `rejected`, `fallback` |
+| `prose` | TEXT | empty where the section had no admissible source to be written from |
+| `source_ids` | TEXT | JSON list of `source_document` ids, in the order the prose cites them |
+| `reject_reason` | TEXT | null unless rejected or fallback |
+| `industries` | TEXT | JSON list of the industries that map to this theme |
+
+Primary key: `theme`, `section`, `version`.
+
+Its columns were described until 6.4 as `research_section`'s with `theme` in place of `ticker` and `industries` added, and 6.4 wrote them out because a table in the store has to be comparable against this file column by column, and a description by difference cannot be compared against anything. The statuses mean what they mean on `research_section` and the checker writes the same two columns.
 
 ### source_document
 Grain: one row per fetched document.

@@ -448,6 +448,49 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The research store and the theme store, one row per section per version.
+    //
+    // Created together because they are one shape with a different subject, and
+    // the checker that moves a section between statuses reads and writes both.
+    // Every version is kept and nothing deletes one: a section rewritten next
+    // month is a new version beside this one, which is what lets a reader see
+    // what the report said at the time.
+    //
+    // The status is guarded in the table rather than only in the checker. A
+    // status nobody declared is a section no surface knows how to draw, and a
+    // check constraint is what makes that a refusal at the write rather than a
+    // row the page silently skips. `prose` and `source_ids` are not null and may
+    // be empty, because a section with no admissible source to be written from is
+    // still a row, the one that records it was left out and why.
+    const string CreateResearchSections = @"
+        CREATE TABLE research_section (
+            ticker         TEXT NOT NULL,
+            section        TEXT NOT NULL,
+            version        INTEGER NOT NULL,
+            as_of          TEXT NOT NULL,
+            model          TEXT NOT NULL,
+            status         TEXT NOT NULL CHECK (status IN ('pending', 'accepted', 'rejected', 'fallback')),
+            prose          TEXT NOT NULL,
+            source_ids     TEXT NOT NULL,
+            reject_reason  TEXT,
+            PRIMARY KEY (ticker, section, version)
+        ) STRICT;
+
+        CREATE TABLE theme_section (
+            theme          TEXT NOT NULL,
+            section        TEXT NOT NULL,
+            version        INTEGER NOT NULL,
+            as_of          TEXT NOT NULL,
+            model          TEXT NOT NULL,
+            status         TEXT NOT NULL CHECK (status IN ('pending', 'accepted', 'rejected', 'fallback')),
+            prose          TEXT NOT NULL,
+            source_ids     TEXT NOT NULL,
+            reject_reason  TEXT,
+            industries     TEXT NOT NULL,
+            PRIMARY KEY (theme, section, version)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -470,6 +513,7 @@ public static class SchemaMigrations
         new Migration(18, "create news_pulse", CreateNewsPulse),
         new Migration(19, "create fundamentals", CreateFundamentals),
         new Migration(20, "create source_document", CreateSourceDocument),
+        new Migration(21, "create research_section and theme_section", CreateResearchSections),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

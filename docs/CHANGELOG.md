@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - SCHEMA.md - the research and theme tables written out, with what the four statuses mean
+
+Corrects: `theme_section` was described as a difference from `research_section`, which cannot be compared column by column against a built store, and the four statuses were listed with no meaning stated anywhere but `RUNBOOK.md`. Found at 6.4 while writing the migration that creates both tables.
+Was:
+> ### theme_section
+> Grain: one row per theme, section and version. Same columns as `research_section` with `theme` in place of `ticker`, plus `industries` holding the industries that map to this theme.
+Now: `theme_section` has a column table of its own with the same nine columns as `research_section` and `industries` last. The `research_section` notes gain what `section` is named by, that `prose` is empty for a section with no admissible source, the order `source_ids` is in, and that `reject_reason` is set on a fallback as well as a rejection. Two paragraphs follow: what the four statuses mean and how the retry is bounded, and that the checker writes two columns and no more.
+Why: a table described by difference cannot be compared column by column against the store, and `schema-columns` compares every table the store holds, so the first migration to create it would have failed that check on a table SCHEMA does describe. The status meanings were not stated anywhere: the column listed four words, the architecture used rejected and fell back without saying which was the retry, and `RUNBOOK.md` was the only place that said what a fallback is. The retry bound is stated here because it is a property of the stored rows rather than of a return value, which is where the done condition asks for it to be asserted.
+
 ### 2026-09-13 - ARCHITECTURE.html - the marketing marker is a pairing, after a live run refused three real articles
 
 Corrects: the admissibility row's marketing half rested on invitation language, and a live run over 411 real articles from one dated request refused three pieces of ordinary consumer-finance reporting. Two tripped on one invitation written twice, "sign up" and "signing up" counted as two. The third survived that repair: an article on how savers lose a retirement pot says "opening an account" and "sign up", which are two genuinely different invitations inside an article whose subject is accounts. Found by the demonstration this checkpoint ran, not by reading.

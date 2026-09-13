@@ -899,6 +899,17 @@ internal static class Scope
             Verdict.Pass,
             "every document refused, with the category that refused each, the count per category the run log line states, and the order that decides which of two failed gates the row records",
             ByAdmissibility),
+        // 6.4, the research store and the theme store. Their columns against
+        // SCHEMA, the theme table written out rather than described by
+        // difference, and the status guarded by the store itself.
+        [CheckReach.Key(StoresTable, "Research store")] = new Scoped(
+            Verdict.Pass,
+            "the table's nine columns and types are asserted against SCHEMA.md, the reason is asserted to be the only column admitting null, and a status outside the four SCHEMA declares is refused by the store rather than by the checker",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Theme store")] = new Scoped(
+            Verdict.Pass,
+            "the table's ten columns are asserted against SCHEMA.md, which wrote them out at 6.4 rather than describing them as the research table's with a subject renamed, and the store refuses a status it does not declare as the research table's does",
+            ByMigration),
         // 6.3, the source documents store. Its columns against SCHEMA as every
         // other table's are, plus the two that admit null, which is the first
         // table here where nullability carries a property rather than being a

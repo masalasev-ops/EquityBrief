@@ -70,11 +70,13 @@ public class PriceStorageForm
         Assert.DoesNotContain("volume", money);
         Assert.DoesNotContain("observed_at", money);
 
-        // One table is described as a difference from another and has no column
-        // table of its own. It is named rather than skipped quietly, so a second
-        // one appearing is a failure here instead of a silent exclusion from the
-        // money check.
-        Assert.Equal("theme_section", Assert.Single(StoreSchema.DescribedByDelta(Corpus.Read("docs/SCHEMA.md"))));
+        // No table is described as a difference from another. `theme_section`
+        // was, until 6.4 wrote its columns out, because the migration creating it
+        // made it a table in the store and `schema-columns` compares every one of
+        // those against the file column by column. Asserted empty rather than
+        // left unasserted, so a table described that way again is a failure here
+        // instead of a silent exclusion from the money check.
+        Assert.Empty(StoreSchema.DescribedByDelta(Corpus.Read("docs/SCHEMA.md")));
 
         // The permanent proof that the reader reads the Notes cell and not the
         // column name, over a constructed document.
