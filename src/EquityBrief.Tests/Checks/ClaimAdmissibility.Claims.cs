@@ -486,6 +486,99 @@ public partial class ClaimAdmissibility
         Assert.Equal($"{ClaimRules.UnmatchedFigure}: $1.85 billion", reader.GetString(2));
     }
 
+    [Fact]
+    public async Task TheVerdictsAreWhatTheFixturesOwnClaimsExpectationSaysTheRulesProduce()
+    {
+        // Done condition 7's derived expectation. Every paragraph is checked in one
+        // run, so a checker that refused everything satisfies the refusals and
+        // fails the two acceptances, and one that accepted everything fails the
+        // rest.
+        var expected = Expected("claims");
+
+        Assert.Equal(Ticker, expected.GetProperty("ticker").GetString());
+
+        using var store = await WithSources();
+
+        var sections = Sections();
+        var version = 0;
+        var versions = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        // Each paragraph on a day of its own. Three of them are versions of one
+        // section, and on one day the third would be read as the retry of the
+        // second, which is the rule working rather than the verdict this file
+        // states for a first attempt. The facts file on or before each of those
+        // days is the fixture night's.
+        var day = DateOnly.ParseExact(AsOf, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        foreach (var written in sections)
+        {
+            versions[written.Name] = ++version;
+            Pending(store, written, version, day.AddDays(version - 1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        await Checker(store).RunAsync("check-expected");
+
+        var rows = sections
+            .Select(written => written.Section)
+            .Distinct()
+            .SelectMany(section => Stored(store, section))
+            .ToDictionary(row => row.Version);
+
+        var verdicts = expected.GetProperty("verdicts");
+
+        Assert.Equal(sections.Count, verdicts.EnumerateObject().Count());
+
+        foreach (var verdict in verdicts.EnumerateObject())
+        {
+            var row = rows[versions[verdict.Name]];
+            var reason = verdict.Value.GetProperty("reason");
+            var named = verdict.Value.TryGetProperty("offending", out var offending)
+                && offending.ValueKind == JsonValueKind.String;
+
+            Assert.Equal(verdict.Value.GetProperty("status").GetString(), row.Status);
+
+            var stated = reason.ValueKind == JsonValueKind.Null
+                ? null
+                : named
+                    ? $"{reason.GetString()}: {offending.GetString()}"
+                    : reason.GetString();
+
+            Assert.Equal(stated, row.Reason);
+        }
+
+        // The attempts, each in a store of its own so one pair's versions cannot
+        // be read as the other's retry.
+        foreach (var pair in expected.GetProperty("attempts").EnumerateObject())
+        {
+            using var attempted = await WithSources();
+            var (section, first, second) = Attempts(pair.Name);
+
+            Pending(attempted, SectionNamed(first), 1);
+            await Checker(attempted).RunAsync("check-first");
+            Pending(attempted, SectionNamed(second), 2);
+            await Checker(attempted).RunAsync("check-second");
+
+            Assert.Equal(
+                [.. pair.Value.EnumerateArray().Select(status => status.GetString()!)],
+                [.. Stored(attempted, section).Select(row => row.Status)]);
+        }
+
+        var numbers = expected.GetProperty("numbersInTheCleanComputedParagraph");
+        var figures = ClaimRules.Sentences(SectionNamed("a clean computed paragraph").Prose)
+            .SelectMany(sentence => ClaimRules.Figures(sentence.Text))
+            .ToArray();
+
+        Assert.Equal(numbers.GetProperty("figures").GetInt32(), figures.Count(figure => figure.Kind == FigureKind.Figure));
+        Assert.Equal(numbers.GetProperty("windows").GetInt32(), figures.Count(figure => figure.Kind == FigureKind.Window));
+        Assert.Equal(numbers.GetProperty("dates").GetInt32(), figures.Count(figure => figure.Kind == FigureKind.Date));
+
+        Assert.Equal(
+            ["status", "reject_reason"],
+            [.. expected.GetProperty("columnsTheCheckerWrites").EnumerateArray().Select(column => column.GetString()!)]);
+
+        Assert.Equal(1, expected.GetProperty("retriesPerPass").GetInt32());
+    }
+
     // ---- the reader, over constructed text ----
 
     [Fact]
