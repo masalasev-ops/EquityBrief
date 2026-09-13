@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - BUILD_PLAN.md - 6.3's done condition amended, and the clause it cannot assert moved to 6.4
+
+Corrects: 6.3's done condition required that a pass finding no admissible source for a section leaves the section absent with one line saying so. That is a claim about a surface which draws a section, and nothing at 6.3 can draw one: `source_document` carries no ticker and no section, by design, because one document supports claims about several names and about a theme, so no store at 6.3 ties a document to the section it would be cited in. Found by the phase report, which left one claim out of scope at 6.3 after everything else had passed.
+Was:
+> **Done when** each denied category is refused by a fixture document and nothing resting on it is written, a source is returned but its text cannot be retrieved and the result is discarded rather than cited with the url and the reason on the run log, a pass finds no admissible source for a section and the section is absent with one line saying so, and each refusal is read back off the run page's own markup rather than off the model behind it.
+Now: the clause is replaced by the half 6.3 does deliver, being an intake that admits nothing at all saying so in one reading a pass can gate on and recording what was fetched and why each document was refused, with a paragraph beneath the condition stating that it was amended and why. The moved clause is added to 6.4's done condition, naming 6.3 as the checkpoint that could not assert it, because 6.4 creates `research_section` and is the first point at which a section exists to be absent and to carry the reason it is.
+Why: the alternative was to draw the surface from something that does not exist, which is the one thing a done condition must not buy. A checkpoint amending its own done condition is legitimate and the rule about it is that the amendment cannot be invisible, so it is here and it is in 6.3's PROGRESS entry in the words CLAUDE.md asks for.
+
 ### 2026-09-13 - ARCHITECTURE.html - the inadmissible document row's rationale loses its commas so the row's parts can be read off it
 
 Corrects: the row's second sentence formed a comma run of its own, so the reader that takes a row's parts from its own words picked up three items of prose from it alongside the six documents. Found at 6.3 while discharging the obligation to read that row's parts off the row, which is the direction a decomposition into four of six would otherwise pass.

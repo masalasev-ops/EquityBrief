@@ -583,7 +583,9 @@ The run page's stale-and-failed region gains the documents refused by admissibil
 
 `claim-admissibility` is implemented and promoted on the roster here, with the pending-row floor lowered in the same commit. Its roster row named 6.1 until 6.0, which is a checkpoint that builds no admissibility.
 
-**Done when** each denied category is refused by a fixture document and nothing resting on it is written, a source is returned but its text cannot be retrieved and the result is discarded rather than cited with the url and the reason on the run log, a pass finds no admissible source for a section and the section is absent with one line saying so, and each refusal is read back off the run page's own markup rather than off the model behind it.
+**Done when** each denied category is refused by a fixture document and nothing resting on it is written, a source is returned but its text cannot be retrieved and the result is discarded rather than cited with the url and the reason on the run log, an intake that admits nothing at all says so in one reading a pass can gate on and records what was fetched and why each document was refused, and each refusal is read back off the run page's own markup rather than off the model behind it.
+
+This condition was amended at 6.3 and the entry for it says so. It read that a pass finding no admissible source for a section leaves the section absent with one line saying so, which is a claim about a surface that draws a section, and no store here ties a document to a section: `source_document` carries no ticker and no section by design, since one document supports claims about several names and a theme. The clause moves to 6.4, which creates `research_section` and is the first checkpoint at which a section exists to be absent and to carry the reason it is.
 
 ### 6.4 The claim checker
 Migration creating `research_section` and `theme_section`, one row per section per version, which are the research store and the theme store the catalogue has named since the architecture was written.
@@ -592,7 +594,7 @@ Numbers checked against the facts file, claims checked for a source document tha
 
 The fixture gains a poisoned paragraph, citing a number that is not in the facts file, and an unsourced claim, naming no stored document. Both are expected rejections and neither may reach the store.
 
-**Done when** a poisoned paragraph and an unsourced claim are both rejected, the claim checker rejects twice and that section is absent with its reason rather than guessed, nothing rejected is written asserted over the store rather than over a return value, and the retry is proved to be one rather than unbounded.
+**Done when** a poisoned paragraph and an unsourced claim are both rejected, the claim checker rejects twice and that section is absent with its reason rather than guessed, a pass finds no admissible source for a section and the section is absent with one line saying so, which 6.3 could not assert because no store there ties a document to a section, nothing rejected is written asserted over the store rather than over a return value, and the retry is proved to be one rather than unbounded.
 
 ### 6.5 The staleness judge
 The four questions answered from data the nightly run already computed: a new filing, the earnings date passing, the name's news pulse above its own baseline, or a manual refresh (see: Deciding not to spend must not cost anything). Is there a research record, does it still stand, and if all four questions answer no then the stored research is shown with its as-of date and nothing is spent (see: Nothing expires on a timer).
