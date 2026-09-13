@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - ARCHITECTURE.html - the inadmissible document row's rationale loses its commas so the row's parts can be read off it
+
+Corrects: the row's second sentence formed a comma run of its own, so the reader that takes a row's parts from its own words picked up three items of prose from it alongside the six documents. Found at 6.3 while discharging the obligation to read that row's parts off the row, which is the direction a decomposition into four of six would otherwise pass.
+Was:
+> Six, because section 17 names four denied categories and a date rule and section 18 names the unretrievable case, and this cell named three of those until 6.0
+Now: Six because section 17 names four denied categories and a date rule and section 18 names the unretrievable case. This cell named three of those until 6.0 and carried one verdict over all six until 6.3, where each became a claim of its own read off this row's own words.
+Why: the reader is a run of three or more comma-separated items, which is what these rows use to enumerate. A rationale sentence written with commas is indistinguishable from an enumeration, so either the reader learns about sentences or the sentence stops looking like a list. The second is cheaper and it is the one the row can carry: the reader is shared with every decomposed row in section 15 and teaching it to skip a trailing clause would change what it reads for all of them.
+
+### 2026-09-13 - BUILD_PLAN.md - the inadmissible document obligation discharged, and one created against 6.9
+
+Authorised by: Each denied category is refused by a marker the document carries, and the domain is never one of them
+Was:
+> | **The inadmissible document row's parts read off the document** | 6.0 | 6.3 | 6.3 is where the six documents arrive, which is what makes the row's parts readable off the row rather than chosen by a reader. Section 19.1's row names six kinds the test refuses and carries one verdict over them, so five could be missing and the row would still pass, which is the fault the fifth phase 5 sign-off review found on section 15's rows. 6.0 widened the text and left the decomposition, because the reader that reads parts off a document is scoped to section 15's tables and widening it would make every fixture row enumerating three or more items owe parts in the same pass |
+Now: the row is marked discharged and states what discharged it, with its prior text kept in the row as that table's convention requires. A second row is created, due at 6.9, for the markers being tested against what the search tool returns, and 6.9's own text cites it back.
+Why: the discharge is a decomposition plus the assertion that makes it a reading of the row rather than a second statement of it. The new obligation exists because 6.3's markers were measured on pages fetched by hand: that is real evidence and it is not the same evidence a search tool produces, and the difference is worth chasing from one end rather than being remembered.
+
 ### 2026-09-13 - CLAUDE.md - claim-admissibility promoted, and the half of its row that is still owed
 
 Authorised by: Each denied category is refused by a marker the document carries, and the domain is never one of them

@@ -31,6 +31,21 @@ public class ClaimAdmissibility
             CheckReach.Key(Scope.LimitsTable, "Source admissibility"),
             CheckReach.Key(Scope.FailureTable, "A source is returned but its text cannot be retrieved"),
             CheckReach.Key(Scope.FailureTable, "A document's publish date falls outside the window the pass asked for"),
+
+            // Section 19.1's three rows, the first of them read as six claims
+            // rather than one. The expectation is reached here rather than by
+            // `fixture-expectations` for the reason the run page's is reached by
+            // the check that draws the page: what it holds is what the rules
+            // produce over documents, and the check that reads it is the one that
+            // judges them.
+            CheckReach.Key(Scope.FixtureTable, "an inadmissible document, a machine-generated price forecast"),
+            CheckReach.Key(Scope.FixtureTable, "an inadmissible document, a broker marketing page"),
+            CheckReach.Key(Scope.FixtureTable, "an inadmissible document, a summary written by another AI system"),
+            CheckReach.Key(Scope.FixtureTable, "an inadmissible document, a quote page carrying no article"),
+            CheckReach.Key(Scope.FixtureTable, "an inadmissible document, a page with no publish date"),
+            CheckReach.Key(Scope.FixtureTable, "an inadmissible document, a page whose text cannot be retrieved"),
+            CheckReach.Key(Scope.FixtureTable, "source documents"),
+            CheckReach.Key(Scope.FixtureTable, "refused documents"),
         ]);
 
     static string Folder() => Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder);
@@ -728,6 +743,121 @@ public class ClaimAdmissibility
             .Single(candidate => candidate.Heading == heading);
 
         return table.Body.Single(row => row.Count > 1 && row[0] == subject);
+    }
+
+    // ---- the fixture's own expectation ----
+
+    static JsonElement Expected(string stage) =>
+        JsonDocument.Parse(File.ReadAllText(Path.Combine(
+            Folder(), "expectations", stage + ".json"))).RootElement;
+
+    [Fact]
+    public void TheVerdictsAreWhatTheFixturesOwnExpectationSaysTheRulesProduce()
+    {
+        // Done condition 7's derived expectation, and the diff it exists for. The
+        // file was written from the rules and from the marker each document states
+        // it carries rather than from a run of this code, so a rule that changed
+        // meaning shows up here as a disagreement rather than as a new number
+        // everything agrees with.
+        var expected = Expected("admissibility");
+        var refusable = Refusable();
+
+        Assert.Equal(expected.GetProperty("documentsHeld").GetInt32(), refusable.Count);
+
+        var verdicts = refusable.ToDictionary(
+            one => one.Name,
+            one => Admissibility.Judge(one.Document, From, To),
+            StringComparer.Ordinal);
+
+        foreach (var stated in expected.GetProperty("refusedBy").EnumerateObject())
+        {
+            Assert.Equal(stated.Value.GetString(), verdicts[stated.Name]);
+        }
+
+        // Both directions over the file, so a document the file leaves out is as
+        // visible as a verdict it gets wrong.
+        Assert.Equal(
+            expected.GetProperty("refusedBy").EnumerateObject().Count(),
+            verdicts.Count);
+
+        Assert.Equal(
+            expected.GetProperty("kindsRefused").GetInt32(),
+            verdicts.Values.Distinct(StringComparer.Ordinal).Count());
+
+        Assert.Equal(expected.GetProperty("verdicts").GetInt32(), Admissibility.Verdicts.Length);
+
+        // The order, read off the file as the four gates in the order they are
+        // judged, and asserted against the document that fails two of them.
+        var gates = expected.GetProperty("gatesInOrder").EnumerateArray().Select(gate => gate.GetString()!).ToArray();
+
+        Assert.Equal(Admissibility.NoText, gates[0]);
+        Assert.Equal(Admissibility.NoPublishDate, gates[2]);
+        Assert.Equal(Admissibility.OutsideTheWindow, gates[3]);
+
+        var both = expected.GetProperty("documentFailingTwoGates");
+
+        Assert.Equal(
+            both.GetProperty("refusedBy").GetString(),
+            verdicts[both.GetProperty("name").GetString()!]);
+
+        Assert.Contains("cheapest reason", both.GetProperty("why").GetString()!, StringComparison.Ordinal);
+
+        // The admitted half, which the file states as a count and a composition
+        // rather than as a list, because the documents are real and what matters
+        // is that none of them is refused.
+        var real = Real();
+        var admitted = SourceDocuments.Of([.. real], From, To, FetchedAt);
+
+        Assert.Equal(expected.GetProperty("realDocumentsAdmitted").GetInt32(), admitted.Admitted.Count);
+
+        var composition = expected.GetProperty("realDocuments");
+
+        Assert.Equal(
+            composition.GetProperty("articles").GetInt32(),
+            real.Count(document => document.Channel == DocumentChannel.NewsFeed));
+
+        Assert.Equal(
+            composition.GetProperty("releaseExhibits").GetInt32(),
+            real.Count(document => document.Channel == DocumentChannel.FilingsArchive));
+
+        // The host that delivered both a refused page and an admitted one, which
+        // is the measured case behind judging per document. Read off the file and
+        // asserted against the documents rather than restated as a sentence.
+        var shared = composition.GetProperty("sharedHostWithARefusedPage").GetString()!;
+
+        Assert.Contains(
+            real,
+            document => Admissibility.Host(document.Url).EndsWith(shared, StringComparison.Ordinal));
+
+        // The row each verdict leaves, read off the file rather than described in
+        // a test's own words.
+        var refusedRow = expected.GetProperty("rowAfterARefusal");
+        var refused = SourceDocuments.Of([.. refusable.Select(one => one.Document)], From, To, FetchedAt);
+
+        Assert.Equal(JsonValueKind.Null, refusedRow.GetProperty("body").ValueKind);
+        Assert.All(refused.Refused, row => Assert.Null(row.Body));
+
+        Assert.Equal(JsonValueKind.Null, refusedRow.GetProperty("publishedOnWhereTheRefusalIsTheDate").ValueKind);
+        Assert.Null(refused.Refused.Single(row => row.Admissibility == Admissibility.NoPublishDate).PublishedOn);
+
+        Assert.Contains("category", refusedRow.GetProperty("admissibility").GetString()!, StringComparison.Ordinal);
+
+        var admittedRow = expected.GetProperty("rowAfterAnAdmission");
+
+        Assert.Equal(Admissibility.Accepted, admittedRow.GetProperty("admissibility").GetString());
+        Assert.Contains("whole", admittedRow.GetProperty("body").GetString()!, StringComparison.Ordinal);
+        Assert.All(admitted.Admitted, row => Assert.False(string.IsNullOrWhiteSpace(row.Body)));
+
+        // The measured boundary the thresholds rest on, stated in the file as the
+        // number of qualifying paragraphs the tightest captured article carries.
+        // One, so a threshold raised by a sentence would refuse a real article.
+        Assert.Contains(
+            expected.GetProperty("tightestArticleQualifyingParagraphs").GetInt32(),
+            real
+                .Where(document => document.Channel == DocumentChannel.NewsFeed)
+                .Select(article => Admissibility.Paragraphs(article.Text!)
+                    .Count(paragraph => Admissibility.Sentences(paragraph) >= Admissibility.SentencesInAParagraph
+                        && Admissibility.Words(paragraph) >= Admissibility.WordsInAParagraph)));
     }
 
     [Fact]

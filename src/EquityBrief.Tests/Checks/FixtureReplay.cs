@@ -165,6 +165,89 @@ public class FixtureReplay
         return named;
     }
 
+    // The table an expectation is waiting for a writer for, where it names one.
+    //
+    // A store can be built, read and drawn a checkpoint before anything writes to
+    // it, and the source documents store is the first of those here: SCHEMA gives
+    // Insert on it to the two research runners and to nobody else, so the
+    // statement cannot exist before the first runner does. An expectation about
+    // what those rows will say is a real expectation, and naming its table in
+    // `tables` would claim the replay populates it.
+    //
+    // So it goes in `awaits` instead, with the checkpoint whose writer will fill
+    // it, and the exemption is asserted rather than tolerated: the table has to be
+    // one SCHEMA declares, the replay has to leave it empty, and the checkpoint has
+    // to be one the plan has and the record does not. The day something writes it,
+    // the emptiness fails and the only repair is to move the table into `tables`,
+    // which is what keeps this from becoming a way to name a table nothing checks.
+    static IReadOnlyDictionary<string, (string Table, string WrittenAt)> Awaited()
+    {
+        var awaited = new Dictionary<string, (string, string)>(StringComparer.Ordinal);
+
+        foreach (var file in Directory.GetFiles(Path.Combine(Folder(), "expectations"), "*.json"))
+        {
+            var document = JsonDocument.Parse(File.ReadAllText(file)).RootElement;
+
+            if (!document.TryGetProperty("awaits", out var awaits))
+            {
+                continue;
+            }
+
+            awaited[Path.GetFileNameWithoutExtension(file)] = (
+                awaits.GetProperty("table").GetString()!,
+                awaits.GetProperty("writtenAt").GetString()!);
+
+            Assert.False(
+                string.IsNullOrWhiteSpace(awaits.GetProperty("why").GetString()),
+                $"{Path.GetFileNameWithoutExtension(file)}.json awaits a table and does not say why nothing writes it.");
+        }
+
+        return awaited;
+    }
+
+    [Fact]
+    public async Task AnExpectationCoversATableTheReplayWritesOrOneNoWriterExistsFor()
+    {
+        // The two halves in one place, because what they partition is every
+        // expectation: a file that named neither would cover nothing and pass
+        // both directions of the checks above by having nothing in either list.
+        var named = Named();
+        var awaited = Awaited();
+
+        Assert.True(named.Count >= 5, $"Read {named.Count} expectations, expected at least 5.");
+        Assert.NotEmpty(awaited);
+
+        var covering = named
+            .Where(entry => entry.Value.Length == 0 && !awaited.ContainsKey(entry.Key))
+            .Select(entry => $"{entry.Key} names no table and awaits none")
+            .ToArray();
+
+        Assert.DoesNotContain(covering, _ => true);
+
+        using var store = await ReplayedAsync();
+        var populated = Populated(store).ToHashSet(StringComparer.Ordinal);
+        var declared = StoreSchema.DeclaredTables(Corpus.Read("docs/SCHEMA.md"));
+        var plan = Corpus.Read("docs/BUILD_PLAN.md");
+        var progress = Corpus.Read("docs/PROGRESS.md");
+
+        foreach (var (stage, (table, writtenAt)) in awaited)
+        {
+            Assert.Contains(table, declared);
+
+            Assert.DoesNotContain(table, populated);
+
+            Assert.True(
+                DuePoints.InThePlan(writtenAt, plan),
+                $"{stage}.json says {table} is written at {writtenAt}, which the plan has neither as a checkpoint nor as a phase.");
+
+            Assert.False(
+                DuePoints.HasLanded(writtenAt, progress),
+                $"{stage}.json says {table} is written at {writtenAt}, which the record shows as landed. " +
+                "A table the replay leaves empty after its writer's checkpoint has landed is a writer " +
+                "nothing runs, and the expectation has to move its table into the covered list.");
+        }
+    }
+
     [Fact]
     public async Task EveryTableTheReplayPopulatesIsNamedByAnExpectation()
     {
