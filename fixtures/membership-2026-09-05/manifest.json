@@ -209,6 +209,20 @@
       "query": "https://www.sec.gov/Archives/edgar/data/18230/000001823026000040/0000018230-26-000040-index.htm",
       "fetchedAt": "2026-09-13T00:33:54Z",
       "trimmedTo": "nothing. An index page from a fourth filer, captured because it lists two documents typed `EX-99` rather than one, so the rule that picks the release has a population to pick from. The release is the lower sequence number and the second exhibit is something else, which is the same shape a filed transcript would arrive in and the reason the rule is stated by sequence rather than by taking the only match."
+    },
+    {
+      "file": "model-probe-thinking.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions with model qwen/qwen3.5-9b, a one-sentence system instruction, a user message stating one close, temperature 0, max_tokens 200 and no reasoning setting",
+      "fetchedAt": "2026-09-13T12:57:21Z",
+      "trimmedTo": "nothing. The whole response, captured before any parser for it was written, and kept because it is the shape a parser written from the chat completions specification gets wrong: the model is a thinking model, it spent the whole token budget in reasoning_content, returned an empty content and stopped on length. A parser reading content would store an empty section."
+    },
+    {
+      "file": "model-probe-answered.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "the same request as model-probe-thinking.json with reasoning_effort set to none",
+      "fetchedAt": "2026-09-13T06:03:57Z",
+      "trimmedTo": "nothing. The whole response to the one request field of four that turned reasoning off on this runtime: a /no_think marker in the prompt, reasoning.effort and chat_template_kwargs.enable_thinking were each accepted and ignored, and reasoning_effort none answered in 19 tokens and stopped on stop."
     }
   ]
 }

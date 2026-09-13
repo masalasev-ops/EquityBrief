@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-9d2fhvv99le374ipzw6c3i",
+  "object": "chat.completion",
+  "created": 1789279437,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight closed its trading session at a price of 333.42.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 41,
+    "completion_tokens": 19,
+    "total_tokens": 60,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}
