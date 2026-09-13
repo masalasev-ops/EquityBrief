@@ -149,7 +149,8 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
             extremes,
             listings.FirstOrDefault(listing => listing.Ticker == ticker),
             at is > 0 ? ordered[at.Value - 1].Ticker : null,
-            at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null),
+            at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null,
+            await read.SectionStatesAsync(ticker, DateOnly.MaxValue)),
         "text/html; charset=utf-8");
 });
 
@@ -391,6 +392,7 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.Nights(everyListing),
             await read.StaleNamesAsync(index, dated),
             RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
+            RunScreen.FellBack(await read.FellBackAsync(dated)),
             RunScreen.Harness(PhaseReport(builder))),
         "text/html; charset=utf-8");
 });

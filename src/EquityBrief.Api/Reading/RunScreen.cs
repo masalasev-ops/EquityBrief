@@ -242,6 +242,13 @@ public static class RunScreen
             .Select(row => new RefusedDocument(row.Category, row.Title, row.Url)),
     ];
 
+    // The sections that fell back on a night, a name's and a theme's, with the
+    // reason each stored, in the order the store handed them over.
+    public static IReadOnlyList<LeftOutSection> FellBack(IReadOnlyList<FellBackRow> rows) =>
+    [
+        .. rows.Select(row => new LeftOutSection(row.Subject, row.Section, row.Reason ?? string.Empty)),
+    ];
+
     // The verdict counts from the last phase report, read out of the report the
     // harness wrote rather than counted here.
     //

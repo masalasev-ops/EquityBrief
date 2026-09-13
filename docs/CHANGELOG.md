@@ -25,6 +25,31 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - ARCHITECTURE.html - the claim checker's catalogue row names the theme store it reads and writes
+
+Corrects: the catalogue row gave the claim checker the research store alone, while SCHEMA gives it Update on `theme_section`, the read and write matrix fills its Research and theme column, and section 12.2 says both runners' output passes one checker. So three of the four places the component is declared agreed and the fourth did not. Found at 6.4 by `component-access`, on the first run after the class declared what SCHEMA and the matrix already said.
+Was:
+> research store, facts, source documents | research store
+Now: the Reads cell names research store, theme store, facts, source documents, the Writes cell names research store, theme store, and the What it does cell adds that it checks theme sections as well as a name's.
+Why: the other three statements are the ones with reasons behind them. SCHEMA's ownership row is what `writer-ownership` enforces, the matrix's column is one column for both stores by design, and a theme runner whose sections nothing checks would write the only unchecked prose in the report.
+
+### 2026-09-13 - BUILD_PLAN.md - three obligations the claim checker's measurement created, cited back by 6.6 and 6.9
+
+Authorised by: A claim is a sentence, and every sentence in a researched section names the document it rests on
+Was:
+> 6.6's text opened its third paragraph with "A section is assigned to the local lane that the machine cannot hold", and 6.9's third paragraph opened with "`theme_section` written per theme with the industries that map to it", with no citation in either to an obligation 6.4 created.
+Now: three rows in the carried obligations table, each due at the checkpoint that first produces its evidence: whole-number figures tied to the fact they round and the facts file carrying the segment figures, both at 6.6, and a theme section's figures at 6.9. A paragraph is added to each of 6.6 and 6.9 citing its rows back.
+Why: 6.4 measured its own number rule and the measurement said where it is weak, and building the checker also showed two sections whose figures the facts file does not carry. None of the three can be settled at 6.4, because each needs a section a model wrote, and a finding that can only be settled later is a row chased from one end rather than a sentence in a record.
+
+### 2026-09-13 - SCHEMA.md - the research and theme tables written out, with what the four statuses mean
+
+Corrects: `theme_section` was described as a difference from `research_section`, which cannot be compared column by column against a built store, and the four statuses were listed with no meaning stated anywhere but `RUNBOOK.md`. Found at 6.4 while writing the migration that creates both tables.
+Was:
+> ### theme_section
+> Grain: one row per theme, section and version. Same columns as `research_section` with `theme` in place of `ticker`, plus `industries` holding the industries that map to this theme.
+Now: `theme_section` has a column table of its own with the same nine columns as `research_section` and `industries` last. The `research_section` notes gain what `section` is named by, that `prose` is empty for a section with no admissible source, the order `source_ids` is in, and that `reject_reason` is set on a fallback as well as a rejection. Two paragraphs follow: what the four statuses mean and how the retry is bounded, and that the checker writes two columns and no more.
+Why: a table described by difference cannot be compared column by column against the store, and `schema-columns` compares every table the store holds, so the first migration to create it would have failed that check on a table SCHEMA does describe. The status meanings were not stated anywhere: the column listed four words, the architecture used rejected and fell back without saying which was the retry, and `RUNBOOK.md` was the only place that said what a fallback is. The retry bound is stated here because it is a property of the stored rows rather than of a return value, which is where the done condition asks for it to be asserted.
+
 ### 2026-09-13 - ARCHITECTURE.html - the marketing marker is a pairing, after a live run refused three real articles
 
 Corrects: the admissibility row's marketing half rested on invitation language, and a live run over 411 real articles from one dated request refused three pieces of ordinary consumer-finance reporting. Two tripped on one invitation written twice, "sign up" and "signing up" counted as two. The third survived that repair: an article on how savers lose a retirement pot says "opening an account" and "sign up", which are two genuinely different invitations inside an article whose subject is accounts. Found by the demonstration this checkpoint ran, not by reading.

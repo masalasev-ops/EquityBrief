@@ -150,6 +150,14 @@ public class ReadSurface
             // document was fetched and not stored.
             CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility"),
 
+            // 6.4, the claim checker's two surfaces: the sections that fell back on
+            // the run page, and the line a name's page draws for a section left
+            // out, which is what section 18's two rows about the checker say a
+            // reader sees.
+            CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back"),
+            CheckReach.Key(Scope.FailureTable, "Claim checker rejects twice"),
+            CheckReach.Key(Scope.FailureTable, "A pass finds no admissible source for a section"),
+
             // The run page's own expectation file, which 5.6 added and section
             // 19.1 did not name until the phase 5 sign-off. It is reached here
             // rather than by `fixture-expectations` because what it holds is the
@@ -2807,25 +2815,160 @@ public class ReadSurface
 
         Assert.Equal(["calendar"], [.. failed.Select(stage => stage.Stage)]);
 
-        var region = new MarkRenderer().StaleAndFailed(stale, failed, []);
+        var region = new MarkRenderer().StaleAndFailed(stale, failed, [], []);
 
         Assert.Contains("data-stale=\"1\"", region, StringComparison.Ordinal);
         Assert.Contains("NEWW", region, StringComparison.Ordinal);
         Assert.Contains("data-stage=\"calendar\"", region, StringComparison.Ordinal);
         Assert.Contains("the feed did not answer", region, StringComparison.Ordinal);
 
-        // The one research half still absent is the sections a rejection made
-        // fall back, which needs a written section to reject and arrives with the
-        // claim checker. Stated rather than drawn empty, because an empty list
-        // reads as a night that rejected nothing.
-        Assert.Contains("data-fallbacks=\"absent\"", region, StringComparison.Ordinal);
-
-        // A clean night says each thing rather than showing three empty regions.
-        var clean = new MarkRenderer().StaleAndFailed([], [], []);
+        // A clean night says each thing rather than showing four empty regions.
+        var clean = new MarkRenderer().StaleAndFailed([], [], [], []);
 
         Assert.Contains("no name is carrying yesterday's bars", clean, StringComparison.Ordinal);
         Assert.Contains("no stage of this night failed", clean, StringComparison.Ordinal);
         Assert.Contains("no document was refused by admissibility on this night", clean, StringComparison.Ordinal);
+        Assert.Contains("no section fell back on this night", clean, StringComparison.Ordinal);
+    }
+
+    // ---- 6.4, the sections the claim checker left out ----
+
+    // The status word the read surface states for a section left out, against the
+    // checker's own. The surface holds no reference to the worker, so the word is
+    // stated twice and held together here, which is what `RunScreen.NoSession`
+    // already does for a night that did not trade.
+    [Fact]
+    public void TheWordThePageReadsForASectionLeftOutIsTheWordTheCheckerWrites()
+    {
+        Assert.Equal(EquityBrief.Worker.Research.ClaimChecker.Fallback, NameScreen.Fallback);
+    }
+
+    // A store the whole pipeline filled with the fixture's sections checked by the
+    // shipped checker, so what the page draws is what the checker decided rather
+    // than a status a test wrote.
+    static async Task<TemporaryStore> WithCheckedSections()
+    {
+        var store = await ClaimAdmissibility.WithSources();
+        var checker = new EquityBrief.Worker.Research.ClaimChecker(
+            FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile);
+
+        // Refused twice on one day, which falls back.
+        ClaimAdmissibility.Pending(store, ClaimAdmissibility.SectionNamed("a poisoned paragraph"), 1);
+        await checker.RunAsync("check-first");
+        ClaimAdmissibility.Pending(store, ClaimAdmissibility.SectionNamed("a poisoned paragraph"), 2);
+        await checker.RunAsync("check-second");
+
+        // No admissible source, which falls back on its first check.
+        ClaimAdmissibility.Pending(store, ClaimAdmissibility.SectionNamed("a section with no admissible source"), 1);
+
+        // Refused once and waiting on its retry, which is neither written nor left
+        // out and is not drawn as either.
+        ClaimAdmissibility.Pending(store, ClaimAdmissibility.SectionNamed("an unsourced claim"), 1);
+
+        await checker.RunAsync("check-rest");
+
+        return store;
+    }
+
+    [Fact]
+    public async Task ASectionTheCheckerLeftOutIsAbsentFromTheNamePageWithOneLineSayingWhy()
+    {
+        // Section 18's two rows about a section the checker could not accept, read
+        // back off the name page's own markup: refused twice, and no admissible
+        // source. Each is absent with one line saying why, and the line is the
+        // reason the checker stored.
+        using var store = await WithCheckedSections();
+
+        var api = Api(store);
+        var ticker = ClaimAdmissibility.Ticker;
+        var states = await api.SectionStatesAsync(ticker, DateOnly.MaxValue);
+
+        Assert.Equal(3, states.Count);
+
+        var region = NameScreen.Region(
+            new SinglePageApp(),
+            new MarkRenderer(),
+            ticker,
+            await api.BarsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue),
+            await api.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue),
+            await api.LevelsAsync(ticker),
+            await api.ProfileAsync(ticker),
+            await api.LadderAsync(ticker),
+            await api.NextEventAsync(ticker, DateOnly.MinValue),
+            await api.MovesAsync(ticker),
+            sections: states);
+
+        Assert.Contains("data-left-out=\"2\"", region, StringComparison.Ordinal);
+
+        // Refused twice: the line names the section and carries both the word that
+        // says it was the retry and the figure the facts file did not hold.
+        var twice = Regex.Match(region, "<p class=\"left-out\" data-section=\"The key under each figure\">([^<]*)</p>");
+
+        Assert.True(twice.Success);
+        Assert.Contains("rejected twice", twice.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("66.3%", twice.Groups[1].Value, StringComparison.Ordinal);
+
+        // No admissible source: the line says so in the words section 18 uses.
+        var none = Regex.Match(region, "<p class=\"left-out\" data-section=\"The two cases\">([^<]*)</p>");
+
+        Assert.True(none.Success);
+        Assert.Contains("no admissible source was found", none.Groups[1].Value, StringComparison.Ordinal);
+
+        // The section waiting on its retry is not drawn as left out, and no prose
+        // from any of the three reaches the page, because nothing drawn at 6.4 is a
+        // written section.
+        Assert.DoesNotContain("data-section=\"What the company sells\"", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("Analysts expect", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("Keysight closed at", region, StringComparison.Ordinal);
+        Assert.Contains("data-written=\"absent\"", region, StringComparison.Ordinal);
+
+        // Exactly the store's fallback rows, counted from the store rather than
+        // from the page, so a region drawing one of two looks as wrong as it is.
+        Assert.Equal(
+            states.Count(state => state.Status == EquityBrief.Worker.Research.ClaimChecker.Fallback),
+            Regex.Matches(region, "<p class=\"left-out\"").Count);
+    }
+
+    [Fact]
+    public async Task TheSectionsThatFellBackOnANightAreDrawnOnTheRunPageWithTheirReasons()
+    {
+        // Section 15.10's fourth region, the part 6.4 draws. A name's sections and
+        // a theme's together, each with whose it is and the reason it stored, and
+        // only the night's: a section that fell back on another day is that day's.
+        using var store = await WithCheckedSections();
+
+        Insert(
+            store,
+            "INSERT INTO theme_section VALUES ('test and measurement', 'The industry cycle', 1, '2026-09-08', 'a writer', " +
+            "'fallback', '', '[]', 'no admissible source was found', '[]');");
+
+        Insert(
+            store,
+            "INSERT INTO research_section VALUES ('KEYS', 'The risks, each with what would confirm it', 1, '2026-09-07', 'a writer', " +
+            "'fallback', '', '[]', 'no admissible source was found');");
+
+        var api = Api(store);
+        var night = new DateOnly(2026, 9, 8);
+
+        var fellBack = RunScreen.FellBack(await api.FellBackAsync(night));
+
+        Assert.Equal(3, fellBack.Count);
+
+        var region = new MarkRenderer().StaleAndFailed([], [], [], fellBack);
+
+        Assert.Contains("data-fell-back=\"3\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-subject=\"KEYS\" data-section=\"The key under each figure\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-subject=\"KEYS\" data-section=\"The two cases\"", region, StringComparison.Ordinal);
+        Assert.Contains("data-subject=\"test and measurement\" data-section=\"The industry cycle\"", region, StringComparison.Ordinal);
+        Assert.Contains("66.3%", region, StringComparison.Ordinal);
+
+        // The day before is its own night.
+        Assert.DoesNotContain("The risks, each with what would confirm it", region, StringComparison.Ordinal);
+        Assert.Single(await api.FellBackAsync(new DateOnly(2026, 9, 7)));
+
+        // And a refusal still waiting on its retry fell back on no night.
+        Assert.DoesNotContain("What the company sells", region, StringComparison.Ordinal);
     }
 
     // A refused document as the store holds one: the row form the intake produces
@@ -2887,7 +3030,7 @@ public class ReadSurface
         Assert.All(read, row => Assert.NotEqual(Admissibility.Accepted, row.Category));
 
         var refused = RunScreen.Refused(read);
-        var region = new MarkRenderer().StaleAndFailed([], [], refused);
+        var region = new MarkRenderer().StaleAndFailed([], [], refused, []);
 
         Assert.Contains("data-refused=\"7\"", region, StringComparison.Ordinal);
 
@@ -3049,6 +3192,7 @@ public class ReadSurface
             RunScreen.Nights(listings),
             await api.StaleNamesAsync("GSPC"),
             RunScreen.Refused(await api.RefusedDocumentsAsync(night)),
+            RunScreen.FellBack(await api.FellBackAsync(night)),
             RunScreen.Harness(null));
 
         foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "harness" })

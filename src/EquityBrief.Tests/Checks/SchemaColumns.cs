@@ -33,6 +33,12 @@ public class SchemaColumns
             // being a detail of the declaration.
             CheckReach.Key(Scope.StoresTable, "Source documents"),
 
+            // 6.4, the research store and the theme store: migration 21's columns
+            // and types, and the status the store itself refuses outside the four
+            // SCHEMA declares.
+            CheckReach.Key(Scope.StoresTable, "Research store"),
+            CheckReach.Key(Scope.StoresTable, "Theme store"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.StoresTable, "Listings"),
 
@@ -161,6 +167,66 @@ public class SchemaColumns
             "Two columns admit null and neither is an absence of data",
             schema,
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheResearchAndThemeTablesMatchWhatSchemaDeclaresAndRefuseAStatusItDoesNot()
+    {
+        var schema = Corpus.Read("docs/SCHEMA.md");
+
+        using var store = new TemporaryStore().Migrated();
+
+        // Nine and ten, stated exactly. The theme table is the research table's
+        // columns with its subject renamed and one more, and asserting both
+        // counts is what says the file wrote the difference out rather than
+        // leaving a reader to apply it.
+        var research = StoreSchema.Declared(schema, "research_section");
+        var theme = StoreSchema.Declared(schema, "theme_section");
+
+        Assert.Equal(9, research.Count);
+        Assert.Equal(10, theme.Count);
+
+        Assert.Equal(research, StoreSchema.Built(store, "research_section"));
+        Assert.Equal(theme, StoreSchema.Built(store, "theme_section"));
+
+        Assert.Equal(
+            research.Skip(1).Select(column => column.Name),
+            theme.Skip(1).Take(8).Select(column => column.Name));
+
+        Assert.Equal("theme", theme[0].Name);
+        Assert.Equal("industries", theme[^1].Name);
+
+        // One column admits null in each, the reason, which a pending and an
+        // accepted section have none of. A section with no admissible source is a
+        // row with empty prose rather than a null one, because the row is what
+        // records that it was left out.
+        Assert.Equal(["reject_reason"], AdmitsNull(store, "research_section"));
+        Assert.Equal(["reject_reason"], AdmitsNull(store, "theme_section"));
+
+        // The four statuses are accepted and a fifth is refused by the store, in
+        // both tables, so a writer that invented one fails at the write.
+        string[] statuses = ["pending", "accepted", "rejected", "fallback"];
+
+        for (var version = 1; version <= statuses.Length; version++)
+        {
+            store.Execute(
+                "INSERT INTO research_section VALUES ('AAPL', 'The two cases', " +
+                $"{version}, '2026-09-08', 'a model', '{statuses[version - 1]}', '', '[]', NULL);");
+        }
+
+        var refused = Assert.Throws<SqliteException>(() => store.Execute(
+            "INSERT INTO research_section VALUES ('AAPL', 'The two cases', 9, '2026-09-08', 'a model', 'omitted', '', '[]', NULL);"));
+
+        // 19 is SQLITE_CONSTRAINT and 275 its CHECK extension, read as codes
+        // rather than as a message for the reason the membership refusals are.
+        Assert.Equal(19, refused.SqliteErrorCode);
+        Assert.Equal(275, refused.SqliteExtendedErrorCode);
+
+        Assert.Throws<SqliteException>(() => store.Execute(
+            "INSERT INTO theme_section VALUES ('memory', 'The industry cycle', 1, '2026-09-08', 'a model', 'omitted', '', '[]', NULL, '[]');"));
+
+        store.Execute(
+            "INSERT INTO theme_section VALUES ('memory', 'The industry cycle', 1, '2026-09-08', 'a model', 'pending', '', '[]', NULL, '[]');");
     }
 
     // Which of a built table's columns admit null, read off the store rather

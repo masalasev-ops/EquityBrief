@@ -22,7 +22,7 @@ namespace EquityBrief.Tests.Checks;
 // admits, and the admitting half is where the cost of a wrong rule falls: a
 // marker that fires on ordinary reporting takes the reporting this system exists
 // to read out of every pass, silently, and the pass looks like a quiet week.
-public class ClaimAdmissibility
+public partial class ClaimAdmissibility
 {
     internal static CheckReach Reach => new(
         "claim-admissibility",
@@ -46,6 +46,15 @@ public class ClaimAdmissibility
             CheckReach.Key(Scope.FixtureTable, "an inadmissible document, a page whose text cannot be retrieved"),
             CheckReach.Key(Scope.FixtureTable, "source documents"),
             CheckReach.Key(Scope.FixtureTable, "refused documents"),
+
+            // 6.4, the claim half: section 17's rejection row, section 19.1's two
+            // expected rejections, and figure 12.1's two boxes that say a claim is
+            // checked and then stored.
+            CheckReach.Key(Scope.LimitsTable, "Claim rejection"),
+            CheckReach.Key(Scope.FixtureTable, "a poisoned paragraph"),
+            CheckReach.Key(Scope.FixtureTable, "an unsourced claim"),
+            CheckReach.Key("Figure 12.1", "Check every claim"),
+            CheckReach.Key("Figure 12.1", "Store it"),
         ]);
 
     static string Folder() => Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder);

@@ -8131,3 +8131,117 @@ Carried:    one obligation created, due at 6.9: the denied-category markers test
             fetched by hand arrives as a reading tool's rendering rather than as the bytes a search
             tool returns. 6.9's own text cites it back. This session has committed code and may not
             sign it off.
+
+### 6.4 - the claim checker, what a claim and a figure are, and where the number rule is weak   2026-09-13
+Built:      migration 21 creating `research_section` and `theme_section`, the claim checker reading
+            every pending section in both stores against its facts file and the stored documents it
+            cites, the rules it reads by, the name page's line for a section left out, and the run
+            page's sections that fell back. Seven commits: the prose, the stores, the checker with
+            its rules, the surfaces, the expectation, the near-miss poison the sweep forced, and
+            this record.
+            The checker inserts nothing and that is the ownership. SCHEMA gives Insert on both tables
+            to the writers alone, the first of which arrives at 6.6, so what this checkpoint moves
+            are sections a test inserts as pending the way a writer would, and the expectation names
+            its table under `awaits` with 6.6 as the writer's checkpoint.
+Settled:    what a claim and a figure are, as a decision, because neither was stated and a later
+            session could draw either line anywhere with nothing to show it. A claim is a sentence,
+            and every sentence of a researched section cites a document by its position in the
+            section's own source list; the key under each figure is the one section held to numbers
+            alone, because the lane table says it is written from known values with nothing to
+            weigh. A figure is a rounding of a value the facts file holds at the precision the prose
+            itself states, matched on magnitude rather than sign and on existence rather than
+            attribution. Years, quarter and fiscal labels, times and ordinals to tenth are not
+            figures; a window has to be a number the file names or holds; a date has to be one it
+            holds; a number in words from eleven up is refused, while one to ten are not read, which
+            is a stated cost.
+            The four statuses, which the store listed with no meaning stated anywhere but the
+            runbook. A first refusal is rejected and may be retried once as the next version; a
+            second consecutive refusal on the same day falls back with both attempts' text kept; a
+            researched section whose sources hold nothing admitted falls back on its first check,
+            because a rewrite cannot create a source; a version after a fallback is a fresh first
+            attempt. The store refuses any other status with a check constraint.
+Measured:   the reader, before anything rested on it, over the four captured articles, both filed
+            releases and 411 articles from one live news request: 15,412 sentences and 11,727
+            figures. The sentence reader holds, 700 of the 15,412 being three words or fewer and the
+            ones read being real short sentences and page furniture rather than splits at an
+            abbreviation. Three misreads were found and each is repaired and asserted: a percentage
+            before the word week read as a window, five times; a time of day read as two figures;
+            and a strength of 2 matching 200% through the fraction reading.
+            And where the number rule is weak. Against AAPL's facts file of 38 values, taken from a
+            chain without the corporate action check, the same figures, written by nobody with that
+            file in mind, pass by coincidence: 1,301 of 7,939 whole numbers, 76 of 2,091 at one
+            decimal, 14 of 1,547 at two, some of the last being AAPL's own figures. So the rule is
+            a strong test for a figure stated with decimals and a weak one for a whole number, and a
+            model inventing a growth rate of twelve per cent passes wherever a value near twelve
+            exists. Not repaired here, because what repairs it is attribution, and that is carried
+            to where the prompt that could require it is written.
+Found:      four things the corpus did not carry, each repaired where it was found.
+            `theme_section` was described as a difference from `research_section`, which cannot be
+            compared column by column against a built store, and `schema-columns` compares every
+            table the store holds. Written out, with the delta-table assertion moved from one to
+            none.
+            The claim checker's catalogue row named the research store alone while SCHEMA, the read
+            and write matrix and section 12.2 all give it the theme store, found by `component-access`
+            on the first run after the class declared what the other three said.
+            The replay writes no facts file for AAPL on the fixture night at all, because its
+            corporate action check refetches AAPL's year as of the action's own session and the
+            series then ends on 2026-08-10. The prose fixture was written against AAPL first and moved
+            to KEYS, which nothing refetches.
+            And the retry rule working where a test was wrong: three of the six committed paragraphs
+            are versions of one section, and inserted on one day the third was read as the retry of
+            the second and fell back. Each is dated on a day of its own in the expectation's test.
+Tested:     16 on the claim half of `claim-admissibility`, beside the document half's 19: the poisoned
+            paragraph refused naming its one figure, the clean computed paragraph accepted with its
+            eight figures, two windows and a date, the unsourced claim refused naming its sentence,
+            the clean researched paragraph accepted and a citation to a refused row refused, the
+            section with no admissible source falling back on its first check, refused twice falling
+            back with both attempts' text, a refusal then a clean retry accepted, the retry bound over
+            six consecutive refusals and across a day, nothing refused written and no column changed
+            but the two the checker owns read off the statement itself, the facts file of the day the
+            section was written, a theme section's figures refused as the carried obligation states,
+            the sections read against figure 12.2's table in both directions, rounding at stated
+            precision, the misreads, sentences and citations, and citations past the list or to a row
+            not stored. 1 on the expectation. 1 on the two tables' columns and the status guard. 3 on
+            the surfaces, each read back off the markup over a store the shipped checker moved. 724
+            tests, from 703 at 6.3.
+Mutated:    the rule, stated before the sweep: mutate a property whose failure would let a sentence
+            a reader should not see reach them, or leave out one they should, with nothing loud to
+            show it. Five qualify and all five were mutated, in a detached worktree under the session
+            scratchpad outside this repository, each reverted before the next, and the worktree
+            removed. All five red.
+            The retry unbounded, every refusal rejected and none falling back: 5 tests red. A
+            researched sentence with no citation passing: 3 red. A citation to a refused row passing:
+            3 red. The precision the prose states ignored, half a unit either way whatever it writes:
+            1 red at first and 9 red after the repair below. And the checker taking the newest facts
+            file rather than the file of the day the section was written: 1 red.
+            The precision mutation found a defect in the fixture rather than in the code. The
+            poisoned paragraph said 68.4% where the file holds 65.87%, so a checker that had stopped
+            reading precision still refused it and only a constructed test noticed. The poison is
+            66.3% now, 0.43 of a point off, which is the slip of rounding a writer makes rather than an
+            invention, and the mutation was run again against it.
+            The last is thin and named as thin: one test catches the newest-file mutation, because
+            the replay holds one facts file per name and only a constructed later file shows the
+            difference.
+            Properties added and not mutated, named because the next sweep has to find them: the
+            status check constraint; a version after a fallback being a fresh first attempt; the two
+            names carrying digits; windows matched against names as well as values; the fraction
+            reading limited to values below ten with a fractional part; the digits inside a name left
+            unread; a citation after the full stop belonging to its sentence; and the section list
+            read against figure 12.2.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 724 of 724 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 328 claims, 262 PASS, 0 fail, 66 out of scope, 0
+            unexamined, 269 placements and verdicts reconciled against a floor of 34, 34 of 35 roster
+            checks carried and all 34 run. Migrations 0 to 21.
+            The twelve claims owed at 6.4 all pass, including the no-admissible-source row 6.3
+            amended its done condition to move here. The claim pair stays 328 and 312: this
+            checkpoint added no claim and moved none.
+            The reader's measurement was demonstrated over a live request and the fixture, under the
+            session scratchpad and never `data/`, and the operator's store under `data/` was not
+            touched by either gate.
+Carried:    three obligations created. A whole-number figure tied to the fact it rounds, and the
+            facts file carrying the figures a local lane section quotes, both due at 6.6, where the
+            first model-written sections exist and the prompt is written. A theme section's figures
+            checked against a facts file a theme has, due at 6.9, where the first theme section is
+            written. 6.6's and 6.9's own text cite them back. This session has committed code and
+            may not sign it off.

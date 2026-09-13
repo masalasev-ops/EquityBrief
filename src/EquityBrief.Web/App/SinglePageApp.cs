@@ -149,7 +149,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<ChartBar> twelveMonths,
         IReadOnlyList<FiredReason> firedReasons,
         string? previousOnTheList,
-        string? nextOnTheList)
+        string? nextOnTheList,
+        IReadOnlyList<LeftOutSection>? leftOut = null)
     {
         var region = new StringBuilder();
 
@@ -192,6 +193,12 @@ public sealed class SinglePageApp : IComponent
         // event book does: what it holds is stored figures and the sentences that
         // state an absence, rather than a mark.
         region.Append(numbers);
+
+        // The researched sections, which section 4 interleaves with the computed
+        // ones. At 6.4 what is drawn is the sections left out, each with its line,
+        // because that is what the claim checker produces and nothing writes a
+        // section a reader could be shown before 6.8.
+        region.Append(marks.LeftOut(ticker, leftOut ?? []));
 
         region.Append(marks.MomentumPanel(ticker, readings));
         region.Append(marks.LevelSummary(ticker, summary, absent));
@@ -344,6 +351,7 @@ public sealed class SinglePageApp : IComponent
         int nights,
         IReadOnlyList<string> stale,
         IReadOnlyList<RefusedDocument> refused,
+        IReadOnlyList<LeftOutSection> fellBack,
         HarnessCounts? harness)
     {
         var region = new StringBuilder();
@@ -357,7 +365,7 @@ public sealed class SinglePageApp : IComponent
         region.Append("<p class=\"degraded\">registered candidates that are not on the list, and the correction divisor beside each threshold, arrive with the register at 7.4</p>");
         region.Append("</section>");
 
-        region.Append(marks.StaleAndFailed(stale, failed, refused));
+        region.Append(marks.StaleAndFailed(stale, failed, refused, fellBack));
         region.Append(marks.HarnessVerdicts(harness));
 
         region.Append("</section>");

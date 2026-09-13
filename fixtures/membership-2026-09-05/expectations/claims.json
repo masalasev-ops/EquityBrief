@@ -1,0 +1,28 @@
+{
+  "stage": "claims",
+  "derivation": "derived",
+  "derivedFrom": "the decision that a claim is a sentence and every sentence in a researched section names the document it rests on, taken with the two decisions it reads, that every number in written prose exists in the facts file and every researched claim names a stored source, and with SCHEMA's statement of the four statuses. Each verdict below was written from those rules and from what each paragraph in research-prose.json says it carries, not from a run of the checker: the poisoned paragraph changes one figure so its refusal names that figure, the unsourced claim adds one sentence with no citation and no digit so only the citation rule can refuse it, and the section with no admissible source cites only refused documents so it falls back before any sentence is read. The facts the figures are matched against are read back from a replayed store at test time and are not stated here.",
+  "tables": [],
+  "awaits": {
+    "table": "research_section",
+    "writtenAt": "6.6",
+    "why": "the checker moves sections and inserts none. SCHEMA gives Insert on research_section to the prose writer and the research runner and to nobody else, and the first of them arrives at 6.6, so the replay populates this table only once a writer runs in it. Until then the sections this file describes are inserted as pending by the test, as a writer would insert them, and moved by the shipped checker. The day the replay writes one, this entry fails until the table moves to the tables list above."
+  },
+  "ticker": "KEYS",
+  "verdicts": {
+    "a clean computed paragraph": { "status": "accepted", "reason": null },
+    "a poisoned paragraph": { "status": "rejected", "reason": "a figure the facts file does not hold", "offending": "66.3%" },
+    "a clean researched paragraph": { "status": "accepted", "reason": null },
+    "an unsourced claim": { "status": "rejected", "reason": "a sentence naming no document", "offending": "Analysts expect the next design cycle to be the strongest in five years." },
+    "a claim resting on a refused document": { "status": "rejected", "reason": "a citation to a document admissibility refused", "offending": "D2 (algorithmic price forecast)" },
+    "a section with no admissible source": { "status": "fallback", "reason": "no admissible source was found", "offending": null }
+  },
+  "attempts": {
+    "rejected twice": ["rejected", "fallback"],
+    "rejected then accepted": ["rejected", "accepted"]
+  },
+  "numbersInTheCleanComputedParagraph": { "figures": 8, "windows": 2, "dates": 1 },
+  "columnsTheCheckerWrites": ["status", "reject_reason"],
+  "retriesPerPass": 1,
+  "note": "two rows' worth of reason are kept for a section refused twice, the first attempt's on its own rejected row and the second's on the fallback row, and the run log line for the second check names both. The clean paragraphs are asserted accepted in the same run as the refusals, because a checker that refused everything would satisfy every refusal above and fail only these two."
+}

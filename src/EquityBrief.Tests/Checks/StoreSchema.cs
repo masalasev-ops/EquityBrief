@@ -36,8 +36,9 @@ internal static class StoreSchema
             .ToArray();
 
     // Tables SCHEMA describes as a difference from another rather than with a
-    // column table of their own. There is one, `theme_section`, which says it
-    // has research_section's columns with theme in place of ticker.
+    // column table of their own. There were one until 6.4, `theme_section`, and
+    // there are none now: the migration creating it put it in the store, where a
+    // description by difference cannot be compared against the built columns.
     //
     // Named rather than skipped quietly. A sweep over every table has to do
     // something about this one, and swallowing it would mean a second such table

@@ -758,7 +758,8 @@ public static class NameScreen
         MoveExtremes? extremes = null,
         ListingRow? listing = null,
         string? previousOnTheList = null,
-        string? nextOnTheList = null)
+        string? nextOnTheList = null,
+        IReadOnlyList<SectionStateRow>? sections = null)
     {
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
@@ -843,8 +844,25 @@ public static class NameScreen
             TwelveMonths(bars),
             FiredReasons(listing),
             previousOnTheList,
-            nextOnTheList);
+            nextOnTheList,
+            LeftOut(sections ?? []));
     }
+
+    // The status a checker leaves a section in when it is left out. The worker's
+    // own constant cannot be referenced from here, since the read surface holds no
+    // reference to the worker, so the word is stated and `read-surface` asserts
+    // the two agree.
+    public const string Fallback = "fallback";
+
+    // The sections whose newest version the checker left out, each with the reason
+    // it stored. Nothing is computed: the reason is the row's, drawn as written.
+    public static IReadOnlyList<LeftOutSection> LeftOut(IReadOnlyList<SectionStateRow> sections) =>
+    [
+        .. sections
+            .Where(section => string.Equals(section.Status, Fallback, StringComparison.Ordinal))
+            .OrderBy(section => section.Section, StringComparer.Ordinal)
+            .Select(section => new LeftOutSection(string.Empty, section.Section, section.Reason ?? string.Empty)),
+    ];
 
     // The plan region alone, which is what tonight's list shows for the selected
     // name: the plan column and the two tables it is read beside. Section 15.7

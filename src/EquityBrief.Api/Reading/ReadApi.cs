@@ -76,6 +76,18 @@ public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, 
 // be deciding which of them the page may have.
 public sealed record FilingRow(string Ticker, DateOnly FilingDate, string Payload, string Source);
 
+// The newest version of one of a name's sections, and where the checker left it.
+//
+// The prose is not carried. What the page draws from this at 6.4 is whether a
+// section was left out and why, and the written sections are drawn from 6.8,
+// where each carries its own date and model beside it.
+public sealed record SectionStateRow(string Section, int Version, DateOnly AsOf, string Status, string? Reason);
+
+// One section that fell back on a night, from either store. `Subject` is a
+// ticker for a name's section and a theme for a theme's, which is what the run
+// page names beside the section.
+public sealed record FellBackRow(string Subject, string Section, int Version, string? Reason);
+
 // The high and the low of the sessions one move spans, which is what section
 // 15.9's fact strip states. A name with no annotated move has none.
 public sealed record MoveExtremes(string Ticker, DateOnly Ended, int Sessions, decimal High, decimal Low);
@@ -239,6 +251,32 @@ public sealed class ReadApi : IComponent
         this.databaseFile = databaseFile;
         this.clock = clock;
     }
+
+    // The newest version of each of a name's sections, on or before the night the
+    // page is about, so an earlier night's page shows what the report said then.
+    const string SectionStatesForName = @"
+        SELECT r.section, r.version, r.as_of, r.status, r.reject_reason
+        FROM research_section r
+        WHERE r.ticker = $ticker
+          AND r.as_of <= $night
+          AND r.version = (
+              SELECT MAX(s.version) FROM research_section s
+              WHERE s.ticker = r.ticker AND s.section = r.section AND s.as_of <= $night)
+        ORDER BY r.section;
+    ";
+
+    // The sections that fell back on one night, from both stores. By the date
+    // each was written, which is a date rather than an instant and needs no clock.
+    const string FellBackOnNight = @"
+        SELECT ticker, section, version, reject_reason
+        FROM research_section
+        WHERE status = 'fallback' AND as_of = $night
+        UNION ALL
+        SELECT theme, section, version, reject_reason
+        FROM theme_section
+        WHERE status = 'fallback' AND as_of = $night
+        ORDER BY 1, 2, 3;
+    ";
 
     // Newest filing first, which is the order the numbers section draws in and the
     // order a restatement arrives in: a later filing about an earlier quarter is a
@@ -1146,6 +1184,58 @@ public sealed class ReadApi : IComponent
                 DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(2),
                 reader.GetString(3)));
+        }
+
+        return rows;
+    }
+
+    // Where each of a name's sections stands, newest version first per section.
+    public async Task<IReadOnlyList<SectionStateRow>> SectionStatesAsync(string ticker, DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SectionStatesForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<SectionStateRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new SectionStateRow(
+                reader.GetString(0),
+                reader.GetInt32(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(3),
+                reader.IsDBNull(4) ? null : reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
+    // The sections that fell back on one night, a name's and a theme's together.
+    public async Task<IReadOnlyList<FellBackRow>> FellBackAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FellBackOnNight;
+        command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<FellBackRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new FellBackRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.IsDBNull(3) ? null : reader.GetString(3)));
         }
 
         return rows;

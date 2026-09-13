@@ -246,6 +246,11 @@ public sealed record StageRow(
 // blank for exactly the rows whose reason is the blank.
 public sealed record RefusedDocument(string Category, string Title, string Url);
 
+// One section left out, as a page draws it: which section, whose, and the reason
+// the checker stored. `Subject` is a ticker on the run page and empty on a name's
+// own page, where the name is the page.
+public sealed record LeftOutSection(string Subject, string Section, string Reason);
+
 // One line of the sector strip.
 public sealed record SectorLine(string Sector, int Names, int InUptrend, int OnTheList);
 
@@ -1468,7 +1473,8 @@ public sealed class MarkRenderer : IComponent
     public string StaleAndFailed(
         IReadOnlyList<string> stale,
         IReadOnlyList<StageRow> failed,
-        IReadOnlyList<RefusedDocument> refused)
+        IReadOnlyList<RefusedDocument> refused,
+        IReadOnlyList<LeftOutSection> fellBack)
     {
         var region = new StringBuilder();
 
@@ -1489,12 +1495,68 @@ public sealed class MarkRenderer : IComponent
         }
 
         region.Append(Refused(refused));
+        region.Append(FellBack(fellBack));
+        region.Append("</section>");
 
-        // The other research half of this region, which is the sections a claim
-        // rejection made fall back. It needs a written section to fall back, so it
-        // arrives with the claim checker at 6.4. Stated rather than drawn empty,
-        // because an empty list reads as a night that rejected nothing.
-        region.Append("<p class=\"degraded\" data-fallbacks=\"absent\">the sections that fell back arrive with the claim checker that rejects them</p>");
+        return region.ToString();
+    }
+
+    // The sections that fell back on this night, whose they were and why.
+    //
+    // Listed rather than counted, for the reason the refusals are, and the reason
+    // drawn whole, because the reason is the offending text: a figure the facts
+    // file does not hold, a sentence naming no document, or no admissible source.
+    // A night with none says so, which is the ordinary case.
+    string FellBack(IReadOnlyList<LeftOutSection> fellBack)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"fell-back\" data-fell-back=\"{fellBack.Count}\">");
+
+        if (fellBack.Count == 0)
+        {
+            region.Append("<p data-fell-back=\"none\">no section fell back on this night</p>");
+        }
+        else
+        {
+            region.Append(Formatted($"<p data-fell-back=\"{fellBack.Count}\">{fellBack.Count} section(s) fell back</p>"));
+
+            foreach (var section in fellBack)
+            {
+                region.Append(Invariant, $"<p class=\"fell-back-section\" data-subject=\"{Escaped(section.Subject)}\" data-section=\"{Escaped(section.Section)}\">");
+                region.Append(Invariant, $"{Escaped(section.Subject)}, {Escaped(section.Section)}: {Escaped(section.Reason)}</p>");
+            }
+        }
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // A name's own sections that were left out, each with one line saying why.
+    //
+    // Section 18's two rows about a section the checker could not accept say the
+    // same thing a reader sees: the section is absent with one line saying why,
+    // whether it was refused twice or had no admissible source to be written from.
+    // The line is the reason the checker stored, so the page and the run log
+    // cannot describe one refusal two ways.
+    //
+    // Only the sections left out are drawn here. A written section is drawn from
+    // 6.8 with its own date and model beside it, and a section still waiting on
+    // its retry is neither written nor left out, so this page says nothing of it.
+    public string LeftOut(string ticker, IReadOnlyList<LeftOutSection> leftOut)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"research\" data-ticker=\"{Escaped(ticker)}\" data-left-out=\"{leftOut.Count}\">");
+
+        foreach (var section in leftOut)
+        {
+            region.Append(Invariant, $"<p class=\"left-out\" data-section=\"{Escaped(section.Section)}\">");
+            region.Append(Invariant, $"{Escaped(section.Section)} is left out: {Escaped(section.Reason)}</p>");
+        }
+
+        region.Append("<p class=\"degraded\" data-written=\"absent\">the written sections, each with its own date and the model that wrote it, arrive with the research pass at 6.8</p>");
         region.Append("</section>");
 
         return region.ToString();

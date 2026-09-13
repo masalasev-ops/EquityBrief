@@ -58,6 +58,30 @@ public static class FactsFile
         });
     }
 
+    // The facts a stored payload holds, with their sources, in the order written.
+    //
+    // The claim checker's read, which is the first that needs the facts rather
+    // than a comparison of two files. An empty payload is a file the retention
+    // emptied and holds nothing, which is a different answer from a file with no
+    // facts in it only to a reader that had the night's facts in hand.
+    public static IReadOnlyList<Fact> Read(string payload)
+    {
+        if (payload.Length == 0)
+        {
+            return [];
+        }
+
+        using var document = JsonDocument.Parse(payload);
+
+        return
+        [
+            .. document.RootElement.GetProperty("facts").EnumerateArray().Select(fact => new Fact(
+                fact.GetProperty("name").GetString()!,
+                fact.GetProperty("value").GetString()!,
+                fact.GetProperty("source").GetString()!)),
+        ];
+    }
+
     // The hash of the payload, which is what the staleness judge reads to know
     // whether tonight's facts differ from the last night's without holding the
     // facts they differ from. That is also why the retention keeps it when it
