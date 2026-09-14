@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - CLAUDE.md - nightly-cost's row states the carve's second half
+
+Authorised by: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
+Was:
+> | `nightly-cost` | every CI run | The nightly path makes zero model calls and zero per-name network requests, asserted over the shipped source and over a recorded run, with the run measured over two universe sizes so the count is shown not to grow with the population |
+Now:
+> | `nightly-cost` | every CI run | The nightly path makes zero per-name network requests and its arithmetic zero model calls, asserted over the shipped source and over a recorded run, with the run measured over two universe sizes so the count is shown not to grow with the population. The night reaches no lane an open reaches, read off what the components its own file constructs declare, and every model call a whole recorded night makes sits on step 17's own row or on a pass that row names, with nothing spent anywhere, because the queue is carved out of the model-call rule by name and out of nothing else |
+Why: the check now asserts which lane the night may call and that its model calls come from step 17 alone, which is the half of the carve 6.10 lands before the queue, and a roster row stating less than its check asserts is the row a later session narrows the check back to. It also asserted zero model calls against a figure its own helper wrote as a literal zero, which reading the calls off the run log replaces.
+
 ### 2026-09-13 - BUILD_PLAN.md - the industry list measurement read as a measure of the search, and one obligation created against 6.11
 
 Corrects: the discharged row said the fixture's four industries drawing nothing over the whole list is what a theme pass finds until the list covers its industries, and one of the four, Consumer Electronics, drew ten storable pages from statista.com searched alone a minute apart. Found at 6.9 while its record was written, by reading the single-site searches against the whole-list ones.
