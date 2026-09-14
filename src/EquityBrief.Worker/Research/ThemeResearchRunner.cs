@@ -213,9 +213,11 @@ public sealed class ThemeResearchRunner(
         {
             stopped = await WriteAsync(connection, theme, asOf, stored, null, runId, null, written, notWritten, cancellation);
 
+            // Under the theme's own stage, since a name's pass runs this one inside its run and
+            // checks its own sections after it.
             if (written.Count > 0)
             {
-                await checker.RunAsync(runId, cancellation: cancellation);
+                await checker.RunForThemeAsync(runId, cancellation: cancellation);
             }
 
             // The one retry, told why the first draft was refused.
@@ -229,7 +231,7 @@ public sealed class ThemeResearchRunner(
 
                 if (written.Count > before)
                 {
-                    await checker.RunAsync(runId, ResearchRunner.SecondRound, cancellation);
+                    await checker.RunForThemeAsync(runId, ResearchRunner.SecondRound, cancellation);
                 }
             }
         }

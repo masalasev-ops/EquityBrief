@@ -640,6 +640,12 @@ public partial class FixtureExpectations
             Query(store, "SELECT version, status FROM theme_section ORDER BY version;"));
         Assert.Equal(ThemeResearchRunner.Written, outcome.Outcome);
         Assert.Contains($"research call: {ClaimRules.CycleSection}, {ResearchRunner.SecondRound}", Query(store, "SELECT stage FROM run_log;"));
+
+        // Both checks under the theme's stage, the retry's with its round, so a name's pass that
+        // refreshed this theme has its own two free.
+        Assert.Equal(
+            [ClaimChecker.ThemeStage, $"{ClaimChecker.ThemeStage}, {ResearchRunner.SecondRound}"],
+            Query(store, "SELECT stage FROM run_log WHERE stage LIKE '%claims%' ORDER BY rowid;"));
     }
 
     // ---- which theme a name's pass reads, and when it refreshes it ----
@@ -694,6 +700,50 @@ public partial class FixtureExpectations
 
         Assert.Equal(IndustryList().Count, asked.Requests);
         Assert.Contains(ClaimRules.CycleSection, refreshed.Warranted);
+    }
+
+    [Fact]
+    public async Task ANamesPassWhoseThemeWroteItsCycleChecksItsOwnSectionsOnARowOfItsOwn()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+        using var folder = new TemporaryDirectory();
+
+        const string Theme = "Scientific & Technical Instruments";
+
+        // One page the theme's search keeps, so its call is made and its cycle is written and
+        // checked inside the name's pass.
+        Answered(
+            folder.Path,
+            Theme,
+            """
+            {"results":[{"url":"https://www.spglobal.com/instruments","title":"Instruments","content":"A snippet.","raw_content":"Orders for test and measurement instruments kept rising as laboratories and factories spent on new equipment.","published_date":"Fri, 04 Sep 2026 00:00:00 GMT"}]}
+            """);
+
+        // The cycle in words, and the key under each figure, which is the one section written
+        // from the facts file alone and so the one a name with no document still has written.
+        var model = new ScriptedModel(
+            "Orders for test and measurement instruments kept rising across the industry [D1].",
+            "Each line on the chart is drawn from the name's own stored sessions.");
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, lane: [], paid: model, localModel: new NothingAnsweringLocal(), archive: new NoRelease(), news: new NoArticles(), search: new RecordedSearchFeed(folder.Path)).RunAsync("KEYS", "research-theme-checked");
+
+        // A theme refreshed inside a name's pass runs its check under the name's run, and the
+        // name's own check after it is a row of its own rather than a second row under one
+        // stage, which the 6.11 production run found stopping MSFT's pass with nothing on its
+        // row once its theme had written a cycle.
+        Assert.Equal(ResearchRunner.Written, outcome.Outcome);
+        Assert.Equal(
+            [$"1|{ClaimChecker.Accepted}"],
+            Query(store, "SELECT version, status FROM theme_section;"));
+        Assert.Equal(
+            [$"{ClaimRules.ComputedSection}|{ClaimChecker.Accepted}"],
+            Query(store, "SELECT section, status FROM research_section WHERE ticker = 'KEYS';"));
+
+        var stages = Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-theme-checked';");
+
+        Assert.Contains(ClaimChecker.ThemeStage, stages);
+        Assert.Contains(ClaimChecker.Stage, stages);
+        Assert.Contains(ResearchRunner.Stage, stages);
     }
 
     [Fact]
