@@ -204,7 +204,7 @@ public class LocalModelFeedTests
 
         // A fixture run refuses it too, because the refusal is about the configuration.
         Assert.Throws<InvalidOperationException>(() =>
-            OnDemandFeeds.Resolve("fixture", Folder(), null, null, null, LocalLane.Settings(configured), ResearchModelFeedTests.Shipped()));
+            OnDemandFeeds.Resolve("fixture", Folder(), null, null, null, null, LocalLane.Settings(configured), ResearchModelFeedTests.Shipped()));
 
         // And a number that is not one is refused rather than read as the default.
         var mistyped = new ConfigurationBuilder().AddInMemoryCollection(

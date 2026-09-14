@@ -25,6 +25,97 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - BUILD_PLAN.md - the industry list measurement read as a measure of the search, and one obligation created against 6.11
+
+Corrects: the discharged row said the fixture's four industries drawing nothing over the whole list is what a theme pass finds until the list covers its industries, and one of the four, Consumer Electronics, drew ten storable pages from statista.com searched alone a minute apart. Found at 6.9 while its record was written, by reading the single-site searches against the whole-list ones.
+Was:
+> | **The industry source list measured against a search that ran** | 6.0 | 6.9, discharged | measured, and recorded in PROGRESS.md and in the list's own review note. One search a site over the quarter to 2026-09-08, each for an industry the site covers, returned 68 results and 50 storable ones, being on the site with text longer than their snippet and a publish date: semiconductors.org 10, trendforce.com 10, statista.com 10, iea.org 9, worldsteel.org 5, digitimes.com 3, spglobal.com 2, eia.gov 1, and none from bls.gov, census.gov, federalreserve.gov or ihsmarkit.com. Two of the three gated markings were guesses the search contradicts, statista.com returning ten storable pages of ten and digitimes.com three, and the list now marks ihsmarkit.com alone. The same theme search for the fixture's four industries over the whole list returned nothing for any of them, which is what a theme pass for most of the index finds until the list covers its industries. What it read before: 6.9 builds the search and is the first point at which anything can measure this list. 1.7 named it as the weaker of the two, because the licensed feed returned no article from any site on it, and the 6.0 review confirmed that with no more evidence than 1.7 had: a feed measurement cannot review a search list. What 6.9 produces is a search against the list over a theme, and what that answers is which of the twelve sites return a page whose full text can be stored, which is the question the gated markings on the list are a guess at |
+Now: the row's last measured sentence says the empty searches measure the one search a pass makes rather than the list, and names the row that carries it. A second row is created, due at 6.11, for a theme search over the whole list measured against its sites searched alone, and 6.11's own text cites it back.
+Why: a statement that the list does not cover an industry, resting on a search that returned nothing for an industry a site on the list does cover, would send a later session to widen the list when what returned less than the list holds is the search. It is chased from 6.11 because that is the checkpoint producing every section on real names.
+
+### 2026-09-13 - ARCHITECTURE.html - the name screen reads the industry cycle from the theme store
+
+Authorised by: A theme is the industry the index names for a member, and one theme pass serves every member it names
+Was:
+> <p><b>Reads:</b> the facts, ladder, levels, volume profile, moves and fundamentals for that name and date, every stored research section with its own date and model, the source documents those sections cite, which the dates-and-sources region draws and this list did not name until 6.0, the calendar that region draws beside them, and the run log, for what research has spent and cost and what the newest pass for the name came to, which the page has read since 6.6 and this list did not name until 6.8.</p>
+Now:
+> <p><b>Reads:</b> the facts, ladder, levels, volume profile, moves and fundamentals for that name and date, every stored research section with its own date and model, the industry cycle the theme store holds for the industry the membership row names for the name, which is the theme's section rather than one of the name's and is read that way from 6.9, the source documents those sections cite, which the dates-and-sources region draws and this list did not name until 6.0, the calendar that region draws beside them, and the run log, for what research has spent and cost and what the newest pass for the name came to, which the page has read since 6.6 and this list did not name until 6.8.</p>
+Why: a name's industry cycle is its theme's section, read for the industry its membership row names, and a Reads line naming only the name's own research sections would not say where the page draws it from.
+
+### 2026-09-13 - BUILD_PLAN.md - the three obligations 6.9 produces the evidence for, discharged
+
+Corrects: nothing was wrong. Three carried obligations reached the checkpoint that produces their evidence, and each row records what was measured and ruled, in the form 6.8's discharge took.
+Was:
+> | **A theme section's figures checked against a facts file a theme has** | 6.4 | 6.9 | 6.9 builds the theme runner and writes the first theme section. A facts file is one per name and a theme is not a name, so 6.4's checker holds a theme section against no facts file and refuses every figure in it, while the industry cycle is a section about where an industry's own prices are, which is figures. What 6.9 produces is the theme record and its stored documents, and what it settles is where a figure about an industry's prices is computed so that code owns it before prose quotes it |
+>
+> | **The denied-category markers tested against what the search tool returns** | 6.3 | 6.9 | 6.9 builds the search tool and is the first point at which a document arrives through the path the product will use. 6.3's markers were read off eight pages asked for by hand, which is real evidence and not the same evidence: a page fetched by hand arrives as a reading tool's rendering rather than as the bytes a search tool returns, so what the fixture holds is seven constructed documents carrying markers measured elsewhere. What 6.9 produces is a set of results from a theme search and a company search, and what that answers is whether the markers fire on what the tool actually delivers, in both directions: a refusable page admitted, and an ordinary article refused. The four captured articles already hold the admitting half against the licensed feed |
+>
+> | **The industry source list measured against a search that ran** | 6.0 | 6.9 | 6.9 builds the search and is the first point at which anything can measure this list. 1.7 named it as the weaker of the two, because the licensed feed returned no article from any site on it, and the 6.0 review confirmed that with no more evidence than 1.7 had: a feed measurement cannot review a search list. What 6.9 produces is a search against the list over a theme, and what that answers is which of the twelve sites return a page whose full text can be stored, which is the question the gated markings on the list are a guess at |
+Now:
+> | **A theme section's figures checked against a facts file a theme has** | 6.4 | 6.9, discharged | settled as a rule rather than as a file (see: A theme section states no figure, because nothing the store holds is computed for an industry). A theme's facts file is empty by rule: nothing the store holds is computed about an industry's own prices, so the checker holds a theme section against none and refuses every figure in one, the section is asked for with no figure and no full date, and every sentence cites a document in the theme record. The evidence was the first theme section a model wrote: over the nine Semiconductors pages the fixture's search kept, the paid model wrote the cycle in words citing two of them, and the checker accepted it on its first draft. A facts file of medians over the members' own files was the branch not taken, because it is a figure about the members' shares rather than about the industry's prices. What it read before: 6.9 builds the theme runner and writes the first theme section. A facts file is one per name and a theme is not a name, so 6.4's checker holds a theme section against no facts file and refuses every figure in it, while the industry cycle is a section about where an industry's own prices are, which is figures. What 6.9 produces is the theme record and its stored documents, and what it settles is where a figure about an industry's prices is computed so that code owns it before prose quotes it |
+>
+> | **The denied-category markers tested against what the search tool returns** | 6.3 | 6.9, discharged | measured over what the tool returned, and recorded in the search admissibility expectation, which a test reruns from the captures. Over the twenty results of a company search for Keysight Technologies and a theme search for Semiconductors, seventeen carrying text: one refusable page refused, a quote page with no running prose; two refusable pages admitted, a quote page whose one paragraph of prose is the provider's description of the company and a move write-up bylined to a site's price tracker, both from sites no list carries, so on the path a theme pass takes the list drops each before the test reads it; and none of the other fourteen refused, a research vendor's report page and a listing of an association's posts among them. No marker was changed: the quote page rule's second half is 6.3's choice not to refuse an article filed under a quote address, and the write-up is the limit 6.3 stated for machine writing nobody declares. What it read before: 6.9 builds the search tool and is the first point at which a document arrives through the path the product will use. 6.3's markers were read off eight pages asked for by hand, which is real evidence and not the same evidence: a page fetched by hand arrives as a reading tool's rendering rather than as the bytes a search tool returns, so what the fixture holds is seven constructed documents carrying markers measured elsewhere. What 6.9 produces is a set of results from a theme search and a company search, and what that answers is whether the markers fire on what the tool actually delivers, in both directions: a refusable page admitted, and an ordinary article refused. The four captured articles already hold the admitting half against the licensed feed |
+>
+> | **The industry source list measured against a search that ran** | 6.0 | 6.9, discharged | measured, and recorded in PROGRESS.md and in the list's own review note. One search a site over the quarter to 2026-09-08, each for an industry the site covers, returned 68 results and 50 storable ones, being on the site with text longer than their snippet and a publish date: semiconductors.org 10, trendforce.com 10, statista.com 10, iea.org 9, worldsteel.org 5, digitimes.com 3, spglobal.com 2, eia.gov 1, and none from bls.gov, census.gov, federalreserve.gov or ihsmarkit.com. Two of the three gated markings were guesses the search contradicts, statista.com returning ten storable pages of ten and digitimes.com three, and the list now marks ihsmarkit.com alone. The same theme search for the fixture's four industries over the whole list returned nothing for any of them, which is what a theme pass for most of the index finds until the list covers its industries. What it read before: 6.9 builds the search and is the first point at which anything can measure this list. 1.7 named it as the weaker of the two, because the licensed feed returned no article from any site on it, and the 6.0 review confirmed that with no more evidence than 1.7 had: a feed measurement cannot review a search list. What 6.9 produces is a search against the list over a theme, and what that answers is which of the twelve sites return a page whose full text can be stored, which is the question the gated markings on the list are a guess at |
+Why: A row whose checkpoint has landed is discharged in its own cell with what it read before, so the table carries no open row due at a landed checkpoint.
+
+### 2026-09-13 - ARCHITECTURE.html - the lane table's industry cycle states no figure
+
+Authorised by: A theme section states no figure, because nothing the store holds is computed for an industry
+Was:
+> <td>every sentence cites a document in the theme record; every figure is one code computed for the industry</td>
+Now:
+> <td>every sentence cites a document in the theme record; it states no figure, because nothing the store holds is computed for an industry (see: A theme section states no figure, because nothing the store holds is computed for an industry)</td>
+Why: No code computes a figure about an industry's own prices, so the only figure a theme section could carry is one no rule can check, and the cell says what the rule does rather than a figure nothing produces.
+
+### 2026-09-13 - ARCHITECTURE.html - an off-list search result is discarded before its text is read
+
+Corrects: the row said the text of an off-list result is never fetched, and the search tool returns each result's text in the answer to the search, so no second request exists to be skipped. Found at 6.9 by the capture taken before the feed was written.
+Was:
+> <td>the result is discarded before its text is fetched, and the run log names the domain</td>
+Now:
+> <td>the result is discarded before its text is read, the tool having returned the text in the same answer, and the run log names the domain</td>
+Why: The gate still runs before anything reads or tests the text, which is what the row is for, and it now says the mechanism the tool allows.
+
+### 2026-09-13 - ARCHITECTURE.html - the research runner reads membership for the name's industry
+
+Authorised by: A theme is the industry the index names for a member, and one theme pass serves every member it names
+Was:
+> <td>facts, fundamentals, filings archive, news feed, research store, theme store, source documents, run log</td> ... and starts no second plain pass where one did (see: A name opened again on the day its research pass ran starts no second pass unless the page asks for one)</td>; and the matrix row's Membership cell blank
+Now:
+> <td>membership, facts, fundamentals, filings archive, news feed, research store, theme store, source documents, run log</td> ... with a sentence saying it reads the industry the index names for the name and has the theme research runner refresh that theme first where the cycle is missing or stale; and the matrix row's Membership cell R
+Why: The name's industry is what its theme is, and the runner reads it off the membership row the night writes.
+
+### 2026-09-13 - ARCHITECTURE.html - the theme research runner reads the run log and says what it drops and when it does not start
+
+Authorised by: A theme refresh runs off-peak, and a name opened at peak is written without one
+Was:
+> <td>theme store, source documents, search tool</td><td>theme store, source documents</td><td>researches an industry's own cycle once, so every name in that industry shares one paid pass, testing every document it fetched for admissibility before storing it as the per-name runner does, and has the spend cap make its every paid call</td>; and the matrix row's run log cell W
+Now:
+> <td>theme store, source documents, search tool, run log</td><td>theme store, source documents</td> with sentences saying a theme is the index's industry, that off-list and short results are dropped and named, that it does not start at peak, and that it reads the run log for a pass already run that day; and the matrix row's run log cell R W
+Why: A theme pass is researched once a day at most, which it reads off its own rows, and the row names what it drops before anything is stored.
+
+### 2026-09-13 - SCHEMA.md - membership carries the industry beside the sector
+
+Authorised by: A theme is the industry the index names for a member, and one theme pass serves every member it names
+Was:
+> | `sector` | TEXT | the sector the provider last named for this ticker, null where it has named none. Last because it was added by an `ALTER TABLE` at 5.1 and SQLite appends, and this file states the order the store has rather than the order that reads best |
+Now:
+> | `sector` | TEXT | ... After `observed_at` because it was added by an `ALTER TABLE` at 5.1 ... |
+> > | `industry` | TEXT | the industry the provider last named for this ticker, null where it has named none. Last because it was added by an `ALTER TABLE` at 6.9 |
+Why: Migration 22 adds the industry, and the sector is no longer the last column.
+
+### 2026-09-13 - RUNBOOK.md - what a pass does about the industry cycle, and the search tool's key
+
+Authorised by: A theme is the industry the index names for a member, and one theme pass serves every member it names
+Was:
+> The industry cycle waits for the theme record, which the theme research runner writes.
+> >
+> > **Where to look.** Every stage of a pass is a row on the run log under one run, `research-<instant>-<TICKER>`: `fundamentals`, `staleness`, `prose`, one `research call:` row per paid call, `claims`, the second and third rounds' rows named for their round, and `research` last, whose detail says what was written, what was not and why, and what the documents came to.
+Now:
+> the sentence removed, a paragraph on the theme's cycle added before **Where to look.**, which now names the `theme research` row; and the secrets table gains `| Tavily, the search tool | EquityBrief:Providers:Tavily:ApiKey | EquityBrief.Worker |`
+Why: 6.9 writes the theme record, so the sentence saying the cycle waits for it is no longer true, and a secrets file written by hand needs the search tool's key path.
+
 ### 2026-09-13 - ARCHITECTURE.html - the name screen's reads name the calendar and the run log
 
 Corrects: the name screen has read the run log since 6.6, for the newest prose pass's sections not written, and since 6.7 for what research spent, and from 6.8 it reads the calendar for its dates and the newest research pass, and its Reads line named none of the three. Found at 6.8, where the page's research regions are drawn.

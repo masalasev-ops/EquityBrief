@@ -42,11 +42,12 @@ public sealed class MembershipLoader(
     // night rewrites the same rows with the same values, which is what makes the
     // stage idempotent.
     const string Upsert = @"
-        INSERT INTO membership (index_code, ticker, joined, ""left"", sector, observed_at)
-        VALUES ($index_code, $ticker, $joined, $left, $sector, $observed_at)
+        INSERT INTO membership (index_code, ticker, joined, ""left"", sector, industry, observed_at)
+        VALUES ($index_code, $ticker, $joined, $left, $sector, $industry, $observed_at)
         ON CONFLICT (index_code, ticker, IFNULL(joined, '')) DO UPDATE SET
             ""left"" = excluded.""left"",
             sector = COALESCE(excluded.sector, membership.sector),
+            industry = COALESCE(excluded.industry, membership.industry),
             observed_at = excluded.observed_at;
     ";
 
@@ -56,7 +57,7 @@ public sealed class MembershipLoader(
     // sector is not, and assigning would clear the value the store already
     // holds. A departed name keeps the sector it was last seen with, dated by
     // the `observed_at` on its own row, and a name the provider has never named
-    // a sector for stays null.
+    // a sector for stays null. The industry is coalesced for the same reason, from 6.9.
 
     // Members on a date, which is a different question from members now.
     //
@@ -128,6 +129,7 @@ public sealed class MembershipLoader(
             command.Parameters.AddWithValue("$joined", Text(constituent.Joined) ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("$left", Text(constituent.Left) ?? (object)DBNull.Value);
             command.Parameters.AddWithValue("$sector", (object?)constituent.Sector ?? DBNull.Value);
+            command.Parameters.AddWithValue("$industry", (object?)constituent.Industry ?? DBNull.Value);
             command.Parameters.AddWithValue("$observed_at", observedAt);
 
             await command.ExecuteNonQueryAsync(cancellationToken);

@@ -312,6 +312,24 @@ public sealed class ReadApi : IComponent
         ORDER BY r.section;
     ";
 
+    // The industry cycle a name reads, which is its theme's: the newest version the checker
+    // accepted for the industry the index last named for the member. A name's cycle is
+    // never one of its own rows, so it is read off the theme store and not the research one.
+    // see: A theme is the industry the index names for a member, and one theme pass serves every member it names
+    const string ThemeCycleForName = @"
+        SELECT t.section, t.version, t.as_of, t.model, t.prose, t.source_ids
+        FROM theme_section t
+        WHERE t.theme = (
+                SELECT m.industry FROM membership m
+                WHERE m.ticker = $ticker AND m.industry IS NOT NULL
+                ORDER BY m.observed_at DESC
+                LIMIT 1)
+          AND t.section = $section
+          AND t.status = 'accepted'
+        ORDER BY t.version DESC
+        LIMIT 1;
+    ";
+
     // The stages the prose writer and the research runner record themselves under.
     // The worker's own constants cannot be referenced from here, since the read
     // surface holds no reference to the worker, so the words are stated and
@@ -1419,7 +1437,8 @@ public sealed class ReadApi : IComponent
     }
 
     // A name's written sections, one per section, each the newest the checker
-    // accepted.
+    // accepted, with its industry cycle among them, which is its theme's rather than a row
+    // of its own.
     public async Task<IReadOnlyList<WrittenSectionRow>> WrittenSectionsAsync(string ticker)
     {
         await using var connection = Open();
@@ -1443,7 +1462,36 @@ public sealed class ReadApi : IComponent
                 reader.GetString(5)));
         }
 
+        if (await ThemeCycleAsync(ticker) is { } cycle)
+        {
+            rows.Add(cycle);
+        }
+
         return rows;
+    }
+
+    // The name's industry cycle, being its theme's newest accepted version, or none where
+    // its industry has none or the index names no industry for it.
+    public async Task<WrittenSectionRow?> ThemeCycleAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ThemeCycleForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$section", ClaimRules.CycleSection);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync()
+            ? new WrittenSectionRow(
+                reader.GetString(0),
+                reader.GetInt32(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5))
+            : null;
     }
 
     // The detail of the newest pass for a name, as stored, or none where no pass has

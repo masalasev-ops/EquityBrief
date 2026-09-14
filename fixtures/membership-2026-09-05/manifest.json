@@ -489,6 +489,41 @@
       "query": "POST chat/completions for The short version of KEYS in the paid lane, the draft written after the checker refused the first, over the evidence the research runner hands that section from the fixture's filings and news for the night of 2026-09-08, asked in the comparison with every section in the paid lane, keyed fe71ec99b59ce56ed58e77ad82030968",
       "fetchedAt": "2026-09-13T18:30:44Z",
       "trimmedTo": "nothing. The whole response, 16148 prompt tokens, 14208 of them served from the provider's cache, and 5173 completion tokens, 4441 of them reasoning, finishing on stop, named for the request's key so a replay asking the same request reads it."
+    },
+    {
+      "file": "search-150201fc99d04011ffbc59c51496a023.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', the theme search a pass builds for KEYS's industry on 2026-09-08: include_domains the twelve sites of the industry list in the file's order, max_results 10, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 150201fc99d04011ffbc59c51496a023",
+      "fetchedAt": "2026-09-13T22:12:53Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: a quarter's window restricted to the industry list returned nothing for this industry, and the same was true of the fixture's other three industries, Consumer Electronics, Software - Infrastructure and Entertainment, which were searched the same way at the same time and are recorded in PROGRESS.md rather than committed. It is the case a theme pass has to survive on the one name the fixture researches: a search that answered and found nothing, which is not a tool that did not answer."
+    },
+    {
+      "file": "search-d760e4f3838af335c7eeec409c810adf.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', the theme search a pass builds for that industry on 2026-09-08: include_domains the twelve sites of the industry list in the file's order, max_results 10, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed d760e4f3838af335c7eeec409c810adf",
+      "fetchedAt": "2026-09-13T22:21:49Z",
+      "trimmedTo": "nothing. The whole response, ten results each carrying its page's text and an HTTP date: nine from semiconductors.org, which is on the list, and one from mordorintelligence.com, which is not, although the request restricted the search to the list. It is the industry the list covers, kept so a theme pass is exercised past its search, and it is the capture that shows the restriction is a request the tool does not always hold. No fixture member is in this industry, so the two members a theme serves are constructed."
+    },
+    {
+      "file": "search-d03660a12e10e32f3ce3c191af07077a.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Keysight Technologies', restricted to the thirteen sites of the company-news list in the file's order, max_results 10, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed d03660a12e10e32f3ce3c191af07077a",
+      "fetchedAt": "2026-09-13T22:12:55Z",
+      "trimmedTo": "nothing. The whole response, and a company search is not a path the product takes, since per-name material comes from feeds fetched by ticker. It is here as the other half of what the denied-category markers are tested against, a search naming a company, and for what it shows about the list: seven of its ten results came from finance.yahoo.com, ca.finance.yahoo.com and quiverquant.com, none of which the request's list carries, and three came back with no page text, one of them from businesswire.com, which the list does carry."
+    },
+    {
+      "file": "search-refusal-401.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search",
+      "query": "POST search for 'Scientific & Technical Instruments industry' with a key that is not one, sent in the authorisation header",
+      "fetchedAt": "2026-09-13T22:12:55Z",
+      "trimmedTo": "nothing. The whole body of the refusal, status 401, which is where the tool puts its own words: under detail, as an error string, rather than at the top level."
+    },
+    {
+      "file": "research-call-819de509e6450b99ce2b4086bb0c1aad.json",
+      "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
+      "query": "POST chat/completions for The industry cycle of the theme Semiconductors, the paid call a theme pass builds from the shipped configuration over the nine pages its search kept from the industry list, with no facts listed: model deepseek-flash, max_tokens 32768, keyed 819de509e6450b99ce2b4086bb0c1aad",
+      "fetchedAt": "2026-09-13T22:50:44Z",
+      "trimmedTo": "nothing. The whole response to one paid call, 235 uncached prompt tokens, 12,928 cached and 2,550 completion tokens, of which 2,194 were reasoning, finishing on stop. Sent from PowerShell with the body the theme pass built, byte for byte, because the same body sent from the test host was cut off while it was being written to the connection on each of three attempts, where a short body from the same host was answered on its second attempt. Its prose states no figure and cites the first two pages, and the checker accepted it on its first draft."
     }
   ]
 }

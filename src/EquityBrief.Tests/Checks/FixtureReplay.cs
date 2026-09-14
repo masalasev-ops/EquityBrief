@@ -184,6 +184,23 @@ public class FixtureReplay
         return store;
     }
 
+    // The whole replay: the pipeline, the research pass for the fixture's one researched
+    // name, and the theme pass for the one industry the fixture holds a recording for. The
+    // name's own industry is searched inside its pass and returns nothing from the list, so
+    // the theme store is written by the second step, over the industry the list covers.
+    internal const string RecordedTheme = "Semiconductors";
+
+    internal static async Task<TemporaryStore> ReplayedWholeAsync()
+    {
+        var store = await ResearchedAsync();
+        var night = FixedClock.At(Night, SessionZones.UnitedStates);
+        var cap = new SpendCap(new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), Core.Spending.SpendCaps.Default, night, store.DatabaseFile);
+
+        await Themer(store, night, cap, new ClaimChecker(night, store.DatabaseFile)).RunAsync(RecordedTheme, "replay-theme");
+
+        return store;
+    }
+
     // The store a research pass over the fixture starts from: the replay, and the night's
     // facts assembled again and its changes read again once the opens' fundamentals are
     // stored, which is what the research verb does after a fetch.
@@ -209,15 +226,40 @@ public class FixtureReplay
         ILocalModelFeed? localModel = null,
         LocalModelSettings? localSettings = null,
         IFilingsArchiveFeed? archive = null,
-        INameNewsFeed? news = null) =>
-        new(
+        INameNewsFeed? news = null,
+        ISearchFeed? search = null)
+    {
+        var cap = new SpendCap(paid ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile);
+        var checker = new ClaimChecker(clock, store.DatabaseFile);
+
+        return new(
             new StalenessJudge(clock, store.DatabaseFile),
             sections => new ProseWriter(localModel ?? local ?? new RecordedLocalModelFeed(Folder()), localSettings ?? new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
-            new SpendCap(paid ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile),
-            new ClaimChecker(clock, store.DatabaseFile),
+            cap,
+            checker,
+            Themer(store, clock, cap, checker, search),
             archive ?? new RecordedFilingsArchiveFeed(Folder()),
             news ?? new RecordedNameNewsFeed(Folder()),
             lane ?? ProseWriter.DefaultLane,
+            clock,
+            store.DatabaseFile);
+    }
+
+    // The theme research runner a replayed pass holds, over the committed recordings and the
+    // industry list at the checkout's root, sharing the pass's cap and checker as the
+    // worker's verb has it do.
+    internal static ThemeResearchRunner Themer(
+        TemporaryStore store,
+        IClock clock,
+        SpendCap cap,
+        ClaimChecker checker,
+        ISearchFeed? search = null) =>
+        new(
+            cap,
+            checker,
+            search ?? new RecordedSearchFeed(Folder()),
+            SourceLists.Read(Path.Combine(Repository.Root, SourceLists.FileName)).Industry,
+            Providers.ResearchModelFeedTests.Shipped().Pricing,
             clock,
             store.DatabaseFile);
 
@@ -360,7 +402,7 @@ public class FixtureReplay
 
         Assert.DoesNotContain(covering, _ => true);
 
-        using var store = await ResearchedAsync();
+        using var store = await ReplayedWholeAsync();
         var populated = Populated(store).ToHashSet(StringComparer.Ordinal);
         var declared = StoreSchema.DeclaredTables(Corpus.Read("docs/SCHEMA.md"));
         var plan = Corpus.Read("docs/BUILD_PLAN.md");
@@ -390,7 +432,7 @@ public class FixtureReplay
         var named = Named();
         var covered = named.Values.SelectMany(tables => tables).ToHashSet(StringComparer.Ordinal);
 
-        using var store = await ResearchedAsync();
+        using var store = await ReplayedWholeAsync();
 
         var populated = Populated(store).Except(NotAFigure, StringComparer.Ordinal).ToArray();
 
@@ -415,7 +457,7 @@ public class FixtureReplay
 
         Assert.True(named.Count >= 4, $"Read {named.Count} expectations, expected at least 4.");
 
-        using var store = await ResearchedAsync();
+        using var store = await ReplayedWholeAsync();
         var populated = Populated(store).ToHashSet(StringComparer.Ordinal);
 
         var missing = named
@@ -433,7 +475,7 @@ public class FixtureReplay
         // The permanent proof that the forward direction can fail, over
         // constructed input rather than by breaking the fixture. A table nobody
         // named is exactly what this check exists to find, so it is planted.
-        using var store = await ResearchedAsync();
+        using var store = await ReplayedWholeAsync();
 
         var covered = Named().Values.SelectMany(tables => tables).ToHashSet(StringComparer.Ordinal);
         var populated = Populated(store).Except(NotAFigure, StringComparer.Ordinal).ToArray();

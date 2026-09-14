@@ -157,7 +157,8 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     var extremes = await read.MoveExtremesAsync(ticker);
 
     // The written sections and the documents they cite, which the dates-and-sources
-    // region draws with the calendar from the newest stored session on.
+    // region draws with the calendar from the newest stored session on. The industry
+    // cycle among them is the theme's, read for the industry the index names the member in.
     var written = await read.WrittenSectionsAsync(ticker);
 
     return Results.Content(

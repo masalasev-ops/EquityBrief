@@ -150,6 +150,32 @@ public sealed record ResearchPricing
         return PeakDays.Contains(utc.DayOfWeek) && PeakHours.Any(window => utc.Hour >= window.From && utc.Hour < window.To);
     }
 
+    // The first instant at or after this one that is not at peak: the instant itself where
+    // it is not, and otherwise the start of the first hour after it that no window holds,
+    // which is what a refusal to run paid work at peak says it waits for.
+    public DateTimeOffset OffPeakFrom(DateTimeOffset instant)
+    {
+        if (!IsPeak(instant))
+        {
+            return instant;
+        }
+
+        var utc = instant.ToUniversalTime();
+        var hour = new DateTimeOffset(utc.Year, utc.Month, utc.Day, utc.Hour, 0, 0, TimeSpan.Zero);
+
+        // A week of hours holds every window on every day, so a pricing whose windows
+        // cover every hour of every day it names still ends on a day it does not name.
+        for (var step = 1; step <= 24 * 8; step++)
+        {
+            if (!IsPeak(hour.AddHours(step)))
+            {
+                return hour.AddHours(step);
+            }
+        }
+
+        throw new InvalidOperationException("Every hour of every day is at peak, so there is no off-peak window for paid work to wait for.");
+    }
+
     // What an answer cost: the cached prompt tokens, the uncached ones and the
     // completion, each at its rate, multiplied where the provider's own timestamp falls
     // at peak.

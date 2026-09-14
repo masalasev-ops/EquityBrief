@@ -25,6 +25,10 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 6.9, the theme research runner.
+            CheckReach.Key(Scope.CatalogueTable, "Theme research runner"),
+            CheckReach.Key(Scope.MatrixTable, "Theme research runner"),
+
             // 6.8, the research runner.
             CheckReach.Key(Scope.CatalogueTable, "Research runner"),
             CheckReach.Key(Scope.MatrixTable, "Research runner"),

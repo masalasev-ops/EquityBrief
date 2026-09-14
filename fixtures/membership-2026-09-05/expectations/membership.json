@@ -25,6 +25,13 @@
   "NFLX": "Communication Services"
  },
  "sectorNote": "derived from the Components object of the same captured payload, which is where the provider puts Sector and carries current members alone. The two departed constituents appear in the spans and not in Components, so their sector is null, which is what the provider says rather than an omission.",
+ "industries": {
+  "AAPL": "Consumer Electronics",
+  "KEYS": "Scientific & Technical Instruments",
+  "MSFT": "Software - Infrastructure",
+  "NFLX": "Entertainment"
+ },
+ "industryNote": "derived from the same Components object as the sectors, from 6.9, where the industry became what a theme is. Four members and four industries, so no two of this fixture's names share a theme, and the claim that one theme pass serves every member of an industry is asserted over a constructed pair rather than over these four. The departed constituents have no industry for the reason they have no sector.",
  "properties": {
   "aDepartedNameHasNoSectorBecauseTheSnapshotHoldsCurrentMembersAlone": "null, drawn as not on file",
   "aDepartedNameKeepsItsRowAndItsLeaveDate": "membership has no declared deleter",

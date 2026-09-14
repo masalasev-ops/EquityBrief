@@ -1,0 +1,43 @@
+{
+  "stage": "search-admissibility",
+  "derivation": "derived",
+  "derivedFrom": "the admissibility test's four denied categories, its publish-date window and its retrieval rule as 6.3 wrote them, read against every result two captured searches returned: the company search for Keysight Technologies over the company-news list and the theme search for Semiconductors over the industry list, both over the quarter to 2026-09-08. Each verdict was worked out by reading the page the tool returned against the rule for each category, a paragraph of running prose being three sentences and forty words, before the tests that read this file were run. It is the evidence the markers were owed against what the search tool delivers rather than against pages fetched by hand.",
+  "tables": [
+    "source_document"
+  ],
+  "window": {
+    "from": "2026-06-08",
+    "to": "2026-09-08"
+  },
+  "verdicts": {
+    "https://finance.yahoo.com/technology/articles/why-keysight-technologies-keys-6-011045642.html": "text could not be retrieved",
+    "https://finance.yahoo.com/markets/stocks/articles/keysight-technologies-keys-rallied-earnings-144744649.html": "accepted",
+    "https://finance.yahoo.com/quote/1KT.F": "accepted",
+    "https://markets.ft.com/data/announce/detail?dockey=600-202609021100BIZWIRE_USPRX____20260902_BW618968-1": "accepted",
+    "https://www.prnewswire.com/news-releases/lockheed-martin-verizon-keysight-odc-and-astris-ai-demonstrate-technology-for-public-airspace-protection-with-nvidia-technology-302849010.html": "accepted",
+    "https://finance.yahoo.com/markets/stocks/articles/keysight-technologies-keys-stock-gets-001850132.html": "accepted",
+    "https://www.quiverquant.com/news/Keysight+Technologies+Falls+as+AI-Linked+Tech+Selloff+and+Profit-Taking+Pressure+Shares": "accepted",
+    "https://finance.yahoo.com/technology/ai/articles/keysight-keys-raised-outlook-ai-224547726.html": "text could not be retrieved",
+    "https://ca.finance.yahoo.com/quote/KEYS.VI/news": "quote or hub page with no article",
+    "https://www.businesswire.com/news/home/20260721366524/en/Keysight-Addresses-Cross-Domain-Physics-Issues-That-Leave-Electronic-Designs-Vulnerable-to-Late-Stage-Failure": "text could not be retrieved",
+    "https://www.semiconductors.org/wp-content/uploads/2026/07/SIA_2026_State-of-the-Semiconductor-Industry.pdf": "accepted",
+    "https://www.mordorintelligence.com/industry-reports/semiconductor-industry-landscape": "accepted",
+    "https://www.semiconductors.org?p=31318": "accepted",
+    "https://www.semiconductors.org/category/blog": "accepted",
+    "https://www.semiconductors.org/2026-state-of-the-u-s-semiconductor-industry": "accepted",
+    "https://www.semiconductors.org/sia-commends-chips-awards-to-accelerate-advanced-compute-semiconductor-rd": "accepted",
+    "https://www.semiconductors.org/global-semiconductor-sales-increase-6-4-month-to-month-in-july": "accepted",
+    "https://www.semiconductors.org/global-semiconductor-sales-increase-9-2-month-to-month-in-may": "accepted",
+    "https://www.semiconductors.org/global-semiconductor-sales-increase-35-1-from-q1-2026-to-q2-2026": "accepted",
+    "https://www.semiconductors.org/michael-robbins-named-president-and-ceo-of-semiconductor-industry-association": "accepted"
+  },
+  "readings": {
+    "https://ca.finance.yahoo.com/quote/KEYS.VI/news": "refused, and rightly: addressed under quote, and not one of its 87 lines is a paragraph of running prose. A refusable page refused.",
+    "https://finance.yahoo.com/quote/1KT.F": "admitted, and a person would refuse it: a quote page addressed under quote and titled as one, whose one paragraph of running prose among 297 lines is the provider's description of the company. The rule refuses a symbol page only where no running prose exists, which 6.3 chose so that an article filed under a quote address is not refused, and a profile paragraph meets it. A refusable page admitted, from a site the company-news list does not carry.",
+    "https://www.semiconductors.org/category/blog": "admitted: a listing of six of the association's own posts, each cut off, addressed as a category rather than as a symbol, so no rule reaches it. Every sentence on it is the association's own words, which a reader can check against the posts.",
+    "https://www.quiverquant.com/news/Keysight+Technologies+Falls+as+AI-Linked+Tech+Selloff+and+Profit-Taking+Pressure+Shares": "admitted, and a person would refuse it: a move write-up bylined to the site's price tracker, which says what wrote it only in its byline. The marker refuses writing a system declares in the text or the title and nothing else, which 6.3 stated as its limit. A refusable page admitted, from a site the company-news list does not carry.",
+    "https://www.mordorintelligence.com/industry-reports/semiconductor-industry-landscape": "admitted: a research vendor's page selling a report, whose figures are the vendor's projections, and no denied category is about a vendor's own marketing. From a site the industry list does not carry, which is where the search drops it before this test runs."
+  },
+  "ordinaryArticlesRefused": 0,
+  "note": "twenty results, seventeen carrying text. Refusable pages refused: one. Refusable pages admitted: two, both from sites no list carries, so on the path a theme pass takes the list drops each before this test reads it. Of the other fourteen with text, none refused, the vendor's report page and the listing among them."
+}

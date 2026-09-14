@@ -46,6 +46,10 @@ public partial class ReadSurface
         "read-surface",
         ["fixtures/membership-2026-09-05"],
         [
+            // 6.9, the page of a name whose theme could not be refreshed, which is the half
+            // of section 18's row a reader sees.
+            CheckReach.Key(Scope.FailureTable, "A theme refresh fails while a name's pass depends on it"),
+
             // 5.6, the run page. Every one of these is a claim about a surface,
             // which is why they are reached by a check that draws the surface
             // and reads it back rather than by a declaration.

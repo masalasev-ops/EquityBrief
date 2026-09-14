@@ -11,6 +11,9 @@
   <ItemGroup>
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="appsettings.Secrets.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The two open-web lists live at the checkout's root with their review date, and a
+         theme pass reads the industry list beside the assembly as it reads its settings. -->
+    <None Include="..\..\source-lists.json" Link="source-lists.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

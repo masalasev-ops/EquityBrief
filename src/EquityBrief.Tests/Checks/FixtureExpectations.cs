@@ -59,6 +59,17 @@ public partial class FixtureExpectations
             // figure 12.1's three questions.
             CheckReach.Key(Scope.LimitsTable, "Research staleness triggers"),
 
+            // 6.9, the theme research runner over the fixture's recordings: the record one
+            // theme pass writes, section 17's three rows about a theme search, and three of
+            // section 18's four rows about what a search returns.
+            CheckReach.Key(Scope.FixtureTable, "theme record"),
+            CheckReach.Key(Scope.LimitsTable, "Theme search parameters"),
+            CheckReach.Key(Scope.LimitsTable, "Source lists"),
+            CheckReach.Key(Scope.LimitsTable, "Scheduling of queued work"),
+            CheckReach.Key(Scope.FailureTable, "A search returns snippets rather than full page text"),
+            CheckReach.Key(Scope.FailureTable, "A search returns a site the applicable list does not carry"),
+            CheckReach.Key(Scope.FailureTable, "The search tool is unavailable"),
+
             // 6.8, the research runner over the fixture's recordings: the record one
             // pass writes, one pass an open, figure 12.1's two boxes the runner is, and
             // the paid path's half of section 18's two local lane rows.
@@ -409,6 +420,19 @@ public partial class FixtureExpectations
         Assert.Equal(
             [expected.GetProperty("departed").GetArrayLength().ToString()],
             Query(store, "SELECT COUNT(*) FROM membership WHERE sector IS NULL;"));
+
+        // The industry, from the same snapshot, which is what a theme is from 6.9. A
+        // departed name has none for the sector's reason.
+        foreach (var named in expected.GetProperty("industries").EnumerateObject())
+        {
+            Assert.Equal(
+                [named.Value.GetString()!],
+                Query(store, $"SELECT industry FROM membership WHERE ticker = '{named.Name}';"));
+        }
+
+        Assert.Equal(
+            [.. expected.GetProperty("departed").EnumerateArray().Select(_ => "")],
+            Query(store, "SELECT IFNULL(industry, '') FROM membership WHERE left IS NOT NULL ORDER BY ticker;"));
 
         // The two populations are different, which is the thing a reader is
         // most likely to conflate: five constituents and three names.
@@ -2048,10 +2072,11 @@ public partial class FixtureExpectations
         // at 6.3 and it caught that, the claims file added its note at 6.4 and it
         // caught that, the staleness file added its note at 6.5 and it caught
         // that, the prose file added its statement of what it froze at 6.6 and
-        // it caught that, and the research record added its own at 6.8 and it caught
-        // that. Which is what it is for.
+        // it caught that, the research record added its own at 6.8 and it caught
+        // that, the membership file added its industry note at 6.9 and it caught
+        // that, and so it did the two expectation files 6.9 added. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.note", "membership.sectorNote", "prose.frozen", "research-record.frozen", "series-state.note", "staleness.note", "stored-filings.note"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.note", "membership.sectorNote", "prose.frozen", "research-record.frozen", "search-admissibility.note", "series-state.note", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.note"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 
