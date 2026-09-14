@@ -9658,3 +9658,141 @@ Carried:    one obligation discharged and two created. A theme search over the w
             gives it is refused for the digit in it. And the industry list's review reads what the
             production runs found it yielding, which its measured note now carries. This session has
             committed code and may not sign phase 6 off.
+
+### 6.0 ruling - a suspect name's retries bounded, and a name whose retries are spent named on the run page on every night it stays suspect   2026-09-14
+Not a checkpoint entry. It belongs to 6.0, which has not landed. This session has committed
+            code and may not sign it off.
+Built:      no component. The ruling 6.0 owed and did not write, with the bound in the corporate
+            action check. Migration 23 adds `series_state.retries`, the nights after the one that
+            marked a name suspect on which it has been asked for again and failed. The check reads
+            each suspect name's count: a name with retries left is asked for again as before, a
+            failure counts one more, a night an action lands on the name starts the count at none
+            whatever the refetch does, and a refetch that succeeds sets the name ok with no count. A
+            name whose retries are spent is not asked for, stays suspect with its row as its last
+            refetch left it, and keeps the stage partial with a detail naming it, the instant it was
+            last asked for and the reason, on every night it stays so, which is what the run page's
+            stale and failed region lists. The night's own line counts the names left spent. The
+            commits: the ruling with its code, tests and expectation; section 16's series state row
+            carrying the count, with section 19.1's fixture row returned to what its expectation
+            reads, where the first commit had put it; section 18's row and the runbook's giving a
+            suspect name's reason from the night its retries are spent, where the check writes it,
+            with the region asserted to name the name on the nights before; the test the sweep's
+            survivor needed; and this record.
+Decided:    one decision, superseding nothing. A suspect name's retries are bounded, and a name whose
+            retries are spent stays suspect and named on the run page until another action lands on
+            it. The bound is five nights after the one that marked it, so one action costs at most six
+            requests however long its failure lasts, reasoned from the retries a feed already makes
+            inside one night rather than measured. What a spent name is left as is ruled with it,
+            because a bound alone would replace a loop nobody bounded with a stop nobody sees. Its
+            figures are still computed over its stored series: section 18 has never said a suspect
+            name's figures are withheld, and a bound on its retries is not where that changes.
+Found:      at 6.11's close, reading the carried obligations table for the phase 6 handoff. The row A
+            suspect name's retries bounded and decided stood due at 6.0 with no decision written for
+            it, while 6.0's text cited it in the sentence that names three rows 6.0 discharged, and the
+            row had not changed since c2359dd at 5.7. The check that refuses a row still owed at a
+            landed checkpoint could not see it, since 6.0's planning entry says 6.0 has not landed, as
+            this one does; that is left to the phase 6 sign-off as a finding of its own rather than
+            repaired here. In the
+            operator's store, read without writing, `series_state` holds 28 rows, all ok, and the
+            run log holds eight runs of the check started from 2026-09-09 to 2026-09-11 UTC, none
+            partial and none naming a suspect name. Two statements the ruling had to replace were
+            wrong before it: the runbook told the operator to re-run the night and named a manual
+            refetch nothing in the system performs, and section 18 said a failed check shows a note
+            that prices are being refetched, which no surface draws by that name, where a failed
+            refetch was listed as the stage's partial outcome on the run page's stale and failed
+            region. And three statements the ruling's first commit made were wrong, each found
+            while writing this record and corrected on this branch with its prior text in
+            CHANGELOG.md: the
+            count stated on section 19.1's fixture row for series state, whose expectation reads no
+            count, rather than on section 16's store row; section 18's row and the runbook's saying
+            the region gives a suspect name's reason on every night it stays suspect, where the
+            stage's detail names the name alone until its retries are spent and gives the reason from
+            that night; and the runbook's saying any night re-run by hand counts as a retry, where a
+            re-run of the night the action landed finds the action again and starts the count at
+            none. The expectation's derivation named only the ninth night's action as the test's
+            own, where both are, and says so now.
+Changed:    the decision in DECISIONS.md, beside the one it bounds. Section 7's catalogue row for the
+            corporate action checker, section 16's series state row, section 17's per-name network
+            call row, which states the bound and the figures in digits, and section 18's row for a
+            split or dividend not caught, which states what a spent name is left as and names the
+            region that lists it and what it gives from which night. SCHEMA.md's series state table
+            with the column and why a count and not a history. The runbook's row for a name marked
+            suspect. BUILD_PLAN.md's row discharged. Ten CHANGELOG entries, three of them the
+            corrections above.
+Tested:     3 under `corporate-actions`: a name whose refetch fails on its action's night and on
+            every night after, asked for again on each of the 5 nights the limit allows with each
+            failure counted on its series state row, then on the 2 nights after asked for nothing,
+            its row left as the fifth retry left it and the stage partial with a detail naming it,
+            when it was last asked for and why; the run page's stale and failed region, drawn from
+            the run log by the read surface's own projection, naming the check as partial and the
+            name on the action's night and on each of the 7 nights after, and when it was last asked
+            for and why on the last 2; a new action on a name whose retries are spent asking for
+            it that night with its count at none, the night after asking again and counting 1, and a
+            refetch that then succeeds setting the name ok with no count and the stage ok; and, added
+            for the sweep's survivor, a store migrated to the version before the count and holding
+            AAPL suspect as a night before the count wrote it, taken through migration 23 with the
+            count at none, then asked for again on each of the 5 nights after and on the sixth named
+            as spent and asked for nothing. 1 under `nightly-cost`, over the expectation
+            `suspect-retries`, derived from the decision rather than frozen from a run: ten nights
+            over AAPL with a refetch that fails whenever it is
+            asked and an action landing on the first and the ninth, each night's refetch requests
+            against the sequence the decision gives, being 1 on the action's night and on each of
+            the 5 retry nights, none on the 2 nights after and 1 on each of the last two; the run
+            log's request count each night being the action feed's own and the refetch's together;
+            the count on the row; which nights name AAPL as spent; and one action's requests summing
+            to 6, one more than the limit; with section 17's per-name row and the runbook's row each
+            held to the constant in two phrases. And 1 widened under `nightly-cost`, the carve-out
+            test reading section 17's bound by the actions of the day and of the 5 nights before it
+            against the constant. 904 tests, from 900 at 6.11.
+Mutated:    the rule, stated before the sweep: mutate every property the ruling added whose failure
+            would let a suspect name be asked for again past its limit or stop short of it, count a
+            failure it should not or leave one uncounted, keep a count across a new action or across
+            a refetch that succeeded, let a name whose retries are spent be skipped without being
+            named on the outcome, on the stage's outcome or in its detail, name a spent name while an
+            action lands on it, name it with an instant other than its last refetch's, let the
+            column's default count a row that exists when it is added as anything but none, or let
+            section 17's or the runbook's figure drift from the constant. Outside the rule: the retry
+            of a suspect name as such, which a correction at 5.7 added and whose sweep reinstated the
+            defect; its clearing on a refetch that succeeds, which 1.6 built; and the night's console
+            line, which no test reads. Fourteen qualify and all fourteen were mutated, in a detached
+            worktree under the session scratchpad outside this repository, over an unmutated baseline
+            of 903 tests all passing at a2f4193; each was reverted before the next. Thirteen went red
+            on the first run: the retries unbounded, 3 tests red; a name asked for on one night fewer
+            than the limit, 3; on one night more, 3; a failed retry left uncounted, 3; a failure on a
+            night an action lands on a counted name counted on, 2; a refetch that succeeded keeping
+            its count, 1; a night naming a spent name written as ok, 1; a spent name left out of the
+            detail, 1; a spent name skipped and named nowhere, 2; a spent name named as spent on a
+            night an action lands on it, 2; a spent name named with tonight's instant rather than its
+            last refetch's, 1; section 17 stating 4 nights, 1; and the runbook stating 4 nights, 1.
+            One survived, a missing property: the column's default counting a row that exists when it
+            is added as one. Migration 23's comment and SCHEMA.md both state that such a row starts at
+            none, and every test migrated an empty store and had the check write each count itself, so
+            the default reached no row. The test added migrates a store to the version before the count
+            with a name suspect in it, above. Run again at 613e445, the commit that added the test, in
+            the same worktree over an unmutated baseline of 904 passing: the column's default counting
+            such a row as one, 1 test red, being the test added. Two more were mutated there, by a rule
+            stated before that run: break each property the corrections commit asserted that no test
+            had asserted before it, being a suspect name named on the run page's region on a night its
+            refetch fails, 1 red, and the check written partial on such a night, 1 red, both being the
+            test the corrections widened, so no test before them asserted either. The worktree was
+            removed after. Properties added and not mutated, named because the next sweep has to find
+            them: the night's own line counting the names left spent, which no test reads; and a spent
+            name's reason read as empty where its row carries none, which no suspect row the check
+            writes can hold.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six steps,
+            exit 0, against `data-ci` and never `data`. 904 of 904 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 346 claims, 330 PASS, 0 fail, 16 out of scope, 0
+            unexamined, 337 placements and verdicts reconciled against a floor of 34, 34 of 35 roster
+            checks carried and all 34 run. Migrations 0 to 23, this ruling adding 23. The 16 read
+            twice, by the first checkpoint each note names and by the last, give 16 at phase 7 both
+            ways: 2 at 7.1, 3 at 7.3, 1 at 7.4, 9 at 7.5 and 1 at 7.6, as at 6.11. The ruling moved no
+            claim: the rows it edited pass under the checks they passed under before, section 7's
+            catalogue row under `component-access`, section 16's series state row under
+            `schema-columns`, section 17's per-name row under `nightly-cost`, section 18's row under
+            `corporate-actions`, and section 19.1's series state row, returned to its text, under
+            `fixture-expectations`. The operator's store under `data/` was not touched by either gate,
+            its newest file last written on 2026-09-12 at 00:51 UTC before the gates and after them.
+Carried:    one obligation discharged and none created. A suspect name's retries bounded and decided
+            is discharged by the decision and the bound above. The operating rows are unchanged. The
+            blind spot that let the row stand unwritten through the phase is not repaired on this
+            branch, and is named to the phase 6 sign-off as a finding of its own.
