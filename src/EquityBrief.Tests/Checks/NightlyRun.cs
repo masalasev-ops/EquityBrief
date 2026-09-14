@@ -5,6 +5,7 @@ using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
+using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Membership;
@@ -53,6 +54,9 @@ public class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Build the levels for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Classify the trend state and build the ladder for every name, writing a row whether or not it carries a tranche (see: A ladder row is written for every index member every night) (see: The trend classifier returns its label to the ladder builder)."),
             CheckReach.Key(Scope.LimitsTable, "Per-request timeout and the night's deadline"),
+
+            // 6.10, step 17, run last and after the close.
+            CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for listed names whose research is missing or stale, in priority order, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about)."),
 
             // 5.7. The row states a figure the night is bounded by and the
             // deadline follows it by three, which is a relationship between two
@@ -528,6 +532,7 @@ public class NightlyRun
         var code = await Nightly.RunAsync(
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
             night,
+            NightQueue.FromFixture(FixtureFolder()),
             "GSPC",
             FixedClock.At(Night, SessionZones.UnitedStates),
             output,
@@ -984,6 +989,47 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task StepSeventeenRunsTheOvernightQueueAfterTheArithmeticHasClosed()
+    {
+        // Section 14's last step, read off the document, and the night running it last: after
+        // the close has recorded the arithmetic's counts, on the night's own output and on the
+        // run log's own order.
+        var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
+
+        Assert.StartsWith("Close the arithmetic", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Run the overnight queue", steps[^1], StringComparison.Ordinal);
+
+        using var store = new TemporaryStore();
+
+        var (code, output, error) = await NightAsync(store, runId: "night-with-queue");
+
+        Assert.True(code == 0, error);
+
+        var close = output.IndexOf("  close:", StringComparison.Ordinal);
+        var queue = output.IndexOf("  queue:", StringComparison.Ordinal);
+
+        Assert.True(close >= 0 && queue > close, $"The queue did not run after the close: {output}");
+
+        var stages = RunLog(store, "night-with-queue").Select(row => row.Stage).ToArray();
+
+        Assert.Equal(OvernightQueue.Stage, stages[^1]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^2]);
+
+        // The night's last line states the queue's local calls apart from the arithmetic's,
+        // read off the queue's own row.
+        var calls = Scalar(store, $"SELECT model_calls FROM run_log WHERE run_id = 'night-with-queue' AND stage = '{OvernightQueue.Stage}';");
+
+        Assert.True(calls > 0, "The fixture night's queue made no call, so the line's figure says nothing.");
+        Assert.Contains($"0 model calls in the arithmetic and {calls} local model call(s) from the overnight queue", output, StringComparison.Ordinal);
+
+        // And the words the read surface and the carve state for the queue are the queue's own,
+        // since neither can reference the component that writes them.
+        Assert.Equal(OvernightQueue.Stage, EquityBrief.Api.Reading.RunScreen.QueueStage);
+        Assert.Equal(OvernightQueue.StoppedAtItsLimit, EquityBrief.Api.Reading.RunScreen.QueueAtItsLimit);
+        Assert.Equal(OvernightQueue.Stage, NightlyCost.QueueStage);
+    }
+
+    [Fact]
     public async Task EachStepDoesWhatSectionFourteenSaysItDoes()
     {
         // The order alone would pass over three steps that ran and did nothing.
@@ -1159,7 +1205,8 @@ public class NightlyRun
         TemporaryStore store,
         NightFeeds feeds,
         string runId,
-        IClock clock)
+        IClock clock,
+        NightQueue? queue = null)
     {
         var output = new StringWriter();
         var error = new StringWriter();
@@ -1167,6 +1214,7 @@ public class NightlyRun
         var code = await Nightly.RunAsync(
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
             feeds,
+            queue ?? NightQueue.FromFixture(FixtureFolder()),
             "GSPC",
             clock,
             output,
@@ -1265,11 +1313,16 @@ public class NightlyRun
             Bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8)),
         };
 
+        // Step 17 over a local model that does not answer. This night's facts are built
+        // from a constructed session, so its queue would ask for drafts nobody recorded,
+        // and what this asserts is the arithmetic before it: a queue that could not run
+        // leaves every figure above it as it is.
         var (code, output, error) = await NightAsync(
             store,
             tonight,
             "night-of-the-join",
-            FixedClock.At(new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+            FixedClock.At(new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            NightQueue.FromFixture(FixtureFolder()) with { LocalModel = new FixtureExpectations.NothingAnsweringLocal() });
 
         Assert.True(code == 0, error);
 

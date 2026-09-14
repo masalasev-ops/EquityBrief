@@ -2,7 +2,9 @@ using System.Text.Json;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Core.Configuration;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Worker;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Calendar;
@@ -155,6 +157,37 @@ public class FixtureReplay
         await new ClaimChecker(night, store.DatabaseFile).RunAsync("replay-claims");
 
         return store;
+    }
+
+    // A whole night over the fixture, as the scheduler runs one, step 17 included, over the
+    // recorded local model unless a test hands the night another queue.
+    //
+    // Apart from the replay above, which calls each stage itself so every table a stage
+    // writes can be read against an expectation: this is the night in order, which is where
+    // what the overnight queue came to is read. The queue writes nothing the replay's own
+    // prose pass does not, so the tables the replay populates are the same with or without it.
+    internal const string NightRunId = "fixture-night";
+
+    internal static async Task<(TemporaryStore Store, int Code, string Output, string Error)> NightAsync(
+        NightQueue? queue = null,
+        IClock? clock = null,
+        string runId = NightRunId)
+    {
+        var store = new TemporaryStore();
+        var output = new StringWriter();
+        var error = new StringWriter();
+
+        var code = await Nightly.RunAsync(
+            new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
+            Folder(),
+            Index,
+            clock ?? FixedClock.At(Night, SessionZones.UnitedStates),
+            output,
+            error,
+            runId,
+            queue: queue ?? NightQueue.FromFixture(Folder(), new RecordingAwake()));
+
+        return (store, code, output.ToString(), error.ToString());
     }
 
     // The name the fixture's research pass is recorded for.

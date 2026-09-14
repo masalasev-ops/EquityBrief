@@ -575,9 +575,21 @@ public class NightlyCost
 
         using var parsed = System.Text.Json.JsonDocument.Parse(detail);
 
-        return parsed.RootElement.TryGetProperty("completed", out var completed)
-            ? [.. completed.EnumerateArray().Select(pass => pass.GetProperty("runId").GetString()!)]
-            : [];
+        var passes = new List<string>();
+
+        if (parsed.RootElement.TryGetProperty("completed", out var completed))
+        {
+            passes.AddRange(completed.EnumerateArray().Select(pass => pass.GetProperty("runId").GetString()!));
+        }
+
+        // The pass the queue stopped at, which made the call that found the local model not
+        // answering.
+        if (parsed.RootElement.TryGetProperty("stopped", out var stopped) && stopped.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            passes.Add(stopped.GetProperty("runId").GetString()!);
+        }
+
+        return passes;
     }
 
     [Fact]
@@ -907,6 +919,7 @@ public class NightlyCost
         var code = await Nightly.RunAsync(
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
             feeds,
+            NightQueue.FromFixture(FixtureFolder()),
             Index,
             FixedClock.At(Night, SessionZones.UnitedStates),
             output,

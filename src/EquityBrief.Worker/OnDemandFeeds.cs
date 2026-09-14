@@ -111,6 +111,18 @@ public sealed record OnDemandFeeds(
             () => Live(baseAddress, apiKey, archiveContact, searchKey, local, research),
             "an open");
 
+    // The local model alone, for the overnight queue. The night reaches it and nothing else
+    // this record holds, and resolving the whole record would ask a night for the paid
+    // model's key, which a night that calls no paid model has no business needing. The same
+    // resolution as the whole record's, refusing in both directions.
+    public static ILocalModelFeed LocalModelFor(string? source, string? fixtureFolder, LocalModelSettings local) =>
+        FeedSource.Resolve<ILocalModelFeed>(
+            source,
+            fixtureFolder,
+            folder => new RecordedLocalModelFeed(folder),
+            () => OpenAiCompatibleModelFeed.Live(local),
+            "the overnight queue");
+
     // Whether this set can reach the network at all, asked of the objects rather
     // than of the setting that produced them. Every recorded double is named, so a
     // feed added live and forgotten here reads as one that cannot, which is the

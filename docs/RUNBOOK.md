@@ -11,11 +11,11 @@ Two jobs. Neither is part of the application, because scheduling lives outside i
 | Job | When | What it does | Costs |
 |---|---|---|---|
 | `tools/nightly` | after the US close | the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, listings, facts, forward returns, news pulse | one bulk bar request, one news feed request, a handful of calendar and membership calls. No model call |
-| the overnight queue | after the arithmetic, same invocation | the local model writes the sections in the local lane for listed names whose research is missing or stale, in priority order, until the configured time limit | nothing |
+| the overnight queue | after the arithmetic, same invocation | the local model writes the local lane's sections that rest on no document, for listed names whose research is missing or stale, in priority order, starting no pass once the configured hours have passed | nothing, and no request |
 
 **Every schedule is expressed in UTC.** The research provider's peak and off-peak windows are fixed in UTC, and a schedule written in local time moves into peak when daylight saving changes with nothing to announce it. Convert for display only.
 
-**The overnight queue holds the machine awake while it works.** A laptop left to itself sleeps, and a nightly job that silently did not run is worse than no nightly job. The run page states the previous night's outcome including how many queued passes completed and how many were left.
+**The overnight queue holds the machine awake while it works.** A laptop left to itself sleeps, and a nightly job that silently did not run is worse than no nightly job. On Windows it takes a power request and on macOS a power assertion, released when the queue ends, and on any other machine it takes none; the queue's row on the run log says which. The run page states the night's outcome, including how many queued passes completed and how many were left, and names every traded session since the queue last ran on which it did not run (see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar).
 
 **Both jobs are idempotent.** Running a night twice produces identical stored state and makes no additional model call.
 
@@ -153,6 +153,18 @@ The local model takes settings and never a key. Each has a default measured on t
 
 A lane naming a section figure 12.2 does not name is refused when the lane is read, and so is one naming a section twice.
 
+### The overnight queue's settings
+
+The queue runs at step 17 of the same invocation as the night, after the arithmetic has closed and recorded its counts, over the local model and nothing else. It writes the local lane's sections that rest on no document, which in this machine's lane is the key under each figure: what the company sells and the segment commentary rest on the company's own filing, which the pass an open starts fetches, and the night fetches nothing for a name (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about). A name whose only outstanding section rests on documents is not queued.
+
+| Setting | Key | Default |
+|---|---|---|
+| the hours after which the queue starts no pass | `EquityBrief:Queue:Hours`, a whole number above zero | `1` |
+
+**An hour covers the whole index at the rate measured on this machine.** 6.10 measured 12 passes on the local model the settings name, over the fixture's four listed names on three nights: 3.35 seconds a pass on average and 5.13 at the slowest, so 503 members at the slowest come to 43 minutes. The queue starts no pass once the hours have passed and finishes the one it is in, so it runs past them by at most one pass; the night's fifteen-minute deadline bounds the arithmetic and not the queue (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). Measure again after a change of model or machine, and set the hours from what a pass takes there.
+
+**Where to read what it did.** The queue's own row on the run log, under the night's run with the stage `overnight queue`, says what it came to: `ok` where it ran through every name it queued, `limit` where it stopped at its hours with names left, and `unavailable` where the local model did not answer, which stops the queue at that name. Its detail names the names listed and queued, every pass it ran under a run of its own with what each wrote, the names it left, and whether the machine was held awake. Each name's pass writes the judge's, the writer's and the checker's rows under that pass's run.
+
 ### The research model's settings and the spend caps
 
 The research model is the one part of the system that costs money, and nothing in the code says which model it is. The shipped `appsettings.json` beside the worker names the provider and the model this installation uses and the rates that provider charges for it; a different provider or model is different values, set in `appsettings.Secrets.json` or the environment, either of which wins over the shipped file. Its key is in the table above and is refused by name at startup when it is blank, on a fixture run as on a live one.
@@ -230,7 +242,7 @@ Read the run page first. It states what ran, how long, what was spent, how many 
 | One name's chart shows a gap and its plan says not computed | a gap in that name's series | expected behaviour, not a fault. An interpolated bar would produce averages and swings that never happened. It clears when the provider fills the session |
 | A name is marked suspect | the corporate action check itself failed | re-run the night. If it recurs, the name's adjusted history and the provider's have diverged and the year needs a manual refetch |
 | A night is missing from the run page altogether | the night was refused before it knew where the store is | the store is the only record this system keeps, so a refusal that happens before the data root resolves cannot be written to it. Read the scheduler's own history: Task Scheduler's `Last Run Result` on Windows, `launchctl list` on macOS. Every refusal after that point does write a row, under the first step with an outcome of `refused` rather than `failed`, so a refused night and a failed migration are different lines on the page |
-| The run page says the queue did not run | the machine slept | expected to be visible rather than silent. Listed names open without a draft, as normal |
+| The run page says the queue did not run | the machine slept, or the night stopped before step 17 | expected to be visible rather than silent. Listed names open without a draft, as normal, and the next night that runs drafts them. Where the page says the queue could not run, the local model was not answering: start the runtime and load the model the settings name |
 | A research section is absent with a line saying no admissible source was found | every candidate document failed admissibility | not a fault. Writing the section from a price forecast or a year-old article would be worse than the gap |
 | A section says fallback | the model was unreachable, or the claim checker rejected twice | the computed report is complete and useful on its own. The run log names the offending text |
 | Research is paused | the spend cap was reached | it resumes at the start of the next period. The cap is a hard stop by design |

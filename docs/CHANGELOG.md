@@ -25,6 +25,96 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-13 - RUNBOOK.md - the jobs table says what the overnight queue writes and what stops it
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about
+Was:
+> | the overnight queue | after the arithmetic, same invocation | the local model writes the sections in the local lane for listed names whose research is missing or stale, in priority order, until the configured time limit | nothing |
+Now:
+> | the overnight queue | after the arithmetic, same invocation | the local model writes the local lane's sections that rest on no document, for listed names whose research is missing or stale, in priority order, starting no pass once the configured hours have passed | nothing, and no request |
+Why: the queue fetches nothing, so it writes only what a facts file supports, and it starts no pass after its limit rather than stopping one inside a call.
+
+### 2026-09-13 - RUNBOOK.md - the wakefulness paragraph says how the machine is held and which nights the page names
+
+Authorised by: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar
+Was:
+> **The overnight queue holds the machine awake while it works.** A laptop left to itself sleeps, and a nightly job that silently did not run is worse than no nightly job. The run page states the previous night's outcome including how many queued passes completed and how many were left.
+Now:
+> **The overnight queue holds the machine awake while it works.** A laptop left to itself sleeps, and a nightly job that silently did not run is worse than no nightly job. On Windows it takes a power request and on macOS a power assertion, released when the queue ends, and on any other machine it takes none; the queue's row on the run log says which. The run page states the night's outcome, including how many queued passes completed and how many were left, and names every traded session since the queue last ran on which it did not run (see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar).
+Why: a hold the scheduler cannot see is one an operator needs to find on the machine, and a night the machine slept through runs no arithmetic either, so the page reads it off the calendar.
+
+### 2026-09-13 - RUNBOOK.md - the morning table tells a queue that did not run from one that could not
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about
+Was:
+> | The run page says the queue did not run | the machine slept | expected to be visible rather than silent. Listed names open without a draft, as normal |
+Now:
+> | The run page says the queue did not run | the machine slept, or the night stopped before step 17 | expected to be visible rather than silent. Listed names open without a draft, as normal, and the next night that runs drafts them. Where the page says the queue could not run, the local model was not answering: start the runtime and load the model the settings name |
+Why: a night whose arithmetic stopped never reaches step 17 either, and a queue that ran into a runtime that was not answering has its own line and its own remedy.
+
+### 2026-09-13 - ARCHITECTURE.html - the lane paragraph says a pass writes a section moved left, not the overnight queue
+
+Authorised by: The local lane's scope is a setting, and whatever it holds is written for nothing
+Was:
+> sections move left and the overnight queue begins writing them for nothing. The picture is the same either way; only the boundary moves. (see: The local lane's scope is a setting, and the overnight queue writes whatever is in it)
+Now:
+> sections move left and a pass writes them for nothing. The picture is the same either way; only the boundary moves. (see: The local lane's scope is a setting, and whatever it holds is written for nothing)
+Why: a synthesis section moved into the local lane rests on documents, which only a pass that fetches has, and the night fetches none, so the sentence saying the queue begins writing it no longer holds.
+
+### 2026-09-13 - ARCHITECTURE.html - step 17 writes the lane's sections that rest on no document, bounded by a limit of its own
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about
+Was:
+> <li>Run the overnight queue on the local model, writing the sections in the local lane for listed names whose research is missing or stale, in priority order, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call, and no part of the arithmetic above depends on it (see: The overnight queue writes a free first draft; the paid model is for names you get serious about).</li>
+Now:
+> <li>Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for listed names whose research is missing or stale, in priority order, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about).</li>
+Why: the step fetches nothing, so the sections it can write are the ones a facts file alone supports, and the night's deadline is sized for the arithmetic, so the step names the limit that bounds it instead.
+
+### 2026-09-13 - ARCHITECTURE.html - the wall clock row is the arithmetic's
+
+Authorised by: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed
+Was:
+> <tr><td>Nightly wall clock, at index size</td><td>a night bounded by 5 minutes,
+Now:
+> <tr><td>Nightly wall clock, at index size</td><td>a night's arithmetic, steps 1 to 16, bounded by 5 minutes,
+Why: step 17 runs for up to its own limit after the arithmetic has closed, so a wall clock over the whole night would be read against an hour of queue it was never sized for.
+
+### 2026-09-13 - ARCHITECTURE.html - the night's deadline bounds the arithmetic, and the queue its own limit
+
+Authorised by: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed
+Was:
+> each attempt bounded by 30 seconds; the night as a whole bounded by 15 minutes (see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move)</td>
+Now:
+> each attempt bounded by 30 seconds; the arithmetic as a whole, steps 1 to 16, bounded by 15 minutes, and the overnight queue at step 17 bounded by its own limit instead (see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move) (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed)</td>
+Why: a queue held to the deadline would get what the arithmetic left of fifteen minutes and an hour's limit would be cut short with nothing saying so.
+
+### 2026-09-13 - ARCHITECTURE.html - the overnight queue's limit set from the pass 6.10 measured
+
+Authorised by: The overnight queue is bounded by time, not by a count of names
+Was:
+> <tr><td>Overnight queue</td><td>the local model writes the sections in the local lane, for listed names whose research is missing or stale, in order of reasons fired, stopping after a configured number of hours, proposed at 1 until 6.10 measures a pass on this machine; no paid call is ever made by the queue (see: A research pass is split by section difficulty, not run wholesale on one model)</td><td>a name count cannot bound the time because pass durations vary widely, and the whole point of the queue is that it costs nothing, so a paid fallback inside it would defeat it. The number of hours is a budget rather than a bound on behaviour, so what settles it is the per-pass duration 6.10 measures on this machine, stated as the hours that cover a named number of names at the measured rate with the rate and its population beside it. It is 1 until then, so the queue is bounded from the first night it runs rather than after the figure arrives</td>
+Now:
+> <tr><td>Overnight queue</td><td>the local model writes the sections in the local lane that rest on no document, for listed names whose research is missing or stale, in order of reasons fired, starting no pass once a configured number of hours has passed, which is 1: at the slowest pass 6.10 measured on this machine an hour covers every member of the index, the 503 the first live night loaded coming to 43 minutes at 5.13 seconds a pass; no paid call and no request is ever made by the queue (see: A research pass is split by section difficulty, not run wholesale on one model) (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed)</td><td>a name count cannot bound the time because pass durations vary widely, and the whole point of the queue is that it costs nothing, so a paid fallback inside it would defeat it. The number of hours is a budget rather than a bound on behaviour, so what settles it is the per-pass duration measured on this machine, stated as the hours that cover a named number of names at the measured rate with the rate and its population beside it. 6.10 measured 12 passes on the local model the shipped configuration names, over the fixture's four listed names on three nights: 3.35 seconds a pass on average and 5.13 at the slowest, the slowest being a name whose first draft the checker refused and whose second was written. A pass runs past the limit it started inside, by at most one pass</td>
+Why: the row carried a proposed figure until this checkpoint measured a pass, and says in its own words that the figure is set from that measurement with the rate and its population beside it.
+
+### 2026-09-13 - ARCHITECTURE.html - the slept row cites how a night the queue did not run is read
+
+Authorised by: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar
+Was:
+> a queue that silently fails looks identical to a quiet night, so the absence has to be stated rather than inferred from an empty result (see: The overnight run holds the machine awake and reports whether it ran)</td>
+Now:
+> a queue that silently fails looks identical to a quiet night, so the absence has to be stated rather than inferred from an empty result (see: The overnight run holds the machine awake and reports whether it ran) (see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar)</td>
+Why: the row says the page states the night, and the decision says which nights those are, a traded session with no queue row rather than a night whose arithmetic ran.
+
+### 2026-09-13 - ARCHITECTURE.html - the local model unavailable row cites the decision that replaced the one it cited
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about
+Was:
+> the answer for each is the other lane (see: The overnight queue writes a free first draft; the paid model is for names you get serious about)</td>
+Now:
+> the answer for each is the other lane (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about)</td>
+Why: the decision it cited is superseded at 6.10, and a citation of a superseded name is refused.
+
 ### 2026-09-13 - CLAUDE.md - nightly-cost's row states the carve's second half
 
 Authorised by: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name

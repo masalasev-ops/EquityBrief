@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-mosssfynxz2klqqn3czth",
+  "object": "chat.completion",
+  "created": 1789353359,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 316.22, trading above the 20-day simple moving average of 313.538 and the 50-day simple moving average of 315.641456, while remaining below the immediate resistance level of 334.7013 and above the immediate support zone between 299.7415 and 320.28. Technical indicators show an uptrend state with a relative strength index of 50.256878 and a positive MACD value of 2.247663, suggesting continued upward momentum supported by recent price moves ranging from roughly 8 percent to 12 percent over various sessions in late 2025 and early 2026. The average daily volume over the past 20 days was 39.18 million shares, which is lower than the 48.64 million shares averaged over the past 50 days, indicating a potential consolidation phase before the next dated event on 2026-10-29.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1013,
+    "completion_tokens": 240,
+    "total_tokens": 1253,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

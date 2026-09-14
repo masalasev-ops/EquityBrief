@@ -263,6 +263,26 @@ public sealed record StageRow(
     string Outcome,
     string Detail);
 
+// The overnight queue as the run page draws it for one night.
+//
+// `Outcome` is null where the queue wrote no row for the night, and the counts are then
+// zero. `NotRun` is every traded session with no queue row, from the one after the newest
+// earlier night the queue ran on up to and including this night, and `NeverRan` says the
+// store holds no queue row on or before this night at all, which is stated rather than
+// read as a night it failed.
+// see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar
+public sealed record QueueNight(
+    DateOnly Night,
+    string? Outcome,
+    int Queued,
+    int Completed,
+    int Left,
+    double LimitHours,
+    string? Reason,
+    string? Awake,
+    IReadOnlyList<DateOnly> NotRun,
+    bool NeverRan);
+
 // One refused document, as the run page draws it: the category that refused it,
 // what it was called, and where it is.
 //
@@ -1925,6 +1945,55 @@ public sealed class MarkRenderer : IComponent
             region.Append(Invariant, $"<p class=\"refused\" data-category=\"{Escaped(document.Category)}\" ");
             region.Append(Invariant, $"data-url=\"{Escaped(document.Url)}\">");
             region.Append(Invariant, $"{Escaped(document.Category)}: {Escaped(document.Title)}, {Escaped(document.Url)}</p>");
+        }
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The overnight queue, section 15.10's fifth region: whether the queue ran after the
+    // night's arithmetic, how many queued passes completed and how many were left for the
+    // next night, and every traded session since it last ran on which it did not.
+    //
+    // A night it did not run is a line of its own naming the night, because a queue that
+    // silently failed looks identical to a quiet night and the absence has to be read off
+    // the page rather than inferred from a region with nothing in it.
+    // see: The overnight run holds the machine awake and reports whether it ran
+    public string OvernightQueue(QueueNight queue)
+    {
+        var region = new StringBuilder();
+        var ran = queue.Outcome is not null;
+
+        region.Append(Invariant, $"<section class=\"overnight-queue\" data-night=\"{queue.Night:yyyy-MM-dd}\" data-queue=\"{(ran ? "ran" : queue.NeverRan ? "never" : "not run")}\" ");
+        region.Append(Invariant, $"data-outcome=\"{Escaped(queue.Outcome ?? "none")}\" data-queued=\"{queue.Queued}\" data-completed=\"{queue.Completed}\" data-left=\"{queue.Left}\" data-not-run=\"{queue.NotRun.Count}\">");
+
+        if (ran)
+        {
+            region.Append(Invariant, $"<p data-queue=\"ran\">the overnight queue ran on {queue.Night:yyyy-MM-dd}: {queue.Completed} of {queue.Queued} queued pass(es) completed, {queue.Left} left for the next night</p>");
+
+            if (queue.Outcome == "limit")
+            {
+                region.Append(Invariant, $"<p data-outcome=\"limit\">it started no pass once its limit of {queue.LimitHours.ToString("0.##", CultureInfo.InvariantCulture)} hour(s) had passed</p>");
+            }
+            else if (queue.Outcome == "unavailable")
+            {
+                region.Append(Invariant, $"<p data-outcome=\"unavailable\">it could not run: {Escaped(queue.Reason ?? "the local model is unavailable")}</p>");
+            }
+
+            if (queue.Awake is { Length: > 0 } awake)
+            {
+                region.Append(Invariant, $"<p data-awake=\"{Escaped(awake)}\">the machine was {Escaped(awake)}</p>");
+            }
+        }
+        else if (queue.NeverRan)
+        {
+            region.Append(Invariant, $"<p data-queue=\"never\">the overnight queue has not run on any night this store holds, up to {queue.Night:yyyy-MM-dd}</p>");
+        }
+
+        foreach (var night in queue.NotRun)
+        {
+            region.Append(Invariant, $"<p class=\"not-run\" data-night=\"{night:yyyy-MM-dd}\">the overnight queue did not run on {night:yyyy-MM-dd}</p>");
         }
 
         region.Append("</section>");

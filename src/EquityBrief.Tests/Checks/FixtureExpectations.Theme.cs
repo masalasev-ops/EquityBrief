@@ -16,8 +16,9 @@ public partial class FixtureExpectations
 {
     static readonly DateOnly ThemeNight = new(2026, 9, 8);
 
-    // Members of the recorded theme's industry added to the replayed membership, since no
-    // member of the fixture's index is in an industry the list covers.
+    // Members of the recorded theme's industry added to the replayed membership, since the
+    // fixture's four members are in industries whose theme searches over the list returned
+    // nothing.
     static void Members(TemporaryStore store, IReadOnlyList<string> tickers, string industry)
     {
         foreach (var ticker in tickers)

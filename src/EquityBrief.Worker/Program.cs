@@ -8,6 +8,7 @@ using EquityBrief.Data.Migrations;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Fundamentals;
+using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Research;
 using Microsoft.Extensions.Configuration;
 
@@ -339,28 +340,44 @@ static async Task<int> NightlyRun(string[] args)
     }
 
     NightFeeds feeds;
+    NightQueue queue;
 
     try
     {
+        var source = wantsLive ? NightFeeds.LiveSource
+            : wantsFixture ? NightFeeds.FixtureSource
+            : configuration[NightFeeds.SourceKey];
+        var fixture = Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey];
+
         // A fixture night takes no key at all, which is why the source is
         // resolved before anything asks for one. A night over a capture makes no
         // request, so demanding a key for one would stop CI on a machine that
         // has no business holding a key; RUNBOOK's promise is about not reaching
         // the provider anonymously rather than about holding a key to replay.
         feeds = NightFeeds.Resolve(
-            wantsLive ? NightFeeds.LiveSource
-                : wantsFixture ? NightFeeds.FixtureSource
-                : configuration[NightFeeds.SourceKey],
-            Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey],
+            source,
+            fixture,
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName]);
+
+        // Step 17's local model, from the night's own source, with the lane, the limit
+        // and the hold. Resolved here with the feeds rather than at step 17, so a lane
+        // naming a section nobody can write or a limit that is not a number refuses the
+        // night before its first step rather than after its arithmetic.
+        queue = NightQueue.Resolve(
+            source,
+            fixture,
+            LocalLane.Settings(configuration),
+            LocalLane.Sections(configuration),
+            OvernightQueue.Limit(configuration),
+            new MachineAwake());
     }
     catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
     {
         return await RefusedAsync(store, runId, clock, refusal.Message);
     }
 
-    return await Nightly.RunAsync(store, feeds, index, clock, Console.Out, Console.Error, runId);
+    return await Nightly.RunAsync(store, feeds, queue, index, clock, Console.Out, Console.Error, runId);
 }
 
 // A night refused before its first step, on stderr and on the run log.

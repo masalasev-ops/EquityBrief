@@ -457,6 +457,16 @@ public partial class FixtureExpectations
             asked.AddRange(replayed.Asked);
         }
 
+        // From 6.10, the overnight queue over a whole fixture night.
+        var queued = new RecordedLocalModelFeed(Folder());
+        var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = queued });
+
+        using (night.Store)
+        {
+            Assert.True(night.Code == 0, night.Error);
+            asked.AddRange(queued.Asked);
+        }
+
         var (store, document) = await WithRelease();
 
         using (store)
@@ -474,8 +484,13 @@ public partial class FixtureExpectations
         var recorded = Directory.GetFiles(Folder(), RecordedLocalModelFeed.FilePrefix + "*.json").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
 
         // Seven from 6.6, and twelve from 6.8's research pass and its comparison, the
-        // key under each figure's two being requests 6.6 had already recorded.
-        Assert.Equal(19, recorded.Length);
+        // key under each figure's two being requests 6.6 had already recorded. And three
+        // from 6.10's queue over a whole night: AAPL's key under each figure and KEYS's,
+        // which no replay asked for, since the replay holds no facts file for AAPL that night
+        // and writes KEYS's sections from version one itself, and MSFT's second draft, which
+        // the replay never asks for because it writes one draft a name and stops. MSFT's and
+        // NFLX's first drafts are the replay's own requests, asked again.
+        Assert.Equal(22, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

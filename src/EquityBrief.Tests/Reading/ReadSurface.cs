@@ -50,6 +50,11 @@ public partial class ReadSurface
             // of section 18's row a reader sees.
             CheckReach.Key(Scope.FailureTable, "A theme refresh fails while a name's pass depends on it"),
 
+            // 6.10, the run page's overnight queue region, and the night the machine slept,
+            // which is a claim about what that region states.
+            CheckReach.Key("15.10 Run", "Overnight queue"),
+            CheckReach.Key(Scope.FailureTable, "The machine slept and the overnight queue did not run"),
+
             // 5.6, the run page. Every one of these is a claim about a surface,
             // which is why they are reached by a check that draws the surface
             // and reads it back rather than by a declaration.
@@ -3312,7 +3317,7 @@ public partial class ReadSurface
     [Fact]
     public async Task TheRunPageDrawsEveryRegionSectionFifteenTenNamesAndStatesTheTwoThatAreAbsent()
     {
-        // The five regions in the order that section states them, with the two
+        // The six regions in the order that section states them, with the two
         // that need what phase 7 builds stated as absent rather than drawn
         // empty. An empty region reads as a night that produced nothing.
         using var store = await FixtureExpectations.WithReturns();
@@ -3336,15 +3341,16 @@ public partial class ReadSurface
             await api.StaleNamesAsync("GSPC"),
             RunScreen.Refused(await api.RefusedDocumentsAsync(night)),
             RunScreen.FellBack(await api.FellBackAsync(night)),
+            RunScreen.Queue(await api.QueueRowsAsync(), night, _ => true),
             RunScreen.Harness(null));
 
-        foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "harness" })
+        foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "overnight-queue", "harness" })
         {
             Assert.Contains($"class=\"{region}\"", page, StringComparison.Ordinal);
         }
 
         // In that order, so the evidence page reads as section 15.10 states it.
-        var at = new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "harness" }
+        var at = new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "overnight-queue", "harness" }
             .Select(region => page.IndexOf($"class=\"{region}\"", StringComparison.Ordinal))
             .ToArray();
 
