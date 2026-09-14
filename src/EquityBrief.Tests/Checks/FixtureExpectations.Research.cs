@@ -390,6 +390,31 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task ANameWithNoFactsFileWritesAndFetchesNothingOfItsOwn()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        // AAPL holds no facts file on the replayed night, its bars ending before it. The runner's
+        // outcome for such a name had no test until 6.11's production run reached it.
+        Assert.Empty(Query(store, "SELECT ticker FROM facts WHERE ticker = 'AAPL' AND payload != '';"));
+
+        var news = new NoArticles();
+        var archive = new NoRelease();
+        var local = new NothingAnsweringLocal();
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: new ScriptedModel(), localModel: local, archive: archive, news: news, search: new NoResults()).RunAsync("AAPL", "research-no-facts");
+
+        // Nothing of its own fetched, asked or written, and its row saying why, which is the row
+        // the page's line that the pass did not run is read from.
+        Assert.Equal(ResearchRunner.NoFactsFile, outcome.Outcome);
+        Assert.Empty(outcome.Written);
+        Assert.Equal(0, news.Requests + archive.Requests + local.Requests);
+        Assert.Empty(Query(store, "SELECT section FROM research_section WHERE ticker = 'AAPL';"));
+        Assert.Equal([$"research|{ResearchRunner.NoFactsFile}"], Query(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'research-no-facts' AND stage = 'research';"));
+        Assert.Contains("no facts file is stored for the name on or before today", Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-no-facts' AND stage = 'research';").Single(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ASecondPressWhileAPassRunsIsRefusedByName()
     {
         using var store = await FixtureReplay.ReplayedForResearchAsync();
