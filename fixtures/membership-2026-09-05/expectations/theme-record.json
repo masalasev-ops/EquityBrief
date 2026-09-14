@@ -1,12 +1,12 @@
 {
   "stage": "theme-record",
   "derivation": "derived",
-  "derivedFrom": "section 12's rules for the industry cycle and the decisions that a theme is the industry the index names for a member, that a theme section states no figure, that a theme search is scoped by parameter, and that a list of publishers is a noise filter; and the fixture's own captures: the search a theme pass builds for Semiconductors over the industry list and the quarter to 2026-09-08, and the one research model answer keyed on the request the pass builds from what that search kept. Which results are dropped for their site and which for being short of a document, which pages are stored and admitted, what the cycle is handed and how many calls the pass and a second member's pass take were worked out from those rules and the capture's own bytes before the tests that read this file were run. Section 19.1's theme record.",
+  "derivedFrom": "section 12's rules for the industry cycle and the decisions that a theme is the industry the index names for a member, that a theme section states no figure, that a theme search is scoped by parameter, that a theme pass searches each site on the industry list alone and hands the model a bounded set of the pages they return, and that a list of publishers is a noise filter; and the fixture's own captures: the twelve searches a theme pass builds for Semiconductors, one for each site of the industry list over the quarter to 2026-09-08, and the two research model answers keyed on the requests the pass builds from what those searches kept. Which results are dropped for their site and which for being short of a document, the order the pages are kept in, every site's first result before any site's second, which pages are stored and admitted, which ten the cycle is handed, and how many searches and calls the pass and a second member's pass take were worked out from those rules and the captures' own bytes before the tests that read this file were run. Section 19.1's theme record.",
   "tables": [
     "theme_section",
     "source_document"
   ],
-  "frozen": "the prose the recorded model wrote, the checker's verdict on it and what the call cost, which are readings of a recording rather than figures a rule produces. Every other value in this file is derived.",
+  "frozen": "the prose the recorded model wrote, the checker's verdict on each draft, which refused the first for a sentence naming no document and accepted the second, and what the two calls cost, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
   "theme": "Semiconductors",
   "night": "2026-09-08",
   "window": {
@@ -20,27 +20,35 @@
     "ZZSA",
     "ZZSB"
   ],
-  "note": "the two members are constructed. The four members the fixture's index holds are in four industries whose theme searches over the industry list returned nothing, so two members are added to the replayed membership with this industry and the claim that one pass serves every member is asserted over them.",
-  "results": 10,
-  "offList": [
-    "www.mordorintelligence.com"
+  "note": "the two members are constructed. The four members the fixture's index holds are in four other industries, so two members are added to the replayed membership with this industry and the claim that one pass serves every member is asserted over them.",
+  "results": 17,
+  "resultsNote": "three from each of census.gov, federalreserve.gov, digitimes.com, iea.org and statista.com, two from ihsmarkit.com, and none from spglobal.com, eia.gov, bls.gov, semiconductors.org, trendforce.com or worldsteel.org.",
+  "offList": [],
+  "shortOfADocument": [
+    "https://ihsmarkit.com/topic/technology-critical-insights-security-industry.html"
   ],
-  "shortOfADocument": [],
   "documents": {
-    "stored": 9,
-    "admitted": 9
+    "stored": 16,
+    "admitted": 16,
+    "handed": 10
   },
   "versions": [
     {
       "section": "The industry cycle",
       "version": 1,
       "lane": "paid",
+      "status": "rejected"
+    },
+    {
+      "section": "The industry cycle",
+      "version": 2,
+      "lane": "paid",
       "status": "accepted"
     }
   ],
   "calls": {
-    "searches": 1,
-    "paid": 1
+    "searches": 12,
+    "paid": 2
   },
-  "spend": "0.001604034"
+  "spend": "0.011904468"
 }

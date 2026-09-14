@@ -210,12 +210,18 @@ public partial class ReadSurface
         Assert.True(Section("The key under each figure") < At("<section class=\"plan-arithmetic\""));
         Assert.True(At("<section class=\"plan-arithmetic\"") < Section("The risks, each with what would confirm it"));
 
-        // The cycle is the theme's, and the theme search for the name's industry found no page
-        // from the industry list, so it is not drawn and the page says why in the words the
-        // pass stored.
+        // The cycle is the theme's, and the research model answered the theme's call over the
+        // pages its searches kept for the name's industry with nothing, so it is not drawn and
+        // the page says why in the words the pass stored on its row.
+        var reason = JsonDocument.Parse(Rows(store, "SELECT detail FROM run_log WHERE run_id = 'replay-research' AND stage = 'research';").Single()[0]).RootElement
+            .GetProperty("notWritten").EnumerateArray()
+            .Single(line => line.GetProperty("section").GetString() == "The industry cycle")
+            .GetProperty("reason").GetString()!;
+
+        Assert.StartsWith(ResearchRunner.ThemeNotRefreshed, reason, StringComparison.Ordinal);
         Assert.Equal(-1, Section("The industry cycle"));
         Assert.Equal(
-            $"The industry cycle is not written: {ResearchRunner.ThemeNotRefreshed}{ThemeResearchRunner.NothingFound}",
+            $"The industry cycle is not written: {reason}",
             WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The industry cycle\">([^<]*)</p>").Groups[1].Value));
     }
 
@@ -547,7 +553,9 @@ public partial class ReadSurface
         var caps = new SpendCaps(0.01m, 50m);
         var night = DateTimeOffset.Parse("2026-09-08T21:10:00Z", CultureInfo.InvariantCulture);
 
-        var outcome = await FixtureReplay.Researcher(store, FixedClock.At(night, SessionZones.UnitedStates), caps: caps).RunAsync("KEYS", "research-short-of-the-cap");
+        // The theme's searches find nothing, so the first call the cap refuses is one of the
+        // name's own.
+        var outcome = await FixtureReplay.Researcher(store, FixedClock.At(night, SessionZones.UnitedStates), caps: caps, search: new FixtureExpectations.NoResults()).RunAsync("KEYS", "research-short-of-the-cap");
 
         Assert.Equal(ResearchRunner.Paused, outcome.Outcome);
 

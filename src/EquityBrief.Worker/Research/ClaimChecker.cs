@@ -151,11 +151,26 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
             $rows_written, 0, 0, '0', $detail);
     ";
 
+    // The stage a theme pass's check writes its row under. A name's pass refreshes its theme
+    // inside its own run, so the theme's check and the name's own are two rows of one run and
+    // cannot share a stage, which the 6.11 production run found when MSFT's theme wrote its
+    // cycle and the name's first check then had no row it could write.
+    public const string ThemeStage = "theme claims";
+
     // The stage a round of a pass writes its row under, for the reason the prose
     // writer's is: one row per run per stage, and a pass checks more than once.
-    public static string StageFor(string? round) => round is null ? Stage : Stage + ", " + round;
+    public static string StageFor(string? round, bool theme = false) =>
+        (theme ? ThemeStage : Stage) + (round is null ? string.Empty : ", " + round);
 
-    public async Task<ClaimCheckOutcome> RunAsync(string runId, string? round = null, CancellationToken cancellation = default)
+    public Task<ClaimCheckOutcome> RunAsync(string runId, string? round = null, CancellationToken cancellation = default) =>
+        CheckAllAsync(runId, StageFor(round), cancellation);
+
+    // The check a theme pass runs. It moves every pending section, as any check does, and
+    // writes its row under the theme's stage.
+    public Task<ClaimCheckOutcome> RunForThemeAsync(string runId, string? round = null, CancellationToken cancellation = default) =>
+        CheckAllAsync(runId, StageFor(round, theme: true), cancellation);
+
+    async Task<ClaimCheckOutcome> CheckAllAsync(string runId, string stage, CancellationToken cancellation)
     {
         var startedAt = clock.UtcNow;
 
@@ -193,7 +208,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
 
         record.CommandText = AppendRun;
         record.Parameters.AddWithValue("$run_id", runId);
-        record.Parameters.AddWithValue("$stage", StageFor(round));
+        record.Parameters.AddWithValue("$stage", stage);
         record.Parameters.AddWithValue("$started_at", Instant(startedAt));
         record.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
         record.Parameters.AddWithValue("$rows_written", written);

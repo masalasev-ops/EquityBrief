@@ -16,9 +16,8 @@ public partial class FixtureExpectations
 {
     static readonly DateOnly ThemeNight = new(2026, 9, 8);
 
-    // Members of the recorded theme's industry added to the replayed membership, since the
-    // fixture's four members are in industries whose theme searches over the list returned
-    // nothing.
+    // Members of the recorded theme's industry added to the replayed membership, since none of
+    // the fixture's four members is in it.
     static void Members(TemporaryStore store, IReadOnlyList<string> tickers, string industry)
     {
         foreach (var ticker in tickers)
@@ -31,6 +30,21 @@ public partial class FixtureExpectations
 
     static IReadOnlyList<string> IndustryList() =>
         SourceLists.Read(Path.Combine(Repository.Root, SourceLists.FileName)).Industry;
+
+    // A theme pass's searches answered from a folder a test writes: the first site's search
+    // with the answer given, and every other site's with nothing, so what the pass keeps is
+    // the one answer the test chose.
+    static void Answered(string folder, string theme, string answer)
+    {
+        var queries = ThemeSearch.For(theme, ThemeNight, IndustryList());
+
+        File.WriteAllText(Path.Combine(folder, RecordedSearchFeed.FileFor(queries[0])), answer);
+
+        foreach (var query in queries.Skip(1))
+        {
+            File.WriteAllText(Path.Combine(folder, RecordedSearchFeed.FileFor(query)), """{"results":[]}""");
+        }
+    }
 
     // ---- one pass, every member ----
 
@@ -69,42 +83,50 @@ public partial class FixtureExpectations
         Assert.Equal([$"theme-first|{ThemeResearchRunner.Written}"], Query(store, "SELECT run_id, outcome FROM run_log WHERE stage = 'theme research' ORDER BY rowid;"));
 
         // One record, for the theme and the industries that map to it, in the lane figure 12.2
-        // puts the cycle in, accepted.
-        var version = expected.GetProperty("versions").EnumerateArray().Single();
+        // puts the cycle in: the first draft refused and the second, written in the same pass,
+        // accepted.
+        var versions = expected.GetProperty("versions").EnumerateArray().ToArray();
         var industries = JsonSerializer.Serialize(Listed(expected.GetProperty("industries")));
 
         Assert.Equal(
-            [$"{theme}|{version.GetProperty("section").GetString()}|{version.GetProperty("version").GetInt32()}|{expected.GetProperty("night").GetString()}|{version.GetProperty("status").GetString()}|{industries}"],
-            Query(store, "SELECT theme, section, version, as_of, status, industries FROM theme_section;"));
+            [.. versions.Select(version => $"{theme}|{version.GetProperty("section").GetString()}|{version.GetProperty("version").GetInt32()}|{expected.GetProperty("night").GetString()}|{version.GetProperty("status").GetString()}|{industries}")],
+            Query(store, "SELECT theme, section, version, as_of, status, industries FROM theme_section ORDER BY version;"));
 
-        Assert.Equal("paid", version.GetProperty("lane").GetString());
-        Assert.Equal([Providers.ResearchModelFeedTests.Shipped().Identity], Query(store, "SELECT model FROM theme_section;"));
+        Assert.All(versions, version => Assert.Equal("paid", version.GetProperty("lane").GetString()));
+        Assert.Equal([Providers.ResearchModelFeedTests.Shipped().Identity], Query(store, "SELECT DISTINCT model FROM theme_section;"));
 
-        // The search the pass asked, over the window the file states, and what it kept: the
-        // result from a site the list does not carry dropped and named, no result short of a
-        // document, and every page it kept stored and admitted.
+        // The searches the pass asked, one a site in the list's order, each over the window the
+        // file states, and what they kept: a result from a site the list does not carry dropped
+        // and named, a result short of a document dropped and named, and every page kept stored
+        // and admitted.
         var window = expected.GetProperty("window");
-        var asked = search.Asked.Single();
 
-        Assert.Equal(window.GetProperty("from").GetString(), Iso(asked.From));
-        Assert.Equal(window.GetProperty("to").GetString(), Iso(asked.To));
+        Assert.Equal(IndustryList(), search.Asked.Select(asked => Assert.Single(asked.Domains)).ToArray());
 
-        // Section 17's four parameters on the request the pass made, read off the body the
-        // feed sends for it: the industry and no member's ticker, the two dates, the industry
-        // list and no other site, and the page's text with its publish date.
-        using (var sent = JsonDocument.Parse(TavilySearchFeed.Body(asked)))
+        foreach (var asked in search.Asked)
         {
+            Assert.Equal(window.GetProperty("from").GetString(), Iso(asked.From));
+            Assert.Equal(window.GetProperty("to").GetString(), Iso(asked.To));
+
+            // Section 17's four parameters on each request the pass made, read off the body the
+            // feed sends for it: the industry and no member's ticker, the two dates, one site of
+            // the industry list and no other, and the page's text with its publish date.
+            using var sent = JsonDocument.Parse(TavilySearchFeed.Body(asked));
             var body = sent.RootElement;
 
             Assert.Equal(theme + " industry", body.GetProperty("query").GetString());
             Assert.All(members.Append("KEYS"), ticker => Assert.DoesNotContain(ticker, body.GetProperty("query").GetString()!, StringComparison.Ordinal));
             Assert.Equal(window.GetProperty("from").GetString(), body.GetProperty("start_date").GetString());
             Assert.Equal(window.GetProperty("to").GetString(), body.GetProperty("end_date").GetString());
-            Assert.Equal(IndustryList(), Listed(body.GetProperty("include_domains")));
+            Assert.Equal([.. asked.Domains], Listed(body.GetProperty("include_domains")));
+            Assert.Equal(ThemeSearch.ResultsASite, body.GetProperty("max_results").GetInt32());
             Assert.Equal(TavilySearchFeed.RawContent, body.GetProperty("include_raw_content").GetString());
             Assert.True(body.GetProperty("include_published_date").GetBoolean());
         }
-        Assert.Equal(expected.GetProperty("results").GetInt32(), TavilySearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedSearchFeed.FileFor(asked)))).Results.Count);
+
+        var answers = search.Asked.Select(asked => TavilySearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedSearchFeed.FileFor(asked))))).ToArray();
+
+        Assert.Equal(expected.GetProperty("results").GetInt32(), answers.Sum(answer => answer.Results.Count));
 
         var detail = JsonDocument.Parse(Query(store, "SELECT detail FROM run_log WHERE stage = 'theme research';").Single()).RootElement;
 
@@ -116,31 +138,120 @@ public partial class FixtureExpectations
         Assert.Equal(documents.GetProperty("stored").GetInt32().ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document;").Single());
         Assert.Equal(documents.GetProperty("admitted").GetInt32().ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document WHERE admissibility = 'accepted';").Single());
 
-        // The cycle is handed every page kept, in the order the tool ranked them, and its
-        // prose is the recording its request is keyed on, byte for byte.
-        var kept = TavilySearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedSearchFeed.FileFor(asked)))).Results
+        // The pages kept in the order the rule keeps them, every site's first result before any
+        // site's second, read off the captures by the test's own walk rather than the pass's.
+        var results = new List<SearchResult>();
+
+        for (var rank = 0; rank < ThemeSearch.ResultsASite; rank++)
+        {
+            results.AddRange(answers.Where(answer => rank < answer.Results.Count).Select(answer => answer.Results[rank]));
+        }
+
+        var kept = results
             .Where(result => ThemeSearch.OnList(result.Url, IndustryList()) && !ThemeSearch.ShortOfADocument(result))
-            .Select(result => SourceDocuments.Id(result.Url))
             .ToArray();
 
-        Assert.Equal([JsonSerializer.Serialize(kept)], Query(store, "SELECT source_ids FROM theme_section;"));
+        Assert.Equal(documents.GetProperty("stored").GetInt32(), kept.Length);
 
-        var request = firstPaid.Asked.Single();
+        // The cycle is handed the first ten of them, each carrying its opening, and each draft's
+        // prose is the recording its request is keyed on, byte for byte.
+        var handed = kept.Take(documents.GetProperty("handed").GetInt32()).ToArray();
+        var ids = handed.Select(result => SourceDocuments.Id(result.Url)).ToArray();
 
-        Assert.Equal(SectionPrompt.PaidLane, request.Lane);
-        Assert.Equal(ClaimRules.CycleSection, request.Section);
-        Assert.Equal(kept, request.DocumentIds);
-        Assert.StartsWith("Industry: " + theme + "\n", request.Prompt, StringComparison.Ordinal);
-        Assert.Contains("Facts:\n\n", request.Prompt, StringComparison.Ordinal);
+        Assert.Equal(ThemeSearch.MostPages, handed.Length);
+        Assert.Equal([JsonSerializer.Serialize(ids), JsonSerializer.Serialize(ids)], Query(store, "SELECT source_ids FROM theme_section ORDER BY version;"));
+        Assert.Equal(2, firstPaid.Asked.Count);
 
-        var recorded = OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text;
+        foreach (var request in firstPaid.Asked)
+        {
+            Assert.Equal(SectionPrompt.PaidLane, request.Lane);
+            Assert.Equal(ClaimRules.CycleSection, request.Section);
+            Assert.Equal(ids, request.DocumentIds);
+            Assert.StartsWith("Industry: " + theme + "\n", request.Prompt, StringComparison.Ordinal);
+            Assert.Contains("Facts:\n\n", request.Prompt, StringComparison.Ordinal);
+        }
 
-        Assert.Equal([recorded], Query(store, "SELECT prose FROM theme_section;"));
+        // A page longer than the opening a call carries is handed its opening and not the rest,
+        // and the stored document keeps its whole text: the Federal Reserve's industrial
+        // production release is over twice the opening's length.
+        var longest = handed.Single(result => result.Text!.Length > ThemeSearch.CharactersAPage * 2);
 
-        // What the one call cost, off the row the spend cap wrote.
+        Assert.Contains(ThemeSearch.Opening(longest.Text!), firstPaid.Asked[0].Prompt, StringComparison.Ordinal);
+        Assert.DoesNotContain(longest.Text![ThemeSearch.CharactersAPage..(ThemeSearch.CharactersAPage + 200)], firstPaid.Asked[0].Prompt, StringComparison.Ordinal);
+        Assert.True(
+            int.Parse(Query(store, $"SELECT length(body) FROM source_document WHERE id = '{SourceDocuments.Id(longest.Url)}';").Single(), CultureInfo.InvariantCulture) > ThemeSearch.CharactersAPage * 2,
+            "The stored page is its opening rather than its whole text.");
+
+        // The second call told why the first draft was refused.
+        Assert.DoesNotContain("previous draft", firstPaid.Asked[0].Prompt, StringComparison.Ordinal);
+        Assert.Contains("Your previous draft of this section was refused by the checker for:", firstPaid.Asked[1].Prompt, StringComparison.Ordinal);
+
+        Assert.Equal(
+            [.. firstPaid.Asked.Select(request => OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)],
+            Query(store, "SELECT prose FROM theme_section ORDER BY version;"));
+
+        // What the two calls cost, off the rows the spend cap wrote.
         Assert.Equal(
             decimal.Parse(expected.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
-            decimal.Parse(Query(store, "SELECT spend FROM run_log WHERE run_id = 'theme-first' AND stage = 'research call: The industry cycle';").Single(), CultureInfo.InvariantCulture));
+            Query(store, "SELECT spend FROM run_log WHERE run_id = 'theme-first' AND stage LIKE 'research call: The industry cycle%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
+    }
+
+    [Fact]
+    public void SectionSeventeenStatesTheSearchesAThemePassMakesAndThePagesItHandsAsTheCodeDoes()
+    {
+        // The three figures the limits row states, read off its own cell and held to the
+        // constants the pass reads, so neither moves alone.
+        var row = ArchitectureTables
+            .In(File.ReadAllText(Repository.Architecture))
+            .Single(table => table.Heading == Scope.LimitsTable)
+            .Body.Single(cells => cells.Count > 1 && cells[0] == "Theme search parameters");
+
+        Assert.Contains($"asks for that site's first {ThemeSearch.ResultsASite} results", row[1], StringComparison.Ordinal);
+        Assert.Contains($"handed at most {ThemeSearch.MostPages} of the pages it admitted", row[1], StringComparison.Ordinal);
+        Assert.Contains($"each carried as its first {ThemeSearch.CharactersAPage.ToString("N0", CultureInfo.InvariantCulture)} characters", row[1], StringComparison.Ordinal);
+
+        // A search a site: as many searches as the list has sites, each restricted to one.
+        var queries = ThemeSearch.For(FixtureReplay.RecordedTheme, ThemeNight, IndustryList());
+
+        Assert.Equal(IndustryList().Count, queries.Count);
+        Assert.All(queries, query => Assert.Single(query.Domains));
+    }
+
+    [Fact]
+    public void TheAnswersAreTakenARankAtATimeAndAPageIsHandedItsOpening()
+    {
+        // Over constructed answers, so the order is the rule's rather than whatever the
+        // captures happen to hold: the first result of every site before any site's second,
+        // a page two searches returned kept once, and an answer with nothing passed over.
+        static SearchResult Result(string url) => new(url, url, "a snippet", "a page", null);
+
+        var merged = ThemeSearch.Merged(
+        [
+            new SearchAnswer([Result("https://a.test/1"), Result("https://a.test/2"), Result("https://a.test/3")]),
+            new SearchAnswer([]),
+            new SearchAnswer([Result("https://c.test/1"), Result("https://a.test/2")]),
+        ]);
+
+        Assert.Equal(["https://a.test/1", "https://c.test/1", "https://a.test/2", "https://a.test/3"], merged.Results.Select(result => result.Url));
+        Assert.Empty(ThemeSearch.Merged([]).Results);
+
+        // At most ten pages handed, in the order they were kept.
+        var stored = Enumerable.Range(1, 12)
+            .Select(at => new StoredDocument($"d{at}", $"https://a.test/{at}", $"page {at}", ThemeNight, DateTimeOffset.UnixEpoch, $"text {at}", Admissibility.Accepted))
+            .ToArray();
+
+        Assert.Equal(stored.Take(ThemeSearch.MostPages).Select(document => document.Id), ThemeSearch.Handed(stored).Select(document => document.Id));
+
+        // A page at the opening's length is carried whole, one character longer is cut to it,
+        // and a cut that would split a character in two stops before it.
+        var exact = new string('a', ThemeSearch.CharactersAPage);
+
+        Assert.Equal(exact, ThemeSearch.Opening(exact));
+        Assert.Equal(exact, ThemeSearch.Opening(exact + "b"));
+
+        var split = new string('a', ThemeSearch.CharactersAPage - 1) + "\U0001F600" + "tail";
+
+        Assert.Equal(new string('a', ThemeSearch.CharactersAPage - 1), ThemeSearch.Opening(split));
     }
 
     // ---- what a search keeps ----
@@ -152,12 +263,15 @@ public partial class FixtureExpectations
 
         var cap = new SpendCap(new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
 
-        await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile)).RunAsync(FixtureReplay.RecordedTheme, "theme-off-list");
+        await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile)).RunAsync("Scientific & Technical Instruments", "theme-off-list");
 
-        // The page from the research vendor the list does not carry is nowhere in the store,
-        // and the run log names its site.
-        Assert.Equal("0", Query(store, "SELECT COUNT(*) FROM source_document WHERE url LIKE '%mordorintelligence%';").Single());
-        Assert.Equal(["www.mordorintelligence.com"], Listed(JsonDocument.Parse(Query(store, "SELECT detail FROM run_log WHERE stage = 'theme research';").Single()).RootElement.GetProperty("offList")));
+        // The search restricted to worldsteel.org answered for this industry with three pages
+        // from three other sites, none of which the list carries. None of them is in the
+        // store, and the run log names each site, in the order the pass kept results.
+        Assert.Equal("0", Query(store, "SELECT COUNT(*) FROM source_document WHERE url LIKE '%dictionary.com%' OR url LIKE '%science.gov%' OR url LIKE '%merriam-webster.com%';").Single());
+        Assert.Equal(
+            ["www.dictionary.com", "www.science.gov", "www.merriam-webster.com"],
+            Listed(JsonDocument.Parse(Query(store, "SELECT detail FROM run_log WHERE stage = 'theme research';").Single()).RootElement.GetProperty("offList")));
 
         // Over the company search the tool answered against the company-news list: seven of
         // its ten results come from sites the list does not carry. Two of those came back
@@ -191,10 +305,9 @@ public partial class FixtureExpectations
         // A search that answered with two results from sites the list carries, one with no
         // text and one whose text is shorter than its own snippet, which is what two results
         // the searches at 6.9 returned looked like.
-        var query = ThemeSearch.For(FixtureReplay.RecordedTheme, ThemeNight, IndustryList());
-
-        File.WriteAllText(
-            Path.Combine(folder.Path, RecordedSearchFeed.FileFor(query)),
+        Answered(
+            folder.Path,
+            FixtureReplay.RecordedTheme,
             """
             {"query":"Semiconductors industry","results":[
               {"url":"https://www.trendforce.com/news/a","title":"A","content":"A snippet the tool wrote about the page.","raw_content":null,"published_date":"Tue, 01 Sep 2026 00:00:00 GMT"},
@@ -226,20 +339,30 @@ public partial class FixtureExpectations
     [Fact]
     public async Task EveryPageAThemeSearchStoresComesFromTheListThatGovernsIt()
     {
-        var expected = Expected("theme-record");
-
         using var store = await FixtureReplay.ReplayedWholeAsync();
 
-        // The whole replay's theme pass: the nine pages the file states, each from a site the
-        // industry list carries, beside the fourteen documents the name's pass read from the
-        // licensed feed and the archive, which no list governs.
-        var hosts = Query(store, "SELECT url FROM source_document;")
-            .Select(url => new Uri(url))
-            .Where(url => url.Host.EndsWith("semiconductors.org", StringComparison.Ordinal) || url.Host.EndsWith("mordorintelligence.com", StringComparison.Ordinal))
+        // The whole replay's two theme passes, for KEYS's industry inside its pass and for
+        // Semiconductors after it: the pages their searches kept, worked out from the captures
+        // by the rule, each stored and each from a site the industry list carries, beside the
+        // documents the name's pass read from the licensed feed and the archive, which no list
+        // governs.
+        var kept = new[] { "Scientific & Technical Instruments", FixtureReplay.RecordedTheme }
+            .SelectMany(theme => ThemeSearch.For(theme, ThemeNight, IndustryList()))
+            .SelectMany(query => TavilySearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedSearchFeed.FileFor(query)))).Results)
+            .Where(result => ThemeSearch.OnList(result.Url, IndustryList()) && !ThemeSearch.ShortOfADocument(result))
+            .Select(result => result.Url)
+            .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(expected.GetProperty("documents").GetProperty("stored").GetInt32(), hosts.Length);
-        Assert.All(hosts, url => Assert.True(ThemeSearch.OnList(url.ToString(), IndustryList()), $"{url} is stored from a theme search and its site is not on the industry list."));
+        var stored = Query(store, "SELECT url FROM source_document;");
+        var research = Expected("research-record");
+
+        Assert.Equal(
+            Expected("theme-record").GetProperty("documents").GetProperty("stored").GetInt32() + research.GetProperty("theme").GetProperty("stored").GetInt32(),
+            kept.Length);
+        Assert.All(kept, url => Assert.Contains(url, stored));
+        Assert.All(kept, url => Assert.True(ThemeSearch.OnList(url, IndustryList()), $"{url} is stored from a theme search and its site is not on the industry list."));
+        Assert.Equal(research.GetProperty("documents").GetProperty("fetched").GetInt32(), stored.Count - kept.Length);
 
         // Both lists carry a review date and sit under the tool's domain limit.
         using var lists = JsonDocument.Parse(File.ReadAllText(Path.Combine(Repository.Root, SourceLists.FileName)));
@@ -421,12 +544,13 @@ public partial class FixtureExpectations
 
         Assert.Equal(ThemeResearchRunner.Unavailable, (await Themer(down).RunAsync("Scientific & Technical Instruments", "theme-down")).Outcome);
 
-        // The next finds nothing to write from and runs to the end, which does close it: a
-        // search that found nothing is not run again that day.
+        // The next searches every site and runs to the end, its call answered with nothing,
+        // which does close it: a pass that ran to the end, whatever it could write, is not run
+        // again that day.
         var found = new RecordedSearchFeed(Folder());
 
         Assert.Equal(ThemeResearchRunner.Written, (await Themer(found).RunAsync("Scientific & Technical Instruments", "theme-nothing")).Outcome);
-        Assert.Equal(1, found.Requests);
+        Assert.Equal(IndustryList().Count, found.Requests);
 
         var again = new RecordedSearchFeed(Folder());
         var second = await Themer(again).RunAsync("Scientific & Technical Instruments", "theme-nothing-again");
@@ -458,10 +582,9 @@ public partial class FixtureExpectations
 
         // One page from a site the list carries, with its text, published before the quarter
         // the search asked for, which admissibility refuses.
-        var query = ThemeSearch.For(FixtureReplay.RecordedTheme, ThemeNight, IndustryList());
-
-        File.WriteAllText(
-            Path.Combine(folder.Path, RecordedSearchFeed.FileFor(query)),
+        Answered(
+            folder.Path,
+            FixtureReplay.RecordedTheme,
             """
             {"results":[{"url":"https://www.semiconductors.org/an-old-report","title":"An old report","content":"A snippet.","raw_content":"A report on the industry, published long before the quarter the search asked for, and carrying enough text to be a page.","published_date":"Mon, 02 Mar 2026 00:00:00 GMT"}]}
             """);
@@ -490,10 +613,9 @@ public partial class FixtureExpectations
         using var store = new TemporaryStore().Migrated();
         using var folder = new TemporaryDirectory();
 
-        var query = ThemeSearch.For(FixtureReplay.RecordedTheme, ThemeNight, IndustryList());
-
-        File.WriteAllText(
-            Path.Combine(folder.Path, RecordedSearchFeed.FileFor(query)),
+        Answered(
+            folder.Path,
+            FixtureReplay.RecordedTheme,
             """
             {"results":[{"url":"https://www.semiconductors.org/sales","title":"Sales","content":"A snippet.","raw_content":"Global sales rose again in July as demand for advanced chips kept climbing across the industry.","published_date":"Fri, 04 Sep 2026 00:00:00 GMT"}]}
             """);
@@ -518,6 +640,12 @@ public partial class FixtureExpectations
             Query(store, "SELECT version, status FROM theme_section ORDER BY version;"));
         Assert.Equal(ThemeResearchRunner.Written, outcome.Outcome);
         Assert.Contains($"research call: {ClaimRules.CycleSection}, {ResearchRunner.SecondRound}", Query(store, "SELECT stage FROM run_log;"));
+
+        // Both checks under the theme's stage, the retry's with its round, so a name's pass that
+        // refreshed this theme has its own two free.
+        Assert.Equal(
+            [ClaimChecker.ThemeStage, $"{ClaimChecker.ThemeStage}, {ResearchRunner.SecondRound}"],
+            Query(store, "SELECT stage FROM run_log WHERE stage LIKE '%claims%' ORDER BY rowid;"));
     }
 
     // ---- which theme a name's pass reads, and when it refreshes it ----
@@ -570,8 +698,52 @@ public partial class FixtureExpectations
 
         var refreshed = await FixtureReplay.Researcher(stale, ResearchClock, localModel: new NothingAnsweringLocal(), archive: new NoRelease(), news: new NoArticles(), search: asked).RunAsync("KEYS", "research-theme-refreshed");
 
-        Assert.Equal(1, asked.Requests);
+        Assert.Equal(IndustryList().Count, asked.Requests);
         Assert.Contains(ClaimRules.CycleSection, refreshed.Warranted);
+    }
+
+    [Fact]
+    public async Task ANamesPassWhoseThemeWroteItsCycleChecksItsOwnSectionsOnARowOfItsOwn()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+        using var folder = new TemporaryDirectory();
+
+        const string Theme = "Scientific & Technical Instruments";
+
+        // One page the theme's search keeps, so its call is made and its cycle is written and
+        // checked inside the name's pass.
+        Answered(
+            folder.Path,
+            Theme,
+            """
+            {"results":[{"url":"https://www.spglobal.com/instruments","title":"Instruments","content":"A snippet.","raw_content":"Orders for test and measurement instruments kept rising as laboratories and factories spent on new equipment.","published_date":"Fri, 04 Sep 2026 00:00:00 GMT"}]}
+            """);
+
+        // The cycle in words, and the key under each figure, which is the one section written
+        // from the facts file alone and so the one a name with no document still has written.
+        var model = new ScriptedModel(
+            "Orders for test and measurement instruments kept rising across the industry [D1].",
+            "Each line on the chart is drawn from the name's own stored sessions.");
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, lane: [], paid: model, localModel: new NothingAnsweringLocal(), archive: new NoRelease(), news: new NoArticles(), search: new RecordedSearchFeed(folder.Path)).RunAsync("KEYS", "research-theme-checked");
+
+        // A theme refreshed inside a name's pass runs its check under the name's run, and the
+        // name's own check after it is a row of its own rather than a second row under one
+        // stage, which the 6.11 production run found stopping MSFT's pass with nothing on its
+        // row once its theme had written a cycle.
+        Assert.Equal(ResearchRunner.Written, outcome.Outcome);
+        Assert.Equal(
+            [$"1|{ClaimChecker.Accepted}"],
+            Query(store, "SELECT version, status FROM theme_section;"));
+        Assert.Equal(
+            [$"{ClaimRules.ComputedSection}|{ClaimChecker.Accepted}"],
+            Query(store, "SELECT section, status FROM research_section WHERE ticker = 'KEYS';"));
+
+        var stages = Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-theme-checked';");
+
+        Assert.Contains(ClaimChecker.ThemeStage, stages);
+        Assert.Contains(ClaimChecker.Stage, stages);
+        Assert.Contains(ResearchRunner.Stage, stages);
     }
 
     [Fact]
@@ -587,11 +759,13 @@ public partial class FixtureExpectations
         await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: archive, news: news, search: search).RunAsync("KEYS", "research-counted");
 
         // Two probes were made through the one cap, the name's and its theme's. The theme's
-        // row counts its probe and its search, and the name's counts its own probe beside its
-        // news and its archive requests, and not the theme's, which the 6.9 sweep found no
-        // test telling apart.
+        // row counts its probe and its search a site, and the name's counts its own probe
+        // beside its news and its archive requests, and not the theme's, which the 6.9 sweep
+        // found no test telling apart.
         Assert.Equal(2, paid.Probes);
-        Assert.Equal(["2"], Query(store, "SELECT network_requests FROM run_log WHERE run_id = 'research-counted' AND stage = 'theme research';"));
+        Assert.Equal(
+            [(IndustryList().Count + 1).ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT network_requests FROM run_log WHERE run_id = 'research-counted' AND stage = 'theme research';"));
         Assert.Equal(
             [(news.Requests + archive.Requests + 1).ToString(CultureInfo.InvariantCulture)],
             Query(store, "SELECT network_requests FROM run_log WHERE run_id = 'research-counted' AND stage = 'research';"));

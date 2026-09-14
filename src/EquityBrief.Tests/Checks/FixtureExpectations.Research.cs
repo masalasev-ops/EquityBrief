@@ -49,9 +49,14 @@ public partial class FixtureExpectations
             .Select(row => row.Split('|', 3))
             .ToLookup(row => row[0], row => row[2]);
 
+        // The theme's call is the theme's, made inside the pass for the name's industry, and is
+        // read apart from the name's own below.
+        var own = paid.Asked.Where(request => request.Section != ClaimRules.CycleSection).ToArray();
+        var theme = expected.GetProperty("theme");
+
         var answered = local.Asked
             .Select(request => (request.Section, Text: OpenAiCompatibleModelFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedLocalModelFeed.FileFor(request))), request.Section).Text))
-            .Concat(paid.Asked.Select(request => (request.Section, Text: OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)))
+            .Concat(own.Select(request => (request.Section, Text: OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)))
             .ToLookup(answer => answer.Section, answer => answer.Text);
 
         foreach (var section in drafts)
@@ -60,7 +65,16 @@ public partial class FixtureExpectations
         }
 
         Assert.Equal(expected.GetProperty("modelCalls").GetProperty("local").GetInt32(), local.Requests);
-        Assert.Equal(expected.GetProperty("modelCalls").GetProperty("paid").GetInt32(), paid.Requests);
+        Assert.Equal(expected.GetProperty("modelCalls").GetProperty("paid").GetInt32(), own.Length);
+
+        // The theme's one call, over the ten pages it was handed, answered with nothing: the
+        // recording carries no answer, and the pass stored no cycle.
+        var cycle = Assert.Single(paid.Asked, request => request.Section == ClaimRules.CycleSection);
+
+        Assert.Equal(theme.GetProperty("paid").GetInt32(), paid.Asked.Count(request => request.Section == ClaimRules.CycleSection));
+        Assert.Equal(theme.GetProperty("handed").GetInt32(), cycle.DocumentIds.Count);
+        Assert.Throws<UnusableResearchAnswer>(() => OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(cycle))), cycle.Section));
+        Assert.Empty(Query(store, "SELECT theme FROM theme_section;"));
 
         // Every request the paid lane made was asked in the paid lane, of the configured
         // model, and every one the local lane made in the local lane: the lanes, derived.
@@ -68,19 +82,29 @@ public partial class FixtureExpectations
 
         Assert.All(paid.Asked, request => Assert.Equal(SectionPrompt.PaidLane, request.Lane));
         Assert.All(local.Asked, request => Assert.Equal(SectionPrompt.Lane, request.Lane));
-        Assert.Equal(Listed(lanes.GetProperty("paid")).Order(StringComparer.Ordinal), paid.Asked.Select(request => request.Section).Distinct().Order(StringComparer.Ordinal));
+        Assert.Equal(Listed(lanes.GetProperty("paid")).Order(StringComparer.Ordinal), own.Select(request => request.Section).Distinct().Order(StringComparer.Ordinal));
         Assert.Equal(Listed(lanes.GetProperty("local")).Order(StringComparer.Ordinal), local.Asked.Select(request => request.Section).Distinct().Order(StringComparer.Ordinal));
         Assert.Equal(Listed(lanes.GetProperty("local")), ProseWriter.DefaultLane);
 
-        // What was fetched, admitted and refused, and the company's own filing among it.
+        // What was fetched, admitted and refused, and the company's own filing among it, beside
+        // the pages the theme's searches kept, which are stored in the same store.
         var documents = expected.GetProperty("documents");
+        var themeRow = JsonDocument.Parse(Query(store, "SELECT detail FROM run_log WHERE run_id = 'replay-research' AND stage = 'theme research';").Single()).RootElement;
 
-        Assert.Equal(documents.GetProperty("fetched").GetInt32().ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document;").Single());
-        Assert.Equal(documents.GetProperty("admitted").GetInt32().ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document WHERE admissibility = 'accepted';").Single());
+        Assert.Equal(theme.GetProperty("theme").GetString(), themeRow.GetProperty("theme").GetString());
+        Assert.Equal(theme.GetProperty("stored").GetInt32(), themeRow.GetProperty("fetched").GetInt32());
+        Assert.Equal(theme.GetProperty("admitted").GetInt32(), themeRow.GetProperty("admitted").GetInt32());
+        Assert.Equal([(theme.GetProperty("searches").GetInt32() + 1).ToString(CultureInfo.InvariantCulture)], Query(store, "SELECT network_requests FROM run_log WHERE run_id = 'replay-research' AND stage = 'theme research';"));
+
+        Assert.Equal((documents.GetProperty("fetched").GetInt32() + theme.GetProperty("stored").GetInt32()).ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document;").Single());
+        Assert.Equal((documents.GetProperty("admitted").GetInt32() + theme.GetProperty("admitted").GetInt32()).ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document WHERE admissibility = 'accepted';").Single());
         Assert.Equal(
             [.. documents.GetProperty("refused").EnumerateObject().Select(refused => $"{refused.Name}|{refused.Value.GetInt32()}")],
             Query(store, "SELECT admissibility, COUNT(*) FROM source_document WHERE admissibility != 'accepted' GROUP BY admissibility ORDER BY admissibility;"));
-        Assert.Equal(["null"], Query(store, "SELECT body FROM source_document WHERE admissibility != 'accepted';"));
+        // A refused document keeps no body. The pass reads no refusal from the capture since 6.11: the
+        // one the capture holds, an AI-written summary dated 2026-07-09, is inside no move and before
+        // the release, and a pass reads only those windows.
+        Assert.All(Query(store, "SELECT IFNULL(body, 'null') FROM source_document WHERE admissibility != 'accepted';"), body => Assert.Equal("null", body));
         Assert.Single(Query(store, $"SELECT id FROM source_document WHERE title = '{documents.GetProperty("ownFiling").GetString()}' AND url LIKE 'https://www.sec.gov/%' AND published_on = '2026-08-18';"));
 
         // What each section was handed, in order, read off the source list each version stored.
@@ -112,10 +136,14 @@ public partial class FixtureExpectations
 
         Assert.Equal(Listed(expected.GetProperty("stages")), Query(store, "SELECT stage FROM run_log WHERE run_id = 'replay-research' ORDER BY rowid;"));
 
-        // What the pass spent, off the rows the spend cap wrote.
+        // What the pass spent on the name's own sections and on its theme, off the rows the
+        // spend cap wrote. The theme's refused call was billed, and its row carries the price.
         Assert.Equal(
             decimal.Parse(expected.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
-            Query(store, "SELECT spend FROM run_log WHERE run_id = 'replay-research';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
+            Query(store, $"SELECT spend FROM run_log WHERE run_id = 'replay-research' AND stage NOT LIKE 'research call: {ClaimRules.CycleSection}%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
+        Assert.Equal(
+            decimal.Parse(theme.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
+            Query(store, $"SELECT spend FROM run_log WHERE run_id = 'replay-research' AND stage LIKE 'research call: {ClaimRules.CycleSection}%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
 
         // The window it read, which is the stored year to the night.
         var window = expected.GetProperty("window");
@@ -189,7 +217,12 @@ public partial class FixtureExpectations
             .RunAsync("KEYS", "research-nothing-paid-for-local", new ResearchPassRequest(PaidForLocal: true));
 
         Assert.Equal(ResearchRunner.Written, paidForLocal.Outcome);
-        Assert.Equal(1, asked.Requests);
+
+        // One request a window: with no release, the moves' spans and the quarter back from the
+        // night, overlapping spans once.
+        var facts = FactsFile.Read(Query(store, "SELECT payload FROM facts WHERE ticker = 'KEYS' AND session_date = '2026-09-08';").Single());
+
+        Assert.Equal(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 8)).Count, asked.Requests);
         Assert.DoesNotContain("The key under each figure", paidForLocal.Warranted);
         Assert.Empty(paidForLocal.Written);
 
@@ -199,7 +232,7 @@ public partial class FixtureExpectations
             .RunAsync("KEYS", "research-nothing-next-day");
 
         Assert.NotEqual(ResearchRunner.RanToday, tomorrow.Reason);
-        Assert.Equal(1, nextDay.Requests);
+        Assert.Equal(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 9)).Count, nextDay.Requests);
     }
 
     [Fact]
@@ -264,7 +297,7 @@ public partial class FixtureExpectations
         var later = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: news).RunAsync("KEYS", "research-warranted-answered");
 
         Assert.NotEqual(ResearchRunner.NotWarranted, later.Outcome);
-        Assert.Equal(1, news.Requests);
+        Assert.NotEqual(0, news.Requests);
 
         // A rewrite asked the same day writes what went stale and nothing accepted that day,
         // so the rewrite control pays for no section twice in a day. The judge makes every
@@ -293,7 +326,8 @@ public partial class FixtureExpectations
 
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
 
-        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: new Articles([article]))
+        // The theme's searches find nothing, so its call is not what the count below reads.
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: new Articles([article]), search: new NoResults())
             .RunAsync("KEYS", "research-only-refused");
 
         // No paid call: a section with nothing admitted is stored citing what it was handed,
@@ -356,6 +390,31 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task ANameWithNoFactsFileWritesAndFetchesNothingOfItsOwn()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        // AAPL holds no facts file on the replayed night, its bars ending before it. The runner's
+        // outcome for such a name had no test until 6.11's production run reached it.
+        Assert.Empty(Query(store, "SELECT ticker FROM facts WHERE ticker = 'AAPL' AND payload != '';"));
+
+        var news = new NoArticles();
+        var archive = new NoRelease();
+        var local = new NothingAnsweringLocal();
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: new ScriptedModel(), localModel: local, archive: archive, news: news, search: new NoResults()).RunAsync("AAPL", "research-no-facts");
+
+        // Nothing of its own fetched, asked or written, and its row saying why, which is the row
+        // the page's line that the pass did not run is read from.
+        Assert.Equal(ResearchRunner.NoFactsFile, outcome.Outcome);
+        Assert.Empty(outcome.Written);
+        Assert.Equal(0, news.Requests + archive.Requests + local.Requests);
+        Assert.Empty(Query(store, "SELECT section FROM research_section WHERE ticker = 'AAPL';"));
+        Assert.Equal([$"research|{ResearchRunner.NoFactsFile}"], Query(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'research-no-facts' AND stage = 'research';"));
+        Assert.Contains("no facts file is stored for the name on or before today", Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-no-facts' AND stage = 'research';").Single(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ASecondPressWhileAPassRunsIsRefusedByName()
     {
         using var store = await FixtureReplay.ReplayedForResearchAsync();
@@ -407,6 +466,151 @@ public partial class FixtureExpectations
         Assert.Equal("0", Query(store, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{paid.Identity}';").Single());
         Assert.Equal(["paused"], Query(store, "SELECT DISTINCT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage LIKE 'research call:%';"));
         Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage = 'research';"));
+    }
+
+    // A name's news answered from the recording, noting each window it is asked for, and refusing
+    // the windows a test names as the live feed refuses one the provider has more of.
+    sealed class WindowedNews(INameNewsFeed inner, Func<(DateOnly From, DateOnly To), bool>? refuses = null) : INameNewsFeed
+    {
+        public List<(DateOnly From, DateOnly To)> Asked { get; } = [];
+
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<NewsArticle>> ArticlesAsync(string ticker, DateOnly from, DateOnly to, CancellationToken cancellation = default)
+        {
+            Requests++;
+            Asked.Add((from, to));
+
+            return refuses?.Invoke((from, to)) == true
+                ? throw new ProviderRefusal($"The news query for {ticker} over {Iso(from)} to {Iso(to)} reached 20 pages of 1000 and the provider still had more.", transient: false)
+                : inner.ArticlesAsync(ticker, from, to, cancellation);
+        }
+    }
+
+    [Fact]
+    public async Task APassReadsTheNewsInsideEachMoveAndSinceTheFilingAndNeverTheStoredYear()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var news = new WindowedNews(new RecordedNameNewsFeed(Folder()));
+
+        await FixtureReplay.Researcher(store, ResearchClock, news: news, search: new NoResults()).RunAsync("KEYS", "research-windows");
+
+        // The windows the rule reads, worked out by the test from the night's facts and the
+        // release's filing date rather than taken from the pass: KEYS's eight moves, five of
+        // which overlap, and the days from 2026-08-18 to the night.
+        var facts = FactsFile.Read(Query(store, "SELECT payload FROM facts WHERE ticker = 'KEYS' AND session_date = '2026-09-08';").Single());
+        var moves = MoveWindows.In(facts);
+
+        Assert.Equal(8, moves.Count);
+
+        var release = Query(store, "SELECT published_on FROM source_document WHERE url LIKE 'https://www.sec.gov/%'").Single();
+        var filed = DateOnly.ParseExact(release, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        Assert.Equal(new DateOnly(2026, 8, 18), filed);
+
+        var expected = NewsWindows.For(moves, filed, new DateOnly(2026, 9, 8));
+
+        Assert.Equal(expected, news.Asked);
+        Assert.True(news.Asked.Count < moves.Count + 1, $"The pass asked for {news.Asked.Count} windows over {moves.Count} moves and the filing, so no overlap was read once.");
+        Assert.DoesNotContain(news.Asked, window => window.From <= new DateOnly(2026, 9, 8).AddYears(-ResearchRunner.WindowYears) && window.To >= new DateOnly(2026, 9, 8));
+
+        // And what each section was handed is what the stored year handed it: the research record
+        // expectation's titles, read by the test above, rest on documents inside these windows.
+        Assert.All(
+            Query(store, "SELECT published_on FROM source_document WHERE url NOT LIKE 'https://www.sec.gov/%';"),
+            published => Assert.Contains(news.Asked, window => string.CompareOrdinal(Iso(window.From), published) <= 0 && string.CompareOrdinal(published, Iso(window.To)) <= 0));
+    }
+
+    [Fact]
+    public async Task AWindowTheProviderHasMoreOfIsNamedUnreadAndThePassWritesFromTheRest()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        // The window since the filing refused as the live feed refused MSFT's year, and the moves'
+        // windows answered. The pass does not stop on it: the refusal is on its row and the sections
+        // resting on the moves are written.
+        // The sections are handed less than the recordings were asked over, so a research model that
+        // answers whatever it is asked stands in for the recorded one.
+        var news = new WindowedNews(new RecordedNameNewsFeed(Folder()), window => window.To == new DateOnly(2026, 9, 8));
+        var paid = new ScriptedModel([.. Enumerable.Repeat("The section, in words and citing its document [D1].", 20)]);
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, news: news, search: new NoResults()).RunAsync("KEYS", "research-window-refused");
+
+        Assert.NotEqual(ResearchRunner.Unavailable, outcome.Outcome);
+        Assert.Contains(news.Asked, window => window.To == new DateOnly(2026, 9, 8));
+        Assert.Contains("news: The news query for KEYS", outcome.Reason, StringComparison.Ordinal);
+        Assert.Contains("still had more", Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-window-refused' AND stage = 'research';").Single(), StringComparison.Ordinal);
+        Assert.Single(Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-window-refused' AND stage = 'research';"));
+    }
+
+    [Fact]
+    public void TheWindowsAreEachMovesSpanAndTheDaysSinceTheFilingReadOnceWhereTheyOverlap()
+    {
+        var night = new DateOnly(2026, 9, 8);
+
+        MoveWindow[] moves =
+        [
+            new("largest move", new DateOnly(2026, 2, 17), new DateOnly(2026, 2, 24)),
+            new("move 2", new DateOnly(2026, 2, 20), new DateOnly(2026, 3, 2)),
+            new("move 3", new DateOnly(2026, 3, 3), new DateOnly(2026, 3, 6)),
+            new("move 4", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 8)),
+            new("move 5", null, new DateOnly(2025, 9, 9)),
+            new("move 6", new DateOnly(2026, 8, 20), new DateOnly(2026, 8, 25)),
+        ];
+
+        // Overlapping spans are one, and a span starting the day after another ends is one with it;
+        // a move whose start has left the stored year is no window; and the filing's span to the
+        // night takes in a move inside it.
+        Assert.Equal(
+            [(new DateOnly(2026, 2, 17), new DateOnly(2026, 3, 6)), (new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 8)), (new DateOnly(2026, 8, 18), night)],
+            NewsWindows.For(moves, new DateOnly(2026, 8, 18), night));
+
+        // With no filing, the quarter back from the night; and a filing dated after the night is read
+        // as none.
+        Assert.Equal((night.AddMonths(-NewsWindows.WithoutAFilingMonths), night), NewsWindows.For([], null, night).Single());
+        Assert.Equal((night.AddMonths(-NewsWindows.WithoutAFilingMonths), night), NewsWindows.For([], night.AddDays(1), night).Single());
+    }
+
+    [Fact]
+    public async Task ACapReachedInsideAPassStopsItsRemainingPaidCallsRatherThanWarning()
+    {
+        // The pass as the recordings have it, once with the caps that let it run, to read what its
+        // first paid call cost and what its second could cost.
+        var asked = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+
+        using (var free = await FixtureReplay.ReplayedForResearchAsync())
+        {
+            await FixtureReplay.Researcher(free, ResearchClock, paid: asked, search: new NoResults()).RunAsync("KEYS", "research-priced");
+        }
+
+        var first = asked.Asked[0];
+        var second = asked.Asked[1];
+        var cost = asked.Price(OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(first))), first.Section));
+
+        // A day cap the first call fits inside and the first call's cost with the second's ceiling
+        // does not: the cap is reached inside the pass rather than before it.
+        var cap = cost + asked.Ceiling(second) - 0.000001m;
+
+        Assert.True(asked.Ceiling(first) <= cap, "The first call's ceiling does not fit the cap, so the pass would stop before it rather than inside it.");
+
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, caps: new SpendCaps(cap, 50m), search: new NoResults()).RunAsync("KEYS", "research-cap-reached");
+
+        // One call made and written, and no call after the refusal: the pass is paused, and every
+        // paid section it had not reached is named with the cap's line rather than written.
+        Assert.Equal(ResearchRunner.Paused, outcome.Outcome);
+        Assert.Equal([first.Section], paid.Asked.Select(request => request.Section).ToArray());
+        Assert.Equal([$"{first.Section}|1"], Query(store, $"SELECT section, version FROM research_section WHERE ticker = 'KEYS' AND model = '{paid.Identity}';"));
+
+        var stopped = outcome.NotWritten.Where(line => line.Reason.StartsWith("research is paused:", StringComparison.Ordinal)).Select(line => line.Section).ToArray();
+
+        Assert.Contains(second.Section, stopped);
+        Assert.DoesNotContain(first.Section, stopped);
+        Assert.Equal([cost.ToString(CultureInfo.InvariantCulture)], Query(store, "SELECT spend FROM run_log WHERE run_id = 'research-cap-reached' AND stage LIKE 'research call:%' AND outcome = 'ok';"));
+        Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-cap-reached' AND stage = 'research';"));
     }
 
     [Fact]
@@ -489,10 +693,13 @@ public partial class FixtureExpectations
                 Listed(asked.GetProperty("fallback")).Order(StringComparer.Ordinal),
                 Query(store, "SELECT section FROM research_section WHERE ticker = 'KEYS' AND status = 'fallback' ORDER BY section;"));
 
-            Assert.Equal(asked.GetProperty("calls").GetInt32(), local.Requests + paid.Requests);
+            // Over the name's own sections: the theme's one call is made the same in both runs,
+            // whichever lane the name's sections are in, and is the theme's rather than a lane's.
+            Assert.Equal(asked.GetProperty("calls").GetInt32(), local.Requests + paid.Asked.Count(request => request.Section != ClaimRules.CycleSection));
+            Assert.Equal(1, paid.Asked.Count(request => request.Section == ClaimRules.CycleSection));
             Assert.Equal(
                 decimal.Parse(asked.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
-                Query(store, "SELECT spend FROM run_log WHERE run_id = 'replay-research';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
+                Query(store, $"SELECT spend FROM run_log WHERE run_id = 'replay-research' AND stage NOT LIKE 'research call: {ClaimRules.CycleSection}%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
 
             // One evidence set: every section in both runs was handed what the default pass
             // hands it, whichever model asked.
@@ -607,9 +814,11 @@ public partial class FixtureExpectations
 
         Assert.Contains($"through the spend cap for ${decimal.Round(spend, 4).ToString(CultureInfo.InvariantCulture)}", runbook, StringComparison.Ordinal);
 
-        // And the window, which both state as the stored year.
+        // And the windows a pass reads the news over, which the runbook states as the rule does:
+        // inside each stored move and from the release's filing date to the night.
         Assert.Equal(1, ResearchRunner.WindowYears);
-        Assert.Contains("fetches the name's news for the stored year", runbook, StringComparison.Ordinal);
+        Assert.Contains("the name's news inside each stored move and from the release's filing date to the night, overlapping spans once", runbook, StringComparison.Ordinal);
+        Assert.DoesNotContain("news for the stored year", runbook, StringComparison.Ordinal);
     }
 
     // ---- a dated calendar item's date ----

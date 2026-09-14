@@ -911,6 +911,24 @@ internal static class Scope
             Verdict.Pass,
             "a name whose section predates its stored filing and its passed earnings date is drawn with one line naming both, which is the line the shipped judge writes to the run log over the same store, and a name whose research stands is drawn as standing",
             ByReadSurface),
+        // 6.11, the phase report. The report exporter's two rows and the surface it writes, and
+        // the harness's own matrix row, which had waited here since 0.5.
+        [CheckReach.Key(CatalogueTable, "Report exporter")] = new Scoped(
+            Verdict.Pass,
+            "the class declares an empty access, which is a claim rather than an omission, and it matches a row reading the API and writing a file the person exporting chooses where to keep, which is no store",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Report exporter")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is blank and the declaration is empty, asserted cell by cell",
+            ByAccess),
+        [CheckReach.Key("15.4 The two surfaces", "The exported report")] = new Scoped(
+            Verdict.Pass,
+            "the file the export route offers is a document of its own carrying no script, no router link, no form and nothing fetched, every disclosure open, the name page's own marks and written sections byte for byte with no value the page does not state, and one candle for each session the store holds for the name",
+            ByReadSurface),
+        [CheckReach.Key(MatrixTable, "Verification harness")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is blank, read against the catalogue row's words for what the harness reads and writes, which name no store the matrix carries, and every store the suite opens is a temporary one outside the data root",
+            ByAccess),
         // 6.10, the overnight queue. The component, section 14's step 17, section 17's row and the
         // model calls row the carve changes, section 18's row for a night the machine slept and the
         // half of its local model row the queue records, and the run page's region.

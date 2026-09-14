@@ -32,6 +32,7 @@ builder.Services.AddSingleton(_ => SpendCaps.From(
     builder.Configuration[SpendCaps.DayKey],
     builder.Configuration[SpendCaps.MonthKey]));
 builder.Services.AddSingleton<SinglePageApp>();
+builder.Services.AddSingleton<ReportExporter>();
 
 // What the name page's control starts: the worker's research verb, from the checkout this
 // surface's build sits in, told to write the store this surface reads.
@@ -96,6 +97,30 @@ app.MapGet("/marks/level-chart/{ticker}", async (
 // prove is that the test agrees with itself.
 app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
 {
+    var name = await NameAsync(read, marks, page, caps, clock, ticker, builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC", export: false);
+
+    // The link to the file, outside the region, so the file does not carry it.
+    return Results.Content(ReportExporter.Link(ticker) + name.Region, "text/html; charset=utf-8");
+});
+
+// One name's report as a file to hand to someone, section 15.4's second surface: the name
+// screen's region composed by the same code from the same reads, less the research controls
+// and the pause, which are the application asking the operator something rather than the
+// report. Offered as a download, so where the file is kept is the operator's choice.
+// see: A single report can still be exported as a self-contained file
+app.MapGet(ReportExporter.Route + "{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, ReportExporter exporter) =>
+{
+    var name = await NameAsync(read, marks, page, caps, clock, ticker, builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC", export: true);
+
+    return Results.File(
+        System.Text.Encoding.UTF8.GetBytes(exporter.Document(ticker, name.AsOf, name.Region)),
+        "text/html; charset=utf-8",
+        ReportExporter.FileName(ticker, name.AsOf));
+});
+
+// The name screen's region, read here and composed by the app, for the page and for the file.
+static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export)
+{
     var bars = await read.BarsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
     var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
     var levels = await read.LevelsAsync(ticker);
@@ -107,7 +132,6 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     // page can say why it is here and the walk is one pass through.
     var night = await read.NewestNightAsync();
     var listings = night is { } dated ? await read.ListingsAsync(dated) : [];
-    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
     // The index on the night the list is from, so the neighbours are that
     // night's members rather than today's.
@@ -161,25 +185,25 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     // cycle among them is the theme's, read for the industry the index names the member in.
     var written = await read.WrittenSectionsAsync(ticker);
 
-    return Results.Content(
-        NameScreen.Region(
-            page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
-            fundamentals,
-            extremes,
-            listings.FirstOrDefault(listing => listing.Ticker == ticker),
-            at is > 0 ? ordered[at.Value - 1].Ticker : null,
-            at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null,
-            await read.SectionStatesAsync(ticker, DateOnly.MaxValue),
-            await read.StalenessAsync(ticker),
-            written,
-            await read.NewestPassAsync(ticker),
-            await SpendNow(read, caps, clock),
-            await read.CitedDocumentsAsync(NameScreen.Cited(written)),
-            await read.EventsAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
-            await read.PaidCallSpendsAsync(),
-            clock.SessionDateAt(clock.UtcNow)),
-        "text/html; charset=utf-8");
-});
+    var region = NameScreen.Region(
+        page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
+        fundamentals,
+        extremes,
+        listings.FirstOrDefault(listing => listing.Ticker == ticker),
+        at is > 0 ? ordered[at.Value - 1].Ticker : null,
+        at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null,
+        await read.SectionStatesAsync(ticker, DateOnly.MaxValue),
+        await read.StalenessAsync(ticker),
+        written,
+        await read.NewestPassAsync(ticker),
+        export ? null : await SpendNow(read, caps, clock),
+        await read.CitedDocumentsAsync(NameScreen.Cited(written)),
+        await read.EventsAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
+        export ? null : await read.PaidCallSpendsAsync(),
+        clock.SessionDateAt(clock.UtcNow));
+
+    return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
+}
 
 // A press of the name page's control: start the worker's research verb for the name, and
 // return at once with the line the page puts beside the control.

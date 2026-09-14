@@ -38,12 +38,14 @@ namespace EquityBrief.Core.Providers;
 // carries a single boolean for the other.
 //
 // The segment table's scale is stated once, in its own title cell, and its figures
-// are in millions. Negatives are parenthesised rather than signed and empty cells
-// are non-breaking spaces.
+// are in millions for both captured filers and in thousands for a third. Negatives
+// are parenthesised rather than signed and empty cells are non-breaking spaces.
 //
 // One row of a money table is not money: a count of reportable segments, marked by
 // a unit after its label. A reader applying the table's scale records two million
-// segments.
+// segments. And a money row can be marked the same way with the table's own
+// currency, which a reader leaving every marked row as filed stores a thousand times
+// short.
 //
 // Neither the row label nor the concept identifies a group. Four groups of one
 // captured table share one axis and member in the markup while their labels
@@ -392,6 +394,7 @@ public static class SecEdgarArchive
 
         var title = Plain(Regex.Match(rows[0], "<th[^>]*class=\"tl\"[^>]*>(.*?)</th>", RegexOptions.IgnoreCase | RegexOptions.Singleline).Groups[1].Value);
         var scale = Scale(title);
+        var currency = Currency(title);
         var periods = Periods(rows);
 
         if (periods.Count == 0)
@@ -426,7 +429,7 @@ public static class SecEdgarArchive
                 continue;
             }
 
-            var figures = Figures(row, periods, scale);
+            var figures = Figures(row, periods, scale, currency);
 
             (open ? current.Figures : consolidated).AddRange(figures);
         }
@@ -453,6 +456,13 @@ public static class SecEdgarArchive
             : title.Contains("in Millions", StringComparison.OrdinalIgnoreCase) ? 1_000_000
             : title.Contains("in Thousands", StringComparison.OrdinalIgnoreCase) ? 1_000
             : 1;
+
+    // The currency the title states its scale in, being the sign written before it:
+    // "$ in Thousands" is dollars. Null where the title states no scale.
+    public static string? Currency(string title) =>
+        Regex.Match(title, @"(\S+)\s+in\s+(?:Billions|Millions|Thousands)", RegexOptions.IgnoreCase) is { Success: true } stated
+            ? stated.Groups[1].Value
+            : null;
 
     const string GroupRow = "rh";
 
@@ -533,10 +543,10 @@ public static class SecEdgarArchive
     // One row's figures, one per period column.
     //
     // A row whose label ends in a unit after a vertical bar is not in the table's
-    // currency, and the scale is not applied to it. A row whose label is bracketed
-    // and whose cells are all empty is the renderer's own structural row and
-    // carries nothing.
-    static IReadOnlyList<SegmentFigure> Figures(string row, IReadOnlyList<ReportPeriod> periods, int scale)
+    // currency, and the scale is not applied to it, unless the unit it states is that
+    // currency. A row whose label is bracketed and whose cells are all empty is the
+    // renderer's own structural row and carries nothing.
+    static IReadOnlyList<SegmentFigure> Figures(string row, IReadOnlyList<ReportPeriod> periods, int scale, string? currency)
     {
         var label = Label(row);
 
@@ -549,8 +559,12 @@ public static class SecEdgarArchive
         var concept = Concept(row);
 
         // The scale is a statement about the money in the table, so a row stating
-        // a unit of its own is left exactly as filed.
-        var applies = unit is null ? scale : 1;
+        // a unit of its own is left exactly as filed. A row stating the table's own
+        // currency is that money: a narrative details table marks each of its money
+        // rows so, NFLX's reading "Revenues | $" under "$ in Thousands" beside a count
+        // marked "segment", and a reader leaving it as filed stored the quarter's
+        // revenue a thousand times short, which 6.11's production run found.
+        var applies = unit is null || string.Equals(unit, currency, StringComparison.Ordinal) ? scale : 1;
         var cells = Regex
             .Matches(row, "<td[^>]*class=\"(num|nump|text)\"[^>]*>(.*?)</td>", RegexOptions.IgnoreCase | RegexOptions.Singleline)
             .Select(cell => Plain(cell.Groups[2].Value))

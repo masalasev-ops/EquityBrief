@@ -327,10 +327,12 @@ public static class ClaimRules
     // Words a period ends without ending a sentence. The four captured articles
     // carry "vs." in a title and "Inc." in a company name, and a split after either
     // leaves a fragment with no citation, which the citation rule would refuse
-    // for being a sentence it is not.
+    // for being a sentence it is not. "Bros." and "Cos." end the names of two index
+    // members, and "Jr." and "Sr." a person's, and 6.11's production run found a cause
+    // refused for a split after "Bros." and again after "Jr.".
     static readonly HashSet<string> Abbreviations = new(StringComparer.OrdinalIgnoreCase)
     {
-        "vs", "Inc", "Corp", "Co", "Ltd", "Plc", "St", "Mr", "Mrs", "Ms", "Dr", "No", "approx", "est",
+        "vs", "Inc", "Corp", "Co", "Cos", "Bros", "Ltd", "Plc", "St", "Mr", "Mrs", "Ms", "Dr", "Jr", "Sr", "No", "approx", "est",
         "e.g", "i.e", "U.S", "U.K", "Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Sept",
         "Oct", "Nov", "Dec",
     };
@@ -412,6 +414,12 @@ public static class ClaimRules
     // matched on a shape, because the shape of an index name is the shape of a
     // number and a rule keyed on capital letters before digits would exempt
     // "Q3 revenue of 94" along with it.
+    //
+    // A stored move's own name is not one of them, and that is a limit kept rather
+    // than a gap: the facts file names a move "move 4", a draft calling it that is
+    // refused for a 4 the file holds no figure for, and a rule exempting the name
+    // would exempt "shares move 4%" with it. 6.11's production run met it once, on
+    // KEYS's cause, and the retry named the move's session instead.
     public static readonly string[] NamesCarryingDigits = ["S&P 500"];
 
     // Phrases carrying a number word that name a period rather than state a

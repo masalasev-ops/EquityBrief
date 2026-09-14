@@ -1,12 +1,12 @@
 {
   "stage": "research-record",
   "derivation": "derived",
-  "derivedFrom": "section 12's rules and the lane configuration assigns each section, the decision that a research pass hands each section the documents code picks for it with the company's own filing first, the decision that a dated calendar item's date rests on a document the sentence cites, the decision that the fixture comparison moved the cause of each large move into the paid lane, the decision that a theme is the industry the index names for a member, and the fixture's own captures: KEYS's thirteen articles, its release filed on 2026-08-18, its eight stored moves, and the theme search for its industry, Scientific & Technical Instruments, which returned no page from the industry list, so the industry cycle is not written and says why. Which lane writes each section, which sections a pass warrants, which documents are fetched, admitted, refused and handed to each section, and in which order, were worked out from those rules and captures outside this repository before the tests that read this file were run, by ranking each move's documents on the listings the provider attributes them to and then on their dates. Section 19.1's research record, whose local half 6.6's prose file carries.",
+  "derivedFrom": "section 12's rules and the lane configuration assigns each section, the decision that a research pass hands each section the documents code picks for it with the company's own filing first, the decision that a dated calendar item's date rests on a document the sentence cites, the decision that the fixture comparison moved the cause of each large move into the paid lane, the decision that a theme is the industry the index names for a member, and the fixture's own captures: KEYS's thirteen articles, of which the twelve published inside a stored move or since the release are the ones a pass reads, its release filed on 2026-08-18, its eight stored moves, and the twelve theme searches for its industry, Scientific & Technical Instruments, one a site of the industry list, which keep eleven pages from bls.gov, statista.com, spglobal.com, census.gov and digitimes.com, being two job postings, three labour and price releases, a quarterly financial report, three statistics pages and two trade news items, so the theme's one call is asked over the openings of the ten it is handed, the research model answers it with nothing, its reasoning finding no page carrying the industry's prices, and the industry cycle is not written and says why. Which lane writes each section, which sections a pass warrants, which documents are fetched, admitted, refused and handed to each section, and in which order, were worked out from those rules and captures outside this repository before the tests that read this file were run, by ranking each move's documents on the listings the provider attributes them to and then on their dates. Section 19.1's research record, whose local half 6.6's prose file carries.",
   "tables": [
     "research_section",
     "source_document"
   ],
-  "frozen": "what each recorded model wrote and the claim checker's verdict on it, and what each paid call cost, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
+  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call with nothing, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
   "ticker": "KEYS",
   "night": "2026-09-08",
   "window": {
@@ -28,14 +28,12 @@
     ]
   },
   "notWritten": {
-    "The industry cycle": "the theme could not be refreshed: the search returned no page from the industry list with its text"
+    "The industry cycle": "the theme could not be refreshed: The research model returned no answer for The industry cycle: the finish reason was stop after 2593 completion token(s), 2592 of them reasoning. A section stored from this would be empty."
   },
   "documents": {
-    "fetched": 14,
+    "fetched": 13,
     "admitted": 13,
-    "refused": {
-      "AI-written summary": 1
-    },
+    "refused": {},
     "ownFiling": "Results release, exhibit991-q326pressrelease.htm"
   },
   "handed": {
@@ -76,6 +74,7 @@
   ],
   "stages": [
     "staleness",
+    "research call: The industry cycle",
     "theme research",
     "prose",
     "research call: The cause of each large move",
@@ -93,6 +92,16 @@
     "paid": 5
   },
   "spend": "0.020124825",
+  "theme": {
+    "theme": "Scientific & Technical Instruments",
+    "searches": 12,
+    "stored": 11,
+    "admitted": 11,
+    "handed": 10,
+    "paid": 1,
+    "spend": "0.00749835"
+  },
+  "themeNote": "the theme's searches, its call and what the call cost are the theme's, made inside the name's pass and under its run. The name's own calls and spend above, and the lane comparison below, leave them out, since both runs of the comparison make the same call.",
   "comparison": {
     "paid": {
       "accepted": {

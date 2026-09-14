@@ -9315,3 +9315,346 @@ Carried:    no obligation is created or discharged here. A theme search over the
             against its sites searched alone stays due at 6.11, and the operating row that sets both
             caps stays open, read at twenty research passes carrying a recorded cost on the run
             page's operational header. This session has committed code and may not sign it off.
+
+### 6.11 - the phase 6 report, a theme searched a site at a time, the exported report, and what a production run found that no replay could   2026-09-14
+Built:      the theme search in the form the measurement below settled: a theme pass searches each
+            of the industry list's twelve sites alone, asks each for its first three results, takes
+            the answers a rank at a time with a page two searches returned kept once, and hands its
+            one call at most ten of the pages it admitted, every site's first before any site's
+            second, each carried as its first 30,000 characters and stored whole. Section 17's
+            theme search row, the runbook's search tool row and the industry list's note say so,
+            and the fixture's theme recordings were taken again in that form: twenty-four searches
+            and three research calls, the manifest naming each. The report exporter: one name's
+            report as a file the operator keeps, answered at `/exports/name/<ticker>` as a download
+            named for the name and its newest session, being the name page's own region from the
+            same composition and the same reads in a document carrying its own styles and no
+            script, nothing fetched from anywhere, every disclosure open, the router's links kept as
+            their words, and neither the research controls with the cost stated before them nor a
+            pause drawn, with the name page's link to it, section 7's and section 16's rows and section 15.4's exported report,
+            and a runbook section. The verification harness's own matrix row, read blank across
+            every store against its catalogue row, whose reads and writes name no store the matrix
+            carries, and against the stores the suite opens, each a temporary one outside the data
+            root. The news a research pass reads, narrowed to the windows its sections are handed
+            from: each stored move's span and the days since the company's own filing, overlapping
+            spans read once, and where the company has no filing a pass can read, the quarter back
+            from the night; a window the provider has more of than a query reads is named on the
+            pass's row as unread and the sections are written from the rest. And four repairs the
+            production run forced, each below with the test that goes red without it: a theme
+            refreshed inside a name's pass checks its cycle under a stage of its own, the runbook's
+            list of a pass's rows naming it; the archive's segment reader scales a row marked with
+            its table's own currency, with the table that showed it captured; the checker reads
+            "Bros.", "Cos.", "Jr." and "Sr." as words a full stop ends without ending a sentence;
+            and the runner's outcome for a name with no facts file is asserted. The commits: the
+            theme search, the exporter, the news windows, the checker's stage, the runbook's rows,
+            the segment reader, the first two abbreviations, the no-facts outcome with two
+            obligations carried to 7.0, the last two abbreviations with a stated limit, the industry
+            list's note, the test the sweep's survivor below needed, and this record.
+Settled:    two decisions, one of them superseding. A theme pass searches each site on the industry
+            list alone, and hands the model a bounded set of the pages they return. A research pass
+            reads a name's news inside each stored move and since the company's own filing, and
+            hands each section the documents code picks from it, the company's own filing first,
+            superseding the entry that read the stored year, which is moved below with its
+            reasoning. What each section is handed is unchanged.
+Measured:   the theme search, before any code, over the quarter to 2026-09-08: 62 searches at the
+            tool's basic depth, being the fixture's four industries searched over the whole
+            industry list and over each of its twelve sites alone, and ten controls. The search over
+            the whole list returned nothing for any of the four, nor for Semiconductors, which had
+            returned ten results over it at 6.9. Restricted to four sites it returned nothing; to
+            three, nothing once and eight results once; to two, ten results each of three times, one
+            site taking all ten in two of them; and at the advanced depth over the whole list,
+            nothing for one industry and ten results for the other, eight of them from sites the list
+            does not carry. Each site searched alone drew results from five to nine of the twelve
+            for each industry, and 63, 34, 47 and 21 results on the site with their text and a
+            publish date for Consumer Electronics, Scientific & Technical Instruments, Software -
+            Infrastructure and Entertainment. So a pass makes a search a site, twelve against one,
+            and asks each for three results, the fewest at which each of the four industries had
+            ten pages to hand; each page is carried as its first 30,000 characters, which holds 135
+            of the 172 pages with text whole, the median page being 9,785 characters, and keeps ten
+            pages under 110,000 tokens and under two cents at the model's off-peak rate. The sites a
+            measurement shows covering an industry were not taken as a third form: that map is
+            twelve searches an industry for every industry the index names, and it moves, since a
+            quarter of an hour later semiconductors.org returned nothing for Semiconductors and
+            worldsteel.org answered with three pages from three other sites.
+            The production run: every section section 4 specifies, on this machine, for the
+            fixture's four real names on its night, 2026-09-08. The store is the fixture's night
+            replayed and copied by the store's own backup into a data root under the session
+            scratchpad, never `data/`. Each name's pass is the research verb's composition, the
+            same components in the same order, with the news feed, the filings archive, the
+            fundamentals endpoint and the search tool live, the local lane on qwen/qwen3.5-9b in LM
+            Studio on this machine and the paid lane on deepseek-flash through the spend cap, on a
+            clock held at 21:10 UTC on the night so every window is the stored figures' own, run on
+            2026-09-14 from 13:46 UTC, off-peak at the provider. It took five runs. The first three
+            each found a fault below, the fourth is the figures, with MSFT's and NFLX's fundamentals
+            fetched live as an installation's first open fetches them, and the fifth is NFLX again
+            after the segment reader's repair.
+            MSFT: 365 seconds, 5 local calls and 7 paid, $0.041464446, its news windows 5,080
+            documents of which 5,024 were admitted, and its theme, Software - Infrastructure, one
+            call at $0.005399934 writing a cycle accepted on its first draft. Seven of its nine
+            sections are accepted: the cause of each large move, the dated calendar items and the
+            short version on their first drafts, the key under each figure, the two cases and the
+            risks on their second, and the cycle. The segment commentary and what the company sells
+            fell back, each refused twice for the quarter's segment revenue its release quotes and
+            its facts file does not carry, below.
+            NFLX: 406 seconds, 4 local calls and 9 paid, $0.060450138, 1,413 documents and 1,400
+            admitted, and Entertainment one call at $0.005927514, accepted on its first draft. Seven
+            of nine: the cause and what the company sells on their second drafts, the key under
+            each figure written by the replayed night's prose pass from the recording 6.6 took on
+            this machine, the dated calendar items and the risks on their second, the short version
+            and the cycle. The segment commentary and the two cases fell back, the commentary
+            refused twice for the United States' revenue of $5.1 billion and the two cases on its
+            second draft for the same figure, which its facts file held a thousand times short,
+            below. The fifth run, on a fresh copy with the reader repaired, held that revenue as
+            $5,100,000,000, and the commentary and the two cases quoting $5.1 billion were each
+            accepted on their first draft, in 316 seconds for $0.051737868, while its research model
+            answered Entertainment's cycle with nothing.
+            KEYS: 400 seconds, 4 local calls and 7 paid, $0.035762715, 201 documents all admitted,
+            and Scientific & Technical Instruments two calls at $0.011229102, the first draft
+            refused for a sentence naming no document and the second accepted. Eight of nine: the
+            cause and the two cases on their second drafts, what the company sells, the segment
+            commentary, the key under each figure on its second, the risks, the short version and
+            the cycle. The dated calendar items were not written: the research model answered with
+            3,944 tokens of reasoning and nothing else, which a section is not stored from.
+            AAPL: its bars end on 2026-08-10, so its pass recorded that no facts file is stored, in
+            58 seconds, after refreshing Consumer Electronics in two calls at $0.006581640, the
+            second draft accepted, below.
+            So every one of the nine sections was written and accepted on this machine for at least
+            one of the three names with a facts file: the cause, the key, the risks, the short
+            version and the cycle for all three, what the company sells, the dated calendar items
+            and the two cases for two, and the segment commentary for KEYS, and for NFLX once its
+            figures were read at their scale. The four synthesis sections were written by the paid
+            model on demand for every name. The condition is read as each section produced, and not
+            as each report carrying every section: the checker leaves out a section it refuses twice
+            and a model that answers with nothing leaves one unwritten, each by rule and each named
+            on the report with its reason, so no report can be promised all nine, and none of the
+            three the fourth run produced carries all nine. That run spent $0.166815489:
+            $0.137677299 on the names' own sections and $0.029138190 on the four themes, 29 paid
+            calls in all, so a pass came to between 4.7 and 6.7 cents with its theme, against
+            section 17's proposed caps of $10 a day and $50 a month. With the second, third and
+            fifth runs, whose stores are in hand, the production runs spent $0.432621876; the first
+            run's store was replaced by the second's, so what its theme calls cost is the provider's
+            own statement to read.
+            Each report exported through the read surface itself, the API process started over the
+            fourth run's store on this machine: MSFT's, NFLX's and KEYS's as
+            `EquityBrief-<ticker>-2026-09-08.html` and AAPL's as `EquityBrief-AAPL-2026-08-10.html`,
+            its newest session, of 292,161, 288,233, 291,729 and 240,004 bytes, none holding a
+            script, a router's link, a form or a reference to anything outside itself, every
+            disclosure open, each drawing its accepted sections and the line for every section it
+            lacks with that section's reason, and the three with a facts file drawing their moves
+            table's eight cause cells.
+Found:      seven things only a production run reached: four repaired here with a test that goes red
+            without the repair, two carried to 7.0 as rulings, and one stated as a limit.
+            A large company's year of news is past what a query reads. The first run asked for
+            MSFT's stored year in one window, the provider still had more after twenty pages of a
+            thousand articles, and the feed refused the window with an error the pass did not
+            catch, so the pass stopped with nothing on its row. KEYS's fixture year is thirteen
+            articles and no recording could have shown it. The news a pass reads is now the windows
+            its sections are handed from, and a window the provider has more of is recorded as
+            unread; MSFT's windows came to 5,080 documents.
+            A theme refreshed inside a name's pass wrote its check's row under the stage the name's
+            own check writes. The second run stopped MSFT's pass on the unique key over run and
+            stage, after the theme's two calls and four of the name's own had been paid for, with
+            nothing on the pass's row. The fixture reaches the theme inside a name's pass only where
+            the theme's call answers with nothing, so the theme's check never ran there. The
+            theme's check now has a stage of its own, and the runbook's list of a pass's rows names
+            it.
+            The archive's segment reader stored NFLX's quarter a thousand times short. Its latest
+            quarterly report files its segments in a narrative table in thousands whose money rows
+            carry the table's own currency after their label, "Revenues | $" with cells reading
+            "$ 12,559,938", beside counts carrying "segment", and the reader left every row carrying
+            a unit as filed, which is right for a count and wrong for money. So the fourth run's
+            facts file held the United States' revenue as 5,100,000 dollars and total revenue as
+            12,559,938, the sections quoting $5.1 billion were refused, and a draft quoting $5.1
+            million would have passed. Both captured filers mark no money row, which is why no
+            replay could show it. The table is captured beside theirs, and the fifth run above is
+            the repair on a live filing.
+            The checker split sentences at names' abbreviations. The third and fourth runs' NFLX
+            cause was refused at "Warner Bros.", the fragment before it for naming no document and
+            the rest for naming no move's session, two things its prose did not do, and the fifth
+            run's at "Floyd Mayweather Jr.". "Bros." and "Cos.", which end the names of two members
+            of the index, and "Jr." and "Sr." are words a full stop ends without ending a sentence.
+            A pass for a name with no facts file refreshes its industry's theme before it finds
+            none. AAPL's pass records that no facts file is stored and its page says the pass did
+            not run, and in each run whose store is in hand the same pass had already searched
+            twelve sites and paid for Consumer Electronics' cycle. The runner's outcome for such a
+            name had no test and has one. Reading the facts file ahead of the theme was written and
+            taken back before it was committed: the theme record 6.9's fixture writes comes from two
+            members added with no facts file of their own, whose passes refresh and read the theme,
+            so the order is what that checkpoint built, and whether a name the night computed
+            nothing for should buy a theme is a ruling, carried to 7.0.
+            A facts file carries no segment figure where the name's newest filing is its annual
+            report. The fourth run fetched MSFT's live: its newest filing is its report for the year
+            to 2026-06-30, whose segment table is three twelve-month periods, and the facts
+            assembler carries the latest quarter, so its segment commentary and what the company
+            sells were refused for the quarter's segment revenue its release quotes. The same holds
+            for a filing stored while the archive could not be read, which the fetcher does not read
+            again until a later filing is stored, because a stored filing is never updated. What a
+            facts file carries of a year is a ruling, carried to 7.0.
+            And a stored move's own name is read as a figure. KEYS's first cause in the fourth run
+            named its moves as the facts file names them, "move 4", "move 6" and "move 8", and was
+            refused for the digits; the retry named their sessions and passed. Exempting the name
+            would exempt "shares move 4%" with it, and the rule refuses rather than passes, so it is
+            stated where the checker's reader meets it rather than repaired.
+            Beside these, two readings of the runs themselves. The third run's MSFT and NFLX were
+            refused for segment figures for a reason in the run and not the product: the fixture
+            holds archive captures for AAPL and KEYS alone, so the replayed night stored MSFT's and
+            NFLX's filings with no segment table, which is why the fourth run fetched those two
+            names' fundamentals live. And whether a theme's cycle is written moved between runs of
+            one pass: the third run's research model answered with nothing for Software -
+            Infrastructure and Scientific & Technical Instruments, the fourth wrote all four, and
+            the fifth answered Entertainment with nothing, which the industry list's measured note
+            now records for its review.
+Predicted:  315 claims and 299 PASS after phase 6, the pair 6.0 took in its first commit and restated
+            as the pair taken. The actual is 346 claims and 330 PASS, with 16 out of scope, every
+            one at phase 7, 0 unexamined and 0 fail. Thirty-one claims arrived that the prediction
+            did not name, each named in the entry of the checkpoint it arrived at, and placed here in
+            the list it belongs in. Thirteen belong in list A, being parts of rows 6.0 found already
+            placed at a phase 6 checkpoint: the fact strip at 6.1, seven parts arriving and the
+            row's own subject leaving, 6; at 6.6, section 18's row for a section assigned to the
+            local lane that the machine cannot hold, five parts where there was one, 4, and the
+            provenance footer's three parts where there was one, 2; and at 6.7 section 18's spend
+            cap row at two parts, 1. Eighteen belong in list B, being claims the phase added, which
+            is where 5.7 placed the rows a component brought with it: section 19.1's stored filings
+            expectation at 6.1, 1, and its archive extracts at 6.2, 1; the inadmissible document
+            row's six parts at 6.3, 5, which 6.0 named, took out of list B and carried as an
+            obligation; section 15.9's research not yet written and research stale at three parts
+            each at 6.5, 4; section 18's local model unavailable row at five parts at 6.6, 4; and at
+            6.7 the spend cap's catalogue and matrix rows, 2, and section 15.9's research paused at
+            two parts, 1. List A as it landed is 74 and list B 34.
+            The arithmetic: 315 and 222 as 6.0 left them, the gap stop's own row being the one claim
+            that passed there; plus 31 is 346; 222 plus list A's 74 and list B's 34 is 330; and 330
+            with the 16 at phase 7 is 346. The chain between is each checkpoint's own entry: 322 at
+            6.1, 323 at 6.2, 328 at 6.3 and 6.4, 332 at 6.5, 342 at 6.6, and 346 from 6.7 to here.
+            Every claim either list named arrived, nine of them as their parts rather than as a whole
+            row, which are the nine decompositions above, and every part passes. No predicted claim
+            is absent: nothing is out of scope at a phase 6 checkpoint, and no count in the chain
+            moved by anything but an arrival its entry names.
+Tested:     8 under `fixture-expectations`: section 17's theme search row stating the results a
+            site is asked for, the pages handed and the characters carried of each as the code holds
+            them, and a pass making one search for each site of the list; the answers taken a rank
+            at a time over constructed answers, a page two searches returned kept once and an answer
+            with nothing passed over, at most ten pages handed in the order kept, and a page cut at
+            its opening without splitting a character; a pass reading the news inside each stored
+            move and since the filing and never the stored year, over a feed recording every window
+            it was asked for, the windows worked out by the test from KEYS's eight moves and its
+            release's filing date, and every document stored dated inside one; a window the
+            provider has more of named on the pass's row as unread, the pass running on to its row
+            rather than stopping; the windows as each move's span and the days since the filing,
+            spans that overlap or touch read once, a move whose start has left the stored year no
+            window, and no filing and a filing dated after the night both read as the quarter back
+            from the night; a cap reached inside a pass, set between the first call's cost and what
+            the second could cost, stopping it there, the pass paused, one section written, the next
+            named with the cap's line, and nothing spent past the first call; a name's pass whose
+            theme wrote its cycle running to the end, the theme's check and the name's each a row of
+            its own under the one run; and a name with no facts file writing, fetching and asking
+            the local model nothing of its own, its row saying why. The theme record test rewritten
+            over the twelve searches, the research record's own calls and spend told apart from its
+            theme's, and the theme retry's two checks asserted under the theme's stage. 3 under
+            `read-surface`: the exported report as the name page's region in a file needing nothing
+            else to be read, offered as a download named for the name and its newest session,
+            drawing the page's marks and written sections byte for byte, stating no value the page
+            does not, and holding one candle for each stored session and each accepted section at
+            its date; and over constructed markup, every disclosure opened, a router's link kept as
+            its words and a document's link kept, the file's name and title, and a name that is not
+            markup-safe escaped wherever it is written; and the page and the file opened at one
+            instant under a fixed clock, over KEYS's research made stale, where the page draws its
+            control to rewrite with the cost before it and the file draws neither, and again with
+            the day cap reached, where the page draws the pause and the file does not, each file
+            still carrying the research state and the page's written sections. 1 under
+            `component-access`: the
+            verification harness's matrix row blank in every cell, its catalogue row naming no store
+            the matrix carries, and a store the suite opens sitting outside the checkout's data
+            root, with the silent components' reading keyed on the stores their cells resolve to. 1
+            under `claim-admissibility`: three sentences, two of them a model's carrying "Warner
+            Bros." and "Floyd Mayweather Jr." and a third carrying "Cos." and "Sr.", each read as one
+            sentence keeping its own citation. And 1 in the filings
+            archive's own tests, over the captured NFLX table: its revenue rows marked with the
+            table's currency carried at its scale, $12,559,938,000 and the United States'
+            $5,100,000,000, its counts still counts, and a title stating no scale stating no
+            currency; with one widened in the name news feed's tests, a window the provider still
+            has more of refused as a refusal the pass records rather than as an error that stops it.
+            900 tests, from 886 at 6.10.
+Mutated:    the rule, stated before the sweep: mutate every property 6.11 added whose failure would
+            let a theme pass search the list in a form other than a search a site, ask a site for a
+            count other than three, keep or hand pages in an order other than a rank at a time, hand
+            its call more than ten pages or a page past its opening, go on searching past a search
+            that failed, or hand its call the admitted pages without the rule; let an exported
+            report carry a script, a router's link, the research controls or a shut disclosure, be
+            offered as anything but a download named for its name and session, or carry a name
+            unescaped, or let the name page carry no link to it; let a research pass read a name's
+            news over the stored year rather than the windows, read overlapping or touching spans
+            apart, read a name with no filing or a filing dated after the night over anything but
+            the quarter, read no move's span, stop on a window the provider has more of or refuse
+            it as an error, or keep one article twice; let a theme refreshed inside a name's pass
+            check its cycle, first draft or retry, under the stage the name's own check writes; let
+            a pass for a name with no facts file record anything but that; let the checker end a
+            sentence at "Bros.", "Cos.", "Jr." or "Sr."; or let the archive's segment reader leave a
+            row marked with its table's own currency as filed, scale a row marked with a unit that
+            is not that currency, or misread the currency a title states. Outside the rule: the
+            production runs' figures, which no replay reproduces; and the harness's own matrix row
+            and the silent components' cells, which are read by assertions over the document
+            itself. Thirty-eight qualify and all thirty-eight were mutated, in a detached worktree
+            under the session scratchpad outside this repository, over an unmutated baseline of 899
+            tests all passing; each was reverted before the next, and the worktree removed.
+            Thirty-seven went red on the first run. The theme search: one search over the whole
+            list, 33 tests red; the first site alone, 32; ten results a site, 31; the answers kept a
+            site at a time, 29; a page two searches returned kept twice, 1; every admitted page
+            handed, 29; a page handed whole past its opening, 29; a cut splitting a character, 1;
+            the searches after a failed one made, 2; the theme's call handed the admitted pages
+            without the rule, 28. The exported report: a disclosure left shut, 1; a router's link
+            kept as a link, 2; a script, 2; the name unescaped, 1; the file named without its
+            session, 2; the file answered as a page rather than a download, 1; the name page
+            carrying no link to it, 1. The news a pass reads: the stored year as one window, 4;
+            overlapping spans read apart, 2; touching spans read apart, 1; no filing read over the
+            year, 1; a filing dated after the night read as the start, 1; no move's span read, 27;
+            an article two windows returned kept twice, 1; a window the provider has more of
+            refused as an error, 1; a pass stopped by one, 1. The theme's check: its first under the
+            name's stage, 2; its retry under it, 1; the theme's stage the name's own text, 1. A name
+            with no facts file recorded as a pass that wrote, 1. The checker ending a sentence at
+            "Bros.", 1, at "Cos.", 1, at "Jr.", 1, and at "Sr.", 1. The segment reader: a row marked
+            with its table's currency left as filed, 1; every marked row scaled, 2; the title's
+            currency misread, 1.
+            One survived, a missing property: the route handing its spend verdict to the file. The
+            rule named the research controls, and a control is drawn only with the cost stated
+            before it, which reads the priced calls the route also withholds from the file, so the
+            verdict alone draws none. What it draws alone is the pause, which the route's own
+            comment leaves out of the file and no test named, since the export test opens both
+            surfaces under the machine's clock over spend that reaches no cap. The test added opens
+            the page and the file at one instant under a fixed clock, over KEYS's research made
+            stale and then with the day cap reached, above. It went red once the test named it, run
+            again at the commit that added the test over an unmutated baseline of 900 passing: the
+            route handing its spend verdict to the file, 1 test red, being the test added.
+            Properties added and not mutated, named because the next sweep has to find them: the
+            characters a file's name replaces, its title, every value it states being one the page
+            states, and the escaping of the name page's link to it; the
+            priced calls withheld from the file, the second of the two guards above, which draws
+            nothing while the first holds; a title stating no scale read as stating no currency; a
+            move whose start has left the stored year yielding no window; and a cap reached inside
+            a pass stopping its remaining paid calls, which asserts inside a pass the stop 6.7 built
+            and 6.7's sweep mutated as a paused call made anyway.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six
+            steps, exit 0, against `data-ci` and never `data`. 900 of 900 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 346 claims, 330 PASS, 0 fail, 16 out of scope, 0
+            unexamined, 337 placements and verdicts reconciled against a floor of 34, 34 of 35
+            roster checks carried and all 34 run. Migrations 0 to 22, this checkpoint adding none.
+            The 16 read twice, by the first checkpoint each note names and by the last, give 16 at
+            phase 7 both ways: 2 at 7.1, 3 at 7.3, 1 at 7.4, 9 at 7.5 and 1 at 7.6. No claim
+            arrived here, and the four owed at 6.11 pass, so no claim is out of scope at a phase 6
+            checkpoint and every phase 6 claim passes naming a check the report reconciled against
+            its declared reach. The operator's store under `data/` was not touched by either gate,
+            its newest file last written on 2026-09-12 at 00:51 UTC before the gates and after them.
+Carried:    one obligation discharged and two created. A theme search over the whole list measured
+            against its sites searched alone is discharged by the measurement above and the
+            decision it settled. The two created are both due at 7.0, which rules each with the
+            evidence this checkpoint put in hand and whose text cites them: whether a pass for a
+            name with no facts file refreshes its industry's theme
+            (owes: A name with no facts file refreshes its industry's theme, ruled), and what a
+            facts file carries of a segment table after an annual filing or an archive the fetch
+            could not read
+            (owes: The segment figures a facts file carries after an annual filing or an archive the fetch could not read).
+            The operating row that sets both caps stays open: the passes this checkpoint priced ran in a
+            scratch store, and its trigger is read on the run page of the store the night fills.
+            One limit is stated where the checker's reader meets it rather than carried, since it
+            refuses rather than passes: a draft naming a stored move by the name the facts file
+            gives it is refused for the digit in it. And the industry list's review reads what the
+            production runs found it yielding, which its measured note now carries. This session has
+            committed code and may not sign phase 6 off.

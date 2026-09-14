@@ -25,6 +25,69 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-14 - RUNBOOK.md - a pass's rows name the check its theme runs under a stage of its own
+
+Corrects: the list of a pass's rows, which named one `claims` stage for a pass however many checks ran in it, found when 6.11's production run stopped MSFT's pass on a second row under that stage.
+Was:
+> `theme research` where the pass refreshed its theme, whose detail names the sites it dropped and the addresses short of a document, `prose`,
+Now:
+> `theme research` where the pass refreshed its theme, whose detail names the sites it dropped and the addresses short of a document, and `theme claims` ahead of it where the theme wrote a cycle to check, `prose`,
+Why: a theme refreshed inside a name's pass checks its cycle under the name's run, so its check is a row of its own and the list a reader looks for rows in has to carry it.
+
+### 2026-09-14 - ARCHITECTURE.html - the cause row cites the decision that replaced the one it cited
+
+Authorised by: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
+Was:
+> at most two a move, naming the fewest companies and then the earliest (see: A research pass hands each section the documents code picks for it, the company's own filing first). A move with no document inside it
+Now:
+> at most two a move, naming the fewest companies and then the earliest (see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first). A move with no document inside it
+Why: the decision it cited is superseded at 6.11, and a citation of a superseded name is refused.
+
+### 2026-09-14 - RUNBOOK.md - a pass reads the news inside each move and since the release, not the stored year
+
+Authorised by: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
+Was:
+> It fetches the name's news for the stored year and its latest results release from the filings archive, tests each document for admissibility as it arrives and stores it with the verdict. It hands each section the documents code picks for it: two a move for the cause of each move, and six since the release beside the release itself for the sections built across the evidence (see: A research pass hands each section the documents code picks for it, the company's own filing first).
+Now:
+> It fetches its latest results release from the filings archive, then the name's news inside each stored move and from the release's filing date to the night, overlapping spans once, tests each document for admissibility as it arrives and stores it with the verdict. It hands each section the documents code picks for it: two a move for the cause of each move, and six since the release beside the release itself for the sections built across the evidence (see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first). A window the provider has more of than a query reads is named as unread on the pass's row, and the sections are written from the windows that were read.
+Why: 6.11's production run found MSFT's year past the most pages a query reads, and the pass reads only the windows the rule hands a section from.
+
+### 2026-09-14 - ARCHITECTURE.html - a theme search is restricted to one site of the industry list at a time, and its call is handed a bounded set of pages
+
+Authorised by: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return
+Was:
+> <tr><td>Theme search parameters</td><td>a theme search names the industry and not a ticker, carries an explicit date range, is restricted to the industry source list, and requests full page text rather than snippets (see: A theme search is scoped by parameter, not by hope)</td><td>an unscoped query returns the wrong industry, undated articles, and pages whose text cannot be stored; a snippet cannot serve as the document a claim rests on. Search is for theme material alone, because a ticker-tagged feed is exhaustive over a date range and cannot return the wrong company (see: Theme material comes from a search tool, and per-name material never does)</td>
+Now:
+> <tr><td>Theme search parameters</td><td>a theme search names the industry and not a ticker, carries an explicit date range, is restricted to one site of the industry source list, asks for that site's first 3 results, and requests full page text rather than snippets, and a theme pass makes one such search for every site on the list; its call is handed at most 10 of the pages it admitted, every site's first before any site's second, each carried as its first 30,000 characters (see: A theme search is scoped by parameter, not by hope) (see: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return)</td><td>an unscoped query returns the wrong industry, undated articles, and pages whose text cannot be stored; a snippet cannot serve as the document a claim rests on. A search restricted to more than one site is one the tool answered at 6.11 with nothing, with one site's pages or with pages from outside the restriction, so the restriction is a site at a time, and a page of a million and a half characters is carried as its opening so ten pages stay a bounded call. Search is for theme material alone, because a ticker-tagged feed is exhaustive over a date range and cannot return the wrong company (see: Theme material comes from a search tool, and per-name material never does)</td>
+Why: 6.11 measured the one search over the whole list returning nothing for five industries, and a restriction to several sites answered with nothing or with one site's pages, so a pass searches a site at a time, and a site answers with pages whose text no call should carry whole.
+
+### 2026-09-14 - RUNBOOK.md - what a theme pass costs against the search tool's allowance
+
+Authorised by: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return
+Was:
+> | Tavily | open web search, for theme material only | free tier is a thousand credits a month against a few hundred searches a year |
+Now:
+> | Tavily | open web search, for theme material only | free tier is a thousand credits a month; a theme pass makes twelve searches, one a site of the industry list, at one credit each at the basic depth, so a few hundred passes a year come to a few thousand searches |
+Why: a pass searches each site on the list alone from 6.11, so it spends twelve credits where it spent one, which is still inside the free allowance at the volume the tool was chosen for.
+
+### 2026-09-14 - RUNBOOK.md - the industry cycle paragraph says a theme pass searches a site at a time and what that costs
+
+Authorised by: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return
+Was:
+> The theme pass searches the open web for the industry over the quarter to the day, restricted to the industry list and asking for each page's text; it drops a result from a site the list does not carry and a result whose text is missing or no longer than its snippet, names both on its row, tests every page it keeps for admissibility and stores it, and has the spend cap make one call, which states no figure. [...] A theme pass costs one search against the tool's monthly allowance and one paid call: over the fixture's Semiconductors pages the call cost $0.0016.
+Now:
+> The theme pass searches each site on the industry list for the industry, one search a site over the quarter to the day, asking each for its first three results and each page's text (see: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return); it drops a result from a site the list does not carry and a result whose text is missing or no longer than its snippet, names both on its row, tests every page it keeps for admissibility and stores it whole, and has the spend cap make one call over at most ten of the pages it admitted, each carried as its first 30,000 characters, which states no figure. [...] A theme pass costs twelve searches against the tool's monthly allowance and one paid call, or two where the checker refuses the first draft: over the ten Semiconductors pages the fixture's searches kept, the two calls cost $0.0119. Where the list's sites carry nothing about an industry's prices the model writes nothing and the cycle is left out with that line: over the eleven pages the searches kept for Scientific & Technical Instruments, being job postings, labour and price releases, statistics pages and trade news, its one call came back empty.
+Why: the paragraph described the one search over the list, which 6.11 measured returning nothing, and a pass that makes twelve searches and hands a bounded set of pages costs what the new sentences state.
+
+### 2026-09-14 - BUILD_PLAN.md - the theme search obligation 6.11 produces the evidence for, discharged
+
+Authorised by: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return
+Was:
+> | **A theme search over the whole list measured against its sites searched alone** | 6.9 | 6.11 | 6.11 produces every section section 4 specifies on the current hardware, and the section a theme pass writes exists only where the theme's search returns a page. At 6.9 the one search a theme pass makes, restricted to the twelve sites of the industry list, returned nothing for Consumer Electronics, where statista.com searched alone a minute apart returned ten results, every one on the site with its text and a publish date. So a search over the list that returns nothing does not say that no site on it covers the industry, and a name in an industry a site does cover can be left without the section while its page says, truly of the search and not of the list, that the search found nothing. What 6.11 produces is reports on real names, and what that answers is whether a theme pass searches the list once, each site once, or the sites a measurement shows covering the industry, measured over the industries of the names it reports on with the searches each form costs a theme |
+Now:
+> the row reads discharged at 6.11, with what the measurement found and what it read before.
+Why: 6.11 measured the one search over the list against a search a site over the fixture's four industries and ruled the form, which is the evidence the row was carried for.
+
 ### 2026-09-14 - BUILD_PLAN.md - 6.10's text says the queue writes the lane's sections that rest on no document
 
 Authorised by: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about

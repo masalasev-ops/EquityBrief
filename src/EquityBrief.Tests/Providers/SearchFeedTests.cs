@@ -27,6 +27,9 @@ public class SearchFeedTests
     internal const string KeysightCompany = "search-d03660a12e10e32f3ce3c191af07077a.json";
     internal const string Refusal = "search-refusal-401.json";
 
+    // The industry the fixture's replay researches beside the name's own.
+    const string FixtureReplayTheme = Checks.FixtureReplay.RecordedTheme;
+
     internal static string Folder() => Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder);
 
     internal static string Captured(string file) => File.ReadAllText(Path.Combine(Folder(), file));
@@ -79,11 +82,16 @@ public class SearchFeedTests
     public async Task TheThemeSearchIsScopedByItsFourParametersOnTheRequestTheFeedSends()
     {
         // Section 17's row asserted on the bytes the feed sent rather than on the prose that
-        // describes them: the industry and not a ticker, the window's two dates, the industry
-        // list, and the page's text rather than a snippet.
+        // describes them: the industry and not a ticker, the window's two dates, one site of the
+        // industry list, and the page's text rather than a snippet. A pass makes one such
+        // search for every site on the list, in the list's own order.
         var industry = Lists().Industry;
+        var queries = ThemeSearch.For("Semiconductors", Night, industry);
+
+        Assert.Equal(industry, queries.Select(query => Assert.Single(query.Domains)).ToArray());
+
         var seen = new Seeing(HttpStatusCode.OK, Captured(SemiconductorsTheme));
-        var answer = await Feed(seen).SearchAsync(ThemeSearch.For("Semiconductors", Night, industry));
+        var answer = await Feed(seen).SearchAsync(queries[1]);
 
         using var sent = JsonDocument.Parse(seen.Sent);
         var body = sent.RootElement;
@@ -100,16 +108,15 @@ public class SearchFeedTests
         Assert.Equal("2026-09-08", body.GetProperty("end_date").GetString());
         Assert.Equal(Night.AddMonths(-ThemeSearch.WindowMonths).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), body.GetProperty("start_date").GetString());
 
-        // The industry list, every site in the file's own order, and nothing else.
-        Assert.Equal(industry, body.GetProperty("include_domains").EnumerateArray().Select(site => site.GetString()!).ToArray());
-        Assert.DoesNotContain(Lists().CompanyNews.Except(industry), site => body.GetProperty("include_domains").EnumerateArray().Any(listed => listed.GetString() == site));
+        // The one site of the industry list this search is for, and nothing else.
+        Assert.Equal([industry[1]], body.GetProperty("include_domains").EnumerateArray().Select(site => site.GetString()!).ToArray());
 
         // The page's text, its publish date, and nothing the tool writes itself.
         Assert.Equal("text", body.GetProperty("include_raw_content").GetString());
         Assert.True(body.GetProperty("include_published_date").GetBoolean());
         Assert.False(body.GetProperty("include_answer").GetBoolean());
         Assert.Equal("general", body.GetProperty("topic").GetString());
-        Assert.Equal(ThemeSearch.MostResults, body.GetProperty("max_results").GetInt32());
+        Assert.Equal(ThemeSearch.ResultsASite, body.GetProperty("max_results").GetInt32());
 
         // Posted to the search path with the key in the header, and never in the address or
         // the body.
@@ -126,7 +133,8 @@ public class SearchFeedTests
     [Fact]
     public void TheCapturedAnswersAreReadAsTheToolSentThem()
     {
-        // The search the fixture's own industry gets found nothing, and that is an answer.
+        // The one search over the whole list for the fixture's own industry found nothing, and
+        // that is an answer.
         Assert.Empty(TavilySearchFeed.Parse(Captured(InstrumentsTheme)).Results);
 
         // The industry the list covers: ten results, each with its page's text and a publish
@@ -159,20 +167,20 @@ public class SearchFeedTests
     {
         // A refusal is an answer, in the words the tool writes under its detail.
         var refused = await Assert.ThrowsAsync<ProviderRefusal>(() =>
-            Feed(new Seeing(HttpStatusCode.Unauthorized, Captured(Refusal))).SearchAsync(ThemeSearch.For("Semiconductors", Night, Lists().Industry)));
+            Feed(new Seeing(HttpStatusCode.Unauthorized, Captured(Refusal))).SearchAsync(ThemeSearch.For("Semiconductors", Night, Lists().Industry)[0]));
 
         Assert.Equal("The search tool refused the search with status 401: Unauthorized: missing or invalid API key.", refused.Message);
         Assert.False(refused.Transient);
 
         // Nothing listening is not a refusal, and only the feed can tell the two apart.
         var gone = await Assert.ThrowsAsync<SearchToolUnavailable>(() =>
-            Feed(new Unreachable()).SearchAsync(ThemeSearch.For("Semiconductors", Night, Lists().Industry)));
+            Feed(new Unreachable()).SearchAsync(ThemeSearch.For("Semiconductors", Night, Lists().Industry)[0]));
 
         Assert.StartsWith("The search tool could not be reached: HttpRequestException: ", gone.Message, StringComparison.Ordinal);
         Assert.DoesNotContain(NotAKey, gone.Message, StringComparison.Ordinal);
 
         // A search that found nothing is neither.
-        var nothing = await Feed(new Seeing(HttpStatusCode.OK, Captured(InstrumentsTheme))).SearchAsync(ThemeSearch.For("Scientific & Technical Instruments", Night, Lists().Industry));
+        var nothing = await Feed(new Seeing(HttpStatusCode.OK, Captured(InstrumentsTheme))).SearchAsync(ThemeSearch.For("Scientific & Technical Instruments", Night, Lists().Industry)[0]);
 
         Assert.Empty(nothing.Results);
 
@@ -186,20 +194,32 @@ public class SearchFeedTests
     public async Task TheRecordingAnswersTheSearchesAPassBuildsAndRefusesAnyOtherByName()
     {
         var industry = Lists().Industry;
+        var from = Night.AddMonths(-ThemeSearch.WindowMonths);
 
-        // Every committed capture a theme pass reads is named for the request that pass
-        // builds, so a pass over the fixture reads these files and no others.
-        Assert.Equal(InstrumentsTheme, RecordedSearchFeed.FileFor(ThemeSearch.For("Scientific & Technical Instruments", Night, industry)));
-        Assert.Equal(SemiconductorsTheme, RecordedSearchFeed.FileFor(ThemeSearch.For("Semiconductors", Night, industry)));
-        Assert.Equal(KeysightCompany, RecordedSearchFeed.FileFor(new SearchQuery("Keysight Technologies", Night.AddMonths(-ThemeSearch.WindowMonths), Night, Lists().CompanyNews, 10)));
+        // Every search a theme pass builds for the two industries the fixture's replay researches
+        // has a capture named for its request, so a pass over the fixture reads these files and
+        // no others.
+        foreach (var theme in new[] { "Scientific & Technical Instruments", FixtureReplayTheme })
+        {
+            Assert.All(
+                ThemeSearch.For(theme, Night, industry),
+                query => Assert.True(File.Exists(Path.Combine(Folder(), RecordedSearchFeed.FileFor(query))), $"No capture answers the search for {theme} on {query.Domains[0]}."));
+        }
+
+        // The captures of the one search over the whole list, which a pass made until 6.11, and
+        // the company search, each named for the request it answered.
+        Assert.Equal(InstrumentsTheme, RecordedSearchFeed.FileFor(new SearchQuery("Scientific & Technical Instruments industry", from, Night, industry, 10)));
+        Assert.Equal(SemiconductorsTheme, RecordedSearchFeed.FileFor(new SearchQuery("Semiconductors industry", from, Night, industry, 10)));
+        Assert.Equal(KeysightCompany, RecordedSearchFeed.FileFor(new SearchQuery("Keysight Technologies", from, Night, Lists().CompanyNews, 10)));
 
         var recorded = new RecordedSearchFeed(Folder());
+        var statista = ThemeSearch.For(FixtureReplayTheme, Night, industry).Single(query => query.Domains[0] == "statista.com");
 
-        Assert.Equal(10, (await recorded.SearchAsync(ThemeSearch.For("Semiconductors", Night, industry))).Results.Count);
+        Assert.Equal(ThemeSearch.ResultsASite, (await recorded.SearchAsync(statista)).Results.Count);
         Assert.Single(recorded.Asked);
 
         // A day later is a window nobody recorded, refused rather than answered.
-        var later = await Assert.ThrowsAsync<InvalidOperationException>(() => recorded.SearchAsync(ThemeSearch.For("Semiconductors", Night.AddDays(1), industry)));
+        var later = await Assert.ThrowsAsync<InvalidOperationException>(() => recorded.SearchAsync(ThemeSearch.For(FixtureReplayTheme, Night.AddDays(1), industry)[0]));
 
         Assert.StartsWith("No recording answers the search for 'Semiconductors industry'", later.Message, StringComparison.Ordinal);
         Assert.Equal(2, recorded.Requests);
@@ -207,7 +227,7 @@ public class SearchFeedTests
         // And a recording standing for a tool that does not answer says so.
         var down = new RecordedSearchFeed(Folder(), "The search tool could not be reached: nothing is listening.");
 
-        await Assert.ThrowsAsync<SearchToolUnavailable>(() => down.SearchAsync(ThemeSearch.For("Semiconductors", Night, industry)));
+        await Assert.ThrowsAsync<SearchToolUnavailable>(() => down.SearchAsync(statista));
     }
 
     [Fact]

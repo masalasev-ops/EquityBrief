@@ -788,6 +788,25 @@ public partial class ClaimAdmissibility
     }
 
     [Fact]
+    public void ANameEndingInAnAbbreviationDoesNotEndTheSentenceItIsIn()
+    {
+        // Two sentences the research model wrote for NFLX's cause in 6.11's production runs, which
+        // the checker split after "Bros." and after "Jr." into a fragment naming no document and a
+        // remainder naming no move's session, so the section was refused for two things its prose
+        // did not do. Two members of the index are named with an abbreviation the list did not
+        // hold, and a person's name with a suffix.
+        var sentences = ClaimRules.Sentences(
+            "The session ending 2026-03-03 came after Republican state attorneys general pressed the Department of Justice to scrutinize Netflix's Warner Bros. bid, arguing the deal would produce undue market concentration in streaming and theatrical releases [D3]. " +
+            "The session ending 2026-03-02 came as coverage described Netflix's appetite for fights between older athletes, such as the rematch between Floyd Mayweather Jr. and Manny Pacquiao [D4]. " +
+            "The Estee Lauder Cos. reported in the same week, as did a company Sr. managers run [D1].");
+
+        Assert.Equal(3, sentences.Count);
+        Assert.Equal([3], sentences[0].Citations);
+        Assert.Equal([4], sentences[1].Citations);
+        Assert.Equal([1], sentences[2].Citations);
+    }
+
+    [Fact]
     public void ACitationPastTheListOrToARowNotStoredIsRefusedByName()
     {
         var admitted = new StoredDocument("a", "https://a.test/a", "a", new DateOnly(2026, 9, 1), FetchedAt, "text", Admissibility.Accepted);
