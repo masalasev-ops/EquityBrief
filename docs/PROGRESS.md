@@ -9796,3 +9796,152 @@ Carried:    one obligation discharged and none created. A suspect name's retries
             is discharged by the decision and the bound above. The operating rows are unchanged. The
             blind spot that let the row stand unwritten through the phase is not repaired on this
             branch, and is named to the phase 6 sign-off as a finding of its own.
+
+### Phase 6 sign-off                                                         2026-09-14
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. The building
+            session committed PRs 76 through 88 and says so in its handover. This is the first
+            review of phase 6.
+Verified:   by re-running both gates on `main` at c8a6426 rather than by reading the entries.
+            `tools/ci.ps1` green end to end, all 6 steps, 0 warnings, 0 errors, 904 of 904 tests
+            passing inside it, migrations 0 to 23 applied against `data-ci/` and then none
+            pending at schema version 23, exit 0. `tools/verify-phase.ps1` green at 29 tables,
+            346 claims, 330 PASS, 0 FAIL, 16 out of scope, 0 unexamined, 337 placements and
+            verdicts reconciled against a floor of 34, fixture PRESENT with 1 captured over 6
+            constituents and 4 names, 35 checks on the roster and 34 carried, 34 ran and passed
+            and none failed or did not run, the suite 904 of 904 with none failed and none
+            unrun. Windows PowerShell on this machine. Every figure the handover and the 6.0
+            ruling's entry state reproduces exactly.
+Split:      the 16 out of scope are 2 at 7.1, 3 at 7.3, 1 at 7.4, 9 at 7.5 and 1 at 7.6, computed
+            over the 16 out-of-scope claims in `artifacts/phase-report.json` by the checkpoint
+            each note names. Read by the first checkpoint each note names and by the last, and
+            the two readings agree because every note names one. None is inside phase 6 and none
+            names a bare phase. All five checkpoints they name are in `BUILD_PLAN.md` and none is
+            recorded above.
+Matrix:     read from the runs that pushed each merge, jobs enumerated rather than run
+            conclusions read, since a skipped job leaves a run green. The 13 merge commits on
+            `main` since the phase 5 sign-off's merge 2fdcff7, d52e590 through c8a6426, are PRs 76
+            through 88, and carry 13 push runs. Those runs carry 39 jobs, 13 each of
+            `matrix (windows-latest)`, `matrix (macos-latest)` and `case-sensitivity`, and all 39
+            concluded success. All 13 PRs were read again by job: 6 green each, two runs of each
+            of the three jobs. `.github/workflows/ci.yml` carries zero `if:` and zero
+            `continue-on-error:` keys, counted rather than blocklisted.
+Plan:       all twelve checkpoints, 6.0 through 6.11, are in `BUILD_PLAN.md` and all twelve are
+            recorded above, 6.0 by its planning entry and its ruling, both opening "Not a
+            checkpoint entry", over 133 entry headings before this one. No open pull request.
+            The carried obligations table holds 75 rows: 64 discharged, 7 operating and 4 open,
+            all 4 due at 7.0 and each cited by 7.0's text, so nothing is owed inside phase 6.
+            All 29 expectation files state `derivation: derived` and none is frozen from a run.
+            Mutation evidence is recorded at every checkpoint entry from 6.1 to 6.11 and at the
+            6.0 ruling. The one done condition phase 6 amended, at 6.3, says so in the required
+            words. The remote holds one branch, `main`, and the local tree is on `main` and clean.
+Store:      the operator store under `data/` was not touched by either gate or by this review.
+            `data/equitybrief.db` read last written 2026-09-12 00:51 UTC before the gates and
+            after them. Opened immutable, it is at schema version 18 and holds 28 `series_state`
+            rows, all `ok`, so migration 23's default of 0 lands on no suspect name when the next
+            night applies it.
+Swept:      12 runs over 11 mutations and 1 baseline, all made in an isolated worktree at c8a6426
+            under the session scratchpad outside the repository, the full suite each time,
+            reverted, and the main tree modified at no point. The baseline is 904 of 904 there.
+            The rule was stated before the sweep: the four mutations the handover named, and then
+            every site PR 88 added that decides which names a night asks for or names, or which
+            of two values it writes to the run log, with the count's boundary and the count
+            SCHEMA states for an `ok` row beside them. Nine turned a test red.
+            Dropping `retries = excluded.retries` from `MarkState` turns 4 red. Asking for a spent
+            name on a sixth night, `<` widened to `<=`, turns 4 red. A failure on an action's
+            night no longer starting the count again turns 3 red. A spent name an action lands on
+            still named as spent turns 2 red. The stage written `ok` while a name is spent, the
+            reason drawn replaced with a fixed phrase, and the last-asked instant drawn as
+            tonight's rather than the row's each turn the run page test red. A recovered name
+            keeping its count, where SCHEMA says 0 when the state is ok, turns 1 red.
+            Dropping the membership clause from `SuspectNames` turns 1 red, and that one is a
+            scan: `EveryMembershipReadIsOneOfTheTwoFormsOverTheSession` holds every membership
+            read in shipped source to a stated set of sites and the query left the set. No
+            behavioural test has a suspect name leave the index, so that a name the index no
+            longer holds is neither asked for nor named as spent is carried by the scan alone.
+            Predicted to survive, and recorded as the scan's catch rather than the behaviour's.
+Survived:   two, both a property the code states and no test names, and neither a defect.
+            A spent name added to `Retried` on a night an action lands on it leaves 904 green.
+            The requests, the count and the state are unchanged, since the name is asked for once
+            either way, and what moves is the stage's detail, which would count it as retried from
+            an earlier night where the action is the reason it was asked for.
+            The console line's count of names left spent, set to 0, leaves 904 green. Nothing
+            reads the console line, and the run log carries the same count and is asserted.
+Blind spot: the handover's own finding, confirmed and ruled. `DuePoints.Built` in
+            `src/EquityBrief.Tests/Harness/Reconciliation.cs` skips every entry opening "Not a
+            checkpoint entry", and every x.0 is recorded only by such entries, so `HasLanded` is
+            never true for one. Probed in the worktree against the open-row test alone,
+            `EveryOpenCheckpointRowNamesAPointThePlanHasAndTheRecordDoesNot`, by moving the volume
+            profile row's due point: at 7.0 green, at 6.0 green, at 6.5 red. A row still open at
+            a planning pass that has landed passes, and the control shows the assertion otherwise
+            holds. The reader is pinned that way by a permanent test,
+            `src/EquityBrief.Tests/Checks/ArchitectureConformance.cs` line 395 asserting 3.0 has
+            not landed on a record holding only its planning entry, and its source in the corpus
+            is CLAUDE.md's convention that such an entry says which checkpoint it belongs to
+            without saying that checkpoint has landed. The same reader decides landed for
+            `architecture-conformance`'s out-of-scope due points, `coverage-reported`'s roster,
+            `fixture-replay`'s expectations and the placement reconciliation. Today none of those
+            names an x.0, and the obligations table names one four times, being all four open
+            rows, at 7.0.
+            Ruled a repair, not a stated limit. As a limit the check guards none of the open
+            population at its next due point, and the one time the shape arose it hid the only
+            row it could. The reader answers two questions with one answer: whether phase N has
+            landed, which a planning entry must not answer, and whether N.0 has landed, which
+            only a planning entry can. The repair answers the second from the planning entry and
+            leaves the first as it is, turns line 395's assertion while keeping line 394's, and
+            moves the CLAUDE.md sentence with it, its prior text to CHANGELOG. It is code and a
+            spec edit, so this session does not make it. It is owed by the session that builds
+            7.0, before 7.0's own entry is written, because that entry is the point after which
+            the four rows' due point has passed. A row entered for this repair due at 7.0 would
+            be invisible to the unrepaired check, so the order is stated here rather than left
+            to the check to enforce.
+Judged:     the five the handover offered as reversible, and none is reversed.
+            Five nights stands. It is reasoned rather than measured and says so, the store holds
+            no suspect name to measure against, and any bound is the property; a wrong five costs
+            a name its refetch sooner or one request later, and the run page names it either way.
+            A spent name's figures computed over its unadjusted series stands as the ruling, which
+            weighed withholding and declined it. What the ruling does not state is where else the
+            name is marked: nothing in `EquityBrief.Api` or `EquityBrief.Web` reads
+            `series_state`, so the run page is the one surface naming a suspect name, and its
+            name page, tonight's list and its exported report draw its figures with nothing
+            beside them. Before the ruling that lasted as long as the failure did. Since it, a
+            name whose retries are spent stays so until another action lands on it, which for a
+            split on a name paying no dividend may not come. Carried.
+            The reason drawn only once the retries are spent stands. On the nights before, the
+            stage names the name as suspect and asks for it again, and the reason is the row's.
+            No verb refetching one name's year stands, and the runbook says so. Its row states
+            that a re-run of the action's night starts the count again, and does not offer that
+            as the course for a spent name; that is a sentence for whoever next edits the row.
+            6.11's reading of "every section section 4 specifies is produced" as each section
+            produced rather than each report carrying all nine stands. It is the only reading a
+            checkpoint can produce, since the claim checker omits a section it refuses twice by
+            rule, and the entry says plainly that none of the three reports carried all nine. Its
+            limit on a draft naming a move "move 4" stands as well: it refuses rather than passes,
+            and it is stated where the rule's reader meets it. The digit comes from the facts
+            file's own label for the move, so a repair that exempts nothing would sit there
+            rather than in the checker.
+Rewritten:  the handover names d208e3a amended to 4f71812 before its first push and nothing
+            force-pushed. `main`'s history holds 4f71812, and no branch contains d208e3a, consistent
+            with that.
+Not a reopen: under the stopping rules none of the above reopens phase 6. No check broke, both
+            gates are green, and no done condition fails. The blind spot is a check narrower than
+            its row, and today its narrowing hides nothing: no open row is due at a planning pass
+            that has landed, the one row it hid was discharged by the ruling, and the operator
+            ruled that it survives this sign-off as its own item. The unmarked surfaces are a
+            ruling on behaviour the corpus states and the code carries, and the run page names
+            the name on every night it stays suspect.
+Carried:    three items, for 7.0 to enter in the table rather than by this entry, which edits no
+            spec.
+            The due-point reader answering whether a planning checkpoint has landed from its
+            planning entry, with the permanent test and CLAUDE.md's convention moved with it, so
+            that a row still open at a landed planning pass fails `obligation-reconciles`. Owed
+            before 7.0's own entry is written, as ruled above.
+            Whether a suspect name's own surfaces say so, being its name page, tonight's list and
+            its exported report, or whether its figures are withheld there, now that a name whose
+            retries are spent stays suspect until another action lands on it. A ruling at 7.0.
+            A behavioural test that a suspect name the index no longer holds is neither asked for
+            nor named as spent, so the property the membership clause carries is not held by a
+            source scan alone. A test, placed by 7.0.
+Signed:     phase 6 is signed off at c8a6426. Its twelve checkpoints are built and recorded,
+            both gates are green on the tree being signed, the matrix ran on both runners for
+            every merge, nothing is owed inside the phase, and 7.0 is unblocked.
