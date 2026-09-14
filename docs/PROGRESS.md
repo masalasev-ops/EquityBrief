@@ -9079,3 +9079,239 @@ Carried:    one obligation, created here: a theme search over the whole list mea
             that ran. The operating row that sets both caps stays open, read at twenty research
             passes carrying a recorded cost on the run page's operational header. This session has
             committed code and may not sign it off.
+
+### 6.10 - the overnight queue, the carve's second half ahead of it, and what a night can draft without a fetch   2026-09-14
+Built:      the nightly model-call carve-out's second half, in its own commit before the queue: the
+            night reaches no lane an open reaches, read off the components its own file constructs
+            and what each declares, and every model call a whole recorded night makes sits on step
+            17's own row or on a pass that row names, with nothing spent on any row. The night's
+            model calls are read off the run log where the check's own helper had written a literal
+            zero. Then the overnight queue as step 17, after the close has recorded the arithmetic's
+            counts. It reads tonight's list, the names that fired a reason, in order of reasons
+            fired and then of tickers; judges every listed name first, which spends nothing; and
+            queues a name for the local lane's sections that rest on no document and that a pass on
+            demand would write, being those never written, refused, left out on an earlier day, or
+            accepted and named stale, which the staleness verdict now carries the standings for so
+            the queue asks the question a pass asks rather than a second statement of it. Each
+            name's pass runs under a run of its own: the prose writer handed no document, the claim
+            checker, one more draft of a section of that name's the checker refused, and the checker
+            again. The queue starts no pass once its hours have passed and finishes the one it is
+            in, and a local model that does not answer stops it at that name. Its row under the
+            night's run says what it came to, ok, limit or unavailable, with every call its passes
+            made, no request, no row of research of its own and no spend, and names the night, the
+            names listed and queued, every pass with its run, the pass it stopped at, the names it
+            left, and whether the machine was held. The machine is held awake while it works: a
+            power request on Windows and a power assertion on macOS, released when the queue ends,
+            and on any other machine none, which its row says. The hours are
+            `EquityBrief:Queue:Hours`, whole hours above zero, one by default, read with the local
+            model's settings and lane where a test reads them; the night's fifteen-minute deadline
+            bounds the arithmetic and hands the queue nothing. The night resolves the queue's local
+            model from its own source, where every other on-demand feed is resolved, and its last
+            line states the queue's local calls apart from the arithmetic's none. The run page's
+            overnight queue region: whether the queue ran on the night, how many queued passes
+            completed and how many were left, that it stopped at its limit or could not run and why,
+            whether the machine was held, and every traded session since the queue last ran on which
+            it did not, each on a line of its own, with a store whose queue never ran saying so. The
+            night's duration on the page spans the arithmetic and not the queue, and a queue at its
+            limit is not a stage that failed. Three recordings and the overnight queue expectation.
+            Four commits: the carve's second half, the queue, the properties the sweep found
+            unasserted, and this record, which restates the plan's own text for the checkpoint to
+            the decision it took.
+Settled:    four decisions, two of them superseding. The overnight queue writes the local lane's
+            sections that rest on no document, and the paid model is for names you get serious
+            about, superseding the entry that said the queue writes a listed name's narrative
+            sections and the name opens complete. The local lane's scope is a setting, and whatever
+            it holds is written for nothing, superseding the entry that said the queue starts
+            writing synthesis once it moves into the local lane. The overnight queue is bounded by
+            its own limit rather than the night's deadline, and starts no pass once the limit has
+            passed. A night the overnight queue did not run is a traded session with no queue row,
+            read on the run page against the exchange calendar.
+Measured:   the pass on this machine, which is what section 17's hours are set from: 12 passes over
+            three whole fixture nights, the four listed names each night, on qwen/qwen3.5-9b in LM
+            Studio with the model loaded, the night's arithmetic over the capture and step 17
+            calling the runtime live on a clock that ran in real time. The nine passes of one call
+            took 2.29 to 3.38 seconds and the three of two calls, MSFT's refused first draft and its
+            second, 4.85 to 5.13; 3.35 seconds a pass on average, and each night's queue 13 to 14
+            seconds. An hour therefore covers every member of the index at the slowest pass, the 503
+            the first live night loaded coming to 43 minutes, and the hours stay at one, set now
+            from the measurement rather than proposed. The first call after the runtime had loaded
+            the model took 21.9 seconds, so a night whose runtime has unloaded it pays that once.
+            Three answers captured from the same runtime, the requests a whole fixture night's queue
+            makes that no replay had asked for: AAPL's and KEYS's key under each figure, 1,013 and
+            1,007 prompt tokens, and MSFT's second draft, 1,096, told why the first was refused. On
+            each of the three live nights MSFT's first draft was refused and a second written, as
+            the recordings have it, and the other three names were written once.
+Found:      the queue cannot fetch, and that narrows what it can write. Section 17's per-name row
+            carves the backfill and the corporate action refetch out of the rule and nothing else,
+            and section 14's note says step 17 calls the local model only, so a night makes no
+            request for a name. A section resting on documents rests on ones a pass fetched and
+            stored, and the source store ties a document to a name through nothing but a section
+            citing it, so what the queue can write is the lane's sections that rest on no document,
+            which on this machine is the key under each figure. Two decisions said more, that a
+            listed name opens complete in the morning and that the queue starts writing synthesis
+            once it moves left, and both are superseded with their reasoning kept. Handing the
+            writer the documents a name's stored research already cites was the other way, and a
+            stale section rewritten from documents older than what made it stale would be dated
+            after that event and read as standing.
+            The night's deadline would have cut the queue: it is sized for the arithmetic, and a
+            step 17 handed its token gets whatever the arithmetic left of fifteen minutes. The queue
+            is handed none, and section 17's deadline and wall clock rows say they bound steps 1 to
+            16. The run page's duration spanned every row of the night's run and would have read the
+            queue's hour against a limit of minutes, and its failed region would have listed a queue
+            that stopped at its limit, so both keep the queue out.
+            The first night over the fixture found the queue asking the writer for sections it hands
+            no document to, so a name whose only missing work rests on documents would have been
+            counted every night as a pass that wrote nothing; it asks for the sections that rest on
+            none, and a name with no such work is not queued. It also found every member of the
+            fixture's night listed, and three of the requests that night makes recorded nowhere,
+            since the replay's prose pass writes one draft for MSFT and NFLX and none for AAPL or
+            KEYS, which the three captures are.
+            Writing the test for a local model that does not answer found the pass that discovered
+            it making one attempted call on its own run while the queue's row named no such pass, so
+            the carve's reader would have reported a model call outside step 17; the row names the
+            pass it stopped at and counts its call.
+            The nightly-cost check's model-call half had asserted nothing since it was written: its
+            helper returned the request count beside a literal zero, and the two assertions that the
+            night called no model compared that zero with itself. The carve's second half found it
+            going to read the figure.
+            The sweep's unmutated baseline failed one test before a mutation was made.
+            `banned-prose` counts the captures a manifest names among the tracked files, the queue's
+            commit was verified before its three captures were tracked, and they took the count to
+            67 against a ceiling of 65, so that commit holds a red test the run recording its figure
+            could not see. It is the fault 6.8 recorded, arriving a second time, so the next commit
+            raises the ceiling to 70 and also fails a capture a manifest names that git does not
+            track, on the run that would otherwise count short rather than on the next one. And a
+            third check of the lane, in the record that hands the night its queue, was one no path
+            could reach: the lane is checked where it is read and again by the writer before a pass
+            writes anything, and the sweep's removal of it survived, so it is gone.
+            And the plan's own text for 6.10 still said the queue writes the sections in the local
+            lane, which section 14's step 17 and the runbook stopped saying in the queue's commit,
+            so this record's commit restates it to the decision, with its prior text in the
+            changelog.
+Tested:     3 under `nightly-cost`: a whole recorded night's arithmetic calling no model and every
+            call the night makes sitting on step 17's row or a pass that row names, with the night's
+            composition reaching no lane an open reaches; the carve over constructed rows, allowing
+            a call on step 17's row and on the passes it names and refusing one on an arithmetic
+            stage, one under a run the row does not name however its id reads, any spend at all, and
+            step 17's row under another night; and a night constructing a component that reaches an
+            open's lane reported by what the component declares, with a comment naming one not read
+            as a construction. 12 under `fixture-expectations`: the queue over a whole fixture night
+            against the expectation derived from section 14's step 17, section 17's row and the
+            decisions, the four listed names in order of reasons fired, each pass asking for the key
+            under each figure and handed nothing, MSFT's refused draft written again, five local
+            calls on the queue's row and no spend, request or source document, and the machine held
+            before the first call and released after the last; the order of reasons fired told apart
+            from the order of tickers, and a name that fired nothing left off the list, over a copy
+            of the night where NFLX fires three reasons and KEYS none; a pass writing again only
+            what the checker refused of its own name, with another name's draft waiting in the
+            store; a second queue the same night queuing nobody; the limit at its boundary either
+            side on a clock the calls move, a pass started inside it running past it to its end; the
+            hours read as whole hours above zero and a value that is not one refused by name;
+            section 17's row and the runbook's settings row stating the default and the key the code
+            reads; a local model that does not answer stopping the queue at the first name, every
+            name left and its one call on the pass the row names; no call a pass makes carrying a
+            token the night's deadline can cancel; the night's queue read from its settings, a night
+            over a capture reaching the recorded runtime and a live night the operator's, with
+            hours, a lane, a folder or a local key it cannot take refused before the night starts;
+            the arithmetic's tables and rows the same whether the queue wrote or could not run; and
+            the machine's hold taken twice on Windows and macOS, and any other machine saying why
+            not. 5 under `read-surface`: the run page saying the queue ran and how many queued
+            passes completed and were left, between stale and failed and the harness; a night the
+            queue did not run named on a line of its own, the projection read against the exchange's
+            calendar across a weekend and Labor Day, a row under a later night saying nothing about
+            an earlier page, and a store whose queue never ran saying so; a queue the local model
+            stopped saying it could not run and listed as a stage that failed; the night's duration
+            spanning the arithmetic, and a queue at its limit not a stage that failed; and a queue
+            row read under the night its detail names when it started after midnight in New York,
+            with the newest of a night's rows drawn. 1 under `nightly-run`: step 17 running after
+            the close, on the night's output and in the run log's order, and the night's last line
+            stating the queue's local calls apart from the arithmetic's. One widened under
+            `banned-prose`: a capture a manifest names that git does not track fails the run that
+            would count short. 886 tests, from 865 at 6.9.
+Mutated:    the rule, stated before the sweep: mutate every property 6.10 added whose failure would
+            let the night call a lane an open reaches or make a model call outside step 17
+            unreported, let the queue queue a name it should not or in the wrong order, ask the
+            writer for a section resting on documents, spend, run a pass past its limit's boundary
+            or stop one inside it, go on past a local model that does not answer, lose what its row
+            says it did or which passes it ran, take the machine's hold at the wrong time, or make
+            the run page misstate whether the queue ran, how many passes completed or were left, or
+            which nights it did not run, or let the night's duration and failed stages take the
+            queue in. The operating system's own power request, which the suite does not read back,
+            is outside the rule. Forty-nine qualify and all forty-nine were mutated, in a detached
+            worktree under the session scratchpad outside this repository, over an unmutated
+            baseline of 881 tests of which 880 passed, the one failing being the capture ceiling
+            above, which is left out of every count below; each was reverted before the next, and
+            the worktree removed.
+            Forty went red on the first run. The carve: a row that spent read as spending nothing, 1
+            test red; a model call under a run the queue's row does not name read as allowed, 1;
+            step 17's row under any night allowing this night's calls, 1; the pass the queue stopped
+            at not read as one its row names, 1; a comment naming a component read as constructing
+            it, 1; the research model read as a lane the night may call, 1. What the queue queues: a
+            name that fired nothing read as listed, 1, on a rebalance's second night, where the
+            joiner fired nothing and held no draft, so it was queued and asked the recording for a
+            draft nobody recorded; a section resting on documents asked for, 2; a section that
+            stands judged as missing, 5; the judge's standings not handed to the queue, 5. The
+            limit: a pass whose turn comes at the limit started, 1; the limit never stopping a pass,
+            1; the limit read as twice itself, 1; the name whose turn came at the limit not named as
+            left, 1; zero hours read as a limit, 1; blank hours refused rather than defaulted, 1. A
+            pass: a refused draft not written again, 8; a local model that did not answer passed
+            over to the next name, 1; the hold released before the passes, 1; Windows never asked
+            for a hold, 1. The row: spending, 3; counting no model call, 3; the pass it stopped at
+            left off, 1; that pass's call left out of its count, 1; written under a run of its own,
+            5; every pass under one run, 30. The night: its last line stating no queue call, 1; the
+            configured lane not handed to the queue, 9; a fixture night's queue handed part of the
+            lane, 8. The run page: every stage but the queue's read as its rows, 2; a day the
+            exchange did not trade named as a night the queue missed, 1; the page's own night left
+            off, 1; a store whose queue never ran read as one that missed the night, 1; a row under
+            a later night read as an earlier one, 1; the passes completed read as the passes queued,
+            1; a queue at its limit drawn without saying so, 1; a queue the local model stopped
+            drawn without saying so, 1; no queue region, 4; the night's duration spanning the queue,
+            1; a queue at its limit listed as a stage that failed, 1.
+            Nine survived. Four are missing properties, each one the code states and no test named:
+            the queue handed the night's deadline; another name's refused draft written again by a
+            pass, where the checker moves every draft waiting in the store and no test left one
+            waiting when a pass checked, as a pass started on demand during the night or one stopped
+            before its check would; a night over a capture reaching the live runtime, where every
+            fixture night built its queue's local model directly; and the night's verb ignoring its
+            configured hours, where no test reached the verb, so the reading moved into the record
+            the night hands its queue, where a test reads it. Three are unreachable boundaries: the
+            list read in order of tickers, where every member of the fixture's night fired, AAPL two
+            reasons and the other three one each, so the two orders are one; a queue row's night
+            read off the clock, where the fixture's queue starts at 21:10 UTC on the night its row
+            names; and the oldest of a night's queue rows drawn, where each night holds one. One is
+            an unproducible shape: the night's model calls a literal zero again, where the helper
+            runs the fetch stage alone, whose own insert writes its model calls as a literal zero,
+            so no reading of that figure can be other than zero; the invariant that a stage holding
+            no model feed writes none is asserted where it holds, over every arithmetic row of a
+            whole recorded night and on the fetch stage's own row. And one was the check no path
+            could reach, removed rather than tested.
+            Each of the rest went red once a test named it, run again at the commit that added the
+            tests over an unmutated baseline of 886 passing: the queue handed the night's deadline,
+            1; another name's refused draft written again, 1; a night over a capture reaching the
+            live runtime, 1; the configured hours ignored, restated against where the reading now
+            is, 1; the list read in order of tickers, 1; a queue row's night read off the clock, 1;
+            and the oldest of a night's rows drawn, 1. Three ran with them. The fetch stage's row
+            counting a model call, which breaks the invariant under the unproducible shape, 6; a
+            name that fired nothing read as listed, now red on the test that reorders the night as
+            well, 2; and the capture guard reading an untracked capture as tracked, 1. The removed
+            check's mutation has nothing left to apply to.
+            Properties added and not mutated, named because the next sweep has to find them: the
+            platform's own power request and its release, and the macOS assertion, which only the
+            macOS runner takes; the seconds each pass took and the reason a queue could not run,
+            carried on its row; the run page treating a day the closure table cannot place as one
+            the region does not name; the region's line for a machine that was not held; and the
+            verb refusing the night before its first step, rather than after its arithmetic, where
+            its queue's hours, lane, folder or local key cannot be taken.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six
+            steps, exit 0, against `data-ci` and never `data`. 886 of 886 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 346 claims, 326 PASS, 0 fail, 20 out of scope, 0
+            unexamined, 333 placements and verdicts reconciled against a floor of 34, 34 of 35
+            roster checks carried and all 34 run. Migrations 0 to 22, this checkpoint adding none.
+            The 20 read twice, by the first checkpoint each note names and by the last, give 4 at
+            phase 6 and 16 at phase 7 both ways, the 4 at 6.11. The claim pair stays at 346 and 330:
+            no claim arrived, and the seven owed at 6.10 pass. The operator's store under `data/`
+            was not touched by either gate, its newest file last written on 2026-09-11.
+Carried:    no obligation is created or discharged here. A theme search over the whole list measured
+            against its sites searched alone stays due at 6.11, and the operating row that sets both
+            caps stays open, read at twenty research passes carrying a recorded cost on the run
+            page's operational header. This session has committed code and may not sign it off.

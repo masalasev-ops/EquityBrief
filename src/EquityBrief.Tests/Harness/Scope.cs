@@ -911,6 +911,37 @@ internal static class Scope
             Verdict.Pass,
             "a name whose section predates its stored filing and its passed earnings date is drawn with one line naming both, which is the line the shipped judge writes to the run log over the same store, and a name whose research stands is drawn as standing",
             ByReadSurface),
+        // 6.10, the overnight queue. The component, section 14's step 17, section 17's row and the
+        // model calls row the carve changes, section 18's row for a night the machine slept and the
+        // half of its local model row the queue records, and the run page's region.
+        [CheckReach.Key(CatalogueTable, "Overnight queue")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the listings it reads and the run log it appends to and nothing else, holding no feed, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source, with the judge, the writer and the checker it has do the deciding and the writing under declarations of their own",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Overnight queue")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included, which is where the queue writing no research is a claim: the sections a pass writes are inserted by the prose writer and moved by the checker, each under its own row",
+            ByAccess),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for listed names whose research is missing or stale, in priority order, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about).")] = new Scoped(
+            Verdict.Pass,
+            "the night runs the queue as its last step, after the close has recorded the arithmetic's counts, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none",
+            ByNight),
+        [CheckReach.Key(LimitsTable, "Overnight queue")] = new Scoped(
+            Verdict.Pass,
+            "over a whole fixture night the queue writes the listed names' key under each figure in order of reasons fired, handed no document, with nothing spent and no request on its row or any other, and at a limit set on a clock only a model call moves, a name whose turn comes at the limit is left while a pass started a tick inside it runs to its end",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The machine slept and the overnight queue did not run")] = new Scoped(
+            Verdict.Pass,
+            "the run page for a night two traded sessions after the queue last ran names both nights it did not run, each on a line of its own, read through the page's route, and the calendar's closed days and the nights before the queue first ran are named as nothing",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "The local model is unavailable, the overnight queue records that it could not run")] = new Scoped(
+            Verdict.Pass,
+            "with the local model not answering, the queue's row says it could not run and why, names the pass that found out with its one call, leaves every name, writes no section, and the night it ran at the end of still exits clean",
+            ByExpectations),
+        [CheckReach.Key("15.10 Run", "Overnight queue")] = new Scoped(
+            Verdict.Pass,
+            "the run page's route draws whether the queue ran on the night, with the queued passes completed and left read off the queue's own row, where section 15.10 puts the region, and names every traded session since it last ran on which it did not",
+            ByReadSurface),
         // 6.9, the theme research runner and the search tool. The component, the record one
         // theme pass writes and every member of its industry reads, section 17's three rows
         // about a theme search, and section 18's four rows about what a search returns and a
@@ -1385,7 +1416,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(LimitsTable, "Model calls in the nightly run")] = new Scoped(
             Verdict.Pass,
-            "zero over the shipped source and zero on every stage the recorded night wrote to the run log",
+            "zero on every stage of the arithmetic a whole recorded night wrote, read off the run log, with every model call that night made sitting on step 17's own row or a pass that row names, nothing spent on any row, and the night's composition reaching no lane an open reaches, read off what the components it constructs declare",
             ByCost),
         [CheckReach.Key(LimitsTable, "Per-name network calls in the nightly run")] = new Scoped(
             Verdict.Pass,
@@ -1707,7 +1738,6 @@ internal static class Scope
         // written to be shown.
         [CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes")] = "6.7",
         [CheckReach.Key("15.9 Name", "Research paused, with the stored sections still rendered under their own dates")] = "6.8",
-        [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
         [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
         // 7.5 is "Reason verdicts on the run page" and 7.4 is "The shadow
         // column", so two rows of this section are owed two phases after it.
@@ -1720,6 +1750,7 @@ internal static class Scope
         // both directions, rather than only the ones nothing asserts yet: a part
         // with no entry would inherit nothing, which is what contradiction D was.
         [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.3",
+        [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
 
         [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "7.5",
         [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "7.5",
@@ -2067,7 +2098,7 @@ internal static class Scope
         ["The search tool is unavailable"] = "6.9",
         // Section 18's two local lane rows, decomposed at 6.6. The writer's parts and
         // the page's arrived there, the paid path's and the page's option at 6.8, and
-        // what the overnight queue records arrives with the queue.
+        // what the overnight queue records at 6.10, each now reached where it landed.
         ["The local model is unavailable, the overnight queue records that it could not run"] = "6.10",
         ["A theme refresh fails while a name's pass depends on it"] = "6.9",
         ["Something tries to edit or delete a register row"] = "7.3",

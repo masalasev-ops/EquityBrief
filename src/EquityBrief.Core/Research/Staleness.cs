@@ -60,6 +60,12 @@ public sealed record StalenessVerdict(
     DateOnly? WrittenAsOf,
     PulseReading Pulse)
 {
+    // The newest version of each section the judgement was made over, whatever its
+    // status. From 6.10, for the overnight queue, which asks which sections a pass would
+    // write without reading the research store itself: its declared reads are the
+    // listings and nothing else, and the judge has already read these.
+    public IReadOnlyList<SectionStanding> Sections { get; init; } = [];
+
     // The one line section 15.9 promises for stale research, naming which of the
     // four fired, and the line for research never written. Held here so the page
     // and the run log say the same words.
@@ -127,7 +133,7 @@ public static class Staleness
         // go stale.
         if (accepted.Length == 0)
         {
-            return new StalenessVerdict(night, ResearchState.Missing, [], [], null, reading);
+            return new StalenessVerdict(night, ResearchState.Missing, [], [], null, reading) { Sections = newestVersions };
         }
 
         var stale = new HashSet<string>(StringComparer.Ordinal);
@@ -192,7 +198,10 @@ public static class Staleness
             fired,
             [.. stale.Order(StringComparer.Ordinal)],
             accepted.Min(section => section.AsOf),
-            reading);
+            reading)
+        {
+            Sections = newestVersions,
+        };
     }
 
     // Whether a print happened after a section dated `asOf` was written.

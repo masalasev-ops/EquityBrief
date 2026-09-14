@@ -25,6 +25,10 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 6.10, the overnight queue.
+            CheckReach.Key(Scope.CatalogueTable, "Overnight queue"),
+            CheckReach.Key(Scope.MatrixTable, "Overnight queue"),
+
             // 6.9, the theme research runner.
             CheckReach.Key(Scope.CatalogueTable, "Theme research runner"),
             CheckReach.Key(Scope.MatrixTable, "Theme research runner"),

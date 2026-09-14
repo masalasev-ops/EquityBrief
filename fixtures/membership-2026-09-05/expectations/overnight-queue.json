@@ -1,0 +1,65 @@
+{
+  "stage": "overnight-queue",
+  "derivation": "derived",
+  "derivedFrom": "section 14's step 17, section 17's overnight queue row, the decision that the queue writes the local lane's sections that rest on no document, the decision that it is bounded by its own limit and starts no pass once the limit has passed, and the fixture's own night: the four members listed on 2026-09-08 with the reasons each fired, as the listings expectation recomputes them from section 11's rules. The order the names are queued in, which of them are queued, which sections each pass asks for, what each is handed, that nothing is left at a limit of an hour on a clock that does not move, and that nothing is spent or requested were worked out from those rules before the tests that read this file were run.",
+  "tables": [
+    "research_section"
+  ],
+  "frozen": "the claim checker's verdict on each draft the recorded local model wrote, which is a reading of a recording rather than a figure a rule produces, and with it the one retry MSFT's refused first draft draws. Every other value in this file is derived.",
+  "night": "2026-09-08",
+  "limitHours": 1,
+  "listed": [
+    "AAPL",
+    "KEYS",
+    "MSFT",
+    "NFLX"
+  ],
+  "listedNote": "every member of the fixture's night fired a reason: AAPL two and the other three one each, so AAPL is first and the three that fired one follow in the order of their tickers.",
+  "queued": [
+    "AAPL",
+    "KEYS",
+    "MSFT",
+    "NFLX"
+  ],
+  "queuedNote": "every listed name, since no name holds a section of the local lane on the night and each has a facts file, so the one section of the lane resting on no document is missing for all four.",
+  "asked": [
+    "The key under each figure"
+  ],
+  "askedNote": "the local lane as this machine's default holds what the company sells, the segment commentary and the key under each figure, and the first two rest on the company's own filing, so the key under each figure is the one a pass asks for.",
+  "handed": "nothing",
+  "left": [],
+  "outcome": "ok",
+  "passes": [
+    {
+      "ticker": "AAPL",
+      "modelCalls": 1,
+      "versions": [
+        "accepted"
+      ]
+    },
+    {
+      "ticker": "KEYS",
+      "modelCalls": 1,
+      "versions": [
+        "accepted"
+      ]
+    },
+    {
+      "ticker": "MSFT",
+      "modelCalls": 2,
+      "versions": [
+        "rejected",
+        "accepted"
+      ]
+    },
+    {
+      "ticker": "NFLX",
+      "modelCalls": 1,
+      "versions": [
+        "accepted"
+      ]
+    }
+  ],
+  "modelCalls": 5,
+  "spend": "0"
+}

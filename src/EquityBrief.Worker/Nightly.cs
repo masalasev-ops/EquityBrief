@@ -17,6 +17,7 @@ using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Research;
 
 namespace EquityBrief.Worker;
 
@@ -59,7 +60,8 @@ public static class Nightly
         TextWriter error,
         string? runId = null,
         IBulkPriceFeed? bulk = null,
-        TimeSpan? deadline = null)
+        TimeSpan? deadline = null,
+        NightQueue? queue = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
@@ -76,6 +78,7 @@ public static class Nightly
         return await RunAsync(
             store,
             bulk is null ? feeds : feeds with { Bulk = bulk },
+            queue ?? NightQueue.FromFixture(fixtureFolder),
             indexCode,
             clock,
             output,
@@ -87,6 +90,7 @@ public static class Nightly
     public static async Task<int> RunAsync(
         StoreLocation store,
         NightFeeds feeds,
+        NightQueue queue,
         string indexCode,
         IClock clock,
         TextWriter output,
@@ -116,6 +120,10 @@ public static class Nightly
         runId ??= FormattableString.Invariant($"night-{clock.UtcNow:yyyyMMddTHHmmssZ}");
 
         var (membership, historical, bulkFeed, corporate, calendar, _) = feeds;
+
+        // The local model calls step 17 made, which the night's last line states apart
+        // from the arithmetic's, whose model calls are none.
+        var queueCalls = 0;
 
         // The order is section 14's, for the steps that exist. Migrate is not
         // one of its steps: it is what makes the store able to hold the night,
@@ -316,6 +324,32 @@ public static class Nightly
                     $"{outcome.ReasonsFired} reason(s) fired, {outcome.NamesStale} stale, " +
                     $"{outcome.Duration}";
             }),
+            // Section 14's step 17, after the arithmetic has closed and recorded its
+            // counts. It calls the local model and nothing else, and no figure above it
+            // moves whether it ran. It is handed no token from the night's deadline: that
+            // deadline bounds the arithmetic, and the queue is bounded by its own limit,
+            // which a night that took three minutes would otherwise cut to twelve.
+            // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
+            // see: The overnight queue is bounded by time, not by a count of names
+            // see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed
+            new("queue", async () =>
+            {
+                var outcome = await new OvernightQueue(
+                    new StalenessJudge(clock, store.DatabaseFile),
+                    sections => new ProseWriter(queue.LocalModel, queue.Settings, sections, clock, store.DatabaseFile),
+                    new ClaimChecker(clock, store.DatabaseFile),
+                    queue.Lane,
+                    queue.Limit,
+                    queue.Awake,
+                    clock,
+                    store.DatabaseFile).RunAsync(runId, clock.SessionDateAt(clock.UtcNow));
+
+                queueCalls = outcome.ModelCalls;
+
+                return $"{outcome.Completed.Count} of {outcome.Queued.Count} queued pass(es) completed, " +
+                    $"{outcome.Left.Count} left for the next night, {outcome.ModelCalls} local model call(s), " +
+                    $"{outcome.Outcome}, {outcome.Awake}";
+            }, [OvernightQueue.Stage]),
         ];
 
         output.WriteLine($"nightly: {runId}, store {store.DatabaseFile}");
@@ -442,7 +476,8 @@ public static class Nightly
         var live = feeds.ReachesTheNetwork;
 
         output.WriteLine(
-            $"nightly: green over {(live ? "the provider" : "a capture")}, 0 model calls, " +
+            $"nightly: green over {(live ? "the provider" : "a capture")}, 0 model calls in the arithmetic and " +
+            $"{queueCalls} local model call(s) from the overnight queue, " +
             $"{feeds.Requests} {(live ? "network request(s)" : "request(s), none of them to a network")}, " +
             $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
 

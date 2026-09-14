@@ -142,6 +142,11 @@ public sealed record RunStageRow(
     string Spend,
     string Detail);
 
+// One row the overnight queue wrote, as the store holds it: the night its detail names,
+// the instant it started, what it came to, and the detail the run page reads the counts
+// from.
+public sealed record QueueRow(DateOnly Night, DateTimeOffset StartedAt, string Outcome, string Detail);
+
 // One document a pass fetched and did not store, as the store holds it.
 //
 // The row exists because the refusal would otherwise be invisible: nothing else
@@ -717,6 +722,16 @@ public sealed class ReadApi : IComponent
     // is depends on the offset that evening. The clock is the one thing allowed
     // to answer that question, and it answers it here rather than in SQL.
     // see: Nothing is written against one operating system
+    // Every row the overnight queue wrote, in the order they started. The whole log's
+    // worth rather than a window, because a night the queue did not run is read against
+    // the newest night before it on which it did, however long ago that was.
+    const string QueueRows = @"
+        SELECT started_at, outcome, IFNULL(detail, '')
+        FROM run_log
+        WHERE stage = $stage
+        ORDER BY started_at;
+    ";
+
     const string RunLogInWindow = @"
         SELECT run_id, stage, started_at, ended_at, outcome,
                rows_written, model_calls, network_requests, spend, detail
@@ -950,6 +965,32 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
+    // The overnight queue's rows, each under the night its own detail names, which is the
+    // session its arithmetic closed, and under the clock's night for a row whose detail
+    // names none.
+    public async Task<IReadOnlyList<QueueRow>> QueueRowsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = QueueRows;
+        command.Parameters.AddWithValue("$stage", RunScreen.QueueStage);
+
+        var rows = new List<QueueRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var started = DateTimeOffset.Parse(reader.GetString(0), CultureInfo.InvariantCulture);
+            var detail = reader.GetString(2);
+
+            rows.Add(new QueueRow(RunScreen.QueueNightOf(detail) ?? clock.SessionDateAt(started), started, reader.GetString(1), detail));
+        }
+
+        return rows;
+    }
+
     // The documents one night's passes refused, newest first.
     //
     // A pass is on demand rather than nightly, so what this bounds is the day the
@@ -1020,7 +1061,11 @@ public sealed class ReadApi : IComponent
             .Select(row => row.RunId)
             .FirstOrDefault();
 
-        var stages = rows.Where(row => row.RunId == run).ToArray();
+        // The arithmetic's span, which the wall clock row bounds. The overnight queue's row
+        // sits under the same run and runs for up to its own limit after the close, so a
+        // span over it would read an hour of queue against a limit of minutes.
+        // see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed
+        var stages = rows.Where(row => row.RunId == run && row.Stage != RunScreen.QueueStage).ToArray();
 
         if (stages.Length == 0)
         {

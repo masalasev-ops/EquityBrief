@@ -218,8 +218,102 @@ public static class RunScreen
     [
         .. stages.Where(stage => !string.Equals(stage.Outcome, Ok, StringComparison.Ordinal)
             && !string.Equals(stage.Outcome, "started", StringComparison.Ordinal)
-            && !string.Equals(stage.Outcome, NoSession, StringComparison.Ordinal)),
+            && !string.Equals(stage.Outcome, NoSession, StringComparison.Ordinal)
+            && !(string.Equals(stage.Stage, QueueStage, StringComparison.Ordinal) && string.Equals(stage.Outcome, QueueAtItsLimit, StringComparison.Ordinal))),
     ];
+
+    // The overnight queue's own stage, and the outcome it writes where it stopped at its
+    // limit with names left. Stated here for the reason the no-session word is, the read
+    // surface holding no reference to the worker, and `nightly-run` asserts both agree. A
+    // queue at its limit did what its limit is for, so it is not a stage that failed; a
+    // queue the local model stopped is, and stays on the list.
+    public const string QueueStage = "overnight queue";
+
+    public const string QueueAtItsLimit = "limit";
+
+    // The night a queue row's detail names, or none where it names none or is not JSON.
+    public static DateOnly? QueueNightOf(string detail)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(detail);
+
+            return document.RootElement.TryGetProperty("night", out var night) && night.ValueKind == JsonValueKind.String
+                && DateOnly.TryParseExact(night.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var on)
+                    ? on
+                    : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    // The overnight queue for one night, read off the queue's rows and the exchange's
+    // calendar: what the newest row for the night came to, with its counts, and every
+    // traded session with no row from the one after the newest earlier night the queue ran
+    // on, up to and including this night. A store with no row on or before the night says
+    // the queue never ran rather than naming every night it holds from before the queue
+    // existed.
+    // see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar
+    public static QueueNight Queue(IReadOnlyList<QueueRow> rows, DateOnly night, Func<DateOnly, bool> traded)
+    {
+        var tonight = rows
+            .Where(row => row.Night == night)
+            .OrderByDescending(row => row.StartedAt)
+            .FirstOrDefault();
+
+        var earlier = rows.Where(row => row.Night < night).Select(row => (DateOnly?)row.Night).Max();
+
+        if (tonight is null && earlier is null)
+        {
+            return new QueueNight(night, null, 0, 0, 0, 0, null, null, [], NeverRan: true);
+        }
+
+        var notRun = new List<DateOnly>();
+
+        if (earlier is { } since)
+        {
+            for (var day = since.AddDays(1); day < night; day = day.AddDays(1))
+            {
+                if (traded(day))
+                {
+                    notRun.Add(day);
+                }
+            }
+        }
+
+        if (tonight is null && traded(night))
+        {
+            notRun.Add(night);
+        }
+
+        if (tonight is null)
+        {
+            return new QueueNight(night, null, 0, 0, 0, 0, null, null, notRun, NeverRan: false);
+        }
+
+        using var detail = JsonDocument.Parse(tonight.Detail);
+        var root = detail.RootElement;
+
+        int Count(string name) =>
+            root.TryGetProperty(name, out var list) && list.ValueKind == JsonValueKind.Array ? list.GetArrayLength() : 0;
+
+        string? Text(string name) =>
+            root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+
+        return new QueueNight(
+            night,
+            tonight.Outcome,
+            Count("queued"),
+            Count("completed"),
+            Count("left"),
+            root.TryGetProperty("limitHours", out var hours) && hours.ValueKind == JsonValueKind.Number ? hours.GetDouble() : 0,
+            Text("reason"),
+            Text("awake"),
+            notRun,
+            NeverRan: false);
+    }
 
     // The documents a night's passes refused, grouped by the category that
     // refused each.

@@ -424,10 +424,10 @@ public sealed class SinglePageApp : IComponent
     // agree about it rather than each stating it.
     public const int TonightDrawn = 20;
 
-    // The run page, section 15.10's five regions, in the order that section
+    // The run page, section 15.10's six regions, in the order that section
     // states them.
     //
-    // Two of the five are absent and say so. The shadow candidates need the
+    // Two of the six are absent and say so. The shadow candidates need the
     // candidate register, which phase 7 builds, and the reason records' verdict
     // half needs resolved setups, which no checkpoint accumulates. Each is
     // stated rather than drawn empty, because an empty region reads as a night
@@ -448,6 +448,7 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<string> stale,
         IReadOnlyList<RefusedDocument> refused,
         IReadOnlyList<LeftOutSection> fellBack,
+        QueueNight queue,
         HarnessCounts? harness,
         PricedCalls? priced = null)
     {
@@ -463,6 +464,7 @@ public sealed class SinglePageApp : IComponent
         region.Append("</section>");
 
         region.Append(marks.StaleAndFailed(stale, failed, refused, fellBack));
+        region.Append(marks.OvernightQueue(queue));
         region.Append(marks.HarnessVerdicts(harness));
 
         region.Append("</section>");

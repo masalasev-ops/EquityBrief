@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -108,9 +109,10 @@ public class NightlyCost
     // first model client lands. What the carve names is the file a model may be
     // reached from, and it says nothing about the night: no nightly step holds a
     // model feed, which component-access asserts over each stage's declared feeds,
-    // and the queue that will call this lane from the night is 6.10's, where the
-    // second half says which lane the night may call. A file here that reaches a
-    // model and is not a model feed fails, for the reason a client belongs in a feed.
+    // and the queue that calls this lane from the night is 6.10's, where the second
+    // half below says which lane the night may call and that its calls come from step
+    // 17 alone. A file here that reaches a model and is not a model feed fails, for
+    // the reason a client belongs in a feed.
     //
     // Two from 6.7, which adds the research model's live feed, the second file that
     // sends the wire path. Its recorded double reaches no model and carries no pattern,
@@ -479,6 +481,219 @@ public class NightlyCost
         Assert.Empty(NotFeeds(sources, MayHoldAClient));
     }
 
+    // ---- the carve's second half, which is about the night ----
+    //
+    // It lands at 6.10 and ahead of the queue it is about, for the reason 2.1 landed the
+    // cost carve-out ahead of the live feed: a guard built in the commit that builds what
+    // it guards has no run in which it stood alone. The first half, at 6.6, names the
+    // files a model may be reached from and says nothing about the night. This half says
+    // the two things the decision says of the night: which lane it may call, and that its
+    // calls come from step 17 alone.
+    // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
+
+    // Step 17's own stage on the night's run. Stated here before the queue exists, since the
+    // guard lands first, and read against the queue's own constant from the commit that
+    // builds it.
+    internal const string QueueStage = "overnight queue";
+
+    // What the night may reach: the feeds the night's own record resolves, and the local
+    // model. A paid model, a search, a company's financials and the filings archive are an
+    // open's, and a night reaching one is a night whose cost is no longer the arithmetic's.
+    internal static readonly Feed[] TheNightMayReach =
+    [
+        Feed.IndexMembership,
+        Feed.BulkPrice,
+        Feed.HistoricalPrice,
+        Feed.SplitsAndDividends,
+        Feed.EarningsCalendar,
+        Feed.News,
+        Feed.LocalModel,
+    ];
+
+    static string NightSource() =>
+        File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Nightly.cs"));
+
+    // The lanes the night's composition may not call, read off the components its own file
+    // constructs and what each of them declares, so a component added to the night that
+    // reaches a paid lane is found by its declaration rather than by a name kept here.
+    // Comments are stripped first, because a sentence naming a component is not a use of it.
+    internal static IReadOnlyList<string> LanesTheNightMayNotCall(
+        string nightSource,
+        IReadOnlyList<DeclaredComponent> components)
+    {
+        var constructed = Regex.Matches(SourceStatements.WithoutComments(nightSource), @"\bnew\s+([A-Z]\w*)\s*\(")
+            .Select(match => match.Groups[1].Value)
+            .ToHashSet(StringComparer.Ordinal);
+
+        return
+        [
+            .. components
+                .Where(component => constructed.Contains(component.Name))
+                .SelectMany(component => component.Access.Feeds
+                    .Where(feed => !TheNightMayReach.Contains(feed))
+                    .Select(feed => $"the night constructs {component.Name}, which reaches {feed}")),
+        ];
+    }
+
+    // One run log row as the carve reads it.
+    internal sealed record CostRow(string RunId, string Stage, int ModelCalls, string Spend, string Detail);
+
+    // What a store's rows carry that the carve does not allow: any spend, whose only source
+    // is a paid call, and a model call anywhere but on step 17's own row and the runs that
+    // row names as its passes. The passes are read off the queue's row rather than off how a
+    // run id reads, because a matcher keyed on the opening of an id answers for every id that
+    // happens to open the same way.
+    internal static IReadOnlyList<string> CallsTheCarveDoesNotAllow(IReadOnlyList<CostRow> rows, string nightRunId)
+    {
+        var step = rows.Where(row => row.RunId == nightRunId && row.Stage == QueueStage).ToArray();
+        var passes = step.SelectMany(row => PassesNamedIn(row.Detail)).ToHashSet(StringComparer.Ordinal);
+        var offences = new List<string>();
+
+        foreach (var row in rows)
+        {
+            if (row.Spend != "0")
+            {
+                offences.Add($"{row.RunId} {row.Stage} spent {row.Spend}");
+            }
+
+            if (row.ModelCalls > 0 && !step.Contains(row) && !passes.Contains(row.RunId))
+            {
+                offences.Add($"{row.RunId} {row.Stage} made {row.ModelCalls} model call(s) outside step 17");
+            }
+        }
+
+        return offences;
+    }
+
+    // The runs step 17's row names as the passes it ran.
+    static IReadOnlyList<string> PassesNamedIn(string detail)
+    {
+        if (detail.Length == 0)
+        {
+            return [];
+        }
+
+        using var parsed = System.Text.Json.JsonDocument.Parse(detail);
+
+        var passes = new List<string>();
+
+        if (parsed.RootElement.TryGetProperty("completed", out var completed))
+        {
+            passes.AddRange(completed.EnumerateArray().Select(pass => pass.GetProperty("runId").GetString()!));
+        }
+
+        // The pass the queue stopped at, which made the call that found the local model not
+        // answering.
+        if (parsed.RootElement.TryGetProperty("stopped", out var stopped) && stopped.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            passes.Add(stopped.GetProperty("runId").GetString()!);
+        }
+
+        return passes;
+    }
+
+    [Fact]
+    public async Task TheArithmeticCallsNoModelAndTheNightsCallsComeFromStepSeventeenAlone()
+    {
+        // Over a whole recorded night rather than one stage of one, because the claim is
+        // about the night and a stage run alone cannot say which steps a night runs.
+        using var store = new TemporaryStore();
+
+        var code = await Nightly.RunAsync(
+            new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
+            FixtureFolder(),
+            Index,
+            FixedClock.At(Night, SessionZones.UnitedStates),
+            new StringWriter(),
+            new StringWriter(),
+            "run-carve");
+
+        Assert.Equal(0, code);
+
+        var rows = CostRows(store.DatabaseFile);
+        var night = rows.Where(row => row.RunId == "run-carve").ToArray();
+
+        // The population, stated: every stage of the arithmetic writes a row under the
+        // night's run, the facts step two.
+        Assert.True(night.Length >= 17, $"The night wrote {night.Length} row(s), expected at least 17.");
+
+        // No arithmetic stage called a model, read off the rows the night wrote.
+        Assert.Equal(0, night.Where(row => row.Stage != QueueStage).Sum(row => row.ModelCalls));
+
+        // And whatever model calls the night made are on step 17's rows, and nothing spent.
+        Assert.Empty(CallsTheCarveDoesNotAllow(rows, "run-carve"));
+
+        // Which lane: the night's composition reaches nothing an open reaches.
+        var components = ShippedComponents.All();
+
+        Assert.True(components.Count >= 20, $"Read {components.Count} declared components, expected at least 20.");
+        Assert.Empty(LanesTheNightMayNotCall(NightSource(), components));
+    }
+
+    [Fact]
+    public void TheCarveAllowsAModelCallOnStepSeventeensRowsAndNowhereElse()
+    {
+        // The permanent proof, over constructed rows, since the night this lands in has no
+        // step 17 and its rows would prove only the empty case.
+        const string NightRun = "night-x";
+        const string Named = """{"completed":[{"ticker":"MSFT","runId":"a-pass"}]}""";
+
+        CostRow[] clean =
+        [
+            new(NightRun, "fetch", 0, "0", ""),
+            new(NightRun, QueueStage, 1, "0", Named),
+            new("a-pass", "prose", 1, "0", ""),
+            new("a-pass", "claims", 0, "0", ""),
+        ];
+
+        Assert.Empty(CallsTheCarveDoesNotAllow(clean, NightRun));
+
+        // A model call on an arithmetic stage.
+        Assert.Contains("night-x facts made 1 model call(s) outside step 17", CallsTheCarveDoesNotAllow([.. clean, new(NightRun, "facts", 1, "0", "")], NightRun));
+
+        // A model call under a run the queue's row does not name, however the id reads.
+        Assert.Single(CallsTheCarveDoesNotAllow([.. clean, new("night-x-queue-NFLX", "prose", 1, "0", "")], NightRun));
+
+        // Any spend at all, on any row.
+        Assert.Single(CallsTheCarveDoesNotAllow([.. clean, new("a-pass", "research call: The two cases", 0, "0.0021", "")], NightRun));
+
+        // And step 17's row under another night licenses nothing on this one: both its own
+        // call and its pass's are outside this night's step.
+        Assert.Equal(
+            2,
+            CallsTheCarveDoesNotAllow([new(NightRun, "fetch", 0, "0", ""), new("night-y", QueueStage, 1, "0", Named), new("a-pass", "prose", 1, "0", "")], NightRun).Count);
+    }
+
+    [Fact]
+    public void ANightConstructingAComponentThatReachesAnOpensLaneIsReportedByWhatItDeclares()
+    {
+        var components = ShippedComponents.All();
+
+        // The spend cap, which holds the research model.
+        Assert.Contains(
+            LanesTheNightMayNotCall("steps = [ new(\"x\", () => new SpendCap(feed, caps, clock, db).AskAsync(request)) ];", components),
+            offence => offence.Contains("SpendCap", StringComparison.Ordinal) && offence.Contains(nameof(Feed.ResearchModel), StringComparison.Ordinal));
+
+        // The research runner, which fetches a name's filings, and the fundamentals fetcher.
+        Assert.Contains(
+            LanesTheNightMayNotCall("new ResearchRunner(judge, writer, cap, checker, themes, archive, news, lane, clock, db)", components),
+            offence => offence.Contains(nameof(Feed.FilingsArchive), StringComparison.Ordinal));
+        Assert.Contains(
+            LanesTheNightMayNotCall("new FundamentalsFetcher(feed, clock, db, archive)", components),
+            offence => offence.Contains(nameof(Feed.CompanyFinancials), StringComparison.Ordinal));
+
+        // The theme runner, which searches.
+        Assert.Contains(
+            LanesTheNightMayNotCall("new ThemeResearchRunner(cap, checker, search, list, pricing, clock, db)", components),
+            offence => offence.Contains(nameof(Feed.SearchTool), StringComparison.Ordinal));
+
+        // The prose writer reaches the local model and nothing else, which the night may.
+        Assert.Empty(LanesTheNightMayNotCall("new ProseWriter(model, settings, lane, clock, db)", components));
+
+        // And a comment naming one is not a construction of it.
+        Assert.Empty(LanesTheNightMayNotCall("// new SpendCap(feed, caps, clock, db) is not built here", components));
+    }
+
     [Fact]
     public async Task ANightsRequestCountDoesNotGrowWithTheUniverse()
     {
@@ -704,6 +919,7 @@ public class NightlyCost
         var code = await Nightly.RunAsync(
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
             feeds,
+            NightQueue.FromFixture(FixtureFolder()),
             Index,
             FixedClock.At(Night, SessionZones.UnitedStates),
             output,
@@ -822,6 +1038,10 @@ public class NightlyCost
         return store;
     }
 
+    // The model calls are read off the rows the run wrote rather than written here. Until
+    // 6.10 this returned a literal zero beside the request count, so the two assertions
+    // that the night called no model compared that zero with itself and could not fail,
+    // which the carve's second half found when it went to read the figure.
     static async Task<(NightCost Cost, int Members)> NightAsync(string? members)
     {
         using var store = await StoredAsync(members);
@@ -832,6 +1052,28 @@ public class NightlyCost
             FixedClock.At(Night, SessionZones.UnitedStates),
             store.DatabaseFile).RunAsync(Index, "run-night");
 
-        return (new NightCost(feed.Requests, 0), outcome.MembersStored);
+        var calls = CostRows(store.DatabaseFile).Where(row => row.RunId == "run-night").Sum(row => row.ModelCalls);
+
+        return (new NightCost(feed.Requests, calls), outcome.MembersStored);
+    }
+
+    // Every run log row as the carve reads it.
+    internal static IReadOnlyList<CostRow> CostRows(string databaseFile)
+    {
+        using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT run_id, stage, model_calls, spend, IFNULL(detail, '') FROM run_log ORDER BY rowid;";
+
+        var rows = new List<CostRow>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            rows.Add(new CostRow(reader.GetString(0), reader.GetString(1), reader.GetInt32(2), reader.GetString(3), reader.GetString(4)));
+        }
+
+        return rows;
     }
 }

@@ -529,7 +529,10 @@ public sealed class ResearchRunner(
     // not written again today, so a second open of a name costs nothing; an accepted
     // section is written again where the judge names it stale; anything refused, or
     // left out on an earlier day, or never written, is written.
-    static bool Warranted(string section, Newest? newest, StalenessVerdict verdict, DateOnly asOf) =>
+    //
+    // Over the judge's own standings from 6.10, so the overnight queue asks the question
+    // this pass asks rather than a second statement of it.
+    public static bool Warranted(string section, SectionStanding? newest, StalenessVerdict verdict, DateOnly asOf) =>
         newest switch
         {
             null => true,
@@ -538,6 +541,9 @@ public sealed class ResearchRunner(
             { Status: ClaimChecker.Fallback } left => left.AsOf != asOf,
             _ => true,
         };
+
+    static bool Warranted(string section, Newest? newest, StalenessVerdict verdict, DateOnly asOf) =>
+        Warranted(section, newest is null ? null : new SectionStanding(section, newest.AsOf, newest.Status), verdict, asOf);
 
     // Whether a name's pass refreshes its theme, by the rule its own sections are judged by
     // with one difference. The judge's triggers are the name's, and the theme is not one of

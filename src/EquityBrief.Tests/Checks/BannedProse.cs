@@ -216,9 +216,41 @@ public class BannedProse
         // twenty-four model answers the research pass and the lane comparison
         // recorded: each is a file a manifest entry declares, and the ceiling is
         // raised by hand when a checkpoint captures more, so an exclusion that grew
-        // without anyone adding a capture is what fails.
-        var excluded = Repository.TrackedFiles().Count(IsCapture);
+        // without anyone adding a capture is what fails. Sixty-four at 6.9, its four
+        // searches and its theme call, and sixty-seven at 6.10, the three answers the
+        // overnight queue asked for over a whole night. 6.10's queue commit was verified
+        // before its three were tracked and held a red test here the moment they were,
+        // which is the fault 6.8 recorded arriving a second time, and its sweep's
+        // baseline is what showed it.
+        var tracked = Repository.TrackedFiles();
+        var excluded = tracked.Count(IsCapture);
 
-        Assert.True(excluded is >= 5 and <= 65, $"Excluded {excluded} captured responses, expected between 5 and 65.");
+        Assert.True(excluded is >= 5 and <= 70, $"Excluded {excluded} captured responses, expected between 5 and 70.");
+
+        // And the count is over the tree as it will be committed. The ceiling failed on a
+        // committed tree at 6.8 and again at 6.10, each time because the run verifying the
+        // commit was taken before its new captures were tracked and counted fewer than the
+        // commit held. So a capture a manifest names that git does not track fails here, on
+        // the run that would otherwise count short, rather than on the next one.
+        var onDisk = Directory.GetFiles(Path.Combine(Repository.Root, "fixtures"), "*.json", SearchOption.AllDirectories)
+            .Where(IsCapture)
+            .ToArray();
+
+        Assert.True(onDisk.Length >= excluded, $"Found {onDisk.Length} captured responses on disk and {excluded} tracked.");
+
+        var untracked = Untracked(onDisk, tracked);
+
+        Assert.True(
+            untracked.Count == 0,
+            $"A manifest names {untracked.Count} capture(s) git does not track, which the count above cannot see: " +
+            string.Join(", ", untracked.Select(file => Path.GetRelativePath(Repository.Root, file))));
+
+        // The permanent proof for that reader, over constructed paths.
+        Assert.Equal(["b.json"], Untracked(["a.json", "b.json"], ["a.json", "c.json"]));
+        Assert.Empty(Untracked(["a.json"], ["a.json", "b.json"]));
     }
+
+    // The captures on disk that git does not track.
+    internal static IReadOnlyList<string> Untracked(IReadOnlyList<string> captures, IReadOnlyList<string> tracked) =>
+        [.. captures.Except(tracked, StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal)];
 }

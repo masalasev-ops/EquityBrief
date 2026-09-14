@@ -257,6 +257,21 @@ static string? PhaseReport(WebApplicationBuilder builder)
     return File.Exists(path) ? File.ReadAllText(path) : null;
 }
 
+// Whether the exchange traded on a day, for the run page's overnight queue region, and
+// a day the closure table cannot place is one the region does not name, rather than a
+// page that fails to draw for a night nobody asked about.
+static bool Traded(DateOnly day)
+{
+    try
+    {
+        return EquityBrief.Core.Bars.ExchangeClosures.IsSession(day);
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
+    }
+}
+
 // Tonight's list, section 15.7, read here and composed by the app.
 //
 // `/screens/tonight` resolves to the newest night the listings hold and
@@ -482,6 +497,7 @@ app.MapGet("/screens/run/{night?}", async (
             await read.StaleNamesAsync(index, dated),
             RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
             RunScreen.FellBack(await read.FellBackAsync(dated)),
+            RunScreen.Queue(await read.QueueRowsAsync(), dated, Traded),
             RunScreen.Harness(PhaseReport(builder)),
             RunScreen.Priced(await read.PaidCallSpendsAsync())),
         "text/html; charset=utf-8");
