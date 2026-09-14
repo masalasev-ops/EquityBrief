@@ -1,7 +1,14 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using EquityBrief.Api.Reading;
+using EquityBrief.Core.Configuration;
+using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -117,5 +124,57 @@ public partial class ReadSurface
         // A name that is not markup-safe is escaped wherever it is written.
         Assert.Contains("data-ticker=\"&lt;x&gt;\"", new ReportExporter().Document("<x>", null, string.Empty), StringComparison.Ordinal);
         Assert.Contains("href=\"/exports/name/A%26B\"", ReportExporter.Link("A&B"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheFileLeavesOutTheControlAndThePauseThePageDrawsAtTheSameInstant()
+    {
+        // The file is the report less what the application asks the operator, so each of the two
+        // is asserted where the page draws it: a stale name's offer to rewrite, and a pause at a
+        // cap, which one page never carries together because a paused page offers no control. The
+        // test above opens both surfaces under the machine's clock over spend that reaches no cap,
+        // where the page draws no pause for the file to leave out, and the 6.11 sweep's mutation
+        // handing the route's spend verdict to the file survived it.
+        using var store = await FixtureReplay.ResearchedAsync();
+
+        store.Execute("UPDATE research_section SET as_of = '2026-08-01' WHERE ticker = 'KEYS';");
+
+        using var host = new ClockedHost(store.Root, FixedClock.At(AWeekLater, SessionZones.UnitedStates));
+        using var client = host.CreateClient();
+
+        var offering = await client.GetStringAsync("/screens/name/KEYS");
+        var offeredFile = await client.GetStringAsync(ReportExporter.Route + "KEYS");
+
+        Assert.Contains("<form class=\"research-control\" method=\"post\" action=\"/passes/KEYS\" data-kind=\"rewrite\"", offering, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"research-cost\"", offering, StringComparison.Ordinal);
+        Assert.DoesNotContain("research-control", offeredFile, StringComparison.Ordinal);
+        Assert.DoesNotContain("research-cost", offeredFile, StringComparison.Ordinal);
+
+        // The day cap reached on the day both are opened, which each surface reads per request.
+        Spend(store, "research-today", "research call: The two cases", "2026-09-15T12:00:00Z", "10.00");
+
+        var paused = await client.GetStringAsync("/screens/name/KEYS");
+        var pausedFile = await client.GetStringAsync(ReportExporter.Route + "KEYS");
+
+        Assert.Contains("<p class=\"research-paused\" data-cap=\"day\" data-resumes-at=\"2026-09-16T00:00:00Z\">", paused, StringComparison.Ordinal);
+        Assert.DoesNotContain("research-paused", pausedFile, StringComparison.Ordinal);
+
+        // Both files are still the report: the research state and every written section the page draws.
+        foreach (var file in new[] { offeredFile, pausedFile })
+        {
+            Assert.Contains("<p class=\"research-state\" data-state=\"stale\">", file, StringComparison.Ordinal);
+            Assert.Equal(Blocks(paused, "<section class=\"written-section\".*?</section>"), Blocks(file, "<section class=\"written-section\".*?</section>"));
+        }
+    }
+
+    // The read surface under a clock the test fixes, so a page and its file are opened at one
+    // instant against the spend the test wrote for it.
+    sealed class ClockedHost(string root, IClock clock) : WebApplicationFactory<ReadApi>
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseSetting(StoreLocation.DataRootKey, root);
+            builder.ConfigureTestServices(services => services.AddSingleton(clock));
+        }
     }
 }
