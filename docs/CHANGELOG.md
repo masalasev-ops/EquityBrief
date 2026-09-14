@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-14 - RUNBOOK.md - a pass's rows name the check its theme runs under a stage of its own
+
+Corrects: the list of a pass's rows, which named one `claims` stage for a pass however many checks ran in it, found when 6.11's production run stopped MSFT's pass on a second row under that stage.
+Was:
+> `theme research` where the pass refreshed its theme, whose detail names the sites it dropped and the addresses short of a document, `prose`,
+Now:
+> `theme research` where the pass refreshed its theme, whose detail names the sites it dropped and the addresses short of a document, and `theme claims` ahead of it where the theme wrote a cycle to check, `prose`,
+Why: a theme refreshed inside a name's pass checks its cycle under the name's run, so its check is a row of its own and the list a reader looks for rows in has to carry it.
+
 ### 2026-09-14 - ARCHITECTURE.html - the cause row cites the decision that replaced the one it cited
 
 Authorised by: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
