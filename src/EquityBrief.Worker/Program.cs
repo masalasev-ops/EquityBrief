@@ -364,13 +364,7 @@ static async Task<int> NightlyRun(string[] args)
         // and the hold. Resolved here with the feeds rather than at step 17, so a lane
         // naming a section nobody can write or a limit that is not a number refuses the
         // night before its first step rather than after its arithmetic.
-        queue = NightQueue.Resolve(
-            source,
-            fixture,
-            LocalLane.Settings(configuration),
-            LocalLane.Sections(configuration),
-            OvernightQueue.Limit(configuration),
-            new MachineAwake());
+        queue = NightQueue.From(configuration, source, fixture, new MachineAwake());
     }
     catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
     {

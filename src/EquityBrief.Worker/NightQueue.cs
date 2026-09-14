@@ -1,6 +1,7 @@
 using EquityBrief.Core.Providers;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Research;
+using Microsoft.Extensions.Configuration;
 
 namespace EquityBrief.Worker;
 
@@ -29,9 +30,24 @@ public sealed record NightQueue(
             TimeSpan.FromHours(OvernightQueue.DefaultHours),
             awake ?? new MachineAwake());
 
+    // What the night's verb hands step 17, read from configuration: the local model's
+    // settings and lane, the queue's hours, and the local model from the night's own source.
+    // Here rather than in the verb, so what a night reads from its settings is asserted where
+    // it is read.
+    public static NightQueue From(IConfiguration configuration, string? source, string? fixtureFolder, IMachineAwake awake) =>
+        Resolve(
+            source,
+            fixtureFolder,
+            LocalLane.Settings(configuration),
+            LocalLane.Sections(configuration),
+            OvernightQueue.Limit(configuration),
+            awake);
+
     // The night's own source decides which local model the queue reaches, resolved where
     // every other on-demand feed is, so a night over a capture reaches no model runtime and
-    // a live night reaches the operator's.
+    // a live night reaches the operator's. The lane is taken as it was read: reading it
+    // checks it, and the writer checks it again before a pass writes anything, so a third
+    // check here was one nothing could reach, which 6.10's sweep showed by removing it.
     public static NightQueue Resolve(
         string? source,
         string? fixtureFolder,
@@ -39,5 +55,5 @@ public sealed record NightQueue(
         IReadOnlyList<string> lane,
         TimeSpan limit,
         IMachineAwake awake) =>
-        new(OnDemandFeeds.LocalModelFor(source, fixtureFolder, settings), settings, ProseWriter.Checked(lane), limit, awake);
+        new(OnDemandFeeds.LocalModelFor(source, fixtureFolder, settings), settings, lane, limit, awake);
 }

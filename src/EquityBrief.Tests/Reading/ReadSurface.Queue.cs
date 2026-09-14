@@ -156,6 +156,32 @@ public partial class ReadSurface
         Assert.Single(RunScreen.Failed([.. stages.Select(stage => stage.Stage == OvernightQueue.Stage ? stage with { Outcome = OvernightQueue.Unavailable } : stage)]));
     }
 
+    [Fact]
+    public async Task AQueueRowIsReadUnderTheNightItsDetailNamesAndTheNewestOfANightsRowsIsDrawn()
+    {
+        // A queue that started after midnight in New York, which an hour's limit after a late
+        // night can do, is read under the night whose arithmetic it followed rather than under
+        // the clock's night for the instant it started.
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+            $"VALUES ('night-late', '{OvernightQueue.Stage}', '2026-09-09T04:30:00Z', '2026-09-09T05:10:00Z', 'ok', 0, 1, 0, '0', " +
+            "'{\"night\":\"2026-09-08\",\"queued\":[\"AAPL\"],\"completed\":[{\"ticker\":\"AAPL\",\"runId\":\"night-late-queue-AAPL\"}],\"left\":[],\"limitHours\":1}');");
+
+        var started = new DateTimeOffset(2026, 9, 9, 4, 30, 0, TimeSpan.Zero);
+
+        Assert.Equal(new DateOnly(2026, 9, 9), ((EquityBrief.Core.Time.IClock)EquityBrief.Core.Time.FixedClock.At(started, EquityBrief.Core.Time.SessionZones.UnitedStates)).SessionDateAt(started));
+        Assert.Equal(new DateOnly(2026, 9, 8), Assert.Single(await Api(store).QueueRowsAsync()).Night);
+
+        // Two rows for one night, being a night run twice: the newest is what the page draws.
+        var earlier = Row(new DateOnly(2026, 9, 8), OvernightQueue.Unavailable) with { StartedAt = new DateTimeOffset(2026, 9, 9, 1, 0, 0, TimeSpan.Zero) };
+        var later = Row(new DateOnly(2026, 9, 8)) with { StartedAt = new DateTimeOffset(2026, 9, 9, 2, 0, 0, TimeSpan.Zero) };
+
+        Assert.Equal(OvernightQueue.Ran, RunScreen.Queue([later, earlier], new DateOnly(2026, 9, 8), ExchangeClosures.IsSession).Outcome);
+        Assert.Equal(OvernightQueue.Ran, RunScreen.Queue([earlier, later], new DateOnly(2026, 9, 8), ExchangeClosures.IsSession).Outcome);
+    }
+
     static string Text(TemporaryStore store, string sql)
     {
         using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={store.DatabaseFile}");

@@ -135,6 +135,91 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task TheQueueTakesTheNamesThatFiredInOrderOfReasonsFiredAndNotOfTheirTickers()
+    {
+        // Every member of the fixture's night fired, AAPL two reasons and the other three one
+        // each, so the order of reasons fired and the order of tickers are one order there and
+        // a queue reading either passed, which 6.10's sweep showed. Over a copy of that night
+        // two listings are changed: NFLX firing three reasons, which puts it first where its
+        // ticker puts it last, and KEYS firing none, which takes it off tonight's list.
+        var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = new NothingAnsweringLocal() });
+
+        using var store = night.Store;
+
+        Assert.True(night.Code == 0, night.Error);
+
+        // The coincidence, stated, so the change below is read against the night it changes.
+        Assert.Equal(
+            ["AAPL|2", "KEYS|1", "MSFT|1", "NFLX|1"],
+            Query(store, "SELECT ticker || '|' || fired_count FROM listing WHERE session_date = '2026-09-08' AND fired_count > 0 ORDER BY fired_count DESC, ticker;"));
+
+        store.Execute("UPDATE listing SET fired_count = 3 WHERE ticker = 'NFLX' AND session_date = '2026-09-08';");
+        store.Execute("UPDATE listing SET fired_count = 0 WHERE ticker = 'KEYS' AND session_date = '2026-09-08';");
+
+        var clock = FixedClock.At(QueueNight, SessionZones.UnitedStates);
+        var local = new RecordedLocalModelFeed(Folder());
+
+        var reordered = await new OvernightQueue(
+            new StalenessJudge(clock, store.DatabaseFile),
+            sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            new ClaimChecker(clock, store.DatabaseFile),
+            ProseWriter.DefaultLane,
+            TimeSpan.FromHours(OvernightQueue.DefaultHours),
+            new RecordingAwake(),
+            clock,
+            store.DatabaseFile).RunAsync("reordered", new DateOnly(2026, 9, 8));
+
+        Assert.Equal(["NFLX", "AAPL", "MSFT"], reordered.Listed);
+        Assert.Equal(["NFLX", "AAPL", "MSFT"], reordered.Queued);
+        Assert.Equal(["NFLX", "AAPL", "MSFT"], reordered.Completed.Select(pass => pass.Ticker));
+        Assert.DoesNotContain("KEYS", Query(store, "SELECT DISTINCT ticker FROM research_section;"));
+    }
+
+    [Fact]
+    public async Task APassWritesAgainOnlyWhatTheCheckerRefusedOfItsOwnName()
+    {
+        // The checker moves every draft waiting in the store rather than the pass's alone, and
+        // another name's draft can be waiting when a pass checks: one a pass started on demand
+        // wrote during the night, or one a pass stopped before its check left behind. Over a
+        // copy of the fixture's night, ORCL's key waits with a figure no facts file holds. The
+        // first pass's check refuses it, and that pass, whose own draft was accepted, writes no
+        // second round, while MSFT's, whose own first draft was refused, still writes one.
+        var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = new NothingAnsweringLocal() });
+
+        using var store = night.Store;
+
+        Assert.True(night.Code == 0, night.Error);
+
+        store.Execute(
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) " +
+            $"VALUES ('ORCL', '{ClaimRules.ComputedSection}', 1, '2026-09-08', '{LocalModelSettings.DefaultModel}', 'pending', 'The close of 123.45 sits above the average.', '[]', NULL);");
+
+        var clock = FixedClock.At(QueueNight, SessionZones.UnitedStates);
+        var local = new RecordedLocalModelFeed(Folder());
+
+        var outcome = await new OvernightQueue(
+            new StalenessJudge(clock, store.DatabaseFile),
+            sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            new ClaimChecker(clock, store.DatabaseFile),
+            ProseWriter.DefaultLane,
+            TimeSpan.FromHours(OvernightQueue.DefaultHours),
+            new RecordingAwake(),
+            clock,
+            store.DatabaseFile).RunAsync("waiting", new DateOnly(2026, 9, 8));
+
+        // The other name's draft was checked by the queue's first pass, and refused.
+        Assert.Equal([ClaimChecker.Rejected], Query(store, "SELECT status FROM research_section WHERE ticker = 'ORCL';"));
+
+        Assert.Equal(["AAPL", "KEYS", "MSFT", "NFLX"], outcome.Completed.Select(pass => pass.Ticker));
+        Assert.Equal([1, 1, 2, 1], outcome.Completed.Select(pass => pass.ModelCalls));
+
+        var secondRound = ProseWriter.StageFor(ResearchRunner.SecondRound);
+
+        Assert.DoesNotContain(secondRound, Query(store, $"SELECT stage FROM run_log WHERE run_id = '{OvernightQueue.PassRunId("waiting", "AAPL")}';"));
+        Assert.Contains(secondRound, Query(store, $"SELECT stage FROM run_log WHERE run_id = '{OvernightQueue.PassRunId("waiting", "MSFT")}';"));
+    }
+
+    [Fact]
     public async Task ANameWhoseLaneStandsTodayIsNotQueuedAgain()
     {
         // The same night's queue run a second time, after the first wrote every key: each
@@ -228,6 +313,83 @@ public partial class FixtureExpectations
 
         Assert.Equal(OvernightQueue.Ran, covering.Outcome);
         Assert.Empty(covering.Left);
+    }
+
+    // A local model that answers from the recordings and notes whether the token each call
+    // was handed can ever be cancelled.
+    sealed class TokenNotingLocal(ILocalModelFeed inner, List<bool> cancellable) : ILocalModelFeed
+    {
+        public int Requests => inner.Requests;
+
+        public Task<ModelAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default)
+        {
+            cancellable.Add(cancellation.CanBeCanceled);
+
+            return inner.CompleteAsync(request, cancellation);
+        }
+    }
+
+    [Fact]
+    public async Task TheQueueIsHandedNothingFromTheNightsDeadline()
+    {
+        // The deadline is sized for the arithmetic, and a queue handed it would have its
+        // passes cut at whatever the arithmetic left of fifteen minutes. So no call a pass
+        // makes carries a token anything can cancel: the night's deadline cannot reach it,
+        // and its own limit is read between passes rather than inside one.
+        var cancellable = new List<bool>();
+
+        var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = new TokenNotingLocal(new RecordedLocalModelFeed(Folder()), cancellable) });
+
+        using (night.Store)
+        {
+            Assert.True(night.Code == 0, night.Error);
+        }
+
+        Assert.NotEmpty(cancellable);
+        Assert.All(cancellable, can => Assert.False(can));
+    }
+
+    [Fact]
+    public void TheNightReadsItsQueueFromItsSettingsAndRefusesOneItCannotRead()
+    {
+        static IConfiguration Settings(params (string Key, string Value)[] pairs) =>
+            new ConfigurationBuilder().AddInMemoryCollection(pairs.ToDictionary(pair => pair.Key, pair => (string?)pair.Value)).Build();
+
+        // A night over a capture reaches the recorded runtime, with the hours and the lane its
+        // settings state.
+        var stated = NightQueue.From(
+            Settings((OvernightQueue.HoursKey, "2"), (LocalLane.SectionsKey + ":0", ClaimRules.ComputedSection)),
+            FeedSource.Fixture,
+            Folder(),
+            new RecordingAwake());
+
+        Assert.IsType<RecordedLocalModelFeed>(stated.LocalModel);
+        Assert.Equal(TimeSpan.FromHours(2), stated.Limit);
+        Assert.Equal([ClaimRules.ComputedSection], stated.Lane);
+
+        // Settings stating nothing: this machine's lane and the default hours.
+        var blank = NightQueue.From(Settings(), FeedSource.Fixture, Folder(), new RecordingAwake());
+
+        Assert.Equal(TimeSpan.FromHours(OvernightQueue.DefaultHours), blank.Limit);
+        Assert.Equal(ProseWriter.DefaultLane, blank.Lane);
+        Assert.Equal(LocalModelSettings.DefaultModel, blank.Settings.Model);
+
+        // A live night reaches the operator's runtime, and a night over a capture never does.
+        Assert.IsType<OpenAiCompatibleModelFeed>(NightQueue.From(Settings(), FeedSource.Live, null, new RecordingAwake()).LocalModel);
+
+        // Refused before the night starts, each naming what it could not read: hours that
+        // are not whole hours, a lane naming a section figure 12.2 does not, a fixture folder
+        // that is not there, and a key on the local lane.
+        Assert.Contains(
+            OvernightQueue.HoursKey,
+            Assert.Throws<InvalidOperationException>(() => NightQueue.From(Settings((OvernightQueue.HoursKey, "half")), FeedSource.Fixture, Folder(), new RecordingAwake())).Message,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "The cause of every move",
+            Assert.Throws<InvalidOperationException>(() => NightQueue.From(Settings((LocalLane.SectionsKey + ":0", "The cause of every move")), FeedSource.Fixture, Folder(), new RecordingAwake())).Message,
+            StringComparison.Ordinal);
+        Assert.Throws<DirectoryNotFoundException>(() => NightQueue.From(Settings(), FeedSource.Fixture, Path.Combine(Folder(), "no-such-capture"), new RecordingAwake()));
+        Assert.Throws<InvalidOperationException>(() => NightQueue.From(Settings((LocalModelSettings.ApiKeyKey, "a-key")), FeedSource.Fixture, Folder(), new RecordingAwake()));
     }
 
     [Fact]
@@ -338,8 +500,10 @@ public partial class FixtureExpectations
     {
         // The platform's own request, taken and released on the machine running the suite,
         // which is each of the two platforms in the matrix and Linux in the case-sensitivity
-        // job. A second hold after the first is released is taken as well, so a release that
-        // left the request open would not pass for one that closed it.
+        // job. A second hold is taken after the first is released, so a hold the machine gives
+        // once is not read as one it gives every night. Whether the release closed the
+        // platform's request is not read back here, since the platform lists its requests
+        // through a tool of its own and this repository shells out to none.
         var awake = new MachineAwake();
 
         foreach (var attempt in new[] { 1, 2 })
