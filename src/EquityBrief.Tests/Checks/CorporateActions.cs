@@ -1,5 +1,6 @@
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
+using EquityBrief.Data.Migrations;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Membership;
@@ -42,9 +43,11 @@ public class CorporateActions
 
     static string FixtureFolder() => Path.Combine(Repository.Root, "fixtures", Fixture);
 
-    static async Task<TemporaryStore> Stored()
+    static Task<TemporaryStore> Stored() => Loaded(new TemporaryStore().Migrated());
+
+    // The index and its stored year, loaded into a store the test has already migrated.
+    static async Task<TemporaryStore> Loaded(TemporaryStore store)
     {
-        var store = new TemporaryStore().Migrated();
         var clock = FixedClock.At(Backfilled, SessionZones.UnitedStates);
 
         await new MembershipLoader(
@@ -632,6 +635,50 @@ public class CorporateActions
         Assert.Empty(cleared.Suspect);
         Assert.Equal(("ok", 0), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
         Assert.Equal("ok", StageOf(store, "night-cleared").Outcome);
+    }
+
+    [Fact]
+    public async Task ANameAlreadySuspectWhenItsCountIsAddedIsAskedForAgainOnTheNightsTheLimitAllowsFromThen()
+    {
+        // The migration's default. A row that exists when the count is added was counted by
+        // nothing, and the rule counts from the night it lands, so such a name starts at none
+        // and is asked for again on each of the limit's nights from then. Every other test
+        // here migrates an empty store and has the check write each count itself, so a
+        // default counting such a row as one passed all of them. Found by the 6.0 ruling's
+        // sweep.
+        var counted = SchemaMigrations.All.Single(migration => migration.Name == "add series_state.retries");
+
+        using var store = new TemporaryStore();
+
+        new MigrationRunner(SchemaMigrations.All.Where(migration => migration.Version < counted.Version).ToArray())
+            .Apply(store.DatabaseFile);
+
+        // A name a night before the count existed left suspect, in the columns that night's
+        // check wrote.
+        store.Execute(
+            "INSERT INTO series_state (ticker, state, reason, checked_at) " +
+            "VALUES ('AAPL', 'suspect', 'a refetch that failed before the count existed', '2026-08-10T21:10:00Z');");
+
+        var migrated = MigrationRunner.Standard().Apply(store.DatabaseFile);
+
+        Assert.Equal(counted.Version - 1, migrated.From);
+        Assert.Contains(counted.Name, migrated.Applied);
+        Assert.Equal(("suspect", 0), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
+
+        await Loaded(store);
+
+        var sessions = SessionsFrom(DateOnly.FromDateTime(ActionNight.UtcDateTime), CorporateActionChecker.RetryNights + 2);
+
+        for (var night = 1; night <= CorporateActionChecker.RetryNights + 1; night++)
+        {
+            var outcome = await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(NightOn(sessions[night]), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync(Index, $"night-{night}");
+
+            var asked = night <= CorporateActionChecker.RetryNights;
+
+            Assert.Equal(asked ? 1 : 0, outcome.RefetchRequests);
+            Assert.Equal(!asked, (outcome.Spent ?? []).Any(spent => spent.Ticker == "AAPL"));
+        }
     }
 
     [Fact]
