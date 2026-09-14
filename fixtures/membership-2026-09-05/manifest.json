@@ -176,6 +176,13 @@
       "trimmedTo": "nothing. The second filer's segment table, whole, and it is here because a parser written against one filer's markup is a parser written against one filer. Four things it carries that the first does not. Its date header cells carry a unit after the date, reading 'Jul. 31, 2026 USD ($)' and in one column 'USD ($) segment', so a reader parsing the whole cell as a date fails on every column. One of its rows is not money at all: a count of reportable segments, marked by a unit after its label, which a reader applying the table's stated scale would record as two million segments. Its first cell's class is a list rather than a name, so a reader keyed on equality misses the rows carrying an extra class. And four of its groups share one axis and member in the markup while their labels differ, with two labels appearing twice, so neither the label nor the concept is a unique key and the groups are an ordered sequence rather than a set."
     },
     {
+      "file": "segment-report-NFLX-R65.htm",
+      "endpoint": "Archives/edgar/data/1065280/000106528026000212/R65.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1065280/000106528026000212/R65.htm",
+      "fetchedAt": "2026-09-14T14:09:35Z",
+      "trimmedTo": "nothing. A third filer's segment table, whole, captured at 6.11 because the production run found its figures stored a thousand times short. It is a narrative details table in thousands rather than millions, and it marks every row after its label: the counts of operating and reportable segments with 'segment', and each money row with the table's own currency, reading 'Revenues | $' with cells such as '$ 12,559,938', where the two captured filers leave their money rows unmarked. A reader that took every marked row for a row outside the table's currency left the revenue rows as filed. It reports one segment, and its one group is a geography rather than a business, the United States, so the figure a release calls a region is the only breakdown it carries."
+    },
+    {
       "file": "filing-types-KEYS-8k.htm",
       "endpoint": "Archives/edgar/data/1601046/000160104626000029/0001601046-26-000029-index.htm",
       "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000029/0001601046-26-000029-index.htm",

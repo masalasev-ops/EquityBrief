@@ -249,6 +249,39 @@ public class FilingsArchiveTests
     }
 
     [Fact]
+    public void ARowMarkedWithTheTablesOwnCurrencyIsInTheTablesScale()
+    {
+        // A third filer's table, in thousands, marks every row after its label: its counts
+        // with "segment" and its money rows with the table's own currency. A reader that left
+        // every marked row as filed stored NFLX's quarter's revenue a thousand times short,
+        // which 6.11's production run found in its facts file.
+        var table = SecEdgarArchive.Breakdown(Captured("segment-report-NFLX-R65.htm"), "R65.htm")!;
+
+        Assert.Equal(1_000, table.Scale);
+        Assert.Equal("$", SecEdgarArchive.Currency(table.Title));
+
+        var revenue = table.Consolidated.First(figure => figure.LineItem == "Revenues" && figure.Period.Months == 3);
+
+        // $ 12,559,938 as rendered, which is the quarter's revenue in dollars.
+        Assert.Equal("$", revenue.Unit);
+        Assert.Equal(12_559_938_000m, revenue.Value);
+
+        var unitedStates = Assert.Single(table.Groups, group => group.Label == "United States")
+            .Figures.First(figure => figure.Period.Months == 3);
+
+        Assert.Equal(5_100_000_000m, unitedStates.Value);
+
+        // And the counts beside them are still counts.
+        var count = table.Consolidated.First(figure => figure.LineItem == "Number of operating segments" && figure.Value is not null);
+
+        Assert.Equal("segment", count.Unit);
+        Assert.Equal(1m, count.Value);
+
+        // A title stating no scale states no currency.
+        Assert.Null(SecEdgarArchive.Currency("Segment Information (Details)"));
+    }
+
+    [Fact]
     public void APeriodColumnBelongsToTheHeaderWhoseSpanReachesIt()
     {
         // One end date under two spans. A reader keyed on the date alone takes the
