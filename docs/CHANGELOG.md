@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-14 - BUILD_PLAN.md - 6.10's text says the queue writes the lane's sections that rest on no document
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about
+Was:
+> Run the overnight queue on the local model, writing the sections in the local lane for listed names whose research is missing or stale, in order of reasons fired, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). It makes no paid call, and no part of the arithmetic depends on it.
+Now:
+> Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for listed names whose research is missing or stale, in order of reasons fired, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). It makes no paid call and no request, and no part of the arithmetic depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about).
+Why: the checkpoint took the decision that the queue fetches nothing and so writes only what a facts file supports, and section 14's step 17 was restated to it in the queue's commit while the plan's own text for the checkpoint still said the queue writes the local lane.
+
 ### 2026-09-13 - RUNBOOK.md - the jobs table says what the overnight queue writes and what stops it
 
 Authorised by: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about
