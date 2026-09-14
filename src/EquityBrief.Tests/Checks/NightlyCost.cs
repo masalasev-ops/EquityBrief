@@ -778,11 +778,113 @@ public class NightlyCost
 
         // Two carve-outs now, and both are asserted. The refetch is the second
         // and was found at 1.6: it makes one request per name whose adjusted
-        // prices an action moved, bounded by the day's actions rather than by
-        // the universe. It is carved rather than the rule loosened, because a
-        // night that refetched every name would satisfy a loosened rule.
+        // prices an action moved, and from the 6.0 ruling a suspect name's
+        // retries on the nights after, so it is bounded by the actions of the day
+        // and of the retry nights before it rather than by the universe. It is
+        // carved rather than the rule loosened, because a night that refetched
+        // every name would satisfy a loosened rule.
         Assert.Contains("the backfill and the corporate action refetch carved out of it", limits, StringComparison.Ordinal);
-        Assert.Contains("bounded by the day's actions rather than by the universe", limits, StringComparison.Ordinal);
+        Assert.Contains($"bounded by the actions of the day and of the {CorporateActionChecker.RetryNights} nights before it rather than by the universe", limits, StringComparison.Ordinal);
+    }
+
+    static System.Text.Json.JsonElement Expected(string stage) =>
+        System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(FixtureFolder(), "expectations", stage + ".json"))).RootElement;
+
+    [Fact]
+    public async Task ASuspectNameCostsOneRequestOnEachNightOfItsRetriesAndNoneOnceTheyAreSpent()
+    {
+        // The ruling 6.0 owed and 6.11 found unwritten. From the phase 5 sign-off a name
+        // whose refetch failed was asked for again on every night after, so a failure that
+        // lasted made one per-name request on the nightly path on each night it lasted,
+        // and section 17's bound by the day's actions had stopped being true. Measured here
+        // night by night over a name whose refetch fails every time it is asked, against a
+        // sequence derived from the decision rather than frozen from a run: one request on
+        // the action's night and on each retry night, none once the retries are spent, and
+        // one again when another action lands.
+        // see: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+        var expected = Expected("suspect-retries");
+        var name = expected.GetProperty("failingName").GetString()!;
+        var nights = expected.GetProperty("nights").EnumerateArray().ToArray();
+
+        Assert.Equal(CorporateActionChecker.RetryNights, expected.GetProperty("retryNights").GetInt32());
+
+        var first = DateOnly.ParseExact(expected.GetProperty("firstActionSession").GetString()!, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var sessions = CorporateActions.SessionsFrom(first, nights.Length);
+
+        using var store = await StoredAsync(null);
+
+        var spentOn = new List<int>();
+
+        for (var night = 0; night < nights.Length; night++)
+        {
+            var plan = nights[night];
+            var runId = $"night-{night}";
+
+            // An action on the name on the nights the plan lands one, and none on the rest.
+            var actions = new CorporateActions.ActionOnSessions(name, plan.GetProperty("actionLands").GetBoolean() ? [sessions[night]] : []);
+            var history = new RecordedHistoricalBarFeed(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+
+            var outcome = await new CorporateActionChecker(actions, history, FixedClock.At(CorporateActions.NightOn(sessions[night]), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync(Index, runId);
+
+            // The per-name figure the carve-out is about, on the outcome and on the row the
+            // run page reads, where the action feed's own request is the rest.
+            Assert.True(
+                plan.GetProperty("requests").GetInt32() == outcome.RefetchRequests,
+                $"Night {night}, " + sessions[night].ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) +
+                $", asked for {name} {outcome.RefetchRequests} time(s), expected {plan.GetProperty("requests").GetInt32()}.");
+
+            using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+            connection.Open();
+
+            using var row = connection.CreateCommand();
+            row.CommandText = "SELECT network_requests FROM run_log WHERE run_id = $r AND stage = $s;";
+            row.Parameters.AddWithValue("$r", runId);
+            row.Parameters.AddWithValue("$s", CorporateActionChecker.Stage);
+
+            Assert.Equal((long)(actions.Requests + outcome.RefetchRequests), (long)row.ExecuteScalar()!);
+
+            using var state = connection.CreateCommand();
+            state.CommandText = "SELECT state, retries FROM series_state WHERE ticker = $t;";
+            state.Parameters.AddWithValue("$t", name);
+
+            using var reader = state.ExecuteReader();
+
+            Assert.True(reader.Read());
+            Assert.Equal(CorporateActionChecker.Suspect, reader.GetString(0));
+            Assert.Equal(plan.GetProperty("retries").GetInt32(), reader.GetInt32(1));
+
+            Assert.Equal(plan.GetProperty("spent").GetBoolean(), (outcome.Spent ?? []).Any(spent => spent.Ticker == name));
+
+            if (plan.GetProperty("spent").GetBoolean())
+            {
+                spentOn.Add(night);
+            }
+        }
+
+        // The bound itself, over the nights one action's failure spans: from its night to the
+        // night before the next action lands.
+        var next = Array.FindIndex(nights, 1, plan => plan.GetProperty("actionLands").GetBoolean());
+        var oneAction = nights.Take(next).Sum(plan => plan.GetProperty("requests").GetInt32());
+
+        Assert.Equal(expected.GetProperty("mostRequestsForOneAction").GetInt32(), oneAction);
+        Assert.Equal(CorporateActionChecker.RetryNights + 1, oneAction);
+        Assert.NotEmpty(spentOn);
+
+        // And the two places the figure is stated for a reader, held to the constant so
+        // neither moves alone.
+        var carve = ArchitectureTables
+            .In(File.ReadAllText(Repository.Architecture))
+            .Single(table => table.Heading == Scope.LimitsTable)
+            .Body.Single(cells => cells.Count > 2 && cells[0] == "Per-name network calls in the nightly run");
+
+        Assert.Contains($"asked for again on at most {CorporateActionChecker.RetryNights} nights after the one that marked it", carve[2], StringComparison.Ordinal);
+        Assert.Contains($"one action costs at most {CorporateActionChecker.RetryNights + 1} requests", carve[2], StringComparison.Ordinal);
+
+        var runbook = Corpus.Read("docs/RUNBOOK.md");
+
+        Assert.Contains($"asks for the name's year again on each of the next {CorporateActionChecker.RetryNights} nights", runbook, StringComparison.Ordinal);
+        Assert.Contains($"the refetch has failed on {CorporateActionChecker.RetryNights + 1} nights running", runbook, StringComparison.Ordinal);
     }
 
     [Fact]

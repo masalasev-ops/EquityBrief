@@ -174,7 +174,8 @@ public static class Nightly
                     .RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
-                    $"{outcome.Suspect.Count} suspect, {outcome.Requests} request(s)";
+                    $"{outcome.Suspect.Count} suspect, {(outcome.Spent ?? []).Count} left suspect with retries spent, " +
+                    $"{outcome.Requests} request(s)";
             }),
             // The calendar, one request for the whole index's dated events over
             // the window. The earnings date is needed nightly by the ladder

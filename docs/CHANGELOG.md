@@ -25,6 +25,60 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-14 - BUILD_PLAN.md - the suspect name's retries obligation discharged by the ruling 6.0 owed
+
+Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+Was:
+> | **A suspect name's retries bounded and decided** | 5.7 sign-off | 6.0 | the action check refetches every suspect name every night with no cap, and section 17's refetch row, pinned by `nightly-cost`, still bounds the refetch by the day's actions while `nightly-cost` measures the fetch alone; no decision covers the retry. No name is suspect today. 6.0 rules the bound and writes the decision, and the limits row and its assertion move with it |
+Now:
+> | **A suspect name's retries bounded and decided** | 5.7 sign-off | 6.0, discharged | ruled, with the bound in the check and the decision it wrote (see: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it). Found unwritten at 6.11, after the phase's other checkpoints had landed, and ruled on 2026-09-14.
+Why: 6.11 found the row still owed at 6.0 with no decision written for it, and the ruling that discharges it is the one the row asked for.
+
+### 2026-09-14 - RUNBOOK.md - a suspect name's row says what the check does across its retries and after them
+
+Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+Was:
+> | A name is marked suspect | the corporate action check itself failed | re-run the night. If it recurs, the name's adjusted history and the provider's have diverged and the year needs a manual refetch |
+Now:
+> | A name is marked suspect | the corporate action check itself failed | nothing at first: the check asks for the name's year again on each of the next 5 nights, and the run page's failed region names the name and the reason on every night it stays suspect.
+Why: a night re-run by hand no longer asks for a name whose retries are spent, and nothing in the system performs the manual refetch the row named, so the row says what the check does and what the page shows.
+
+### 2026-09-14 - ARCHITECTURE.html - section 17's refetch carve-out states the bound on a suspect name's retries
+
+Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+Was:
+> it makes one request per name whose adjusted prices an action moved, which is bounded by the day's actions rather than by the universe, and on the fixture's captured day that is one name in five hundred.
+Now:
+> it makes one request per name whose adjusted prices an action moved, and a name whose refetch failed is asked for again on at most 5 nights after the one that marked it, a failure on a night an action lands on it starting the count again, so one action costs at most 6 requests however long its failure lasts. That is bounded by the actions of the day and of the 5 nights before it rather than by the universe
+Why: from the phase 5 sign-off a suspect name was asked for again on every night with no bound, so the row's bound by the day's actions had stopped being true, and the ruling bounds the retries and says what a name whose retries are spent is left as.
+
+### 2026-09-14 - ARCHITECTURE.html - section 18's corporate action row says what a name whose retries are spent is left as and where it is seen
+
+Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+Was:
+> <tr><td>A split or dividend not caught</td><td>the corporate action check refetches the year; if the check itself fails the name is marked suspect, and every night after refetches it again, with or without an action of its own that day, until one refetch succeeds (see: Adjusted history is re-fetched after a corporate action)</td><td>a note that prices are being refetched</td>
+Now:
+> <tr><td>A split or dividend not caught</td><td>the corporate action check refetches the year; if the check itself fails the name is marked suspect, and on the nights after it refetches it again, with or without an action of its own that day, until one refetch succeeds or the name's retries are spent; a name whose retries are spent is not refetched again until another action lands on it, and stays suspect with the reason its last refetch failed for
+Why: the retries are bounded, and the surface the row named was drawn nowhere by that name, so the row names the region that lists a suspect name on every night it stays so.
+
+### 2026-09-14 - ARCHITECTURE.html - the corporate action checker's catalogue row carries the bound on its retries
+
+Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+Was:
+> and a name whose own check failed is marked suspect rather than passing and is refetched again every night until one succeeds</td></tr>
+Now:
+> and a name whose own check failed is marked suspect rather than passing and is refetched again on the nights after until one succeeds or its retries are spent, and a name whose retries are spent stays suspect and named on the run page on every night until another action lands on it</td></tr>
+Why: the catalogue states what the component does, and the ruling changes what it does with a name whose refetch keeps failing.
+
+### 2026-09-14 - ARCHITECTURE.html - the series state store row carries the retry count
+
+Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+Was:
+> <tr><td>series state</td><td>which names the corporate action check left trusted and which it marked suspect</td><td>section 7's corporate action checker</td></tr>
+Now:
+> <tr><td>series state</td><td>which names the corporate action check left trusted and which it marked suspect, with how many nights each suspect name has been asked for again</td><td>section 7's corporate action checker</td></tr>
+Why: the store carries the count the check reads to bound a suspect name's retries, from migration 23.
+
 ### 2026-09-14 - RUNBOOK.md - a pass's rows name the check its theme runs under a stage of its own
 
 Corrects: the list of a pass's rows, which named one `claims` stage for a pass however many checks ran in it, found when 6.11's production run stopped MSFT's pass on a second row under that stage.

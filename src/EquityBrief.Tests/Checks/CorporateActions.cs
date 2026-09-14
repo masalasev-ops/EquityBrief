@@ -423,6 +423,197 @@ public class CorporateActions
         }
     }
 
+    // One action on one name, on the sessions it is handed and on no other, so the night
+    // an action lands on a suspect name is one a test chooses rather than the captured
+    // day's. A dividend, being the action most members carry.
+    internal sealed class ActionOnSessions(string ticker, params DateOnly[] sessions) : ICorporateActionFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<CorporateAction>> ActionsAsync(
+            string exchange,
+            DateOnly session,
+            CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult<IReadOnlyList<CorporateAction>>(
+                sessions.Contains(session) ? [new CorporateAction(ticker, session, ActionKind.Dividend, "0.26")] : []);
+        }
+    }
+
+    // The sessions the exchange traded, from one on, read off the closure table rather
+    // than counted in calendar days, because the retries are counted in nights and a
+    // night on a day the exchange did not trade fetches nothing.
+    internal static IReadOnlyList<DateOnly> SessionsFrom(DateOnly first, int count)
+    {
+        var sessions = new List<DateOnly>();
+
+        for (var day = first; sessions.Count < count; day = day.AddDays(1))
+        {
+            if (EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+            {
+                sessions.Add(day);
+            }
+        }
+
+        return sessions;
+    }
+
+    // A night of the check at 21:10 UTC on a session, which is the night's own instant.
+    internal static DateTimeOffset NightOn(DateOnly session) =>
+        new(session.ToDateTime(new TimeOnly(21, 10)), TimeSpan.Zero);
+
+    static (string State, int Retries, string CheckedAt) CountOf(TemporaryStore store, string ticker)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT state, retries, checked_at FROM series_state WHERE ticker = $t;";
+        command.Parameters.AddWithValue("$t", ticker);
+
+        using var reader = command.ExecuteReader();
+
+        Assert.True(reader.Read(), $"{ticker} carries no series state row.");
+
+        return (reader.GetString(0), reader.GetInt32(1), reader.GetString(2));
+    }
+
+    static (string Outcome, int Requests, string Detail) StageOf(TemporaryStore store, string runId)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT outcome, network_requests, detail FROM run_log WHERE run_id = $r AND stage = 'actions';";
+        command.Parameters.AddWithValue("$r", runId);
+
+        using var reader = command.ExecuteReader();
+
+        Assert.True(reader.Read(), $"{runId} wrote no actions row.");
+
+        return (reader.GetString(0), reader.GetInt32(1), reader.GetString(2));
+    }
+
+    // A history feed holding no response for anyone, which is a refetch that fails every
+    // night it is asked, and counts each ask.
+    static RecordedHistoricalBarFeed Refusing() =>
+        new(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+
+    [Fact]
+    public async Task ANameWhoseRetriesAreSpentIsNotAskedForAndTheRunPageNamesItOnEveryNightItStaysSuspect()
+    {
+        // The ruling 6.0 owed and 6.11 found unwritten. A retry with no bound made one
+        // per-name request on every night a failure lasted, and a bound alone would have
+        // turned that into a name nothing asks for and nothing names. So this asserts both
+        // halves: that the retries end, and what the name is left as where a person reads it.
+        using var store = await Stored();
+
+        var sessions = SessionsFrom(DateOnly.FromDateTime(ActionNight.UtcDateTime), CorporateActionChecker.RetryNights + 3);
+
+        // The captured action lands on AAPL and its refetch fails.
+        var marked = await Checker(store, Refusing()).RunAsync(Index, "night-0");
+
+        Assert.Equal(["AAPL"], marked.Suspect);
+        Assert.Equal(0, CountOf(store, "AAPL").Retries);
+
+        // Asked for again on each of the nights the limit allows, each failure counted.
+        for (var night = 1; night <= CorporateActionChecker.RetryNights; night++)
+        {
+            var retry = await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(NightOn(sessions[night]), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync(Index, $"night-{night}");
+
+            Assert.Equal(["AAPL"], retry.Retried ?? []);
+            Assert.Equal(1, retry.RefetchRequests);
+            Assert.Equal(["AAPL"], retry.Suspect);
+            Assert.Empty(retry.Spent ?? []);
+            Assert.Equal(("suspect", night), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
+        }
+
+        var lastAsked = CountOf(store, "AAPL").CheckedAt;
+        var reason = StateOf(store, "AAPL").Reason!;
+
+        // The nights after: nothing asked, the row as the last retry left it, and the stage
+        // partial and naming the name, when it was last asked for and why, on each of them.
+        for (var night = CorporateActionChecker.RetryNights + 1; night <= CorporateActionChecker.RetryNights + 2; night++)
+        {
+            var runId = $"night-{night}";
+            var clock = FixedClock.At(NightOn(sessions[night]), SessionZones.UnitedStates);
+            var quiet = await new CorporateActionChecker(new NoActionFeed(), Refusing(), clock, store.DatabaseFile).RunAsync(Index, runId);
+
+            Assert.Equal(0, quiet.RefetchRequests);
+            Assert.Empty(quiet.Retried ?? []);
+            Assert.Empty(quiet.Suspect);
+
+            var spent = Assert.Single(quiet.Spent ?? []);
+
+            Assert.Equal(new SpentName("AAPL", lastAsked, reason), spent);
+            Assert.Equal(("suspect", CorporateActionChecker.RetryNights, lastAsked), CountOf(store, "AAPL"));
+
+            var stage = StageOf(store, runId);
+
+            Assert.Equal("partial", stage.Outcome);
+            Assert.Contains($"1 left suspect with {CorporateActionChecker.RetryNights} retries spent", stage.Detail, StringComparison.Ordinal);
+            Assert.Contains($"AAPL, last asked for at {lastAsked}, because {reason}", stage.Detail, StringComparison.Ordinal);
+
+            // The surface a person reads it on: the run page's stale and failed region for
+            // that night, drawn from the run log by the read surface's own projection.
+            var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, clock);
+            var failed = EquityBrief.Api.Reading.RunScreen.Failed(EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync(sessions[night])));
+            var region = System.Net.WebUtility.HtmlDecode(new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, [], []));
+
+            Assert.Contains("actions: partial.", region, StringComparison.Ordinal);
+            Assert.Contains($"AAPL, last asked for at {lastAsked}, because {reason}", region, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public async Task AnActionOnANameWhoseRetriesAreSpentAsksForItAgainAndStartsItsCountAgain()
+    {
+        // What ends a spent name's silence on the network, being the only thing that does:
+        // a new action is a new reason to ask, so the night one lands asks for the name and
+        // counts from none again, and the night after asks again.
+        using var store = await Stored();
+
+        var sessions = SessionsFrom(DateOnly.FromDateTime(ActionNight.UtcDateTime), CorporateActionChecker.RetryNights + 4);
+
+        await Checker(store, Refusing()).RunAsync(Index, "night-0");
+
+        for (var night = 1; night <= CorporateActionChecker.RetryNights + 1; night++)
+        {
+            await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(NightOn(sessions[night]), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync(Index, $"night-{night}");
+        }
+
+        Assert.Equal(CorporateActionChecker.RetryNights, CountOf(store, "AAPL").Retries);
+
+        var landing = sessions[CorporateActionChecker.RetryNights + 2];
+        var acted = await new CorporateActionChecker(new ActionOnSessions("AAPL", landing), Refusing(), FixedClock.At(NightOn(landing), SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, "night-action");
+
+        Assert.Equal(1, acted.RefetchRequests);
+        Assert.Equal(["AAPL"], acted.Suspect);
+        Assert.Empty(acted.Spent ?? []);
+        Assert.Equal(0, CountOf(store, "AAPL").Retries);
+
+        var after = sessions[CorporateActionChecker.RetryNights + 3];
+        var retried = await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(NightOn(after), SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, "night-after");
+
+        Assert.Equal(["AAPL"], retried.Retried ?? []);
+        Assert.Equal(1, retried.RefetchRequests);
+        Assert.Equal(1, CountOf(store, "AAPL").Retries);
+
+        // And a refetch that succeeds on a retry night clears the count with the state.
+        var cleared = await new CorporateActionChecker(new NoActionFeed(), RecordedHistoricalBarFeed.FromFolder(FixtureFolder()), FixedClock.At(NightOn(after), SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, "night-cleared");
+
+        Assert.Empty(cleared.Suspect);
+        Assert.Equal(("ok", 0), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
+        Assert.Equal("ok", StageOf(store, "night-cleared").Outcome);
+    }
+
     [Fact]
     public async Task ASuspectNameIsRefetchedOnTheNextNightWithoutAnActionOfItsOwn()
     {

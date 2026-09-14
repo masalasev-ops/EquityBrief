@@ -442,6 +442,7 @@ Grain: one row per ticker.
 | `state` | TEXT | `ok` or `suspect` |
 | `reason` | TEXT | why, in words, when the state is not ok |
 | `checked_at` | TEXT | UTC instant of the check that set this |
+| `retries` | INTEGER | how many nights after the one that marked it the name has been asked for again and failed, 0 when the state is ok; last because SQLite appends |
 
 Primary key: `ticker`.
 
@@ -450,6 +451,8 @@ Primary key: `ticker`.
 One row per ticker rather than one per check, because the question asked of it is whether this name's series can be trusted now. When it happened is in the run log, which is the record of what each night did, and a second history here would be the same fact in two places.
 
 No deleter. A name that becomes trustworthy again is set back to `ok` by the check that established it, which is an update on the row that already exists.
+
+**`retries` is a count and not a history, added at the 6.0 ruling.** The check reads it to decide whether tonight asks for a suspect name again, which is a question about now, and each attempt's night is still the run log's. A night an action lands on the name sets it back to 0 however the refetch goes, because the action is a new reason to ask, and a name at the limit is not asked for again until one does (see: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it). It is not null with a default of 0, where `bar.raw_close` is nullable, because here the default holds: nothing counted a row that exists when the column is added, and the rule counts from the night it lands.
 
 ### run_log
 Grain: one row per run per stage.
