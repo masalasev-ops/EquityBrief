@@ -55,6 +55,11 @@ public partial class ClaimAdmissibility
             CheckReach.Key(Scope.FixtureTable, "an unsourced claim"),
             CheckReach.Key("Figure 12.1", "Check every claim"),
             CheckReach.Key("Figure 12.1", "Store it"),
+
+            // Figure 12.2's lane table whole, which its placement names this check for
+            // from 6.9: every row's section, lane, prompt and rules are read against the
+            // checker, the lane's default and the prompts in both directions.
+            "What each lane actually writes",
         ]);
 
     static string Folder() => Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder);

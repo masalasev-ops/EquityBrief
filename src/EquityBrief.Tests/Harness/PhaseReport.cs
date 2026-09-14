@@ -144,12 +144,20 @@ internal static class PhaseReport
         // the checker in both directions. What the paid rows say code works out is
         // the research runner's at 6.8 and the theme runner's at 6.9, so the whole
         // table is reached at the later of those and not before.
+        //
+        // Converted from a due point to a check at 6.9, the later of the two, by the
+        // run that verified it: a placement still owed at a checkpoint the record shows
+        // as landed is refused, as section 11's was at 5.4. It names the check that
+        // opens the document and reads the table's own rows, and its reason names the
+        // records that assert what the paid rows say code works out.
         ["What each lane actually writes"] = new Placement(
             "each section's lane, what code works out before a model is asked, what the model is asked " +
-            "to write and what the section must pass to be stored. The lane is a configured default, and " +
-            "the local rows' lanes, prompts and rules are asserted against the code from 6.6; the paid " +
-            "rows' inputs are built by the research runner at 6.8 and the theme runner at 6.9. The due " +
-            "point was 6.0 until 6.0, a point that never lands, and 6.6 until 6.6 rewrote the table", Due: "6.9"),
+            "to write and what the section must pass to be stored. The lane is a configured default; the " +
+            "rows' lanes, sections, prompts and rules are read against the code in both directions by " +
+            "claim-admissibility from 6.6, and what the paid rows say code works out is asserted by the " +
+            "research record from 6.8 and the theme record from 6.9. The due point was 6.0 until 6.0, a " +
+            "point that never lands, 6.6 until 6.6 rewrote the table, and 6.9 until 6.9 landed",
+            Check: "claim-admissibility"),
         ["13.2 Four things that can improve, shallowest first"] = new Placement(
             "a plan for phase 7, with nothing built to assert it against", Due: "7.1"),
         ["13.3 The guardrails"] = new Placement(

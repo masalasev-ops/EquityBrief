@@ -8877,3 +8877,205 @@ Carried:    nothing new. Three obligations are discharged here, each marked in t
             boundary measured against the fixture both ways. The operating row that sets both caps
             stays open, read at twenty research passes carrying a recorded cost on the run page's
             operational header. This session has committed code and may not sign it off.
+
+### 6.9 - the search tool and the theme research runner, a theme as the industry the index names, and one search over the whole industry list finding less than its sites hold   2026-09-13
+Built:      the search tool, Tavily's search endpoint in its own wire format, behind a feed
+            interface with its own `Requests`, written against four responses captured before a line
+            of it existed: the theme search a pass builds for KEYS's industry, the same search for
+            the industry the list covers, a company search, and a refusal. Its key sits in the
+            secrets file under its own path and a blank one is refused by name; it is one more file
+            on the outward-request scan's list; a tool that does not answer is told apart from a
+            refusal and from a search that found nothing; and its recorded double is keyed on the
+            whole request and refuses any other by name. Each member's industry on the membership
+            row beside its sector, from the snapshot the constituents payload already carries,
+            coalesced so a departed name keeps the one it was last seen with, in migration 22. The
+            theme search: the industry and not a ticker, the quarter to the day, the industry list,
+            the page's text and its publish date, ten results; a result from a site the list does
+            not carry dropped before its text is read and its site named on the run log; a result
+            with no text, or text no longer than its snippet, dropped as short of a document with
+            its address named; and the two lists read from the file at the checkout's root, which
+            the worker's build copies beside it, a file with a list of no sites refused. The theme
+            research runner: one pass a theme at a time; researched once a day at most, read off the
+            theme's own rows and its own row on the run log; not started inside a peak window of the
+            configured prices, its row naming the UTC instant the windows close; the research model
+            asked whether it answers before anything is searched; every page it keeps tested for
+            admissibility and stored with its verdict; the cycle written through the spend cap with
+            no figure listed, or inserted empty citing what was kept where nothing was admitted; one
+            retry told why; the industry that maps to the theme stored with the record. The name's
+            pass: its industry cycle is the theme's, found by the industry the membership row names,
+            judged by the theme's newest version with a trigger the staleness judge fired for the
+            name dated after an accepted theme as what makes it stale, refreshed before anything of
+            the name's own, and where it could not be refreshed named as not written with why while
+            every other section is written; the name's own row counts none of the theme's requests.
+            The name page: the cycle drawn from the theme record for the name's industry with the
+            pages it cites among the sources, and a cycle from before a refresh that failed drawn
+            under its own date beside the line. Five captures, the theme record and search
+            admissibility expectations. Three commits: the build, the properties the sweep found
+            unasserted, and this record, with the whole replay now running the recorded theme's
+            pass.
+Settled:    three decisions. A theme is the industry the index names for a member, and one theme
+            pass serves every member it names. A theme section states no figure, because nothing the
+            store holds is computed for an industry. A theme refresh runs off-peak, and a name
+            opened at peak is written without one.
+Measured:   22 searches sent live between 22:12 and 22:22 UTC, each over the quarter to 2026-09-08
+            unless said otherwise. The theme search for each of the fixture's four industries,
+            Consumer Electronics, Scientific & Technical Instruments, Software - Infrastructure and
+            Entertainment, over the whole industry list: no result for any of the four. One search a
+            site, each for an industry the site covers: 68 results and 50 storable, being on the
+            site with text longer than their snippet and a publish date, from eight of the twelve
+            sites, and no result from bls.gov, census.gov, federalreserve.gov or ihsmarkit.com; the
+            figures a site are in the list's own note, and statista.com's search was for Consumer
+            Electronics, a minute after the whole list drew nothing for it, returning ten storable
+            pages of ten. The theme search for Semiconductors at ten results: nine from
+            semiconductors.org and one from mordorintelligence.com, which the list does not carry,
+            every one with its text and an HTTP date; at twenty, 18 results, 5 from sites the list
+            does not carry and 1 short of a document. Scientific & Technical Instruments searched
+            two more ways: with no window, 20 results, every one short of a document and 19 with no
+            publish date; with the news topic, 10 results, 2 short of a document, being eight Bureau
+            of Labor Statistics pages on occupations, wages, input costs, employment projections and
+            industry codes, a job listing, and the semiconductor association's report on its own
+            industry, none of them about the industry searched. The company search for Keysight
+            Technologies over the company-news list: 7 of 10 results from sites the list does not
+            carry, and 3 with no text. And a key that is not one, refused with status 401 and the
+            tool's words under detail.
+            The markers over the twenty results the two committed searches returned, seventeen
+            carrying text: one refusable page refused, two refusable pages admitted, both from sites
+            no list carries, and none of the other fourteen refused.
+            The theme call over the nine pages kept for Semiconductors: 235 uncached prompt tokens,
+            12,928 cached and 2,550 completion, 2,194 of them reasoning, for $0.001604034, citing
+            two pages and accepted on its first draft.
+Found:      the search tool does not hold a search to the list it is given: the theme search for
+            Semiconductors returned one of ten results from a site the request left out, and the
+            company search seven of ten, so the drop by site is a guard the code carries rather than
+            a filter the request applies. Section 18's row said an off-list result's text is never
+            fetched, and the tool returns every result's text in its answer to the search, so there
+            is no second request to skip, and the row says the result is discarded before its text
+            is read. The one search over the industry list returned nothing for any of the fixture's
+            four industries, and that is a measure of the search rather than of the list: Consumer
+            Electronics, which drew nothing over the twelve sites, drew ten storable pages from
+            statista.com searched alone a minute apart. So a search over the whole list can return
+            nothing for an industry a site on it covers, and three statements this checkpoint wrote
+            that read the four empty searches as industries the list does not cover, in the list's
+            own note, in the plan's discharged row and in the theme record's note, are corrected in
+            this record's commit, the plan's with its prior text in the changelog. KEYS's research
+            record names its industry cycle as not written because its theme could not be refreshed,
+            and the theme record is asserted over two constructed members in Semiconductors, the one
+            industry searched over the whole list that returned pages. Two of the list's three gated
+            markings were guesses the search contradicted, statista.com returning ten storable pages
+            of ten and digitimes.com three, and the list marks ihsmarkit.com alone. Searched without
+            a window, Scientific & Technical Instruments drew twenty results and no document, and
+            searched as news it drew ten pages none of which was about the industry, so neither form
+            would have given its cycle a page to rest on, and the pass keeps the general topic over
+            the quarter.
+            The theme call's request, 61,473 bytes, was cut off while it was being written to the
+            connection on each of three attempts from the test host in this session's shell, where a
+            short request was answered, so the capture was sent from PowerShell with the body the
+            pass built, byte for byte, as its manifest entry says. Whether a live pass could send it
+            was left open by that, and it can: the shipped client in a plain process, run outside
+            the session's sandbox at 01:33 UTC, sent a request of 61,470 bytes built the same way
+            from the same nine pages and was answered in 2.1 seconds, cut at an answer budget of 64
+            tokens so that it bought the prompt alone, which is spend the ledger does not hold. The
+            same process inside the sandbox was refused the socket before anything was sent.
+            And this record turned fifteen tests red on the run that verifies it, every one for one
+            reason: figure 12.2's lane table was placed as owed at 6.9, the later of the two points
+            its own reason named, and a placement still owed at a checkpoint the record shows as
+            landed is refused. It names claim-admissibility now, which opens the document and reads
+            every row's section, lane, prompt and rules against the code, and its reason names the
+            research record and the theme record for what the paid rows say code works out.
+Tested:     14 under `fixture-expectations`: the theme record from the captures against the
+            expectation derived from section 12's rules and the decisions it names, one pass serving
+            two members of the industry with the second member's pass making no search and no call;
+            a result from a site the list does not carry dropped before its text is read and named
+            on the run log; a result short of a document not stored and its address recorded; every
+            page a theme search stores coming from the list that governs it; the denied-category
+            markers against what the search tool returned, from the search admissibility
+            expectation; a refresh at peak starting nothing and naming when the windows close; a
+            search tool that does not answer leaving the theme as it was and the name written
+            without its cycle; a refresh that fails leaving the name's other sections written and
+            the record as it was; a theme researched once a day, with only a pass that ran to the
+            end closing the day; a cycle whose kept pages were all refused left out without a call;
+            a cycle refused once written again in the pass, told why; a member with no industry told
+            why it has no cycle, with no theme searched; an accepted theme standing until a trigger
+            fired for the name is dated after it; and a name's row counting its own requests and not
+            its theme's. 3 under `read-surface`: every member of an industry drawing the one cycle
+            its theme wrote; a name whose theme could not be refreshed drawing every section but the
+            cycle, and one line for it; and a cycle written before a refresh that failed drawn under
+            its own date beside the line. 8 on the providers: the theme search scoped by its four
+            parameters on the bytes the feed sends; the captured answers read as the tool sent them;
+            a refusal carrying the tool's own words, and nothing listening being its own failure;
+            the recording answering the searches a pass builds and refusing any other by name; a
+            publish date in a form nobody captured refused by name; an empty page text read as no
+            text; a list file with no sites refused by name; and an open's feeds holding the search
+            tool, a fixture's reaching no network. 1 on the membership loader: a name that leaves
+            the index keeping the industry it was last seen with. 865 tests, from 839 at 6.8.
+Mutated:    the rule, stated before the sweep: mutate every property 6.9 added whose failure would
+            let a theme pass search, spend or write where it should not, keep a result the list or
+            the text rule should drop, send a search scoped other than section 17 says, store or
+            read a theme under an industry other than the index names, refresh at peak, or make a
+            name's pass or page state an industry cycle other than the one its theme holds.
+            Thirty-seven qualify and all thirty-seven were mutated, in a detached worktree under the
+            session scratchpad outside this repository, over an unmutated baseline of 857 passing,
+            each reverted before the next, and the worktree removed.
+            Twenty-five went red on the first run. The request the feed sends: no page text asked
+            for, 2 tests red; no start date, 2; no list, 2. What the feed reads: a publish date in a
+            form nobody captured read anyway, 1. A recording answering a search over another window,
+            29. What a search keeps: a host ending in a listed site's name with no dot before it
+            read as that site, 1; a result from a site the list does not carry kept, 8; text no
+            longer than its snippet kept, 1; a result with no text kept, 2; a year's window rather
+            than a quarter's, 30; the bare industry name as the query, 30. The theme pass: a refresh
+            at peak, 1; its refusal naming the instant it was asked rather than when the windows
+            close, 1; a search made without asking whether the research model answers, 2; a search
+            tool that did not answer read as one that found nothing, 3; a theme stored with no
+            industry mapped to it, 1; a theme asked for as if it were a company, 8; the windows read
+            as closing at the next hour, 1. The name's pass: the cycle judged as one of the name's
+            own sections too, 7; a theme that could not be refreshed left without a line, 7. Each
+            member's industry: a name that leaves losing the industry it was last seen with, 1; the
+            industry read from the sector field, 30. The page: a theme draft the checker has not
+            accepted drawn, 1; a theme of another industry drawn, 1; a cycle from before a failed
+            refresh drawn without its line, 1. One mutation's first form, a refusal read as a tool
+            that did not answer, did not build: the line the tool's silence is reported with became
+            nullable where the filter no longer proved it set, which warnings as errors refuse, so
+            no test ran. It was restated to carry the refusal's own words, run with the survivors,
+            and went red, 1; the first form is not counted among the thirty-seven.
+            Eleven survived, and all eleven are missing properties, each one the code states and no
+            test named. Each went red once a test named it, run again at the commit that added the
+            tests over an unmutated baseline of 865 passing: an empty page text read as a page, 1,
+            where 45 of the 156 results the captures hold carry no text and every one as null; a
+            list file with no sites read as a list, 1, where only the committed file was read; a
+            theme researched again the same day, 1, a theme accepted today bought again, 1, and a
+            pass that did not run to the end closing the day, 1, where no test ran a theme twice in
+            a day; a cycle whose kept pages were all refused paid for, 1; a cycle refused once not
+            written again, 1, where the recorded answer was accepted on its first draft; a member
+            with no industry left without a line, 1; an accepted theme refreshed on every open, 1,
+            and never refreshed, 1, where no test opened a member whose theme was accepted on an
+            earlier day; and the theme's probe counted on the name's row, 1.
+            Properties added and not mutated, named because the next sweep has to find them: a blank
+            search key refused by name and the key sent in the authorisation header; a tool that
+            does not answer and a timeout told apart from a refusal on the feed's side; the depth,
+            the topic, no answer and no images asked for, and ten results; the recorded double
+            refusing a search it holds no capture for; the search tool on the outward-request scan's
+            list; migration 22; a theme's own lock refusing a second pass for it; every kept page
+            stored with its verdict; a theme pass at the cap paused; the pending and fallback halves
+            of the rule judging a theme's newest version; the cycle asked for with no figure and no
+            full date; the pages the cycle cites among the name page's sources; and the lists read
+            beside the worker's assembly, a missing file refused.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six
+            steps, exit 0, against `data-ci` and never `data`. 865 of 865 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 346 claims, 319 PASS, 0 fail, 27 out of scope, 0
+            unexamined, 326 placements and verdicts reconciled against a floor of 34, 34 of
+            35 roster checks carried and all 34 run. Migrations 0 to 22, this checkpoint adding one.
+            The 27 read twice, by the first checkpoint each note names and by the last, give 11 at
+            phase 6 and 16 at phase 7 both ways: 7 at 6.10 and 4 at 6.11.
+            The claim pair stays at 346 and 330: no claim arrived, and the ten owed at 6.9 pass.
+            The operator's store under `data/` was not touched by either gate.
+Carried:    one obligation, created here: a theme search over the whole list measured against its
+            sites searched alone, due at 6.11, which produces every section section 4 specifies on
+            real names, and 6.11's own text cites it back. What it answers is whether a theme pass
+            searches the list once, each site once, or the sites a measurement shows covering the
+            industry, with the searches each form costs a theme. Three obligations are discharged
+            here, each marked in the plan with the text it read before: a theme section's figures
+            checked against a facts file a theme has, the denied-category markers tested against
+            what the search tool returns, and the industry source list measured against a search
+            that ran. The operating row that sets both caps stays open, read at twenty research
+            passes carrying a recorded cost on the run page's operational header. This session has
+            committed code and may not sign it off.
