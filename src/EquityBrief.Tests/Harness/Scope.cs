@@ -749,7 +749,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(FailureTable, "A split or dividend not caught")] = new Scoped(
             Verdict.Pass,
-            "a real captured action on a current member triggers a full-year refetch, the replacement is atomic, a failure of the check itself marks the name suspect with its reason rather than passing, a suspect name is asked for again on the nights its retries allow and not after, a new action starts its count again, and the run page's stale and failed region names a name whose retries are spent on every night it stays suspect",
+            "a real captured action on a current member triggers a full-year refetch, the replacement is atomic, a failure of the check itself marks the name suspect with its reason rather than passing, a suspect name is asked for again on the nights its retries allow and not after, a new action starts its count again, and the run page's stale and failed region names a suspect name on every night it stays suspect, with when it was last asked for and why from the night its retries are spent",
             ByActions),
         [CheckReach.Key(NightlyRunSteps.Heading, "Check splits and dividends, and refetch the full year for any name affected.")] = new Scoped(
             Verdict.Pass,

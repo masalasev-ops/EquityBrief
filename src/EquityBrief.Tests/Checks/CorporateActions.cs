@@ -501,6 +501,16 @@ public class CorporateActions
     static RecordedHistoricalBarFeed Refusing() =>
         new(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
+    // The run page's stale and failed region for a night's session, drawn from the run log
+    // by the read surface's own projection, which is where a person reads a suspect name.
+    static async Task<string> FailedRegionOn(TemporaryStore store, DateOnly session)
+    {
+        var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, FixedClock.At(NightOn(session), SessionZones.UnitedStates));
+        var failed = EquityBrief.Api.Reading.RunScreen.Failed(EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync(session)));
+
+        return System.Net.WebUtility.HtmlDecode(new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, [], []));
+    }
+
     [Fact]
     public async Task ANameWhoseRetriesAreSpentIsNotAskedForAndTheRunPageNamesItOnEveryNightItStaysSuspect()
     {
@@ -518,7 +528,15 @@ public class CorporateActions
         Assert.Equal(["AAPL"], marked.Suspect);
         Assert.Equal(0, CountOf(store, "AAPL").Retries);
 
-        // Asked for again on each of the nights the limit allows, each failure counted.
+        // Named on the run page from the night that marked it, the reason held back until
+        // the retries are spent, which is where the runbook sends the operator to read it.
+        var markedRegion = await FailedRegionOn(store, sessions[0]);
+
+        Assert.Contains("actions: partial.", markedRegion, StringComparison.Ordinal);
+        Assert.Contains("suspect: AAPL", markedRegion, StringComparison.Ordinal);
+
+        // Asked for again on each of the nights the limit allows, each failure counted, and
+        // named on the run page on each of them.
         for (var night = 1; night <= CorporateActionChecker.RetryNights; night++)
         {
             var retry = await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(NightOn(sessions[night]), SessionZones.UnitedStates), store.DatabaseFile)
@@ -529,6 +547,11 @@ public class CorporateActions
             Assert.Equal(["AAPL"], retry.Suspect);
             Assert.Empty(retry.Spent ?? []);
             Assert.Equal(("suspect", night), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
+
+            var retryRegion = await FailedRegionOn(store, sessions[night]);
+
+            Assert.Contains("actions: partial.", retryRegion, StringComparison.Ordinal);
+            Assert.Contains("suspect: AAPL", retryRegion, StringComparison.Ordinal);
         }
 
         var lastAsked = CountOf(store, "AAPL").CheckedAt;
@@ -557,11 +580,8 @@ public class CorporateActions
             Assert.Contains($"1 left suspect with {CorporateActionChecker.RetryNights} retries spent", stage.Detail, StringComparison.Ordinal);
             Assert.Contains($"AAPL, last asked for at {lastAsked}, because {reason}", stage.Detail, StringComparison.Ordinal);
 
-            // The surface a person reads it on: the run page's stale and failed region for
-            // that night, drawn from the run log by the read surface's own projection.
-            var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, clock);
-            var failed = EquityBrief.Api.Reading.RunScreen.Failed(EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync(sessions[night])));
-            var region = System.Net.WebUtility.HtmlDecode(new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, [], []));
+            // The surface a person reads it on, now with when it was last asked for and why.
+            var region = await FailedRegionOn(store, sessions[night]);
 
             Assert.Contains("actions: partial.", region, StringComparison.Ordinal);
             Assert.Contains($"AAPL, last asked for at {lastAsked}, because {reason}", region, StringComparison.Ordinal);

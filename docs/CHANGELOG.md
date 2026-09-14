@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-14 - RUNBOOK.md - a suspect name's row gives the reason where the line does, and says a hand re-run of the action's night starts the count again
+
+Corrects: the ruling's first commit, which stated that the run page's failed region names a suspect name and its reason on every night it stays suspect and that any night re-run by hand counts as one of its retries, found while writing the ruling's record by reading the stage's detail and the check's count against the row. The region gives the reason from the night the retries are spent, and a re-run of the night the action landed finds the action again and starts the count at none.
+Was:
+> nothing at first: the check asks for the name's year again on each of the next 5 nights, and the run page's failed region names the name and the reason on every night it stays suspect. A night re-run by hand counts as one of them. Where the line says its retries are spent, the refetch has failed on 6 nights running, so read the reason:
+Now:
+> nothing at first: the check asks for the name's year again on each of the next 5 nights, and the run page's failed region names the name on every night it stays suspect. A night re-run by hand counts as one of them, except a re-run of the night the action landed, which finds the action again and starts the count at none. Where the line says its retries are spent, the refetch has failed on 6 nights running, counting a night re-run by hand as one, and the line gives when it was last asked for and why, so read the reason:
+Why: the row sends the operator to a line, so it states what the line carries and from which night, and what a night re-run by hand does to the count.
+
+### 2026-09-14 - ARCHITECTURE.html - section 18's corporate action row gives the reason on the run page from the night a suspect name's retries are spent, where the check writes it
+
+Corrects: the ruling's first commit, which stated that the run page's stale and failed region names a suspect name and why on every night it stays suspect, found while writing the ruling's record by reading the stage's detail against the row. The check names a suspect name alone on the nights its refetch fails, and adds when it was last asked for and why from the night its retries are spent.
+Was:
+> <td>the run page's stale and failed region lists the check as partial, naming the suspect name and why, on every night the name stays suspect, and says its retries are spent once they are</td>
+Now:
+> <td>the run page's stale and failed region lists the check as partial, naming the suspect name, on every night the name stays suspect, and from the night its retries are spent says so with when it was last asked for and why</td>
+Why: a row stating what a person sees states what the region draws, and the reason is drawn where the runbook sends the operator to read it, once the retries are spent.
+
 ### 2026-09-14 - ARCHITECTURE.html - section 16's series state row carries the retry count
 
 Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
