@@ -49,9 +49,14 @@ public partial class FixtureExpectations
             .Select(row => row.Split('|', 3))
             .ToLookup(row => row[0], row => row[2]);
 
+        // The theme's call is the theme's, made inside the pass for the name's industry, and is
+        // read apart from the name's own below.
+        var own = paid.Asked.Where(request => request.Section != ClaimRules.CycleSection).ToArray();
+        var theme = expected.GetProperty("theme");
+
         var answered = local.Asked
             .Select(request => (request.Section, Text: OpenAiCompatibleModelFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedLocalModelFeed.FileFor(request))), request.Section).Text))
-            .Concat(paid.Asked.Select(request => (request.Section, Text: OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)))
+            .Concat(own.Select(request => (request.Section, Text: OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)))
             .ToLookup(answer => answer.Section, answer => answer.Text);
 
         foreach (var section in drafts)
@@ -60,7 +65,16 @@ public partial class FixtureExpectations
         }
 
         Assert.Equal(expected.GetProperty("modelCalls").GetProperty("local").GetInt32(), local.Requests);
-        Assert.Equal(expected.GetProperty("modelCalls").GetProperty("paid").GetInt32(), paid.Requests);
+        Assert.Equal(expected.GetProperty("modelCalls").GetProperty("paid").GetInt32(), own.Length);
+
+        // The theme's one call, over the ten pages it was handed, answered with nothing: the
+        // recording carries no answer, and the pass stored no cycle.
+        var cycle = Assert.Single(paid.Asked, request => request.Section == ClaimRules.CycleSection);
+
+        Assert.Equal(theme.GetProperty("paid").GetInt32(), paid.Asked.Count(request => request.Section == ClaimRules.CycleSection));
+        Assert.Equal(theme.GetProperty("handed").GetInt32(), cycle.DocumentIds.Count);
+        Assert.Throws<UnusableResearchAnswer>(() => OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(cycle))), cycle.Section));
+        Assert.Empty(Query(store, "SELECT theme FROM theme_section;"));
 
         // Every request the paid lane made was asked in the paid lane, of the configured
         // model, and every one the local lane made in the local lane: the lanes, derived.
@@ -68,15 +82,22 @@ public partial class FixtureExpectations
 
         Assert.All(paid.Asked, request => Assert.Equal(SectionPrompt.PaidLane, request.Lane));
         Assert.All(local.Asked, request => Assert.Equal(SectionPrompt.Lane, request.Lane));
-        Assert.Equal(Listed(lanes.GetProperty("paid")).Order(StringComparer.Ordinal), paid.Asked.Select(request => request.Section).Distinct().Order(StringComparer.Ordinal));
+        Assert.Equal(Listed(lanes.GetProperty("paid")).Order(StringComparer.Ordinal), own.Select(request => request.Section).Distinct().Order(StringComparer.Ordinal));
         Assert.Equal(Listed(lanes.GetProperty("local")).Order(StringComparer.Ordinal), local.Asked.Select(request => request.Section).Distinct().Order(StringComparer.Ordinal));
         Assert.Equal(Listed(lanes.GetProperty("local")), ProseWriter.DefaultLane);
 
-        // What was fetched, admitted and refused, and the company's own filing among it.
+        // What was fetched, admitted and refused, and the company's own filing among it, beside
+        // the pages the theme's searches kept, which are stored in the same store.
         var documents = expected.GetProperty("documents");
+        var themeRow = JsonDocument.Parse(Query(store, "SELECT detail FROM run_log WHERE run_id = 'replay-research' AND stage = 'theme research';").Single()).RootElement;
 
-        Assert.Equal(documents.GetProperty("fetched").GetInt32().ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document;").Single());
-        Assert.Equal(documents.GetProperty("admitted").GetInt32().ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document WHERE admissibility = 'accepted';").Single());
+        Assert.Equal(theme.GetProperty("theme").GetString(), themeRow.GetProperty("theme").GetString());
+        Assert.Equal(theme.GetProperty("stored").GetInt32(), themeRow.GetProperty("fetched").GetInt32());
+        Assert.Equal(theme.GetProperty("admitted").GetInt32(), themeRow.GetProperty("admitted").GetInt32());
+        Assert.Equal([(theme.GetProperty("searches").GetInt32() + 1).ToString(CultureInfo.InvariantCulture)], Query(store, "SELECT network_requests FROM run_log WHERE run_id = 'replay-research' AND stage = 'theme research';"));
+
+        Assert.Equal((documents.GetProperty("fetched").GetInt32() + theme.GetProperty("stored").GetInt32()).ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document;").Single());
+        Assert.Equal((documents.GetProperty("admitted").GetInt32() + theme.GetProperty("admitted").GetInt32()).ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM source_document WHERE admissibility = 'accepted';").Single());
         Assert.Equal(
             [.. documents.GetProperty("refused").EnumerateObject().Select(refused => $"{refused.Name}|{refused.Value.GetInt32()}")],
             Query(store, "SELECT admissibility, COUNT(*) FROM source_document WHERE admissibility != 'accepted' GROUP BY admissibility ORDER BY admissibility;"));
@@ -112,10 +133,14 @@ public partial class FixtureExpectations
 
         Assert.Equal(Listed(expected.GetProperty("stages")), Query(store, "SELECT stage FROM run_log WHERE run_id = 'replay-research' ORDER BY rowid;"));
 
-        // What the pass spent, off the rows the spend cap wrote.
+        // What the pass spent on the name's own sections and on its theme, off the rows the
+        // spend cap wrote. The theme's refused call was billed, and its row carries the price.
         Assert.Equal(
             decimal.Parse(expected.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
-            Query(store, "SELECT spend FROM run_log WHERE run_id = 'replay-research';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
+            Query(store, $"SELECT spend FROM run_log WHERE run_id = 'replay-research' AND stage NOT LIKE 'research call: {ClaimRules.CycleSection}%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
+        Assert.Equal(
+            decimal.Parse(theme.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
+            Query(store, $"SELECT spend FROM run_log WHERE run_id = 'replay-research' AND stage LIKE 'research call: {ClaimRules.CycleSection}%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
 
         // The window it read, which is the stored year to the night.
         var window = expected.GetProperty("window");
@@ -293,7 +318,8 @@ public partial class FixtureExpectations
 
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
 
-        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: new Articles([article]))
+        // The theme's searches find nothing, so its call is not what the count below reads.
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: new Articles([article]), search: new NoResults())
             .RunAsync("KEYS", "research-only-refused");
 
         // No paid call: a section with nothing admitted is stored citing what it was handed,
@@ -489,10 +515,13 @@ public partial class FixtureExpectations
                 Listed(asked.GetProperty("fallback")).Order(StringComparer.Ordinal),
                 Query(store, "SELECT section FROM research_section WHERE ticker = 'KEYS' AND status = 'fallback' ORDER BY section;"));
 
-            Assert.Equal(asked.GetProperty("calls").GetInt32(), local.Requests + paid.Requests);
+            // Over the name's own sections: the theme's one call is made the same in both runs,
+            // whichever lane the name's sections are in, and is the theme's rather than a lane's.
+            Assert.Equal(asked.GetProperty("calls").GetInt32(), local.Requests + paid.Asked.Count(request => request.Section != ClaimRules.CycleSection));
+            Assert.Equal(1, paid.Asked.Count(request => request.Section == ClaimRules.CycleSection));
             Assert.Equal(
                 decimal.Parse(asked.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
-                Query(store, "SELECT spend FROM run_log WHERE run_id = 'replay-research';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
+                Query(store, $"SELECT spend FROM run_log WHERE run_id = 'replay-research' AND stage NOT LIKE 'research call: {ClaimRules.CycleSection}%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
 
             // One evidence set: every section in both runs was handed what the default pass
             // hands it, whichever model asked.

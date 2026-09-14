@@ -221,11 +221,12 @@ public class BannedProse
         // overnight queue asked for over a whole night. 6.10's queue commit was verified
         // before its three were tracked and held a red test here the moment they were,
         // which is the fault 6.8 recorded arriving a second time, and its sweep's
-        // baseline is what showed it.
+        // baseline is what showed it. Ninety-four at 6.11: the twenty-four searches a site
+        // the replay's two theme passes make, and the three theme calls over what they kept.
         var tracked = Repository.TrackedFiles();
         var excluded = tracked.Count(IsCapture);
 
-        Assert.True(excluded is >= 5 and <= 70, $"Excluded {excluded} captured responses, expected between 5 and 70.");
+        Assert.True(excluded is >= 5 and <= 100, $"Excluded {excluded} captured responses, expected between 5 and 100.");
 
         // And the count is over the tree as it will be committed. The ceiling failed on a
         // committed tree at 6.8 and again at 6.10, each time because the run verifying the

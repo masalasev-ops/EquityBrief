@@ -24,11 +24,11 @@ public sealed record ThemePassOutcome(
 //
 // It researches where an industry's own prices are once, and every member the index names
 // in that industry reads the one record it writes, so a paid pass is shared rather than
-// bought per name. It searches the open web for the industry, within a quarter's window
-// and the industry list, drops a result from a site the list does not carry and a result
-// short of a document before anything is stored, tests every page it keeps for
-// admissibility and stores it with its verdict as the per-name runner does, and has the
-// spend cap make the one paid call.
+// bought per name. It searches each site on the industry list for the industry within a
+// quarter's window, drops a result from a site the list does not carry and a result short of
+// a document before anything is stored, tests every page it keeps for admissibility and
+// stores it with its verdict as the per-name runner does, and has the spend cap make the one
+// paid call over at most ten of the pages it admitted.
 // see: Industry research is per theme, not per name
 // see: A theme is the industry the index names for a member, and one theme pass serves every member it names
 // see: A theme search is scoped by parameter, not by hope
@@ -168,22 +168,29 @@ public sealed class ThemeResearchRunner(
             return await RecordAsync(connection, runId, startedAt, Outcome(theme, asOf, Unavailable, unreachable), 0, search.Requests + cap.Probes - requestsBefore, cancellation);
         }
 
-        var query = ThemeSearch.For(theme, asOf, industryList);
-        SearchAnswer answer;
+        // One search a site, every one made before anything is stored.
+        // see: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return
+        var queries = ThemeSearch.For(theme, asOf, industryList);
+        var answers = new List<SearchAnswer>();
 
         // A tool that does not answer, or refuses, leaves the stored record as it was: the
-        // pass has not started, so nothing it would write is half written.
+        // pass has not started, so nothing it would write is half written, and the searches
+        // after the one that failed are not made.
         try
         {
-            answer = await search.SearchAsync(query, cancellation);
+            foreach (var query in queries)
+            {
+                answers.Add(await search.SearchAsync(query, cancellation));
+            }
         }
         catch (Exception refused) when (refused is SearchToolUnavailable or ProviderRefusal)
         {
             return await RecordAsync(connection, runId, startedAt, Outcome(theme, asOf, Unavailable, refused.Message), 0, search.Requests + cap.Probes - requestsBefore, cancellation);
         }
 
+        var answer = ThemeSearch.Merged(answers);
         var intake = ThemeSearch.Of(answer, industryList);
-        var documents = SourceDocuments.Of(intake.Fetched, query.From, query.To, startedAt);
+        var documents = SourceDocuments.Of(intake.Fetched, asOf.AddMonths(-ThemeSearch.WindowMonths), asOf, startedAt);
         var documentsBefore = await CountAsync(connection, DocumentsHeld, null, cancellation);
         var sectionsBefore = await CountAsync(connection, SectionsHeld, theme, cancellation);
 
@@ -285,11 +292,7 @@ public sealed class ThemeResearchRunner(
             return null;
         }
 
-        var request = SectionPrompt.ThemeRequest(
-            cap.Model,
-            theme,
-            [.. admitted.Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, document.Body!))],
-            refusedBecause);
+        var request = SectionPrompt.ThemeRequest(cap.Model, theme, ThemeSearch.Handed(admitted), refusedBecause);
 
         var call = await cap.AskAsync(request, runId, round, cancellation);
 

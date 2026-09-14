@@ -545,6 +545,195 @@
       "query": "POST chat/completions for The industry cycle of the theme Semiconductors, the paid call a theme pass builds from the shipped configuration over the nine pages its search kept from the industry list, with no facts listed: model deepseek-flash, max_tokens 32768, keyed 819de509e6450b99ce2b4086bb0c1aad",
       "fetchedAt": "2026-09-13T22:50:44Z",
       "trimmedTo": "nothing. The whole response to one paid call, 235 uncached prompt tokens, 12,928 cached and 2,550 completion tokens, of which 2,194 were reasoning, finishing on stop. Sent from PowerShell with the body the theme pass built, byte for byte, because the same body sent from the test host was cut off while it was being written to the connection on each of three attempts, where a short body from the same host was answered on its second attempt. Its prose states no figure and cites the first two pages, and the checker accepted it on its first draft."
+    },
+    {
+      "file": "search-6d47836c4a103ea12716f38fb8509f22.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains spglobal.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 6d47836c4a103ea12716f38fb8509f22",
+      "fetchedAt": "2026-09-14T12:10:08Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, one with no page text, the longest text 4,617 characters."
+    },
+    {
+      "file": "search-628baf53b72b68623b345da9a00559ec.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains eia.gov alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 628baf53b72b68623b345da9a00559ec",
+      "fetchedAt": "2026-09-14T12:10:11Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-beadf7c1250fbac97cbfa3402749cb1a.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains bls.gov alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed beadf7c1250fbac97cbfa3402749cb1a",
+      "fetchedAt": "2026-09-14T12:10:12Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, each with its page's text and a publish date, the longest text 186,272 characters."
+    },
+    {
+      "file": "search-1a38055a06e024835fd4dee08e28bd8c.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains census.gov alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 1a38055a06e024835fd4dee08e28bd8c",
+      "fetchedAt": "2026-09-14T12:10:15Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, two with no page text, the longest text 1,587,483 characters."
+    },
+    {
+      "file": "search-3a9021493142c16d7c40eff04c8eacdc.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains federalreserve.gov alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 3a9021493142c16d7c40eff04c8eacdc",
+      "fetchedAt": "2026-09-14T12:10:18Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-eb3c23aec45f0e951f836b7bdd72f966.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains semiconductors.org alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed eb3c23aec45f0e951f836b7bdd72f966",
+      "fetchedAt": "2026-09-14T12:10:20Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-a17e0f6ebd439b9f95d70bdf1dae77d1.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains trendforce.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed a17e0f6ebd439b9f95d70bdf1dae77d1",
+      "fetchedAt": "2026-09-14T12:10:22Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-c09f9632c876999ac04119b848b2853c.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains digitimes.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed c09f9632c876999ac04119b848b2853c",
+      "fetchedAt": "2026-09-14T12:10:23Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, one with no page text, the longest text 10,341 characters."
+    },
+    {
+      "file": "search-a523a4bb0f4dcb80f288a07984222a69.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains iea.org alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed a523a4bb0f4dcb80f288a07984222a69",
+      "fetchedAt": "2026-09-14T12:10:26Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-246444eb32f76dd8d7cbce71064e13e9.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains worldsteel.org alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 246444eb32f76dd8d7cbce71064e13e9",
+      "fetchedAt": "2026-09-14T12:10:29Z",
+      "trimmedTo": "nothing. The whole response, three results, all from sites other than the one the request named: www.dictionary.com, www.science.gov, www.merriam-webster.com, which a pass drops before reading their text."
+    },
+    {
+      "file": "search-46742c51f520c94bc3f420c16d30d632.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains ihsmarkit.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 46742c51f520c94bc3f420c16d30d632",
+      "fetchedAt": "2026-09-14T12:10:31Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-a69241d8b978bb8cb5eabfae1b99d2c5.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Scientific & Technical Instruments industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains statista.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed a69241d8b978bb8cb5eabfae1b99d2c5",
+      "fetchedAt": "2026-09-14T12:10:32Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, each with its page's text and a publish date, the longest text 11,445 characters."
+    },
+    {
+      "file": "search-a9fcfb0c9ac35c0d67ca0d6e101a1933.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains spglobal.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed a9fcfb0c9ac35c0d67ca0d6e101a1933",
+      "fetchedAt": "2026-09-14T12:10:34Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-44ed8846329fdbbf2f85def5634c07a7.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains eia.gov alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 44ed8846329fdbbf2f85def5634c07a7",
+      "fetchedAt": "2026-09-14T12:10:37Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-eee757f76f290137dd0cbc3badef1e06.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains bls.gov alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed eee757f76f290137dd0cbc3badef1e06",
+      "fetchedAt": "2026-09-14T12:10:38Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-f9d3263003706ff04ae40ef8644d8123.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains census.gov alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed f9d3263003706ff04ae40ef8644d8123",
+      "fetchedAt": "2026-09-14T12:10:40Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, each with its page's text and a publish date, the longest text 68,684 characters."
+    },
+    {
+      "file": "search-a15da9e0cb51cf5b07608e63da91fa97.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains federalreserve.gov alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed a15da9e0cb51cf5b07608e63da91fa97",
+      "fetchedAt": "2026-09-14T12:10:43Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, each with its page's text and a publish date, the longest text 73,938 characters."
+    },
+    {
+      "file": "search-3ace5a6805b1a046a10f0ba32b34019d.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains semiconductors.org alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 3ace5a6805b1a046a10f0ba32b34019d",
+      "fetchedAt": "2026-09-14T12:10:45Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-b5efad53f9a0a79d5b8f707c275a7e09.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains trendforce.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed b5efad53f9a0a79d5b8f707c275a7e09",
+      "fetchedAt": "2026-09-14T12:10:46Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-1c8af101268c9e7cb592979a96977bd0.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains digitimes.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 1c8af101268c9e7cb592979a96977bd0",
+      "fetchedAt": "2026-09-14T12:10:48Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, each with its page's text and a publish date, the longest text 12,362 characters."
+    },
+    {
+      "file": "search-aae56ee86b85939d6fc82261b531a2a4.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains iea.org alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed aae56ee86b85939d6fc82261b531a2a4",
+      "fetchedAt": "2026-09-14T12:10:50Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, each with its page's text and a publish date, the longest text 11,048 characters."
+    },
+    {
+      "file": "search-688c4b595a702d353de109a920816ed5.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains worldsteel.org alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 688c4b595a702d353de109a920816ed5",
+      "fetchedAt": "2026-09-14T12:10:52Z",
+      "trimmedTo": "nothing. The whole response, and it holds no result: the tool answered this site's search for the industry with nothing."
+    },
+    {
+      "file": "search-df4c8b922b3020b79dffae40f5cdfad1.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains ihsmarkit.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed df4c8b922b3020b79dffae40f5cdfad1",
+      "fetchedAt": "2026-09-14T12:10:54Z",
+      "trimmedTo": "nothing. The whole response, two results from the site, one with no page text, the longest text 32,166 characters."
+    },
+    {
+      "file": "search-848c251d9da4915d0334ee9b7a18bcee.json",
+      "endpoint": "the search tool's search endpoint at https://api.tavily.com/search, with the key in the authorisation header and never in the body or the address",
+      "query": "POST search for 'Semiconductors industry', one of the twelve searches a theme pass builds for that industry on 2026-09-08 from 6.11, one a site of the industry list: include_domains statista.com alone, max_results 3, start_date 2026-06-08, end_date 2026-09-08, topic general, search_depth basic, include_raw_content text, include_published_date true, include_answer false, include_images false, keyed 848c251d9da4915d0334ee9b7a18bcee",
+      "fetchedAt": "2026-09-14T12:10:56Z",
+      "trimmedTo": "nothing. The whole response, three results from the site, each with its page's text and a publish date, the longest text 6,215 characters."
+    },
+    {
+      "file": "research-call-93f13c80d3c8893c9e9ae52ca390ebe4.json",
+      "endpoint": "the research model's provider named by the shipped configuration, at its OpenAI-format address, with the key in the authorisation header and never in the address",
+      "query": "POST chat/completions for The industry cycle of the theme Scientific & Technical Instruments in the paid lane, its first draft, asked inside KEYS's research pass over the ten pages its twelve searches kept first, each page carried as its first 30,000 characters, keyed 93f13c80d3c8893c9e9ae52ca390ebe4",
+      "fetchedAt": "2026-09-14T12:16:45Z",
+      "trimmedTo": "nothing. The whole response, 39617 prompt tokens, 0 of them served from the provider's cache, and no answer: 2593 completion tokens, 2592 of them reasoning, finishing on stop with empty content, the reasoning concluding that no page it was handed carries the industry's prices and so writing nothing, as the instructions ask. A billed answer a section cannot be stored from, which is what a replay reads as one. Named for the request's key so a replay asking the same request reads it. Sent from a plain process outside the session's sandbox, because a body of this size from the test host was cut off at 6.9."
+    },
+    {
+      "file": "research-call-94d821728145c69d259cc08d5ba00837.json",
+      "endpoint": "the research model's provider named by the shipped configuration, at its OpenAI-format address, with the key in the authorisation header and never in the address",
+      "query": "POST chat/completions for The industry cycle of the theme Semiconductors in the paid lane, its first draft, over the ten pages its twelve searches kept first, each page carried as its first 30,000 characters, keyed 94d821728145c69d259cc08d5ba00837",
+      "fetchedAt": "2026-09-14T12:17:00Z",
+      "trimmedTo": "nothing. The whole response, 45100 prompt tokens, 128 of them served from the provider's cache, and 5380 completion tokens, 4869 of them reasoning, finishing on stop. Named for the request's key so a replay asking the same request reads it. Sent from a plain process outside the session's sandbox, because a body of this size from the test host was cut off at 6.9."
+    },
+    {
+      "file": "research-call-3d8532ba85699302bb0197fa022ad087.json",
+      "endpoint": "the research model's provider named by the shipped configuration, at its OpenAI-format address, with the key in the authorisation header and never in the address",
+      "query": "POST chat/completions for The industry cycle of the theme Semiconductors in the paid lane, its second draft, over the same ten pages and told why the checker refused the first, each page carried as its first 30,000 characters, keyed 3d8532ba85699302bb0197fa022ad087",
+      "fetchedAt": "2026-09-14T12:17:26Z",
+      "trimmedTo": "nothing. The whole response, 45138 prompt tokens, 44928 of them served from the provider's cache, and 2940 completion tokens, 2506 of them reasoning, finishing on stop. Named for the request's key so a replay asking the same request reads it. Sent from a plain process outside the session's sandbox, because a body of this size from the test host was cut off at 6.9."
     }
   ]
 }
