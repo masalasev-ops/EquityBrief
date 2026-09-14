@@ -212,6 +212,12 @@ dotnet run --project src/EquityBrief.Worker -- research --ticker KEYS
 
 **Where to look.** Every stage of a pass is a row on the run log under one run, `research-<instant>-<TICKER>`: `fundamentals`, `staleness`, `theme research` where the pass refreshed its theme, whose detail names the sites it dropped and the addresses short of a document, `prose`, one `research call:` row per paid call, `claims`, the second and third rounds' rows named for their round, and `research` last, whose detail says what was written, what was not and why, and what the documents came to.
 
+### Exporting one name's report
+
+The name page carries a link, *Export this report as a file*, and the browser saves what it answers wherever the operator chooses. The read surface answers the same file at `/exports/name/<TICKER>`, which is the address the link asks for.
+
+The file is the name page's own region, drawn by the same code from the same store, in a document that needs nothing else to be read: its styles are inline, it carries no script and fetches nothing, every disclosure is open, and a link to another of the application's pages is kept as its words (see: A single report can still be exported as a self-contained file). It leaves out the research controls and the pause, which are the application asking the operator something rather than part of the report. It is named for the name and the newest session its figures are from, `EquityBrief-KEYS-2026-09-08.html`, so two exports on different nights are two files, and its opening line states that session. Nothing is written to the store by an export.
+
 ---
 
 ## Moving the installation

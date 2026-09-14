@@ -25,6 +25,11 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 6.11, the report exporter, and the harness's own matrix row.
+            CheckReach.Key(Scope.CatalogueTable, "Report exporter"),
+            CheckReach.Key(Scope.MatrixTable, "Report exporter"),
+            CheckReach.Key(Scope.MatrixTable, "Verification harness"),
+
             // 6.10, the overnight queue.
             CheckReach.Key(Scope.CatalogueTable, "Overnight queue"),
             CheckReach.Key(Scope.MatrixTable, "Overnight queue"),
@@ -385,7 +390,7 @@ public class ComponentAccess
         Assert.True(components.Count >= 20, $"Read {components.Count} declaring components, expected at least 20.");
 
         var faults = new List<string>();
-        var silent = 0;
+        var silent = new List<string>();
 
         foreach (var component in components)
         {
@@ -399,11 +404,13 @@ public class ComponentAccess
 
             if (!writes && !appends)
             {
-                silent++;
+                silent.Add(component.Name);
 
                 var row = catalogue.Single(entry => Matches(entry.Component, component.Name));
 
-                if (!string.IsNullOrWhiteSpace(row.Writes) && !row.Writes.StartsWith("none", StringComparison.OrdinalIgnoreCase))
+                // Its Writes cell names no store: "none", or, for the exporter, a file the
+                // person exporting keeps, which is not a store the run log's rule is about.
+                if (ComponentVocabulary.Read(row.Writes) is var cell && (cell.Stores.Any() || cell.Unresolved.Any()))
                 {
                     faults.Add($"{component.Name} declares no write and its Writes cell reads '{row.Writes}'.");
                 }
@@ -412,9 +419,10 @@ public class ComponentAccess
 
         Assert.Empty(faults);
 
-        // The three that write nothing, stated in advance: the page, the renderer and
-        // the trend classifier, which hands its label to the ladder builder.
-        Assert.Equal(3, silent);
+        // The four that write no store, stated in advance: the page, the renderer, the
+        // trend classifier, which hands its label to the ladder builder, and from 6.11 the
+        // report exporter, whose file is kept wherever the person exporting chooses.
+        Assert.Equal(["MarkRenderer", "ReportExporter", "SinglePageApp", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(
@@ -425,9 +433,10 @@ public class ComponentAccess
     [Fact]
     public void TheCatalogueRowsWithNoClassYetAreCounted()
     {
-        // The direction that cannot hold until the components are built, counted
-        // with the narrowing named rather than left to read as coverage. It
-        // shrinks by one per component from here.
+        // The direction that could not hold until the components were built, counted with the
+        // narrowing named rather than left to read as coverage. It shrank by one per component
+        // until 6.11 built the report exporter, and what is left is named: rows no shipped
+        // class stands for, each for a reason of its own.
         var catalogue = Catalogue();
         var built = ShippedComponents.All().Select(component => component.Name).ToArray();
 
@@ -437,6 +446,35 @@ public class ComponentAccess
 
         Assert.True(absent.Length > 0, $"{absent.Length} catalogue rows have no class, which is context and not a pass.");
         Assert.Equal(catalogue.Count - built.Length, absent.Length);
+        Assert.DoesNotContain(absent, row => row.Component == "Report exporter");
+        Assert.Contains(absent, row => row.Component == "Verification harness");
+    }
+
+    [Fact]
+    public void TheVerificationHarnessRowIsBlankAcrossTheMatrixAndTheStoresItOpensAreItsOwn()
+    {
+        // The harness is a catalogue row no shipped class stands for, so no declaration reads its
+        // matrix row. The row is read against the catalogue's own words for what the harness
+        // reads and writes, which name no store the matrix carries, and against the stores the
+        // suite opens, each a temporary store outside the data root, which is the half of its
+        // Reads cell that says it never opens one there.
+        var row = Table(Scope.MatrixTable).Body.Single(entry => entry.Count > 1 && entry[0] == "Verification harness");
+
+        Assert.True(row.Count >= 12, $"Read {row.Count - 1} cells in the harness's row, expected at least 11.");
+        Assert.All(row.Skip(1), cell => Assert.Equal(string.Empty, cell));
+
+        var catalogue = Catalogue().Single(entry => entry.Component == "Verification harness");
+
+        Assert.Contains("never a store under the data root", catalogue.Reads, StringComparison.Ordinal);
+        Assert.Empty(ComponentVocabulary.Read(catalogue.Reads).Stores);
+        Assert.Empty(ComponentVocabulary.Read(catalogue.Writes).Stores);
+
+        using var store = new TemporaryStore();
+
+        Assert.StartsWith(Path.GetTempPath(), store.Root, StringComparison.OrdinalIgnoreCase);
+        Assert.False(
+            Path.GetFullPath(store.Root).StartsWith(Path.GetFullPath(Path.Combine(Repository.Root, "data")), StringComparison.OrdinalIgnoreCase),
+            "A store the suite opens sits under the checkout's data root.");
     }
 
     // Section 7 says a class of this exact name with spaces removed, which
