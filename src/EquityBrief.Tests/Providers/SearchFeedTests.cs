@@ -225,6 +225,40 @@ public class SearchFeedTests
     }
 
     [Fact]
+    public void AnEmptyPageTextIsReadAsNoTextAtAll()
+    {
+        // The captures carry a missing page text as null. An empty or blank one is the same
+        // absence written another way, and a page of nothing is not a document a pass could
+        // store, which the 6.9 sweep found no test reading.
+        var results = TavilySearchFeed.Parse(
+            """{"results":[{"url":"https://www.iea.org/a","title":"a","content":"a snippet","raw_content":"","published_date":"Tue, 01 Sep 2026 00:00:00 GMT"},{"url":"https://www.iea.org/b","title":"b","content":"a snippet","raw_content":"   ","published_date":"Tue, 01 Sep 2026 00:00:00 GMT"}]}""").Results;
+
+        Assert.All(results, result => Assert.Null(result.Text));
+        Assert.All(results, result => Assert.True(ThemeSearch.ShortOfADocument(result)));
+    }
+
+    [Fact]
+    public void AListFileWithNoSitesIsRefusedByName()
+    {
+        // A search restricted to no site returns nothing, which would read as an industry
+        // nobody writes about, so a file without a list is refused rather than read. The
+        // 6.9 sweep found only the committed file read, which carries both lists.
+        using var folder = new TemporaryDirectory();
+
+        var file = Path.Combine(folder.Path, SourceLists.FileName);
+
+        File.WriteAllText(file, """{"companyNews":{"sites":["reuters.com"]},"industry":{"sites":[]}}""");
+
+        var refused = Assert.Throws<InvalidOperationException>(() => SourceLists.Read(file));
+
+        Assert.Contains("'industry'", refused.Message, StringComparison.Ordinal);
+
+        File.WriteAllText(file, """{"companyNews":{"sites":["reuters.com",""]},"industry":{"sites":["iea.org"]}}""");
+
+        Assert.Contains("'companyNews'", Assert.Throws<InvalidOperationException>(() => SourceLists.Read(file)).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AnOpensFeedsHoldTheSearchToolAndAFixtureOneReachesNoNetwork()
     {
         var feeds = OnDemandFeeds.FromFixture(Folder(), ResearchModelFeedTests.Shipped());

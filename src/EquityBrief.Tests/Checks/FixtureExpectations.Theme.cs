@@ -399,6 +399,238 @@ public partial class FixtureExpectations
             outcome.NotWritten.Select(line => $"{line.Section}|{line.Reason}").ToArray());
     }
 
+    // ---- once a day, and what closes it ----
+
+    [Fact]
+    public async Task AThemeIsResearchedOnceADayAndOnlyAPassThatRanToTheEndClosesIt()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        ThemeResearchRunner Themer(ISearchFeed search, RecordedResearchModelFeed? model = null) =>
+            FixtureReplay.Themer(
+                store,
+                ResearchClock,
+                new SpendCap(model ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile),
+                new ClaimChecker(ResearchClock, store.DatabaseFile),
+                search);
+
+        // A search tool that did not answer: the pass did not run to the end, so it does not
+        // close the day, and the next pass that evening searches.
+        var down = new RecordedSearchFeed(Folder(), "The search tool could not be reached: nothing is listening.");
+
+        Assert.Equal(ThemeResearchRunner.Unavailable, (await Themer(down).RunAsync("Scientific & Technical Instruments", "theme-down")).Outcome);
+
+        // The next finds nothing to write from and runs to the end, which does close it: a
+        // search that found nothing is not run again that day.
+        var found = new RecordedSearchFeed(Folder());
+
+        Assert.Equal(ThemeResearchRunner.Written, (await Themer(found).RunAsync("Scientific & Technical Instruments", "theme-nothing")).Outcome);
+        Assert.Equal(1, found.Requests);
+
+        var again = new RecordedSearchFeed(Folder());
+        var second = await Themer(again).RunAsync("Scientific & Technical Instruments", "theme-nothing-again");
+
+        Assert.Equal(ThemeResearchRunner.NotWarranted, second.Outcome);
+        Assert.Equal(ThemeResearchRunner.WrittenToday, second.Reason);
+        Assert.Equal(0, again.Requests);
+
+        // And a cycle a pass left accepted today, with no row saying so on the run log, as a
+        // pass stopped between its insert and its row would leave it, is not bought again: the
+        // theme's own rows say it was written today. The 6.9 sweep found both halves of the
+        // once-a-day rule unasserted.
+        store.Execute(
+            "INSERT INTO theme_section VALUES ('Semiconductors', 'The industry cycle', 1, '2026-09-08', 'deepseek-flash', 'accepted', 'A cycle [D1].', '[]', NULL, '[\"Semiconductors\"]');");
+
+        var bought = new RecordedSearchFeed(Folder());
+
+        Assert.Equal(ThemeResearchRunner.NotWarranted, (await Themer(bought).RunAsync("Semiconductors", "theme-accepted-today")).Outcome);
+        Assert.Equal(0, bought.Requests);
+    }
+
+    // ---- what the cycle is written from ----
+
+    [Fact]
+    public async Task ACycleWhoseKeptPagesWereAllRefusedIsLeftOutWithoutACall()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var folder = new TemporaryDirectory();
+
+        // One page from a site the list carries, with its text, published before the quarter
+        // the search asked for, which admissibility refuses.
+        var query = ThemeSearch.For(FixtureReplay.RecordedTheme, ThemeNight, IndustryList());
+
+        File.WriteAllText(
+            Path.Combine(folder.Path, RecordedSearchFeed.FileFor(query)),
+            """
+            {"results":[{"url":"https://www.semiconductors.org/an-old-report","title":"An old report","content":"A snippet.","raw_content":"A report on the industry, published long before the quarter the search asked for, and carrying enough text to be a page.","published_date":"Mon, 02 Mar 2026 00:00:00 GMT"}]}
+            """);
+
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var cap = new SpendCap(paid, Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
+
+        await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile), new RecordedSearchFeed(folder.Path)).RunAsync(FixtureReplay.RecordedTheme, "theme-refused-only");
+
+        // Stored with its refusal and no body, a cycle inserted empty citing it, no call paid
+        // for, and the checker leaving it out for having no admissible source, which the 6.9
+        // sweep found no test reaching.
+        Assert.Equal([$"{Admissibility.OutsideTheWindow}|null"], Query(store, "SELECT admissibility, body FROM source_document;"));
+        Assert.Equal(0, paid.Requests);
+
+        var row = Query(store, "SELECT prose, status, reject_reason FROM theme_section;").Single().Split('|');
+
+        Assert.Equal(string.Empty, row[0]);
+        Assert.Equal(ClaimChecker.Fallback, row[1]);
+        Assert.Contains(ClaimRules.NoAdmissibleSource, row[2], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ACycleRefusedOnceIsWrittenAgainInThePassToldWhy()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var folder = new TemporaryDirectory();
+
+        var query = ThemeSearch.For(FixtureReplay.RecordedTheme, ThemeNight, IndustryList());
+
+        File.WriteAllText(
+            Path.Combine(folder.Path, RecordedSearchFeed.FileFor(query)),
+            """
+            {"results":[{"url":"https://www.semiconductors.org/sales","title":"Sales","content":"A snippet.","raw_content":"Global sales rose again in July as demand for advanced chips kept climbing across the industry.","published_date":"Fri, 04 Sep 2026 00:00:00 GMT"}]}
+            """);
+
+        // A first draft quoting a figure no facts file holds, and a second in words.
+        var model = new ScriptedModel(
+            "Sales across the industry rose 35.1% in the quarter [D1].",
+            "Sales across the industry kept rising as demand for advanced chips climbed [D1].");
+
+        var cap = new SpendCap(model, Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
+
+        var outcome = await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile), new RecordedSearchFeed(folder.Path)).RunAsync(FixtureReplay.RecordedTheme, "theme-retry");
+
+        // Two calls, the second told why the first was refused, and two versions: the first
+        // refused for the figure, the second accepted. The 6.9 sweep found the retry unasserted.
+        Assert.Equal(2, model.Asked.Count);
+        Assert.DoesNotContain("previous draft", model.Asked[0].Prompt, StringComparison.Ordinal);
+        Assert.Contains($"Your previous draft of this section was refused by the checker for: {ClaimRules.UnmatchedFigure}", model.Asked[1].Prompt, StringComparison.Ordinal);
+
+        Assert.Equal(
+            [$"1|{ClaimChecker.Rejected}", $"2|{ClaimChecker.Accepted}"],
+            Query(store, "SELECT version, status FROM theme_section ORDER BY version;"));
+        Assert.Equal(ThemeResearchRunner.Written, outcome.Outcome);
+        Assert.Contains($"research call: {ClaimRules.CycleSection}, {ResearchRunner.SecondRound}", Query(store, "SELECT stage FROM run_log;"));
+    }
+
+    // ---- which theme a name's pass reads, and when it refreshes it ----
+
+    [Fact]
+    public async Task AMemberWithNoIndustryIsToldWhyItHasNoCycleAndNoThemeIsSearched()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        store.Execute("UPDATE membership SET industry = NULL WHERE ticker = 'KEYS';");
+
+        var search = new NoResults();
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, localModel: new NothingAnsweringLocal(), archive: new NoRelease(), news: new NoArticles(), search: search).RunAsync("KEYS", "research-no-industry");
+
+        Assert.Equal(0, search.Requests);
+        Assert.DoesNotContain(ClaimRules.CycleSection, outcome.Warranted);
+        Assert.Contains(outcome.NotWritten, line => line.Section == ClaimRules.CycleSection && line.Reason == ResearchRunner.NoIndustry);
+    }
+
+    [Fact]
+    public async Task AnAcceptedThemeStandsUntilATriggerFiredForTheNameIsDatedAfterIt()
+    {
+        // A theme accepted in August for KEYS's industry.
+        const string Theme = "INSERT INTO theme_section VALUES ('Scientific & Technical Instruments', 'The industry cycle', 1, '2026-08-01', 'deepseek-flash', 'accepted', 'A cycle [D1].', '[]', NULL, '[\"Scientific & Technical Instruments\"]');";
+
+        // A name opened for the first time fires nothing, and reads the theme its industry
+        // already holds rather than buying it again.
+        using (var fresh = await FixtureReplay.ReplayedForResearchAsync())
+        {
+            fresh.Execute(Theme);
+
+            var search = new NoResults();
+
+            var outcome = await FixtureReplay.Researcher(fresh, ResearchClock, localModel: new NothingAnsweringLocal(), archive: new NoRelease(), news: new NoArticles(), search: search).RunAsync("KEYS", "research-theme-stands");
+
+            Assert.Equal(0, search.Requests);
+            Assert.DoesNotContain(ClaimRules.CycleSection, outcome.Warranted);
+        }
+
+        // A name whose own research predates its newest filing has a trigger fired for it
+        // dated after the theme too, so its pass refreshes the theme. The 6.9 sweep found
+        // neither direction asserted.
+        using var stale = await FixtureReplay.ReplayedForResearchAsync();
+
+        stale.Execute(Theme);
+        stale.Execute("INSERT INTO research_section VALUES ('KEYS', 'What the company sells', 1, '2026-07-01', 'a writer', 'accepted', 'prose', '[]', NULL);");
+
+        var asked = new NoResults();
+
+        var refreshed = await FixtureReplay.Researcher(stale, ResearchClock, localModel: new NothingAnsweringLocal(), archive: new NoRelease(), news: new NoArticles(), search: asked).RunAsync("KEYS", "research-theme-refreshed");
+
+        Assert.Equal(1, asked.Requests);
+        Assert.Contains(ClaimRules.CycleSection, refreshed.Warranted);
+    }
+
+    [Fact]
+    public async Task ANamesRowCountsTheRequestsItMadeAndNotItsThemes()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var news = new RecordedNameNewsFeed(Folder());
+        var archive = new RecordedFilingsArchiveFeed(Folder());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var search = new RecordedSearchFeed(Folder());
+
+        await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: archive, news: news, search: search).RunAsync("KEYS", "research-counted");
+
+        // Two probes were made through the one cap, the name's and its theme's. The theme's
+        // row counts its probe and its search, and the name's counts its own probe beside its
+        // news and its archive requests, and not the theme's, which the 6.9 sweep found no
+        // test telling apart.
+        Assert.Equal(2, paid.Probes);
+        Assert.Equal(["2"], Query(store, "SELECT network_requests FROM run_log WHERE run_id = 'research-counted' AND stage = 'theme research';"));
+        Assert.Equal(
+            [(news.Requests + archive.Requests + 1).ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT network_requests FROM run_log WHERE run_id = 'research-counted' AND stage = 'research';"));
+    }
+
+    // A research model that answers each call with the next of its texts, for a pass whose
+    // drafts a test chooses rather than a provider recorded.
+    internal sealed class ScriptedModel(params string[] texts) : IResearchModelFeed
+    {
+        readonly ResearchModelSettings settings = Providers.ResearchModelFeedTests.Shipped();
+
+        public int Requests { get; private set; }
+
+        public int Probes { get; private set; }
+
+        public string Identity => settings.Identity;
+
+        public List<ModelRequest> Asked { get; } = [];
+
+        public Task<string?> UnreachableAsync(CancellationToken cancellation = default)
+        {
+            Probes++;
+
+            return Task.FromResult<string?>(null);
+        }
+
+        public Task<ResearchAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default)
+        {
+            Asked.Add(request);
+
+            var text = texts[Requests++];
+
+            return Task.FromResult(new ResearchAnswer(settings.Model, text, 100, 0, 100, 50, 0, "stop", DateTimeOffset.Parse("2026-09-08T21:10:30Z", CultureInfo.InvariantCulture)));
+        }
+
+        public decimal Price(ResearchAnswer answer) => settings.Pricing.Price(answer);
+
+        public decimal Ceiling(ModelRequest request) => settings.Pricing.Ceiling(request, settings.AnswerTokens);
+    }
+
     // A search tool that answers every search with a refusal.
     internal sealed class RefusingSearch(string line) : ISearchFeed
     {
