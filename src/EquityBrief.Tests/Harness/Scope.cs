@@ -749,7 +749,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(FailureTable, "A split or dividend not caught")] = new Scoped(
             Verdict.Pass,
-            "a real captured action on a current member triggers a full-year refetch, the replacement is atomic, and a failure of the check itself marks the name suspect with its reason rather than passing",
+            "a real captured action on a current member triggers a full-year refetch, the replacement is atomic, a failure of the check itself marks the name suspect with its reason rather than passing, a suspect name is asked for again on the nights its retries allow and not after, a new action starts its count again, and the run page's stale and failed region names a suspect name on every night it stays suspect, with when it was last asked for and why from the night its retries are spent",
             ByActions),
         [CheckReach.Key(NightlyRunSteps.Heading, "Check splits and dividends, and refetch the full year for any name affected.")] = new Scoped(
             Verdict.Pass,
@@ -1438,7 +1438,7 @@ internal static class Scope
             ByCost),
         [CheckReach.Key(LimitsTable, "Per-name network calls in the nightly run")] = new Scoped(
             Verdict.Pass,
-            "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once",
+            "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once; and a suspect name whose refetch keeps failing is measured night by night against a sequence derived from the decision, one request on its action's night and on each retry night and none once its retries are spent, with the figure the row states held to the constant",
             ByCost),
         [CheckReach.Key(FailureTable, "Bulk price feed unavailable, run log")] = new Scoped(
             Verdict.Pass,

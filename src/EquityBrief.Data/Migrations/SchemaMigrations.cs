@@ -226,6 +226,20 @@ public static class SchemaMigrations
         ALTER TABLE membership ADD COLUMN industry TEXT;
     ";
 
+    // How many nights after the one that marked it a suspect name has been asked for
+    // again, added at the 6.0 ruling because a count is what bounds them: the check reads
+    // it to decide whether tonight asks again. A count rather than a history, since when
+    // each attempt was made is the run log's.
+    //
+    // Not null with a default, unlike the columns above, because here the default is a
+    // value that holds rather than one nobody wrote: every row that exists when the column
+    // is added has been counted by nothing, and the rule counts from the night it lands, so
+    // a name already suspect is asked for again on at most the limit's nights from then.
+    // see: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+    const string AddSeriesStateRetries = @"
+        ALTER TABLE series_state ADD COLUMN retries INTEGER NOT NULL DEFAULT 0;
+    ";
+
     // Whether a name's stored series can be trusted, at the grain the statement
     // is about, which is the name. Contradiction C: the failure table said a
     // name whose corporate action check failed is marked suspect and nothing
@@ -524,6 +538,7 @@ public static class SchemaMigrations
         new Migration(20, "create source_document", CreateSourceDocument),
         new Migration(21, "create research_section and theme_section", CreateResearchSections),
         new Migration(22, "add membership.industry", AddMembershipIndustry),
+        new Migration(23, "add series_state.retries", AddSeriesStateRetries),
     ];
 
     // The provider carries no join date for 145 of the 822 spans it returns,

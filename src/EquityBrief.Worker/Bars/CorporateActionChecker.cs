@@ -21,7 +21,14 @@ public sealed record ActionCheckOutcome(
     IReadOnlyList<string> Suspect,
     int RefetchRequests = 0,
     // Names an earlier night left suspect and this one refetched again.
-    IReadOnlyList<string>? Retried = null);
+    IReadOnlyList<string>? Retried = null,
+    // Names left suspect with their retries spent, which this night did not ask for
+    // and names all the same.
+    IReadOnlyList<SpentName>? Spent = null);
+
+// A suspect name whose retries are spent: when it was last asked for, as the UTC
+// instant its row carries, and the reason that refetch failed for.
+public sealed record SpentName(string Ticker, string LastAskedAt, string Reason);
 
 // The corporate action check. One bulk request per kind per night, and a
 // full-year refetch of any current member whose adjusted prices an action has
@@ -64,6 +71,24 @@ public sealed class CorporateActionChecker : IComponent
     public const string Ok = "ok";
     public const string Suspect = "suspect";
 
+    // How many nights after the one that marked it a suspect name is asked for again.
+    //
+    // Until the 6.0 ruling nothing bounded them, so a failure that lasted made one
+    // per-name request on the nightly path every night it lasted. A refetch already
+    // carries the retry a transient fault needs inside a night, so a failure that
+    // survives it on six nights running is not one the next night clears, and a week of
+    // sessions is what an outage would have to outlast. A night an action lands on the
+    // name starts the count again, since the action is a new reason to ask, so one action
+    // costs at most one request more than this however long its failure lasts.
+    //
+    // What a spent name is left as is the other half of the rule: not asked for again
+    // until an action lands on it, still suspect with its reason, and named with it on
+    // every night it stays so, which puts the stage on the run page's failed region
+    // rather than stopping in silence.
+    // see: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+    // see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+    public const int RetryNights = 5;
+
     readonly ICorporateActionFeed actions;
     readonly IHistoricalBarFeed history;
     readonly IClock clock;
@@ -91,14 +116,18 @@ public sealed class CorporateActionChecker : IComponent
     ";
 
     // The names a night before this one marked suspect, among the names the
-    // night stores. Each is refetched again tonight whether or not an action
+    // night stores, with how many nights each has been asked for again. Each
+    // with retries left is refetched again tonight whether or not an action
     // landed on it today, because the action that made it suspect is still in
     // its stored history unadjusted. A refetch is the per-name request the cost
-    // rule carves out, and this adds one per suspect name, which grows with the
-    // failures and never with the index.
+    // rule carves out, and this adds one per suspect name with retries left,
+    // which grows with the failures of the last few nights and never with the
+    // index. The row's reason and instant are read for the ones whose retries
+    // are spent, which the stage names rather than asks for.
     // see: Adjusted history is re-fetched after a corporate action
+    // see: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
     const string SuspectNames = @"
-        SELECT s.ticker FROM series_state s
+        SELECT s.ticker, s.retries, s.reason, s.checked_at FROM series_state s
         WHERE s.state = $suspect
           AND EXISTS (
               SELECT 1 FROM membership m
@@ -122,12 +151,13 @@ public sealed class CorporateActionChecker : IComponent
     ";
 
     const string MarkState = @"
-        INSERT INTO series_state (ticker, state, reason, checked_at)
-        VALUES ($ticker, $state, $reason, $checked_at)
+        INSERT INTO series_state (ticker, state, reason, checked_at, retries)
+        VALUES ($ticker, $state, $reason, $checked_at, $retries)
         ON CONFLICT (ticker) DO UPDATE SET
             state = excluded.state,
             reason = excluded.reason,
-            checked_at = excluded.checked_at;
+            checked_at = excluded.checked_at,
+            retries = excluded.retries;
     ";
 
     const string BarCount = "SELECT COUNT(*) FROM bar;";
@@ -166,14 +196,30 @@ public sealed class CorporateActionChecker : IComponent
         // Current members only. An action on a name the index does not hold is
         // not this system's concern, and the fixture carries three of them so
         // the filter has something to reject.
-        //
-        // And every name an earlier night left suspect, retried until one
-        // refetch succeeds.
-        var retried = await SuspectAsync(connection, indexCode, session);
-
-        var affected = today
+        var acted = today
             .Where(action => members.Contains(action.Ticker))
             .Select(action => action.Ticker)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // And every name an earlier night left suspect with retries left, asked
+        // for again until one refetch succeeds or its retries are spent. A name
+        // whose retries are spent is asked for only on a night an action lands on
+        // it, and named on every other night it stays suspect.
+        var suspects = await SuspectAsync(connection, indexCode, session);
+
+        var retried = suspects
+            .Where(name => name.Retries < RetryNights)
+            .Select(name => name.Ticker)
+            .ToArray();
+
+        var spent = suspects
+            .Where(name => name.Retries >= RetryNights && !acted.Contains(name.Ticker))
+            .Select(name => new SpentName(name.Ticker, name.CheckedAt, name.Reason))
+            .ToArray();
+
+        var counted = suspects.ToDictionary(name => name.Ticker, name => name.Retries, StringComparer.OrdinalIgnoreCase);
+
+        var affected = acted
             .Concat(retried)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(ticker => ticker, StringComparer.Ordinal)
@@ -213,7 +259,7 @@ public sealed class CorporateActionChecker : IComponent
                     await StoreAsync(connection, ticker, bar, observed);
                 }
 
-                await MarkAsync(connection, ticker, Ok, null, observed);
+                await MarkAsync(connection, ticker, Ok, null, observed, 0);
                 await transaction.CommitAsync();
 
                 refetched++;
@@ -232,7 +278,11 @@ public sealed class CorporateActionChecker : IComponent
                 // like a check that found nothing.
                 await transaction.RollbackAsync();
 
-                await MarkAsync(connection, ticker, Suspect, failure.Message, observed);
+                // A night an action lands on the name starts its count again,
+                // and any other night it is asked for counts one more.
+                var retries = acted.Contains(ticker) ? 0 : counted.GetValueOrDefault(ticker) + 1;
+
+                await MarkAsync(connection, ticker, Suspect, failure.Message, observed, retries);
                 suspect.Add(ticker);
             }
         }
@@ -246,14 +296,17 @@ public sealed class CorporateActionChecker : IComponent
             actions.Requests - actionRequestsBefore + refetchRequests,
             suspect,
             refetchRequests,
-            retried);
+            retried,
+            spent);
 
         await AppendAsync(connection, runId, observed, outcome);
 
         return outcome;
     }
 
-    static async Task<IReadOnlyList<string>> SuspectAsync(SqliteConnection connection, string indexCode, DateOnly session)
+    sealed record SuspectRow(string Ticker, int Retries, string Reason, string CheckedAt);
+
+    static async Task<IReadOnlyList<SuspectRow>> SuspectAsync(SqliteConnection connection, string indexCode, DateOnly session)
     {
         await using var command = connection.CreateCommand();
 
@@ -262,13 +315,17 @@ public sealed class CorporateActionChecker : IComponent
         command.Parameters.AddWithValue("$index", indexCode);
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
-        var names = new List<string>();
+        var names = new List<SuspectRow>();
 
         await using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
-            names.Add(reader.GetString(0));
+            names.Add(new SuspectRow(
+                reader.GetString(0),
+                reader.GetInt32(1),
+                reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                reader.GetString(3)));
         }
 
         return names;
@@ -327,7 +384,8 @@ public sealed class CorporateActionChecker : IComponent
         string ticker,
         string state,
         string? reason,
-        string observed)
+        string observed,
+        int retries)
     {
         await using var command = connection.CreateCommand();
 
@@ -336,6 +394,7 @@ public sealed class CorporateActionChecker : IComponent
         command.Parameters.AddWithValue("$state", state);
         command.Parameters.AddWithValue("$reason", (object?)reason ?? DBNull.Value);
         command.Parameters.AddWithValue("$checked_at", observed);
+        command.Parameters.AddWithValue("$retries", retries);
 
         await command.ExecuteNonQueryAsync();
     }
@@ -353,7 +412,13 @@ public sealed class CorporateActionChecker : IComponent
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", started);
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("$outcome", outcome.Suspect.Count == 0 ? "ok" : "partial");
+        var spent = outcome.Spent ?? [];
+
+        // Partial while a member's series is suspect and was not refetched tonight,
+        // whether its refetch failed tonight or its retries are spent, so the run
+        // page's failed region names a spent name on every night it stays suspect
+        // rather than only on the nights it was asked for.
+        command.Parameters.AddWithValue("$outcome", outcome.Suspect.Count == 0 && spent.Count == 0 ? "ok" : "partial");
         command.Parameters.AddWithValue("$rows_written", outcome.RowsReplaced);
         command.Parameters.AddWithValue("$network_requests", outcome.Requests);
         command.Parameters.AddWithValue(
@@ -362,7 +427,11 @@ public sealed class CorporateActionChecker : IComponent
             $"{outcome.RefetchRequests} of the {outcome.Requests} request(s) per name, " +
             $"{(outcome.Retried ?? []).Count} retried from an earlier night" +
             ((outcome.Retried ?? []).Count == 0 ? string.Empty : ": " + string.Join(", ", outcome.Retried!)) +
-            (outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect)));
+            (outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect)) +
+            (spent.Count == 0
+                ? string.Empty
+                : $", {spent.Count} left suspect with {RetryNights} retries spent, each not asked for again until an action lands on it: " +
+                  string.Join("; ", spent.Select(name => $"{name.Ticker}, last asked for at {name.LastAskedAt}, because {name.Reason}"))));
 
         await command.ExecuteNonQueryAsync();
     }
