@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-14 - ARCHITECTURE.html - section 16's series state row carries the retry count
+
+Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+Was:
+> <tr><td><b>Series state</b></td><td>per name, whether its stored series can be trusted, with the reason when it cannot and the instant the check that said so ran</td><td>current state only, one row per name</td></tr>
+Now:
+> <tr><td><b>Series state</b></td><td>per name, whether its stored series can be trusted, with the reason when it cannot, the instant the check that said so ran, and how many nights after the one that marked it a suspect name has been asked for again</td><td>current state only, one row per name</td></tr>
+Why: the store carries the count the check reads to bound a suspect name's retries from migration 23, and this is the row that states the store's columns, which `schema-columns` holds to SCHEMA.md.
+
+### 2026-09-14 - ARCHITECTURE.html - section 19.1's series state row returned to what its expectation reads
+
+Corrects: the ruling's first commit, which stated the retry count on section 19.1's fixture row for series state, taken for the store row, found while writing the ruling's record. That row's expectation reads each name's state and none's count, so the part would have passed with nothing asserting it.
+Was:
+> <tr><td>series state</td><td>which names the corporate action check left trusted and which it marked suspect, with how many nights each suspect name has been asked for again</td><td>section 7's corporate action checker</td></tr>
+Now:
+> <tr><td>series state</td><td>which names the corporate action check left trusted and which it marked suspect</td><td>section 7's corporate action checker</td></tr>
+Why: a fixture row states what its expectation holds, and the count is stated on section 16's store row instead.
+
 ### 2026-09-14 - BUILD_PLAN.md - the suspect name's retries obligation discharged by the ruling 6.0 owed
 
 Authorised by: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it

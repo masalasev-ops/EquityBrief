@@ -974,7 +974,7 @@ section carrying its own date and the model that wrote it.</p>
   <tr><td><b>Theme store</b></td><td>theme, as-of date, prose, sources, and which industries map to it</td><td>forever, every version</td></tr>
   <tr><td><b>Source documents</b></td><td>url, fetched date, title, text</td><td>forever; a claim whose source is missing is not rendered</td></tr>
   <tr><td><b>Candidate register</b></td><td>candidate, its rule, its test, the date registered, and for a retirement a new row naming what it retires</td><td>forever; append-only, no update and no delete</td></tr>
-  <tr><td><b>Series state</b></td><td>per name, whether its stored series can be trusted, with the reason when it cannot and the instant the check that said so ran</td><td>current state only, one row per name</td></tr>
+  <tr><td><b>Series state</b></td><td>per name, whether its stored series can be trusted, with the reason when it cannot, the instant the check that said so ran, and how many nights after the one that marked it a suspect name has been asked for again</td><td>current state only, one row per name</td></tr>
   <tr><td><b>Run log</b></td><td>run, start, end, per-stage outcome, spend, failures by component</td><td>forever</td></tr>
 </table>
 
@@ -1109,7 +1109,7 @@ section carrying its own date and the model that wrote it.</p>
   <tr><td colspan="3"><b>Expected outputs, each produced by the rule named beside it</b></td></tr>
   <tr><td>membership</td><td>the index's constituents on the fixture date, with their join and leave dates</td><td>section 7's membership loader</td></tr>
   <tr><td>fetch</td><td>the bars a night stored from the bulk file, and the names it carried nothing for</td><td>section 7's bar fetcher</td></tr>
-  <tr><td>series state</td><td>which names the corporate action check left trusted and which it marked suspect, with how many nights each suspect name has been asked for again</td><td>section 7's corporate action checker</td></tr>
+  <tr><td>series state</td><td>which names the corporate action check left trusted and which it marked suspect</td><td>section 7's corporate action checker</td></tr>
   <tr><td>indicators</td><td>the averages, momentum readings and typical daily move</td><td>section 7's indicator engine</td></tr>
   <tr><td>swings</td><td>the swing highs and lows</td><td>the swing lookback in section 17</td></tr>
   <tr><td>volume profile</td><td>shares traded in each price band</td><td>section 9's volume profile builder</td></tr>
