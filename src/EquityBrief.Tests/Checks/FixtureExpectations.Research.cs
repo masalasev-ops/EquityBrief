@@ -101,7 +101,10 @@ public partial class FixtureExpectations
         Assert.Equal(
             [.. documents.GetProperty("refused").EnumerateObject().Select(refused => $"{refused.Name}|{refused.Value.GetInt32()}")],
             Query(store, "SELECT admissibility, COUNT(*) FROM source_document WHERE admissibility != 'accepted' GROUP BY admissibility ORDER BY admissibility;"));
-        Assert.Equal(["null"], Query(store, "SELECT body FROM source_document WHERE admissibility != 'accepted';"));
+        // A refused document keeps no body. The pass reads no refusal from the capture since 6.11: the
+        // one the capture holds, an AI-written summary dated 2026-07-09, is inside no move and before
+        // the release, and a pass reads only those windows.
+        Assert.All(Query(store, "SELECT IFNULL(body, 'null') FROM source_document WHERE admissibility != 'accepted';"), body => Assert.Equal("null", body));
         Assert.Single(Query(store, $"SELECT id FROM source_document WHERE title = '{documents.GetProperty("ownFiling").GetString()}' AND url LIKE 'https://www.sec.gov/%' AND published_on = '2026-08-18';"));
 
         // What each section was handed, in order, read off the source list each version stored.
@@ -214,7 +217,12 @@ public partial class FixtureExpectations
             .RunAsync("KEYS", "research-nothing-paid-for-local", new ResearchPassRequest(PaidForLocal: true));
 
         Assert.Equal(ResearchRunner.Written, paidForLocal.Outcome);
-        Assert.Equal(1, asked.Requests);
+
+        // One request a window: with no release, the moves' spans and the quarter back from the
+        // night, overlapping spans once.
+        var facts = FactsFile.Read(Query(store, "SELECT payload FROM facts WHERE ticker = 'KEYS' AND session_date = '2026-09-08';").Single());
+
+        Assert.Equal(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 8)).Count, asked.Requests);
         Assert.DoesNotContain("The key under each figure", paidForLocal.Warranted);
         Assert.Empty(paidForLocal.Written);
 
@@ -224,7 +232,7 @@ public partial class FixtureExpectations
             .RunAsync("KEYS", "research-nothing-next-day");
 
         Assert.NotEqual(ResearchRunner.RanToday, tomorrow.Reason);
-        Assert.Equal(1, nextDay.Requests);
+        Assert.Equal(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 9)).Count, nextDay.Requests);
     }
 
     [Fact]
@@ -289,7 +297,7 @@ public partial class FixtureExpectations
         var later = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: news).RunAsync("KEYS", "research-warranted-answered");
 
         Assert.NotEqual(ResearchRunner.NotWarranted, later.Outcome);
-        Assert.Equal(1, news.Requests);
+        Assert.NotEqual(0, news.Requests);
 
         // A rewrite asked the same day writes what went stale and nothing accepted that day,
         // so the rewrite control pays for no section twice in a day. The judge makes every
@@ -433,6 +441,151 @@ public partial class FixtureExpectations
         Assert.Equal("0", Query(store, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{paid.Identity}';").Single());
         Assert.Equal(["paused"], Query(store, "SELECT DISTINCT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage LIKE 'research call:%';"));
         Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage = 'research';"));
+    }
+
+    // A name's news answered from the recording, noting each window it is asked for, and refusing
+    // the windows a test names as the live feed refuses one the provider has more of.
+    sealed class WindowedNews(INameNewsFeed inner, Func<(DateOnly From, DateOnly To), bool>? refuses = null) : INameNewsFeed
+    {
+        public List<(DateOnly From, DateOnly To)> Asked { get; } = [];
+
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<NewsArticle>> ArticlesAsync(string ticker, DateOnly from, DateOnly to, CancellationToken cancellation = default)
+        {
+            Requests++;
+            Asked.Add((from, to));
+
+            return refuses?.Invoke((from, to)) == true
+                ? throw new ProviderRefusal($"The news query for {ticker} over {Iso(from)} to {Iso(to)} reached 20 pages of 1000 and the provider still had more.", transient: false)
+                : inner.ArticlesAsync(ticker, from, to, cancellation);
+        }
+    }
+
+    [Fact]
+    public async Task APassReadsTheNewsInsideEachMoveAndSinceTheFilingAndNeverTheStoredYear()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var news = new WindowedNews(new RecordedNameNewsFeed(Folder()));
+
+        await FixtureReplay.Researcher(store, ResearchClock, news: news, search: new NoResults()).RunAsync("KEYS", "research-windows");
+
+        // The windows the rule reads, worked out by the test from the night's facts and the
+        // release's filing date rather than taken from the pass: KEYS's eight moves, five of
+        // which overlap, and the days from 2026-08-18 to the night.
+        var facts = FactsFile.Read(Query(store, "SELECT payload FROM facts WHERE ticker = 'KEYS' AND session_date = '2026-09-08';").Single());
+        var moves = MoveWindows.In(facts);
+
+        Assert.Equal(8, moves.Count);
+
+        var release = Query(store, "SELECT published_on FROM source_document WHERE url LIKE 'https://www.sec.gov/%'").Single();
+        var filed = DateOnly.ParseExact(release, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        Assert.Equal(new DateOnly(2026, 8, 18), filed);
+
+        var expected = NewsWindows.For(moves, filed, new DateOnly(2026, 9, 8));
+
+        Assert.Equal(expected, news.Asked);
+        Assert.True(news.Asked.Count < moves.Count + 1, $"The pass asked for {news.Asked.Count} windows over {moves.Count} moves and the filing, so no overlap was read once.");
+        Assert.DoesNotContain(news.Asked, window => window.From <= new DateOnly(2026, 9, 8).AddYears(-ResearchRunner.WindowYears) && window.To >= new DateOnly(2026, 9, 8));
+
+        // And what each section was handed is what the stored year handed it: the research record
+        // expectation's titles, read by the test above, rest on documents inside these windows.
+        Assert.All(
+            Query(store, "SELECT published_on FROM source_document WHERE url NOT LIKE 'https://www.sec.gov/%';"),
+            published => Assert.Contains(news.Asked, window => string.CompareOrdinal(Iso(window.From), published) <= 0 && string.CompareOrdinal(published, Iso(window.To)) <= 0));
+    }
+
+    [Fact]
+    public async Task AWindowTheProviderHasMoreOfIsNamedUnreadAndThePassWritesFromTheRest()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        // The window since the filing refused as the live feed refused MSFT's year, and the moves'
+        // windows answered. The pass does not stop on it: the refusal is on its row and the sections
+        // resting on the moves are written.
+        // The sections are handed less than the recordings were asked over, so a research model that
+        // answers whatever it is asked stands in for the recorded one.
+        var news = new WindowedNews(new RecordedNameNewsFeed(Folder()), window => window.To == new DateOnly(2026, 9, 8));
+        var paid = new ScriptedModel([.. Enumerable.Repeat("The section, in words and citing its document [D1].", 20)]);
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, news: news, search: new NoResults()).RunAsync("KEYS", "research-window-refused");
+
+        Assert.NotEqual(ResearchRunner.Unavailable, outcome.Outcome);
+        Assert.Contains(news.Asked, window => window.To == new DateOnly(2026, 9, 8));
+        Assert.Contains("news: The news query for KEYS", outcome.Reason, StringComparison.Ordinal);
+        Assert.Contains("still had more", Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-window-refused' AND stage = 'research';").Single(), StringComparison.Ordinal);
+        Assert.Single(Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-window-refused' AND stage = 'research';"));
+    }
+
+    [Fact]
+    public void TheWindowsAreEachMovesSpanAndTheDaysSinceTheFilingReadOnceWhereTheyOverlap()
+    {
+        var night = new DateOnly(2026, 9, 8);
+
+        MoveWindow[] moves =
+        [
+            new("largest move", new DateOnly(2026, 2, 17), new DateOnly(2026, 2, 24)),
+            new("move 2", new DateOnly(2026, 2, 20), new DateOnly(2026, 3, 2)),
+            new("move 3", new DateOnly(2026, 3, 3), new DateOnly(2026, 3, 6)),
+            new("move 4", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 8)),
+            new("move 5", null, new DateOnly(2025, 9, 9)),
+            new("move 6", new DateOnly(2026, 8, 20), new DateOnly(2026, 8, 25)),
+        ];
+
+        // Overlapping spans are one, and a span starting the day after another ends is one with it;
+        // a move whose start has left the stored year is no window; and the filing's span to the
+        // night takes in a move inside it.
+        Assert.Equal(
+            [(new DateOnly(2026, 2, 17), new DateOnly(2026, 3, 6)), (new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 8)), (new DateOnly(2026, 8, 18), night)],
+            NewsWindows.For(moves, new DateOnly(2026, 8, 18), night));
+
+        // With no filing, the quarter back from the night; and a filing dated after the night is read
+        // as none.
+        Assert.Equal((night.AddMonths(-NewsWindows.WithoutAFilingMonths), night), NewsWindows.For([], null, night).Single());
+        Assert.Equal((night.AddMonths(-NewsWindows.WithoutAFilingMonths), night), NewsWindows.For([], night.AddDays(1), night).Single());
+    }
+
+    [Fact]
+    public async Task ACapReachedInsideAPassStopsItsRemainingPaidCallsRatherThanWarning()
+    {
+        // The pass as the recordings have it, once with the caps that let it run, to read what its
+        // first paid call cost and what its second could cost.
+        var asked = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+
+        using (var free = await FixtureReplay.ReplayedForResearchAsync())
+        {
+            await FixtureReplay.Researcher(free, ResearchClock, paid: asked, search: new NoResults()).RunAsync("KEYS", "research-priced");
+        }
+
+        var first = asked.Asked[0];
+        var second = asked.Asked[1];
+        var cost = asked.Price(OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(first))), first.Section));
+
+        // A day cap the first call fits inside and the first call's cost with the second's ceiling
+        // does not: the cap is reached inside the pass rather than before it.
+        var cap = cost + asked.Ceiling(second) - 0.000001m;
+
+        Assert.True(asked.Ceiling(first) <= cap, "The first call's ceiling does not fit the cap, so the pass would stop before it rather than inside it.");
+
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, caps: new SpendCaps(cap, 50m), search: new NoResults()).RunAsync("KEYS", "research-cap-reached");
+
+        // One call made and written, and no call after the refusal: the pass is paused, and every
+        // paid section it had not reached is named with the cap's line rather than written.
+        Assert.Equal(ResearchRunner.Paused, outcome.Outcome);
+        Assert.Equal([first.Section], paid.Asked.Select(request => request.Section).ToArray());
+        Assert.Equal([$"{first.Section}|1"], Query(store, $"SELECT section, version FROM research_section WHERE ticker = 'KEYS' AND model = '{paid.Identity}';"));
+
+        var stopped = outcome.NotWritten.Where(line => line.Reason.StartsWith("research is paused:", StringComparison.Ordinal)).Select(line => line.Section).ToArray();
+
+        Assert.Contains(second.Section, stopped);
+        Assert.DoesNotContain(first.Section, stopped);
+        Assert.Equal([cost.ToString(CultureInfo.InvariantCulture)], Query(store, "SELECT spend FROM run_log WHERE run_id = 'research-cap-reached' AND stage LIKE 'research call:%' AND outcome = 'ok';"));
+        Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-cap-reached' AND stage = 'research';"));
     }
 
     [Fact]
@@ -636,9 +789,11 @@ public partial class FixtureExpectations
 
         Assert.Contains($"through the spend cap for ${decimal.Round(spend, 4).ToString(CultureInfo.InvariantCulture)}", runbook, StringComparison.Ordinal);
 
-        // And the window, which both state as the stored year.
+        // And the windows a pass reads the news over, which the runbook states as the rule does:
+        // inside each stored move and from the release's filing date to the night.
         Assert.Equal(1, ResearchRunner.WindowYears);
-        Assert.Contains("fetches the name's news for the stored year", runbook, StringComparison.Ordinal);
+        Assert.Contains("the name's news inside each stored move and from the release's filing date to the night, overlapping spans once", runbook, StringComparison.Ordinal);
+        Assert.DoesNotContain("news for the stored year", runbook, StringComparison.Ordinal);
     }
 
     // ---- a dated calendar item's date ----

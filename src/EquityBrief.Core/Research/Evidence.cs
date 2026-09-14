@@ -21,7 +21,7 @@ public sealed record EvidenceDocument(StoredDocument Stored, int Symbols);
 // segments, and the company's own filing and the documents since it for the sections
 // built across the evidence. Within each, the fewest companies named first.
 // see: Code owns every number
-// see: A research pass hands each section the documents code picks for it, the company's own filing first
+// see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
 public static class Evidence
 {
     // The documents one move's cause may rest on, at most. Two, measured over KEYS's

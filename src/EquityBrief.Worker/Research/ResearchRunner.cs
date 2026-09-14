@@ -40,7 +40,7 @@ public sealed record ResearchPassOutcome(
 // section the documents code picks for it.
 // see: Everything expensive happens when a name is opened
 // see: The model never fetches; components fetch and hand it documents
-// see: A research pass hands each section the documents code picks for it, the company's own filing first
+// see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
 // see: Every paid call is made through the spend cap, which holds the research model
 //
 // One pass, one run id, however many rounds it takes. A section refused on its first
@@ -101,8 +101,10 @@ public sealed class ResearchRunner(
     // Why a plain open on the day a pass ran starts nothing.
     public const string RanToday = "a research pass for this name already ran today, and opening it again writes nothing until a later day or a rewrite";
 
-    // The window a pass reads, which is the stored year: a move's cause rests on a
-    // document inside that move, and no stored move is older than the bars kept.
+    // The window a document a pass keeps may be dated inside, which is the stored year: a
+    // move's cause rests on a document inside that move, and no stored move is older than the
+    // bars kept. The news a pass asks for is narrower, the windows the rule hands a section
+    // from, which 6.11 found a large company's year needed.
     // see: One year of bars, and no more
     public const int WindowYears = 1;
 
@@ -331,21 +333,10 @@ public sealed class ResearchRunner(
         var fetched = new List<(FetchedDocument Document, int Symbols)>();
         var unread = new List<string>();
 
-        try
-        {
-            foreach (var article in await news.ArticlesAsync(ticker, from, asOf, cancellation))
-            {
-                fetched.Add((
-                    new FetchedDocument(DocumentChannel.NewsFeed, article.Url, article.Title, DateOnly.FromDateTime(article.Published.UtcDateTime), article.Text),
-                    Math.Max(1, article.Symbols.Count)));
-            }
-        }
-        catch (ProviderRefusal refused)
-        {
-            unread.Add("news: " + refused.Message);
-        }
-
+        // The company's own filing first, because the news the sections built across the
+        // evidence are handed is the news published since it.
         string? ownFiling = null;
+        (FetchedDocument Document, int Symbols)? filing = null;
 
         if (await CikAsync(connection, ticker, cancellation) is { } cik)
         {
@@ -353,9 +344,9 @@ public sealed class ResearchRunner(
             {
                 if ((await archive.FilingsAsync(ticker, cik, cancellation)).Release is { } release)
                 {
-                    fetched.Add((
+                    filing = (
                         new FetchedDocument(DocumentChannel.FilingsArchive, release.Url, "Results release, " + release.Document, release.FiledOn, release.Text),
-                        Evidence.OwnFiling));
+                        Evidence.OwnFiling);
                     ownFiling = SourceDocuments.Id(release.Url);
                 }
             }
@@ -367,6 +358,37 @@ public sealed class ResearchRunner(
         else
         {
             unread.Add("filings archive: no CIK is stored for the name, which the fundamentals fetch writes");
+        }
+
+        // The news inside each stored move and since the filing, overlapping spans once, and
+        // never the stored year: a window the provider has more of than a query reads is named
+        // as unread and the others are still read.
+        // see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var (windowFrom, windowTo) in NewsWindows.For(MoveWindows.In(facts), filing?.Document.PublishedOn, asOf))
+        {
+            try
+            {
+                foreach (var article in await news.ArticlesAsync(ticker, windowFrom, windowTo, cancellation))
+                {
+                    if (seen.Add(article.Url))
+                    {
+                        fetched.Add((
+                            new FetchedDocument(DocumentChannel.NewsFeed, article.Url, article.Title, DateOnly.FromDateTime(article.Published.UtcDateTime), article.Text),
+                            Math.Max(1, article.Symbols.Count)));
+                    }
+                }
+            }
+            catch (ProviderRefusal refused)
+            {
+                unread.Add("news: " + refused.Message);
+            }
+        }
+
+        if (filing is { } own)
+        {
+            fetched.Add(own);
         }
 
         var intake = SourceDocuments.Of([.. fetched.Select(one => one.Document)], from, asOf, startedAt);

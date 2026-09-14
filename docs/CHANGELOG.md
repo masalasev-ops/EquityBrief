@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-14 - ARCHITECTURE.html - the cause row cites the decision that replaced the one it cited
+
+Authorised by: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
+Was:
+> at most two a move, naming the fewest companies and then the earliest (see: A research pass hands each section the documents code picks for it, the company's own filing first). A move with no document inside it
+Now:
+> at most two a move, naming the fewest companies and then the earliest (see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first). A move with no document inside it
+Why: the decision it cited is superseded at 6.11, and a citation of a superseded name is refused.
+
+### 2026-09-14 - RUNBOOK.md - a pass reads the news inside each move and since the release, not the stored year
+
+Authorised by: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
+Was:
+> It fetches the name's news for the stored year and its latest results release from the filings archive, tests each document for admissibility as it arrives and stores it with the verdict. It hands each section the documents code picks for it: two a move for the cause of each move, and six since the release beside the release itself for the sections built across the evidence (see: A research pass hands each section the documents code picks for it, the company's own filing first).
+Now:
+> It fetches its latest results release from the filings archive, then the name's news inside each stored move and from the release's filing date to the night, overlapping spans once, tests each document for admissibility as it arrives and stores it with the verdict. It hands each section the documents code picks for it: two a move for the cause of each move, and six since the release beside the release itself for the sections built across the evidence (see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first). A window the provider has more of than a query reads is named as unread on the pass's row, and the sections are written from the windows that were read.
+Why: 6.11's production run found MSFT's year past the most pages a query reads, and the pass reads only the windows the rule hands a section from.
+
 ### 2026-09-14 - ARCHITECTURE.html - a theme search is restricted to one site of the industry list at a time, and its call is handed a bounded set of pages
 
 Authorised by: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return

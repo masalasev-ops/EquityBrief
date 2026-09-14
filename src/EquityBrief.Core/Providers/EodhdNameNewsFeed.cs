@@ -74,10 +74,14 @@ public sealed class EodhdNameNewsFeed(
             offset += parsed.Count;
         }
 
-        throw new InvalidOperationException(
+        // A refusal of the window rather than an error, so a pass records it as unread on its row and
+        // writes from the windows it could read. It was an error until 6.11, and a pass for MSFT over
+        // the stored year stopped on it with nothing on its row.
+        throw new ProviderRefusal(
             FormattableString.Invariant($"The news query for {ticker} over {from:yyyy-MM-dd} to {to:yyyy-MM-dd} reached {EodhdNewsFeed.MostPages} pages of ") +
             $"{EodhdNewsFeed.Limit} and the provider still had more. A pass that read a truncated window would rest its sections " +
-            "on whatever the pages happened to include, so it refuses rather than reading one.");
+            "on whatever the pages happened to include, so the window is refused rather than read.",
+            transient: false);
     }
 
     async Task<string> FetchAsync(string ticker, DateOnly from, DateOnly to, int offset, CancellationToken cancellation)

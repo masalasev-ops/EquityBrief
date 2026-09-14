@@ -73,12 +73,14 @@ public class NameNewsFeedTests
         Assert.Contains("offset=0", first.Query, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"offset={EodhdNewsFeed.Limit}"), handler.Asked[1].Query, StringComparison.Ordinal);
 
-        // A window the provider still had more of at the last page refuses rather than
-        // handing a pass part of a year as the whole of it.
+        // A window the provider still had more of at the last page is refused rather than handing a
+        // pass part of a window as the whole of it, and refused as a refusal the pass records rather
+        // than as an error that stops it, which a pass for MSFT stopped on at 6.11.
         var endless = new Answering(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(Page(EodhdNewsFeed.Limit, "KEYS.US")) });
-        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => Live(endless).ArticlesAsync("KEYS", From, To));
+        var refused = await Assert.ThrowsAsync<ProviderRefusal>(() => Live(endless).ArticlesAsync("KEYS", From, To));
 
         Assert.Contains("still had more", refused.Message, StringComparison.Ordinal);
+        Assert.False(refused.Transient);
         Assert.Equal(EodhdNewsFeed.MostPages, endless.Asked.Count);
     }
 
