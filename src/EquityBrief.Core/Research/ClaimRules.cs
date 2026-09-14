@@ -327,10 +327,12 @@ public static class ClaimRules
     // Words a period ends without ending a sentence. The four captured articles
     // carry "vs." in a title and "Inc." in a company name, and a split after either
     // leaves a fragment with no citation, which the citation rule would refuse
-    // for being a sentence it is not.
+    // for being a sentence it is not. "Bros." and "Cos." end the names of two index
+    // members, and 6.11's production run found a cause refused for a split after the
+    // first.
     static readonly HashSet<string> Abbreviations = new(StringComparer.OrdinalIgnoreCase)
     {
-        "vs", "Inc", "Corp", "Co", "Ltd", "Plc", "St", "Mr", "Mrs", "Ms", "Dr", "No", "approx", "est",
+        "vs", "Inc", "Corp", "Co", "Cos", "Bros", "Ltd", "Plc", "St", "Mr", "Mrs", "Ms", "Dr", "No", "approx", "est",
         "e.g", "i.e", "U.S", "U.K", "Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Sept",
         "Oct", "Nov", "Dec",
     };
