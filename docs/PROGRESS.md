@@ -9945,3 +9945,171 @@ Carried:    three items, for 7.0 to enter in the table rather than by this entry
 Signed:     phase 6 is signed off at c8a6426. Its twelve checkpoints are built and recorded,
             both gates are green on the tree being signed, the matrix ran on both runners for
             every merge, nothing is owed inside the phase, and 7.0 is unblocked.
+
+### 7.0 ruling - a spent suspect name asked for weekly, and its name page, its exported report and its row on tonight's list saying so   2026-09-14
+Not a checkpoint entry. It belongs to 7.0, which has not landed, and it is not the entry of
+            the pass that plans phase 7, which is still to come. The repair the phase 6 sign-off
+            ruled owed before that pass's entry is written, the due-point reader answering whether
+            a planning checkpoint has landed, is not made here. This session has committed code
+            and may not sign it off.
+Built:      no component. The operator's ruling on an item the phase 6 sign-off carried to 7.0, with
+            the check, the read API and the pages it reaches. A suspect name is still asked for
+            again on each of the 5 nights after the one that marked it; once those are spent it is
+            asked for again on the first session 7 or more calendar days after the session it was
+            last asked for, taken from the instant its row carries through the clock the night runs
+            on, with the count going on past the limit, until a refetch succeeds or the name leaves
+            the index, and named as spent on the sessions between. The read API reads the suspect
+            rows of `series_state` as stored and declares the read. The name page opens with one
+            line saying the name's prices may not reflect a recent dividend or split, when the
+            refetch was last tried and why it failed, first inside its region, so the exported
+            report carries it; the name's row on tonight's list says so beside the name with the
+            instant and the reason as its title; the run page keeps its line. Nothing stored changes
+            shape and no migration is added. The commits: the ruling with its code, tests, documents
+            and expectation; the test the sweep's survivor needed; the read API's matrix verdict
+            counting its reads again; and this record.
+Decided:    one decision, superseding one. A suspect name is asked for again on the five nights
+            after it is marked and weekly after that, and its own page, its row on tonight's list
+            and the run page say so until a refetch succeeds. It supersedes the 6.0 ruling's
+            decision, which moves to "Previously decided" with its reasoning: the five nights, the
+            count, a new action starting it again and the run page's line stand, and what changed
+            is that a spent name no longer waits for another action and that its own surfaces say
+            so. Weekly rather than never, because the provider is the only source of the series and
+            a failure it has cleared is then cleared without anyone acting; weekly rather than
+            nightly, because a failure that lasts costs one request a week. No second provider is
+            taken, and its figures are still computed over its stored series rather than withheld.
+Found:      the phase 6 sign-off carried the question of a suspect name's own surfaces to 7.0,
+            having found that nothing in the read API or the pages read `series_state`, so the run
+            page was the one surface naming a suspect name while its name page, tonight's list and
+            its exported report drew its figures with nothing beside them, and that a name whose
+            retries were spent stayed so until another action landed on it, which for a split on a
+            name paying no dividend may not come. It carried a behavioural test for a suspect name
+            the index no longer holds as well, since its sweep found that property held by a source
+            scan alone. The operator ruled on 2026-09-14: five nights stand, a spent name is asked
+            for weekly, and its own page and its row on tonight's list say so, with no second data
+            source, since EODHD is the only subscription and had not failed. In the operator's
+            store, read without writing after the scheduled night of 2026-09-14 finished, the night
+            ran every stage ok at schema version 23, its check found 128 actions and refetched 4
+            names with every refetch succeeding, and `series_state` holds 32 rows, all ok. And one
+            statement the ruling's first commit left wrong, found while filling in this record from
+            the phase report and corrected on this branch: the harness's verdict on section 16's
+            matrix row for the read API counted the eleven reads the row carried before its series
+            state read, where it carries twelve and the one write. Two verdicts beside it were wrong
+            before this ruling and are not corrected here: the rows for the mark renderer and the
+            single page app are each said to have all eleven cells blank, where each has thirteen,
+            the count being written into the note and read against nothing.
+Changed:    the decision in DECISIONS.md and the one it supersedes moved to "Previously decided".
+            Section 7's catalogue row for the corporate action checker; section 15.7's reads and
+            its list row, which gains the line beside the name; section 15.9's reads and a region
+            for the line, read as its three parts; section 16's matrix row for the read API, which
+            gains its series state read; section 17's per-name network call row, which states the
+            weekly bound in digits beside the nightly one; and section 18's row for a split or
+            dividend not caught, in all three of its cells. SCHEMA.md's series state notes. The
+            runbook's row for a name marked suspect. BUILD_PLAN.md's 7.0 text, which cites the two
+            items this discharges, the two rows entered discharged, and 6.0's row, which cites the
+            decision that superseded its own. Nine CHANGELOG entries.
+Tested:     4 added under `corporate-actions`: a name whose nightly retries are spent on Monday
+            2026-08-17, asked for on the sessions its week comes round on and on none between, being
+            Monday 2026-08-24 and Monday 2026-08-31, Tuesday 2026-09-08 because the exchange closed
+            on Monday 2026-09-07, and not Monday 2026-09-14, six days on, its count going on past
+            the limit and the stage partial on each, then cleared by a refetch that succeeds on
+            Tuesday 2026-09-15 with nothing asked a week later; a suspect name with its retries
+            spent and one with retries left, asked for and named while both are members, and neither
+            asked for nor named, with the stage ok, on the night both have left the index; and a
+            name the check itself marked suspect, whose name page and exported report, served by
+            their routes, carry the line with when it was last tried and why above the trend state,
+            whose row on tonight's list draws its line, and none of the three once a refetch
+            succeeds. And, added for the sweep's survivor, a name whose last nightly retry, Monday
+            2026-08-17's night, was asked at 00:42 UTC on the Tuesday, its row carrying that
+            instant, asked for on Monday 2026-08-24, 7 days on from the session and 6 from the
+            instant's UTC date, and not named as spent there, its count going on to 6. 1 added under
+            `read-surface`, over a store the whole pipeline populated, one listed name suspect and
+            one trusted: the read hands the suspect row back as stored, by the state the check
+            writes; tonight's route draws the line in the suspect name's row with its instant and
+            escaped reason as the title and none in the trusted name's; and the name route and the
+            export draw the line once, first inside the region, with the reason escaped in the
+            markup, while the trusted name's page draws none. Widened: under `corporate-actions`,
+            the spent name's stage detail read as its nightly retries spent; under `nightly-cost`,
+            the derived expectation `suspect-retries` at 28 nights, its sessions written out and
+            read off the closure table as well, each request after the nightly retries worked out
+            from the closure table as the first session a week on from the one before it, section
+            17's row held to both constants in two phrases, the carve-out's bound to both, and the
+            runbook's weekly phrase to the constant; and under `architecture-conformance`, the
+            screens counts at 42 rows, 121 subjects and 128 elements. 909 tests, from 904 at the
+            phase 6 sign-off.
+Mutated:    the rule, stated before the sweep: mutate every property the ruling added whose failure
+            would let a spent name be asked for before its week has come round or after it, never or
+            every night, count its week from the UTC date of the instant rather than from the
+            session, skip a week whose seventh day the exchange did not trade, name it as spent on a
+            night it is asked for, go on asking for or naming a name the index no longer holds,
+            leave the name page without its line, draw the line below the figures, for a name whose
+            series is trusted, or in the page and not in the exported report, leave tonight's row
+            without its line or put one suspect name's line on every row, state the instant or the
+            reason other than as stored or the reason unescaped, read rows other than the suspect
+            ones, leave the read API's read undeclared, or let section 17's or the runbook's weekly
+            figure drift from the constant. Outside the rule: the nightly retries, the count and a
+            new action starting it again, which the 6.0 ruling added and its sweep and the phase 6
+            sign-off's mutated; the migration's default, which the 6.0 ruling's rerun mutated; and
+            the night's console line, which no test reads. Twenty one qualify and all twenty one
+            were mutated, in a detached worktree under the session scratchpad outside this
+            repository, over an unmutated baseline of 908 tests all passing at 8586d45; each was
+            reverted before the next. Twenty went red on the first run: a spent name never asked for
+            again, 2 tests red; asked for every night, 6; six days on, 2; eight days on, 2; a week
+            whose seventh day the exchange did not trade skipped rather than moved to the next
+            session, 2; a spent name asked for on its week's night and named as spent there too, 2;
+            a suspect name the index no longer holds asked for and named, 2, being the test added
+            and the source scan of the membership reads; the name page drawn without its line, 2;
+            the line drawn below the fact strip, 2; the line drawn for a trusted name, 2; the
+            exported report composed without it, 2; tonight's row drawn without its line, 2; one
+            suspect name's line drawn on every row, 1; the reason drawn where the instant goes, 2;
+            the instant drawn where the reason goes, 2; the reason drawn unescaped, 1; the read
+            handing back the rows that are not suspect, 2; the read left out of the read API's
+            declaration, 1, under `component-access`; section 17 stating 8 days, 1; and the runbook
+            stating 8 days, 1. One survived, a missing property: a spent name's week counted from
+            the UTC date of the instant its row carries rather than from the session it was last
+            asked for. The decision and SCHEMA.md both count from the session, and every test ran
+            its nights at 21:10 UTC, which is where a night run by hand for a named session puts its
+            clock and where the two dates agree, so the two readings reached no night on which they
+            differ. A night that starts on the system clock after midnight UTC and before midnight
+            in New York is such a night: the scheduled task starts a night it missed when the
+            machine is next available, and a night run by hand in the evening reads the system
+            clock. In the operator's store the scheduled night of 2026-09-14 ran its check at
+            23:30:20 UTC, before midnight. The test added runs the last nightly retry at 00:42 UTC,
+            above. Run again at 3f81ba1, the commit that added the test, in the same worktree over
+            an unmutated baseline of 909 passing: the week counted from the instant's UTC date, 1
+            test red, being the test added. One more was mutated there, by a rule stated before that
+            run: break the property the added test asserts in the other form a UTC date can take the
+            session's place in, being the week counted in UTC dates at both ends, from the instant's
+            to the night's, which agrees with the session at both ends on every night before
+            midnight UTC, 1 test red, being the test added. The worktree was removed after.
+            Properties added and not mutated, named because the next sweep has to find them: the
+            count going on past the limit on a night a spent name is asked for, which the weekly
+            tests read; the title of tonight's row stating the instant and the reason, which the
+            read surface's test reads and which no mutation reached, since the two that swapped them
+            changed the name page's line; the clause of the stage's detail saying a spent name is
+            asked for again 7 days after its session, which no test reads; and a suspect row with no
+            reason drawn as no reason recorded, which no suspect row the check writes can hold.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six
+            steps, exit 0, against `data-ci` and never `data`. 909 of 909 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 350 claims, 334 PASS, 0 fail, 16 out of scope, 0
+            unexamined, 341 placements and verdicts reconciled against a floor of 34, 34 of 35
+            roster checks carried and all 34 run. Migrations 0 to 23, none added. Both gates ran
+            twice with this entry in place, and these figures are from the second run, after the
+            verdict's correction above; the first gave the same figures. The 16 read twice, by the
+            first checkpoint each note names and by the last, give 16 at phase 7 both ways: 2 at
+            7.1, 3 at 7.3, 1 at 7.4, 9 at 7.5 and 1 at 7.6, as at the phase 6 sign-off. The ruling
+            added 4 claims, the line beside the name in section 15.7's list and the three parts of
+            section 15.9's region for the line, each PASS under `read-surface`, and moved none: the
+            rows it edited pass under the checks they passed under before, section 7's catalogue row
+            and section 16's matrix row for the read API under `component-access`, section 17's
+            per-name row under `nightly-cost`, and section 18's row under `corporate-actions`. The
+            operator's store under `data/` was not touched by either gate, its newest file last
+            written on 2026-09-15 at 00:14 UTC before the gates and after them.
+Carried:    two obligations entered and discharged, none created. A suspect name's own surfaces say
+            so, ruled, is discharged by the decision and the three surfaces above. A suspect name
+            the index no longer holds is neither asked for nor named, asserted by behaviour, is
+            discharged by the test above. The phase 6 sign-off's third item, the due-point reader
+            repair, stays with the session that builds 7.0 and stays owed before that pass's entry.
+            And one finding, for 7.0 to enter in the table rather than by this entry: a count
+            written into a verdict note is reconciled against nothing, so the phase report prints it
+            whatever the row holds, as the mark renderer's and the single page app's matrix verdicts
+            print eleven blank cells over rows of thirteen.
