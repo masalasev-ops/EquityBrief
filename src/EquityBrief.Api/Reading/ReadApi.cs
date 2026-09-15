@@ -71,6 +71,12 @@ public sealed record CalendarRow(string Ticker, DateOnly EventDate, string Kind,
 // stated.
 public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, string Plan);
 
+// A name whose stored series the corporate action check marked suspect, as its row holds
+// it: the reason its last refetch failed for, the instant it was last asked for, and how
+// many nights after the one that marked it it has been asked for again. Every field is
+// the stored column, and the instant stays the text the check wrote.
+public sealed record SuspectSeriesRow(string Ticker, string? Reason, string CheckedAt, int Retries);
+
 // One stored filing, as the store holds it. The payload and the source are handed
 // over as written rather than unpacked here, because the read surface hands back
 // stored values unchanged and a reader that picked figures out of the JSON would
@@ -237,11 +243,14 @@ public sealed record UniverseRow(
 public sealed class ReadApi : IComponent
 {
     // Reads every store and appends to the run log, which is section 7's row
-    // for this component and the eleven R cells plus one W in its matrix row.
+    // for this component and the R cells plus one W in its matrix row.
     //
     // Every store means every store the matrix has a column for. The candidate
     // register has no column and is not in the catalogue's phrase, so it is not
-    // declared here either; it arrives with the registrar in phase 7.
+    // declared here either; it arrives with the registrar in phase 7. Series
+    // state was the one column the row left blank until the 7.0 ruling, which
+    // has the name page and tonight's list say where a name's prices may not
+    // reflect a dividend or split.
     public static ComponentAccess Access => new(
         Stores:
         [
@@ -262,11 +271,17 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.ResearchSection, Touch.Read),
             new StoreTouch(Store.ThemeSection, Touch.Read),
             new StoreTouch(Store.SourceDocument, Touch.Read),
+            new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
 
     public const string Stage = "read-api";
+
+    // The state the corporate action check marks a name whose refetch failed with. The
+    // worker's own constant cannot be referenced from here, so it is stated and
+    // `read-surface` asserts the two agree.
+    public const string SuspectState = "suspect";
 
     readonly string databaseFile;
     readonly IClock clock;
@@ -1638,6 +1653,43 @@ public sealed class ReadApi : IComponent
 
         return rows;
     }
+
+    // Every name whose stored series is suspect, as the rows hold them. The name page and
+    // tonight's list say so beside the name's figures, which are computed over a series
+    // that may not carry a dividend's or a split's adjustment. The whole store's rather
+    // than one name's, since a night holds none or a few and tonight's list asks about
+    // twenty names at once.
+    // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
+    public async Task<IReadOnlyList<SuspectSeriesRow>> SuspectSeriesAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SuspectSeries;
+        command.Parameters.AddWithValue("$suspect", SuspectState);
+
+        var rows = new List<SuspectSeriesRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new SuspectSeriesRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetString(1),
+                reader.GetString(2),
+                reader.GetInt32(3)));
+        }
+
+        return rows;
+    }
+
+    const string SuspectSeries = @"
+        SELECT ticker, reason, checked_at, retries
+        FROM series_state
+        WHERE state = $suspect
+        ORDER BY ticker;
+    ";
 
     // Whether the index holds a name today, which is what the name page's control is
     // refused on before anything is started for it.

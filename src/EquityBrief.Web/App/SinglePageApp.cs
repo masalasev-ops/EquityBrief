@@ -187,7 +187,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<DateCell>? dates = null,
         ResearchPassLine? pass = null,
         IReadOnlyList<ResearchControl>? controls = null,
-        ResearchCost? cost = null)
+        ResearchCost? cost = null,
+        SuspectPrices? suspect = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -206,6 +207,10 @@ public sealed class SinglePageApp : IComponent
         }
 
         region.Append(Invariant($"<section class=\"name\" data-ticker=\"{Escaped(ticker)}\">"));
+
+        // Where the name's stored series is suspect, first, since every figure after it is
+        // computed over those prices. Inside the region, so the exported report carries it.
+        region.Append(marks.PricesSuspect(ticker, suspect));
 
         // The trend state, in a word. Read off the ladder row rather than worked
         // out here, and a name with no row says so rather than showing nothing:

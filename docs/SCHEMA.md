@@ -441,7 +441,7 @@ Grain: one row per ticker.
 | `ticker` | TEXT | |
 | `state` | TEXT | `ok` or `suspect` |
 | `reason` | TEXT | why, in words, when the state is not ok |
-| `checked_at` | TEXT | UTC instant of the check that set this |
+| `checked_at` | TEXT | UTC instant of the check that set this, which times a spent name's weekly retry from its session |
 | `retries` | INTEGER | how many nights after the one that marked it the name has been asked for again and failed, 0 when the state is ok; last because SQLite appends |
 
 Primary key: `ticker`.
@@ -452,7 +452,7 @@ One row per ticker rather than one per check, because the question asked of it i
 
 No deleter. A name that becomes trustworthy again is set back to `ok` by the check that established it, which is an update on the row that already exists.
 
-**`retries` is a count and not a history, added at the 6.0 ruling.** The check reads it to decide whether tonight asks for a suspect name again, which is a question about now, and each attempt's night is still the run log's. A night an action lands on the name sets it back to 0 however the refetch goes, because the action is a new reason to ask, and a name at the limit is not asked for again until one does (see: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it). It is not null with a default of 0, where `bar.raw_close` is nullable, because here the default holds: nothing counted a row that exists when the column is added, and the rule counts from the night it lands.
+**`retries` is a count and not a history, added at the 6.0 ruling.** The check reads it to decide whether tonight asks for a suspect name again, which is a question about now, and each attempt's night is still the run log's. A night an action lands on the name sets it back to 0 however the refetch goes, because the action is a new reason to ask, and a name at the limit is asked for again on the first night whose session is 7 or more days after the session of its `checked_at`, with the count going on past the limit, until a refetch succeeds (see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds). The read API reads the row as stored from the 7.0 ruling, for the line the name page opens with and the one tonight's list draws beside the name. It is not null with a default of 0, where `bar.raw_close` is nullable, because here the default holds: nothing counted a row that exists when the column is added, and the rule counts from the night it lands.
 
 ### run_log
 Grain: one row per run per stage.

@@ -234,8 +234,9 @@ public static class SchemaMigrations
     // Not null with a default, unlike the columns above, because here the default is a
     // value that holds rather than one nobody wrote: every row that exists when the column
     // is added has been counted by nothing, and the rule counts from the night it lands, so
-    // a name already suspect is asked for again on at most the limit's nights from then.
-    // see: A suspect name's retries are bounded, and a name whose retries are spent stays suspect and named on the run page until another action lands on it
+    // a name already suspect is asked for again on the limit's nights from then, and weekly
+    // after them from the 7.0 ruling, which counts on past the limit in the same column.
+    // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
     const string AddSeriesStateRetries = @"
         ALTER TABLE series_state ADD COLUMN retries INTEGER NOT NULL DEFAULT 0;
     ";
