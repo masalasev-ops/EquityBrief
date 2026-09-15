@@ -10350,3 +10350,97 @@ Carried:    one row discharged and none created. A planning checkpoint lands wit
             the phase 6 sign-off ruled. The four rows due at 8.0 and the count a verdict note
             states, due at 8.0, stay open, and none reads as passed, since 8.0's planning entry is
             not written.
+
+### 7.2 - the phase 7 report   2026-09-15
+Built:      nothing that runs. This checkpoint reports on phase 7, and its done condition is that
+            every phase 7 claim is PASS naming an instrument whose declared reach includes it, that
+            unexamined is zero, that the pair 7.0 predicted is checked against the actual with every
+            claim that moved named, and that no verdict note on the read and write matrix states a
+            count of cells its row does not carry. It corrects three of those notes, in one commit
+            before this record, 47b80f3: the mark renderer's and the single page app's, which said
+            all eleven cells are blank over rows of thirteen, now thirteen; and the read API's,
+            which said the twelve reads and the one write over a row of twelve cells read and one,
+            the run log's, read and written, so that its reads counted twelve of the thirteen cells
+            that read, now saying twelve cells read and the run log's cell read and written.
+Predicted:  at 7.0, 350 claims and 334 PASS after phase 7, with 16 out of scope, 0 unexamined and 0
+            fail, all 16 at phase 8: 2 at 8.1, 3 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6, with the
+            ruling's 4 claims passing and 7.0, 7.1 and 7.2 adding none. Checked against the actual
+            under Verified.
+Moved:      every claim that moved over the phase, read off the phase report the phase 6 sign-off's
+            gates wrote and the one this checkpoint's gates wrote, by table and subject. Added, 4,
+            each PASS under `read-surface`, by the 7.0 ruling: section 15.7's line beside the name
+            where its prices may not reflect a dividend or split, and section 15.9's region for a
+            name whose prices may be out of date, as its one line, when the refetch was last tried
+            and why it failed, and its place above everything the page draws from those prices.
+            Moved from a phase 7 due point to phase 8 by 7.0's renumbering, 16, each still out of
+            scope: from 7.5 to 8.5, section 15.10's two reason record parts, the share that reached
+            target before stop and the break-even those setups demanded, section 15.11's four
+            display states, below the minimum, at or above it, unresolved setups and never shown,
+            section 17's reason record display and minimum resolved setups, and section 18's
+            condition that has fired with nothing resolved yet; from 7.4 to 8.4, section 15.10's
+            shadow candidates; from 7.3 to 8.3, section 16's candidate register and section 18's
+            register row edited or deleted and register disagreeing with the correction; from 7.1 to
+            8.1, section 17's setup resolution and family size and correction; and from 7.6 to 8.6,
+            section 17's frozen measurement windows. None removed, no verdict changed, and no
+            passing claim passes under a different check.
+Measured:   over the phase, from the phase 6 sign-off's merge at 6bbaddb. 6 tests added, 904 to 910:
+            5 by the 7.0 ruling and 1 by 7.1. No migration, schema version 23 throughout. No check
+            added, 35 on the roster and 34 carried. Two decisions written, both at 7.0, and one
+            superseded: the ruling's, which moved the 6.0 ruling's to "Previously decided", and the
+            one making phase 6's carried items phase 7 and the improvement loop phase 8. The carried
+            obligations table went from 75 rows with 64 discharged to 79 with 67: the ruling entered
+            2, discharged as they were entered, and 7.0 entered 2, of which 7.1 discharged the
+            repair's. 5 checkpoint rows are open, all due at 8.0, and 7 operating rows stand. Two
+            checks read differently: `obligation-reconciles` reads a row as cited back only by the
+            marker inside the checkpoint that owes it, and every check asking whether a point has
+            landed reads a planning checkpoint as landed from its planning entry, with
+            `architecture-conformance` reading the record for every started phase's opening
+            checkpoint landed. Pull requests 90 and 91 for 7.0, 92 for 7.1, and this checkpoint's.
+Found:      over the phase, each recorded in the entry of the checkpoint that found it. By mutation:
+            a spent suspect name's week counted from the UTC date of the instant its row carries
+            rather than from its session, at the 7.0 ruling, remedied by a test over a night
+            starting after midnight UTC; and `obligation-reconciles` reading a row as cited back
+            wherever the row's name appears in its checkpoint's text, at 7.0, remedied by reading
+            the marker. By a check refusing: `done-condition-producible` stating section 20's row
+            count exactly, at 7.0. By reading the phase report while filling in a record: the read
+            API's matrix note counting eleven reads, corrected at the ruling, and the two notes
+            counting eleven blank cells over rows of thirteen, corrected here, with the gap behind
+            all three, a count typed into a note and read against nothing, entered for 8.0. By the
+            operator: the ruling committed under 7.0 while 7.0 was still the improvement loop's
+            planning pass, which made phase 6's carried items phase 7 and the loop phase 8. By
+            building the repair: that a planning pass is told from a ruling by its heading alone, so
+            the real record is read for every started phase's opening checkpoint landed. And here,
+            by measuring each matrix note that states a count against the cells of its row: the read
+            API's note, which the ruling corrected, counted the read-only cells as its reads and
+            left the run log's read out of the count.
+Mutated:    no assertion is added, and the property the correction states, that a count a matrix
+            verdict note states is its row's, is not one any test reads. The rule, stated before the
+            run: return one corrected note to its prior count, the mark renderer's to all eleven
+            cells, since the two blank-row notes are one string and the read API's note is the same
+            kind. Predicted to survive, a missing property: nothing reads a count a verdict note
+            states against the row it describes, which is the row due at 8.0. It survived, in a
+            detached worktree under the session scratchpad at 47b80f3, over an unmutated baseline of
+            910 tests all passing: 910 passed with the note back at eleven, and the worktree was
+            removed after. It is the evidence the row at 8.0 was entered for, in the form a sweep
+            produces.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six
+            steps, exit 0, against `data-ci` and never `data`. 910 of 910 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 350 claims, 334 PASS, 0 fail, 16 out of scope, 0
+            unexamined, 341 placements and verdicts reconciled against a floor of 34, 34 of 35
+            roster checks carried and all 34 run. Migrations 0 to 23, none added. Both gates ran
+            with this entry in place. The pair 7.0 predicted is the actual in every figure: 350
+            claims and 334 PASS, 16 out of scope read by the first and by the last checkpoint each
+            note names as 2 at 8.1, 3 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6, 0 unexamined and 0
+            fail. Every phase 7 claim, being the ruling's 4, is PASS under `read-surface`, whose
+            declared reach the reconciliation asserts includes each. The read and write matrix
+            carries 32 verdict notes and 3 state a count of cells, each now the count its row
+            carries, measured against the row's cells in ARCHITECTURE.html: the mark renderer's and
+            the single page app's 13 blank of 13, and the read API's 12 read and 1 read and written
+            of 13. The operator's store under `data/` was not touched by either gate, its newest
+            file last written on 2026-09-15 at 00:14 UTC before the gates and after them.
+Carried:    none discharged at 7.2 and none created. Open: 5 checkpoint rows, all due at 8.0, being
+            the four the phase 6 sign-off left open and the count a verdict note states, to which
+            this checkpoint's mutation adds its survivor; and 7 operating rows.
+Notes:      this session has committed code to phase 7 and may not sign it off. The sign-off is owed
+            on the phase as a whole, by a session that has committed no code, before 8.0's entry is
+            written.
