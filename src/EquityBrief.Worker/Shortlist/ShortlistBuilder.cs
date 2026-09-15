@@ -259,12 +259,12 @@ public sealed class ShortlistBuilder : IComponent
                     : PlanAtListing(plan));
 
             // Registered candidates, evaluated the same way and shown nowhere.
-            // The register arrives at 7.3, so the list is empty and says why
+            // The register arrives at 8.3, so the list is empty and says why
             // rather than being absent: an empty column and a column that has
             // never been written read the same on a page and only one is true.
             command.Parameters.AddWithValue(
                 "$shadow_reasons",
-                JsonSerializer.Serialize(new { candidates = Array.Empty<string>(), note = "the candidate register arrives at 7.3" }));
+                JsonSerializer.Serialize(new { candidates = Array.Empty<string>(), note = "the candidate register arrives at 8.3" }));
 
             await command.ExecuteNonQueryAsync(cancellation);
 

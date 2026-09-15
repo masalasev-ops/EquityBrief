@@ -159,9 +159,9 @@ internal static class PhaseReport
             "point that never lands, 6.6 until 6.6 rewrote the table, and 6.9 until 6.9 landed",
             Check: "claim-admissibility"),
         ["13.2 Four things that can improve, shallowest first"] = new Placement(
-            "a plan for phase 7, with nothing built to assert it against", Due: "7.1"),
+            "a plan for phase 8, with nothing built to assert it against", Due: "8.1"),
         ["13.3 The guardrails"] = new Placement(
-            "rules for phase 7, asserted by register-append-only", Due: "7.1"),
+            "rules for phase 8, asserted by register-append-only", Due: "8.1"),
         // 1.8, and the journey here is worth stating because it was wrong twice.
         //
         // It was owed at 0.6, which had landed, then re-pointed to 1.3 and then
@@ -175,7 +175,7 @@ internal static class PhaseReport
         // 1.8 is where phase 1's expectations land, which is the first point the
         // fixture holds a shape this table can be read against.
         ["19.2 What the harness checks"] = new Placement(
-            "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register", Due: "7.1"),
+            "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register", Due: "8.1"),
         ["19.3 What it produces"] = new Placement(
             "this harness's own output, asserted over the generated report rather than over the model behind it",
             Check: "architecture-conformance"),

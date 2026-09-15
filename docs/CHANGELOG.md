@@ -25,6 +25,50 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-15 - CLAUDE.md - the register-append-only roster row starts at 8.1
+
+Authorised by: Phase 6's carried items are built as phase 7, and the improvement loop is phase 8
+Was:
+> | `register-append-only` | from 7.1 |
+Now:
+> | `register-append-only` | from 8.1 |
+Why: the candidate register is built by the loop's first checkpoint that the roster row names, which is 8.1 since the loop moved to phase 8.
+
+### 2026-09-15 - ARCHITECTURE.html - section 13 names phase 8 as the improvement loop's phase
+
+Authorised by: Phase 6's carried items are built as phase 7, and the improvement loop is phase 8
+Was:
+> which is why the other three sit in phase 7 and why phase 5 has an obligation described below.
+>
+> <p>The loop is a phase 7 feature. But it cannot be added in phase 7 unless phase 5 stores the right things,
+>
+> because by the time phase 7 arrives the rules may have changed
+>
+> the difference between phase 7 being a feature and phase 7 being a six-month wait.
+>
+> no checkpoint accumulates nights. Phase 7 adds the scoring, the register,
+Now:
+> which is why the other three sit in phase 8 and why phase 5 has an obligation described below.
+>
+> <p>The loop is a phase 8 feature. But it cannot be added in phase 8 unless phase 5 stores the right things,
+>
+> because by the time phase 8 arrives the rules may have changed
+>
+> the difference between phase 8 being a feature and phase 8 being a six-month wait.
+>
+> no checkpoint accumulates nights. Phase 8 adds the scoring, the register,
+Why: the loop moved to phase 8; each sentence says which phase builds it and why phase 5 stores what it needs first, which is unchanged.
+
+### 2026-09-15 - ARCHITECTURE.html - section 20 gains phase 7's row and the later row becomes phase 8
+
+Authorised by: Phase 6's carried items are built as phase 7, and the improvement loop is phase 8
+Was:
+> <tr><td><b>7. Later</b></td>
+Now:
+> <tr><td><b>7. Phase 6's carried items</b></td><td>the operator's ruling on a suspect name's own surfaces with its weekly retry, and the due-point reader landing a planning checkpoint from its planning entry</td><td>a suspect name's page, its exported report and its row on tonight's list saying its prices may not reflect a dividend or split</td><td>a spent suspect name asked for weekly and neither asked for nor named once it leaves the index; an open obligation due at a planning checkpoint failing once that checkpoint's planning entry is recorded</td><td>both gates are green with every phase 7 claim PASS and none unexamined, and the pair 7.0 predicted is checked against the actual</td></tr>
+> <tr><td><b>8. Later</b></td>
+Why: the phase table states each phase's visible output and done condition, and phase 7 is now phase 6's carried items, so it gains that phase's row ahead of the later one, which moves to 8.
+
 ### 2026-09-15 - BUILD_PLAN.md - phase 7 written for phase 6's carried items, and the improvement loop moved to phase 8
 
 Authorised by: Phase 6's carried items are built as phase 7, and the improvement loop is phase 8

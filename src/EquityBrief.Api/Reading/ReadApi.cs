@@ -247,7 +247,7 @@ public sealed class ReadApi : IComponent
     //
     // Every store means every store the matrix has a column for. The candidate
     // register has no column and is not in the catalogue's phrase, so it is not
-    // declared here either; it arrives with the registrar in phase 7. Series
+    // declared here either; it arrives with the registrar in phase 8. Series
     // state was the one column the row left blank until the 7.0 ruling, which
     // has the name page and tonight's list say where a name's prices may not
     // reflect a dividend or split.

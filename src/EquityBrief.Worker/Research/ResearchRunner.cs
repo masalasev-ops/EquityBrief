@@ -319,7 +319,7 @@ public sealed class ResearchRunner(
 
         // A name the night computed no facts file for writes nothing of its own. Its theme is
         // refreshed first where the cycle wanted it, since the theme is the industry's; whether a
-        // pass should buy a theme for a name it can write nothing for is carried to 7.0.
+        // pass should buy a theme for a name it can write nothing for is carried to 8.0.
         // owes: A name with no facts file refreshes its industry's theme, ruled
         var (facts, night) = await FactsAsync(connection, ticker, asOf, cancellation);
 
