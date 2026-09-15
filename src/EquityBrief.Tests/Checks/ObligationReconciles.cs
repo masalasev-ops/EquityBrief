@@ -178,8 +178,27 @@ public class ObligationReconciles
     [Fact]
     public void EveryRowIsCitedBackByTheCheckpointThatOwesIt()
     {
-        var obligations = All();
-        var checkpoints = PlanCheckpoints.All().ToDictionary(point => point.Id, point => point.Text);
+        var (reconciled, missing) = CitedBack(All(), PlanCheckpoints.All());
+
+        Assert.True(
+            reconciled >= RowFloor,
+            $"Reconciled {reconciled} obligations against the checkpoints that owe them, expected at least {RowFloor}.");
+
+        Assert.DoesNotContain(missing, _ => true);
+    }
+
+    // Named separately from the fact so the proof below exercises the code the
+    // corpus is measured by. A row is cited back by the marker naming it inside
+    // the text of the checkpoint that owes it, and by nothing else. Its name's
+    // words in that text are prose that happens to use them, which CLAUDE.md
+    // gives as the reason the marker exists, and read off the words a checkpoint
+    // whose heading is its row's name cited the row back with no marker at all:
+    // 7.0's sweep deleted 7.1's citation of the row it owes and nothing went red.
+    internal static (int Reconciled, IReadOnlyList<string> Missing) CitedBack(
+        IReadOnlyList<Obligation> obligations,
+        IReadOnlyList<PlanCheckpoint> points)
+    {
+        var checkpoints = points.ToDictionary(point => point.Id, point => point.Text);
         var missing = new List<string>();
         var reconciled = 0;
 
@@ -193,7 +212,7 @@ public class ObligationReconciles
                 : obligation.Checkpoint is { } id ? [id] : Array.Empty<string>();
 
             var cited = candidates.Any(candidate =>
-                checkpoints.TryGetValue(candidate, out var text) && Mentions(text, obligation.Name));
+                checkpoints.TryGetValue(candidate, out var text) && Cites(text, obligation.Name));
 
             if (cited)
             {
@@ -207,12 +226,14 @@ public class ObligationReconciles
                 "cites it back.");
         }
 
-        Assert.True(
-            reconciled >= RowFloor,
-            $"Reconciled {reconciled} obligations against the checkpoints that owe them, expected at least {RowFloor}.");
-
-        Assert.DoesNotContain(missing, _ => true);
+        return (reconciled, missing);
     }
+
+    // The reader the other direction uses, so a citation read as resolving to a
+    // row is the same citation read as citing it back.
+    internal static bool Cites(string text, string name) =>
+        Corpus.Citations(Corpus.Obligation, text, "docs/BUILD_PLAN.md")
+            .Any(citation => string.Equals(citation.Detail, name, StringComparison.Ordinal));
 
     [Fact]
     public void EveryObligationCitationResolvesToARow()
@@ -267,15 +288,6 @@ public class ObligationReconciles
             operating,
             obligation => !obligation.CheckpointsNamed.Any(point => DuePoints.InThePlan(point, plan)));
     }
-
-    // Whole phrase, whitespace tolerant and markup tolerant across the span, so
-    // a name written with emphasis or wrapped across a line still matches. A
-    // pattern built on a literal space is defeated by the first line break.
-    internal static bool Mentions(string text, string name) =>
-        Regex.IsMatch(
-            text,
-            string.Join(@"[\s*`_]+", name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(Regex.Escape)),
-            RegexOptions.IgnoreCase);
 
     // ---- the permanent proofs that each assertion can fail ----
 
@@ -362,15 +374,38 @@ public class ObligationReconciles
     [Fact]
     public void ACheckpointThatDoesNotCiteItsRowIsFound()
     {
-        // The forward direction, over constructed input, so the proof does not
-        // depend on the corpus happening to be wrong.
-        var text = "### 9.9 A checkpoint that says nothing about what it owes\nIt builds a thing.\n";
+        // The forward direction, over a constructed plan and table, so the proof
+        // does not depend on the corpus happening to be wrong. The marker is
+        // assembled, as above, so this file never cites a row that does not
+        // exist.
+        var marker = "(" + "owes" + ": A row its checkpoint names)";
+        var row = "| **A row its checkpoint names** | 9.8 | 9.9 | 9.9 builds it |";
 
-        Assert.False(Mentions(text, "A row nobody cites"));
-        Assert.True(Mentions(text, "builds a thing"));
+        Assert.Equal(0, Reconciled("### 9.9 A checkpoint that says nothing about what it owes\nIt builds a thing.\n", row));
 
-        // And the tolerance the corpus rule asks for: markup and a line break
-        // across the span must not defeat the match.
-        Assert.True(Mentions("it **builds**\na thing here", "builds a thing"));
+        // The shape 7.0's sweep found: the heading is the row's name word for
+        // word, and here a sentence uses it with emphasis too. Neither is a
+        // citation.
+        Assert.Equal(0, Reconciled("### 9.9 A row its checkpoint names\nIt builds **a row its checkpoint names**.\n", row));
+
+        // A citation of the row in another checkpoint's text is not the
+        // checkpoint that owes it citing it back, and a citation of another row
+        // in its own text is not a citation of this one.
+        Assert.Equal(0, Reconciled($"### 9.8 The checkpoint before\nIt names what 9.9 owes {marker}.\n\n### 9.9 A row its checkpoint names\nIt builds it.\n", row));
+        Assert.Equal(0, Reconciled("### 9.9 A row its checkpoint names\nIt builds it (" + "owes" + ": Another row).\n", row));
+
+        // The control, without which the three above prove nothing: the same
+        // checkpoint with the marker in its own text.
+        Assert.Equal(1, Reconciled($"### 9.9 A row its checkpoint names\nIt builds it {marker}.\n", row));
+    }
+
+    static int Reconciled(string checkpoints, string row)
+    {
+        var plan = checkpoints + "\n" + Table(row);
+        var (reconciled, missing) = CitedBack(In(plan, floor: 1), PlanCheckpoints.In(plan, floor: 1));
+
+        Assert.Equal(1, reconciled + missing.Count);
+
+        return reconciled;
     }
 }
