@@ -376,6 +376,14 @@ public static class RunScreen
     static string Key(string ticker, DateOnly sessionDate) =>
         $"{ticker}|{sessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
 
+    // The reasons that fired on a row and count toward their own records.
+    //
+    // A reason the 5.4 correction changed counts only where the row was written
+    // under the corrected rule, read off the value that rule writes and the old
+    // one did not. Earnings soon written before it fired on every future print,
+    // so the setups those rows seeded are not earnings soon's; breakout on volume
+    // written before it could not fire, so its rows remove nothing.
+    // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
     static IReadOnlyList<string> Fired(string reasons)
     {
         using var document = JsonDocument.Parse(reasons);
@@ -384,6 +392,9 @@ public static class RunScreen
         [
             .. document.RootElement.EnumerateArray()
                 .Where(reason => reason.GetProperty("fired").GetBoolean())
+                .Where(reason => !ShortlistSeries.WrittenBeforeTheCorrection(
+                    reason.GetProperty("name").GetString()!,
+                    value => reason.GetProperty("values").TryGetProperty(value, out _)))
                 .Select(reason => reason.GetProperty("name").GetString()!),
         ];
     }

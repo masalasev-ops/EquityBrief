@@ -59,8 +59,9 @@ public class ListingsCoverage
     {
         // The half a coverage count over the fired names would also satisfy. A
         // row with a fired count of zero is what the shadow column is written
-        // against, and it is most of the table: the note in SCHEMA says zero for
-        // most rows and means it.
+        // against. SCHEMA's note said zero for most rows until the 5.4
+        // correction, which the operator's store contradicted on every
+        // whole-index night, and it states the mechanism now rather than a share.
         using var store = await FixtureExpectations.WithListings();
 
         var quiet = int.Parse(Query(store, "SELECT COUNT(*) FROM listing WHERE fired_count = 0;").Single(), CultureInfo.InvariantCulture);

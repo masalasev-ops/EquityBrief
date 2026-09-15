@@ -202,6 +202,30 @@ public static class TonightScreen
         return [.. ShortlistSeries.Reasons.Select(name => new ReasonTotal(name, counted[name]))];
     }
 
+    // The sessions among these rows that were written before the 5.4 correction,
+    // oldest first, read off whether earnings soon's values carry the event date
+    // the corrected rule writes. The rows are kept as written, and the tonight,
+    // run and universe routes say so beside them rather than presenting what the
+    // defect wrote as that night's reading.
+    // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+    public static IReadOnlyList<DateOnly> WrittenBeforeTheCorrection(IEnumerable<ListingRow> listings) =>
+    [
+        .. listings
+            .Where(listing =>
+            {
+                using var document = JsonDocument.Parse(listing.Reasons);
+
+                return document.RootElement.EnumerateArray()
+                    .Where(reason => reason.GetProperty("name").GetString() == ShortlistSeries.EarningsSoon)
+                    .Any(reason => ShortlistSeries.WrittenBeforeTheCorrection(
+                        ShortlistSeries.EarningsSoon,
+                        value => reason.GetProperty("values").TryGetProperty(value, out _)));
+            })
+            .Select(listing => listing.SessionDate)
+            .Distinct()
+            .Order(),
+    ];
+
     // The evenings a name was on the list over a window, which is what the
     // listing strip draws and what the universe screen's two right-hand columns
     // count. They say nothing about index membership, which every name in that

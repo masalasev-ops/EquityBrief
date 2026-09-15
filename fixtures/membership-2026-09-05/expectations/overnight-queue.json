@@ -1,7 +1,7 @@
 {
   "stage": "overnight-queue",
   "derivation": "derived",
-  "derivedFrom": "section 14's step 17, section 17's overnight queue row, the decision that the queue writes the local lane's sections that rest on no document, the decision that it is bounded by its own limit and starts no pass once the limit has passed, and the fixture's own night: the four members listed on 2026-09-08 with the reasons each fired, as the listings expectation recomputes them from section 11's rules. The order the names are queued in, which of them are queued, which sections each pass asks for, what each is handed, that nothing is left at a limit of an hour on a clock that does not move, and that nothing is spent or requested were worked out from those rules before the tests that read this file were run.",
+  "derivedFrom": "section 14's step 17, section 17's overnight queue row, the decision that the queue writes the local lane's sections that rest on no document, the decision that it is bounded by its own limit and starts no pass once the limit has passed, and the fixture's own night: the three members listed on 2026-09-08 with the reasons each fired, as the listings expectation recomputes them from section 11's rules. The order the names are queued in, which of them are queued, which sections each pass asks for, what each is handed, that nothing is left at a limit of an hour on a clock that does not move, and that nothing is spent or requested were worked out from those rules before the tests that read this file were run.",
   "tables": [
     "research_section"
   ],
@@ -11,17 +11,15 @@
   "listed": [
     "AAPL",
     "KEYS",
-    "MSFT",
-    "NFLX"
+    "MSFT"
   ],
-  "listedNote": "every member of the fixture's night fired a reason: AAPL two and the other three one each, so AAPL is first and the three that fired one follow in the order of their tickers.",
+  "listedNote": "three members of the fixture's night fired a reason, one each, so they follow in the order of their tickers, and NFLX fired none. Until the 5.4 correction every member fired: AAPL two and the other three one each, where AAPL's second and NFLX's only reason was earnings soon on a count of 0 read off stored bars the night does not hold, and NFLX's print is thirty sessions after the night.",
   "queued": [
     "AAPL",
     "KEYS",
-    "MSFT",
-    "NFLX"
+    "MSFT"
   ],
-  "queuedNote": "every listed name, since no name holds a section of the local lane on the night and each has a facts file, so the one section of the lane resting on no document is missing for all four.",
+  "queuedNote": "every listed name, since no name holds a section of the local lane on the night and each has a facts file, so the one section of the lane resting on no document is missing for all three.",
   "asked": [
     "The key under each figure"
   ],
@@ -51,15 +49,8 @@
         "rejected",
         "accepted"
       ]
-    },
-    {
-      "ticker": "NFLX",
-      "modelCalls": 1,
-      "versions": [
-        "accepted"
-      ]
     }
   ],
-  "modelCalls": 5,
+  "modelCalls": 4,
   "spend": "0"
 }

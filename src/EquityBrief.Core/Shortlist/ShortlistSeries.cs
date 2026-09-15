@@ -8,20 +8,32 @@ public readonly record struct EdgeAt(decimal Price, string Role);
 // One tranche zone, as the reasons read it.
 public readonly record struct Zone(decimal LowEdge, decimal HighEdge);
 
+// One of tonight's bands, both edges, as the breakout reason reads it. Its role is
+// not carried, because the role the level builder stores is read against tonight's
+// close and the breakout asks which side of the band last night's close was on.
+public readonly record struct Band(decimal LowEdge, decimal HighEdge);
+
 // Everything one name's reasons are evaluated against, already read.
 //
 // Nullable throughout, because the population is the index and a name the night
 // computed nothing for still gets a row. A reason that cannot be evaluated does
 // not fire and says why, rather than firing on an absence read as a zero.
+//
+// `NextEvent` is the date the calendar holds and `SessionsToNextEvent` the count
+// the exchange calendar gives to it, null past the closure table's end. A date
+// with no count is an event nobody can count the sessions to, which is a third
+// state and not the absence of a date.
 public sealed record ReasonInputs(
     decimal? Close,
     decimal? PreviousClose,
     long? Volume,
     double? VolumeAverage50,
     IReadOnlyList<EdgeAt> Edges,
+    IReadOnlyList<Band> Bands,
     IReadOnlyList<Zone> Zones,
     string? TrendState,
     string? PreviousTrendState,
+    DateOnly? NextEvent,
     int? SessionsToNextEvent);
 
 // One reason and whether it fired, with the values that made it so.
@@ -106,18 +118,27 @@ public static class ShortlistSeries
         // Breakout on volume: the close is above a resistance band on volume
         // above the fifty-day average. The one condition that argues for buying
         // strength rather than weakness.
-        var above = inputs.Close is { } price
-            ? inputs.Edges.Where(edge => edge.Role == Resistance && price > edge.Price).ToArray()
+        //
+        // Resistance is read at last night's close: a band of tonight's whose low
+        // edge was at or above the previous session's close, cleared tonight by a
+        // close above its high edge. Until the 5.4 correction it read the role the
+        // level builder stores, which is set against tonight's close, so every
+        // resistance band sat at or above the close and the reason could not fire:
+        // no row of 2,018 in the operator's store had it fired.
+        // see: Breakout on volume reads resistance at the previous session's close
+        var cleared = inputs.Close is { } price && inputs.PreviousClose is { } before
+            ? inputs.Bands.Where(band => band.LowEdge >= before && price > band.HighEdge).ToArray()
             : [];
 
         var heavy = inputs.Volume is { } volume && inputs.VolumeAverage50 is > 0 && volume > inputs.VolumeAverage50;
 
         outcomes.Add(new ReasonOutcome(
             BreakoutOnVolume,
-            above.Length > 0 && heavy,
+            cleared.Length > 0 && heavy,
             Values(
                 ("close", Price(inputs.Close)),
-                ("resistance bands below the close", above.Length.ToString(CultureInfo.InvariantCulture)),
+                (PreviousCloseValue, Price(inputs.PreviousClose)),
+                ("bands above the previous close cleared", cleared.Length.ToString(CultureInfo.InvariantCulture)),
                 ("volume", Count(inputs.Volume)),
                 ("fifty-day average volume", Average(inputs.VolumeAverage50)))));
 
@@ -159,18 +180,51 @@ public static class ShortlistSeries
         //
         // A name with no date on file does not fire and says so, because a
         // guessed date is a wrong date and the failure table promises an
-        // explicit blank.
+        // explicit blank. A date past the closure table's end has no count and
+        // does not fire either, and says that instead, because it is a date
+        // nobody can count the sessions to rather than a date nobody has.
+        //
+        // The count is the exchange calendar's, from the night to the date. Until
+        // the 5.4 correction it counted the stored bars after tonight, and a live
+        // store holds none, so every future print read as 0 and fired.
+        // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
         outcomes.Add(new ReasonOutcome(
             EarningsSoon,
             inputs.SessionsToNextEvent is { } sessions && sessions >= 0 && sessions <= EarningsHorizonSessions,
             Values(
-                ("sessions to the next dated event", inputs.SessionsToNextEvent?.ToString(CultureInfo.InvariantCulture) ?? "not on file"),
+                (NextDatedEventValue, inputs.NextEvent is { } dated ? dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : NotOnFile),
+                ("sessions to the next dated event", inputs.SessionsToNextEvent is { } counted
+                    ? counted.ToString(CultureInfo.InvariantCulture)
+                    : inputs.NextEvent is null ? NotOnFile : BeyondTheExchangeCalendar),
                 ("horizon", EarningsHorizonSessions.ToString(CultureInfo.InvariantCulture)))));
 
         return outcomes;
     }
 
-    public const string Resistance = "resistance";
+    public const string NotOnFile = "not on file";
+
+    public const string BeyondTheExchangeCalendar = "beyond the exchange calendar";
+
+    // The two values a row written since the 5.4 correction carries and a row
+    // written before it does not, one per reason the correction changed. They are
+    // a version marker keyed on the row's shape rather than a stamp, because the
+    // listing has no version column and gains none: `next dated event` among
+    // earnings soon's values, `previous close` among breakout on volume's.
+    // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+    public const string NextDatedEventValue = "next dated event";
+
+    public const string PreviousCloseValue = "previous close";
+
+    // Whether a stored reason was evaluated by the rule the 5.4 correction
+    // replaced, read off whether its values carry that reason's marker. Only the
+    // two reasons the correction changed can be; the other four read the same
+    // before and after.
+    public static bool WrittenBeforeTheCorrection(string reason, Func<string, bool> carriesValue) => reason switch
+    {
+        EarningsSoon => !carriesValue(NextDatedEventValue),
+        BreakoutOnVolume => !carriesValue(PreviousCloseValue),
+        _ => false,
+    };
 
     static IReadOnlyDictionary<string, string> Values(params (string Name, string Value)[] values) =>
         values.ToDictionary(value => value.Name, value => value.Value, StringComparer.Ordinal);

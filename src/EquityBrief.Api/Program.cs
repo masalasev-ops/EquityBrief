@@ -411,7 +411,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             records,
             RunScreen.Tracks(TonightScreen.Totals(listings)),
             TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
-            TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated))),
+            TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated)),
+            TonightScreen.WrittenBeforeTheCorrection(listings)),
         "text/html; charset=utf-8");
 });
 
@@ -475,7 +476,8 @@ app.MapGet("/screens/universe", async (
             sector,
             shown.Page,
             shown.At,
-            UniverseScreen.PageSize),
+            UniverseScreen.PageSize,
+            TonightScreen.WrittenBeforeTheCorrection(history.Values.SelectMany(rows => rows))),
         "text/html; charset=utf-8");
 });
 
@@ -529,7 +531,8 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.FellBack(await read.FellBackAsync(dated)),
             RunScreen.Queue(await read.QueueRowsAsync(), dated, Traded),
             RunScreen.Harness(PhaseReport(builder)),
-            RunScreen.Priced(await read.PaidCallSpendsAsync())),
+            RunScreen.Priced(await read.PaidCallSpendsAsync()),
+            TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated))),
         "text/html; charset=utf-8");
 });
 

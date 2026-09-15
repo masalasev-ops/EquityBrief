@@ -1,7 +1,7 @@
 {
  "stage": "listings",
  "derivation": "derived",
- "derivedFrom": "the rules in section 11, not from a run. Each of the six reasons is recomputed in the suite from the tables it reads, being the bars, the indicators, the levels, the ladders and the calendar, and compared against what the builder wrote. A set frozen from the run would agree with a builder that evaluated the wrong rule, because it would have been taken from that builder.",
+ "derivedFrom": "the rules in section 11, not from a run. Each of the six reasons is recomputed in the suite from the tables it reads, being the bars, the indicators, the levels, the ladders and the calendar, and compared against what the builder wrote. A set frozen from the run would agree with a builder that evaluated the wrong rule, because it would have been taken from that builder. Until the 5.4 correction the suite recomputed five and said six: earnings soon was asserted only over a count handed in, and breakout on volume was recomputed from the role the level builder stores, which is set against tonight's close, so the recompute and the builder agreed that it never fired. The earnings soon dates and counts below are walked by hand from the fixture's night over weekdays less the exchange's closures, and breakout is recomputed from the band edges and last night's close rather than from any stored role.",
  "tables": [
   "listing"
  ],
@@ -25,6 +25,16 @@
   "aMemberWithNothingComputedStillGetsARow": "and its plan says why it is empty",
   "trendChangedNeedsAYesterday": "a name with no ladder row last night has not changed, which is what the every-member ladder row is for",
   "earningsSoonSaysNotOnFile": "rather than firing on a guessed date",
+  "earningsSoonCountsTheExchangeCalendar": "the sessions from the night to the dated event are the exchange's, off its own calendar, never the stored bars after the night, which a live store never holds; an event past the closure table's end is refused as beyond the exchange calendar rather than counted",
+  "breakoutReadsResistanceAtThePreviousClose": "a band of tonight's whose low edge was at or above the previous session's close, cleared by tonight's close above its high edge, on volume above the fifty-day average",
   "planAtListingIsWrittenTonight": "bars can be replayed and the plan cannot, because by the time a verdict is possible the rules may have changed"
+ },
+ "earningsSoon": {
+  "night": "2026-09-04",
+  "note": "the fixture's night is the last session the replayed backfill holds, and the calendar rows are the capture's. Each count is walked by hand over the weekdays after the night up to and including the event, less 2026-09-07, the one closure in reach. Neither dated event is inside the twenty-session horizon, so neither fires, where the bar count the correction replaced gave both a count of 0 and fired both",
+  "AAPL": { "nextDatedEvent": "2026-10-29", "sessions": "38", "fired": false },
+  "NFLX": { "nextDatedEvent": "2026-10-20", "sessions": "31", "fired": false },
+  "KEYS": { "nextDatedEvent": "not on file", "sessions": "not on file", "fired": false },
+  "MSFT": { "nextDatedEvent": "not on file", "sessions": "not on file", "fired": false }
  }
 }

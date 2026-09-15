@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
@@ -4170,19 +4171,48 @@ public partial class FixtureExpectations
                 edges.Any(edge => (previous < edge && close >= edge) || (previous > edge && close <= edge)),
                 written[ShortlistSeries.CrossedALevel]);
 
-            // Breakout on volume, recomputed from the resistance edges and the
-            // average. Both halves of it, so a reason that fired on one is not
-            // read as having fired on both.
-            var resistance = Query(
+            // Breakout on volume, recomputed from tonight's band edges, last
+            // night's close and the average, and never from the role the level
+            // builder stores. That role is set against tonight's close, and a
+            // recompute that read it agreed with a builder that could not fire,
+            // because both asked a question whose answer was no by construction.
+            // Both halves of it, so a reason that fired on one is not read as
+            // having fired on both.
+            var bands = Query(
                 store,
-                $"SELECT low_edge FROM level WHERE ticker = '{name}' AND role = 'resistance' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}') " +
-                $"UNION ALL SELECT high_edge FROM level WHERE ticker = '{name}' AND role = 'resistance' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}');")
-                .Select(edge => decimal.Parse(edge, CultureInfo.InvariantCulture))
+                $"SELECT low_edge, high_edge FROM level WHERE ticker = '{name}' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}');")
+                .Select(band => band.Split('|'))
+                .Select(band => (Low: decimal.Parse(band[0], CultureInfo.InvariantCulture), High: decimal.Parse(band[1], CultureInfo.InvariantCulture)))
                 .ToArray();
 
             Assert.Equal(
-                resistance.Any(edge => close > edge) && volume > average,
+                bands.Any(band => band.Low >= previous && close > band.High) && volume > average,
                 written[ShortlistSeries.BreakoutOnVolume]);
+
+            // Earnings soon, recomputed from the calendar row and the exchange's
+            // own calendar rather than from anything the store holds after
+            // tonight, which is nothing. The per-name dates and counts the
+            // expectation states are the independent half, walked by hand.
+            var newestBar = Query(store, $"SELECT MAX(session_date) FROM bar WHERE ticker = '{name}';").Single();
+            var night = DateOnly.ParseExact(newestBar, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            var nextEvent = Query(
+                store,
+                $"SELECT MIN(event_date) FROM calendar WHERE ticker = '{name}' AND event_date >= '" +
+                night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "';").Single();
+
+            var sessions = nextEvent == "null" ? (int?)null : ExchangeClosures.SessionsUntil(night, DateOnly.ParseExact(nextEvent, "yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            Assert.Equal(
+                sessions is { } counted && counted <= ShortlistSeries.EarningsHorizonSessions,
+                written[ShortlistSeries.EarningsSoon]);
+
+            var expectedEvent = Expected("listings").GetProperty("earningsSoon").GetProperty(name);
+            var values = ReasonValues(store, name, ShortlistSeries.EarningsSoon);
+
+            Assert.Equal(expectedEvent.GetProperty("nextDatedEvent").GetString(), values[ShortlistSeries.NextDatedEventValue]);
+            Assert.Equal(expectedEvent.GetProperty("sessions").GetString(), values["sessions to the next dated event"]);
+            Assert.Equal(expectedEvent.GetProperty("fired").GetBoolean(), written[ShortlistSeries.EarningsSoon]);
 
             // At entry zone, recomputed from the stored plan's own tranches.
             var plan = JsonDocument.Parse(Query(store, $"SELECT plan FROM ladder WHERE ticker = '{name}' ORDER BY as_of DESC LIMIT 1;").Single()).RootElement;
@@ -4224,7 +4254,7 @@ public partial class FixtureExpectations
         var asOf = new DateOnly(2026, 9, 8);
 
         ReasonInputs With(string? tonight, string? lastNight) =>
-            new(100m, 100m, 1000, 500, [], [], tonight, lastNight, null);
+            new(100m, 100m, 1000, 500, [], [], [], tonight, lastNight, null, null);
 
         bool Fired(ReasonInputs inputs) =>
             ShortlistSeries.For(inputs).Single(outcome => outcome.Name == ShortlistSeries.TrendStateChanged).Fired;
@@ -4255,7 +4285,8 @@ public partial class FixtureExpectations
         // Section 18's row: a name with no earnings date on file cannot fire the
         // earnings reason and the calendar says the date is not on file. A
         // guessed date is a wrong date.
-        ReasonInputs With(int? sessions) => new(100m, 100m, 1000, 500, [], [], "range", "range", sessions);
+        ReasonInputs With(int? sessions) =>
+            new(100m, 100m, 1000, 500, [], [], [], "range", "range", sessions is null ? null : new DateOnly(2026, 10, 6), sessions);
 
         ReasonOutcome Reason(int? sessions) =>
             ShortlistSeries.For(With(sessions)).Single(outcome => outcome.Name == ShortlistSeries.EarningsSoon);
@@ -4272,6 +4303,287 @@ public partial class FixtureExpectations
 
         Assert.False(absent.Fired);
         Assert.Equal("not on file", absent.Values["sessions to the next dated event"]);
+    }
+
+    // The 5.4 correction's cases for earnings soon, each through the shipped
+    // builder over the replayed store, whose bars end on the fixture's night as a
+    // live store's end on tonight: no bar exists for any session after it. That is
+    // the shape the pure test above cannot reach and the one that hid the defect,
+    // since the builder counted stored bars after tonight and every count was 0.
+    //
+    // The expected session dates are walked here by hand over weekdays, less the
+    // closures this test names, and never read off the exchange calendar the
+    // builder uses, so a wrong calendar and a wrong count cannot agree.
+    // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+    static readonly DateOnly[] ClosuresTheCasesCross =
+        [new(2026, 9, 7), new(2026, 11, 26), new(2026, 12, 25), new(2027, 1, 1)];
+
+    static DateOnly SessionAfter(DateOnly night, int sessions)
+    {
+        var day = night;
+
+        for (var counted = 0; counted < sessions;)
+        {
+            day = day.AddDays(1);
+
+            if (day.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday && !ClosuresTheCasesCross.Contains(day))
+            {
+                counted++;
+            }
+        }
+
+        return day;
+    }
+
+    static readonly DateOnly FixtureNight = new(2026, 9, 4);
+
+    static IReadOnlyDictionary<string, string> ReasonValues(TemporaryStore store, string ticker, string reason) =>
+        JsonDocument.Parse(Query(store, $"SELECT reasons FROM listing WHERE ticker = '{ticker}';").Single())
+            .RootElement.EnumerateArray()
+            .Single(element => element.GetProperty("name").GetString() == reason)
+            .GetProperty("values").EnumerateObject()
+            .ToDictionary(value => value.Name, value => value.Value.GetString()!, StringComparer.Ordinal);
+
+    static bool ReasonFired(TemporaryStore store, string ticker, string reason) =>
+        JsonDocument.Parse(Query(store, $"SELECT reasons FROM listing WHERE ticker = '{ticker}';").Single())
+            .RootElement.EnumerateArray()
+            .Single(element => element.GetProperty("name").GetString() == reason)
+            .GetProperty("fired").GetBoolean();
+
+    // AAPL's calendar replaced by one dated event, the listings dropped, and the
+    // builder run again for the night. The store's bars are left ending on the
+    // night, so the count can only come from the calendar.
+    static async Task<(bool Fired, IReadOnlyDictionary<string, string> Values, string Detail)> EarningsSoonFor(
+        TemporaryStore store,
+        DateOnly? eventDate,
+        string runId)
+    {
+        Insert(store, "DELETE FROM calendar WHERE ticker = 'AAPL';");
+
+        if (eventDate is { } dated)
+        {
+            Insert(
+                store,
+                "INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('AAPL', '" +
+                dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "', 'earnings', 'after', '{}', '2026-09-05T21:10:00Z');");
+        }
+
+        Insert(store, "DELETE FROM listing;");
+
+        await new ShortlistBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile).RunAsync(Index, runId);
+
+        return (
+            ReasonFired(store, "AAPL", ShortlistSeries.EarningsSoon),
+            ReasonValues(store, "AAPL", ShortlistSeries.EarningsSoon),
+            Query(store, $"SELECT detail FROM run_log WHERE run_id = '{runId}' AND stage = 'listings';").Single());
+    }
+
+    static void NoBarAfter(TemporaryStore store, DateOnly night) =>
+        Assert.Equal(
+            ["0"],
+            Query(store, "SELECT COUNT(*) FROM bar WHERE ticker = 'AAPL' AND session_date > '" + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "';"));
+
+    [Fact]
+    public async Task EarningsSoonOnTonightsSessionFiresAtZero()
+    {
+        using var store = await WithListings();
+        NoBarAfter(store, FixtureNight);
+
+        var (fired, values, _) = await EarningsSoonFor(store, FixtureNight, "earnings-tonight");
+
+        Assert.True(fired);
+        Assert.Equal("0", values["sessions to the next dated event"]);
+        Assert.Equal("2026-09-04", values[ShortlistSeries.NextDatedEventValue]);
+    }
+
+    [Fact]
+    public async Task EarningsSoonOnTheTwentiethSessionFires()
+    {
+        using var store = await WithListings();
+        NoBarAfter(store, FixtureNight);
+
+        var twentieth = SessionAfter(FixtureNight, 20);
+
+        Assert.Equal(new DateOnly(2026, 10, 5), twentieth);
+
+        var (fired, values, _) = await EarningsSoonFor(store, twentieth, "earnings-twentieth");
+
+        Assert.True(fired);
+        Assert.Equal("20", values["sessions to the next dated event"]);
+    }
+
+    [Fact]
+    public async Task EarningsSoonOnTheTwentyFirstSessionDoesNotFire()
+    {
+        using var store = await WithListings();
+        NoBarAfter(store, FixtureNight);
+
+        var (fired, values, _) = await EarningsSoonFor(store, SessionAfter(FixtureNight, 21), "earnings-twenty-first");
+
+        Assert.False(fired);
+        Assert.Equal("21", values["sessions to the next dated event"]);
+    }
+
+    [Fact]
+    public async Task EarningsSoonAcrossTheYearEndClosuresCountsSessionsAndNotDays()
+    {
+        // A night whose twentieth session falls across Christmas and New Year, so
+        // twenty sessions is more than twenty-eight days. AAPL's bars are carried
+        // forward on every session to that night and no further, so the store still
+        // holds nothing after it.
+        using var store = await WithListings();
+
+        var night = new DateOnly(2026, 12, 4);
+
+        for (var day = FixtureNight.AddDays(1); day <= night; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday || ClosuresTheCasesCross.Contains(day))
+            {
+                continue;
+            }
+
+            Insert(
+                store,
+                "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+                "SELECT ticker, '" + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "', open, high, low, close, volume, source, observed_at, raw_close " +
+                "FROM bar WHERE ticker = 'AAPL' AND session_date = '2026-09-04';");
+        }
+
+        NoBarAfter(store, night);
+
+        var twentieth = SessionAfter(night, 20);
+
+        Assert.Equal(new DateOnly(2027, 1, 5), twentieth);
+        Assert.True(twentieth.DayNumber - night.DayNumber > 28);
+
+        var (fired, values, _) = await EarningsSoonFor(store, twentieth, "earnings-year-end");
+
+        Assert.True(fired);
+        Assert.Equal("20", values["sessions to the next dated event"]);
+    }
+
+    [Fact]
+    public async Task EarningsSoonFortySessionsOutWithNoFutureBarsDoesNotFire()
+    {
+        // The live shape exactly: the print is a quarter away and the store holds
+        // no bar after tonight. The bar count read this as 0 and fired.
+        using var store = await WithListings();
+        NoBarAfter(store, FixtureNight);
+
+        var (fired, values, _) = await EarningsSoonFor(store, SessionAfter(FixtureNight, 40), "earnings-forty");
+
+        Assert.False(fired);
+        Assert.Equal("40", values["sessions to the next dated event"]);
+    }
+
+    [Fact]
+    public async Task EarningsSoonPastTheClosureTableIsRefusedAndNamedOnTheRunLog()
+    {
+        using var store = await WithListings();
+
+        var (fired, values, detail) = await EarningsSoonFor(store, new DateOnly(2028, 1, 10), "earnings-beyond");
+
+        Assert.False(fired);
+        Assert.Equal("2028-01-10", values[ShortlistSeries.NextDatedEventValue]);
+        Assert.Equal(ShortlistSeries.BeyondTheExchangeCalendar, values["sessions to the next dated event"]);
+        Assert.Contains("1 name(s) with a dated event beyond the exchange calendar, which ends 2027-12-31", detail, StringComparison.Ordinal);
+        Assert.Contains("AAPL", detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EarningsSoonWithNoDateOnFileSaysSo()
+    {
+        using var store = await WithListings();
+
+        var (fired, values, detail) = await EarningsSoonFor(store, null, "earnings-none");
+
+        Assert.False(fired);
+        Assert.Equal(ShortlistSeries.NotOnFile, values[ShortlistSeries.NextDatedEventValue]);
+        Assert.Equal(ShortlistSeries.NotOnFile, values["sessions to the next dated event"]);
+        Assert.DoesNotContain("beyond the exchange calendar", detail, StringComparison.Ordinal);
+    }
+
+    // The 5.4 correction's cases for breakout on volume, through the shipped
+    // builder over the replayed store with AAPL's bands, closes and volume written
+    // here. The band's stored role is written the way the level builder writes
+    // it, against tonight's close, and the expected outcome is read off the edges
+    // and the two closes this test states, so a builder that read the role would
+    // fail case one rather than agree with this test by construction.
+    // see: Breakout on volume reads resistance at the previous session's close
+    static async Task<(bool Fired, IReadOnlyDictionary<string, string> Values)> BreakoutFor(
+        decimal previousClose,
+        decimal close,
+        bool heavy,
+        string runId)
+    {
+        using var store = await WithListings();
+
+        var tonight = Query(store, "SELECT MAX(session_date) FROM bar WHERE ticker = 'AAPL';").Single();
+        var before = Query(store, $"SELECT MAX(session_date) FROM bar WHERE ticker = 'AAPL' AND session_date < '{tonight}';").Single();
+        var asOf = Query(store, "SELECT MAX(as_of) FROM level WHERE ticker = 'AAPL';").Single();
+        var average = double.Parse(
+            Query(store, $"SELECT value FROM indicator WHERE ticker = 'AAPL' AND name = 'vol_avg50' ORDER BY session_date DESC LIMIT 1;").Single(),
+            CultureInfo.InvariantCulture);
+
+        // One band, 100 to 105, and nothing else AAPL's reasons can read.
+        const decimal low = 100m;
+        const decimal high = 105m;
+
+        Insert(store, $"DELETE FROM level WHERE ticker = 'AAPL' AND as_of = '{asOf}';");
+        Insert(
+            store,
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"VALUES ('AAPL', '{asOf}', '100', '105', '{(low < close ? "support" : "resistance")}', 1, 1, 1, '[]');");
+
+        Insert(store, $"UPDATE bar SET close = '{previousClose.ToString(CultureInfo.InvariantCulture)}' WHERE ticker = 'AAPL' AND session_date = '{before}';");
+        Insert(store, $"UPDATE bar SET close = '{close.ToString(CultureInfo.InvariantCulture)}', " +
+            $"volume = {Math.Round(average * (heavy ? 1.5 : 0.5)).ToString(CultureInfo.InvariantCulture)} WHERE ticker = 'AAPL' AND session_date = '{tonight}';");
+        Insert(store, "DELETE FROM listing;");
+
+        await new ShortlistBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile).RunAsync(Index, runId);
+
+        // The rule, read off what this test wrote.
+        var expected = low >= previousClose && close > high && heavy;
+        var fired = ReasonFired(store, "AAPL", ShortlistSeries.BreakoutOnVolume);
+
+        Assert.Equal(expected, fired);
+
+        return (fired, ReasonValues(store, "AAPL", ShortlistSeries.BreakoutOnVolume));
+    }
+
+    [Fact]
+    public async Task BreakoutFiresWhereTheCloseClearsABandThatSatAboveLastNightsCloseOnVolume()
+    {
+        var (fired, values) = await BreakoutFor(99m, 106m, heavy: true, "breakout-clears");
+
+        Assert.True(fired);
+        Assert.Equal("99", values[ShortlistSeries.PreviousCloseValue]);
+        Assert.Equal("1", values["bands above the previous close cleared"]);
+    }
+
+    [Fact]
+    public async Task BreakoutDoesNotFireWithoutTheVolume()
+    {
+        var (fired, _) = await BreakoutFor(99m, 106m, heavy: false, "breakout-light");
+
+        Assert.False(fired);
+    }
+
+    [Fact]
+    public async Task BreakoutDoesNotFireOverABandLastNightsCloseWasAlreadyAbove()
+    {
+        var (fired, values) = await BreakoutFor(101m, 106m, heavy: true, "breakout-below");
+
+        Assert.False(fired);
+        Assert.Equal("0", values["bands above the previous close cleared"]);
+    }
+
+    [Fact]
+    public async Task BreakoutDoesNotFireOnACloseInsideTheBand()
+    {
+        var (fired, _) = await BreakoutFor(99m, 104m, heavy: true, "breakout-inside");
+
+        Assert.False(fired);
     }
 
     [Fact]

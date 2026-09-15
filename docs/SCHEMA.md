@@ -254,8 +254,8 @@ Grain: one row per ticker per night, **for every index member and not only the l
 |---|---|---|
 | `ticker` | TEXT | |
 | `session_date` | TEXT | |
-| `reasons` | TEXT | JSON: each of the six reasons with fired true or false and the values that made it so |
-| `fired_count` | INTEGER | zero for most rows |
+| `reasons` | TEXT | JSON: each of the six reasons with fired true or false and the values that made it so. From the 5.4 correction earnings soon's values carry `next dated event` and breakout on volume's carry `previous close`, and a row without them was written before it (see: Sessions to a dated event are counted on the exchange calendar and never on stored bars) |
+| `fired_count` | INTEGER | how many of the six reasons fired on the row, counted from `reasons` |
 | `plan_at_listing` | TEXT | JSON: the entry zone, stop and first traded target as they stood that night |
 | `shadow_reasons` | TEXT | JSON: registered candidates, evaluated the same way, shown nowhere |
 
