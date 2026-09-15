@@ -499,8 +499,8 @@ public partial class FixtureExpectations
     public void TheMachineIsHeldOnWindowsAndMacOSAndAnyOtherMachineSaysWhyNot()
     {
         // The platform's own request, taken and released on the machine running the suite,
-        // which is each of the two platforms in the matrix and Linux in the case-sensitivity
-        // job. A second hold is taken after the first is released, so a hold the machine gives
+        // which is macOS on its hosted runner, Windows on the operator's machine and Linux in
+        // the case-sensitivity job. A second hold is taken after the first is released, so a hold the machine gives
         // once is not read as one it gives every night. Whether the release closed the
         // platform's request is not read back here, since the platform lists its requests
         // through a tool of its own and this repository shells out to none.

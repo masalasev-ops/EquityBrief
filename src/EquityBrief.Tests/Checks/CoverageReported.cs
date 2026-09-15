@@ -102,8 +102,14 @@ public class CoverageReported
 
         Assert.True(roster.Count >= 19, $"Read {roster.Count} roster rows, expected at least 19.");
 
+        // The column's two forms and no third. A row in any other form is read
+        // by neither half below and by nothing else, which is how "the matrix"
+        // would sit unread once the hosted Windows leg that gave it meaning was
+        // removed.
+        Assert.DoesNotContain(roster, row => row.Runs is not "every CI run" && !row.Runs.StartsWith("from ", StringComparison.Ordinal));
+
         var everyRun = roster
-            .Where(row => row.Runs is "every CI run" or "the matrix")
+            .Where(row => row.Runs is "every CI run")
             .Select(row => row.Check)
             .ToArray();
 
