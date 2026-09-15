@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-15 - CLAUDE.md - a planning pass's entry lands its checkpoint and never its phase
+
+Corrects: the due-point reader skipped every PROGRESS entry opening "Not a checkpoint entry", which is how a planning pass is recorded, so no planning checkpoint ever landed and an obligation owed at one could not be read as passed; found by the phase 6 sign-off, which probed it by moving a row's due point to 6.0
+Was:
+> A PROGRESS entry for such a pass opens with **"Not a checkpoint entry"** so it says which checkpoint it belongs to without saying that checkpoint has landed.
+Now:
+> A PROGRESS entry for such a pass is headed with that checkpoint and the word planning, as `### 2.0 planning - ...`, and opens with **"Not a checkpoint entry"**, because it lands that checkpoint and never its phase: planning a phase builds none of it. An entry opening that way under any other heading, a ruling among them, lands nothing.
+Why: 7.1's reader lands a phase's opening checkpoint from that entry and never the phase, and tells it from a ruling by its heading, so the sentence says what the entry lands and how it is headed rather than that it says nothing has landed.
+
+### 2026-09-15 - BUILD_PLAN.md - the due-point reader's repair row discharged at 7.1
+
+Corrects: the due-point reader skipped every PROGRESS entry opening "Not a checkpoint entry", which is how a planning pass is recorded, so no planning checkpoint ever landed and an obligation owed at one could not be read as passed; found by the phase 6 sign-off, which probed it by moving a row's due point to 6.0
+Was:
+> | **A planning checkpoint lands with its planning entry** | 6.11 sign-off | 7.1 | the due-point reader skips every entry opening "Not a checkpoint entry", which is how the pass that plans a phase is recorded, so no planning checkpoint lands and a row still open at one passes for as long as the plan runs. The phase 6 sign-off probed it by moving the volume profile row's due point to 6.0 and leaving the check green, with 6.5 turning it red as the control, and ruled it a repair owed before the next planning pass's entry. 7.1 produces the reader that lands a planning checkpoint from its planning entry and never its phase from it, with a permanent test over a constructed plan, table and record |
+Now:
+> the row reads discharged at 7.1, with what the reader lands now, the proofs that hold it and what it read before.
+Why: 7.1 built the reader and the permanent proofs the row was carried for.
+
 ### 2026-09-15 - CLAUDE.md - the register-append-only roster row starts at 8.1
 
 Authorised by: Phase 6's carried items are built as phase 7, and the improvement loop is phase 8

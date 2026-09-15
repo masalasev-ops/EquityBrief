@@ -385,14 +385,18 @@ public class ArchitectureConformance
         // that narrows its own scope and keeps passing.
         const string planningOnly = """
             ### 3.0 planning - the pass that settles what phase 3 builds against
-            Not a checkpoint entry. It belongs to 3.0, which has not landed.
+            Not a checkpoint entry. It belongs to 3.0.
 
             ### 1.2 - the one-year backfill
             Built:      the backfill.
             """;
 
+        // The planning pass lands the checkpoint it belongs to and never its
+        // phase. Until 7.1 it landed neither, so an obligation owed at 3.0 read
+        // as open after 3.0's entry was written exactly as before it.
         Assert.False(DuePoints.HasLanded("phase 3", planningOnly));
-        Assert.False(DuePoints.HasLanded("3.0", planningOnly));
+        Assert.True(DuePoints.HasLanded("3.0", planningOnly));
+        Assert.False(DuePoints.HasLanded("3.1", planningOnly));
         Assert.True(DuePoints.HasLanded("phase 1", planningOnly));
 
         const string built = """
@@ -404,8 +408,8 @@ public class ArchitectureConformance
         Assert.True(DuePoints.HasLanded("3.1", built));
 
         // The number is not what tells them apart. An entry headed with a
-        // building checkpoint whose body opens the planning way is a planning
-        // pass, and the old matcher had no way to see that at all.
+        // building checkpoint whose body opens the planning way is not a
+        // building entry, and the old matcher had no way to see that at all.
         const string numberedLikeACheckpoint = """
             ### 3.1 - the pass that settles what phase 3 builds against
             Not a checkpoint entry. It belongs to 3.1, which has not landed.
@@ -413,6 +417,26 @@ public class ArchitectureConformance
 
         Assert.False(DuePoints.HasLanded("phase 3", numberedLikeACheckpoint));
         Assert.False(DuePoints.HasLanded("3.1", numberedLikeACheckpoint));
+
+        // The heading is. A ruling at a planning checkpoint opens the planning
+        // way and plans nothing, and a planning entry headed with a building
+        // checkpoint, which is how phase 1 was planned, plans no opening
+        // checkpoint: each lands neither its checkpoint nor its phase.
+        const string ruling = """
+            ### 3.0 ruling - an item carried to 3.0, ruled ahead of the pass
+            Not a checkpoint entry. It belongs to 3.0, which has not landed.
+            """;
+
+        Assert.False(DuePoints.HasLanded("3.0", ruling));
+        Assert.False(DuePoints.HasLanded("phase 3", ruling));
+
+        const string plannedUnderABuildingCheckpoint = """
+            ### 1.1 planning - the pass that settles what phase 1 builds against
+            Not a checkpoint entry. It belongs to 1.1, which has not landed.
+            """;
+
+        Assert.False(DuePoints.HasLanded("1.1", plannedUnderABuildingCheckpoint));
+        Assert.False(DuePoints.HasLanded("phase 1", plannedUnderABuildingCheckpoint));
     }
 
     [Fact]
@@ -453,9 +477,28 @@ public class ArchitectureConformance
         // Over the real record, so the reader is exercised against the shapes
         // the file actually carries rather than only against constructed ones.
         // A parse returning nothing would pass every assertion above.
-        var built = DuePoints.Built(Corpus.Read("docs/PROGRESS.md"));
+        var progress = Corpus.Read("docs/PROGRESS.md");
+        var built = DuePoints.Built(progress);
 
         Assert.True(built.Count >= 8, $"Read {built.Count} built checkpoints from PROGRESS, expected at least 8.");
+
+        // The planning half, over the same record. Every phase whose plan has an
+        // opening checkpoint and whose building has started has that checkpoint
+        // landed, which is the population a reader keyed on a heading could read
+        // none of and stay green: a planning entry headed any other way would
+        // leave its checkpoint unlanded and every obligation owed at it unchased,
+        // which is the defect 7.1 repaired arriving by another route. Five at the
+        // phase 6 sign-off, phases 2 to 6, and six once 7.1's own entry is
+        // written; the count only rises, so the floor sits at the first.
+        var started = PlanCheckpoints.All()
+            .Select(point => point.Id)
+            .Where(id => id.EndsWith(".0", StringComparison.Ordinal))
+            .Where(id => built.Any(checkpoint =>
+                DuePoints.PhaseOf(checkpoint) == DuePoints.PhaseOf(id) && checkpoint != id))
+            .ToArray();
+
+        Assert.True(started.Length >= 5, $"Read {started.Length} started phases with an opening checkpoint, expected at least 5.");
+        Assert.DoesNotContain(started, id => !DuePoints.HasLanded(id, progress));
 
         Assert.Contains("1.1", built);
         Assert.Contains("1.2", built);

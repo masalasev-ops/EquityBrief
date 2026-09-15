@@ -260,17 +260,71 @@ public class ObligationReconciles
         // sign-off. The number falls as the plan is worked through, which this
         // comment said in the rule's own words for the other branch, and the
         // floor stood at 3 anyway, one below the count, so the next discharge
-        // but one would have been a maintenance edit. The two assertions below
-        // carry the property; the guard stops them passing over an empty set.
-        Assert.True(open.Length >= 1, $"Found {open.Length} open checkpoint rows, so the two assertions below would pass over an empty set.");
+        // but one would have been a maintenance edit. The assertion below
+        // carries both halves of the property; the guard stops it passing over
+        // an empty set.
+        Assert.True(open.Length >= 1, $"Found {open.Length} open checkpoint rows, so the assertion below would pass over an empty set.");
 
-        Assert.DoesNotContain(open, obligation => !DuePoints.InThePlan(obligation.Checkpoint!, plan));
+        Assert.DoesNotContain(OpenRowFaults(open, plan, progress), _ => true);
+    }
 
-        // A row still owed at a checkpoint the record shows as landed is a row
-        // whose due point has passed with nothing saying so. A discharged row
-        // is exempt, because work committed ahead of the checkpoint that owes
-        // it is legitimate and its citation still has to stand.
-        Assert.DoesNotContain(open, obligation => DuePoints.HasLanded(obligation.Checkpoint!, progress));
+    // Named separately from the fact so the proof below exercises the code the
+    // corpus is measured by. The two halves are the plan lacking the row's due
+    // point and the record showing it landed.
+    internal static IReadOnlyList<string> OpenRowFaults(IReadOnlyList<Obligation> obligations, string plan, string progress)
+    {
+        var faults = new List<string>();
+
+        foreach (var obligation in obligations.Where(row => !row.Discharged && !row.SaysOperating))
+        {
+            if (!DuePoints.InThePlan(obligation.Checkpoint!, plan))
+            {
+                faults.Add($"'{obligation.Name}' is owed at {obligation.Checkpoint}, which the plan does not have.");
+            }
+
+            // A row still owed at a checkpoint the record shows as landed is a
+            // row whose due point has passed with nothing saying so. A
+            // discharged row is exempt, because work committed ahead of the
+            // checkpoint that owes it is legitimate and its citation still has
+            // to stand.
+            if (DuePoints.HasLanded(obligation.Checkpoint!, progress))
+            {
+                faults.Add($"'{obligation.Name}' is owed at {obligation.Checkpoint}, which the record shows as landed.");
+            }
+        }
+
+        return faults;
+    }
+
+    [Fact]
+    public void ARowOwedAtAPlanningCheckpointFailsOnceThatCheckpointsPlanningEntryIsRecorded()
+    {
+        // The shape the phase 6 sign-off found and 7.1 repaired, over a
+        // constructed plan, table and record, so the proof does not wait for a
+        // planning pass to arrive with a row still open against it. Until 7.1
+        // the reader landed no planning checkpoint, and this row passed after
+        // 9.0's planning entry exactly as it passed before it.
+        var plan =
+            "## Phase 9: a phase\n\n" +
+            "### 9.0 Planning\nRules a thing from what is in hand (" + "owes" + ": A row owed at a planning checkpoint).\n\n" +
+            "### 9.1 A checkpoint\nBuilds a thing.\n\n" +
+            Table("| **A row owed at a planning checkpoint** | 8.8 | 9.0 | 9.0 rules it from what is in hand |");
+
+        var rows = In(plan, floor: 1);
+
+        const string before = "### 8.8 - the phase report\nBuilt:      the report.\n";
+        const string planning = "\n### 9.0 planning - phase 9's detail\nNot a checkpoint entry. It belongs to 9.0.\n";
+        const string ruling = "\n### 9.0 ruling - an item carried to 9.0\nNot a checkpoint entry. It belongs to 9.0, which has not landed.\n";
+
+        Assert.Empty(OpenRowFaults(rows, plan, before));
+
+        var fault = Assert.Single(OpenRowFaults(rows, plan, before + planning));
+
+        Assert.Contains("which the record shows as landed", fault, StringComparison.Ordinal);
+
+        // A ruling at the same checkpoint opens the same way and plans nothing,
+        // so the row is still open after it.
+        Assert.Empty(OpenRowFaults(rows, plan, before + ruling));
     }
 
     [Fact]
