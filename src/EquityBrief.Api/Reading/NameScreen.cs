@@ -769,7 +769,8 @@ public static class NameScreen
         IReadOnlyList<CitedDocumentRow>? cited = null,
         IReadOnlyList<CalendarRow>? events = null,
         IReadOnlyList<(string RunId, decimal Spend)>? priced = null,
-        DateOnly? today = null)
+        DateOnly? today = null,
+        SuspectSeriesRow? suspect = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -876,8 +877,16 @@ public static class NameScreen
             [.. (events ?? []).Select(dated => new DateCell(dated.EventDate, dated.Kind, dated.Timing))],
             PassLine(newest, spend, today),
             Controls(staleness, newest, notWritten, spend, priced, today),
-            spend is null || priced is null ? null : Cost(priced, spend));
+            spend is null || priced is null ? null : Cost(priced, spend),
+            Suspect(suspect));
     }
+
+    // A suspect row as the page states it, and nothing for a name whose series is trusted.
+    // The instant and the reason are the row's, and a row carrying no reason says so.
+    public static SuspectPrices? Suspect(SuspectSeriesRow? row) =>
+        row is null ? null : new SuspectPrices(row.CheckedAt, row.Reason ?? NoReason);
+
+    public const string NoReason = "no reason was recorded";
 
     // The reasons the local lane records a section is not written for, which are what the
     // option to have the paid model write it is offered on. The worker's own constants

@@ -1,9 +1,17 @@
+using System.Globalization;
+using System.Net;
+using EquityBrief.Api.Reading;
+using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Membership;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
@@ -580,7 +588,7 @@ public class CorporateActions
             var stage = StageOf(store, runId);
 
             Assert.Equal("partial", stage.Outcome);
-            Assert.Contains($"1 left suspect with {CorporateActionChecker.RetryNights} retries spent", stage.Detail, StringComparison.Ordinal);
+            Assert.Contains($"1 left suspect with {CorporateActionChecker.RetryNights} nightly retries spent", stage.Detail, StringComparison.Ordinal);
             Assert.Contains($"AAPL, last asked for at {lastAsked}, because {reason}", stage.Detail, StringComparison.Ordinal);
 
             // The surface a person reads it on, now with when it was last asked for and why.
@@ -679,6 +687,219 @@ public class CorporateActions
             Assert.Equal(asked ? 1 : 0, outcome.RefetchRequests);
             Assert.Equal(!asked, (outcome.Spent ?? []).Any(spent => spent.Ticker == "AAPL"));
         }
+    }
+
+    static string RunIdOf(DateOnly session) =>
+        "night-" + session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    // One night of the check on a session, with no action unless one is handed in.
+    static Task<ActionCheckOutcome> NightOf(TemporaryStore store, DateOnly session, IHistoricalBarFeed history, ICorporateActionFeed? actions = null) =>
+        new CorporateActionChecker(actions ?? new NoActionFeed(), history, FixedClock.At(NightOn(session), SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, RunIdOf(session));
+
+    // AAPL marked on its captured action's session, Monday 2026-08-10, and asked for on the
+    // five sessions after it, the last being Monday 2026-08-17, every refetch failing.
+    static async Task SpendRetries(TemporaryStore store)
+    {
+        await Checker(store, Refusing()).RunAsync(Index, "night-0");
+
+        foreach (var session in SessionsFrom(new DateOnly(2026, 8, 11), CorporateActionChecker.RetryNights))
+        {
+            await NightOf(store, session, Refusing());
+        }
+
+        Assert.Equal((CorporateActionChecker.RetryNights, "2026-08-17T21:10:00Z"), (CountOf(store, "AAPL").Retries, CountOf(store, "AAPL").CheckedAt));
+    }
+
+    [Fact]
+    public async Task ANameWhoseRetriesAreSpentIsAskedForAgainOnTheFirstSessionAWeekOnFromTheOneItWasLastAskedFor()
+    {
+        // The 7.0 ruling. A spent name waited for another action to land on it, which for a
+        // split on a name paying no dividend may never come, so a failure the provider had
+        // since cleared stayed in the store. It is asked for again weekly: seven calendar
+        // days on from the session it was last asked for, on that session or on the first
+        // after it the exchange traded, counting on past the limit, until a refetch succeeds.
+        using var store = await Stored();
+
+        await SpendRetries(store);
+
+        // Asked for on each session a week or more on and on none before. The weeks fall on
+        // a Monday, on a Monday the exchange closed for Labor Day, which moves the week to the
+        // Tuesday, and then on a Monday six days after that Tuesday, which is not a week.
+        (DateOnly Session, bool Asked)[] nights =
+        [
+            (new(2026, 8, 21), false),
+            (new(2026, 8, 24), true),
+            (new(2026, 8, 28), false),
+            (new(2026, 8, 31), true),
+            (new(2026, 9, 4), false),
+            (new(2026, 9, 8), true),
+            (new(2026, 9, 14), false),
+        ];
+
+        var retries = CorporateActionChecker.RetryNights;
+
+        foreach (var (session, asked) in nights)
+        {
+            var outcome = await NightOf(store, session, Refusing());
+
+            Assert.True(
+                (asked ? 1 : 0) == outcome.RefetchRequests,
+                session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + $" asked for AAPL {outcome.RefetchRequests} time(s).");
+
+            retries += asked ? 1 : 0;
+
+            Assert.Equal(("suspect", retries), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
+            Assert.Equal(asked, (outcome.Retried ?? []).Contains("AAPL"));
+            Assert.Equal(!asked, (outcome.Spent ?? []).Any(spent => spent.Ticker == "AAPL"));
+            Assert.Equal("partial", StageOf(store, RunIdOf(session)).Outcome);
+        }
+
+        // The week after Tuesday 2026-09-08 comes round on Tuesday 2026-09-15, and a refetch
+        // that succeeds there clears the state and the count, after which nothing asks.
+        var cleared = await NightOf(store, new DateOnly(2026, 9, 15), RecordedHistoricalBarFeed.FromFolder(FixtureFolder()));
+
+        Assert.Equal(1, cleared.RefetchRequests);
+        Assert.Empty(cleared.Suspect);
+        Assert.Equal(("ok", 0), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
+
+        var after = await NightOf(store, new DateOnly(2026, 9, 22), Refusing());
+
+        Assert.Equal(0, after.RefetchRequests);
+        Assert.Equal("ok", StageOf(store, RunIdOf(new DateOnly(2026, 9, 22))).Outcome);
+    }
+
+    [Fact]
+    public async Task ASuspectNameTheIndexNoLongerHoldsIsNeitherAskedForNorNamed()
+    {
+        // The property the check's membership clause carries, which the phase 6 sign-off's
+        // sweep found held by a source scan alone, and which the weekly retry makes a
+        // behaviour worth a test: a name asked for once a week is asked for until something
+        // ends it, and for a name the provider no longer serves what ends it is the index.
+        // Two names, AAPL with its retries spent and one with retries left, both leaving.
+        using var store = await Stored();
+
+        await SpendRetries(store);
+
+        var other = ScalarOf(store, "SELECT DISTINCT ticker FROM membership WHERE index_code = 'GSPC' AND \"left\" IS NULL AND ticker <> 'AAPL' ORDER BY ticker LIMIT 1;");
+
+        store.Execute(
+            "INSERT INTO series_state (ticker, state, reason, checked_at, retries) " +
+            $"VALUES ('{other}', 'suspect', 'a refetch that failed', '2026-08-20T21:10:00Z', 1);");
+
+        // While both are members, the one with retries left is asked for and the spent one,
+        // whose week has not come round, is named.
+        var members = await NightOf(store, new DateOnly(2026, 8, 21), Refusing());
+
+        Assert.Equal([other], members.Retried ?? []);
+        Assert.Equal(["AAPL"], (members.Spent ?? []).Select(spent => spent.Ticker));
+
+        // Both leave on Saturday 2026-08-22, so Monday 2026-08-24, when AAPL's week comes round
+        // and the other's next retry is due, asks for neither and names neither.
+        store.Execute($"UPDATE membership SET \"left\" = '2026-08-22' WHERE ticker IN ('AAPL', '{other}');");
+
+        var left = await NightOf(store, new DateOnly(2026, 8, 24), Refusing());
+
+        Assert.Equal(0, left.RefetchRequests);
+        Assert.Empty(left.Retried ?? []);
+        Assert.Empty(left.Spent ?? []);
+        Assert.Empty(left.Suspect);
+
+        var stage = StageOf(store, RunIdOf(new DateOnly(2026, 8, 24)));
+
+        Assert.Equal("ok", stage.Outcome);
+        Assert.DoesNotContain("AAPL", stage.Detail, StringComparison.Ordinal);
+        Assert.DoesNotContain(other, stage.Detail, StringComparison.Ordinal);
+    }
+
+    static string ScalarOf(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        return (string)command.ExecuteScalar()!;
+    }
+
+    // The API over a test store, in process, for the routes the name page and the file are
+    // served from.
+    sealed class SurfaceHost(string root) : WebApplicationFactory<ReadApi>
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+            builder.UseSetting(StoreLocation.DataRootKey, root);
+    }
+
+    [Fact]
+    public async Task ASuspectNamesPageItsExportedReportAndItsRowOnTonightsListSaySoUntilARefetchSucceeds()
+    {
+        // The half of section 18's row the 7.0 ruling added to what a person sees: the name
+        // page opens with a line saying its prices may not reflect a recent dividend or split,
+        // with when the refetch was last tried and why, the exported report carries it, and
+        // the name's row on tonight's list says so beside the name. Read over the row the
+        // check itself wrote, through the routes the page and the file are served from and the
+        // projection tonight's route draws its rows with.
+        using var store = await Stored();
+
+        await Checker(store, Refusing()).RunAsync(Index, "night-0");
+
+        var lastTried = CountOf(store, "AAPL").CheckedAt;
+        var reason = StateOf(store, "AAPL").Reason!;
+        var read = new ReadApi(store.DatabaseFile, FixedClock.At(ActionNight, SessionZones.UnitedStates));
+
+        Assert.Equal(new SuspectSeriesRow("AAPL", reason, lastTried, 0), Assert.Single(await read.SuspectSeriesAsync()));
+
+        // One host for the whole test: the API records its start under an id taken from the
+        // second, so a second host started in the same second is refused at the run log.
+        using var host = new SurfaceHost(store.Root);
+        using var client = host.CreateClient();
+
+        {
+            var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL"));
+            var file = WebUtility.HtmlDecode(await client.GetStringAsync(ReportExporter.Route + "AAPL"));
+
+            foreach (var surface in new[] { page, file })
+            {
+                Assert.Contains("AAPL's prices may not reflect a recent dividend or split", surface, StringComparison.Ordinal);
+                Assert.Contains($"Last tried {lastTried}, because {reason}", surface, StringComparison.Ordinal);
+            }
+
+            // Above everything the page draws from those prices, the trend state first among them.
+            Assert.True(
+                page.IndexOf("class=\"prices-suspect\"", StringComparison.Ordinal) < page.IndexOf("class=\"trend-state\"", StringComparison.Ordinal),
+                "The line is not above the figures the page draws.");
+        }
+
+        Assert.Contains("prices may not reflect a dividend or split", ListRowFor(await read.SuspectSeriesAsync()), StringComparison.Ordinal);
+
+        // Once a refetch succeeds none of the three says so.
+        await NightOf(store, new DateOnly(2026, 8, 11), RecordedHistoricalBarFeed.FromFolder(FixtureFolder()));
+
+        Assert.Empty(await read.SuspectSeriesAsync());
+
+        Assert.DoesNotContain("prices-suspect", await client.GetStringAsync("/screens/name/AAPL"), StringComparison.Ordinal);
+        Assert.DoesNotContain("prices-suspect", await client.GetStringAsync(ReportExporter.Route + "AAPL"), StringComparison.Ordinal);
+
+        Assert.DoesNotContain("prices-suspect", ListRowFor(await read.SuspectSeriesAsync()), StringComparison.Ordinal);
+    }
+
+    // AAPL's row on a list it fired on, drawn by tonight's projection and the list mark from
+    // the suspect rows handed in.
+    static string ListRowFor(IReadOnlyList<SuspectSeriesRow> suspects)
+    {
+        var night = DateOnly.FromDateTime(ActionNight.UtcDateTime);
+        var listing = new ListingRow("AAPL", night, "[{\"name\":\"at support\",\"fired\":true,\"values\":{}}]", 1, "{}");
+
+        var rows = TonightScreen.Rows(
+            night,
+            [listing],
+            new Dictionary<string, int>(StringComparer.Ordinal),
+            new Dictionary<string, UniverseCell>(StringComparer.Ordinal),
+            [],
+            suspects);
+
+        return WebUtility.HtmlDecode(new MarkRenderer().TonightList(rows, SinglePageApp.TonightDrawn));
     }
 
     [Fact]

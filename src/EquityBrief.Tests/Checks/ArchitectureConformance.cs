@@ -896,7 +896,9 @@ public class ArchitectureConformance
         // run page's stale-and-failed region into its four parts, two of them
         // phase 6's. A run finding none would otherwise pass both directions
         // over an empty set.
-        Assert.Equal(41, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 42 from 41 at the 7.0 ruling, which added the name screen's line for a name whose
+        // stored series is suspect.
+        Assert.Equal(42, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -910,8 +912,10 @@ public class ArchitectureConformance
         // 6.8 arrive with their own due points rather than inheriting the row's.
         // 116 from 114 at 6.6, which decomposed the provenance footer into the three
         // kinds of part its row enumerates. One leaves and three arrive. 117 at 6.7,
-        // which decomposed research paused into its line and its sections.
-        Assert.Equal(117, inDocument.Length);
+        // which decomposed research paused into its line and its sections. 121 at the 7.0
+        // ruling: the name screen's line for a suspect name arrives as the three parts its
+        // row enumerates, and tonight's list row gains the line it draws beside the name.
+        Assert.Equal(121, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -979,8 +983,9 @@ public class ArchitectureConformance
         // research runner draws. 120 from 107 at 6.6, thirteen being section 18's
         // two local lane rows at five parts each and the provenance footer's three.
         // 124 at 6.7, being section 18's spend cap row and section 15.9's research
-        // paused row at two parts each.
-        Assert.Equal(124, checkedElements);
+        // paused row at two parts each. 128 at the 7.0 ruling, being tonight's list row's
+        // line beside a suspect name and the name screen's line for it at three parts.
+        Assert.Equal(128, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

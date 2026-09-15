@@ -173,6 +173,22 @@ internal static class Scope
             Verdict.Pass,
             "each reason that fired is named in the row's own cell",
             ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, beside the name a line saying so where its prices may not reflect a dividend or split")] = new Scoped(
+            Verdict.Pass,
+            "the row of a name whose stored series is suspect carries the line beside the name with the row's instant and reason as its title, escaped, and a trusted name's row carries none, read off tonight's route over a store the whole pipeline populated",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Prices may be out of date, one line saying its prices may not reflect a recent dividend or split")] = new Scoped(
+            Verdict.Pass,
+            "the name route and the exported file each draw the line once for a name whose stored series is suspect, and the name route none for a trusted name",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Prices may be out of date, when the refetch was last tried and why it failed")] = new Scoped(
+            Verdict.Pass,
+            "the line carries the row's instant and reason as the store holds them, the reason escaped in the markup and whole once read",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Prices may be out of date, above everything the page draws from those prices")] = new Scoped(
+            Verdict.Pass,
+            "the line is the first thing inside the name's region, ahead of the trend state and the fact strip",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Selected name, the level summary")] = new Scoped(
             Verdict.Pass,
             "the selected row's stored bands are drawn beside its plan column, so a plan is read with the levels it rests on",
@@ -1648,6 +1664,13 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "The list, trend state in a word")] = "5.8",
         [CheckReach.Key("15.7 Tonight", "The list, the distance row mark")] = "5.8",
         [CheckReach.Key("15.7 Tonight", "The list, the reasons")] = "5.4",
+
+        // The parts the 7.0 ruling adds, owed at 7.0, which the ruling belongs to and which
+        // the operator ruled ahead of the pass that plans the phase.
+        [CheckReach.Key("15.7 Tonight", "The list, beside the name a line saying so where its prices may not reflect a dividend or split")] = "7.0",
+        [CheckReach.Key("15.9 Name", "Prices may be out of date, one line saying its prices may not reflect a recent dividend or split")] = "7.0",
+        [CheckReach.Key("15.9 Name", "Prices may be out of date, when the refetch was last tried and why it failed")] = "7.0",
+        [CheckReach.Key("15.9 Name", "Prices may be out of date, above everything the page draws from those prices")] = "7.0",
         [CheckReach.Key("15.7 Tonight", "Selected name, the plan column")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Selected name, the level summary")] = "5.8",
         [CheckReach.Key("15.7 Tonight", "Selected name, whichever row is selected")] = "5.8",
@@ -1815,13 +1838,15 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Night header")] =
             ["names in the index", "names that fired", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
-            ["one row per name that fired", "ordered by how many fired then by band strength", "at most twenty drawn", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reasons"],
+            ["one row per name that fired", "ordered by how many fired then by band strength", "at most twenty drawn", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reasons", "beside the name a line saying so where its prices may not reflect a dividend or split"],
         [CheckReach.Key("15.7 Tonight", "Selected name")] =
             ["the plan column", "the level summary", "whichever row is selected"],
         [CheckReach.Key("15.8 Universe", "Sector strip")] =
             ["one line per sector", "how many are on tonight's list", "names", "how many are in an uptrend"],
         [CheckReach.Key("15.8 Universe", "The table")] =
             ["every name in the index", "the listing strip over sixty sessions", "sorted by distance to the nearest level ascending", "paged", "name", "sector", "close", "trend state", "the distance row mark", "sessions until earnings", "the evening last on the list"],
+        [CheckReach.Key("15.9 Name", "Prices may be out of date")] =
+            ["one line saying its prices may not reflect a recent dividend or split", "when the refetch was last tried and why it failed", "above everything the page draws from those prices"],
         [CheckReach.Key("15.9 Name", "Fact strip")] =
             ["close", "market capitalisation", "the high and low of the move", "next earnings date", "the multiples", "the averages", "momentum and the typical daily move"],
         [CheckReach.Key("15.9 Name", "The chart")] =

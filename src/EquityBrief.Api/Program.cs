@@ -200,7 +200,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         await read.CitedDocumentsAsync(NameScreen.Cited(written)),
         await read.EventsAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
         export ? null : await read.PaidCallSpendsAsync(),
-        clock.SessionDateAt(clock.UtcNow));
+        clock.SessionDateAt(clock.UtcNow),
+        // Whether the name's stored series is suspect, which the page opens with and the
+        // file carries, since it is a statement about the figures rather than a question
+        // the application asks.
+        (await read.SuspectSeriesAsync()).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -357,12 +361,14 @@ app.MapGet("/screens/tonight/{night?}", async (
     // column on any row.
     var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
 
+    // The names whose stored series is suspect, which a row says beside the name.
     var rows = TonightScreen.Rows(
         dated,
         listings,
         strengths,
         cells,
-        await read.ClosesToTheNightAsync(dated));
+        await read.ClosesToTheNightAsync(dated),
+        await read.SuspectSeriesAsync());
 
     // Whichever row the reader selected, from the hash, and the first row when
     // they have selected none. Section 15.7's region is for whichever row is

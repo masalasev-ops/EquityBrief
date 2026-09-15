@@ -183,7 +183,15 @@ public sealed record ListingCell(
     // second shape holding the same values is a second place they can disagree.
     double? DayChangePct = null,
     string? TrendState = null,
-    UniverseCell? Distance = null);
+    UniverseCell? Distance = null,
+    // Where the name's stored series is suspect, which the row says beside the name
+    // from the 7.0 ruling, and null for a name whose series is trusted.
+    SuspectPrices? Suspect = null);
+
+// A name whose stored series may not reflect a dividend or split, as a page states it:
+// when its refetch was last asked for and the reason it failed, both as the store holds
+// them.
+public sealed record SuspectPrices(string LastAskedAt, string Reason);
 
 // One reason that fired for a name, with the values that made it true.
 public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string> Values);
@@ -1027,6 +1035,22 @@ public sealed class MarkRenderer : IComponent
         return svg.ToString();
     }
 
+    // The line a name's page opens with where its stored series is suspect, section
+    // 15.9's region from the 7.0 ruling.
+    //
+    // Above everything the page draws from those prices, since each of them is computed
+    // over a series that may not carry a dividend's or a split's adjustment, and the page
+    // draws them all the same rather than withholding them. The instant and the reason are
+    // the row's, drawn as stored. A name whose series is trusted draws nothing here.
+    // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
+    public string PricesSuspect(string ticker, SuspectPrices? suspect) =>
+        suspect is null
+            ? string.Empty
+            : $"<p class=\"prices-suspect\" data-ticker=\"{Escaped(ticker)}\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\">" +
+              $"{Escaped(ticker)}'s prices may not reflect a recent dividend or split: downloading its year of prices again failed. " +
+              $"Last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}. " +
+              "The figures on this page are computed from the prices as stored.</p>";
+
     // What a mark returns instead of a drawing. It states the count rather than
     // apologising, because the reader's next question is how many there were.
     // Why it is here, section 15.9's region that is present only when the name
@@ -1192,7 +1216,16 @@ public sealed class MarkRenderer : IComponent
             // about. The href carries the night as well as the name, so a
             // selected view of an earlier night is a link like every other view.
             list.Append(Invariant, $"<td><a class=\"select\" data-selects=\"{Escaped(row.Ticker)}\" ");
-            list.Append(Invariant, $"href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>");
+            list.Append(Invariant, $"href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+
+            // Beside the name, where its stored series is suspect, so a row read from the
+            // list does not pass for one whose prices carry every action's adjustment. The
+            // instant and the reason are the name page's to state in full; the row carries
+            // them as its title.
+            // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
+            list.Append(row.Suspect is { } suspect
+                ? $" <span class=\"prices-suspect\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\" title=\"last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}\">prices may not reflect a dividend or split</span></td>"
+                : "</td>");
 
             list.Append(Invariant, $"<td>{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
 

@@ -39,8 +39,13 @@ public static class TonightScreen
         IReadOnlyList<ListingRow> listings,
         IReadOnlyDictionary<string, int> strengthByTicker,
         IReadOnlyDictionary<string, UniverseCell> cellByTicker,
-        IReadOnlyList<CloseRow> closesToTheNight)
+        IReadOnlyList<CloseRow> closesToTheNight,
+        IReadOnlyList<SuspectSeriesRow>? suspects = null)
     {
+        // The names whose stored series is suspect, which a row says beside the name.
+        var suspectByTicker = (suspects ?? [])
+            .ToDictionary(row => row.Ticker, StringComparer.Ordinal);
+
         // The two newest sessions each name holds at or before the night, newest
         // first, which is what both the close cell and the day change are read
         // from. One read for the pair, because the pair is the property: two
@@ -58,7 +63,10 @@ public static class TonightScreen
         [
             .. listings
                 .Where(listing => listing.FiredCount > 0)
-                .Select(listing => Cell(listing, night, strengthByTicker, cellByTicker, sessions))
+                .Select(listing => Cell(listing, night, strengthByTicker, cellByTicker, sessions) with
+                {
+                    Suspect = NameScreen.Suspect(suspectByTicker.GetValueOrDefault(listing.Ticker)),
+                })
                 .OrderByDescending(cell => cell.FiredCount)
                 .ThenByDescending(cell => cell.Strength)
                 .ThenBy(cell => cell.Ticker, StringComparer.Ordinal),
