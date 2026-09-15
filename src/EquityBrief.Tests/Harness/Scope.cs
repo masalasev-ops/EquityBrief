@@ -427,7 +427,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(MatrixTable, "Read API")] = new Scoped(
             Verdict.Pass,
-            "every cell of the row is asserted against the declaration, the twelve reads and the one write",
+            "every cell of the row is asserted against the declaration, twelve cells read and the run log's cell read and written",
             ByAccess),
         [CheckReach.Key(CatalogueTable, "Mark renderer")] = new Scoped(
             Verdict.Pass,
@@ -435,7 +435,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(MatrixTable, "Mark renderer")] = new Scoped(
             Verdict.Pass,
-            "all eleven cells are blank and the declaration is empty, asserted cell by cell",
+            "all thirteen cells are blank and the declaration is empty, asserted cell by cell",
             ByAccess),
         [CheckReach.Key(CatalogueTable, "Single page app")] = new Scoped(
             Verdict.Pass,
@@ -443,7 +443,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(MatrixTable, "Single page app")] = new Scoped(
             Verdict.Pass,
-            "all eleven cells are blank and the declaration is empty, asserted cell by cell",
+            "all thirteen cells are blank and the declaration is empty, asserted cell by cell",
             ByAccess),
                 [CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles")] = new Scoped(
             Verdict.Pass,
