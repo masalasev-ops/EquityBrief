@@ -427,7 +427,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(MatrixTable, "Read API")] = new Scoped(
             Verdict.Pass,
-            "every cell of the row is asserted against the declaration, the eleven reads and the one write",
+            "every cell of the row is asserted against the declaration, the twelve reads and the one write",
             ByAccess),
         [CheckReach.Key(CatalogueTable, "Mark renderer")] = new Scoped(
             Verdict.Pass,
