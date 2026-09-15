@@ -10444,3 +10444,91 @@ Carried:    none discharged at 7.2 and none created. Open: 5 checkpoint rows, al
 Notes:      this session has committed code to phase 7 and may not sign it off. The sign-off is owed
             on the phase as a whole, by a session that has committed no code, before 8.0's entry is
             written.
+
+### 7.2 ruling - the hosted Windows leg removed from CI, and Windows verified by `tools/ci.ps1` on the operator's machine   2026-09-15
+Not a checkpoint entry. It belongs to 7.2, the last checkpoint of phase 7, which has landed, and it
+            is a ruling rather than a building step. This session has committed code to phase 7 and
+            may not sign it off, and the phase 7 sign-off is still owed before 8.0's entry is
+            written.
+Built:      no component. The operator's ruling on 2026-09-15 that the hosted Windows leg is not
+            worth what it costs, with the workflow, the check and the documents it reaches. The
+            workflow has two jobs and no matrix: `macos` on the hosted macOS runner and
+            `case-sensitivity` on Linux, each running `tools/ci.sh` with the full history.
+            `two-platform` now runs on every CI run rather than as the matrix. Its workflow half
+            asserts the runners are exactly the macOS and Linux ones, each in its own job, two
+            invocations of `tools/ci.sh`, no matrix, and still zero YAML condition keys. Its Windows
+            half reads the record: every checkpoint entry written after 7.2's, being one headed with
+            a checkpoint and a dash that does not open "Not a checkpoint entry", has to say
+            `tools/ci.ps1` green, starting after exactly one heading matching 7.2's. The roster
+            readers in `coverage-reported` and the reconciliation no longer accept the matrix as a
+            form, and `coverage-reported` asserts every roster row is in one of the two forms that
+            remain.
+Decided:    one decision, superseding none. Windows is verified on the operator's machine by
+            `tools/ci.ps1`, green over the tree being merged and recorded in the checkpoint's entry,
+            and the hosted runners are macOS and Linux. What is given up is a Windows run on a clean
+            image for every push, so a fault showing only on a fresh Windows install is found on the
+            operator's machine or not at all; a hosted Windows leg returning is a new decision.
+Found:      the operator asked on 2026-09-15 why CI took upwards of 15 minutes. Read off the GitHub
+            runs: the Windows leg's suite step alone took 18 minutes 24 seconds on pull request 92,
+            and the two Windows legs of pull request 93, one per event, took 33 minutes 4 seconds
+            and 21 minutes 56 seconds, where the macOS legs took about 2 minutes, the Linux job
+            under 2, and the same suite 56 seconds on the operator's Windows machine. Over the last
+            60 runs the Windows leg grew from about 3 minutes at phase 4 to between 15 and 20 from
+            2026-09-13, while macOS and Linux stayed between 1 and 2 and a half. The cause was not
+            measured on the runner, since no per-test timings were captured there. The repository is
+            public, so the hosted minutes cost nothing in money and what the leg cost was the wait
+            on every merge. The operator ruled the leg removed and chose the local run to replace
+            it.
+Changed:    `.github/workflows/ci.yml`. CLAUDE.md in five passages: the layout line,
+            `two-platform`'s roster row, the Runs column paragraph, done condition 5 and the merge
+            rule, which now also waits on `tools/ci.ps1` green on the operator's machine. The
+            decision in DECISIONS.md under "Where it runs". Five CHANGELOG entries. Three comments
+            that named both runners or the matrix, in the queue's expectations, the shell locator
+            and the temporary store.
+Tested:     2 added under `two-platform`: a constructed-record proof that an entry before 7.2's is
+            not read, a checkpoint entry saying `tools/ci.ps1` green passes wrapped across lines,
+            one saying `tools/ci.sh` green or `tools/ci.ps1` red is found, a planning pass, a ruling
+            and a sign-off are not read, nor an entry headed with a checkpoint and a dash that opens
+            "Not a checkpoint entry", which the record holds three times under 3.1, and no anchor or
+            two anchors throw; and the real record read, 0 checkpoint entries after 7.2's at this
+            ruling, reported as context and carrying no floor since the population starts empty and
+            grows by one a checkpoint. Changed under `two-platform`: the runner assertion, the
+            invocations read as exactly two, the Linux job read by job rather than off a matrix
+            line, and the fail-fast assertion replaced by one asserting no matrix. Widened under
+            `coverage-reported`: every roster row's Runs cell is every CI run or names a checkpoint.
+            912 tests, from 910.
+Mutated:    the rule, stated before the sweep: break each property the ruling adds, once each, being
+            the workflow naming no Windows runner, the record reader requiring the word green,
+            reading only checkpoint entries, reading only after 7.2's entry, and keying that start
+            on exactly one heading, and the roster's Runs column holding its two forms, with the red
+            count predicted for each. Run in a detached worktree under the session scratchpad at
+            0ff570b, over an unmutated baseline of 912 tests all passing, each mutation against the
+            whole suite and reverted, the worktree removed after. 5 went red with the count
+            predicted and 1 survived. A Windows job returned to the workflow, 3 red, the runner, job
+            and invocation assertions; the reader matching `tools/ci.ps1` without green, 1, the
+            proof. The reader reading an entry that opens "Not a checkpoint entry" survived,
+            predicted 1 and 0 red, a missing property: every such entry the proof held was a
+            planning pass, a ruling or a sign-off, each already left out by its heading, so the
+            opening was read by nothing the proof reached, though the record holds three such
+            entries headed 3.1. Remedied by a case the proof reads, an entry headed with a
+            checkpoint and a dash that opens that way, in its own commit, and run again at cd74213
+            over 912 passing: 1 red, the proof. The anchor taken from the first of several headings,
+            1, the proof; the reader reading the whole record, 2, the proof and the real record,
+            whose entries before 7.2's do not all say it; and `two-platform`'s roster row put back
+            to the matrix, 1, the new form assertion. Not mutated: the merge rule's and done
+            condition 5's sentences, which no check reads, since what carries them is the record
+            reader, mutated above.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end on the
+            operator's Windows machine, six steps, exit 0, against `data-ci` and never `data`: 912
+            of 912 tests ran, 0 failed. `tools/verify-phase.ps1` green: 350 claims, 334 PASS, 0
+            fail, 16 out of scope, 0 unexamined, 341 placements and verdicts reconciled against a
+            floor of 34, 34 of 35 roster checks carried and all 34 run, with `two-platform` reported
+            as running on every CI run. Migrations 0 to 23, none added. No claim moved: the ruling
+            edits no table in ARCHITECTURE.html. Both gates ran with this entry in place. The
+            operator's store under `data/` was not touched by either gate, its newest file last
+            written on 2026-09-15 at 00:14:52 UTC before the gates and after them.
+Carried:    none created and none discharged. The phase 7 sign-off is still owed, and it now covers
+            this ruling as well.
+Notes:      the hosted macOS and Linux legs stand. A change merged without a build session running
+            `tools/ci.ps1` has no Windows result behind it, and the merge rule is what names the
+            run.
