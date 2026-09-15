@@ -169,7 +169,7 @@ public class CoverageReported
         // property, which is that every remaining row names a checkpoint that
         // has not landed. It was 5 until 1.4 promoted nightly-cost, then three
         // until 5.4 promoted listings-coverage, then two until 6.3 promoted
-        // claim-admissibility. One remains, the register at 7.1, and the floor
+        // claim-admissibility. One remains, the register at 8.1, and the floor
         // is exact enough to say what is left rather than generous enough to
         // survive anything: a run finding none would pass this half over an
         // empty set.

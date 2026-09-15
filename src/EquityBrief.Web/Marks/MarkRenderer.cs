@@ -203,7 +203,7 @@ public sealed record ReasonTotal(string Reason, int Names);
 //
 // Counts and no rate. The share that reached target before stop and the
 // break-even those setups demanded are the other half of 15.10's row and arrive
-// at 7.5 with the verdicts; what this carries is how much has been scored and
+// at 8.5 with the verdicts; what this carries is how much has been scored and
 // how far that is from the minimum a verdict needs.
 // see: An unresolved setup is never a win
 public sealed record ReasonRecord(
@@ -1494,7 +1494,7 @@ public sealed class MarkRenderer : IComponent
             // count is what makes the absence readable: a reader sees how far
             // off a verdict is rather than only that there is none.
             table.Append(record.HasEarnedAVerdict
-                ? Formatted($"<td data-verdict=\"due\">{record.Resolved} resolved, and the share that reached target before stop arrives with the verdicts at 7.5</td>")
+                ? Formatted($"<td data-verdict=\"due\">{record.Resolved} resolved, and the share that reached target before stop arrives with the verdicts at 8.5</td>")
                 : Formatted($"<td class=\"not-measured\" data-outline=\"dashed\" data-verdict=\"none\">{record.Resolved} of {record.Minimum} resolved</td>"));
 
             table.Append("</tr>");

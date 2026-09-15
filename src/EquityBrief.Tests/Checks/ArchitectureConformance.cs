@@ -350,7 +350,7 @@ public class ArchitectureConformance
         // Context with a non-vacuity guard, and deliberately not a floor that
         // tracks the count.
         //
-        // This number falls as the build advances and reaches zero at phase 7 by
+        // This number falls as the build advances and reaches zero at phase 8 by
         // construction, so no floor under it can be far enough below that
         // ordinary building never moves it, which is the test CLAUDE.md sets for
         // keeping one. It stood at 100, then 80 at 5.4, then 70 at 5.6, and each
@@ -364,7 +364,7 @@ public class ArchitectureConformance
         // So the guard is one, which is what the number was ever doing here: it
         // stops the two assertions below passing over an empty set. The property
         // is carried by those assertions and not by the size of the population.
-        // When phase 7 empties this set the guard fails, which is correct: at
+        // When phase 8 empties this set the guard fails, which is correct: at
         // that point the two assertions below have nothing to say and the test
         // is what has to change, rather than the number.
         Assert.True(due.Length >= 1, $"Read {due.Length} out-of-scope claims, so the two assertions below would pass over an empty set.");
@@ -829,7 +829,7 @@ public class ArchitectureConformance
         //
         // The claims out of scope is a fact about how much of the system is
         // unbuilt. So is the count answered by the plan: every checkpoint that
-        // lands moves claims out of this population, and at phase 7 it is zero
+        // lands moves claims out of this population, and at phase 8 it is zero
         // by construction. Neither size is a fact about the property, so the
         // floor sits far enough below the value that ordinary building never
         // reaches it, and catches the one thing worth catching: a derivation
@@ -843,7 +843,7 @@ public class ArchitectureConformance
         // the old floor did not survive the correction and could not be carried.
         // Lowered from 20 to 12 at 5.5, and converted to a non-vacuity guard by
         // the phase 5 sign-off for the reason the two counts above were: the
-        // number falls as the build advances and is zero at phase 7 by
+        // number falls as the build advances and is zero at phase 8 by
         // construction, so a floor under it is a maintenance edit every phase
         // rather than a property. The comment already said as much and the
         // number was lowered anyway. What carries the property is the split by

@@ -10113,3 +10113,138 @@ Carried:    two obligations entered and discharged, none created. A suspect name
             written into a verdict note is reconciled against nothing, so the phase report prints it
             whatever the row holds, as the mark renderer's and the single page app's matrix verdicts
             print eleven blank cells over rows of thirteen.
+
+### 7.0 planning - phase 7 written for phase 6's carried items, and the improvement loop moved to phase 8   2026-09-15
+Not a checkpoint entry. It belongs to 7.0, which has not landed. This session has committed code and
+            may not sign it off.
+Built:      no component. Three commits and this record. The first is the plan: phase 7's section
+            with the claims it predicts, the loop's section under phase 8, the rows the move touched
+            and the two rows entered, with the decision and the plan's CHANGELOG entries. The second
+            moves every due point, placement, roster row, line on a page and comment that named one
+            of the loop's checkpoints to phase 8, gives section 20 phase 7's row, and reads the
+            phase count `done-condition-producible` states as nine, with the CHANGELOG entries for
+            CLAUDE.md and ARCHITECTURE.html. The third reads a carried obligation as cited back only
+            by the marker naming it inside the checkpoint that owes it, the remedy for the one
+            mutation of the sweep below that survived where it was predicted red.
+Decided:    one decision, superseding nothing. Phase 6's carried items are built as phase 7, and the
+            improvement loop is phase 8. The operator ruled it on 2026-09-14, after the 7.0 ruling
+            was committed and merged under 7.0 while 7.0 was still the loop's planning pass and that
+            phase had not started, and asked for the plan to be changed with it. The plan moved to
+            meet the label rather than the label to meet the plan, because history on `main` is not
+            rewritten and a label between two phases is not one the plan can carry, 6.5 being the
+            staleness judge. It rules phase 7 and changes no convention: the clause in CLAUDE.md
+            that files work under the checkpoint that owes it stands, and the operator was told
+            before approving that a sign-off carrying items to 8.0 could produce the same labels
+            again.
+Moved:      phase 7 is phase 6's carried items at three checkpoints: 7.0, this pass, with the ruling
+            already recorded here; 7.1, the due-point reader landing a planning checkpoint from its
+            planning entry; and 7.2, the phase report. The loop's nine checkpoints are 8.0 to 8.8,
+            their text unchanged but for 8.0, which gives the paragraph ruling a suspect name's
+            surfaces to 7.0 and gains one ruling how a count a verdict note states is kept to its
+            row. Moved with them: 14 due points in the scope map, 9 to 8.5, 2 to 8.3 and 1 each to
+            8.1, 8.4 and 8.6, and the 2 derived from the plan's text moving with the text; 3
+            placements to 8.1; the register's roster row, which starts at 8.1; the 4 open rows from
+            7.0 to 8.0, with the text that cites them; the surface 2 operating rows read at 8.5; the
+            mentions in 5.0's, 5.6's and 6.0's text; six sentences in section 13 naming the loop's
+            phase; section 20's later row, now 8, with phase 7's row ahead of it; the run page's two
+            lines saying what arrives at 8.4 and at 8.5, with the expectation and the two assertions
+            that read them; the note the shortlist stores with its shadow reasons, which reads 8.3
+            on rows written from now and 7.3 on rows already in the operator's store; and the
+            comments naming them in eleven source files. Not moved: the records, and the 7.0
+            ruling's own references, which name the checkpoint it belongs to. SCHEMA.md, RUNBOOK.md,
+            the fixture README, the tools and the workflow were read for the loop's phase 7 numbers
+            and name none.
+Found:      one reader the move reached that the plan did not name, what phase 7's building text
+            must not say, and a property a check did not hold. The reader:
+            `done-condition-producible` states section 20's row count exactly, at 8, and turned red
+            when phase 7's row went in; it reads 9 now with the reason beside it, and the other 908
+            tests stayed green. The text: the harness derives a due point from the earliest building
+            checkpoint whose text names a subject, and 2 of the 16 out-of-scope claims are derived
+            that way, Candidate register from the heading of the loop's register checkpoint and
+            Setup resolution from its first, so either phrase in 7.1's or 7.2's text would pull a
+            phase 8 claim into phase 7. The property: `obligation-reconciles` read a row as cited
+            back by the checkpoint that owes it wherever the row's name appeared in that
+            checkpoint's text, heading included, where CLAUDE.md gives the marker as what makes that
+            direction assertable, since prose using the same words cannot be told from a citation.
+            7.1's heading is the name of the row it owes, so the sweep's mutation deleting 7.1's
+            citation left the row cited back. Over the plan as committed, all 79 rows are cited back
+            by the marker inside the checkpoint their row names, so the check reads the marker now
+            with no document changed. 5 citations in the plan sit outside the checkpoint their row
+            names, being in the holes table, in a note on a retired row, in the checkpoint building
+            what an operating row calibrates, in a planning pass and in a source list review, and
+            each of those 5 rows is cited inside its own checkpoint as well: the check refuses a row
+            its checkpoint does not cite, and a citation outside that checkpoint neither satisfies
+            it nor fails it.
+Predicted:  350 claims and 334 PASS after phase 7, with 16 out of scope, 0 unexamined and 0 fail,
+            all 16 at phase 8: 2 at 8.1, 3 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6. The ruling added
+            4 claims at 7.0 and all 4 pass; this pass, 7.1 and 7.2 add none. 7.2 checks it.
+Tested:     no test added. One changed in what it proves: `obligation-reconciles`' proof that a
+            checkpoint not citing its row is found runs over a constructed plan and table through
+            the code the corpus is measured by, and finds a checkpoint saying nothing, a heading
+            that is the row's name with the name in its text in emphasis, a citation of the row in
+            another checkpoint's text and a citation of another row in its own each as not citing
+            the row, with the marker in its own text as the control. One changed in what it states,
+            `done-condition-producible`'s phase count at 9, and two in what they read, the run
+            page's reason records region asserted to name 8.5 and its shadow candidates region 8.4.
+            909 tests, as at the 7.0 ruling.
+Mutated:    the rule, stated before the sweep: break every reference the pass moved or entered where
+            a slip would misplace a claim, a placement, a roster row, an obligation or a line on a
+            page, by leaving one of each kind at its phase 7 number, by leaving an open row at 7.0
+            alone and with its citation, by naming a subject phase 8 builds in phase 7's building
+            text, by leaving a row this pass entered without the citation back, and by dropping
+            phase 7's row from section 20. Outside the rule: the note the shortlist stores with its
+            shadow reasons, which no test reads and no page draws, and the comments, which no test
+            reads. Twelve qualify and all twelve were mutated, in a detached worktree under the
+            session scratchpad outside this repository, over an unmutated baseline of 909 tests all
+            passing at 805bd2c; each was reverted before the next. Predicted before the run: seven
+            red, and five surviving here until 7.1 lands. Six of the seven went red: a claim's due
+            point left at 7.5, a checkpoint the plan no longer has, 1 test red, under
+            `architecture-conformance`; an open row left due at 7.0 while the citation back moved
+            into 8.0's text, 1, under `obligation-reconciles`; the run page's line saying what
+            arrives with the register left at 7.4, 1, under `read-surface`; the run page's line
+            saying what arrives with the verdicts left at 7.5, 1, under `read-surface`; the count's
+            row entered with 8.0's text not citing it, 1, under `obligation-reconciles`; and section
+            20 left without phase 7's row, 1, under `done-condition-producible`. The seventh
+            survived, a missing property: the repair's row entered with 7.1's text not citing it,
+            read as cited back by 7.1's heading, found above. Five survived as predicted, each an
+            unreachable boundary here: what tells each from the text as committed is a record
+            showing its checkpoint landed, and this record shows neither 7.0 nor 7.1 landed. A
+            claim's due point, a table's placement and the register's roster row each left at 7.1,
+            and a subject phase 8 builds named in 7.1's text, which moves the due point derived for
+            Candidate register to 7.1, each name a checkpoint the plan has and the record does not
+            show, which every check accepts until 7.1's entry is written. An open row left due at
+            7.0 with its citation moved into 7.0's text names a checkpoint no entry lands: the
+            ruling's entry lands nothing, and this entry lands nothing either, since the due-point
+            reader skips every entry opening as this one does, which is the defect 7.1 repairs. Each
+            of the five is run again at 7.1, where each is expected red. Run again at 83482b3, the
+            commit reading the marker, in the same worktree over an unmutated baseline of 909
+            passing, by a rule stated before that run: the survivor, 1 test red, under
+            `obligation-reconciles`; and each property that commit states about a cite-back broken
+            once, being read off the row's words in the checkpoint's text, off a marker inside any
+            checkpoint's text, and off any marker whatever row it names, 1 test red each, the proof
+            under `obligation-reconciles`, with the corpus alone green under all three since every
+            row's checkpoint carries the marker naming it. The worktree was removed after.
+            Properties added and not mutated, named because the next sweep has to find them: the
+            prediction's figures, which no test reads and 7.2 checks against the report; and the new
+            decision's citations, which `decision-resolves` reads.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six
+            steps, exit 0, against `data-ci` and never `data`. 909 of 909 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 350 claims, 334 PASS, 0 fail, 16 out of scope, 0
+            unexamined, 341 placements and verdicts reconciled against a floor of 34, 34 of 35
+            roster checks carried and all 34 run. Migrations 0 to 23, none added. Both gates ran
+            with this entry in place. The 16 read twice, by the first checkpoint each note names and
+            by the last, give 16 at phase 8 both ways and none at phase 7: 2 at 8.1, 3 at 8.3, 1 at
+            8.4, 9 at 8.5 and 1 at 8.6, the split the prediction states, where the 7.0 ruling read
+            the same claims at 7.1, 7.3, 7.4, 7.5 and 7.6. The three tables placed with a due point,
+            13.2, 13.3 and 19.2, are placed at 8.1, and the register's roster row starts at 8.1 and
+            is not due yet. The 4 claims the ruling added each still PASS under `read-surface`. The
+            operator's store under `data/` was not touched by either gate, its newest file last
+            written on 2026-09-15 at 00:14 UTC before the gates and after them.
+Carried:    two rows entered and none discharged. A planning checkpoint lands with its planning
+            entry, created at the 6.11 sign-off and due at 7.1, whose text cites it; it stays owed
+            before 8.0's entry is written, since that entry is the point after which the four rows
+            now due at 8.0 have passed. A count a verdict note states read off the row it describes,
+            created at the 7.0 ruling and due at 8.0, whose text cites it; 7.2 corrects the two
+            notes that print eleven blank cells over rows of thirteen. The four rows the phase 6
+            sign-off left open are due at 8.0, and the two the ruling discharged stay discharged at
+            7.0.

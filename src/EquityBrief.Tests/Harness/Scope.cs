@@ -1542,7 +1542,7 @@ internal static class Scope
     {
         // 5.5 creates the table and the plan writes `forward_return` there in
         // the snake case the schema uses, so the plural store name matches
-        // nothing until 7.1 mentions forward returns in prose.
+        // nothing until 8.1 mentions forward returns in prose.
         ["Forward returns"] = "5.5",
     };
 
@@ -1718,9 +1718,9 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Operational header, spend")] = "5.6",
         [CheckReach.Key("15.10 Run", "Operational header, what each stage said about itself")] = "5.6",
         [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = "5.6",
-        [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "7.5",
+        [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "8.5",
         [CheckReach.Key("15.10 Run", "Reason records, one row per reason with the reason track mark")] = "5.6",
-        [CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded")] = "7.5",
+        [CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded")] = "8.5",
         [CheckReach.Key("15.10 Run", "Harness, passed")] = "5.6",
         [CheckReach.Key("15.10 Run", "Harness, failed")] = "5.6",
         [CheckReach.Key("15.10 Run", "Harness, unexamined")] = "5.6",
@@ -1780,9 +1780,9 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes")] = "6.7",
         [CheckReach.Key("15.9 Name", "Research paused, with the stored sections still rendered under their own dates")] = "6.8",
         [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
-        // 7.5 is "Reason verdicts on the run page" and 7.4 is "The shadow
-        // column", so two rows of this section are owed two phases after it.
-        [CheckReach.Key("15.10 Run", "Shadow candidates")] = "7.4",
+        // 8.5 is "Reason verdicts on the run page" and 8.4 is "The shadow
+        // column", so two rows of this section are owed three phases after it.
+        [CheckReach.Key("15.10 Run", "Shadow candidates")] = "8.4",
         [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = "6.4",
@@ -1793,10 +1793,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.3",
         [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
 
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "7.5",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "7.5",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = "7.5",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = "7.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = "8.5",
     };
 
     // Contradiction F. Section 15.5's Level chart names four elements, candles,
@@ -1877,9 +1877,9 @@ internal static class Scope
         // The run page's reason record, and the same argument again. Its counts
         // and the base rate pinned above them are what 5.6 builds, and three
         // operating obligations name that surface as where their trigger is
-        // read. Its verdicts need resolved setups and are 7.5's. Read as one
-        // claim it would be owed at 7.5, and the obligations would name a
-        // surface the harness says arrives two phases after the checkpoint the
+        // read. Its verdicts need resolved setups and are 8.5's. Read as one
+        // claim it would be owed at 8.5, and the obligations would name a
+        // surface the harness says arrives three phases after the checkpoint the
         // plan says builds it.
         
         // The run page's stale-and-failed region, decomposed at the phase 5
@@ -2135,7 +2135,7 @@ internal static class Scope
         // universe screen, which is 5.1. 1.1 records the leave date and asserts
         // nothing a reader looks at.
         ["A name leaves the index"] = "5.1",
-        ["A condition has fired but nothing has resolved yet"] = "7.5",
+        ["A condition has fired but nothing has resolved yet"] = "8.5",
         ["A search returns snippets rather than full page text"] = "6.9",
         ["A search returns a site the applicable list does not carry"] = "6.9",
         ["The search tool is unavailable"] = "6.9",
@@ -2144,8 +2144,8 @@ internal static class Scope
         // what the overnight queue records at 6.10, each now reached where it landed.
         ["The local model is unavailable, the overnight queue records that it could not run"] = "6.10",
         ["A theme refresh fails while a name's pass depends on it"] = "6.9",
-        ["Something tries to edit or delete a register row"] = "7.3",
-        ["The candidate register and the correction disagree"] = "7.3",
+        ["Something tries to edit or delete a register row"] = "8.3",
+        ["The candidate register and the correction disagree"] = "8.3",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -2176,10 +2176,10 @@ internal static class Scope
         ["Tranche eligibility"] = "4.4",
         ["Earnings horizon"] = "4.7",
         ["Nightly row coverage"] = "5.4",
-        ["Reason record display"] = "7.5",
-        ["Minimum resolved setups"] = "7.5",
-        ["Family size and correction"] = "7.1",
-        ["Frozen measurement windows"] = "7.6",
+        ["Reason record display"] = "8.5",
+        ["Minimum resolved setups"] = "8.5",
+        ["Family size and correction"] = "8.1",
+        ["Frozen measurement windows"] = "8.6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
@@ -2293,7 +2293,7 @@ internal static class Scope
     // answers about the first checkpoint that happens to use the word and not
     // about the row. Widening the shadow check's population at 6.0 showed it in
     // one run: fourteen of them derived, and moves gave 2.1 against a real 5.2,
-    // levels gave 5.1 against 3.4, and forward returns gave 7.1 against 5.5.
+    // levels gave 5.1 against 3.4, and forward returns gave what is now 8.1 against 5.5.
     // So the whole map is written, uniformly, and this is the reason rather
     // than three of it deriving by the luck of a distinctive phrase.
     internal static IReadOnlyList<string> ResidualFileNameSubjects() => [.. FixtureRows.Keys];

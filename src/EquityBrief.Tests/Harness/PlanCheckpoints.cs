@@ -34,10 +34,11 @@ internal static class PlanCheckpoints
         // section, whichever comes first, and never at the end of the file.
         // Taking the remainder gave the last checkpoint in the document every
         // word after it: the carried obligations table, its prose, and every
-        // subject either happens to name. 7.8 was silently the due point for
-        // anything named down there, and the first sentence added to that table
-        // that used the words "level window" moved a limits row's due point from
-        // 3.4 to 7.8 with nothing but a shadowing assertion to say so. The same
+        // subject either happens to name. The last checkpoint, 7.8 when this was
+        // found, was silently the due point for anything named down there, and
+        // the first sentence added to that table that used the words "level
+        // window" moved a limits row's due point from 3.4 to it with nothing but
+        // a shadowing assertion to say so. The same
         // fault ran the other way at every phase boundary, where a checkpoint's
         // text ran on through the next phase's opening paragraph.
         var sections = Regex.Matches(plan, @"^## ", RegexOptions.Multiline);

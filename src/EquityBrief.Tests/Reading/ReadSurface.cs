@@ -2539,9 +2539,9 @@ public partial class ReadSurface
 
         // No rate anywhere on the region, for either row. The share that reached
         // target before stop and the break-even those setups demanded are the
-        // other half of this row and arrive at 7.5 with the verdicts.
+        // other half of this row and arrive at 8.5 with the verdicts.
         Assert.DoesNotContain("%", drawn, StringComparison.Ordinal);
-        Assert.Contains("7.5", drawn, StringComparison.Ordinal);
+        Assert.Contains("8.5", drawn, StringComparison.Ordinal);
 
         // The nights the record stands on, which is what the three operating
         // obligations read on this page are counted in.
@@ -3325,7 +3325,7 @@ public partial class ReadSurface
     public async Task TheRunPageDrawsEveryRegionSectionFifteenTenNamesAndStatesTheTwoThatAreAbsent()
     {
         // The six regions in the order that section states them, with the two
-        // that need what phase 7 builds stated as absent rather than drawn
+        // that need what phase 8 builds stated as absent rather than drawn
         // empty. An empty region reads as a night that produced nothing.
         using var store = await FixtureExpectations.WithReturns();
 
@@ -3364,7 +3364,7 @@ public partial class ReadSurface
         Assert.Equal([.. at.Order()], at);
 
         Assert.Contains("data-shadow=\"absent\"", page, StringComparison.Ordinal);
-        Assert.Contains("7.4", page, StringComparison.Ordinal);
+        Assert.Contains("8.4", page, StringComparison.Ordinal);
 
         // And the route is a link, which is what makes the page shareable.
         Assert.Contains(SinglePageApp.RunRoute, new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);

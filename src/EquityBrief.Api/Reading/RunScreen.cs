@@ -28,7 +28,7 @@ public static class RunScreen
     // The resolved count is the setups this reason produced that reached an
     // outcome. No rate is computed here and none is drawn: the share that
     // reached target before stop and the break-even those setups demanded are
-    // 7.5's half of this row, and a rate over a handful of cases is a number
+    // 8.5's half of this row, and a rate over a handful of cases is a number
     // that reads as evidence and is not.
     public static IReadOnlyList<ReasonRecord> Records(
         IReadOnlyList<ListingRow> listings,
