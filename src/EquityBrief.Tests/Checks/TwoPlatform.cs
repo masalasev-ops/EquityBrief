@@ -120,6 +120,15 @@ public class TwoPlatform
         Assert.Equal(0, read);
         Assert.Empty(missing);
 
+        // Nor is an entry headed with a checkpoint and a dash that opens "Not a
+        // checkpoint entry", which the record holds under 3.1 three times. The
+        // three above are left out by their headings alone, so without this case
+        // the opening is read by nothing the proof reaches, which is what the
+        // sweep's mutation dropping it found.
+        (read, missing) = WindowsUnrecorded(Before + Anchor + Entry("8.1 - a note on the checkpoint", "Not a checkpoint entry. It builds nothing."));
+        Assert.Equal(0, read);
+        Assert.Empty(missing);
+
         // And the anchor is exactly one heading.
         Assert.Throws<InvalidOperationException>(() => WindowsUnrecorded(Before));
         Assert.Throws<InvalidOperationException>(() => WindowsUnrecorded(Before + Anchor + Anchor));
