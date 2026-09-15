@@ -10532,3 +10532,146 @@ Carried:    none created and none discharged. The phase 7 sign-off is still owed
 Notes:      the hosted macOS and Linux legs stand. A change merged without a build session running
             `tools/ci.ps1` has no Windows result behind it, and the merge rule is what names the
             run.
+
+### Phase 7 sign-off                                                         2026-09-15
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. The building
+            session committed PRs 90 through 94 and says so in its handover, which stopped at PR
+            93 and named `main` at 4d23cf5; `main` held c9b8c7f, PR 94's merge, and this review
+            covers the 7.2 ruling as well. This is the first review of phase 7.
+Verified:   by re-running both gates on `main` at c9b8c7f, in a detached worktree under the
+            session scratchpad rather than in the production checkout. `tools/ci.ps1` green end to
+            end, 0 warnings, 0 errors, 912 of 912 tests passing inside it, migrations 0 to 23
+            applied against that worktree's `data-ci/` and then none pending at schema version
+            23, exit 0. `tools/verify-phase.ps1` green at 29 tables, 350 claims, 334 PASS, 0 FAIL,
+            16 out of scope, 0 unexamined, 341 placements and verdicts reconciled against a floor
+            of 34, fixture PRESENT with 1 captured over 6 constituents and 4 names, 35 checks on
+            the roster and 34 carried, 34 ran and passed and none failed or did not run, the
+            suite 912 of 912 with none failed and none unrun. Windows PowerShell on the operator's
+            Windows machine: `tools/ci.ps1` green. Every figure the 7.2 ruling's entry states
+            reproduces exactly; the handover's 910 is the figure before that ruling's 2 tests.
+Split:      the 16 out of scope are 2 at 8.1, 3 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6, computed
+            over the 16 out-of-scope claims in `artifacts/phase-report.json` by the checkpoint
+            each note names. None is inside phase 7 and none names a bare phase. All five
+            checkpoints are in `BUILD_PLAN.md` and none is recorded above.
+Matrix:     read from the runs that pushed each merge, jobs enumerated rather than run
+            conclusions read, since a skipped job leaves a run green. The 5 merge commits on `main`
+            since the phase 6 sign-off's merge 6bbaddb, 787a935, 45d53b8, 1fe3a3b, 4d23cf5 and
+            c9b8c7f, are PRs 90 through 94, and carry 5 push runs. The first four carry 3 jobs
+            each, `matrix (windows-latest)`, `matrix (macos-latest)` and `case-sensitivity`; the
+            fifth, after PR 94 removed the hosted Windows leg, carries 2, `macos` and
+            `case-sensitivity`. All 14 concluded success. All 5 PRs were read again by job, one
+            run per event: PRs 90 to 93 green on 6 jobs each and PR 94 green on 4.
+            `.github/workflows/ci.yml` carries zero `if:` and zero `continue-on-error:` keys,
+            counted rather than blocklisted.
+Plan:       all three checkpoints, 7.0 through 7.2, are in `BUILD_PLAN.md` and all three are
+            recorded above, 7.0 by its planning entry, 7.1 and 7.2 by their own, with the 7.0 and
+            7.2 rulings each opening "Not a checkpoint entry", over 139 entry headings before
+            this one. No open pull request. The carried obligations table holds 79 rows: 67
+            discharged, 7 operating and 5 open, all 5 due at 8.0 and each cited by 8.0's text with
+            its marker, so nothing is owed inside phase 7. All 29 expectation files state
+            `derivation: derived` and none is frozen from a run. Mutation evidence is recorded at
+            every phase 7 entry. 7.2's report added no assertion and recorded one mutation
+            predicted to survive, which is judged below. No phase 7 entry amends its own done
+            condition. The remote holds one branch, `main`, before this entry's branch.
+Store:      the operator store under `data/` was not touched by either gate or by this review.
+            `data/equitybrief.db` read last written 2026-09-15 00:14:52 UTC before the gates and
+            after them. Opened immutable, it is at schema version 23 and holds 32 `series_state`
+            rows, all `ok` with retries 0, so the night of 2026-09-15, the first on the weekly
+            retry code, holds no suspect name for that code to ask for.
+Swept:      12 runs over 11 mutations and 1 baseline, all made in one detached worktree at c9b8c7f
+            under the session scratchpad, the full suite each time and never a filter, reverted
+            with the tree read clean between them, the worktree removed after, and the main tree
+            modified at no point. The baseline is 912 of 912 there. The rule was stated before
+            the sweep: each property the handover names as the place to look hardest, being the
+            planning heading, the opening a planning entry carries, a planning entry landing its
+            phase, a ruling landing its checkpoint, the cite-back read in the row's own checkpoint
+            and read off its marker, and the started-phase guard; and each property the 7.2 ruling
+            added to `two-platform`'s record reader. Each diff and its prediction were written
+            down before any run. Nine turned a test red and every result matched its prediction.
+            The planning heading widened from `N.0` to any checkpoint, 1 red; a planning entry
+            landing its phase, 1; any `N.0` heading opening "Not a checkpoint entry" landing its
+            checkpoint, 2, one under `obligation-reconciles`. The cite-back accepting its marker in
+            any checkpoint's text, 1; the marker read replaced by a substring read, 1, the case
+            where a heading equals the row's name. The reader skipping the 7.0 planning entry, 1,
+            the guard's `DoesNotContain`, since 7.0 lands from that entry alone. The record reader
+            reading entries that open "Not a checkpoint entry", 1; reading the whole record, 2,
+            the proof and the real record at 86 entries with 48 not saying it; starting one entry
+            late, 1. The handover's cite-back mutation "a checkpoint other than the row's own"
+            cannot be written inside `Cites`, which is handed one checkpoint's text and never its
+            name, so it was made in the caller, `CitedBack`, and said so before the run.
+Survived:   two, both predicted, and neither a defect.
+            Dropping the opening from `DuePoints.Planned`'s condition leaves 912 green, where the
+            handover expected red. It is equivalent by construction rather than one of the four
+            classes: a `N.0 planning - ` entry that does not open "Not a checkpoint entry" is
+            already read as built by `DuePoints.Built`, whose heading pattern matches it, and a
+            checkpoint lands when it is built or planned, so the condition changes no answer
+            `HasLanded` gives and `Planned` has no other caller. A test on `Planned` alone would
+            pin an internal detail no behaviour depends on.
+            The started-phase guard counting one phase fewer leaves 912 green, a missing property:
+            `TheRecordsOwnEntriesAreReadAsBuiltOrAsPlanning` asserts at least 5 over the 6 it reads,
+            2.0 through 7.0, and its comment places the floor at the first count deliberately,
+            since the count only rises. One lost phase passes. Carried below as a judgement for
+            8.0 rather than as a repair, because the comment states the choice.
+Reviewed:   the five entries against their diffs, 6bbaddb..c9b8c7f, 38 files, +2157/-280, src 27
+            files, +1073/-213. `[Fact]`s added per commit account for 904, 909, 910, 910, 912 with
+            none removed. The claim and placement moves, 346 to 350 and 337 to 341, come from the
+            4 keys `Scope.cs` gained at the 7.0 ruling. Every commit deleting spec lines carries
+            its CHANGELOG entry. `PROGRESS.md` and `CHANGELOG.md` lost no line over the phase, and
+            `DECISIONS.md` lost only the decision the 7.0 ruling superseded, which moved to
+            "Previously decided". The renumbering left no reference to a 7.x checkpoint that
+            means the improvement loop in `src/`, `fixtures/`, `tools/`, `.github/` or the specs'
+            placements, and every phase 8 due point named in source exists in the plan. The weekly
+            retry counts a week from the session the name was last asked on, through the clock's
+            IANA zone, so a night running across midnight UTC is one session and cannot ask
+            twice or skip a week, and a week whose seventh day has no session moves to the next.
+Judged:     the two the handover offered as reversible, and neither is reversed.
+            7.2 recording its surviving note mutation rather than adding a check stands. The row
+            that owns the property, a count a verdict note states read off the row it describes,
+            is open and due at 8.0, and a check built inside the report would have decided the
+            ruling that row asks 8.0 for.
+            5.0 landing through its correction entry stands. The entry does not open "Not a
+            checkpoint entry", so the built reader reads it as 5.0, and phase 5 is built and
+            signed off, so nothing reads that answer as due.
+Not a reopen: under the stopping rules none of the above reopens phase 7. No check broke, both
+            gates are green, and no done condition fails. The first item carried below fails
+            `coverage-reported` loudly on the night 8.1's entry lands rather than passing, and it
+            is 8.0's planning pass that can correct it.
+Carried:    for 8.0 to enter in the table or rule on rather than by this entry, which edits no
+            spec.
+            The candidate register's start named twice. `register-append-only`'s roster row in
+            CLAUDE.md, the two phase report placements in `PhaseReport.cs` due at 8.1 and the
+            comment in `CoverageReported.cs` start the register at 8.1, where `BUILD_PLAN.md` builds
+            it at 8.3 and `Scope.cs` places its two claims at 8.3. It dates from 2.0, as 7.1
+            against 7.3, and the renumbering carried it across. Once 8.1 lands the roster row
+            names a recorded checkpoint with no check behind it. Owed before 8.1's entry.
+            Two readers of one population. `two-platform` reads the Windows run off entries headed
+            `N.N - `, a checkpoint and a dash, where `DuePoints.Built` lands a checkpoint off any
+            heading opening `N.N`, so an entry headed without the dash lands its checkpoint and
+            owes no Windows record. The population it misses is 0 today.
+            The started-phase guard's floor, at 5 over 6 phases: raise it, derive it, or keep it
+            with the loss of one phase named as unguarded.
+            Wording in the specs the phase left behind: `BUILD_PLAN.md` lines 411 and 539, whose
+            arithmetic still says the out of scope remain at 7.x; done condition 5 in CLAUDE.md,
+            which still names the matrix; CLAUDE.md's nightly-run rule and `nightly-cost`'s row,
+            which name no refetch after a corporate action, the per-name request ARCHITECTURE
+            carves out and the weekly retry makes open-ended at one a week per failed member;
+            RUNBOOK's suspect row, which says the lines go when the name leaves the index where
+            the name page and the export keep theirs and only the run page's goes; and the run
+            page's line in `SinglePageApp.cs` saying the register arrives at 8.4.
+            Two tests thinner than the property. The midnight test pins the session of the night
+            a name was last asked on and not tonight's, so tonight's session read off the UTC date
+            inside `Due` passes both weekly tests. No test reads the three surfaces for a suspect
+            name the index no longer holds.
+            A replay older than the stored bars, not traced here and older than phase 7. A night
+            run with `--session` for a session before the newest stored bar refetches a due name's
+            year up to that session after dropping the whole series, which removes the name's
+            newer bars; the next night would read the hole as a gap and stop that name. Owed a
+            trace, and a ruling if the trace confirms it.
+            The 7.2 ruling's runtime figures, noted and not owed: its decision states the Windows
+            leg took 15 to 33 minutes against about a minute for the suite on this machine, a
+            whole leg beside a suite step. Both are records, so it stands as written.
+Signed:     phase 7 is signed off at c9b8c7f. Its three checkpoints are built and recorded, both
+            gates are green on the tree being signed, every merge's jobs concluded success on the
+            runners the workflow named at that merge, nothing is owed inside the phase, and 8.0 is
+            unblocked.
