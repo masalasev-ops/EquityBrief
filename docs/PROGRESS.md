@@ -10248,3 +10248,105 @@ Carried:    two rows entered and none discharged. A planning checkpoint lands wi
             notes that print eleven blank cells over rows of thirteen. The four rows the phase 6
             sign-off left open are due at 8.0, and the two the ruling discharged stay discharged at
             7.0.
+
+### 7.1 - the due-point reader landing a planning checkpoint from its planning entry, and never its phase   2026-09-15
+Built:      the due-point reader's planning half. An entry headed with a phase's opening checkpoint
+            and the word planning, whose body opens "Not a checkpoint entry", lands that checkpoint
+            and never its phase; every other entry opening that way lands nothing, a ruling at the
+            same checkpoint and a planning entry headed with a building checkpoint among them; and a
+            phase still lands only from a building entry in it. `HasLanded` reads a checkpoint as
+            landed when it is built or planned and a phase when a checkpoint in it is built, so
+            every check asking it answers the same way: the due points of out-of-scope claims and
+            placed tables the reconciliation reads, the roster rows `coverage-reported` reads, the
+            tables an expectation awaits in `fixture-replay`, and the open rows
+            `obligation-reconciles` reads. Two commits: the reader with its proofs, CLAUDE.md's
+            convention and the row discharged; and this record.
+Changed:    CLAUDE.md's sentence on a planning pass's entry, which said the entry opens "Not a
+            checkpoint entry" so it says which checkpoint it belongs to without saying that
+            checkpoint has landed, and now says the entry is headed with that checkpoint and the
+            word planning and lands it and never its phase, and that an entry opening that way under
+            any other heading lands nothing. BUILD_PLAN.md's row for the repair, discharged at 7.1
+            with what the reader lands, the proofs that hold it and what it read before. Two
+            CHANGELOG entries.
+Measured:   the record as it stood before this entry, read by the repaired reader: 10 planning
+            entries land 6 planning checkpoints, 2.0 from 3 entries, 3.0 from 3, and 4.0, 5.0, 6.0
+            and 7.0 from 1 each. 5 of the 6 land only by their planning entry; 5.0 had landed
+            already from the correction headed 5.0 on 2026-09-11, whose body does not open the
+            planning way. 6 entries open that way and land nothing: 1.1's planning entry, three
+            entries headed 3.1 for work done ahead of it, and the 6.0 and 7.0 rulings. 59
+            checkpoints are built, read from 91 entries. Nothing open, out of scope, rostered,
+            placed or awaited names any of the 5 checkpoints that land now: the 16 out-of-scope
+            claims are at phase 8, the 3 placed tables at 8.1, the one roster row not yet running at
+            8.1, the 4 open checkpoint rows and the count row at 8.0, and no expectation awaits a
+            table. The suite at 2a39a3a, before this entry, ran 910 tests with none failing.
+Found:      that a planning pass is told from a ruling by its heading and by nothing else. Both open
+            "Not a checkpoint entry" and both say which checkpoint they belong to, and every
+            planning entry the record holds is headed with its checkpoint and the word planning,
+            where neither ruling is. A planning entry written under any other heading would land
+            nothing and bring the blind spot back with every check green, so the real record is read
+            for it: every phase whose plan has an opening checkpoint and whose building has started
+            has that checkpoint landed, 5 before this entry and 6 with it. And the entries from
+            2.0's planning to 7.0's each say their checkpoint has not landed, which is what the
+            reader answered when each was written; they are records and stand.
+Tested:     1 added and 2 changed. Added under `obligation-reconciles`: a row owed at 9.0 in a
+            constructed plan and table, with no fault over a record holding 8.8's building entry,
+            one fault naming 9.0 as landed once 9.0's planning entry is added, and none once a 9.0
+            ruling is added instead, through the code the corpus's open rows are read by. Changed
+            under `architecture-conformance`: the constructed records proof turned, so a planning
+            entry alone lands 3.0 and neither phase 3 nor 3.1, with a 3.0 ruling and a 1.1 planning
+            entry each landing neither their checkpoint nor their phase beside the cases it held;
+            and the real record's reading widened to every started phase's opening checkpoint
+            landed, floored at 5. 910 tests, from 909.
+Mutated:    the rule, stated before the sweep: break each property the repair states about the
+            due-point reader, being that a planning entry lands its checkpoint, that it never lands
+            its phase, that a ruling at the same checkpoint lands nothing, and that a planning entry
+            headed with a building checkpoint lands nothing; break the constructed proof that a row
+            owed at a planning checkpoint fails once that checkpoint's planning entry is recorded,
+            by dropping the landed half of the open-row reading; and break the real record's
+            reading, by heading one planning entry another way. Then run again the five mutations
+            7.0's sweep predicted would survive until 7.1 landed, and the probe the phase 6 sign-off
+            made. Outside the rule: the body opening read beside the planning heading, because an
+            entry headed as a planning pass whose body does not open the planning way is a building
+            entry Built already lands, so the mutation is equivalent; and CLAUDE.md's sentence and
+            the discharged row, which no test reads as prose. Twelve were mutated, in a detached
+            worktree under the session scratchpad outside this repository, at 2a39a3a with this
+            entry written into its record first, since five of the twelve are told apart only by a
+            record showing 7.1 landed, over an unmutated baseline of 910 tests all passing; each was
+            reverted before the next, and each went red as predicted. The six the rule chose: a
+            planning entry landing nothing, 3 tests red, under `architecture-conformance` and
+            `obligation-reconciles`; a planning entry landing its phase, 1, under
+            `architecture-conformance`; a ruling at a planning checkpoint landing it, 2, under
+            `architecture-conformance` and `obligation-reconciles`; a planning entry headed with a
+            building checkpoint landing it, 1, under `architecture-conformance`; the landed half of
+            the open-row reading dropped, 1, under `obligation-reconciles`; and 4.0's planning entry
+            headed without the word planning, 2, under `architecture-conformance` and
+            `record-append-only`. The five from 7.0, each of which survived there: a claim's due
+            point left at 7.1, 1, under `architecture-conformance`; a table's placement left at 7.1,
+            15, under `architecture-conformance`; the register's roster row left at 7.1, 1, under
+            `coverage-reported`; a subject phase 8 builds named in 7.1's text, 1, under
+            `architecture-conformance`; and an open row and its citation both left at 7.0, 1, under
+            `obligation-reconciles`. And the phase 6 sign-off's probe, the volume profile row and
+            its citation moved to 6.0, 1, under `obligation-reconciles`, which the sign-off recorded
+            as leaving the check green. The worktree was removed after. Properties added and not
+            mutated, named because the next sweep has to find them: the floor under the real
+            record's reading at 5; and the message each open-row fault carries, which the
+            constructed row reads for the landed half and nothing reads for the other.
+Verified:   `dotnet build` clean with warnings as errors. `tools/ci.ps1` green end to end, six
+            steps, exit 0, against `data-ci` and never `data`. 910 of 910 tests ran, 0 failed.
+            `tools/verify-phase.ps1` green: 350 claims, 334 PASS, 0 fail, 16 out of scope, 0
+            unexamined, 341 placements and verdicts reconciled against a floor of 34, 34 of 35
+            roster checks carried and all 34 run. Migrations 0 to 23, none added. Both gates ran
+            with this entry in place, so the record read by every check shows 7.0 landed from its
+            planning entry and 7.1 landed from this one, and the real record's reading found 6
+            started phases with their opening checkpoints landed. The 16 read by the first and by
+            the last checkpoint each note names are at phase 8 both ways, 2 at 8.1, 3 at 8.3, 1 at
+            8.4, 9 at 8.5 and 1 at 8.6, as 7.0 left them; the three placed tables are at 8.1 and the
+            register's roster row is not due yet. The claims and their verdicts are the ones 7.0
+            left, since no out-of-scope claim, placed table or roster row is due at a planning
+            checkpoint. The operator's store under `data/` was not touched by either gate, its
+            newest file last written on 2026-09-15 at 00:14 UTC before the gates and after them.
+Carried:    one row discharged and none created. A planning checkpoint lands with its planning
+            entry, discharged by the reader and the proofs above before 8.0's entry is written, as
+            the phase 6 sign-off ruled. The four rows due at 8.0 and the count a verdict note
+            states, due at 8.0, stay open, and none reads as passed, since 8.0's planning entry is
+            not written.

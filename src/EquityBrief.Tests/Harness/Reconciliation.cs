@@ -78,25 +78,16 @@ internal static class DuePoints
     // A planning pass is told from a checkpoint by the convention CLAUDE.md
     // already states, the entry opening "Not a checkpoint entry", rather than
     // by its number. The number is what misled the matcher, and an entry headed
-    // "### 2.0 -" whose body opens that way is still a planning pass.
+    // "### 2.0 -" whose body opens that way is still not a building entry.
     internal static IReadOnlyList<string> Built(string progress)
     {
         var built = new List<string>();
 
-        // The heading is the rest of its own line and the body runs to the next
-        // one, so the character class is spelled out rather than left to a dot.
-        // A dot that matches newlines makes the heading swallow the file and
-        // the reader returns nothing, which is a parse failure that reads as a
-        // record with no checkpoints in it.
-        foreach (Match entry in Regex.Matches(
-                     progress,
-                     @"^### (?<heading>[^\r\n]*)(?<body>(?:(?!^### )[\s\S])*)",
-                     RegexOptions.Multiline))
+        foreach (Match entry in Entries(progress))
         {
             var id = Regex.Match(entry.Groups["heading"].Value, @"^(\d+\.\d+)");
 
-            if (!id.Success || entry.Groups["body"].Value.TrimStart()
-                    .StartsWith(NotACheckpoint, StringComparison.Ordinal))
+            if (!id.Success || OpensAsNotACheckpoint(entry))
             {
                 continue;
             }
@@ -107,15 +98,65 @@ internal static class DuePoints
         return built;
     }
 
+    // The planning checkpoints PROGRESS records as planned, each by the entry
+    // of the pass that plans its phase.
+    //
+    // Built skips every entry opening "Not a checkpoint entry", which is how
+    // that pass is recorded, and until 7.1 nothing else read one, so no
+    // planning checkpoint ever landed and an obligation owed at one could not
+    // be read as passed: the retry bound owed at 6.0 was found unwritten at
+    // 6.11 with nothing having said so. Such an entry lands its checkpoint and
+    // never its phase, since planning a phase builds none of it, and the phase
+    // half is the one Built already holds.
+    //
+    // It is told by its heading, a phase's opening checkpoint and the word
+    // planning, as every planning entry the record holds is headed. A ruling
+    // at the same checkpoint opens the same way and plans nothing, so it lands
+    // nothing, and neither does a planning entry headed with a building
+    // checkpoint: "### 1.1 planning" planned phase 1, whose plan has no opening
+    // checkpoint, and 1.1 landed from 1.1's own entry.
+    internal static IReadOnlyList<string> Planned(string progress)
+    {
+        var planned = new List<string>();
+
+        foreach (Match entry in Entries(progress))
+        {
+            var id = Regex.Match(entry.Groups["heading"].Value, @"^(\d+\.0) planning - ");
+
+            if (id.Success && OpensAsNotACheckpoint(entry))
+            {
+                planned.Add(id.Groups[1].Value);
+            }
+        }
+
+        return planned;
+    }
+
+    // The heading is the rest of its own line and the body runs to the next
+    // one, so the character class is spelled out rather than left to a dot.
+    // A dot that matches newlines makes the heading swallow the file and
+    // the reader returns nothing, which is a parse failure that reads as a
+    // record with no checkpoints in it.
+    static MatchCollection Entries(string progress) =>
+        Regex.Matches(
+            progress,
+            @"^### (?<heading>[^\r\n]*)(?<body>(?:(?!^### )[\s\S])*)",
+            RegexOptions.Multiline);
+
+    static bool OpensAsNotACheckpoint(Match entry) =>
+        entry.Groups["body"].Value.TrimStart().StartsWith(NotACheckpoint, StringComparison.Ordinal);
+
     internal const string NotACheckpoint = "Not a checkpoint entry";
 
+    // A phase has landed once a checkpoint in it is built. A checkpoint has
+    // landed once it is built or, being a phase's opening checkpoint, planned.
     internal static bool HasLanded(string due, string progress) =>
-        HasLanded(due, Built(progress));
+        HasLanded(due, Built(progress), Planned(progress));
 
-    internal static bool HasLanded(string due, IReadOnlyList<string> built) =>
+    internal static bool HasLanded(string due, IReadOnlyList<string> built, IReadOnlyList<string> planned) =>
         NamesAPhase(due)
             ? built.Any(checkpoint => PhaseOf(checkpoint) == PhaseOf(due))
-            : built.Contains(due, StringComparer.Ordinal);
+            : built.Contains(due, StringComparer.Ordinal) || planned.Contains(due, StringComparer.Ordinal);
 }
 
 // Reconciles what the report says an instrument covers against what that
