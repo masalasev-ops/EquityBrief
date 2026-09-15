@@ -770,6 +770,49 @@ public class CorporateActions
     }
 
     [Fact]
+    public async Task ASpentNamesWeekIsCountedFromTheSessionItWasLastAskedForWhenThatNightStartedAfterMidnightUtc()
+    {
+        // A night that starts after midnight UTC and before midnight in New York, being a
+        // scheduled start the machine missed and ran late or a night run by hand in the
+        // evening, reads the system clock, so the instant a name was last asked for carries
+        // the next day's UTC date while belonging to the session before it. The week counts
+        // from that session. Every other night here runs at 21:10 UTC, where a night run for
+        // a named session puts its clock and where the two dates agree, so a week counted from
+        // the instant's UTC date passed all of them while asking for such a name a day late.
+        // Found by the 7.0 ruling's sweep.
+        using var store = await Stored();
+
+        await Checker(store, Refusing()).RunAsync(Index, "night-0");
+
+        var retryNights = SessionsFrom(new DateOnly(2026, 8, 11), CorporateActionChecker.RetryNights);
+
+        foreach (var session in retryNights.SkipLast(1))
+        {
+            await NightOf(store, session, Refusing());
+        }
+
+        // The last of the nightly retries is Monday 2026-08-17's night, asked at 00:42 UTC on
+        // the Tuesday.
+        var last = retryNights.Last();
+        var pastMidnight = new DateTimeOffset(2026, 8, 18, 0, 42, 0, TimeSpan.Zero);
+
+        await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(pastMidnight, SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, RunIdOf(last));
+
+        Assert.Equal(new DateOnly(2026, 8, 17), last);
+        Assert.Equal((CorporateActionChecker.RetryNights, "2026-08-18T00:42:00Z"), (CountOf(store, "AAPL").Retries, CountOf(store, "AAPL").CheckedAt));
+
+        // Monday 2026-08-24 is 7 days on from that session and 6 from the instant's UTC date,
+        // and its night, at 21:10 UTC, asks for the name.
+        var week = await NightOf(store, new DateOnly(2026, 8, 24), Refusing());
+
+        Assert.Equal(1, week.RefetchRequests);
+        Assert.Equal(["AAPL"], week.Retried ?? []);
+        Assert.Empty(week.Spent ?? []);
+        Assert.Equal(CorporateActionChecker.RetryNights + 1, CountOf(store, "AAPL").Retries);
+    }
+
+    [Fact]
     public async Task ASuspectNameTheIndexNoLongerHoldsIsNeitherAskedForNorNamed()
     {
         // The property the check's membership clause carries, which the phase 6 sign-off's
