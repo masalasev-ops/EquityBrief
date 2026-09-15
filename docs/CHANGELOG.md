@@ -25,6 +25,169 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-15 - BUILD_PLAN.md - phase 7 written for phase 6's carried items, and the improvement loop moved to phase 8
+
+Authorised by: Phase 6's carried items are built as phase 7, and the improvement loop is phase 8
+Was:
+> ## Phase 7: the improvement loop
+>
+> **Visible output at 7.1.** The resolution counts appear on a run page that already exists.
+>
+> ### 7.0 Planning
+> Confirms the guardrail values against the evidence that has accumulated. Nothing here is tuned to what the data turned out to be; a threshold changed after seeing results starts a new window and the old one is kept.
+>
+> Decides the fundamental analysis, being four readings over the twelve stored quarters and the three questions about what they are for: the computed trajectory, the guide record, earnings quality and the valuation position, each with the range it is placed in and the count of quarters behind it, and then whether the four earn a panel, whether a state transition on one of them earns a seventh reason, and whether a computed fundamental state may gate a tranche (owes: The computed fundamental panel, and whether a fundamental state may fire a reason or gate a tranche). The evidence is in hand by this pass rather than produced by it, since 6.1 stores the filings and the research checkpoints write the first reports to read a panel against, which is why 6.1 filed the question rather than answering it.
+>
+> Narrows what the volume profile is allowed to claim, before anything scores it (owes: The volume profile's claim narrowed to a price region at a day's resolution). Its evidence is in hand as well: the profile has been stored since 3.3 over four names of different character, and the sessions a multiple of the typical daily move sets aside are countable off the stored bars.
+>
+> Rules two things 6.11's production run found and left as they were, because each is a ruling rather than a repair: whether a pass for a name with no facts file refreshes its industry's theme (owes: A name with no facts file refreshes its industry's theme, ruled), and what a facts file carries of a segment table after an annual filing or an archive the fetch could not read (owes: The segment figures a facts file carries after an annual filing or an archive the fetch could not read). Their evidence is in hand rather than produced by this pass: the run's passes on the fixture's names, recorded in `PROGRESS.md`, and the code that decides both.
+>
+> Rules what a suspect name's own surfaces say, which the phase 6 sign-off carried here and the operator ruled ahead of the pass: a name whose retries are spent is asked for again weekly rather than waiting for another action, and its name page, its row on tonight's list and its exported report say its prices may not reflect a dividend or split (owes: A suspect name's own surfaces say so, ruled). With it, the property the check's membership clause carries is asserted by behaviour rather than by a source scan alone, since a name asked for weekly is asked for until it leaves the index (owes: A suspect name the index no longer holds is neither asked for nor named, asserted by behaviour).
+>
+> **Decides what the momentum panel is for, rather than carrying it.** It reaches no decision, feeds no band and gates nothing, which makes it the only part of the technical half with no stated purpose. Either the corpus says it is context a reader weighs and that nothing computes with it, which is a sentence in section 15 and a claim the panel's own row can carry, or it is given a job, which is a component that reads it and a rule that says what it decides. It is decided here rather than filed as an obligation because nothing produces evidence for it: the panel has been drawn since 3.5 and the question is what the corpus intends, not what a measurement would show.
+>
+> ### 7.1 Setup resolution
+> The setup horizon on forward returns: target reached, stop closed through, or the time cap expired. The resolution counts on the run page.
+>
+> **Done when** each of the three outcomes has its own test, a timed-out setup is counted in its own column and never in a rate, and the counts render.
+>
+> ### 7.2 The break-even score
+> The hit rate each plan demanded, computed from its own entry, stop and target, and the share of setups that beat it.
+>
+> **Done when** the arithmetic is asserted against worked cases, and a verdict below the minimum is withheld with its count shown against the minimum.
+>
+> ### 7.3 The candidate register
+> Migration creating `candidate_register`, append only. Registration before scoring, with the rule, the test and the date, and a stated maximum family size.
+>
+> **Done when** an update and a delete are both refused at the store, a retirement is a new row naming what it retires, and the correction divisor matches the rows registered before the window opened.
+>
+> ### 7.4 The shadow column
+> Registered candidates evaluated nightly on every name-night exactly as live reasons are, written to the shadow column and shown nowhere.
+>
+> **Done when** a shadow candidate is evaluated on nights no live reason fired, which is what the every-name listing row exists for, and nothing shadow reaches any screen.
+>
+> ### 7.5 Reason verdicts on the run page
+> Each reason against the bar its own setups demanded, with the resolved count and the divisor beside it, and the base rate pinned.
+>
+> **Done when** no verdict appears below its minimum, every verdict names its divisor, and the three display states are each proved.
+>
+> ### 7.6 Rule versions scored counterfactually
+> Each ladder rule a named version, every night scored under every version from stored bars.
+>
+> **Done when** a version change opens a new window and the previous one is kept, and a rule is not changed while a window measuring it is open.
+>
+> ### 7.7 The model's proposal
+> The model's own entry and exit proposal stored beside the computed one and scored on the same break-even rule, never overriding it.
+>
+> **Done when** the proposal is stored, scored and displayed as a second opinion, and no computed number is sourced from it.
+>
+> ### 7.8 Phase 7 report
+> **Done when** every guardrail has its own test, and the loop has changed nothing on the strength of evidence below its stated minimum.
+Now:
+> ## Phase 7: phase 6's carried items
+>
+> **Visible output at 7.0.** A suspect name's page, its exported report and its row on tonight's list say its prices may not reflect a dividend or split.
+>
+> The items the phase 6 sign-off carried forward, made a phase of their own by the operator's ruling on 2026-09-14 (see: Phase 6's carried items are built as phase 7, and the improvement loop is phase 8). The first of them was ruled and committed under 7.0 while 7.0 was still the improvement loop's planning pass and that phase had not started, so the carried items take phase 7 and the improvement loop moves to phase 8, with every due point, placement, roster row and line on a page that named one of its checkpoints.
+>
+> ### 7.0 Planning
+> This pass: it writes phase 7, moves the improvement loop from phase 7 to phase 8, and enters what the phase 6 sign-off and the ruling below carried. It builds nothing.
+>
+> Rules what a suspect name's own surfaces say, which the phase 6 sign-off carried here and the operator ruled ahead of the pass: a name whose retries are spent is asked for again weekly rather than waiting for another action, and its name page, its row on tonight's list and its exported report say its prices may not reflect a dividend or split (owes: A suspect name's own surfaces say so, ruled). With it, the property the check's membership clause carries is asserted by behaviour rather than by a source scan alone, since a name asked for weekly is asked for until it leaves the index (owes: A suspect name the index no longer holds is neither asked for nor named, asserted by behaviour).
+>
+> **The claims phase 7 predicts.** 350 claims and 334 PASS after phase 7, with 16 out of scope, 0 unexamined and 0 fail. The ruling added its 4 claims at 7.0 and all 4 pass, this pass adds none and moves none into or out of scope, and 7.1 and 7.2 add none, so the pair is the one the ruling left. The 16 are all at phase 8: 2 at 8.1, 3 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6, which is where they stood at 7.1, 7.3, 7.4, 7.5 and 7.6 before the move. 7.2 checks the pair.
+>
+> **Done when** no due point, placement, roster row, open obligation or line on a page names a checkpoint of the improvement loop by its phase 7 number, the 16 out-of-scope claims read by the first and by the last checkpoint each note names are all at phase 8, and what the phase 6 sign-off carried is entered in the table.
+>
+> ### 7.1 A planning checkpoint lands with its planning entry
+> The due-point reader answers whether a planning checkpoint has landed from the entry of the pass that plans its phase, and answers whether the phase itself has landed only from an entry that is not a planning pass, with its permanent proof turned and CLAUDE.md's convention moved with it (owes: A planning checkpoint lands with its planning entry). The phase 6 sign-off found the reader skipping every entry that opens "Not a checkpoint entry", which is how the pass that plans a phase is recorded, so no planning checkpoint ever landed and an obligation due at one could not fail; the one time the shape arose it hid the only row it could.
+>
+> **Done when** an open obligation due at a planning checkpoint passes before that checkpoint's planning entry is recorded and fails after it, asserted over a constructed plan, table and record; a planning entry lands its checkpoint and never its phase; and an entry opening the planning way at a planning checkpoint that is not its planning pass, being a ruling, lands neither.
+>
+> ### 7.2 Phase 7 report
+> The phase report over phase 7, with the pair 7.0 predicted checked against the actual, and the two verdict notes on the read and write matrix that say all eleven cells are blank over rows of thirteen, the mark renderer's and the single page app's, corrected.
+>
+> **Done when** every phase 7 claim is PASS naming an instrument whose declared reach includes it, unexamined is zero, the pair 7.0 predicted is checked against the actual with every claim that moved named, and no verdict note on the read and write matrix states a count of cells its row does not carry.
+>
+> followed by the section above as `## Phase 8: the improvement loop`, its visible output at 8.1 and its checkpoints numbered 8.0 to 8.8 with 8.8 named Phase 8 report, the paragraph ruling what a suspect name's own surfaces say moved to 7.0, and this paragraph added at 8.0 before the momentum panel's:
+>
+> Rules how a count a verdict note states is kept to the row it describes (owes: A count a verdict note states read off the row it describes). The read and write matrix's note for the read API said eleven reads over a row the 7.0 ruling's series state read had made twelve until that ruling corrected it, and the notes for the mark renderer and the single page app say all eleven cells are blank over rows of thirteen, which 7.2 corrects, because a count typed into a note is read against nothing and the phase report prints it whatever the row holds. The evidence is in hand rather than produced by this pass: the three notes and the rows they describe.
+Why: the phase 6 sign-off's carried items were committed under 7.0 while 7.0 was the improvement loop's planning pass and that phase had not started, and the operator ruled that they are phase 7 and the loop phase 8, so the plan carries phase 7's three checkpoints with the claims it predicts and the loop under its new number.
+
+### 2026-09-15 - BUILD_PLAN.md - the loop's checkpoints named in 5.0's, 5.6's and 6.0's text and in the carried obligations table moved to phase 8, and two rows entered
+
+Authorised by: Phase 6's carried items are built as phase 7, and the improvement loop is phase 8
+Was:
+> its counts at 5.6 and its verdicts at 7.5, because
+>
+> the harness had the whole row at 7.5.
+>
+> the reason record's verdict half is 7.5,
+>
+> The verdicts are 7.5's, because
+>
+> give 77 at phase 6 and 16 at phase 7 both ways
+>
+> | 6.1 | 7.0 | what the profile is allowed to say
+>
+> 7.0 is where it falls due because that is the pass before anything scores a feature
+>
+> | 6.1 | 7.0 | the fundamental analysis
+>
+> 7.0 is the planning pass that reads what phase 6 produced before phase 7 builds on it
+>
+> | 6.11 | 7.0 | a name's pass has the theme research runner
+>
+> What 7.0 has is those runs and that fixture
+>
+> | 6.11 | 7.0 | the facts assembler carries the latest quarter
+>
+> What 7.0 has is that run and the two components' code
+>
+> 29 at phase 6 and 12 at phase 7, and every one
+>
+> 250 resolved event-book setups, read on the run page, which 5.6 builds and 7.5 fills with verdicts.
+>
+> which is the minimum section 17 already states, read on the run page, which 5.6 builds and 7.5 fills with verdicts. Phase 7 arriving
+Now:
+> its counts at 5.6 and its verdicts at 8.5, because
+>
+> the harness had the whole row at 8.5.
+>
+> the reason record's verdict half is 8.5,
+>
+> The verdicts are 8.5's, because
+>
+> give 77 at phase 6 and 16 at phase 8 both ways
+>
+> | 6.1 | 8.0 | what the profile is allowed to say
+>
+> 8.0 is where it falls due because that is the pass before anything scores a feature
+>
+> | 6.1 | 8.0 | the fundamental analysis
+>
+> 8.0 is the planning pass that reads what phase 6 produced before phase 8 builds on it
+>
+> | 6.11 | 8.0 | a name's pass has the theme research runner
+>
+> What 8.0 has is those runs and that fixture
+>
+> | 6.11 | 8.0 | the facts assembler carries the latest quarter
+>
+> What 8.0 has is that run and the two components' code
+>
+> 29 at phase 6 and 12 at phase 8, and every one
+>
+> 250 resolved event-book setups, read on the run page, which 5.6 builds and 8.5 fills with verdicts.
+>
+> which is the minimum section 17 already states, read on the run page, which 5.6 builds and 8.5 fills with verdicts. Phase 8 arriving
+>
+> and two rows entered after the two the 7.0 ruling discharged:
+>
+> | **A planning checkpoint lands with its planning entry** | 6.11 sign-off | 7.1 | the due-point reader skips every entry opening "Not a checkpoint entry", which is how the pass that plans a phase is recorded, so no planning checkpoint lands and a row still open at one passes for as long as the plan runs. The phase 6 sign-off probed it by moving the volume profile row's due point to 6.0 and leaving the check green, with 6.5 turning it red as the control, and ruled it a repair owed before the next planning pass's entry. 7.1 produces the reader that lands a planning checkpoint from its planning entry and never its phase from it, with a permanent test over a constructed plan, table and record |
+> | **A count a verdict note states read off the row it describes** | 7.0 ruling | 8.0 | a verdict note in the harness's placement map states counts about the row it passes, being its cells, its reads and its stores, and each count is typed into the note and read against nothing, so the phase report prints it whatever the row holds. The 7.0 ruling found the read API's matrix note at eleven reads over a row its series state read had made twelve and corrected it, and found the mark renderer's and the single page app's notes at all eleven cells blank over rows of thirteen, which 7.2 corrects. What 8.0 has is those three notes and the rows they describe, and what it rules is whether a note's count is read off the row, written without a count, or stated as the limit it is |
+Why: each names a checkpoint of the loop, which moved with it, or a row due at its planning pass, which is 8.0 now; 7.0 enters the repair the phase 6 sign-off ruled owed, due at 7.1, and the count the 7.0 ruling found typed into verdict notes, due at 8.0, which cites it.
+
 ### 2026-09-14 - ARCHITECTURE.html - section 7's corporate action checker row asks for a spent name weekly and names where it is seen
 
 Authorised by: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
