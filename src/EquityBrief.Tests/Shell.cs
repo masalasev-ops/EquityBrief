@@ -44,7 +44,7 @@ internal static class Shell
         return null;
     }
 
-    // pwsh on both runners; powershell.exe is what a Windows machine has by
+    // pwsh on the hosted runners; powershell.exe is what a Windows machine has by
     // default. Either can run a .ps1, and the wrapper has to work under both.
     internal static string? PowerShellHost() => Locate("pwsh") ?? Locate("powershell");
 

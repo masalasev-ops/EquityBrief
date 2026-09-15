@@ -310,7 +310,7 @@ internal static class Reconciliation
             yield break;
         }
 
-        if (row.Runs is not ("every CI run" or "the matrix"))
+        if (row.Runs is not "every CI run")
         {
             yield return
                 $"{where} names {check}, which the roster says runs {row.Runs}. A check that does " +

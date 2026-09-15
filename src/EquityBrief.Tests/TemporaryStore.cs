@@ -55,9 +55,9 @@ internal sealed class TemporaryStore : IDisposable
         //
         // An intermittent red that goes green on a re-run is worse than a
         // reliable one. It is the failure that teaches a person to press the
-        // button again instead of reading the result, and on a two-platform
-        // matrix it would have arrived as one runner in fifteen going red for no
-        // reason anyone could reproduce.
+        // button again instead of reading the result, and on CI it would have
+        // arrived as one run in fifteen going red for no reason anyone could
+        // reproduce.
         using (var connection = new SqliteConnection(MigrationRunner.ConnectionStringFor(DatabaseFile)))
         {
             SqliteConnection.ClearPool(connection);

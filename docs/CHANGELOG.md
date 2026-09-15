@@ -25,6 +25,52 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-15 - CLAUDE.md - the workflow's layout line names the macOS job, and says where Windows is verified
+
+Authorised by: Windows is verified on the operator's machine, and the hosted runners are macOS and Linux
+Was:
+> .github/workflows/ci.yml   the two-platform matrix and the Linux case-sensitivity job.
+Now:
+> .github/workflows/ci.yml   the macOS job and the Linux case-sensitivity job. Windows is
+>                   verified on the operator's machine rather than here.
+Why: the matrix is gone and a layout line naming it would describe a file the repository no longer has.
+
+### 2026-09-15 - CLAUDE.md - two-platform runs on every CI run and reads Windows off the record
+
+Authorised by: Windows is verified on the operator's machine, and the hosted runners are macOS and Linux
+Was:
+> | `two-platform` | the matrix | The suite passes on both windows and macos runners, and no leg can report green without running the suite: the workflow carries zero YAML condition keys, counted rather than blocklisted, because a leg is skipped at runtime by any condition at all and a skipped job leaves its run green |
+Now:
+> | `two-platform` | every CI run | The suite passes on both platforms, macOS on a hosted runner and Windows on the operator's machine (see: Windows is verified on the operator's machine, and the hosted runners are macOS and Linux): the workflow runs `tools/ci.sh` on macOS and names no Windows runner, and every checkpoint entry written since the hosted Windows leg was removed says `tools/ci.ps1` ran green, read off the record by a reader shown to find an entry that does not. No leg can report green without running the suite: the workflow carries zero YAML condition keys, counted rather than blocklisted, because a leg is skipped at runtime by any condition at all and a skipped job leaves its run green |
+Why: with the Windows leg gone the check no longer runs as a matrix, and the half that said the suite passed on a Windows runner has to say where the Windows result now comes from and what reads it.
+
+### 2026-09-15 - CLAUDE.md - the Runs column has two forms, the matrix being gone
+
+Authorised by: Windows is verified on the operator's machine, and the hosted runners are macOS and Linux
+Was:
+> Every check either runs on every CI run, runs as the matrix, or names the checkpoint that starts it. `coverage-reported` asserts each of those three against the corpus:
+Now:
+> Every check either runs on every CI run or names the checkpoint that starts it. `coverage-reported` asserts both against the corpus:
+Why: the one row running as the matrix now runs on every CI run, and the readers that accepted the matrix as a third form accept it no longer, so the sentence names the two forms that remain.
+
+### 2026-09-15 - CLAUDE.md - done condition 5 names where each platform's suite run comes from
+
+Authorised by: Windows is verified on the operator's machine, and the hosted runners are macOS and Linux
+Was:
+> 5. The suite passes on both runners. Until 0.4
+Now:
+> 5. The suite passes on both platforms: on macOS by the hosted runner, and on Windows by `tools/ci.ps1` on the operator's machine, which the PROGRESS entry records in the words `tools/ci.ps1` green, because no hosted runner checks Windows (see: Windows is verified on the operator's machine, and the hosted runners are macOS and Linux). Until 0.4
+Why: no hosted runner checks Windows any more, so the condition says what stands in for it and in what words the record carries it, which is what `two-platform` reads.
+
+### 2026-09-15 - CLAUDE.md - a merge also waits on the Windows run on the operator's machine
+
+Authorised by: Windows is verified on the operator's machine, and the hosted runners are macOS and Linux
+Was:
+> **CI green before merge. That is the only condition.**
+Now:
+> **CI green before merge, and `tools/ci.ps1` green on the operator's machine over the tree being merged. Those are the only conditions.**
+Why: CI no longer runs the suite on Windows, so green CI alone would let a change reach the checkout the nightly runs from with no Windows result behind it.
+
 ### 2026-09-15 - CLAUDE.md - a planning pass's entry lands its checkpoint and never its phase
 
 Corrects: the due-point reader skipped every PROGRESS entry opening "Not a checkpoint entry", which is how a planning pass is recorded, so no planning checkpoint ever landed and an obligation owed at one could not be read as passed; found by the phase 6 sign-off, which probed it by moving a row's due point to 6.0

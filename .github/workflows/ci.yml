@@ -2,12 +2,13 @@ name: ci
 on: [push, pull_request]
 
 jobs:
-  matrix:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  # Windows is a supported platform and is not verified here. It is verified on
+  # the operator's machine, where the nightly job runs, by tools/ci.ps1, and
+  # each checkpoint's record says so, which two-platform reads. The hosted
+  # Windows runner was removed on 2026-09-15 by the operator's ruling, having
+  # taken up to half an hour for a suite that runs in about a minute there.
+  macos:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,9 +20,7 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: verify
-        shell: pwsh
-        run: |
-          if ($IsWindows) { ./tools/ci.ps1 } else { ./tools/ci.sh }
+        run: ./tools/ci.sh
 
   # Linux is not a platform this tool supports. This job exists as an instrument
   # for one class of fault: a path written with the wrong case works on Windows
