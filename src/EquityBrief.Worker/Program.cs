@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
@@ -6,6 +7,7 @@ using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker;
+using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Nights;
@@ -23,22 +25,131 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "nightly" => await NightlyRun(args),
     "fundamentals" => await FundamentalsFetch(args),
     "research" => await ResearchPass(args),
+    "register" => await Register(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Four are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Five are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, " +
-        "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, and " +
+        "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
         "stale, with '--refresh' to write every section again and '--paid-for-local' to have the paid model write the " +
-        "local lane's sections as well. '--live' " +
+        "local lane's sections as well, and " +
+        "'register --candidate <name> --rule <rule> --test <test> --evaluator <evaluator> --parameters <name=value,...>' " +
+        "registers a candidate condition before anything scores it, with '--retire <name> --evidence <figures>' " +
+        "writing the new row that withdraws one. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
     return 1;
+}
+
+// A candidate condition registered before anything scores it, and a retirement.
+//
+// A verb rather than a step, because a registration is a decision a person takes
+// and never something a night arrives at: a register that filled itself would be
+// the thing pre-registration exists to stop. Nothing evaluates a registered
+// candidate at 8.3; the shadow column at 8.4 is what runs them.
+// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+static async Task<int> Register(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var runId = FormattableString.Invariant($"register-{clock.UtcNow:yyyyMMddTHHmmssZ}");
+    var registrar = new CandidateRegistrar(clock, store.DatabaseFile);
+
+    if (Argument(args, "--retire") is { } retiring)
+    {
+        var evidence = Argument(args, "--evidence");
+
+        if (string.IsNullOrWhiteSpace(evidence))
+        {
+            Console.Error.WriteLine(
+                "register: '--retire' was given without '--evidence'. A retirement states the figures " +
+                "that produced it, because a candidate withdrawn for no recorded reason is one nobody " +
+                "can tell from a candidate withdrawn for looking bad.");
+
+            return 1;
+        }
+
+        var withdrawn = await registrar.RetireAsync(retiring, evidence, runId);
+
+        Console.WriteLine("register: " + withdrawn.Detail);
+
+        return withdrawn.Outcome == CandidateRegistrar.Refused ? 1 : 0;
+    }
+
+    var candidate = Argument(args, "--candidate");
+    var rule = Argument(args, "--rule");
+    var test = Argument(args, "--test");
+    var evaluator = Argument(args, "--evaluator");
+
+    if (string.IsNullOrWhiteSpace(candidate)
+        || string.IsNullOrWhiteSpace(rule)
+        || string.IsNullOrWhiteSpace(test)
+        || string.IsNullOrWhiteSpace(evaluator))
+    {
+        Console.Error.WriteLine(
+            "register: a registration needs '--candidate', '--rule', '--test' and '--evaluator'. Each is " +
+            "a column of the row, and a registration missing one is a row that does not say what was " +
+            $"registered. Evaluators carried: {string.Join(", ", CandidateEvaluators.Names)}.");
+
+        return 1;
+    }
+
+    IReadOnlyDictionary<string, double> parameters;
+
+    try
+    {
+        parameters = Parameters(Argument(args, "--parameters"));
+    }
+    catch (FormatException refusal)
+    {
+        Console.Error.WriteLine("register: " + refusal.Message);
+
+        return 1;
+    }
+
+    var outcome = await registrar.RegisterAsync(candidate, rule, test, evaluator, parameters, runId);
+
+    if (outcome.Outcome == CandidateRegistrar.Refused)
+    {
+        Console.Error.WriteLine("register: " + outcome.Detail);
+
+        return 1;
+    }
+
+    Console.WriteLine("register: " + outcome.Detail);
+
+    return 0;
+}
+
+// `name=value,name=value`, parsed against the invariant culture for the reason
+// every date on this path is: a decimal comma read against the machine's locale
+// would register a different condition here and on the runner.
+static IReadOnlyDictionary<string, double> Parameters(string? given)
+{
+    var read = new Dictionary<string, double>(StringComparer.Ordinal);
+
+    foreach (var pair in (given ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries))
+    {
+        var at = pair.IndexOf('=', StringComparison.Ordinal);
+
+        if (at < 0 || !double.TryParse(pair[(at + 1)..], NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+        {
+            throw new FormatException(
+                $"'{pair.Trim()}' is not a name and a number. A registration's parameters are the values " +
+                "its evaluator is run with, so one nobody can read back is a row the shadow column cannot run.");
+        }
+
+        read[pair[..at].Trim()] = value;
+    }
+
+    return read;
 }
 
 // One name's fundamentals, on demand and never from the night.
