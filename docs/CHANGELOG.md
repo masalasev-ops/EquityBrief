@@ -25,6 +25,33 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - SCHEMA.md - the candidate register names the evaluator that will run it
+
+Authorised by: A registration names an evaluator the code carries, and its version is a hash of that evaluator's own source
+Was:
+> the table carried `id`, `candidate`, `rule`, `test`, `event`, `retires`, `registered_at` and `evidence`, with the note "No update, no delete. A correction is a new row."
+Now:
+> three columns sit between `test` and `event`: `evaluator`, the name of an evaluator the Core code carries, refused at the write where it carries none; `parameters`, the JSON values it is run with; and `evaluator_version`, that evaluator's version as the code carried it when the row was written. `event` is stated as constrained in the table, and a paragraph below says why the three are what make the row a registration rather than a description.
+Why: a candidate naming its rule in prose alone is a row a later session re-implements from words, and what it implements is whatever it read the words to mean. The register has to say what will run.
+
+### 2026-09-16 - ARCHITECTURE.html - the candidate registrar, and the register's column in the matrix
+
+Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+Was:
+> section 7 carried no registrar; the read and write matrix carried thirteen store columns and no candidate register among them; section 16's register row read "candidate, its rule, its test, the date registered, and for a retirement a new row naming what it retires" kept "forever; append-only, no update and no delete".
+Now:
+> section 7 carries a **Candidate registrar** row, running on request, reading and writing the register; the matrix carries a fourteenth column for the register, blank in every row but the registrar's, and a registrar row; section 16's row names the evaluator, the parameters and the version as well, and says the refusal is the table's and not only its writers'; and the matrix key says why the read API's cell under the new column is blank and why the registrar reads what it writes.
+Why: the register had a store row and no component, so the one omission section 16's key gave no reason for was its missing column. The migration at 8.3 is what let both be put to something.
+
+### 2026-09-16 - .claude/rules/checks.md - register-append-only runs on every CI run
+
+Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+Was:
+> | `register-append-only` | from 8.3 | The candidate register refuses updates and deletes, the correction divisor matches the rows registered before the window opened, and a registered candidate whose evaluator's source has moved without its version fails rather than being evaluated under a rule the register does not name |
+Now:
+> the Runs cell reads "every CI run", and the Asserts cell states each half as the check asserts it: the refusal at the table itself with the register reading afterwards as it did, the retirement as a new row with the retired one still standing, the divisor over hand-worked rows and over a store by two routes, and the version as a hash of the evaluator's source over normalised line endings and a removed byte order mark.
+Why: 8.3 is the checkpoint the row named, and a roster row naming a checkpoint the record shows as landed fails `coverage-reported`. It was the last checkpoint row on the roster, so the pending population is now empty and its floor moved to a constructed proof.
+
 ### 2026-09-16 - BUILD_PLAN.md - phase 8's opening carries the ruling that moves the reference material
 
 Corrects: the pass moving `CLAUDE.md`'s reference material had no checkpoint that owed it, and a commit subject may not name a number the plan does not carry.

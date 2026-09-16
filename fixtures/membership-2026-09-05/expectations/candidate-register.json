@@ -1,0 +1,63 @@
+{
+ "stage": "candidate-register",
+ "derivation": "derived",
+ "derivedFrom": "the rule that the correction divides the threshold by the candidates registered before the window opened, worked by hand over the rows below rather than read back from a run. Registration is a verb a person invokes and never a step a night arrives at, so the replay runs the registrar after the night as it runs the fundamentals fetch, and the rows here are the ones it writes. The divisor at each instant is counted by hand in the cell beside it: a candidate registered before the instant counts, one registered after it does not, one retired before it does not, and one retired after it does, because it was among the things being tried for the whole of the window the instant opens. The two instants are chosen to straddle each event rather than to fall on a convenient number, and the whole set is smaller than the maximum family of 8 so that the bound is not what produces the answer.",
+ "tables": [
+  "candidate_register"
+ ],
+ "maximumFamily": 8,
+ "registrations": [
+  {
+   "candidate": "momentum index at thirty",
+   "rule": "the relative strength index at or below thirty",
+   "test": "the share of its setups that beat their own break-even, against the reason records",
+   "evaluator": "momentum-index-reading",
+   "parameters": { "level": 30 },
+   "registeredAt": "2026-09-08T22:00:00Z"
+  },
+  {
+   "candidate": "momentum histogram turning up",
+   "rule": "the convergence histogram at or above zero on a session whose previous histogram was at or below it",
+   "test": "the share of its setups that beat their own break-even, against the reason records",
+   "evaluator": "momentum-histogram-turn",
+   "parameters": { "margin": 0 },
+   "registeredAt": "2026-09-08T22:05:00Z"
+  }
+ ],
+ "retirements": [
+  {
+   "retires": "momentum index at thirty",
+   "evidence": "0 resolved setups of a minimum of 250, which is the fixture holding one listing night rather than a finding about the reading",
+   "registeredAt": "2026-09-08T22:10:00Z"
+  }
+ ],
+ "rowsWritten": 3,
+ "divisors": [
+  {
+   "windowOpenedAt": "2026-09-08T21:55:00Z",
+   "divisor": 0,
+   "worked": "nothing is registered yet, so the correction divides by nothing and no verdict may be corrected against this window"
+  },
+  {
+   "windowOpenedAt": "2026-09-08T22:02:00Z",
+   "divisor": 1,
+   "worked": "the index reading is registered and the histogram turn is not, so one candidate was being tried"
+  },
+  {
+   "windowOpenedAt": "2026-09-08T22:07:00Z",
+   "divisor": 2,
+   "worked": "both are registered and neither is retired yet, so two were being tried"
+  },
+  {
+   "windowOpenedAt": "2026-09-08T22:15:00Z",
+   "divisor": 1,
+   "worked": "the index reading was retired before this window opened, so it was not among the things tried over the evidence this window holds, and the histogram turn alone is"
+  }
+ ],
+ "standing": [
+  { "at": "2026-09-08T22:02:00Z", "candidate": "momentum index at thirty", "stands": true },
+  { "at": "2026-09-08T22:02:00Z", "candidate": "momentum histogram turning up", "stands": false },
+  { "at": "2026-09-08T22:15:00Z", "candidate": "momentum index at thirty", "stands": false },
+  { "at": "2026-09-08T22:15:00Z", "candidate": "momentum histogram turning up", "stands": true }
+ ]
+}
