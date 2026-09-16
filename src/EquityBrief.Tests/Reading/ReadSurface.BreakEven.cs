@@ -19,17 +19,28 @@ public partial class ReadSurface
 {
     // One reason's setups, constructed. The outcome and the bar its own plan set,
     // which is the pair the record is computed over.
+    // Spread across sessions from 8.5, because a verdict needs both floors: 250
+    // resolved setups over at least 60 distinct listing sessions, each
+    // contributing at least one. A constructor that put every setup on one night
+    // would build a population that can never earn a verdict, and every
+    // assertion about what is drawn above the minimum would be an assertion about
+    // the night floor instead.
+    // see: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold
     static IReadOnlyList<ResolvedSetup> Setups(
         DateOnly night,
         int wins,
         int losses,
         double breakEven,
-        int withoutABar = 0)
+        int withoutABar = 0,
+        int sessions = ReasonVerdict.MinimumSessions)
     {
         var at = 0;
 
+        // Round robin over the sessions, so each of them carries at least one
+        // setup and the spread is a property of the construction rather than of
+        // how the counts happen to divide.
         ResolvedSetup One(string outcome, double? bar) =>
-            new($"N{++at:0000}", night, outcome, bar);
+            new($"N{++at:0000}", night.AddDays(-(at % Math.Max(sessions, 1))), outcome, bar);
 
         return
         [
@@ -119,35 +130,47 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public void NeitherTheShareNorTheBarIsDrawnOnTheRunPageAtEightTwo()
+    public void TheShareAndTheBarAreDrawnWithTheVerdictAndItsDivisorFromEightFive()
     {
-        // The other half of the same condition, and the half a green report is
-        // blind to. The two figures now exist and section 15.10's row still draws
-        // neither, because both are out of scope until 8.5 draws them with the
-        // verdict that reads them.
+        // 8.2's hard stop, lifted here. The two figures existed at 8.2 and the
+        // page drew neither, because both were out of scope until the verdict
+        // that reads them. This is that verdict, so the test that held the stop
+        // becomes the test that the stop is over: the same figures, now drawn,
+        // with the divisor that corrected the threshold beside them.
+        // see: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold
         var night = new DateOnly(2026, 9, 4);
         var setups = Setups(night, wins: 150, losses: 150, breakEven: 33.5d);
 
         var records = RunScreen.Records(Listings(setups, ShortlistSeries.AtEntryZone), setups);
         var earned = records.Single(one => one.Reason == ShortlistSeries.AtEntryZone);
 
-        // The record has earned a verdict and carries both figures, which is what
-        // makes this a test of the page rather than of the gate.
         Assert.True(earned.HasEarnedAVerdict);
         Assert.NotNull(earned.Share);
         Assert.NotNull(earned.BreakEven);
 
         var drawn = new MarkRenderer().ReasonRecords(records, RunScreen.Tracks(records), Rates(1.2, 3.4), 60);
 
-        // No rate and no bar anywhere on the region, and the cell still says where
-        // they arrive. These two assertions are the whole of what keeps 8.2 off the
-        // page, since the claim map would report the row out of scope either way.
-        Assert.DoesNotContain("%", drawn, StringComparison.Ordinal);
-        Assert.Contains("8.5", drawn, StringComparison.Ordinal);
-        Assert.DoesNotContain("33.5", drawn, StringComparison.Ordinal);
+        // The three together, which is what 15.11 says at or above the minimum: a
+        // share without its denominator hides how much was checked, and a share
+        // without the break-even hides whether it was any good.
+        Assert.Contains("50 per cent of 300 resolved", drawn, StringComparison.Ordinal);
+        Assert.Contains("33.5 per cent those setups demanded", drawn, StringComparison.Ordinal);
 
-        // The row's own columns, unchanged from 8.1: the reason, its track, what
-        // fired, what resolved, what was never entered, and the record cell.
+        // The divisor, drawn beside the verdict, because a verdict without it
+        // hides how hard the test actually was.
+        // see: The significance threshold is divided by the family size, and the divisor is shown
+        Assert.Contains("data-divisor=\"6\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("0.05 divided by a family of 6", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-threshold=\"0.00833\"", drawn, StringComparison.Ordinal);
+
+        // Half of 300 against a bar of 33.5 per cent is a reason well clear of
+        // what its own plans demanded, so the verdict is drawn as cleared and the
+        // exact p is beside it.
+        Assert.Contains("data-verdict=\"cleared\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("Clears at 0.00833", drawn, StringComparison.Ordinal);
+        Assert.Contains("exact one-sided p of", drawn, StringComparison.Ordinal);
+
+        // The row's own columns, unchanged from 8.1.
         var row = Assert.Single(Blocks(drawn, $"<tr data-reason=\"{ShortlistSeries.AtEntryZone}\".*?</tr>"));
 
         Assert.Equal(6, Regex.Matches(row, "<td").Count);

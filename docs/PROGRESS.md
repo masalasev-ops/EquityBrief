@@ -11482,3 +11482,81 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    nothing. The verdicts that read these evaluations are 8.5's, and the register stays
             empty in the operator's store until a person registers something into it.
+
+### 8.5 - reason verdicts on the run page   2026-09-16
+Built:      each reason's wins tested against the bar its own setups demanded, at a threshold divided
+            by the family it belongs to, drawn beside the reason and withheld below either floor
+            (see: A verdict tests a reason's wins against each of its setups' own break-even at a
+            corrected threshold). `PoissonBinomial` computes the exact tail by a dynamic program over
+            the stored break-evens and carries the binomial at the mean as the named approximation
+            nothing uses; `ReasonVerdict` applies the two floors and the correction; `RunScreen`
+            hands the record its verdict; `MarkRenderer` draws section 15.11's three states.
+            Section 17 gains a **Significance threshold** row, which is the one claim this
+            checkpoint adds.
+Rules:      one-sided, because the question is whether a reason beat the bar its own plans set rather
+            than whether it differed from it, so a reason sitting exactly on its bar does not clear.
+            Divided by the family, six for the live reasons and at most eight for registered
+            candidates, and the divisor is drawn beside the verdict because a verdict without it
+            hides how hard the test was. The exact tail rather than the approximation, because the
+            break-evens are stored per row and the arithmetic over a few thousand is a dynamic
+            program: the binomial at the mean gives a different answer for the same counts, which
+            the expectation records beside the exact one. Two floors and not one: 250 resolved
+            setups and 60 distinct listing sessions each contributing at least one, because a count
+            of rows alone can be filled by a handful of nights of one market move and the test
+            assumes an independence that listings clustering by sector and by date do not give.
+            Below either, the cell carries the count against the floor that is short and names which
+            it is, since a reader who cannot tell whether they are waiting for rows or for nights
+            cannot tell how long for.
+Measured:   nothing is shown and nothing can be. The operator's store holds 93 resolved setups under
+            8.1's entry rule, 88 of which set a bar, on seven listing sessions, against floors of 250
+            and 60. Both floors are short, and the row floor is the one the page names, being the
+            first it reads. That is the guardrail working rather than a checkpoint left half done:
+            the loop is built ready and stays silent until the evidence arrives.
+Expected:   derived. `reason-verdicts.json` works six tails by hand as the sums of their own terms,
+            including the three-setup case where no two break-evens agree, which is where a binomial
+            at any single value gets a different answer, and it records that answer beside the exact
+            one. Four display states follow over constructed counts: short of rows at 249, short of
+            sessions at 300 over 59, clearing at 125 of 250 against a bar of 40 per cent, and not
+            clearing at 100 of 250 against the same bar, which is a reason sitting exactly on what
+            its plans demanded. It is constructed rather than taken from the fixture with the reason
+            stated in the file: the fixture holds one listing night, so no reason in it can resolve
+            anything at all.
+Tested:     963, from 956. Seven added: the exact tail against four hand-worked cases with the
+            distribution asserted to sum to one and a break-even outside the unit interval refused;
+            the binomial at the mean bounding the exact tail at counts at or above the mean plus one,
+            shown strictly larger over a spread and exactly equal where every setup demands the same
+            thing; no verdict below either floor, at each boundary and one either side, with a family
+            of none refused; a reason that beats its bar clearing and one sitting on it not; a reason
+            that fired and resolved nothing drawing its count of nought rather than an empty cell;
+            the six tails and four display states read from the expectation; and the four figures the
+            document states pinned to the constants the code carries.
+Corrects:   a gate that was written twice and agreed only while there was one floor. `RunScreen.Tracks`
+            gated the win-loss split on `Resolved >= Minimum` while the record column gated on
+            `HasEarnedAVerdict`, and the night floor pulled them apart on the run it landed: a reason
+            with 280 resolved over 12 sessions had its verdict withheld from the column and its split
+            drawn in the picture, which is the same figure through the second channel that split
+            exists to close. It now reads the record's own answer. Two counts move with the
+            decomposition below and are restated where they are asserted: section 15's rows with
+            their own due point from 124 to 127, and the elements a decomposition names from 132
+            to 136.
+Mutated:    the rule, stated before the sweep: break each half of this checkpoint's done condition,
+            being the exact arithmetic, each of the two floors, and the divisor, and take the
+            arithmetic first because every other half rests on it. Predicted:
+            M1 the exact tail replaced by the binomial at the mean: the hand-worked case where no two
+            break-evens agree red at 0.104 against 0.098, and the expectation's tails red, and the
+            three cases whose probabilities are equal green, because the two distributions agree
+            there.
+            M2 the session floor dropped: the three-state test red on the row that clears the rows
+            and not the nights, the boundary test red at 59 sessions, and the expectation's
+            short-of-sessions case red.
+            M3 the resolved floor loosened by one, so a verdict shows at 249: the boundary test red
+            and the expectation's short-of-resolved case red.
+            M4 the threshold left uncorrected, so 0.05 rather than 0.05 divided by the family: the
+            drawn divisor and threshold red, and the verdict at the exactly-on-the-bar case still
+            not clearing, because that one is nowhere near either threshold.
+            Not mutated, and named so the next sweep has them: the one-sidedness of the test, the
+            refusal of a family of none, and the exclusion of setups that set no bar from the
+            population.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing. The rule versions are 8.6's and the phase report 8.7's.

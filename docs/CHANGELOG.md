@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - ARCHITECTURE.html - section 17 states the significance threshold, and the minimum gains its night floor
+
+Authorised by: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold
+Was:
+> section 17 carried no row for the threshold at all, and the minimum read "250 resolved setups before a verdict is reported at all; 400 before a live condition may be retired", asserted by the run page showing the count beside every verdict and withholding it below the minimum.
+Now:
+> a **Significance threshold** row states 0.05, one-sided, divided by the family the reason belongs to, with the six live reasons as one family of 6 and registered candidates as the other at most 8, and says the null makes the wins a Poisson binomial whose exact tail is computed from the stored break-evens. The minimum reads "250 resolved setups spread over at least 60 distinct listing sessions, each contributing at least one", its reasoning says why the sessions are a floor of their own, and it is asserted by the page withholding below either floor and naming the one that is short.
+Why: the threshold was decided at 8.0 and stated only in the decision record, so the limits table a reader checks a verdict against did not carry the number the verdict was computed at. The night floor is the same omission one column along: a count of rows alone can be filled by a handful of nights of one market move, and the test assumes an independence that listings clustering by sector and by date do not give.
+
 ### 2026-09-16 - SCHEMA.md - the shadow column carries what the night could not evaluate as well as what it did
 
 Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown

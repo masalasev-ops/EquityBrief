@@ -225,7 +225,13 @@ public sealed record ReasonRecord(
     int NeverEntered = 0,
     int Scored = 0,
     double? Share = null,
-    double? BreakEven = null)
+    double? BreakEven = null,
+    int Sessions = 0,
+    int SessionMinimum = 0,
+    bool? Cleared = null,
+    double? PValue = null,
+    double Threshold = 0,
+    int Divisor = 0)
 {
     // A setup that has done nothing is neither right nor wrong, so it is in
     // neither half of this, and one whose price never reached the entry the plan
@@ -233,7 +239,13 @@ public sealed record ReasonRecord(
     // see: A setup is scored from its entry, and a target reached before the entry is never a win
     public int Resolved => Won + Lost;
 
-    public bool HasEarnedAVerdict => Resolved >= Minimum;
+    // Both floors, from 8.5. A count of rows alone can be filled by a handful of
+    // nights of one market move, and the test assumes the setups are
+    // independent, which they are not: listings cluster by sector and by date.
+    // So a record has earned a verdict only once the rows arrived across enough
+    // distinct listing sessions too.
+    // see: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold
+    public bool HasEarnedAVerdict => Resolved >= Minimum && Sessions >= SessionMinimum;
 }
 
 // One row of the reason track: section 15.5's three states out of one
@@ -1521,18 +1533,62 @@ public sealed class MarkRenderer : IComponent
             // see: A setup is scored from its entry, and a target reached before the entry is never a win
             table.Append(Invariant, $"<td class=\"never-entered\" data-never-entered=\"{record.NeverEntered}\">{record.NeverEntered}</td>");
 
-            // The count against the minimum, inside the dashed outline. The
-            // count is what makes the absence readable: a reader sees how far
-            // off a verdict is rather than only that there is none.
-            table.Append(record.HasEarnedAVerdict
-                ? Formatted($"<td data-verdict=\"due\">{record.Resolved} resolved, and the share that reached target before stop arrives with the verdicts at 8.5</td>")
-                : Formatted($"<td class=\"not-measured\" data-outline=\"dashed\" data-verdict=\"none\">{record.Resolved} of {record.Minimum} resolved</td>"));
+            // Section 15.11's three states, from 8.5.
+            //
+            // Below either floor: a dashed outline carrying the count against
+            // the floor that is short, and no rate. The count is what makes the
+            // absence readable, and naming which floor is short is what makes it
+            // actionable: a reader who cannot tell whether they are waiting for
+            // rows or for nights cannot tell how long they are waiting.
+            //
+            // At or above both: the share, the number resolved and the
+            // break-even those setups demanded, always the three together, with
+            // the verdict and the divisor that corrected it. A share without its
+            // denominator hides how much was checked; a share without the
+            // break-even hides whether it was any good; and a verdict without
+            // its divisor hides how hard the test actually was.
+            // see: Not yet measured is drawn as a dashed outline, never as a pale value
+            // see: The record column stays empty until it has earned a number
+            // see: The significance threshold is divided by the family size, and the divisor is shown
+            if (!record.HasEarnedAVerdict)
+            {
+                table.Append(Invariant, $"<td class=\"not-measured\" data-outline=\"dashed\" data-verdict=\"none\" ");
+                table.Append(Invariant, $"data-short=\"{(record.Resolved < record.Minimum ? "resolved" : "sessions")}\" ");
+                table.Append(Invariant, $"data-sessions=\"{record.Sessions}\" data-session-minimum=\"{record.SessionMinimum}\">");
+
+                table.Append(record.Resolved < record.Minimum
+                    ? Formatted($"{record.Resolved} of {record.Minimum} resolved")
+                    : Formatted($"{record.Resolved} of {record.Minimum} resolved over {record.Sessions} of {record.SessionMinimum} listing session(s)"));
+
+                table.Append("</td>");
+            }
+            else
+            {
+                table.Append(Invariant, $"<td data-verdict=\"{(record.Cleared is true ? "cleared" : "not cleared")}\" ");
+                table.Append(Invariant, $"data-share=\"{(record.Share is { } share ? Number(share) : "none")}\" ");
+                table.Append(Invariant, $"data-break-even=\"{(record.BreakEven is { } bar ? Number(bar) : "none")}\" ");
+                table.Append(Invariant, $"data-p-value=\"{(record.PValue is { } p ? p.ToString("0.#####", Invariant) : "none")}\" ");
+                table.Append(Invariant, $"data-divisor=\"{record.Divisor}\" data-threshold=\"{record.Threshold.ToString("0.#####", Invariant)}\" ");
+                table.Append(Invariant, $"data-sessions=\"{record.Sessions}\">");
+
+                table.Append(Formatted(
+                    $"{Number(record.Share ?? 0)} per cent of {record.Resolved} resolved reached target before stop, "));
+                table.Append(Formatted(
+                    $"against the {Number(record.BreakEven ?? 0)} per cent those setups demanded, over {record.Sessions} listing session(s). "));
+                table.Append(Formatted(
+                    $"{(record.Cleared is true ? "Clears" : "Does not clear")} at {record.Threshold.ToString("0.#####", Invariant)}, "));
+                table.Append(Formatted(
+                    $"which is 0.05 divided by a family of {record.Divisor}"));
+                table.Append(record.PValue is { } shownP
+                    ? Formatted($", on an exact one-sided p of {shownP.ToString("0.#####", Invariant)}</td>")
+                    : "</td>");
+            }
 
             table.Append("</tr>");
         }
 
         table.Append("</table>");
-        table.Append("<p class=\"degraded\" data-verdicts=\"absent\">no rate is shown for a reason below the minimum, because a rate over a handful of resolved setups is consistent with almost any truth</p>");
+        table.Append("<p data-verdicts=\"withheld\">no rate and no verdict is shown for a reason below either floor, because a rate over a handful of resolved setups is consistent with almost any truth, and a count of rows alone can be filled by a handful of nights of one market move</p>");
         table.Append("</section>");
 
         return table.ToString();

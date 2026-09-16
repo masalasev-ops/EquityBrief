@@ -390,6 +390,60 @@ internal static class Scope
             Verdict.Pass,
             "the unexamined count is drawn separately from out of scope",
             ByReadSurface),
+        // 8.5, the reason verdicts. Nine claims end here and one arrives, being
+        // section 17's significance threshold row.
+        [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = new Scoped(
+            Verdict.Pass,
+            "the share is drawn with its denominator and its break-even, never one without the others, and only for a reason that cleared both floors, read off the region's markup",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded")] = new Scoped(
+            Verdict.Pass,
+            "the mean bar those setups set is drawn beside the share it is compared with, over the setups that set one rather than over every resolved row",
+            ByReadSurface),
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = new Scoped(
+            Verdict.Pass,
+            "a dashed outline carrying the count against the floor that is short and no rate, asserted at 249 of 250 resolved and at 300 resolved over 59 of 60 sessions, with which floor is short named on the cell",
+            ByReadSurface),
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the share that reached the target before the stop")] = new Scoped(
+            Verdict.Pass,
+            "the share is drawn on the cell of a reason that cleared both floors, read off the markup at 50 per cent of 300 resolved",
+            ByReadSurface),
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the number resolved")] = new Scoped(
+            Verdict.Pass,
+            "the denominator is drawn with the share rather than left to the row's own resolved column, because a share without its denominator hides how much was checked",
+            ByReadSurface),
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the break-even those setups demanded")] = new Scoped(
+            Verdict.Pass,
+            "the mean bar is drawn beside the share it is compared with, read off the markup at 33.5 per cent",
+            ByReadSurface),
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, always the three together")] = new Scoped(
+            Verdict.Pass,
+            "the three arrive on one cell or none of them does: over three records, one clearing both floors and two short of one each, exactly one cell carries a rate and the other two carry the count against the floor that is short",
+            ByReadSurface),
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = new Scoped(
+            Verdict.Pass,
+            "the unresolved segment is its own and never folded into the rate, and the win and loss split is withheld from the mark under the same two floors as the column rather than under the row count alone",
+            ByReadSurface),
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = new Scoped(
+            Verdict.Pass,
+            "no single number with no denominator and no bar is drawn beside a ticker on any route, which the tonight and universe pages are read for",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A condition has fired but nothing has resolved yet")] = new Scoped(
+            Verdict.Pass,
+            "a reason that fired and resolved nothing draws its count of nought against the minimum inside the dashed outline rather than an empty cell, so the state is readable as nothing resolved rather than as nothing measured",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Reason record display")] = new Scoped(
+            Verdict.Pass,
+            "the three states of section 15.11 are each drawn over constructed counts, and the record is beside the reason on the run page and beside no ticker on any other route",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Minimum resolved setups")] = new Scoped(
+            Verdict.Pass,
+            "no verdict of any kind appears below 250 resolved setups or below 60 distinct listing sessions, asserted at each boundary and one either side, with the count drawn beside every withheld verdict",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Significance threshold")] = new Scoped(
+            Verdict.Pass,
+            "the exact one-sided tail matches four cases worked by hand, including one where no two break-evens agree so a binomial at any single value differs, the binomial at the mean is asserted to bound it at counts at or above the mean plus one and to be strictly larger over a spread, and the threshold and its divisor are read off the run page beside every verdict",
+            ByReadSurface),
         // 8.4, the shadow candidates region, read as the three claims its row
         // states. The half none of them says out loud is asserted with them: no
         // evaluation of a name reaches any route, which is what the region
@@ -1773,6 +1827,17 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = "5.2",
         [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = "6.6",
         [CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture")] = "5.8",
+        // 8.5, the reason verdicts. Section 15.10's two figures, and section
+        // 15.11's four rows with the four parts the second of them enumerates.
+        [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "8.5",
+        [CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the share that reached the target before the stop")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the number resolved")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the break-even those setups demanded")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, always the three together")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = "8.5",
+        [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = "8.5",
         // 8.4, the shadow candidates row's three parts. Each carries its own
         // point rather than inheriting the row's, which is what contradiction D
         // was: a part added to the document with no point of its own is a claim
@@ -1788,9 +1853,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Operational header, what each stage said about itself")] = "5.6",
         [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = "5.6",
         [CheckReach.Key("15.10 Run", "Reason records, the never-entered count")] = "8.1",
-        [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "8.5",
         [CheckReach.Key("15.10 Run", "Reason records, one row per reason with the reason track mark")] = "5.6",
-        [CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded")] = "8.5",
         [CheckReach.Key("15.10 Run", "Harness, passed")] = "5.6",
         [CheckReach.Key("15.10 Run", "Harness, failed")] = "5.6",
         [CheckReach.Key("15.10 Run", "Harness, unexamined")] = "5.6",
@@ -1862,10 +1925,6 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.3",
         [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
 
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = "8.5",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] = "8.5",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = "8.5",
-        [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = "8.5",
     };
 
     // Contradiction F. Section 15.5's Level chart names four elements, candles,
@@ -1930,6 +1989,19 @@ internal static class Scope
             ["the resolved count", "the never-entered count", "the share that reached target before stop", "one row per reason with the reason track mark", "the break-even those setups demanded"],
         [CheckReach.Key("15.10 Run", "Harness")] =
             ["passed", "failed", "unexamined"],
+
+        // 8.5. The row states the three figures and then states that they are
+        // shown together or not at all, which is a fourth claim and the one the
+        // other three rest on: a share drawn without its denominator is the
+        // defect this row exists to forbid, and a verdict over the three as one
+        // would pass with two of them drawn.
+        [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum")] =
+        [
+            "the share that reached the target before the stop",
+            "the number resolved",
+            "the break-even those setups demanded",
+            "always the three together",
+        ],
 
         // 8.4. The row states three things and the harness reads it as three
         // claims, for the reason every other decomposed row is read that way: a
@@ -2219,7 +2291,6 @@ internal static class Scope
         // universe screen, which is 5.1. 1.1 records the leave date and asserts
         // nothing a reader looks at.
         ["A name leaves the index"] = "5.1",
-        ["A condition has fired but nothing has resolved yet"] = "8.5",
         ["A search returns snippets rather than full page text"] = "6.9",
         ["A search returns a site the applicable list does not carry"] = "6.9",
         ["The search tool is unavailable"] = "6.9",
@@ -2258,8 +2329,6 @@ internal static class Scope
         ["Tranche eligibility"] = "4.4",
         ["Earnings horizon"] = "4.7",
         ["Nightly row coverage"] = "5.4",
-        ["Reason record display"] = "8.5",
-        ["Minimum resolved setups"] = "8.5",
         ["Frozen measurement windows"] = "8.6",
     };
 
