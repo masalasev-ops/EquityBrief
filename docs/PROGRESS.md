@@ -11954,3 +11954,20 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             not touched by either.
 Carried:    nothing. The rule version bound's operating row stands, restated at the caps; it reads the
             scorer's own nights, which no checkpoint produces.
+
+### 8.3 - correction: the store the entry measured held no register table   2026-09-16
+Corrects:   the 8.3 entry above says the store under `data/` was read immutable on 2026-09-16 and
+            holds 0 rows in the table the migration creates. It held no such table. The operator's
+            store was at schema version 23 when read, migration 25 is what creates
+            `candidate_register`, and no night had run on phase 8's code to apply it. What the entry
+            meant, that nothing is registered, is true, and it is true because nothing could have been.
+Found:      by the session that built phase 8, reading the store immutable for its sign-off handoff on
+            2026-09-16: `user_version` 23, and no `candidate_register`, no `rule_version` and no
+            `forward_return.break_even`, the store last written at 23:43:20 UTC on 2026-09-15.
+Repaired:   nothing in code. A record is corrected by a new dated entry and this is that entry. The
+            8.7 entry makes the same statement about the register and is corrected by the entry below.
+Mutated:    nothing, and not an omission: this entry adds no assertion, so there is nothing of its own
+            to break. The run that verifies the tree it lands in is the 8.7 correction's, below.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree this entry lands in,
+            with the figures the 8.7 correction below records, this entry in place.
+Carried:    nothing.
