@@ -418,6 +418,128 @@ public class ListingsCoverage
         Assert.DoesNotContain("a candidate whose evaluator moved", after, StringComparison.Ordinal);
     }
 
+    // ---- the 8.4 correction, a reading stored as not available ----
+
+    // A member with a short history, being what the index holds after an
+    // addition or a spin-off: bars on the fixture's two newest sessions, so it is
+    // neither stale nor gapped, and readings some of which the indicator step
+    // stored as not available, a null value with the bars it had. On the
+    // operator's store FDXF and HONA are such members every night, with 78 and
+    // 64 bars and so no two hundred day average.
+    static void ShortHistoryMember(TemporaryStore store, double? tonightsReading, double? previousReading)
+    {
+        var sessions = Query(store, "SELECT DISTINCT session_date FROM bar ORDER BY session_date DESC LIMIT 2;");
+
+        Assert.Equal(2, sessions.Count);
+
+        Insert(
+            store,
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
+            "VALUES ('GSPC', 'SHORT', '2026-01-02', NULL, '2026-09-08T00:00:00Z', 'Utilities');");
+
+        foreach (var (session, reading) in new[] { (sessions[0], tonightsReading), (sessions[1], previousReading) })
+        {
+            Insert(
+                store,
+                "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+                $"('SHORT', '{session}', '100.0000', '101.0000', '99.0000', '100.0000', 1000, 'test', '2026-09-08T21:00:00Z', '100.0000');");
+
+            // The two hundred day average is not available on either session,
+            // which is the null the operator's store holds for FDXF and HONA, and
+            // the momentum reading is whatever the case hands in.
+            Insert(
+                store,
+                "INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES " +
+                $"('SHORT', '{session}', 'sma200', NULL, 2), " +
+                $"('SHORT', '{session}', '{MomentumIndexReading.Reading}', " +
+                (reading is { } value ? value.ToString(CultureInfo.InvariantCulture) : "NULL") + ", 2);");
+        }
+    }
+
+    [Fact]
+    public async Task AMemberWithAReadingNotAvailableIsListedAndTheStageCompletes()
+    {
+        // The night of 2026-09-16 as it would have run: no candidate registered,
+        // and a member whose two hundred day average is not available. The
+        // shadow column read every member's readings as numbers, so the first
+        // null threw, the stage's transaction rolled back and the night stopped
+        // with no listing row for any member. Found by rehearsing the night over
+        // an immutable copy of the operator's store, because the committed
+        // fixture's four names hold 253 bars each and store no such null.
+        using var store = await FixtureExpectations.WithListings();
+
+        ShortHistoryMember(store, tonightsReading: 42, previousReading: 41);
+
+        var listed = await RunTheNightAsync(store, "coverage-not-available");
+
+        // Every member has its row, the short one included, and the stage's own
+        // row says ok with nothing evaluated in shadow, which is tonight's case.
+        Assert.Equal([.. FixtureExpectation.CurrentMembers.Append("SHORT").Order(StringComparer.Ordinal)], listed);
+
+        var row = Query(store, "SELECT outcome || ' :: ' || detail FROM run_log WHERE stage = 'listings' AND run_id = 'coverage-not-available';").Single();
+
+        Assert.StartsWith(ShortlistBuilder.Ok + " :: ", row, StringComparison.Ordinal);
+        Assert.Contains("no candidate stands registered", row, StringComparison.Ordinal);
+
+        // And with a candidate standing that reads a reading the member does
+        // have, the null it does not read skips nothing: the candidate is
+        // evaluated on the short member as on every other.
+        await RegisterAsync(store, "momentum index at one hundred", 100, NightStart.AddDays(-1));
+
+        listed = await RunTheNightAsync(store, "coverage-not-available-registered");
+
+        Assert.Contains("SHORT", listed);
+
+        var shadow = Query(store, "SELECT shadow_reasons FROM listing WHERE ticker = 'SHORT';").Single().Replace(" ", string.Empty, StringComparison.Ordinal);
+
+        Assert.Contains("momentumindexatonehundred", shadow, StringComparison.Ordinal);
+        Assert.Contains("\"fired\":true", shadow, StringComparison.Ordinal);
+        Assert.Contains("\"skipped\":[]", shadow, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ACandidateWhoseReadingTonightIsNotAvailableIsSkippedAndNeverReadFromTheSessionBefore()
+    {
+        // The rule the skip is worked from, stated in `ShadowColumn`: a candidate
+        // whose reading the night did not compute is skipped with the reason
+        // "the night computed no" that reading "for" the name, and a skip is a
+        // hole in the record rather than a non-fire. So the expected shadow row
+        // for this member is that one sentence, written by hand here, and not a
+        // row frozen from a run.
+        using var store = await FixtureExpectations.WithListings();
+
+        await RegisterAsync(store, "momentum index at one hundred", 100, NightStart.AddDays(-1));
+
+        // Tonight's reading is not available and the session before holds 42.
+        // A reader that took its night from the first value it could read would
+        // take the session before as tonight and evaluate 42, which at a level of
+        // one hundred fires: the wrong answer is a fire, so it cannot hide as a
+        // skip.
+        ShortHistoryMember(store, tonightsReading: null, previousReading: 42);
+
+        var listed = await RunTheNightAsync(store, "coverage-not-available-tonight");
+
+        Assert.Equal([.. FixtureExpectation.CurrentMembers.Append("SHORT").Order(StringComparer.Ordinal)], listed);
+
+        var shadow = Query(store, "SELECT shadow_reasons FROM listing WHERE ticker = 'SHORT';").Single();
+
+        Assert.Contains(
+            $"the night computed no '{MomentumIndexReading.Reading}' for SHORT",
+            System.Text.Json.JsonDocument.Parse(shadow).RootElement.GetProperty("skipped")[0].GetProperty("reason").GetString(),
+            StringComparison.Ordinal);
+        Assert.Equal(0, System.Text.Json.JsonDocument.Parse(shadow).RootElement.GetProperty("candidates").GetArrayLength());
+        Assert.DoesNotContain("\"fired\":true", shadow.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
+
+        // Every other member was evaluated, so the null reached the one name it
+        // belongs to and no further.
+        foreach (var ticker in listed.Where(ticker => ticker != "SHORT"))
+        {
+            var other = Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{ticker}';").Single();
+
+            Assert.Contains("\"skipped\":[]", other.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
+        }
+    }
+
     static System.Text.Json.JsonElement Expected(string stage) =>
         System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(
             Repository.Root, "fixtures", "membership-2026-09-05", "expectations", stage + ".json"))).RootElement;

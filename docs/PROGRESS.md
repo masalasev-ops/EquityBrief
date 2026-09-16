@@ -12079,3 +12079,72 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    nothing. The phase's sign-off is owed on phase 8 as a whole by a session that has committed
             no code. The eight operating rows stand as the table states them, and the one the loop
             opened is the rule version bound.
+
+### 8.4 - correction: a reading stored as not available left out of the shadow column rather than read as a number, which would have stopped the night at the listings stage   2026-09-16
+Corrects:   the 8.4 entry above records registered candidates evaluated on every member into
+            `listing.shadow_reasons`, over the fixture and over constructed stores. The reader that
+            hands the evaluators a member's readings for tonight and the session before read every
+            value as a number, where SCHEMA declares `indicator.value` null when not available. The
+            first null threw, the listings stage's transaction rolled back, and the night stopped
+            there, whether or not a candidate stood registered, with no listing row for any member
+            and every stage after it unrun. No night has run on 8.4's code, so none has stopped; the
+            first would have been the night of 2026-09-16 at 23:30 UTC.
+Found:      by the phase 8 sign-off review on 2026-09-16, rehearsing that night over a copy of the
+            operator's store taken through an immutable SQLite backup. Migrations 24 to 26 applied to
+            the copy, and the listings stage threw "The data is NULL at ordinal 2" in
+            `ShortlistBuilder.IndicatorsAsync`. The operator ruled that the session reviewing phase 8
+            repairs it before that night, so that session commits this code and does not sign phase 8
+            off. It is labelled for the checkpoint that built the reader.
+Measured:   read immutable from the operator's store on 2026-09-16, at schema 23 and last written
+            2026-09-15 23:43:20 UTC. Over the indicator rows of 2026-09-14 and 2026-09-15, 4 carry a
+            null value, every one the two hundred day average: FDXF at 77 and 78 bars and HONA at 63
+            and 64. Both hold a bar on 2026-09-15, so neither is stale and both are read. The night of
+            2026-09-15 recorded 230325 of its 1275000 indicator rows not available over 508 names,
+            and its listings stage, on the code before phase 8, ran clean.
+Repaired:   a null reading is left out of the values the evaluators are handed, so a candidate that
+            needs it is skipped with "the night computed no" that reading for the name, which is the
+            skip `ShadowColumn` already writes for a reading the night did not compute. The session
+            the reader calls tonight is taken from the first row read, before a null is passed over,
+            so a night whose readings are all not available never reads the session before as tonight.
+Stored:     nothing to keep or rewrite. The operator's store holds no row written by 8.4's code: it is
+            at schema 23 and no night has run on phase 8's code.
+Missed:     by the population every check read. The committed fixture's four names hold 253 bars
+            each, so no fixture night stores a null in a member's last two sessions, and every
+            constructed store the shadow column's tests built inserted numbers. A member with fewer
+            than two hundred bars, which the index holds after any addition or spin-off, was in
+            neither, and 8.4's mutations were chosen over properties that population could reach.
+Guarded:    over the replayed fixture with a constructed member whose two hundred day average is not
+            available on both sessions: the stage completes with a row for every member and says ok
+            with nothing evaluated in shadow, which is the night of 2026-09-16's case; and with a
+            candidate standing that reads a reading the member does have, it is evaluated there as on
+            every other member. And a member whose reading is not available tonight and holds 42 the
+            session before: the candidate is skipped with the reading named, fires nowhere on that
+            member, and every other member is evaluated.
+Expected:   derived: the skip is the sentence `ShadowColumn` states for a reading the night did not
+            compute, written by hand in the test, and the wrong answer the second case can produce is a
+            fire at a level of one hundred over a reading of 42, worked from the evaluator's rule. No
+            expectation file changes, because the committed fixture holds no member under two hundred
+            bars and its replay reads no null.
+Tests:      985, from 983. Two added to `listings-coverage`: a member with a reading not available
+            listed with the stage complete, and a candidate whose reading tonight is not available
+            skipped and never read from the session before.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being the
+            null left out of the values, the session taken before a null is passed over, and a null
+            read as absent rather than as a value. Predicted:
+            M1 the null check removed, which is the reader as 8.4 built it: both new tests red, on the
+            stage throwing, and nothing else, since no other store the suite builds holds a null in a
+            member's last two sessions.
+            M2 the null passed over before the session is taken: the second test red, on the member
+            evaluated at the session before's 42 and firing, and the first green, since its first
+            reading tonight is available.
+            M3 a null read as zero rather than left out: the second test red, on the candidate
+            evaluated and firing at zero where it should be skipped, and the first green, since the
+            null there is a reading no candidate reads.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair. Noted, because the repair adds a path to it: the listings
+            stage's failure sentence says a candidate skipped on one name-night was "not evaluated on
+            any name-night", and a registered candidate reading the two hundred day average would now
+            be skipped on FDXF and HONA and draw that sentence every night they hold fewer than two
+            hundred bars, as the one stale member the store holds every night already would for every
+            candidate. Nothing is registered, so no night draws it yet.

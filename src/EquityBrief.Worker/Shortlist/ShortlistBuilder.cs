@@ -449,7 +449,24 @@ public sealed class ShortlistBuilder : IComponent
         {
             var session = DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+            // Tonight is the first session read, whatever its value holds. Taken
+            // before the null below is passed over, because a night whose readings
+            // were all not available would otherwise take the session before as
+            // tonight and evaluate a candidate on yesterday's values.
             newest ??= session;
+
+            // A reading the indicator step stored as not available, which SCHEMA
+            // declares as a null value with the bars it had. It is left out of
+            // the night's values rather than read, so a candidate that needs it is
+            // skipped with "the night computed no" that reading, which is what
+            // happened. Reading it as a number threw on the first member under 200
+            // bars, and the throw stopped the night at this stage: until the
+            // 8.4 correction nothing a member with a short history could store
+            // was in any fixture or constructed store.
+            if (reader.IsDBNull(2))
+            {
+                continue;
+            }
 
             values[session == newest ? reader.GetString(1) : reader.GetString(1) + PreviousSuffix] = reader.GetDouble(2);
         }
