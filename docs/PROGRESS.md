@@ -11926,7 +11926,31 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             Not mutated, and named so the next sweep has them: the refusal to close a live window beside
             a version, the refused outcome on the run log, the verb's backfill date parse, and the help's
             count word.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Ten runs of the whole suite, never a filter, at this entry's commit in a
+            detached worktree under the session scratchpad, each reverted with the tree read clean
+            between them and the worktree removed after. The baseline is 980 of 981 with one red, and
+            that red is this entry: `two-platform` reads every checkpoint entry written since the 7.2
+            ruling for the words `tools/ci.ps1` green and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 2 red, the beside-its-live-window test and the verb test. M2 turned 3, the bound
+            test, the worst case test and the recorded nights test. M3 turned 1, the worst case test.
+            M4 turned 1, the pin test. M5 turned 2, the backfill test and the pin test. M6 turned 1, the
+            row-names-a-check test. M7 turned 1, the verbs test. M8 turned 2, the recorded nights test
+            and the pin test. M9 turned 2, the beside-its-live-window test and the pin test.
+            Worth recording: the pin went red on every mutation made inside the scorer's own file,
+            which is the pin doing what it is for rather than noise. Any edit to the code a window
+            measures is a new code version, and a live window opened under the old one stops the next
+            night until it is closed and opened again. A mutation written the first way for M7, the
+            arm removed from the dispatch, would not have compiled, because the function it called
+            would have been unused and warnings are errors here; it renames the verb instead.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 981 of 981 tests ran
+            with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: every change
+            here is to what a claim's check asserts and to what its note says, not to what the document
+            claims. Both gates ran with this entry in place, and the operator's store under `data/` was
+            not touched by either.
 Carried:    nothing. The rule version bound's operating row stands, restated at the caps; it reads the
             scorer's own nights, which no checkpoint produces.
