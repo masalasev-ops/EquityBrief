@@ -11085,7 +11085,35 @@ Mutated:    the rule, stated before the sweep: break each property this checkpoi
             M3 the withholding gate loosened by one, so a verdict shows at 249: the boundary test red.
             M4 the share counted over every resolved row rather than over the rows that set a bar:
             the mixed-population case red.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, and M4 took three forms before it proved what it was
+            aimed at. Six runs of the whole suite, never a filter, at this entry's commit in a
+            detached worktree under the session scratchpad, each reverted with the tree read clean
+            between them. The baseline is 936 of 937 with one red, and that red is this entry:
+            `two-platform` reads every checkpoint entry written since the 7.2 ruling for the words
+            `tools/ci.ps1` green and this one carried a placeholder until the run below filled it.
+            M1 turned both the expectation's break-even cases and 8.1's own setup cases red, which
+            is the case listed at 120 and entered at 99 failing in each of the two places it is
+            asserted. M2 turned the same two red, every case but the two ends of the rule, which
+            are symmetric and cannot tell the swap. M3 turned the boundary test red at 249.
+            M4 as first written removed the break-even filter from the population, and it went red
+            in five tests by throwing rather than by counting wrongly: with the filter gone the mean
+            is taken over a null, so what the run showed is that the arithmetic does not crash
+            rather than that the share is over the right rows. M4b kept the count wrong and made the
+            mean total, and it threw in the same five on an empty average. Both are recorded as
+            aimed badly rather than as results. M4c changes the share's own population and nothing
+            else, leaving the counts and the mean right, and it turns exactly the mixed-population
+            assertion red on its figure, 125 of 256 rather than of 250. That is the property this
+            checkpoint's rule names, and M4c is the mutation of record.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 937 of 937 tests
+            ran with none failed, migrations 0 to 24 with one added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 352 claims, 337
+            PASS, 0 FAIL, 15 out of scope, 0 unexamined, 344 placements and verdicts reconciled
+            against a floor of 34, 34 of 35 roster checks carried and all 34 run. The pair is the
+            one 8.0 predicted and the one 8.1 left: this checkpoint adds no claim and moves none,
+            which is what a checkpoint that stores a figure and draws nothing looks like on the
+            report. The 15 out of scope stand at 4 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6, and two
+            of the nine at 8.5 are the share and the break-even this checkpoint computes and does
+            not draw. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing. The candidate register is 8.3's, the shadow column 8.4's, and the verdicts
             that read this bar are 8.5's, which is where the share and the break-even are drawn.
