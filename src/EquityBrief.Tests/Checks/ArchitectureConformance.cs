@@ -16,10 +16,11 @@ public class ArchitectureConformance
     // What this check reaches, declared here rather than in a list beside it.
     // It reads the architecture, which is what lets it be named as covering a
     // whole table; the other three files are what the reconciliation reads to
-    // resolve a roster name and a due point.
+    // resolve a roster name and a due point. The roster moved to
+    // `.claude/rules/checks.md`, so that is the file named here.
     internal static CheckReach Reach => new(
         "architecture-conformance",
-        ["docs/ARCHITECTURE.html", "CLAUDE.md", "docs/BUILD_PLAN.md", "docs/PROGRESS.md"],
+        [".claude/rules/checks.md", "docs/ARCHITECTURE.html", "docs/BUILD_PLAN.md", "docs/PROGRESS.md"],
         [
             CheckReach.Key(Scope.CatalogueTable, "Verification harness"),
             CheckReach.Key(Scope.FailureTable, "The harness cannot parse this document"),
@@ -227,7 +228,10 @@ public class ArchitectureConformance
         var refusal = Assert.Throws<InvalidOperationException>(
             () => Reconcile([new Claim("A table", "A subject", Verdict.Pass, "checked", "no-such-check")]));
 
-        Assert.Contains("is not a check CLAUDE.md's roster carries", refusal.Message, StringComparison.Ordinal);
+        Assert.Contains(
+            "is not a check the roster in .claude/rules/checks.md carries",
+            refusal.Message,
+            StringComparison.Ordinal);
     }
 
     [Fact]

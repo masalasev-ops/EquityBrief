@@ -19,5 +19,10 @@ obj/
 .idea/
 .DS_Store
 
-# local harness settings, per machine and not a corpus document
-/.claude/
+# local harness settings, per machine and not a corpus document, except the
+# path-scoped rules, which are corpus text placed where it loads. The star form
+# is required: a directory git has excluded is never descended into, so
+# `/.claude/` with a negation under it leaves the rules untracked and every
+# check over them silently reading nothing.
+/.claude/*
+!/.claude/rules/

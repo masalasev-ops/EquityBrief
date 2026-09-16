@@ -14,7 +14,53 @@ internal static class Corpus
     internal static readonly string[] Records =
         ["docs/DECISIONS.md", "docs/PROGRESS.md", "docs/CHANGELOG.md"];
 
-    internal static IReadOnlyList<string> Documents => Specs.Concat(Records).ToArray();
+    // The path-scoped rules, read from the directory rather than listed, so a
+    // fifth rules file cannot be added outside every check at once. A list here
+    // would be a second statement of what the directory holds, and the whole
+    // point of the directory is that a session loads what its paths match.
+    //
+    // It refuses rather than returning what it found, because a directory read
+    // is the one population shape that fails silently: an empty result leaves
+    // every assertion over it of the "none of them disagreed" form, and the run
+    // is green having read nothing. The floor is the four files the corpus has,
+    // stated rather than derived, so adding a fifth is a change here as well.
+    //
+    // Repo-relative with forward slashes, which is the spelling `git show
+    // --numstat` hands `changelog-reconciles` and the spelling `Read` turns into
+    // a platform path. A `Path.Combine` here would be a backslash on Windows and
+    // would match nothing in the history, green on one machine and right on the
+    // other.
+    internal static IReadOnlyList<string> Rules
+    {
+        get
+        {
+            var directory = Path.Combine(Repository.Root, ".claude", "rules");
+
+            var found = Directory.Exists(directory)
+                ? Directory.GetFiles(directory, "*.md")
+                    .Select(path => ".claude/rules/" + Path.GetFileName(path))
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .ToArray()
+                : [];
+
+            if (found.Length < 4)
+            {
+                throw new InvalidOperationException(
+                    $"Read {found.Length} rules files from .claude/rules, expected at least 4. " +
+                    "A directory read that returned nothing would assert every property over an " +
+                    "empty set and report green having widened nothing, so this refuses instead.");
+            }
+
+            return found;
+        }
+    }
+
+    // The specs, with the rules files among them. One member rather than two,
+    // because `pinned-constants` keys a dictionary on it and a path reachable
+    // through two members would be two keys of one name.
+    internal static IReadOnlyList<string> SpecsAndRules => [.. Specs, .. Rules];
+
+    internal static IReadOnlyList<string> Documents => [.. Specs, .. Rules, .. Records];
 
     internal static string Read(string relative) =>
         File.ReadAllText(Path.Combine(Repository.Root, relative.Replace('/', Path.DirectorySeparatorChar)));

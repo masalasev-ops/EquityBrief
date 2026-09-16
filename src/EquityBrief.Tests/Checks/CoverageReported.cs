@@ -63,7 +63,11 @@ public class CoverageReported
 
     internal static IReadOnlyList<RosterRow> Roster()
     {
-        var rules = Corpus.Read("CLAUDE.md");
+        // The roster lives in the rules file that loads for a session working in
+        // `tools/` or in the test project, which is everyone who reads it. This
+        // is the only place in the repository that locates the table; everything
+        // else reaches it through `Roster()` or `Coverage()`.
+        var rules = Corpus.Read(".claude/rules/checks.md");
 
         return Regex.Matches(rules, @"^\| `([a-z-]+)` \| ([^|]+) \| ([^|]+) \|$", RegexOptions.Multiline)
             .Select(match => new RosterRow(

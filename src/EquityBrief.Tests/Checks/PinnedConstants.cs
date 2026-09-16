@@ -15,8 +15,13 @@ public class PinnedConstants
     // The specs, which is where a version may be stated. Records are exempt for
     // the reason given above. Read once so both checks scan the same population
     // and neither can quietly narrow to the file that happens to state it.
+    //
+    // The rules files are in it, because a constant stated in one is a constant
+    // stated in a spec: they carry CLAUDE.md's own text, and a version that moved
+    // in the file that loads for a session working in `tools/` is exactly the one
+    // that would go unread.
     static IReadOnlyDictionary<string, string> Specs() =>
-        Corpus.Specs.ToDictionary(spec => spec, Corpus.Read, StringComparer.Ordinal);
+        Corpus.SpecsAndRules.ToDictionary(spec => spec, Corpus.Read, StringComparer.Ordinal);
 
     [Fact]
     public void TheFrameworkTheSpecsStateIsTheOneTheBuildUses()
