@@ -1,7 +1,9 @@
 using System.Globalization;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Shortlist;
 using Microsoft.Data.Sqlite;
 
@@ -178,6 +180,308 @@ public class ListingsCoverage
             $"no bar for this session; the last session stored for the name is {before}",
             Query(store, $"SELECT plan_at_listing FROM listing WHERE ticker = '{name}';").Single(),
             StringComparison.Ordinal);
+    }
+
+    // ---- 8.4, the shadow column ----
+
+    static readonly DateTimeOffset NightStart = new(2026, 9, 8, 21, 0, 0, TimeSpan.Zero);
+
+    // A candidate registered before the night, through the registrar rather than
+    // by an insert, so what the night reads is what a registration actually
+    // writes rather than a row a test made up.
+    static async Task RegisterAsync(TemporaryStore store, string candidate, double level, DateTimeOffset at)
+    {
+        var outcome = await new CandidateRegistrar(
+            FixedClock.At(at, SessionZones.UnitedStates),
+            store.DatabaseFile).RegisterAsync(
+                candidate,
+                "the relative strength index at or below the level",
+                "the share of its setups that beat their own break-even",
+                MomentumIndexReading.EvaluatorName,
+                new Dictionary<string, double>(StringComparer.Ordinal) { [MomentumIndexReading.Level] = level },
+                "coverage-register-" + candidate.Replace(' ', '-'));
+
+        Assert.Equal(CandidateRegistrar.Registered, outcome.Outcome);
+    }
+
+    // A member that trades on the same two sessions the fixture's newest are and
+    // fires nothing: bars so it is neither stale nor gapped, the momentum
+    // readings so a candidate can be evaluated over it, and no level, ladder,
+    // calendar row or volume average, so every live reason reads nothing.
+    static void QuietMemberWithBars(TemporaryStore store)
+    {
+        var sessions = Query(store, "SELECT DISTINCT session_date FROM bar ORDER BY session_date DESC LIMIT 2;");
+
+        Assert.Equal(2, sessions.Count);
+
+        Insert(
+            store,
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
+            "VALUES ('GSPC', 'QUIET', '2026-01-02', NULL, '2026-09-08T00:00:00Z', 'Utilities');");
+
+        foreach (var (session, close) in sessions.Select((session, at) => (session, at == 0 ? "100.0000" : "100.5000")))
+        {
+            Insert(
+                store,
+                "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+                $"('QUIET', '{session}', '100.0000', '101.0000', '99.0000', '{close}', 1000, 'test', '2026-09-08T21:00:00Z', '{close}');");
+
+            // The two readings the registered candidate names, and nothing else.
+            // A volume average is deliberately absent, because it is what the
+            // unusual volume reason needs and this name is meant to fire nothing.
+            foreach (var (name, value) in new[] { (MomentumIndexReading.Reading, 42.0), (MomentumHistogramTurn.Histogram, 0.5) })
+            {
+                Insert(
+                    store,
+                    "INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES " +
+                    $"('QUIET', '{session}', '{name}', {value.ToString(CultureInfo.InvariantCulture)}, 2);");
+            }
+        }
+    }
+
+    static async Task<IReadOnlyList<string>> RunTheNightAsync(TemporaryStore store, string runId)
+    {
+        Insert(store, "DELETE FROM listing;");
+
+        await new ShortlistBuilder(
+            FixedClock.At(NightStart, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("GSPC", runId);
+
+        return Query(store, "SELECT ticker FROM listing ORDER BY ticker;");
+    }
+
+    [Fact]
+    public async Task AShadowCandidateIsEvaluatedOnTheNightsNoLiveReasonFired()
+    {
+        // The done condition 8.4 rests on, and the reason this check owns it: a
+        // shadow candidate has to be evaluated on the nights it would have
+        // fired, and most of those are nights nothing surfaced the name. A
+        // builder that evaluated candidates only where a live reason fired would
+        // leave the candidate's record over the population the live reasons
+        // already chose, which is the comparison being made.
+        using var store = await FixtureExpectations.WithListings();
+
+        // A level high enough that the reading fires wherever it is computed, so
+        // what is being read is which name-nights were reached rather than which
+        // happened to clear a threshold.
+        await RegisterAsync(store, "momentum index at one hundred", 100, NightStart.AddDays(-1));
+
+        // A member that trades tonight and fires nothing. The committed fixture
+        // cannot supply one: over four names of real bars every one of them
+        // fires something, which the neighbouring test states as the shape this
+        // fixture takes. So it is constructed, and it is constructed as a name
+        // with bars rather than as a name without, because a name with no bars
+        // is evaluated over nothing by the live reasons and by the shadow column
+        // alike and would prove the opposite of what this is about.
+        QuietMemberWithBars(store);
+
+        var listed = await RunTheNightAsync(store, "coverage-shadow");
+
+        Assert.True(listed.Count >= 5, $"Read {listed.Count} listing row(s), expected at least 5.");
+
+        var quiet = Query(store, "SELECT ticker FROM listing WHERE fired_count = 0 ORDER BY ticker;");
+
+        // The population the property is about. A run where every name fired
+        // something would assert nothing here, so it is stated rather than
+        // assumed.
+        Assert.Equal(["QUIET"], quiet);
+
+        foreach (var ticker in listed)
+        {
+            var shadow = Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{ticker}';").Single();
+
+            Assert.Contains("momentum index at one hundred", shadow, StringComparison.Ordinal);
+            Assert.Contains("\"skipped\":[]", shadow.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
+        }
+
+        // And the evaluation carries the values it was made on, whichever way it
+        // went, for the reason a listings row carries a live reason's values: a
+        // night where nothing fired is the night that says how close it came.
+        var one = Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{quiet[0]}';").Single();
+
+        Assert.Contains(MomentumIndexReading.Reading, one, StringComparison.Ordinal);
+        Assert.Contains("\"fired\":true", one.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ACandidateRegisteredAfterTheNightStartedIsNotEvaluatedByIt()
+    {
+        // The instant is the night's start rather than now, and that is the whole
+        // rule. A candidate registered while the night was running would be
+        // scored on a name-night it was not registered before, and the register
+        // could not afterwards say which names were reached before it landed.
+        using var store = await FixtureExpectations.WithListings();
+
+        await RegisterAsync(store, "registered before the night", 100, NightStart.AddSeconds(-1));
+        await RegisterAsync(store, "registered after the night started", 100, NightStart.AddSeconds(1));
+
+        var listed = await RunTheNightAsync(store, "coverage-shadow-after");
+
+        foreach (var ticker in listed)
+        {
+            var shadow = Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{ticker}';").Single();
+
+            Assert.Contains("registered before the night", shadow, StringComparison.Ordinal);
+            Assert.DoesNotContain("registered after the night started", shadow, StringComparison.Ordinal);
+        }
+
+        // Both stand registered, so what excluded the second is its instant and
+        // not its standing. Without this the test would pass over a register the
+        // night could not read at all.
+        var rows = await new CandidateRegistrar(
+            FixedClock.At(NightStart, SessionZones.UnitedStates),
+            store.DatabaseFile).RowsAsync();
+
+        Assert.Equal(2, rows.Count);
+        Assert.True(CandidateFamily.StandsAt(rows, "registered after the night started", NightStart.AddDays(1)));
+        Assert.Equal(["registered before the night"], [.. ShadowColumn.StandingAt(rows, NightStart).Select(row => row.Candidate)]);
+    }
+
+    [Fact]
+    public async Task ACandidateWhoseEvaluatorHasMovedOnIsNotEvaluatedAndIsNamedAsAFailureOnTheRunLog()
+    {
+        // A note nobody reads is not a record of having skipped a name-night. The
+        // night does not stop, because every listing row was written and every
+        // live reason was scored; what it could not do is named where the run
+        // page draws failures, and the stage's outcome is what puts it there.
+        using var store = await FixtureExpectations.WithListings();
+
+        await RegisterAsync(store, "momentum index at one hundred", 100, NightStart.AddDays(-1));
+
+        // The row's version moved to one the code does not carry. Written
+        // straight into the table, because the registrar writes the version the
+        // code holds and the state being asserted is the one that arrives when
+        // the code moves afterwards. The register refuses an update, so the
+        // standing row is retired and a new one written in its place, which is
+        // what a change to a registered candidate is.
+        Insert(
+            store,
+            "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, " +
+            "evaluator_version, event, retires, registered_at, evidence) VALUES " +
+            "(90, 'a candidate whose evaluator moved', 'a rule', 'a test', '" + MomentumIndexReading.EvaluatorName +
+            "', '{\"level\": 100}', '000000000000', 'registered', NULL, '2026-09-07T21:00:00Z', NULL);");
+
+        var listed = await RunTheNightAsync(store, "coverage-shadow-drift");
+
+        foreach (var ticker in listed)
+        {
+            var shadow = Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{ticker}';").Single();
+
+            // The one that stands is evaluated and the drifted one is skipped
+            // with its reason, on every row, so a later reader of any name-night
+            // can see the hole rather than reading an absence as a non-fire.
+            Assert.Contains("momentum index at one hundred", shadow, StringComparison.Ordinal);
+            Assert.Contains("a candidate whose evaluator moved", shadow, StringComparison.Ordinal);
+            Assert.Contains("000000000000", shadow, StringComparison.Ordinal);
+            Assert.Contains("the register does not name", shadow, StringComparison.Ordinal);
+        }
+
+        // The stage's own row: a failure rather than a note, with the candidate
+        // named, and its own outcome rather than the night's failure word so a
+        // reader can tell a night that stopped from a night that skipped.
+        var row = Query(store, "SELECT outcome || ' :: ' || detail FROM run_log WHERE stage = 'listings' AND run_id = 'coverage-shadow-drift';").Single();
+
+        Assert.StartsWith(ShortlistBuilder.Failed, row, StringComparison.Ordinal);
+        Assert.Contains("FAILURE", row, StringComparison.Ordinal);
+        Assert.Contains("a candidate whose evaluator moved", row, StringComparison.Ordinal);
+
+        // And the same night once the drifted candidate is withdrawn says ok, so
+        // the outcome is a property of the skip rather than of the shadow column
+        // existing. Withdrawn through a retirement, because the register refuses
+        // a delete: the way to stop evaluating a candidate is to retire it, and
+        // that is the path a person would actually take.
+        var withdrawn = await new CandidateRegistrar(
+            FixedClock.At(NightStart.AddMinutes(-1), SessionZones.UnitedStates),
+            store.DatabaseFile).RetireAsync(
+                "a candidate whose evaluator moved",
+                "its evaluator moved and it was registered under a version the code no longer carries",
+                "coverage-retire-drifted");
+
+        Assert.Equal(CandidateRegistrar.Retired, withdrawn.Outcome);
+
+        Insert(store, "DELETE FROM listing;");
+
+        await new ShortlistBuilder(
+            FixedClock.At(NightStart, SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("GSPC", "coverage-shadow-clean");
+
+        var clean = Query(store, "SELECT outcome FROM run_log WHERE stage = 'listings' AND run_id = 'coverage-shadow-clean';").Single();
+
+        Assert.Equal(ShortlistBuilder.Ok, clean);
+
+        // The retirement took the drifted candidate out and left the standing one
+        // in, so the night went green by withdrawing a candidate rather than by
+        // the shadow column stopping.
+        var after = Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{listed[0]}';").Single();
+
+        Assert.Contains("momentum index at one hundred", after, StringComparison.Ordinal);
+        Assert.DoesNotContain("a candidate whose evaluator moved", after, StringComparison.Ordinal);
+    }
+
+    static System.Text.Json.JsonElement Expected(string stage) =>
+        System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(
+            Repository.Root, "fixtures", "membership-2026-09-05", "expectations", stage + ".json"))).RootElement;
+
+    [Fact]
+    public void EveryCandidateFlagMatchesTheOneWorkedByHand()
+    {
+        // The derived expectation. Each name-night's flags are worked in the file
+        // from the evaluators' own rules, and the evaluators are put to them
+        // directly rather than through a store, because what is being compared is
+        // a derivation against the code and a store in between would only add a
+        // way for the two to agree by accident.
+        var expectation = Expected("shadow-column");
+        var nights = expectation.GetProperty("nameNights").EnumerateArray().ToArray();
+
+        Assert.True(nights.Length >= 5, $"The expectation works {nights.Length} name-night(s), expected at least 5.");
+
+        var registered = expectation.GetProperty("registrations").EnumerateArray()
+            .Select(one => (
+                Candidate: one.GetProperty("candidate").GetString()!,
+                Evaluator: CandidateEvaluators.Find(one.GetProperty("evaluator").GetString()!)!,
+                Parameters: (IReadOnlyDictionary<string, double>)one.GetProperty("parameters").EnumerateObject()
+                    .ToDictionary(pair => pair.Name, pair => pair.Value.GetDouble(), StringComparer.Ordinal)))
+            .ToArray();
+
+        Assert.Equal(2, registered.Length);
+        Assert.All(registered, one => Assert.NotNull(one.Evaluator));
+
+        var firedSomewhere = registered.ToDictionary(one => one.Candidate, _ => 0, StringComparer.Ordinal);
+
+        foreach (var one in nights)
+        {
+            var ticker = one.GetProperty("ticker").GetString()!;
+
+            var values = new Dictionary<string, double>(StringComparer.Ordinal)
+            {
+                [MomentumIndexReading.Reading] = one.GetProperty(MomentumIndexReading.Reading).GetDouble(),
+                [MomentumHistogramTurn.Histogram] = one.GetProperty(MomentumHistogramTurn.Histogram).GetDouble(),
+                [MomentumHistogramTurn.Previous] = one.GetProperty(MomentumHistogramTurn.Previous).GetDouble(),
+            };
+
+            var night = new CandidateNight(ticker, new DateOnly(2026, 9, 8), values);
+
+            foreach (var (candidate, evaluator, parameters) in registered)
+            {
+                var fired = evaluator.Evaluate(night, parameters).Fired;
+
+                Assert.Equal((ticker, candidate, one.GetProperty(candidate).GetBoolean()), (ticker, candidate, fired));
+
+                if (fired)
+                {
+                    firedSomewhere[candidate]++;
+                }
+            }
+        }
+
+        // The totals, so a run where every flag happened to be false could not
+        // pass the loop above by agreeing with an expectation that was also all
+        // false. Both candidates fire somewhere and neither fires everywhere.
+        foreach (var counted in expectation.GetProperty("firedSomewhere").EnumerateObject())
+        {
+            Assert.Equal((counted.Name, counted.Value.GetInt32()), (counted.Name, firedSomewhere[counted.Name]));
+            Assert.InRange(firedSomewhere[counted.Name], 1, nights.Length - 1);
+        }
     }
 
     static IReadOnlyList<string> Query(TemporaryStore store, string sql)

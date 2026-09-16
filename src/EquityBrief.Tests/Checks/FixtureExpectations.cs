@@ -2088,7 +2088,7 @@ public partial class FixtureExpectations
         // note on its theme and the theme record's note on its results at 6.11. Which is what
         // it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.note", "theme-record.resultsNote"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.note", "theme-record.resultsNote"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Levels;
@@ -41,6 +42,7 @@ public sealed class ShortlistBuilder : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -85,6 +87,40 @@ public sealed class ShortlistBuilder : IComponent
         ORDER BY session_date DESC
         LIMIT 1;
     ";
+
+    // Tonight's indicators and the session before, which is what a registered
+    // candidate is evaluated over. Two sessions rather than one, because a
+    // crossing is a fact about two and a condition keyed on tonight's sign alone
+    // would fire every night of a month the reading spent on one side.
+    //
+    // Every indicator name rather than the ones the evaluators happen to read:
+    // which figures the next candidate wants is the thing nobody knows yet, and a
+    // query narrowed to today's evaluators would have to be edited by whoever
+    // registers a candidate reading a different one, which is a code change
+    // inside what is meant to be a registration.
+    const string IndicatorsForLastTwoSessionsOf = @"
+        SELECT session_date, name, value
+        FROM indicator
+        WHERE ticker = $ticker
+          AND session_date IN (
+              SELECT session_date FROM indicator
+              WHERE ticker = $ticker
+              GROUP BY session_date
+              ORDER BY session_date DESC
+              LIMIT 2)
+        ORDER BY session_date DESC, name;
+    ";
+
+    // The register, whole, read once for the night rather than once per name.
+    const string Register = @"
+        SELECT id, candidate, rule, test, evaluator, parameters, evaluator_version,
+               event, retires, registered_at, evidence
+        FROM candidate_register
+        ORDER BY id;
+    ";
+
+    // The suffix a previous session's value is offered to an evaluator under.
+    public const string PreviousSuffix = "_previous";
 
     const string EdgesFor = @"
         SELECT low_edge, high_edge, role
@@ -185,6 +221,18 @@ public sealed class ShortlistBuilder : IComponent
         // over 503 did.
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
+        // The register, read once at the top of the stage, and the candidates
+        // standing at the instant the night started.
+        //
+        // Once rather than per name, so every name in the index is evaluated
+        // against the same set: a register read inside the loop would give a
+        // candidate registered mid-night to the names below it in the alphabet
+        // and not to the ones above, and nothing afterwards could say which.
+        var registered = await RegisterAsync(connection, cancellation);
+        var standing = ShadowColumn.StandingAt(registered, startedAt);
+        var skipped = new Dictionary<string, string>(StringComparer.Ordinal);
+        var evaluated = 0;
+
         // The newest session any name holds, which is the night the list is about.
         // Read off the store rather than the clock, for the reason the close
         // stage and the run page's stale names read it there: a replay run on a
@@ -260,12 +308,35 @@ public sealed class ShortlistBuilder : IComponent
                     : PlanAtListing(plan));
 
             // Registered candidates, evaluated the same way and shown nowhere.
-            // The register arrives at 8.3, so the list is empty and says why
-            // rather than being absent: an empty column and a column that has
-            // never been written read the same on a page and only one is true.
-            command.Parameters.AddWithValue(
-                "$shadow_reasons",
-                JsonSerializer.Serialize(new { candidates = Array.Empty<string>(), note = "the candidate register arrives at 8.3" }));
+            //
+            // Evaluated for every member, including the ones no live reason fired
+            // on, which is what the every-name listing row exists for: a
+            // candidate has to be scored on the nights it would have fired, and
+            // most of those are nights nothing surfaced the name. A stale or
+            // gapped name is evaluated over the same nothing the live reasons
+            // are, so a shadow score is never computed across a hole the live
+            // reasons refused to compute across.
+            // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+            var shadow = ShadowColumn.Evaluate(
+                standing,
+                new CandidateNight(
+                    ticker,
+                    (stale ? newest!.Value : sessionDate ?? asOf),
+                    stale || gapped
+                        ? new Dictionary<string, double>(StringComparer.Ordinal)
+                        : await IndicatorsAsync(connection, ticker, cancellation)));
+
+            evaluated += shadow.Outcomes.Count;
+
+            foreach (var skip in shadow.Skipped)
+            {
+                // Kept once per candidate rather than once per name. The reason
+                // is the same on every name-night, so a list of five hundred
+                // identical lines would bury the one thing the row has to say.
+                skipped.TryAdd(skip.Candidate, skip.Reason);
+            }
+
+            command.Parameters.AddWithValue("$shadow_reasons", Serialised(shadow));
 
             await command.ExecuteNonQueryAsync(cancellation);
 
@@ -286,10 +357,120 @@ public sealed class ShortlistBuilder : IComponent
                 ExchangeClosures.CoveredThrough.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
                 ", not counted and not fired: " + string.Join(", ", beyondTheCalendar);
 
-        await RecordAsync(connection, runId, startedAt, members.Count, fired, reasonsFired, stop.Report() + beyond, cancellation);
+        // The shadow column's own sentence on the stage's row, and it is a
+        // failure rather than a note where a candidate went unevaluated.
+        //
+        // A shadow candidate has to be evaluated on every name-night, so a night
+        // that skipped one has a hole in the record the correction will later
+        // divide by, and a note nobody reads is not a record of having skipped
+        // one. The night does not stop: every listing row was written and every
+        // live reason was scored, so the stage did the thing the night depends on.
+        // What it did not do is named where the run page draws failures.
+        var shadowSaid =
+            standing.Count == 0
+                ? "; no candidate stands registered, so nothing was evaluated in shadow"
+                : FormattableString.Invariant($"; {standing.Count} candidate(s) registered, {evaluated} shadow evaluation(s) written")
+                    + (skipped.Count == 0
+                        ? string.Empty
+                        : FormattableString.Invariant($"; FAILURE: {skipped.Count} registered candidate(s) were not evaluated on any name-night: ")
+                            + string.Join("; ", skipped.Select(entry => $"'{entry.Key}' {entry.Value}")));
+
+        await RecordAsync(
+            connection,
+            runId,
+            startedAt,
+            members.Count,
+            fired,
+            reasonsFired,
+            stop.Report() + beyond + shadowSaid,
+            skipped.Count == 0 ? Ok : Failed,
+            cancellation);
 
         return new ShortlistOutcome(members.Count, members.Count, fired, reasonsFired);
     }
+
+    public const string Ok = "ok";
+
+    // The stage ran and a registered candidate went unevaluated. Its own value
+    // rather than the night's failure word, because the night did not stop and a
+    // reader of the run log has to be able to tell the two apart.
+    public const string Failed = "ok, with a shadow candidate unevaluated";
+
+    static async Task<IReadOnlyList<RegisterRow>> RegisterAsync(
+        SqliteConnection connection,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Register;
+
+        var rows = new List<RegisterRow>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            rows.Add(new RegisterRow(
+                reader.GetInt64(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5),
+                reader.GetString(6),
+                reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8),
+                DateTimeOffset.ParseExact(reader.GetString(9), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                reader.IsDBNull(10) ? null : reader.GetString(10)));
+        }
+
+        return rows;
+    }
+
+    // Tonight's indicators for a name, and the session before under a suffixed
+    // name, which is what lets an evaluator ask about a crossing without the
+    // builder knowing which crossing it means.
+    static async Task<IReadOnlyDictionary<string, double>> IndicatorsAsync(
+        SqliteConnection connection,
+        string ticker,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndicatorsForLastTwoSessionsOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var values = new Dictionary<string, double>(StringComparer.Ordinal);
+        DateOnly? newest = null;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var session = DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            newest ??= session;
+
+            values[session == newest ? reader.GetString(1) : reader.GetString(1) + PreviousSuffix] = reader.GetDouble(2);
+        }
+
+        return values;
+    }
+
+    // What the shadow column holds: the evaluations, and the candidates the night
+    // could not evaluate with the reason for each. Both, because a candidate that
+    // did not fire and a candidate nothing evaluated are opposite statements and
+    // a column carrying only the first cannot tell them apart afterwards.
+    static string Serialised(ShadowResult shadow) =>
+        JsonSerializer.Serialize(new
+        {
+            candidates = shadow.Outcomes
+                .Select(outcome => new { candidate = outcome.Candidate, fired = outcome.Fired, values = outcome.Values })
+                .ToArray(),
+            skipped = shadow.Skipped
+                .Select(skip => new { candidate = skip.Candidate, reason = skip.Reason })
+                .ToArray(),
+        });
 
     static async Task<DateOnly?> NewestSessionAsync(SqliteConnection connection, CancellationToken cancellation)
     {
@@ -576,6 +757,7 @@ public sealed class ShortlistBuilder : IComponent
         int fired,
         int reasonsFired,
         string gaps,
+        string outcome,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -585,7 +767,7 @@ public sealed class ShortlistBuilder : IComponent
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("$outcome", "ok");
+        command.Parameters.AddWithValue("$outcome", outcome);
         command.Parameters.AddWithValue("$rows_written", members);
 
         // The fired count is the headline, because it is the market's mood and

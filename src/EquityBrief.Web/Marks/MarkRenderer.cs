@@ -259,6 +259,17 @@ public sealed record ReasonTrackRow(
 // window nothing has measured rather than a rate of zero.
 public sealed record BaseRateLine(string Window, double? Rate);
 
+// The shadow candidates region: how many candidate conditions stand registered,
+// and the maximum family that number is corrected against.
+//
+// Two numbers and no names. The region says how hard the correction is and that
+// every candidate's own record is withheld until it is promoted, and it carries
+// nothing a reader could read a candidate's performance off, because the
+// register is only a pre-registration for as long as nobody can see how a
+// candidate is doing before deciding whether to keep it.
+// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+public sealed record ShadowRegion(int Registered, int Maximum);
+
 // The four verdict counts of the last phase report.
 //
 // Four fields and no total. Out of scope is counted apart from unexamined and
@@ -2048,6 +2059,38 @@ public sealed class MarkRenderer : IComponent
         {
             region.Append(Invariant, $"<p class=\"not-run\" data-night=\"{night:yyyy-MM-dd}\">the overnight queue did not run on {night:yyyy-MM-dd}</p>");
         }
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The shadow candidates region, section 15.10's third.
+    //
+    // How many candidate conditions are registered, the correction divisor that
+    // number sets, and one line saying each candidate's record is withheld until
+    // it is promoted. No evaluation of a name appears here, and the reason is
+    // worth the sentence: the region exists to say how hard the test is, and a
+    // region that also said how a candidate was doing would let the decision to
+    // keep it be taken on the result, which is what registering in advance is
+    // for.
+    //
+    // The divisor is the count rather than a figure of its own, because the
+    // threshold is divided by the family and the family is what stands
+    // registered. Stating both would be one fact in two places.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: The significance threshold is divided by the family size, and the divisor is shown
+    public string ShadowCandidates(ShadowRegion shadow)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"shadow-candidates\" data-shadow=\"{shadow.Registered}\" data-divisor=\"{shadow.Registered}\" data-maximum=\"{shadow.Maximum}\">");
+
+        region.Append(shadow.Registered == 0
+            ? Formatted($"<p data-shadow=\"none\">no candidate condition is registered, so no threshold is divided; the family may hold at most {shadow.Maximum}</p>")
+            : Formatted($"<p data-shadow=\"{shadow.Registered}\">{shadow.Registered} candidate condition(s) registered, of at most {shadow.Maximum}, so a threshold is divided by {shadow.Registered}</p>"));
+
+        region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until it is promoted, and no evaluation of a name is shown here or anywhere else</p>");
 
         region.Append("</section>");
 

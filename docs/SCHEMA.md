@@ -257,9 +257,11 @@ Grain: one row per ticker per night, **for every index member and not only the l
 | `reasons` | TEXT | JSON: each of the six reasons with fired true or false and the values that made it so. From the 5.4 correction earnings soon's values carry `next dated event` and breakout on volume's carry `previous close`, and a row without them was written before it (see: Sessions to a dated event are counted on the exchange calendar and never on stored bars) |
 | `fired_count` | INTEGER | how many of the six reasons fired on the row, counted from `reasons` |
 | `plan_at_listing` | TEXT | JSON: the entry zone, stop and first traded target as they stood that night |
-| `shadow_reasons` | TEXT | JSON: registered candidates, evaluated the same way, shown nowhere |
+| `shadow_reasons` | TEXT | JSON: `candidates`, each registered candidate the night evaluated with whether it fired and the values that made it so, and `skipped`, each registered candidate the night could not evaluate with the reason. Written for every member on every night exactly as `reasons` is, and drawn on no screen (see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown) |
 
 Primary key: `ticker`, `session_date`.
+
+**`shadow_reasons` carries two lists and not one, from 8.4.** A candidate that did not fire and a candidate nothing evaluated are opposite statements: the first is a measurement and the second is a hole in one. Folding the second into the first is how a record of having skipped a name-night stops existing, and the correction later divides by a family whose members are assumed to have been scored throughout. So a candidate the night could not evaluate, because its evaluator's version has moved or because the night computed none of the values it reads, is written into `skipped` with its reason and is named as a failure on the listings stage's run log row rather than being absent.
 
 **`plan_at_listing` is the column the improvement loop rests on.** Bars can be replayed and the plan cannot, because by the time a verdict is possible the rules may have changed and recomputing would score old listings under new ones. It is written by a component that is already running and it is the difference between the loop being a feature and being a wait.
 

@@ -479,6 +479,7 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<LeftOutSection> fellBack,
         QueueNight queue,
         HarnessCounts? harness,
+        ShadowRegion shadow,
         PricedCalls? priced = null,
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null)
     {
@@ -490,9 +491,7 @@ public sealed class SinglePageApp : IComponent
         region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
         region.Append(marks.ReasonRecords(records, tracks, baseRates, nights));
 
-        region.Append("<section class=\"shadow-candidates\" data-shadow=\"absent\">");
-        region.Append("<p class=\"degraded\">how many candidate conditions are registered, and the correction divisor that number sets, arrive with the register at 8.3; each candidate's own record stays withheld until it is promoted</p>");
-        region.Append("</section>");
+        region.Append(marks.ShadowCandidates(shadow));
 
         region.Append(marks.StaleAndFailed(stale, failed, refused, fellBack));
         region.Append(marks.OvernightQueue(queue));

@@ -1,0 +1,65 @@
+{
+ "stage": "shadow-column",
+ "derivation": "derived",
+ "derivedFrom": "the two registered evaluators' own rules, worked by hand over the name-nights below rather than read back from a run. The index reading fires where the relative strength index is at or below the registered level, inclusive at the level, which is why two of the cases sit exactly on it and one a hundredth above. The histogram turn fires where the previous session's histogram was at or below zero and tonight's is at or above the registered margin, which is a fact about two sessions and not one, so the case that sits above zero on both nights does not fire however high it is. The name-nights are constructed rather than taken from the committed fixture, and the reason is stated rather than left as a choice: over four names of real bars every one of them fires a live reason, so the fixture cannot supply the name-night this is most about, which is one no live reason surfaced.",
+ "tables": [
+  "listing"
+ ],
+ "constructed": true,
+ "registrations": [
+  { "candidate": "momentum index at thirty", "evaluator": "momentum-index-reading", "parameters": { "level": 30 } },
+  { "candidate": "momentum histogram turning up", "evaluator": "momentum-histogram-turn", "parameters": { "margin": 0 } }
+ ],
+ "nameNights": [
+  {
+   "ticker": "AAAA",
+   "case": "both fire: the reading is below the level and the histogram crossed up",
+   "rsi14": 25.0,
+   "macd_hist": 0.2,
+   "macd_hist_previous": -0.5,
+   "momentum index at thirty": true,
+   "momentum histogram turning up": true
+  },
+  {
+   "ticker": "BBBB",
+   "case": "the reading sits exactly on the level, which is inclusive, and the histogram is still below zero",
+   "rsi14": 30.0,
+   "macd_hist": -0.1,
+   "macd_hist_previous": -0.5,
+   "momentum index at thirty": true,
+   "momentum histogram turning up": false
+  },
+  {
+   "ticker": "CCCC",
+   "case": "a hundredth above the level does not fire, which is the boundary from the other side",
+   "rsi14": 30.01,
+   "macd_hist": 0.4,
+   "macd_hist_previous": -0.2,
+   "momentum index at thirty": false,
+   "momentum histogram turning up": true
+  },
+  {
+   "ticker": "DDDD",
+   "case": "neither: the reading is high and the histogram was already above zero last night, so nothing crossed",
+   "rsi14": 55.0,
+   "macd_hist": 0.7,
+   "macd_hist_previous": 0.5,
+   "momentum index at thirty": false,
+   "momentum histogram turning up": false
+  },
+  {
+   "ticker": "EEEE",
+   "case": "both ends of the histogram rule at once: last night exactly zero and tonight exactly the margin",
+   "rsi14": 70.0,
+   "macd_hist": 0.0,
+   "macd_hist_previous": 0.0,
+   "momentum index at thirty": false,
+   "momentum histogram turning up": true
+  }
+ ],
+ "firedSomewhere": {
+  "momentum index at thirty": 2,
+  "momentum histogram turning up": 3
+ },
+ "note": "Every name-night is evaluated by both candidates whichever way each went, so the counts above are over five name-nights each and not over the ones that fired. A candidate absent from a row would be a hole in the record the correction later divides by, which is a different thing from a candidate that did not fire."
+}

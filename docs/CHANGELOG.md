@@ -25,6 +25,33 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - SCHEMA.md - the shadow column carries what the night could not evaluate as well as what it did
+
+Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+Was:
+> | `shadow_reasons` | TEXT | JSON: registered candidates, evaluated the same way, shown nowhere |
+Now:
+> the column holds two lists, `candidates` and `skipped`, the second carrying each registered candidate the night could not evaluate with the reason, and a paragraph below says why they are separate.
+Why: a candidate that did not fire and a candidate nothing evaluated are opposite statements, and folding the second into the first is how a record of having skipped a name-night stops existing.
+
+### 2026-09-16 - ARCHITECTURE.html - the shortlist builder reads the register, and the read API reads it too
+
+Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+Was:
+> the shortlist builder's Reads cell ended at facts and its row said it evaluates the six reasons and records which fired, for every index member and not only the listed ones; its matrix row was blank under the candidate register, as was the read API's, and the matrix key said the read API's cell there was the one store it does not read.
+Now:
+> the Reads cell names the candidate register and the row says it evaluates every candidate standing registered at the instant the night started into the shadow column of the same rows, naming as a failure any it could not evaluate; both matrix rows carry a read; and the key says the read API's cell filled at 8.4 with the region that states how many candidates are registered, and that what it reads there is the register and never a shadow evaluation of a name.
+Why: 8.3 declared the register with nothing reading it, and 8.4 is the checkpoint where the night writes the column and the run page states the count and the divisor.
+
+### 2026-09-16 - .claude/rules/checks.md - listings-coverage carries the shadow column
+
+Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+Was:
+> the row ended at a member the night computed nothing for still carrying one.
+Now:
+> it also asserts what the every-name grain exists for: every candidate standing registered when the night started evaluated into every row including the quiet ones, a candidate registered after the night started not evaluated by it, and a drifted evaluator skipped with its reason and named as a failure on the stage's run log row.
+Why: the check's own comment already said the every-name grain is what the shadow mechanism rests on, and 8.4 is where that stopped being a reason and became a thing asserted.
+
 ### 2026-09-16 - SCHEMA.md - the candidate register names the evaluator that will run it
 
 Authorised by: A registration names an evaluator the code carries, and its version is a hash of that evaluator's own source
