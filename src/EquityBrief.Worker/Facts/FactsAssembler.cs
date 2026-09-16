@@ -534,37 +534,54 @@ public sealed class FactsAssembler : IComponent
             return [];
         }
 
-        var quarters = segments.GetProperty("periods").EnumerateArray()
-            .Where(period => period.GetProperty("months").GetInt32() == 3)
-            .Select(period => period.GetProperty("ended").GetString()!)
-            .Order(StringComparer.Ordinal)
+        // The newest quarter where the table files one, and otherwise the newest
+        // period it does file, which after an annual report is twelve months.
+        // Until 8.0 this took quarters alone, so a name whose newest filing is its
+        // 10-K carried no segment figure at all and both sections that quote one
+        // fell back for a quarter: 6.11's run found it on MSFT, whose report for
+        // the year to 2026-06-30 files twelve-month columns and nothing shorter.
+        // The months are part of the fact's name, so a sentence quoting a year
+        // cannot read as a quarter.
+        // see: A facts file carries the latest period of the segment table, and says which period it is
+        var periods = segments.GetProperty("periods").EnumerateArray()
+            .Select(period => (Months: period.GetProperty("months").GetInt32(), Ended: period.GetProperty("ended").GetString()!))
             .ToArray();
 
-        if (quarters.Length == 0)
+        var quarters = periods.Where(period => period.Months == 3).ToArray();
+        var latest = (quarters.Length > 0 ? quarters : periods)
+            .OrderBy(period => period.Ended, StringComparer.Ordinal)
+            .ThenBy(period => period.Months)
+            .ToArray();
+
+        if (latest.Length == 0)
         {
             return [];
         }
 
-        var ended = quarters[^1];
+        var (months, ended) = latest[^1];
         var facts = new List<Fact>();
         var taken = new HashSet<string>(StringComparer.Ordinal);
+
+        // A quarter keeps the name it had, since every stored facts file and every
+        // section written from one carries it; a longer period says how long it is.
+        var period = months == 3 ? ended : $"{months.ToString(CultureInfo.InvariantCulture)} months to {ended}";
 
         void Take(string group, JsonElement lines, int position)
         {
             foreach (var line in lines.EnumerateArray())
             {
-                if (line.GetProperty("months").GetInt32() != 3
+                if (line.GetProperty("months").GetInt32() != months
                     || line.GetProperty("ended").GetString() != ended
                     || line.GetProperty("value").ValueKind != JsonValueKind.String)
                 {
                     continue;
                 }
 
-                var name = $"segment {group} {line.GetProperty("lineItem").GetString()} {ended}";
+                var name = $"segment {group} {line.GetProperty("lineItem").GetString()} {period}";
 
                 if (!taken.Add(name))
                 {
-                    name = $"segment {group} {position.ToString(CultureInfo.InvariantCulture)} {line.GetProperty("lineItem").GetString()} {ended}";
+                    name = $"segment {group} {position.ToString(CultureInfo.InvariantCulture)} {line.GetProperty("lineItem").GetString()} {period}";
                     taken.Add(name);
                 }
 

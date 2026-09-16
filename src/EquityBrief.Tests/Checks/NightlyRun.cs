@@ -1713,6 +1713,67 @@ public class NightlyRun
 
         return Convert.ToInt32(command.ExecuteScalar());
     }
+
+    [Fact]
+    public void ANamedSessionOlderThanTheStoreIsRefusedAndTheTwoTheRunbookAsksForAreNot()
+    {
+        // 8.0's ruling on the path the phase 7 sign-off carried untraced. The
+        // corporate action check drops a due name's series and refetches it only
+        // as far as the session being replayed, so a replay of an older night
+        // removes the bars after it and the next night reads the hole as a gap.
+        var tonight = new DateOnly(2026, 9, 16);
+        var held = new DateOnly(2026, 9, 15);
+
+        // Older than the newest session the store holds: refused, naming both
+        // dates and what the refusal is about.
+        var refused = NightSession.Refusal(new DateOnly(2026, 9, 11), tonight, held);
+
+        Assert.NotNull(refused);
+        Assert.Contains("2026-09-11", refused, StringComparison.Ordinal);
+        Assert.Contains("2026-09-15", refused, StringComparison.Ordinal);
+        Assert.Contains("gap", refused, StringComparison.Ordinal);
+
+        // The newest session again, which is the re-run RUNBOOK asks for.
+        Assert.Null(NightSession.Refusal(held, tonight, held));
+
+        // A session the store has not reached, which is the catch-up night after
+        // a machine was off. It is older than tonight and newer than the store.
+        Assert.Null(NightSession.Refusal(tonight, tonight, held));
+
+        // A store with no bars at all refuses neither, which is a first run.
+        Assert.Null(NightSession.Refusal(new DateOnly(2026, 1, 2), tonight, null));
+
+        // And the refusal this rule already carried, a session after tonight's.
+        var future = NightSession.Refusal(tonight.AddDays(1), tonight, held);
+
+        Assert.NotNull(future);
+        Assert.Contains("later than tonight", future, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheNewestStoredSessionIsReadOffTheStoreAndAMissingStoreIsNotAnAnswer()
+    {
+        // The half the rule above is handed, read off a store rather than passed
+        // in: a file that does not exist and a migrated store with no bars are
+        // both a first run, and neither is a date.
+        Assert.Null(NightSession.NewestStored(Path.Combine(Path.GetTempPath(), "equitybrief-no-such-store.db")));
+
+        using var store = new TemporaryStore().Migrated();
+
+        Assert.Null(NightSession.NewestStored(store.DatabaseFile));
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at) VALUES " +
+            "('AAPL', '2026-09-14', '1', '1', '1', '1', 1, 'test', '2026-09-14T21:10:00Z'), " +
+            "('AAPL', '2026-09-15', '1', '1', '1', '1', 1, 'test', '2026-09-15T21:10:00Z');";
+        command.ExecuteNonQuery();
+
+        Assert.Equal(new DateOnly(2026, 9, 15), NightSession.NewestStored(store.DatabaseFile));
+    }
 }
 
 // A feed that fails the way the provider does. Named for what it stands in for,

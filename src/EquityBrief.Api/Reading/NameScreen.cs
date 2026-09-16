@@ -953,7 +953,10 @@ public static class NameScreen
             ReadApi.PassUnavailable => $"the research model did not answer when a pass was asked for on {day}, so the pass did not start and the stored research is shown as written, with the sections not written offered to be written later. What the model's address said: {pass.Reason}",
             ReadApi.PassPaused when spend is { Paused: true } => null,
             ReadApi.PassPaused => $"the pass on {day} was stopped by the spend cap before a cap was reached, which the cap does where a call could take spend past it: {pass.NotWritten.Select(line => line.Reason).FirstOrDefault(reason => reason.StartsWith(PausedLine, StringComparison.Ordinal)) ?? pass.Reason}",
-            ReadApi.PassNoFactsFile => $"the pass asked for on {day} did not run: {pass.Reason}",
+            // What the pass did rather than that it did not run, which it said until 8.0
+            // while a pass that refreshed the industry's cycle had made a paid call inside it.
+            // see: A pass for a name with no facts file refreshes its industry's theme and says so
+            ReadApi.PassNoFactsFile => $"the pass asked for on {day}: {pass.Reason}",
             _ => null,
         };
 

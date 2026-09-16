@@ -93,6 +93,11 @@ public sealed class ResearchRunner(
     public const string NoFactsFile = "no facts file";
     public const string AlreadyRunning = "already running";
 
+    // What a pass for such a name did, which is the sentence the name page reads.
+    // see: A pass for a name with no facts file refreshes its industry's theme and says so
+    public const string NoFactsFileReason =
+        "no facts file is stored for the name on or before today, so nothing of the name's own was written";
+
     // The reasons the industry cycle is not written, stated once so the run log and the
     // page say them the same way.
     public const string NoIndustry = "the index names no industry for the name, and a theme is an industry";
@@ -317,15 +322,23 @@ public sealed class ResearchRunner(
             }
         }
 
-        // A name the night computed no facts file for writes nothing of its own. Its theme is
-        // refreshed first where the cycle wanted it, since the theme is the industry's; whether a
-        // pass should buy a theme for a name it can write nothing for is carried to 8.0.
-        // owes: A name with no facts file refreshes its industry's theme, ruled
+        // A name the night computed no facts file for writes nothing of its own, and its theme
+        // is still refreshed where the cycle wanted it, since the theme is the industry's and
+        // every member reads it. What the pass did is said rather than left to be inferred: the
+        // row states that nothing of the name's own was written and whether the industry's cycle
+        // was refreshed, which is what the name page reads.
+        // see: A pass for a name with no facts file refreshes its industry's theme and says so
         var (facts, night) = await FactsAsync(connection, ticker, asOf, cancellation);
 
         if (facts is null)
         {
-            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NoFactsFile, verdict.State, recorded, "no facts file is stored for the name on or before today", notWritten), 0, cap.Probes - themeProbes, cancellation);
+            var reason = NoFactsFileReason + (themeWanted
+                ? notWritten.Any(line => line.Section == ClaimRules.CycleSection)
+                    ? ", and its industry's cycle could not be refreshed"
+                    : ", and the pass refreshed its industry's cycle, which every name in that industry reads"
+                : string.Empty);
+
+            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NoFactsFile, verdict.State, recorded, reason, notWritten), 0, cap.Probes - themeProbes, cancellation);
         }
 
         var documentsBefore = await CountAsync(connection, DocumentsHeld, null, null, cancellation);

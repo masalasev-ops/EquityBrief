@@ -810,6 +810,34 @@ public class CorporateActions
         Assert.Equal(["AAPL"], week.Retried ?? []);
         Assert.Empty(week.Spent ?? []);
         Assert.Equal(CorporateActionChecker.RetryNights + 1, CountOf(store, "AAPL").Retries);
+
+        // The other half, and it is the deciding night rather than the one that asked.
+        // Everything above runs the night that decides at 21:10 UTC, where tonight's session
+        // and the instant's UTC date agree, so a rule reading tonight off the UTC date passes
+        // it. Carried out of the phase 7 sign-off, which found this test thinner than the
+        // property it is for.
+        //
+        // The weeks run on to Monday 2026-08-31 and then to Tuesday 2026-09-08, the Monday
+        // before it being Labor Day. Monday 2026-09-14 is 6 days on from that Tuesday and 7
+        // from the next UTC date, so a night for it that starts at 00:42 UTC on the Tuesday
+        // must not ask: a week is counted in sessions from the session, and 6 days is not one.
+        foreach (var session in new[] { new DateOnly(2026, 8, 31), new DateOnly(2026, 9, 8) })
+        {
+            Assert.Equal(1, (await NightOf(store, session, Refusing())).RefetchRequests);
+        }
+
+        var asked = CountOf(store, "AAPL").Retries;
+
+        var early = await new CorporateActionChecker(
+            new NoActionFeed(),
+            Refusing(),
+            FixedClock.At(new DateTimeOffset(2026, 9, 15, 0, 42, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync(Index, RunIdOf(new DateOnly(2026, 9, 14)));
+
+        Assert.Equal(0, early.RefetchRequests);
+        Assert.Empty(early.Retried ?? []);
+        Assert.Contains(early.Spent ?? [], spent => spent.Ticker == "AAPL");
+        Assert.Equal(asked, CountOf(store, "AAPL").Retries);
     }
 
     [Fact]
@@ -853,6 +881,26 @@ public class CorporateActions
         Assert.Equal("ok", stage.Outcome);
         Assert.DoesNotContain("AAPL", stage.Detail, StringComparison.Ordinal);
         Assert.DoesNotContain(other, stage.Detail, StringComparison.Ordinal);
+
+        // The three surfaces, which the phase 7 sign-off carried as untested for a name the
+        // index no longer holds. The run page's region is the stage row above and stops
+        // naming it, because that region is about tonight. The name page and the exported
+        // report keep their line, because they are about a name whose stored prices are
+        // still the ones that may not carry the adjustment, and a reader opening it has no
+        // other way to know. Tonight's list holds no row for a name that is not a member.
+        using var host = new SurfaceHost(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var surface in new[] { await client.GetStringAsync("/screens/name/AAPL"), await client.GetStringAsync(ReportExporter.Route + "AAPL") })
+        {
+            Assert.Contains("prices-suspect", surface, StringComparison.Ordinal);
+            Assert.Contains("AAPL's prices may not reflect a recent dividend or split", surface, StringComparison.Ordinal);
+        }
+
+        Assert.DoesNotContain(
+            "data-ticker=\"AAPL\"",
+            await client.GetStringAsync("/screens/tonight/2026-08-24"),
+            StringComparison.Ordinal);
     }
 
     static string ScalarOf(TemporaryStore store, string sql)
