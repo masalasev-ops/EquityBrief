@@ -132,6 +132,66 @@ public class DecisionCitations
     }
 
     [Fact]
+    public void ACitationInsideARulesFileIsReadAndIsLostIfTheRulesDirectoryLeavesThePopulation()
+    {
+        // The permanent proof that widening the population did something. The
+        // rules files carry CLAUDE.md's own text, citations included, so a check
+        // reading a fixed list of eight documents would stop reaching them the
+        // moment the text moved, with nothing going red to say so. That is the
+        // shape this harness refuses: a check that narrows its own scope keeps
+        // passing.
+        //
+        // Over a constructed file rather than over the real ones, so it asserts
+        // the reader and the population rather than today's contents.
+        var rules = Corpus.Rules;
+
+        Assert.True(
+            rules.Count >= 4,
+            $"Read {rules.Count} rules files, expected at least 4.");
+
+        Assert.All(rules, path => Assert.StartsWith(".claude/rules/", path, StringComparison.Ordinal));
+
+        // Every rules file is in the population the citation readers walk, and
+        // in the one `pinned-constants` and `changelog-reconciles` treat as specs.
+        var documents = Corpus.Documents;
+        var reached = Corpus.SourceAndDocuments().ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var path in rules)
+        {
+            Assert.Contains(path, documents);
+            Assert.Contains(path, Corpus.SpecsAndRules);
+            Assert.Contains(
+                Path.Combine(Repository.Root, path.Replace('/', Path.DirectorySeparatorChar)),
+                reached);
+        }
+
+        // The reader finds a citation in a rules file exactly as it finds one in
+        // CLAUDE.md, and the name it yields is what `decision-resolves` resolves.
+        const string constructed =
+            "**A rule moved here.** It still cites its decision (" + "see" + ": Code owns every number).";
+
+        var found = Assert.Single(Corpus.Citations(constructed, ".claude/rules/corpus-edits.md"));
+
+        Assert.Equal("Code owns every number", found.Detail);
+        Assert.Contains(found.Detail, Corpus.DecisionNames(Corpus.Read("docs/DECISIONS.md")));
+
+        // And the other direction, which is what makes the widening assertable:
+        // over a population built the way it was before this pass, being the five
+        // specs and the three records, the same citation is reached by nothing.
+        var beforeTheWidening = Corpus.Specs.Concat(Corpus.Records).ToArray();
+
+        Assert.DoesNotContain(".claude/rules/corpus-edits.md", beforeTheWidening);
+        Assert.All(rules, path => Assert.DoesNotContain(path, beforeTheWidening));
+
+        // A citation that a narrowed population cannot see is a citation nothing
+        // resolves, which is the failure the widening exists to prevent. Asserted
+        // as the count it is: eight files before, twelve after, and the four are
+        // the ones carrying the moved text.
+        Assert.Equal(8, beforeTheWidening.Length);
+        Assert.Equal(beforeTheWidening.Length + rules.Count, documents.Count);
+    }
+
+    [Fact]
     public void QuotedPriorTextInTheChangelogIsNotACitation()
     {
         // The permanent proof for the reader's one file-dependent rule, over

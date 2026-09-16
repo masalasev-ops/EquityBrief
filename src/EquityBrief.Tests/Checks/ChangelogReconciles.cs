@@ -76,7 +76,11 @@ public class ChangelogReconciles
 
                 touched.Add(parts[2].Trim());
 
-                if (Corpus.Specs.Contains(parts[2].Trim(), StringComparer.Ordinal)
+                // The rules files are spec-kind, so a commit deleting a line from
+                // one owes a changelog entry as a commit deleting from CLAUDE.md
+                // does. They carry CLAUDE.md's own text and the prior text of an
+                // edit to them is the prior text of a rule.
+                if (Corpus.SpecsAndRules.Contains(parts[2].Trim(), StringComparer.Ordinal)
                     && int.TryParse(parts[1], out var deleted) && deleted > 0)
                 {
                     deletedFromSpec = true;

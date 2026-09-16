@@ -16,8 +16,6 @@ internal static class Repository
 
     internal static string DirectoryBuildProps => Path.Combine(Root, "src", "Directory.Build.props");
 
-    internal static string Rules => Path.Combine(Root, "CLAUDE.md");
-
     internal static string SdkPin => Path.Combine(Root, "global.json");
 
     internal static string BuildPlan => Path.Combine(Root, "docs", "BUILD_PLAN.md");

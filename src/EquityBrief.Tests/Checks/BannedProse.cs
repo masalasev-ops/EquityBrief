@@ -210,6 +210,15 @@ public class BannedProse
         Assert.Contains(scanned, file => file.EndsWith("CLAUDE.md", StringComparison.Ordinal));
         Assert.Contains(scanned, file => file.EndsWith("manifest.json", StringComparison.Ordinal));
 
+        // And a rules file, asserted rather than assumed. This check already
+        // scans every tracked text file, so the rules directory needed no
+        // widening to be covered; what it needed was the coverage stated, since
+        // a directory git never tracked reads here as a corpus that simply does
+        // not contain those words.
+        Assert.Contains(
+            scanned,
+            file => file.EndsWith(Path.Combine(".claude", "rules", "checks.md"), StringComparison.Ordinal));
+
         // The excluded set is small and named, rather than whatever happened to
         // be in a folder. Fifty-nine captured inputs at 6.8 across one fixture, from
         // thirty-four at 6.7, the twenty-five being KEYS's year of news and the

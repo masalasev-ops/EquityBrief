@@ -317,7 +317,7 @@ internal static class Reconciliation
 
         if (row is null)
         {
-            yield return $"{where} names {check}, which is not a check CLAUDE.md's roster carries.";
+            yield return $"{where} names {check}, which is not a check the roster in .claude/rules/checks.md carries.";
             yield break;
         }
 
