@@ -10912,8 +10912,35 @@ Mutated:    the rule, stated before the sweep: break each property this pass add
             Properties added and not mutated: the derived started-phase set's second direction,
             whose population is one phase today, and the decisions' own citations, which
             `decision-resolves` reads.
-            Results: FILLED FROM THE SWEEP
-Verified:   FILLED FROM THE RUN
+            Results: fourteen runs of the whole suite, never a filter, in a detached worktree
+            under the session scratchpad, each mutation reverted with the tree read clean between
+            them. Baselines of 930 at the record's own commit and 931 after the proof M11 needs.
+            Nine went red as predicted: M2 on its own proof, M3 on the guard, M4 on
+            `two-platform`'s constructed proof, M5 on three tests of the record's readers, M6, M7
+            and M8 each on the case they were aimed at, M10 on three tests of the ladder, and M11
+            on the constructed roster proof.
+            M9 survived as first written and was not a survivor: it read the volume average into
+            a reason's values, which moving a name's momentum rows does not touch, so it reached
+            the property at no point. Rewritten as the mutation the rule states, a nightly reader
+            taking a momentum reading into its decision, it turned 11 tests red, the momentum
+            test and the listings recompute among them.
+            M1 survived, predicted red, and it is an unreachable boundary rather than a missing
+            property: `coverage-reported` faults a rostered checkpoint the record shows as
+            landed, and the record shows no checkpoint of phase 8 landed, so the roster row
+            passes at 8.1 and at 8.3 alike. It is the state the phase 7 sign-off described, which
+            fires for the first time on the night 8.1's entry is written. The remedy is the
+            invariant asserted where it holds: the fault reader is named apart from the fact and
+            a constructed roster, plan and record exercise both halves of it, which M11 breaks.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 931 of 931 tests
+            ran with none failed, migrations 0 to 23 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 29 tables, 351
+            claims, 335 PASS, 0 FAIL, 16 out of scope, 0 unexamined, 342 placements and verdicts
+            reconciled against a floor of 34, 35 checks on the roster and 34 carried, all 34 run
+            and none failed. The pair is the one predicted above and no claim moved. The 16 out
+            of scope read off `artifacts/phase-report.json` are 1 at 8.1, 4 at 8.3, 1 at 8.4, 9
+            at 8.5 and 1 at 8.6, which is the split predicted, the family size row having moved
+            to 8.3 with the register. Both gates ran with this entry in place. The operator's
+            store under `data/` was not touched by either gate.
 Carried:    five rows discharged and one opened. The rule version bound is an operating row, at 5
             scheduled nights carrying the scorer's step, read on the run page's operational
             header, which 8.6 fills. The family size and the significance level open no row,
