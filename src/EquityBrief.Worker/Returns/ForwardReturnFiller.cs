@@ -60,13 +60,16 @@ public sealed class ForwardReturnFiller : IComponent
     ";
 
     const string Upsert = @"
-        INSERT INTO forward_return (ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate)
-        VALUES ($ticker, $session_date, $horizon, $outcome, $resolved_on, $return_pct, $base_rate)
+        INSERT INTO forward_return (
+            ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even)
+        VALUES (
+            $ticker, $session_date, $horizon, $outcome, $resolved_on, $return_pct, $base_rate, $break_even)
         ON CONFLICT (ticker, session_date, horizon) DO UPDATE SET
             outcome = excluded.outcome,
             resolved_on = excluded.resolved_on,
             return_pct = excluded.return_pct,
-            base_rate = excluded.base_rate;
+            base_rate = excluded.base_rate,
+            break_even = excluded.break_even;
     ";
 
     // The base rate is written across every row of a horizon once it is known,
@@ -235,6 +238,14 @@ public sealed class ForwardReturnFiller : IComponent
             "$resolved_on",
             outcome.ResolvedOn is { } on ? on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : DBNull.Value);
         command.Parameters.AddWithValue("$return_pct", (object?)outcome.ReturnPct ?? DBNull.Value);
+
+        // The bar this plan set for itself, on the setup horizon's row alone and
+        // only where the entry close it is measured from is known. It is written
+        // beside the setup rather than summed per reason, because the row is what
+        // the page reads and what a later session scores each setup's own wins
+        // against.
+        // see: A condition is judged against the break-even its own plan demands
+        command.Parameters.AddWithValue("$break_even", (object?)outcome.BreakEven ?? DBNull.Value);
 
         // The base rate is written by the pass below rather than here, because
         // it is not known until every listing has been read.

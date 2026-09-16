@@ -1,7 +1,7 @@
 {
  "stage": "forward returns",
  "derivation": "derived",
- "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero. The setup outcomes 8.1 added cannot be reached over a fixture whose listings have no session after them, so the cases below are worked by hand from one plan and read by the suite from this file rather than written into the test.",
+ "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero. The setup outcomes 8.1 added cannot be reached over a fixture whose listings have no session after them, so the cases below are worked by hand from one plan and read by the suite from this file rather than written into the test. The break-even cases below are worked the same way, from the plan's own three prices rather than from a run, and they include section 13's own tranche so the figure the document states is the figure the code produces.",
  "tables": [
   "forward_return"
  ],
@@ -21,7 +21,10 @@
   "neverEntered": "a target reached before that close, and a setup still unentered at the cap: its own value and its own column, never a win and never in a rate",
   "stopBeforeEntry": "a close at or below the zone's top edge that is also through the stop is entered and stopped on that session, because a fall through the whole plan is a trade that happened",
   "capFromTheListing": "the 63 sessions are counted from the listing night and not from the entry, since the plan being scored is the one stored that night",
-  "returnFromTheEntry": "the setup horizon's return is the move from the close it was entered at to the close it resolved on, and null for a setup nobody entered"
+  "returnFromTheEntry": "the setup horizon's return is the move from the close it was entered at to the close it resolved on, and null for a setup nobody entered",
+  "breakEven": "risk over risk plus reward, as a percentage, where risk is the fall from the close the setup was entered at to the stop and reward is the rise from it to the first traded target, so the denominator is the plan's whole range whichever side of it the entry landed on",
+  "breakEvenPopulation": "present exactly where the setup horizon's return is, being every outcome whose entry close is known, and absent on a setup nobody entered, on one that entered and stopped on a single session, and on a row that has not matured",
+  "breakEvenIsNotTheLadders": "the ladder's plan arithmetic states its own break-even as a fraction from the entry zone's midpoint and is never stored; this one is a percentage from the entry close and is stored, because it is set against a share written as a percentage"
  },
  "counts": {
   "rowsPerListing": 3
@@ -43,7 +46,8 @@
     ],
     "outcome": "win",
     "resolvedOn": "2026-01-03",
-    "returnPct": 12.0
+    "returnPct": 12.0,
+    "breakEven": 50.0
    },
    {
     "case": "the target reached from above the zone, which the price never returns to",
@@ -54,7 +58,8 @@
     ],
     "outcome": "never entered",
     "resolvedOn": "2026-01-02",
-    "returnPct": null
+    "returnPct": null,
+    "breakEven": null
    },
    {
     "case": "entered later, when the price comes back to the zone, and then stopped",
@@ -66,7 +71,8 @@
     ],
     "outcome": "loss",
     "resolvedOn": "2026-01-04",
-    "returnPct": -19.19191919191919
+    "returnPct": -19.19191919191919,
+    "breakEven": 45.0
    },
    {
     "case": "one session through the zone and the stop together, which is a fill and a stop",
@@ -76,8 +82,77 @@
     ],
     "outcome": "loss",
     "resolvedOn": "2026-01-02",
-    "returnPct": null
+    "returnPct": null,
+    "breakEven": null
    }
   ]
+ },
+ "breakEven": {
+  "note": "the bar each plan set for itself, worked by hand from three prices. The first is section 13's own first tranche, whose figures the document states; the next three are the plan the cases above use, entered at three different prices; the last two are the ends of the rule, where the entry sits on the stop and on the target.",
+  "cases": [
+   {
+    "case": "section 13's first tranche, which the document works out in prose",
+    "entryClose": "920",
+    "stop": "855",
+    "firstTradedTarget": "1057",
+    "risk": "65",
+    "reward": "137",
+    "breakEven": 32.17821782178218
+   },
+   {
+    "case": "the constructed plan, entered on the listing night at 100",
+    "entryClose": "100",
+    "stop": "90",
+    "firstTradedTarget": "110",
+    "risk": "10",
+    "reward": "10",
+    "breakEven": 50.0
+   },
+   {
+    "case": "the same plan entered lower, at 99, which risks less and stands to gain more",
+    "entryClose": "99",
+    "stop": "90",
+    "firstTradedTarget": "110",
+    "risk": "9",
+    "reward": "11",
+    "breakEven": 45.0
+   },
+   {
+    "case": "a distant target, which the plan may be right rarely and still come out even",
+    "entryClose": "100",
+    "stop": "95",
+    "firstTradedTarget": "150",
+    "risk": "5",
+    "reward": "50",
+    "breakEven": 9.090909090909092
+   },
+   {
+    "case": "the entry on the stop, which risks nothing and has to be right never",
+    "entryClose": "90",
+    "stop": "90",
+    "firstTradedTarget": "110",
+    "risk": "0",
+    "reward": "20",
+    "breakEven": 0.0
+   },
+   {
+    "case": "the entry on the target, which stands to gain nothing and has to be right always",
+    "entryClose": "110",
+    "stop": "90",
+    "firstTradedTarget": "110",
+    "risk": "20",
+    "reward": "0",
+    "breakEven": 100.0
+   }
+  ],
+  "refused": [
+   {
+    "case": "an entry above the plan's own target, which is not a share of anything",
+    "entryClose": "120",
+    "stop": "90",
+    "firstTradedTarget": "110"
+   }
+  ],
+  "refusedNote": "an entry above the plan's own target is a shape a stored plan can take, being an entry zone whose top edge sits at or above the target, and the arithmetic refuses it rather than returning a number outside nought and one hundred. The other half of the refusal, an entry below the stop, is a shape the series cannot produce: a close through the stop resolves as a loss before the entry is read, and the listing night's own close is admitted as an entry only at or above the stop. That half is stated here as the invariant it is rather than asserted over a case the world does not hold."
  }
 }

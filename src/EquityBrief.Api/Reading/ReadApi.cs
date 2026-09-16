@@ -187,7 +187,8 @@ public sealed record ForwardReturnRow(
     string? Outcome,
     DateOnly? ResolvedOn,
     double? ReturnPct,
-    double? BaseRate);
+    double? BaseRate,
+    double? BreakEven = null);
 
 // One of a name's biggest moves, as the store holds it.
 //
@@ -776,7 +777,7 @@ public sealed class ReadApi : IComponent
     // Every filled forward return, which is what the run page's reason records
     // count over and where the base rate is read from.
     const string ForwardReturns = @"
-        SELECT ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate
+        SELECT ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even
         FROM forward_return
         ORDER BY session_date, ticker, horizon;
     ";
@@ -1115,7 +1116,8 @@ public sealed class ReadApi : IComponent
                     ? null
                     : DateOnly.ParseExact(reader.GetString(4), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.IsDBNull(5) ? null : reader.GetDouble(5),
-                reader.IsDBNull(6) ? null : reader.GetDouble(6)));
+                reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.IsDBNull(7) ? null : reader.GetDouble(7)));
         }
 
         return rows;

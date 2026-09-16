@@ -26,10 +26,12 @@ public static class RunScreen
     // number. A reason absent from the page is a reason nobody can ask about.
     //
     // The resolved count is the setups this reason produced that reached an
-    // outcome. No rate is computed here and none is drawn: the share that
-    // reached target before stop and the break-even those setups demanded are
-    // 8.5's half of this row, and a rate over a handful of cases is a number
-    // that reads as evidence and is not.
+    // outcome. The share that reached target before stop and the break-even
+    // those setups demanded are computed here from 8.2, and neither is drawn
+    // until 8.5: they are the other half of 15.10's row and they arrive with the
+    // verdict that reads them. Below the minimum they are not computed at all,
+    // because a rate over a handful of cases is a number that reads as evidence
+    // and is not, and a figure that exists is a figure something eventually draws.
     public static IReadOnlyList<ReasonRecord> Records(
         IReadOnlyList<ListingRow> listings,
         IReadOnlyList<ResolvedSetup> resolved)
@@ -37,6 +39,15 @@ public static class RunScreen
         var byReason = ShortlistSeries.Reasons.ToDictionary(
             reason => reason,
             _ => (Fired: 0, Won: 0, Lost: 0, Unresolved: 0, NeverEntered: 0),
+            StringComparer.Ordinal);
+
+        // Each reason's setups as they arrive, so the arithmetic that reads them
+        // is handed a population rather than a running total. The counts above
+        // are what the row states; these are what the record is computed over,
+        // and they are not the same set.
+        var setupsByReason = ShortlistSeries.Reasons.ToDictionary(
+            reason => reason,
+            _ => new List<(string? Outcome, double? BreakEven)>(),
             StringComparer.Ordinal);
 
         var listedOn = new Dictionary<string, List<string>>(StringComparer.Ordinal);
@@ -83,6 +94,12 @@ public static class RunScreen
             {
                 var counted = byReason[reason];
 
+                // The setup as it stands, with the bar its own plan set, kept for
+                // the arithmetic below. Which of these carry a bar and which do
+                // not is that arithmetic's question rather than this loop's.
+                // see: A condition is judged against the break-even its own plan demands
+                setupsByReason[reason].Add((setup.Outcome, setup.BreakEven));
+
                 byReason[reason] = setup.Outcome switch
                 {
                     ForwardReturnSeries.Win => counted with { Won = counted.Won + 1 },
@@ -106,15 +123,35 @@ public static class RunScreen
             .. ShortlistSeries.Reasons.Select(reason =>
             {
                 var counted = byReason[reason];
+                var scored = ForwardReturnSeries.Record(setupsByReason[reason]);
 
-                return new ReasonRecord(
+                var record = new ReasonRecord(
                     reason,
                     counted.Fired,
                     counted.Won,
                     counted.Lost,
                     counted.Unresolved,
                     MinimumResolvedSetups,
-                    counted.NeverEntered);
+                    counted.NeverEntered,
+                    scored.Scored);
+
+                // The two figures 8.2 adds, withheld here rather than at the page.
+                // A reason below the minimum has no share and no mean break-even
+                // at all, so no surface can draw one by forgetting to ask, which
+                // is the shape a gate kept only in a renderer takes the evening
+                // somebody writes a second renderer. What is shown instead is the
+                // resolved count against the minimum, which the record already
+                // carries.
+                //
+                // Neither is worked out here. `ForwardReturnSeries.Record` owns
+                // the arithmetic, as it owns the base rate's, and this counts and
+                // pairs as the rest of the file does.
+                // see: A screen reads and renders, and computes nothing
+                // see: The record column stays empty until it has earned a number
+                // see: A reason's record is displayed, beside the reason and never beside the name
+                return record.HasEarnedAVerdict
+                    ? record with { Share = scored.Share, BreakEven = scored.BreakEven }
+                    : record;
             }),
         ];
     }
@@ -154,7 +191,7 @@ public static class RunScreen
     [
         .. returns
             .Where(row => row.Horizon == ForwardReturnSeries.Setup && row.Outcome is not null)
-            .Select(row => new ResolvedSetup(row.Ticker, row.SessionDate, row.Outcome!)),
+            .Select(row => new ResolvedSetup(row.Ticker, row.SessionDate, row.Outcome!, row.BreakEven)),
     ];
 
     // The universe base rate per window, read off the column the filler wrote
@@ -413,4 +450,10 @@ public static class RunScreen
 }
 
 // One resolved setup, as the record counts it.
-public sealed record ResolvedSetup(string Ticker, DateOnly SessionDate, string Outcome);
+//
+// The break-even is the bar this setup's own plan set, and it is nullable because
+// a setup that entered and stopped on one session has no entry close to measure
+// one from. A record's share and its mean break-even are over the setups that
+// carry one, which is the population those two figures share.
+// see: A condition is judged against the break-even its own plan demands
+public sealed record ResolvedSetup(string Ticker, DateOnly SessionDate, string Outcome, double? BreakEven = null);

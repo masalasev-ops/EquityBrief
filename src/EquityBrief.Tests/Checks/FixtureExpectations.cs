@@ -3692,6 +3692,102 @@ public partial class FixtureExpectations
         // Short of the cap and still open is not yet matured, which is neither.
         Assert.Null(Score(100m, 100m, 100m).Outcome);
         Assert.Null(Score(120m, 105m, 105m).Outcome);
+
+        // 8.2. The bar each of the four cases set, carried on the same row as the
+        // return and absent wherever the return is, because both are measured
+        // from the entry close.
+        // see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with
+        foreach (var expected in cases)
+        {
+            var listedAt = decimal.Parse(expected.GetProperty("listedAt").GetString()!, CultureInfo.InvariantCulture);
+            var closes = expected.GetProperty("closes").EnumerateArray()
+                .Select(close => decimal.Parse(close.GetString()!, CultureInfo.InvariantCulture))
+                .ToArray();
+
+            var scored = Score(listedAt, closes);
+            var what = expected.GetProperty("case").GetString();
+
+            if (expected.GetProperty("breakEven").ValueKind == JsonValueKind.Null)
+            {
+                Assert.Null(scored.BreakEven);
+                Assert.Null(scored.ReturnPct);
+            }
+            else
+            {
+                Assert.Equal((what, true), (what, scored.BreakEven is not null));
+                Assert.Equal(expected.GetProperty("breakEven").GetDouble(), scored.BreakEven!.Value, 6);
+                Assert.NotNull(scored.ReturnPct);
+            }
+        }
+    }
+
+    [Fact]
+    public void ABreakEvenIsTheShareOfThePlansOwnRangeThatSatBelowTheCloseItWasEnteredAt()
+    {
+        // 8.2's arithmetic, over the cases the expectation works by hand, and run
+        // through the shipped resolution rather than through the helper: the
+        // figure that matters is the one a stored row ends up carrying, and a
+        // helper asserted on its own is a scan rather than a behaviour.
+        //
+        // Each case is scored as a plan whose entry zone's top edge is the entry
+        // close itself and whose listing closed there, so the setup enters on the
+        // listing night at the price the case names and the first close reaches
+        // the target.
+        // see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with
+        var expectation = Expected("forward-returns").GetProperty("breakEven");
+
+        decimal Price(JsonElement one, string name) =>
+            decimal.Parse(one.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
+
+        ForwardReturn Score(JsonElement one, decimal reaching)
+        {
+            var entry = Price(one, "entryClose");
+
+            return ForwardReturnSeries.OverSetup(
+                Closes(reaching),
+                Price(one, "stop"),
+                Price(one, "firstTradedTarget"),
+                entry,
+                entry);
+        }
+
+        var cases = expectation.GetProperty("cases").EnumerateArray().ToArray();
+
+        Assert.Equal(6, cases.Length);
+
+        foreach (var one in cases)
+        {
+            var what = one.GetProperty("case").GetString();
+            var scored = Score(one, Price(one, "firstTradedTarget"));
+
+            // The case's own risk and reward, worked in the file, are what the
+            // figure is of. Asserting them here is what keeps the expectation a
+            // derivation rather than three numbers and an answer.
+            Assert.Equal((what, Price(one, "risk")), (what, Price(one, "entryClose") - Price(one, "stop")));
+            Assert.Equal((what, Price(one, "reward")), (what, Price(one, "firstTradedTarget") - Price(one, "entryClose")));
+
+            Assert.Equal((what, ForwardReturnSeries.Win), (what, scored.Outcome));
+            Assert.Equal((what, true), (what, scored.BreakEven is not null));
+            Assert.Equal(one.GetProperty("breakEven").GetDouble(), scored.BreakEven!.Value, 6);
+        }
+
+        // Section 13's own tranche is the first of them, which is what ties the
+        // figure the document states to the figure the code produces.
+        Assert.Equal("920", cases[0].GetProperty("entryClose").GetString());
+        Assert.Equal(32.17821782178218, Score(cases[0], 1057m).BreakEven!.Value, 6);
+
+        // The refusal, over the one shape of it a stored plan can take. The other
+        // half, an entry below the stop, the series cannot produce, and the
+        // expectation states that as the invariant it is rather than asserting it
+        // over a case the world does not hold.
+        foreach (var one in expectation.GetProperty("refused").EnumerateArray())
+        {
+            var what = one.GetProperty("case").GetString();
+
+            Assert.Equal((what, (double?)null), (what, Score(one, Price(one, "entryClose")).BreakEven));
+        }
+
+        Assert.Contains("the series cannot produce", expectation.GetProperty("refusedNote").GetString()!, StringComparison.Ordinal);
     }
 
     [Fact]
