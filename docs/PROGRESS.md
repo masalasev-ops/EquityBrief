@@ -12164,3 +12164,75 @@ Carried:    nothing owed by this repair. Noted, because the repair adds a path t
             be skipped on FDXF and HONA and draw that sentence every night they hold fewer than two
             hundred bars, as the one stale member the store holds every night already would for every
             candidate. Nothing is registered, so no night draws it yet.
+
+### 8.6 - correction: a night with no version open reads no bands, so level rows stored before member sources cannot stop it   2026-09-16
+Corrects:   the 8.6 entry above records the rule versions step scoring every open version over the
+            names with a bar on the session. The step read every such name's bands, recent bars,
+            typical move and trend whether or not any version was open, and it read each band's
+            members by a `source` key the level builder first wrote at 8.6. A band set stored before
+            then has no such key, and the read threw. Where no version is open the step replays
+            nothing, so the read was work with no use, and a throw there stops the night before the
+            close and the queue.
+Found:      by the phase 8 sign-off review on 2026-09-16, rehearsing the night over a copy of the
+            operator's store taken through an immutable SQLite backup: the step, run for 2026-09-15
+            over the stored level rows, threw a `KeyNotFoundException` in `RuleVersionScorer.Members`.
+            The operator ruled that the session reviewing phase 8 repairs what would stop a night
+            before the next night runs, and moved that night until the repairs land.
+Measured:   read immutable from the operator's store on 2026-09-16, at schema 23 and last written
+            2026-09-15 23:43:20 UTC. 15442 level rows over 508 names, as of 2026-04-16 to
+            2026-09-15, and 0 of them carry a member `source`. The level builder skipped 0 names on
+            each of the six nights recorded from 2026-09-10 to 2026-09-15, so on those nights every
+            name with a bar had a band set as of that night and the step would have read none of the
+            older rows; a name the builder skips on a later night, gapped, under sixty sessions or
+            with no band, would have its older set read, and the rows stay for 365 days.
+Repaired:   the step reads no name's inputs when no version is replayed. Its run log row still
+            counts the names with a bar on the session, and it writes nothing.
+Stored:     nothing to keep or rewrite. The operator's store holds no `rule_version` or
+            `version_score` table, and no night has run on phase 8's code.
+Missed:     every store the suite builds writes its level rows through the level builder at 8.6 or
+            after, so each member carries a `source`, and no test ran the step over a band set in
+            the shape the operator's store holds.
+Guarded:    over the replayed fixture with every level row's members rewritten without `source`,
+            shown to hold that shape and to belong to names with a bar on the session: the step with
+            no version open completes, writes nothing, counts the names and records ok.
+Expected:   derived: no version open means nothing replayed and nothing written, worked from the
+            step's rule. No expectation file changes, because the fixture replay opens no version.
+Tests:      986, from 985. One added to `rule-versions-scored`: a night with no version open reads
+            no bands and completes over level rows without member sources. The code version moves
+            from f4b1a98b0489 to 526e7c8f9175, because the scorer's file is one of the three it pins;
+            no store holds a window, so no night is stopped by the move.
+Not repaired: the same read with a version open. A version replayed over a name whose band set
+            predates member sources still throws and stops the night. No window is open in any
+            store, and opening one is the operator's decision in RUNBOOK; the review that found this
+            has reported further defects in the replay itself, owed their own correction before a
+            window is opened.
+Mutated:    the rule, stated before the sweep: break the one property this correction adds, both
+            ways, being no read when nothing is replayed, and no skipped read when something is.
+            Predicted:
+            M1 the guard removed, which is the step as 8.6 built it: the new test red, on the throw,
+            and the pin test red, because the edit is in a pinned source.
+            M2 the guard inverted, reading only when nothing is replayed: the new test red, on the
+            throw; the pin test red; and every test that needs a version scored red on finding no
+            score, being the backfilled-score flag test and the backfill-bands test in
+            `rule-versions-scored`, `nightly-cost`'s recorded nights test and the loop's
+            changed-nothing test in `architecture-conformance`.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Three runs of the whole suite, never a filter, at this entry's commit,
+            each in its own detached worktree under the session scratchpad, reverted with the tree read
+            clean and the worktree removed after. The baseline is 985 of 986 with one red, and that red
+            is this entry: `two-platform` reads every checkpoint entry written since the 7.2 ruling for
+            its Windows record, and this one carried a placeholder until the run below filled it, so
+            each count that follows is on top of it.
+            M1 turned 2 red: the new test on the `KeyNotFoundException`, and the pin test. M2 turned 6
+            red: the new test on the same throw, the pin test, the backfilled-score flag test and the
+            backfill-bands test on finding no score, `nightly-cost`'s recorded nights test on the
+            one-version night writing no score, and the changed-nothing test on the night scoring no
+            version.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 986 of 986 tests ran
+            with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved. Both gates
+            ran with this entry in place, and the operator's store under `data/` was not touched by
+            either.
+Carried:    nothing owed by this repair beyond the read named above.

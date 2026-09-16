@@ -646,6 +646,33 @@ public class RuleVersionsScored
             laterPlans.Select(row => row[(row.IndexOf(' ', StringComparison.Ordinal) + 1)..]));
     }
 
+    [Fact]
+    public async Task ANightWithNoVersionOpenReadsNoBandsAndCompletesOverLevelRowsWithoutMemberSources()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = Query(store, "SELECT MAX(session_date) FROM bar;").Single();
+        var session = DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // Level rows in the shape stored before member sources were written.
+        store.Execute("UPDATE level SET members = (SELECT json_group_array(json_remove(value, '$.source')) FROM json_each(level.members));");
+
+        Assert.Equal(["0"], Query(store, "SELECT COUNT(*) FROM level WHERE members LIKE '%\"source\"%';"));
+        Assert.Equal(["0"], Query(store, "SELECT COUNT(*) FROM level WHERE json_type(members, '$[0]') <> 'object';"));
+        Assert.NotEqual(
+            "0",
+            Query(store, $"SELECT COUNT(*) FROM level l WHERE EXISTS (SELECT 1 FROM bar b WHERE b.ticker = l.ticker AND b.session_date = '{night}');").Single());
+
+        var outcome = await new RuleVersionScorer(Clock(Opened), store.DatabaseFile).RunAsync(session, "no-version-open");
+
+        Assert.Equal(0, outcome.Versions);
+        Assert.Equal(0, outcome.RowsWritten);
+        Assert.True(outcome.NamesScored > 0, $"Read {outcome.NamesScored} name(s) with a bar on {night}, expected at least 1.");
+        Assert.Equal(
+            [RuleVersionScorer.Ok],
+            Query(store, $"SELECT outcome FROM run_log WHERE run_id = 'no-version-open' AND stage = '{RuleVersionScorer.Stage}';"));
+    }
+
     static IReadOnlyList<string> Query(TemporaryStore store, string sql)
     {
         using var connection = store.Open();

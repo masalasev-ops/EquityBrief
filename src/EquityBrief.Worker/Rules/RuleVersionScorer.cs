@@ -62,7 +62,7 @@ public sealed class RuleVersionScorer : IComponent
     // open window with the night going on scoring it, which is what 8.6 shipped.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "f4b1a98b0489";
+    public const string CodeVersion = "526e7c8f9175";
 
     // The sources the pin is taken over, from the repository root.
     public static IReadOnlyList<string> CodeVersionSources { get; } =
@@ -194,7 +194,8 @@ public sealed class RuleVersionScorer : IComponent
 
         await using (var transaction = await connection.BeginTransactionAsync(cancellation))
         {
-            foreach (var ticker in names)
+            // No version to replay, no bands read: level rows written before member sources were stored cannot be read.
+            foreach (var ticker in replayed.Length == 0 ? Array.Empty<string>() : names)
             {
                 var inputs = await InputsAsync(connection, ticker, session, cancellation);
 
