@@ -10692,11 +10692,14 @@ Found:      by the pass planning 8.0, reading the live store immutable for the f
             Against the calendar table as it now stands, 30, 31, 28 and 28 names had a print
             within twenty sessions of those nights; the table's rows were observed again on
             2026-09-14, so what each earlier night's calendar held is not recoverable and those
-            four figures read the calendar as it stands. Breakout on volume fired on 0 of the
-            2,018 rows over all six sessions the store holds, and every row states 0 resistance
-            bands below the close. Recounted, earnings soon from the calendar and the other five
-            as stored, 372, 342, 333 and 366 names fired a reason on those four nights, where the
-            stored counts are 475, 499, 496 and 495. The operator ruled on 2026-09-15 that this
+            four figures read the calendar as it stands. The night of 2026-09-15 ran clean at
+            23:30:07Z while this correction was being built, ending 23:43:20Z, and wrote a fifth:
+            504 rows, 478 fired earnings soon, 499 fired something, against 33 names with a print
+            within twenty sessions. Breakout on volume fired on 0 of the 2,522 rows over all seven
+            sessions the store holds, and every row states 0 resistance bands below the close.
+            Recounted, earnings soon from the calendar and the other five as stored, 372, 342, 333,
+            366 and 344 names fired a reason on those five nights, where the stored counts are 475,
+            499, 496, 495 and 499. The operator ruled on 2026-09-15 that this
             is a correction at 5.4 landed before 8.0's planning resumes, and that breakout on
             volume reads resistance at the previous session's close, folded into the same change.
 Repaired:   the sessions to a dated event are counted on the exchange calendar, the count the
@@ -10711,19 +10714,21 @@ Repaired:   the sessions to a dated event are counted on the exchange calendar, 
             (see: Breakout on volume reads resistance at the previous session's close). Section
             11's two rows and its flag, section 17's earnings horizon row, SCHEMA's two listing
             notes and two RUNBOOK rows say so, with their prior text in CHANGELOG.
-Stored:     kept as written, by the operator's ruling. 2,018 listing rows over 6 sessions before
-            and after, 1,828 of them with earnings soon fired as the defect wrote it. Re-running
+Stored:     kept as written, by the operator's ruling. 2,522 listing rows over 7 sessions before
+            and after, 2,306 of them with earnings soon fired as the defect wrote it. Re-running
             was ruled out by trace: the shortlist builder dates each row by the name's newest
             stored bar and reads the newest band set, so a `--session` replay of 2026-09-09 would
             rewrite 2026-09-14's rows and not 2026-09-09's, and the corporate action refetch on
             that path deletes a due name's series and refetches only to the replayed session.
-            forward_return is unchanged at 6,054 rows, 3 horizons for each of the 2,018
+            forward_return is unchanged at 7,566 rows, 3 horizons for each of the 2,522
             name-nights, since no outcome reads a reason flag. The rows are told apart by shape: a
             row written since carries `next dated event` among earnings soon's values and
             `previous close` among breakout on volume's. The run page's record counts those two
             reasons only off rows carrying their marker, which removes from earnings soon's
-            record, over the six sessions, 1,828 fired, 99 won and 23 lost, and from breakout on
-            volume's nothing, since it never fired; the other four records are unchanged. The
+            record, over the seven sessions, 2,306 fired, 127 won and 44 lost, and from breakout on
+            volume's nothing, since it never fired; the other four records are unchanged, being
+            crossed a level at 70 won and 18 lost, at entry zone at 36 and 35, trend state changed
+            at 7 and 2, and unusual volume at none resolved. The
             tonight, run and universe routes for a session whose rows lack earnings soon's marker
             draw one line saying earnings soon on those rows counted every future print as
             tonight's and breakout on volume could not fire, by the operator's ruling, with
@@ -10791,11 +10796,31 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             Properties added and not mutated: the run log line naming a name past the table apart
             from the refusal itself, and the universe screen's delegation, which its existing count
             test covers.
-            Results: FILLED FROM THE SWEEP
-Tests:      FILLED FROM THE RUN. Predicted 925, from 912: 7 earnings soon builder cases, 4
-            breakout builder cases, the record case and the route case. Predicted verify-phase:
-            351 claims, 335 PASS, 0 FAIL, 16 out of scope, 0 unexamined, the new claim being
-            section 18's row and passing, with the split at 2 at 8.1, 3 at 8.3, 1 at 8.4, 9 at 8.5
-            and 1 at 8.6 unchanged.
+            Results: every prediction held. Seven runs of the whole suite, never a filter, at
+            5871020, each mutation reverted with the tree read clean between them and the worktree
+            removed after. The baseline is 924 of 925 with one red, and that red is this entry:
+            `two-platform` reads every checkpoint entry written since the 7.2 ruling for the words
+            `tools/ci.ps1` green, and this one carried a placeholder until the run below filled it,
+            so each mutation's reds are the ones above that. M1 turned 13 more red: the replay's
+            six-reason recompute, the five builder cases the count reaches, the four overnight
+            queue tests that read which names fired, the queue's limit test and the run page's
+            fired count, with the night's own print and not on file green. M2 turned 2 more red,
+            the beyond-the-table case and the universe screen's count test. M3 turned 3 more red,
+            the twentieth-session case, the year-end case and the pure horizon test. M4, M5 and M6
+            turned 1 more red each, the record case, the breakout case that fires and the route
+            case, and M5 left the other three breakout cases and the replay green as predicted.
+Tests:      925, from 912: 7 earnings soon builder cases, 4 breakout builder cases, the record
+            case and the route case. `tools/ci.ps1` green end to end, all six steps, 0 warnings,
+            0 errors, migrations 0 to 23 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 351 claims, 335 PASS,
+            0 FAIL, 16 out of scope, 0 unexamined, the claim added being section 18's row for
+            listings written before this correction, with the out-of-scope split unchanged at 2 at
+            8.1, 3 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6. Both gates ran with this entry in
+            place. The operator's store under `data/` was not touched by either gate.
 Carried:    nothing entered. The `--session` replay older than the stored bars is traced above and
             its ruling is owed by 8.0's planning pass, which the phase 7 sign-off carried it to.
+Dated:      the heading's date is the day the entry was written and first committed, 2026-09-15 in
+            UTC. The gates below ran after midnight on 2026-09-16, and the heading stays as it was
+            written: `record-append-only` reads every heading ever committed and a heading that
+            changes is one the record has lost, which is what it refused when this one was moved a
+            day forward.
