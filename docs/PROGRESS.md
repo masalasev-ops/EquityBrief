@@ -11451,7 +11451,34 @@ Mutated:    the rule, stated before the sweep: break each half of this checkpoin
             Not mutated, and named so the next sweep has them: the two-list shape of the column, the
             refusal to evaluate a stale or gapped name, and the reading of a previous session's
             indicator under its suffixed name.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the one test its rule
+            named red and nothing else. Five runs of the whole suite, never a filter, at this
+            entry's commit in a detached worktree under the session scratchpad, each reverted with
+            the tree read clean between them. The baseline is 955 of 956 with one red, and that red
+            is this entry: `two-platform` reads every checkpoint entry written since the 7.2 ruling
+            for the words `tools/ci.ps1` green and this one carried a placeholder until the run
+            below filled it.
+            M1 turned the quiet-name test red and nothing else, which is the shape it should take:
+            the other four names in the fixture fire something, so only the constructed member that
+            trades and fires nothing can tell the difference, and that member is why it is
+            constructed at all.
+            M2 turned the registered-after test red on the second candidate reaching the rows.
+            M3 turned the drift test red on the skip being absent and on the stage's outcome.
+            M4 turned the no-screen test red on the run route, which is the half of that test
+            asserted by an absence and the one a region drawing a name would break first.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 956 of 956 tests
+            ran with none failed, migrations 0 to 25 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 356 claims, 346
+            PASS, 0 FAIL, 10 out of scope, 0 unexamined, 353 placements and verdicts reconciled
+            against a floor of 34, 35 of 35 roster checks carried and all 35 run. The out-of-scope
+            count is the one 8.0 predicted for this checkpoint and the other two are not: 8.0 read
+            section 15.10's shadow candidates row as one claim ending here, and the harness reads it
+            as the three things the row states, so claims and PASS each stand two above the
+            prediction at 356 and 346 rather than 354 and 344. A row passes for what it says, and a
+            single verdict over three statements passes when one is drawn and two are not, which is
+            the reason every other decomposed row in section 15 is read that way. The predicted end
+            of the loop moves with it, from 361 and 361 to 363 and 363. The 10 out of scope stand at
+            9 at 8.5 and 1 at 8.6. Both gates ran with this entry in place, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing. The verdicts that read these evaluations are 8.5's, and the register stays
             empty in the operator's store until a person registers something into it.
