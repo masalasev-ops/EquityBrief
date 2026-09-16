@@ -11197,8 +11197,36 @@ Mutated:    the rule, stated before the sweep: the property worth breaking is th
             on this tree, because the table is in both files while the move is in flight, and red
             once it is not. Recorded as the reason the roster must live in one file rather than
             two.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, M2 included, which is the one worth reading. Five runs
+            of the whole suite, never a filter, at this entry's commit in a detached worktree under
+            the session scratchpad, each reverted with the tree read clean between them. The
+            baseline is 937 of 938 with one red, and that red is this entry: `two-platform` reads
+            every checkpoint entry written since the 7.2 ruling for the words `tools/ci.ps1` green
+            and this one carried a placeholder until the run below filled it.
+            M1 turned the constructed proof red and nothing else, which is the finding rather than
+            the failure: a citation no reader reaches breaks no other test, so the proof is the only
+            thing standing between the old population and a corpus whose rules nothing reads.
+            M2 stayed green, as predicted. Removing the floor breaks nothing while the four files
+            are on disk, because the refusal is about a directory that has emptied rather than one
+            that is full. It is recorded as a mutation that survives by design.
+            M3 is what makes M2 legible: with the floor gone and the directory read yielding
+            nothing, the constructed proof goes red. The pair is the point. The floor is not
+            asserted by M2 because nothing is wrong yet, and it is asserted by M3 because that is
+            the state it exists to refuse.
+            M4 turned 24 tests red, being every `architecture-conformance` test that reads a verdict
+            and three of `coverage-reported`'s. With the roster located in `CLAUDE.md` it is found
+            in neither file at full strength once the table is only in one, and the failure is loud.
+            It is recorded as the reason the roster lives in one file rather than two.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 938 of 938 tests
+            ran with none failed, migrations 0 to 24 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 352 claims, 337
+            PASS, 0 FAIL, 15 out of scope, 0 unexamined, 344 placements and verdicts reconciled
+            against a floor of 34, 34 of 35 roster checks carried and all 34 run. The pair is the
+            one 8.2 left and the one 8.0 predicted: this pass adds no claim and moves none, because
+            the claim population is read from `ARCHITECTURE.html` and nothing here touches that
+            document. The 15 out of scope stand at 4 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6. Both
+            gates ran with this entry in place, and the operator's store under `data/` was not
+            touched by either.
 Numbered:   a ruling on 8.2 rather than a checkpoint of its own. It was written as 8.8 first, and
             the harness refused it: the plan's last checkpoint may not be recorded as built while
             work in the phase remains, and a checkpoint appended after the phase report is the
