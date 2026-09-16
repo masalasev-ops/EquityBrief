@@ -11704,3 +11704,62 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             `data/` was not touched by either.
 Carried:    nothing. The bound stays proposed and its operating row is unchanged: a projection is not
             a measurement, and the row reads the scorer's own nights, which no checkpoint produces.
+
+### 8.7 - the phase 8 report   2026-09-16
+Built:      the report over phase 8. Section 13.2's and 13.3's placements were owed here and are
+            converted to the check that reaches them, which is `architecture-conformance`: both are
+            reconciliations between the document and this harness rather than properties of a
+            component. Each of 13.3's eight guardrails is mapped to the one test that holds it, the
+            mapping is reconciled against the document and against the suite in both directions, and
+            the loop is asserted to have changed nothing on evidence below its stated minimum.
+Rules:      a guardrail is mapped rather than re-asserted. A second implementation of a rule inside
+            the report would be the report agreeing with itself; what a report can say is that each
+            rule written before any data existed has something behind it now, and that the something
+            still exists. The mapping is one test per guardrail and no test held twice, because one
+            test standing for two rules is one rule unheld the day it is narrowed to the other, and
+            every named test is looked up in the assembly rather than in a list, so a rename fails
+            the mapping rather than leaving it pointing at nothing. What counts as the loop having
+            changed something is a candidate retired or a version window closed, both of which are
+            rows, so the question is one rows answer rather than one this entry asserts.
+Measured:   nothing has changed and nothing could have. The register holds no row in the operator's
+            store and no version window has been opened, so there is no retirement and no close to
+            find, and the two minimums are unreached by a wide margin: 93 resolved setups of 250 over
+            seven listing sessions of 60. The loop is built ready and silent, which is the guardrail
+            working rather than a checkpoint left half done, and it is what 8.0 said finished would
+            mean for this phase.
+Expected:   derived, and it is a derivation rather than a file: this checkpoint adds no stage, so
+            there is no stage output to freeze. The guardrails are read off section 13.3 and the
+            things that can improve off 13.2, and each is compared against the suite and the record
+            rather than against a captured run. `tools/verify-phase` covers it from here because
+            `architecture-conformance` runs inside it, which is the same way the other document
+            reconciliations are covered. The report's own arithmetic is the second half: the pair 8.0
+            predicted is put to the actual, with the prediction as the floor so a run below it is a
+            claim population that shrank rather than one that grew by decomposition.
+Tested:     973, from 969. Four added: every guardrail mapped to a test that exists with the mapping
+            reconciled both ways and no test held twice; 13.2's two built rows read against what the
+            record shows built and its third row read for the reason it names no checkpoint; the loop
+            shown to have changed nothing with the same reader shown to find a retirement and a
+            closed window when there is one, and an open window shown not to be a change; and the
+            pair checked against the prediction.
+Mutated:    the rule, stated before the sweep: break each half of this checkpoint's done condition,
+            being the mapping's two directions, the reader that says what a change is, and the pair.
+            Predicted:
+            M1 one guardrail mapped to a test the suite does not carry: the mapping test red on the
+            missing half and nothing else.
+            M2 two guardrails mapped to the same test: the mapping test red on the distinct count and
+            nothing else, because both names still resolve.
+            M3 the change reader keyed on a version row rather than on its close: the changed-nothing
+            test red on the open window, which is the half that says an unfinished measurement is not
+            a change.
+            M4 the change reader ignoring retirements: the changed-nothing test red on the
+            retirement it is shown to find.
+            Not mutated, and named so the next sweep has them: the pair's floor, the reading of
+            13.2's third row, and the assembly lookup that makes a renamed test fail the mapping.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    the phase's own sign-off, which is owed on phase 8 as a whole and which this session may
+            not do: a session that has committed code to this repository must not sign that code off.
+            The three operating rows the loop opened stay open and are correct to: the condition
+            threshold calibration, the candidate family size read from resolved setups and the rule
+            version bound read from the scorer's own nights are each evidence the calendar produces
+            and no checkpoint accumulates.

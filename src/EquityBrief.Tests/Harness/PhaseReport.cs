@@ -165,9 +165,11 @@ internal static class PhaseReport
         // table's rows is built is a table claimed before most of it exists,
         // which is what these two said at 8.1 until 8.0 read them row by row.
         ["13.2 Three things that can improve, shallowest first"] = new Placement(
-            "the loop's own plan, each row built at the checkpoint it names and the last at rule versions", Due: "8.7"),
+            "the loop's own plan, each row read against the checkpoint its Phase cell names and against what the record shows built, with the row that names no checkpoint asserted to be the one an operating obligation carries",
+            Check: "architecture-conformance"),
         ["13.3 The guardrails"] = new Placement(
-            "the loop's guardrails, each mapped at the report to the test that holds it", Due: "8.7"),
+            "the loop's guardrails, each mapped to the test that holds it, with the mapping reconciled against the suite in both directions and the loop asserted to have changed nothing on evidence below its stated minimum",
+            Check: "architecture-conformance"),
         // 1.8, and the journey here is worth stating because it was wrong twice.
         //
         // It was owed at 0.6, which had landed, then re-pointed to 1.3 and then

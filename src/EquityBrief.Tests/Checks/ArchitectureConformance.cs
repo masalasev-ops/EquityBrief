@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Checks;
 // This runs every CI run and asserts the shape of the report. Whether the
 // verdicts are good enough to sign a phase off is tools/verify-phase's question,
 // and it is a gate on a phase rather than on a commit.
-public class ArchitectureConformance
+public partial class ArchitectureConformance
 {
     // What this check reaches, declared here rather than in a list beside it.
     // It reads the architecture, which is what lets it be named as covering a
@@ -25,6 +25,15 @@ public class ArchitectureConformance
             CheckReach.Key(Scope.CatalogueTable, "Verification harness"),
             CheckReach.Key(Scope.FailureTable, "The harness cannot parse this document"),
             "19.3 What it produces",
+
+            // 8.7, the phase 8 report. The loop's own two tables, whole: 13.2's
+            // rows say which checkpoint builds each thing that can improve, and
+            // 13.3's guardrails are the rules the loop is safe under. Both are
+            // reconciliations between the document and this harness, which is
+            // what this check is, and neither is assertable until the loop it
+            // describes is built.
+            "13.2 Three things that can improve, shallowest first",
+            "13.3 The guardrails",
 
             // 19.2 from 8.3, whole. Its rows say what each claim source is
             // checked for and how each fails, which is a description of this
