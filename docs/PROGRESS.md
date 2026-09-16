@@ -10828,3 +10828,96 @@ Dated:      the heading's date is the day the entry was written and first commit
             written: `record-append-only` reads every heading ever committed and a heading that
             changes is one the record has lost, which is what it refused when this one was moved a
             day forward.
+
+### 8.0 planning - the improvement loop written to its end, with the rulings phase 6 and the phase 7 sign-off left open   2026-09-16
+Not a checkpoint entry. It belongs to 8.0, which has not landed. This session has committed code and
+            may not sign phase 8 off.
+Built:      no checkpoint of phase 8. Four commits and this record. The first writes phase 8's
+            intro and 8.0's rulings; the second is the plan, being phase 8 as seven checkpoints
+            with the model's proposal dropped, the contradictions table's two new rows, the five
+            rows due here discharged, one operating row opened and the wording phase 7 left
+            behind; the third names the register's start once, keeps a count out of a verdict
+            note with the guard that refuses one, reads the record through one reader for the
+            Windows run and derives the started-phase population; the fourth is the rulings'
+            code, being the pass that says what it did for a name with no facts file, the facts
+            file carrying the latest period of a segment table, a named session older than the
+            store refused at the argument, and the momentum panel asserted to decide nothing.
+Scope:      this pass edits shipped source, which a planning pass does not usually do, and the
+            exception is written down rather than left as an inconsistency (see: The pass that
+            plans phase 8 carries the phase 7 sign-off's repairs and its rulings' code). The
+            operator ruled it on 2026-09-15. No checkpoint of phase 8 is built here.
+Ruled:      twelve decisions. The fundamentals are closed: no reading is computed, none fires a
+            reason or gates a tranche, and no panel is drawn, because fundamentals arrive only
+            when a name is opened and a nightly reader of them would either read the names the
+            operator happened to open or make the per-name request the hard rule forbids. The
+            volume profile claims a price region at a day's resolution, keeping and counting the
+            sessions wider than three typical moves rather than setting any aside. A pass for a
+            name with no facts file refreshes its industry's theme and says so on the page, which
+            said the pass did not run while a paid call had been made inside it. A facts file
+            carries the latest period of the segment table and names its months, so an annual
+            report's twelve-month columns are carried where they were dropped. A verdict note
+            states no count of the row it describes. The momentum panel is context a reader
+            weighs. An average may widen a band a tranche sits on and may never anchor one. A
+            setup is scored from its entry. The family is at most eight and the threshold is
+            divided by it. A verdict is a one-sided test against each setup's own break-even at a
+            corrected threshold. The model writes no entry or exit proposal, so the loop's eighth
+            checkpoint is dropped and 8.8 becomes 8.7. And this pass's own exception above.
+Measured:   read immutable from the operator's store on 2026-09-16, each figure with its
+            population. The zones that fired on 2026-09-15: 223, no band's neighbouring anchors
+            more than half a typical day's move apart with the widest gap exactly half, so the
+            merge rule holds and the width is chaining rather than a defect; an average sets 36
+            of their 446 edges and widens 35 of the zones, of which 3 would no longer hold the
+            close if a zone were its non-average anchors' range alone, being APO, GRMN and NDAQ.
+            The volume profile, over the 503 names that are members on 2026-09-14 and hold a
+            profile as of it, 30,168 of their 30,180 sessions once the 12 with no prior average
+            true range are left out: 85 exceed three prior typical moves, 532 exceed two and 24
+            exceed four, with 81 names holding one such session, 2 holding two and 420 none. The
+            setups, over 2,522 listings on seven sessions: 147 wins and 51 losses as the filler
+            wrote them, and 42 wins, 51 losses and 105 never entered under the entry rule 8.1
+            builds. The research store: 0 fundamentals rows, 0 source documents, 0 theme
+            sections, and 597 research sections over 495 names, every one of them the key under
+            each figure. The night of 2026-09-15 ran clean, 23:30:07Z to 23:43:20Z, every stage
+            ok, and wrote the fifth night under the reasons the 5.4 correction repaired.
+Predicted:  351 claims and 335 PASS, with 16 out of scope, 0 unexamined and 0 fail, which is
+            where the 5.4 correction left them: this pass adds no claim and moves none into or
+            out of scope. The 16 stand at 1 at 8.1, 4 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6,
+            the family size row having moved to the checkpoint that builds the register. After
+            the loop is built the pair is 361 and 361 with 0 out of scope, and every claim it
+            adds is named at the checkpoint that adds it.
+Tested:     930 tests, from 925: the verdict note guard, two over the session a night may be
+            replayed for, the segment table's twelve-month case and the momentum panel's
+            behaviour. Two were widened rather than added: the weekly retry's midnight case now
+            runs the deciding night after midnight UTC as well as the night that asked, and a
+            suspect name the index no longer holds is read on its page, its exported report and
+            tonight's list. Two checks were loosened with the reason stated: `two-platform` reads
+            the entries `DuePoints` lands a checkpoint from rather than requiring a dash, and
+            `obligation-reconciles` reads its open rows as context, since the corpus now holds
+            none and its constructed proof is what stops the assertion passing over an empty set.
+Mutated:    the rule, stated before the sweep: break each property this pass adds or moves, being
+            the register's start, the note guard, the two readers, the session refusal, the theme
+            sentence, the segment period, the momentum property and the tranche eligibility the
+            zone-edge ruling rests on. Predicted before any run, each in a detached worktree under
+            the session scratchpad, reverted, over an unmutated baseline of 930:
+            M1 the register's roster row back at 8.1: `coverage-reported` red.
+            M2 the note guard's matcher never matching: its own proof red.
+            M3 a count put back in a matrix note: the guard red.
+            M4 `two-platform` requiring a dash again: its constructed proof red.
+            M5 the started-phase reader landing no planning entry: the record's own test red.
+            M6 the session refusal dropped for a session older than the store: its test red.
+            M7 the no-facts-file reason saying only that no file is stored: the research test red.
+            M8 the segment table taking quarters alone: the twelve-month test red.
+            M9 the shortlist builder reading a momentum reading into a reason: the momentum test
+            red, and the listings expectation's recompute red with it.
+            M10 the tranche eligibility dropping the non-average anchor: the band test red.
+            Properties added and not mutated: the derived started-phase set's second direction,
+            whose population is one phase today, and the decisions' own citations, which
+            `decision-resolves` reads.
+            Results: FILLED FROM THE SWEEP
+Verified:   FILLED FROM THE RUN
+Carried:    five rows discharged and one opened. The rule version bound is an operating row, at 5
+            scheduled nights carrying the scorer's step, read on the run page's operational
+            header, which 8.6 fills. The family size and the significance level open no row,
+            because no count of resolved setups measures a convention and a row for one would
+            wait on nothing. The register's start, the two readers, the session replay, the two
+            thin tests and the wording are closed here rather than entered, which is what the
+            phase 7 sign-off carried them for.
