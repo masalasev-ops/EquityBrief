@@ -255,15 +255,16 @@ public class ObligationReconciles
             .Where(obligation => !obligation.Discharged && !obligation.SaysOperating)
             .ToArray();
 
-        // Context with a non-vacuity guard, for the reason the out-of-scope
-        // counts in `architecture-conformance` became one at the phase 5
-        // sign-off. The number falls as the plan is worked through, which this
-        // comment said in the rule's own words for the other branch, and the
-        // floor stood at 3 anyway, one below the count, so the next discharge
-        // but one would have been a maintenance edit. The assertion below
-        // carries both halves of the property; the guard stops it passing over
-        // an empty set.
-        Assert.True(open.Length >= 1, $"Found {open.Length} open checkpoint rows, so the assertion below would pass over an empty set.");
+        // Context rather than a floor, and the non-vacuity it used to guard is
+        // carried by the constructed proof below instead. The count falls as the
+        // plan is worked through and reached zero at 8.0, where the five rows due
+        // there were all discharged, so a floor of one would have made the next
+        // pass keep a row open to satisfy a check. What stops this passing over
+        // an empty set is not this population but
+        // `ARowOwedAtAPlanningCheckpointFailsOnceThatCheckpointsPlanningEntryIsRecorded`,
+        // which runs the same reader over a constructed plan, table and record and
+        // shows it finding both faults.
+        Assert.True(open.Length >= 0, $"Read {open.Length} open checkpoint row(s).");
 
         Assert.DoesNotContain(OpenRowFaults(open, plan, progress), _ => true);
     }

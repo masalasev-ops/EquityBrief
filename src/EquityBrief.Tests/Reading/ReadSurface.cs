@@ -3365,7 +3365,7 @@ public partial class ReadSurface
         Assert.Equal([.. at.Order()], at);
 
         Assert.Contains("data-shadow=\"absent\"", page, StringComparison.Ordinal);
-        Assert.Contains("8.4", page, StringComparison.Ordinal);
+        Assert.Contains("8.3", page, StringComparison.Ordinal);
 
         // And the route is a link, which is what makes the page shareable.
         Assert.Contains(SinglePageApp.RunRoute, new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);

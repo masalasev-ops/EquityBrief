@@ -158,10 +158,16 @@ internal static class PhaseReport
             "research record from 6.8 and the theme record from 6.9. The due point was 6.0 until 6.0, a " +
             "point that never lands, 6.6 until 6.6 rewrote the table, and 6.9 until 6.9 landed",
             Check: "claim-admissibility"),
-        ["13.2 Four things that can improve, shallowest first"] = new Placement(
-            "a plan for phase 8, with nothing built to assert it against", Due: "8.1"),
+        // The two tables the loop is planned in, each due at the report rather
+        // than at its first checkpoint: 13.2 names three things that improve and
+        // the last of them is scored at 8.6, and 13.3's eight guardrails are held
+        // by tests spread from 8.1 to 8.6. A placement due where the first of a
+        // table's rows is built is a table claimed before most of it exists,
+        // which is what these two said at 8.1 until 8.0 read them row by row.
+        ["13.2 Three things that can improve, shallowest first"] = new Placement(
+            "the loop's own plan, each row built at the checkpoint it names and the last at rule versions", Due: "8.7"),
         ["13.3 The guardrails"] = new Placement(
-            "rules for phase 8, asserted by register-append-only", Due: "8.1"),
+            "the loop's guardrails, each mapped at the report to the test that holds it", Due: "8.7"),
         // 1.8, and the journey here is worth stating because it was wrong twice.
         //
         // It was owed at 0.6, which had landed, then re-pointed to 1.3 and then
@@ -175,7 +181,7 @@ internal static class PhaseReport
         // 1.8 is where phase 1's expectations land, which is the first point the
         // fixture holds a shape this table can be read against.
         ["19.2 What the harness checks"] = new Placement(
-            "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register", Due: "8.1"),
+            "this harness's own scope, whose rows arrive with the fixture and with the components they read; the last of them is the candidate register, which the migration at 8.3 creates", Due: "8.3"),
         ["19.3 What it produces"] = new Placement(
             "this harness's own output, asserted over the generated report rather than over the model behind it",
             Check: "architecture-conformance"),
@@ -214,6 +220,12 @@ internal static class PhaseReport
             "the system diagram, whose boxes are the components and stores sections 7 and 16 claim name for name and the outside sources they read; asserted against both tables rather than claimed twice",
             Check: "architecture-conformance"),
     };
+
+    // The placements' own notes, read by the same guard that reads the scope
+    // map's, since a placement says what reaches a whole table on the same terms.
+    // see: A verdict note states no count of the row's own parts
+    internal static IEnumerable<string> PlacementNotes =>
+        Placed.Values.Concat(FiguresPlaced.Values).Select(placement => placement.Reason);
 
     // Which instrument reaches this claim, and what it would assert. This is a
     // statement about the corpus and not about any run, which is why the

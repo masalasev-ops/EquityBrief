@@ -491,7 +491,7 @@ public sealed class SinglePageApp : IComponent
         region.Append(marks.ReasonRecords(records, tracks, baseRates, nights));
 
         region.Append("<section class=\"shadow-candidates\" data-shadow=\"absent\">");
-        region.Append("<p class=\"degraded\">registered candidates that are not on the list, and the correction divisor beside each threshold, arrive with the register at 8.4</p>");
+        region.Append("<p class=\"degraded\">how many candidate conditions are registered, and the correction divisor that number sets, arrive with the register at 8.3; each candidate's own record stays withheld until it is promoted</p>");
         region.Append("</section>");
 
         region.Append(marks.StaleAndFailed(stale, failed, refused, fellBack));
