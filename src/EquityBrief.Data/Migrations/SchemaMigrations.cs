@@ -515,6 +515,56 @@ public static class SchemaMigrations
         ) STRICT;
     ";
 
+    // The candidate register, and the two triggers that make append-only a
+    // property of the store rather than of the components that reach it.
+    //
+    // A registered candidate names an evaluator the code carries and the
+    // parameters it is evaluated with, so the row says what will run rather than
+    // describing it in prose a later session has to re-implement. It carries that
+    // evaluator's version too, which is a hash of the evaluator's own source, so
+    // a row names the exact code it was registered under and a changed evaluator
+    // cannot be read as the one the register named.
+    //
+    // The triggers are the point of the table. Pre-registration only works if a
+    // registered candidate cannot be changed once results are in, and a rule held
+    // only by the components that write is a rule that lasts until something
+    // writes another way. `RAISE(ABORT)` refuses the write and rolls back the
+    // statement, so the register still reads as it did.
+    //
+    // `event` is constrained rather than left open, because a row that is neither
+    // a registration nor a retirement is a row the divisor cannot count and the
+    // shadow column cannot evaluate, and a check constraint is what makes that a
+    // refusal at the write rather than a row every reader skips differently.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    const string CreateCandidateRegister = @"
+        CREATE TABLE candidate_register (
+            id                 INTEGER NOT NULL,
+            candidate          TEXT NOT NULL,
+            rule               TEXT NOT NULL,
+            test               TEXT NOT NULL,
+            evaluator          TEXT NOT NULL,
+            parameters         TEXT NOT NULL,
+            evaluator_version  TEXT NOT NULL,
+            event              TEXT NOT NULL CHECK (event IN ('registered', 'retired')),
+            retires            TEXT,
+            registered_at      TEXT NOT NULL,
+            evidence           TEXT,
+            PRIMARY KEY (id)
+        ) STRICT;
+
+        CREATE TRIGGER candidate_register_is_append_only_on_change
+        BEFORE UPDATE ON candidate_register
+        BEGIN
+            SELECT RAISE(ABORT, 'candidate_register is append only: a correction is a new row naming what it retires.');
+        END;
+
+        CREATE TRIGGER candidate_register_is_append_only_on_removal
+        BEFORE DELETE ON candidate_register
+        BEGIN
+            SELECT RAISE(ABORT, 'candidate_register is append only: a retirement is a new row naming what it retires.');
+        END;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -541,6 +591,7 @@ public static class SchemaMigrations
         new Migration(22, "add membership.industry", AddMembershipIndustry),
         new Migration(23, "add series_state.retries", AddSeriesStateRetries),
         new Migration(24, "add forward_return.break_even", AddForwardReturnBreakEven),
+        new Migration(25, "create candidate_register", CreateCandidateRegister),
     ];
 
     // The bar each plan set for itself, beside the setup it belongs to.

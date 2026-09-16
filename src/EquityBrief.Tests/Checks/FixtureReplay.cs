@@ -156,6 +156,15 @@ public class FixtureReplay
 
         await new ClaimChecker(night, store.DatabaseFile).RunAsync("replay-claims");
 
+        // The candidate registrar, from 8.3, after the night for the reason the
+        // fundamentals fetch is after it: a registration is a decision a person
+        // takes through a verb and never something a night arrives at, and a
+        // night that registered its own candidates would be the thing
+        // pre-registration exists to stop. It is replayed at all because a table
+        // nothing populates is a table no expectation can be read against, and
+        // the rows it writes are the ones `candidate-register.json` works by hand.
+        await RegisterAppendOnly.ReplayRegistrationsAsync(store);
+
         return store;
     }
 

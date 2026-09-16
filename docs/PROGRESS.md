@@ -11236,3 +11236,149 @@ Numbered:   a ruling on 8.2 rather than a checkpoint of its own. It was written 
             checkpoint the plan already carries, and the plan carries the ruling in phase 8's
             opening rather than as a heading. The operator ruled between the three on 2026-09-16.
 Carried:    nothing. The loop is unmoved and 8.3 builds the candidate register next.
+
+### 8.3 - the candidate register   2026-09-16
+Built:      the table a candidate condition is registered in before anything scores it, append only
+            at the store rather than only in what writes to it (see: Candidate conditions are
+            registered before they are scored, and scored in shadow before they are shown).
+            Migration 25 creates `candidate_register` with two triggers, one before update and one
+            before delete, each raising an abort naming the rule, so the refusal holds against
+            anything that opens the file and not only against the one component SCHEMA gives an
+            insert to. The row names an evaluator the code carries, the parameters it will be run
+            with and that evaluator's version (see: A registration names an evaluator the code
+            carries, and its version is a hash of that evaluator's own source). `CandidateRegistrar`
+            is the one door: it registers, it retires, and it offers no third thing, refusing an
+            evaluator nothing implements, a parameter set the evaluator does not read, a family
+            already at its maximum and any change to a candidate that stands registered, each with
+            the attempt on the run log. `CandidateEvaluator` carries the pin; `CandidateFamily`
+            carries the maximum of 8 and the divisor. Two evaluators are carried, being the two
+            readings of the momentum panel that 8.0's own ruling names as the way that panel could
+            be given a job (see: The momentum panel is context a reader weighs, and nothing computes
+            with it). Nothing evaluates a registered candidate here; the shadow column at 8.4 is
+            what runs them, and no screen draws one.
+Rules:      the divisor counts the candidates registered before the window opened and not retired
+            before it opened, and both halves read before rather than at or after. A candidate
+            registered after the window was not among the things being tried over the evidence the
+            window holds, so counting it makes the test harder than it was; one retired after the
+            window was among them for the whole of it, so not counting it makes the test easier,
+            which is the direction that turns noise into a discovery. A candidate stands registered
+            by the last row naming it rather than the first, because a retirement read as permanent
+            would be an edit in a table that can only be appended to. A version is the hash of the
+            evaluator's source, taken over line endings normalised to LF and a leading byte order
+            mark removed so the two machines and the runners agree, and over that source less the
+            one line carrying the version, because a hash of a file including its own hash never
+            settles. Registration is a verb a person invokes and never a step a night arrives at: a
+            night that registered its own candidates would be the thing pre-registration exists to
+            stop.
+Measured:   the operator's store holds no registration and this checkpoint writes none into it: the
+            register is a table a person fills by a decision, and a build that seeded it would be
+            registering candidates nobody chose. What is measured is the bound rather than a
+            population: the maximum family of 8 is refused at 8 and admitted at 7, and the divisor
+            takes three distinct values over the four windows the fixture works. The store under
+            `data/` was read immutable on 2026-09-16 and holds 0 rows in the table the migration
+            creates, which is the state a migration that creates and does not fill leaves.
+Expected:   derived. `candidate-register.json` states two registrations and one retirement with
+            their instants, and works four divisors by hand beside the rows that produce them: 0
+            before anything is registered, 1 between the two registrations, 2 with both standing,
+            and 1 after the first is retired. The last is the case the rule is about and the one a
+            divisor counting what stands now rather than what stood then would get wrong. The
+            whole-pipeline replay runs the registrar after the night, as it runs the fundamentals
+            fetch, because a table nothing populates is a table no expectation can be read against
+            and because a registration after the night is what a registration is. The worked
+            divisors take three values, asserted, so a divisor returning a constant could not pass
+            the loop over them.
+Tested:     950, from 938. Twelve added, all under the new roster row but one: the update and the
+            delete each refused by the table with the register reading afterwards as it did; the
+            retirement as a new row carrying what it withdrew with the original standing byte for
+            byte, and a retirement of nothing refused; the change to a standing candidate refused
+            with the attempt on the run log, and the retire-and-register path leaving three rows;
+            the unknown evaluator, the parameter set the evaluator does not read, and the family at
+            its maximum and one below it; the divisor over hand-worked rows at four instants and
+            what stands at three; the divisor over a store by two routes, the reader and a query;
+            the divisor over the fixture; every evaluator's version against the hash of its own
+            source; the pin over a carriage-returned copy and a byte-order-marked one; a registered
+            candidate whose evaluator has moved on; nothing in the shipped source updating or
+            deleting a register row; and the maximum the limits row states against the bound the
+            code carries. The one outside the row is in `architecture-conformance`, below.
+Amended:    a check, not a done condition. `architecture-conformance` carried a guard that at least
+            one out-of-scope claim take its due point from BUILD_PLAN, which the phase 5 sign-off
+            wrote as a non-vacuity guard after the floor under that count was found to be a
+            maintenance edit every phase. Its own comment said the number is zero at phase 8 by
+            construction, and it reached zero here: the last claim the plan half answered was
+            section 16's candidate register row, and the migration is what let it be put to
+            something. A guard of one now fails for the opposite of its reason, so it is moved off
+            the corpus and onto constructed input, where the population cannot empty as the build
+            advances: a plan written in the test, whose earlier checkpoint answers for a subject
+            named twice, and a proof that `Scope.Resolve` still falls through to the plan reader at
+            all. The split by origin, which cannot be satisfied by an empty set, is what carries the
+            property either way. `coverage-reported`'s pending-row floor went the same way and for
+            the same reason, this being the last checkpoint row on the roster, and its constructed
+            proof over a roster, a plan and a record was written at 8.0 against exactly this day.
+Mutated:    the rule, stated before the sweep: break each half of this checkpoint's done condition,
+            being the refusal at the store, the divisor's two boundaries, and the version pin, and
+            take the refusal first because it is the one thing the whole guardrail rests on.
+            Predicted:
+            M1 the two triggers removed from migration 25: the update and delete test red on both
+            throws, and nothing else, because nothing else writes either statement against the table.
+            M2 the divisor counting rows registered at or after the window rather than before: the
+            hand-worked divisor test red, the fixture divisor test red, and the two-routes test red.
+            M3 the divisor not subtracting retirements at all: the hand-worked test red on the
+            registered-and-retired-before case at 3 rather than 2, and the fixture's last divisor
+            red at 2 rather than 1.
+            M4 an evaluator's source moved without its version: the version test red, and the
+            fixture's row-carries-the-code-version loop red.
+            M5 the refusal of a change to a standing candidate dropped: that test red on the row
+            count and on the run log.
+            Not mutated, and named so the next sweep has them: the parameter-set refusal, the run
+            log carrying a refused registration at all, the source-half scan, and the rule that a
+            candidate stands by the last row naming it rather than the first.
+            Results: all five went red, and two of them said something the prediction did not.
+            Six runs of the whole suite, never a filter, at this entry's commit in a detached
+            worktree under the session scratchpad, each reverted with the tree read clean between
+            them. The baseline is 949 of 950 with one red, and that red is this entry:
+            `two-platform` reads every checkpoint entry written since the 7.2 ruling for the words
+            `tools/ci.ps1` green and this one carried a placeholder until the run below filled it.
+            M1 turned the update and delete test red and nothing else, as predicted. With the
+            triggers gone both statements succeed, so the test fails on the first throw it expected
+            rather than on the register having changed, which is the right shape: nothing else in
+            the suite writes either statement against the table, so nothing else could tell.
+            M2 turned four red rather than three. The three predicted, and also the family maximum
+            case, because the bound is refused through `Refusal`, which asks `Divisor` how many
+            stand. That is worth recording rather than tidying away: the maximum and the divisor are
+            one reader, so a divisor that counts the wrong rows does not only mis-correct a
+            threshold, it also lets a ninth candidate register. The prediction missed it by thinking
+            of the bound as a separate property.
+            M3 turned two red, the hand-worked case at 3 rather than 2 and the fixture's last
+            divisor at 2 rather than 1, both as predicted. The fixture case is the one that matters,
+            because it is the direction that makes a test easier than it was.
+            M4 turned one red rather than two, and the half that did not go red is the finding. The
+            version test failed as predicted, on the source hashing to something the constant does
+            not carry. The fixture's loop asserting each row's version against the code's did not,
+            and could not: the registrar writes whatever version the code holds at the moment it
+            registers, so a row written after the source moved agrees with the moved code. That loop
+            catches a row that has gone stale since it was written and never a source that moved
+            without its version, which is a different question, and the pin is the only thing
+            standing between the two. Recorded as a prediction that named the wrong instrument
+            rather than as a mutation aimed badly, since the mutation found exactly the property the
+            rule named.
+            M5 as first written replaced the refusal's condition with a constant, and it did not
+            compile: unreachable code is a warning and warnings are errors in this repository, so
+            the run never happened. That is recorded because it is a real constraint on how a
+            mutation may be written here. M5b removes the clause instead and turns the standing
+            candidate test red, on the second registration being accepted and on the run log
+            carrying no refusal, as predicted.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 950 of 950 tests
+            ran with none failed, migrations 0 to 25 with one added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 354 claims, 343
+            PASS, 0 FAIL, 11 out of scope, 0 unexamined, 350 placements and verdicts reconciled
+            against a floor of 34, and 35 of 35 roster checks carried and all 35 run, which is the
+            first run in this repository's history with no roster row waiting on a checkpoint. The
+            pair is the one 8.0 predicted: two claims added, being the registrar's catalogue row and
+            its matrix row, and four ended, being section 16's register row, section 18's two
+            register rows and section 17's family size and correction. The 11 out of scope stand at
+            1 at 8.4, 9 at 8.5 and 1 at 8.6. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
+Carried:    nothing. The shadow column that evaluates these rows is 8.4's, the verdicts that divide
+            by this divisor are 8.5's, and the register stays empty in the operator's store until a
+            person registers something into it, which is the guardrail working rather than a
+            checkpoint left half done.

@@ -59,6 +59,7 @@ public class CoverageReported
         ["claim-admissibility"] = "ClaimAdmissibility",
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
+        ["register-append-only"] = "RegisterAppendOnly",
     };
 
     internal static IReadOnlyList<RosterRow> Roster()
@@ -93,7 +94,7 @@ public class CoverageReported
             .Select(row => new Harness.CheckCoverage(
                 row.Check,
                 row.Runs,
-                Implementations.TryGetValue(row.Check, out var carrier) ? carrier : NotDueYet,
+                CarrierFor(row.Check),
                 Harness.CheckReaches.Of(row.Check) is { } reach
                     ? string.Join(", ", reach.Reads)
                     : "no reach declared"))
@@ -149,8 +150,25 @@ public class CoverageReported
 
         Assert.Equal(Roster().Count, coverage.Count);
         Assert.DoesNotContain(coverage, entry => entry.Carrier.Length == 0);
-        Assert.Contains(coverage, entry => entry.Carrier == "not due yet");
+
+        // Every row carries a real carrier from 8.3, which is what promoting the
+        // last checkpoint row means. It was asserted the other way until then: a
+        // row reading "not due yet" had to be present, so that the marker could
+        // not quietly stop being written while rows still needed it.
+        Assert.DoesNotContain(coverage, entry => entry.Carrier == NotDueYet);
+
+        // The marker is still what an unimplemented row gets, put to the same
+        // reader the record above is built by rather than asserted of the corpus,
+        // because the corpus no longer holds such a row and a value nothing
+        // produces is one that can be renamed with nothing noticing.
+        Assert.Equal(NotDueYet, CarrierFor("a-check-nobody-implements"));
+        Assert.Equal("CoverageReported", CarrierFor("coverage-reported"));
     }
+
+    // Which class a roster row's check is carried by, or the marker. Named apart
+    // from the record so the proof above runs this reader rather than a copy.
+    internal static string CarrierFor(string check) =>
+        Implementations.TryGetValue(check, out var carrier) ? carrier : NotDueYet;
 
     [Fact]
     public void TheCiScriptsInvokeTheSuite()
@@ -230,16 +248,27 @@ public class CoverageReported
 
         var pending = Roster().Where(row => row.Runs.StartsWith("from ", StringComparison.Ordinal)).ToArray();
 
-        // The floor is low on purpose and falls as checks are promoted. Its
-        // size is a fact about how much is built rather than about the
-        // property, which is that every remaining row names a checkpoint that
-        // has not landed. It was 5 until 1.4 promoted nightly-cost, then three
-        // until 5.4 promoted listings-coverage, then two until 6.3 promoted
-        // claim-admissibility. One remains, the register at 8.3, and the floor
-        // is exact enough to say what is left rather than generous enough to
-        // survive anything: a run finding none would pass this half over an
-        // empty set.
-        Assert.True(pending.Length >= 1, $"Read {pending.Length} checkpoint rows, expected at least 1.");
+        // The population is context and carries no floor, from 8.3.
+        //
+        // It was floored while any row remained, and the floor fell as checks
+        // were promoted: 5 until 1.4 promoted nightly-cost, three until 5.4
+        // promoted listings-coverage, two until 6.3 promoted claim-admissibility,
+        // one until 8.3 promoted the register. There is nothing left to floor,
+        // and a floor of one over an empty set is a floor that fails for the
+        // opposite of the reason it was written: not because a row names a
+        // landed checkpoint, but because the roster ran out of rows, which is the
+        // build working.
+        //
+        // What that costs is stated rather than absorbed: this half now runs over
+        // a set that may be empty, which is what the rules file forbids of a
+        // scope carrying a property. So the property is carried by the
+        // constructed proof above instead, which exercises both faults over a
+        // roster, a plan and a record written here. A run that reads no pending
+        // row is reporting that the roster has none, and the proof is what says
+        // the reader could still find one. No assertion is written on the count
+        // itself, because an assertion that cannot fail is the under-reporting
+        // this check exists to refuse; the number is carried in the message
+        // below, which is where the scope is stated.
 
         // The checkpoint itself exists only once its phase is planned, which
         // BUILD_PLAN does at the previous phase's sign-off. What has to be true
@@ -253,7 +282,12 @@ public class CoverageReported
         // building checkpoint would have retired a roster row that has not
         // started running. They are asked through `PendingRowFaults` so the proof
         // above runs this reader rather than a copy of it.
-        Assert.DoesNotContain(PendingRowFaults(pending, plan, progress), _ => true);
+        var faults = PendingRowFaults(pending, plan, progress);
+
+        Assert.True(
+            faults.Count == 0,
+            $"{faults.Count} of {pending.Length} checkpoint row(s) name a point the plan lacks or the " +
+            $"record has passed: {string.Join("; ", faults)}");
 
         foreach (var row in pending)
         {

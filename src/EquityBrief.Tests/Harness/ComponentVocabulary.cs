@@ -40,14 +40,19 @@ internal static class ComponentVocabulary
         ("News pulse", [DataStore.NewsPulse]),
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
         ("Sources", [DataStore.SourceDocument]),
+        ("Candidate register", [DataStore.CandidateRegister]),
         ("Series state", [DataStore.SeriesState]),
         ("Run log", [DataStore.RunLog]),
     ];
 
-    // The candidate register has no column. Section 16's key gives a reason for
-    // every other omission and not for this one, which is logged rather than
-    // silently absorbed: it arrives with the registrar at 8.3.
-    internal static readonly DataStore[] WithoutAColumn = [DataStore.CandidateRegister];
+    // Empty from 8.3, and kept rather than deleted.
+    //
+    // It held the candidate register until the registrar arrived with its column,
+    // which was the one omission section 16's key gave no reason for. Keeping the
+    // list is what lets the other direction be asserted: a store dropped out of
+    // the matrix later would have to be written in here to pass, which is a line
+    // somebody has to choose to add rather than an absence nothing notices.
+    internal static readonly DataStore[] WithoutAColumn = [];
 
     internal static string ColumnFor(DataStore store) =>
         Columns.FirstOrDefault(column => column.Stores.Contains(store)).Column
@@ -137,6 +142,7 @@ internal static class ComponentVocabulary
         ["fundamentals"] = DataStore.Fundamentals,
         ["membership"] = DataStore.Membership,
         ["calendar"] = DataStore.Calendar,
+        ["candidate register"] = DataStore.CandidateRegister,
     };
 
     internal sealed record CellReading(DataStore[] Stores, Feed[] Feeds, string[] Unresolved);

@@ -50,6 +50,7 @@ internal static class Scope
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
     const string ByAdmissibility = "claim-admissibility";
+    const string ByRegister = "register-append-only";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -389,6 +390,34 @@ internal static class Scope
             Verdict.Pass,
             "the unexamined count is drawn separately from out of scope",
             ByReadSurface),
+        // 8.3, the candidate register. The store row, the two failure rows and
+        // section 17's family row all end here, because the migration that
+        // creates the table is what lets each be put to something.
+        [CheckReach.Key(StoresTable, "Candidate register")] = new Scoped(
+            Verdict.Pass,
+            "a registration carries the candidate, its rule, its test, the evaluator the code carries, the parameters it will run with, that evaluator's version and the instant, and a retirement is a new row naming what it retires with the retired row still standing byte for byte, read back off a migrated store",
+            ByRegister),
+        [CheckReach.Key(FailureTable, "Something tries to edit or delete a register row")] = new Scoped(
+            Verdict.Pass,
+            "an update and a delete against a migrated store are each refused by the table itself and the register reads afterwards exactly as it did, and a change asked of the registrar is refused with the attempt on the run log naming the candidate that already stands",
+            ByRegister),
+        [CheckReach.Key(FailureTable, "The candidate register and the correction disagree")] = new Scoped(
+            Verdict.Pass,
+            "the divisor is computed over the register by two routes, through the reader and by a query against the store, and the check fails where they differ rather than reporting whichever answered",
+            ByRegister),
+        [CheckReach.Key(LimitsTable, "Family size and correction")] = new Scoped(
+            Verdict.Pass,
+            "the maximum the row states is the bound the registrar refuses at, asserted at the bound and one below it, and the divisor counts the candidates registered before the window opened and not retired before it opened, over hand-worked rows covering a registration after the window and a retirement after it",
+            ByRegister),
+        // The registrar's own two claims, which are what 8.3 adds.
+        [CheckReach.Key(CatalogueTable, "Candidate registrar")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the register it reads and writes and the run log it appends to, reconciled against its row's cells and against SCHEMA's ownership, which gives it the one insert on the table and no update and no delete",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Candidate registrar")] = new Scoped(
+            Verdict.Pass,
+            "its row is read against the declaration cell by cell with the blanks included, the register's column filled for a read and a write and every other store's left empty",
+            ByAccess),
         [CheckReach.Key(CatalogueTable, "Migration runner")] = new Scoped(
             Verdict.Pass,
             "the schema it writes is asserted against SCHEMA.md, column by column and type by type",
@@ -2162,8 +2191,6 @@ internal static class Scope
         // what the overnight queue records at 6.10, each now reached where it landed.
         ["The local model is unavailable, the overnight queue records that it could not run"] = "6.10",
         ["A theme refresh fails while a name's pass depends on it"] = "6.9",
-        ["Something tries to edit or delete a register row"] = "8.3",
-        ["The candidate register and the correction disagree"] = "8.3",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -2196,7 +2223,6 @@ internal static class Scope
         ["Nightly row coverage"] = "5.4",
         ["Reason record display"] = "8.5",
         ["Minimum resolved setups"] = "8.5",
-        ["Family size and correction"] = "8.3",
         ["Frozen measurement windows"] = "8.6",
     };
 

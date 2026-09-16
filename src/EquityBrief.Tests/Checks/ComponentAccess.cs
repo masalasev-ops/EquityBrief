@@ -26,6 +26,10 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 8.3, the candidate registrar.
+            CheckReach.Key(Scope.CatalogueTable, "Candidate registrar"),
+            CheckReach.Key(Scope.MatrixTable, "Candidate registrar"),
+
             // 6.11, the report exporter, and the harness's own matrix row.
             CheckReach.Key(Scope.CatalogueTable, "Report exporter"),
             CheckReach.Key(Scope.MatrixTable, "Report exporter"),

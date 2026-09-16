@@ -427,7 +427,10 @@ Grain: one row per registration event. Append only.
 | `candidate` | TEXT | the candidate condition's name |
 | `rule` | TEXT | its stated rule |
 | `test` | TEXT | the test it will be judged by |
-| `event` | TEXT | `registered` or `retired` |
+| `evaluator` | TEXT | the name of an evaluator the Core code carries, refused at the write where it carries none |
+| `parameters` | TEXT | JSON, the values that evaluator is run with |
+| `evaluator_version` | TEXT | that evaluator's version as the code carried it when the row was written, which is a hash of the evaluator's own source |
+| `event` | TEXT | `registered` or `retired`, constrained in the table |
 | `retires` | TEXT | for a retirement, the candidate it retires |
 | `registered_at` | TEXT | UTC instant |
 | `evidence` | TEXT | for a retirement, the figures that produced it |
@@ -435,6 +438,8 @@ Grain: one row per registration event. Append only.
 Primary key: `id`.
 
 No update, no delete. A correction is a new row.
+
+**The three evaluator columns are what make the row a registration rather than a description.** A candidate naming its rule in prose alone is a row a later session has to re-implement from words, and what it implements is then whatever it read the words to mean, which is the thing pre-registration exists to stop. `evaluator` names code that exists, `parameters` carries the values it is run with, and `evaluator_version` is a hash of that evaluator's source with line endings normalised to LF and any leading byte order mark removed, so the same evaluator hashes the same on both platforms and on a runner that checked the tree out with either ending. A changed evaluator is a new registration retiring the old one, never an edited row, and `register-append-only` fails a registered, unretired candidate whose evaluator's source has moved away from the version its row names.
 
 ### series_state
 Grain: one row per ticker.
