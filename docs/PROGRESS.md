@@ -12051,8 +12051,31 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             Not mutated, and named so the next sweep has them: the clause-in-cell refusal over the
             corpus, the no-test-twice count, the registration half of the live reason refusal, and
             the runbook pin of 400.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Seven runs of the whole suite, never a filter, at this entry's commit in a
+            detached worktree under the session scratchpad, each reverted with the tree read clean
+            between them and the worktree removed after. The baseline is 982 of 983 with one red, and
+            that red is this entry: `two-platform` reads every checkpoint entry written since the 7.2
+            ruling for the words `tools/ci.ps1` green and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 1 red, the mapping test on a body that does not exercise `shadow_reasons`. M2
+            turned 1, the mapping test on its constructed proof. M3 turned 1, the changed-nothing test
+            on the retirement. M4 turned 3: the changed-nothing test, `nightly-cost`'s recorded nights
+            test and `writer-ownership`, whose test is `EveryWriteInTheCodeIsDeclaredInSchema`. M5
+            turned 1, the live reason test on the retirement, with the registration half left to its
+            own path. M6 turned 1, the family-grows test.
+            M4 was restated before the sweep and the restatement is in this entry's history: as first
+            written it closed the windows inside the scorer, which every test calling the scorer alone
+            would also have caught, so it would have shown the scorer's tests rather than the property
+            that a night changes nothing. Moved into the night's step, it reaches only what runs a
+            whole night, and the ownership check it also reaches was added to the prediction then.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 983 of 983 tests ran
+            with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved. Both gates ran
+            with this entry and the 8.3 correction above in place, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing. The phase's sign-off is owed on phase 8 as a whole by a session that has committed
             no code. The eight operating rows stand as the table states them, and the one the loop
             opened is the rule version bound.
