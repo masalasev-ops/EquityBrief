@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using EquityBrief.Api.Reading;
 using EquityBrief.Core.Facts;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
@@ -411,7 +412,26 @@ public partial class FixtureExpectations
         Assert.Equal(0, news.Requests + archive.Requests + local.Requests);
         Assert.Empty(Query(store, "SELECT section FROM research_section WHERE ticker = 'AAPL';"));
         Assert.Equal([$"research|{ResearchRunner.NoFactsFile}"], Query(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'research-no-facts' AND stage = 'research';"));
+        // The row's own detail, where the serialiser escapes the apostrophe, so the sentence is
+        // read up to it and the whole of it is asserted on the outcome below.
         Assert.Contains("no facts file is stored for the name on or before today", Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-no-facts' AND stage = 'research';").Single(), StringComparison.Ordinal);
+        Assert.StartsWith(ResearchRunner.NoFactsFileReason, outcome.Reason, StringComparison.Ordinal);
+
+        // 8.0's ruling: the pass still refreshes its industry's cycle, since the theme is the
+        // industry's and every member reads it, and the row says which of the two happened
+        // rather than leaving a paid call unaccounted for on a page that said the pass did not
+        // run. Here the search returns nothing, so the cycle could not be refreshed and the row
+        // says that; the page reads this sentence as it stands.
+        Assert.Contains("its industry's cycle could not be refreshed", outcome.Reason!, StringComparison.Ordinal);
+
+        var day = outcome.AsOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        Assert.Equal(
+            $"the pass asked for on {day}: {outcome.Reason}",
+            NameScreen.PassLine(
+                new NameScreen.PassRecord(ReadApi.ResearchStage, outcome.AsOf, ReadApi.PassNoFactsFile, outcome.Reason, []),
+                spend: null,
+                outcome.AsOf)!.Line);
     }
 
     [Fact]

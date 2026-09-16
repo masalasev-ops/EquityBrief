@@ -4384,6 +4384,77 @@ public partial class FixtureExpectations
             Query(store, "SELECT COUNT(*) FROM bar WHERE ticker = 'AAPL' AND session_date > '" + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "';"));
 
     [Fact]
+    public async Task ChangingOnlyTheMomentumReadingsLeavesEveryComputedRowAsItWasAndTheFactsFileDifferent()
+    {
+        // 8.0's ruling, asserted as behaviour rather than by a scan on names. Five components
+        // read the indicator table and only one of them, the facts assembler, reads every
+        // indicator name without filtering, so a scan for rsi or macd would miss the one
+        // reader that has them. What is asserted is what the ruling says: no reason, no band,
+        // no plan and no gate moves when the momentum readings do, and the facts file does.
+        // see: The momentum panel is context a reader weighs, and nothing computes with it
+        using var store = await WithListings();
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+        var name = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).First();
+
+        // The populations, stated before the change: the four computed tables the stages
+        // below rewrite, and the facts rows beside them.
+        string[] Rows(string sql) => [.. Query(store, sql)];
+
+        var before = new
+        {
+            Levels = Rows("SELECT ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members FROM level ORDER BY ticker, as_of, low_edge;"),
+            Swings = Rows("SELECT ticker, session_date, direction, price FROM swing ORDER BY ticker, session_date, direction;"),
+            Ladders = Rows("SELECT ticker, as_of, trend_state, plan FROM ladder ORDER BY ticker, as_of;"),
+            Listings = Rows("SELECT ticker, session_date, reasons, fired_count, plan_at_listing FROM listing ORDER BY ticker, session_date;"),
+            Facts = Rows($"SELECT payload FROM facts WHERE ticker = '{name}';"),
+        };
+
+        Assert.True(before.Levels.Length >= 8, $"Read {before.Levels.Length} level row(s), expected at least 8.");
+        Assert.True(before.Swings.Length >= 40, $"Read {before.Swings.Length} swing row(s), expected at least 40.");
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, before.Ladders.Length);
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, before.Listings.Length);
+        Assert.Single(before.Facts);
+
+        // One name's momentum readings moved, after the engine that writes them and without
+        // re-running it, since re-running it would put the series back and the test would
+        // compare a store with itself.
+        var momentum = string.Join(", ", IndicatorSeries.Momentum.Select(reading => $"'{reading}'"));
+
+        Insert(store, $"UPDATE indicator SET value = value + 11 WHERE ticker = '{name}' AND name IN ({momentum}) AND value IS NOT NULL;");
+
+        var moved = int.Parse(
+            Query(store, $"SELECT COUNT(*) FROM indicator WHERE ticker = '{name}' AND name IN ({momentum}) AND value IS NOT NULL;").Single(),
+            CultureInfo.InvariantCulture);
+
+        Assert.True(moved >= 4, $"Moved {moved} momentum reading(s), expected at least 4.");
+
+        // Every stage that follows the engine, run again on the same clock, so the only thing
+        // that differs between the two runs is the readings. The run ids differ because the
+        // run log's key is the run and the stage and a second row under the same pair is
+        // refused; none of the rows compared below carries a run id, which is why that is
+        // safe here and the clock is not.
+        await new SwingFinder(clock, store.DatabaseFile).RunAsync("momentum-swings");
+        await new VolumeProfileBuilder(clock, store.DatabaseFile).RunAsync("momentum-profile");
+        await new LevelBuilder(clock, store.DatabaseFile).RunAsync("momentum-levels");
+        await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "momentum-ladders");
+        await new FactsAssembler(clock, store.DatabaseFile).RunAsync("momentum-facts");
+        await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "momentum-listings");
+
+        Assert.Equal(before.Swings, Rows("SELECT ticker, session_date, direction, price FROM swing ORDER BY ticker, session_date, direction;"));
+        Assert.Equal(before.Levels, Rows("SELECT ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members FROM level ORDER BY ticker, as_of, low_edge;"));
+        Assert.Equal(before.Ladders, Rows("SELECT ticker, as_of, trend_state, plan FROM ladder ORDER BY ticker, as_of;"));
+        Assert.Equal(before.Listings, Rows("SELECT ticker, session_date, reasons, fired_count, plan_at_listing FROM listing ORDER BY ticker, session_date;"));
+
+        // And the facts file moved, which is the one reader the ruling names: prose may state
+        // a reading and never present it as a signal.
+        var after = Rows($"SELECT payload FROM facts WHERE ticker = '{name}';");
+
+        Assert.Single(after);
+        Assert.NotEqual(before.Facts[0], after[0]);
+    }
+
+    [Fact]
     public async Task EarningsSoonOnTonightsSessionFiresAtZero()
     {
         using var store = await WithListings();

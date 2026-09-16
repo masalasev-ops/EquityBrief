@@ -146,6 +146,17 @@ internal static class DuePoints
     static bool OpensAsNotACheckpoint(Match entry) =>
         entry.Groups["body"].Value.TrimStart().StartsWith(NotACheckpoint, StringComparison.Ordinal);
 
+    // Whether an entry lands a checkpoint's code, which is what `Built` reads
+    // above and what `two-platform` reads to know which entries owe the Windows
+    // run. One reader for one population: `two-platform` keyed on a heading of a
+    // checkpoint and a dash until 8.0, where this one requires no dash, so an
+    // entry headed "### 8.1 resolution" landed its checkpoint and owed no
+    // Windows record. The phase 7 sign-off found it with nothing in that
+    // population, which is the time to close it.
+    internal static bool LandsACheckpoint(string heading, string body) =>
+        Regex.IsMatch(heading, @"^\d+\.\d+")
+        && !body.TrimStart().StartsWith(NotACheckpoint, StringComparison.Ordinal);
+
     internal const string NotACheckpoint = "Not a checkpoint entry";
 
     // A phase has landed once a checkpoint in it is built. A checkpoint has

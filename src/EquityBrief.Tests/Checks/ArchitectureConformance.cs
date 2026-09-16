@@ -487,18 +487,48 @@ public class ArchitectureConformance
         // landed, which is the population a reader keyed on a heading could read
         // none of and stay green: a planning entry headed any other way would
         // leave its checkpoint unlanded and every obligation owed at it unchased,
-        // which is the defect 7.1 repaired arriving by another route. Five at the
-        // phase 6 sign-off, phases 2 to 6, and six once 7.1's own entry is
-        // written; the count only rises, so the floor sits at the first.
-        var started = PlanCheckpoints.All()
+        // which is the defect 7.1 repaired arriving by another route.
+        //
+        // The population is derived rather than floored. It was at least five,
+        // set at the phase 6 sign-off over phases 2 to 6 on the reasoning that the
+        // count only rises, and the phase 7 sign-off's sweep showed what that
+        // costs: counting one phase fewer left the suite green, so one phase could
+        // stop being read with nothing saying so. What the plan and the record
+        // give between them is the exact set, being every opening checkpoint of a
+        // phase something else in it has built, so the two halves are compared as
+        // sets and neither can quietly shrink.
+        var openings = PlanCheckpoints.All()
             .Select(point => point.Id)
             .Where(id => id.EndsWith(".0", StringComparison.Ordinal))
+            .ToArray();
+
+        var started = openings
             .Where(id => built.Any(checkpoint =>
                 DuePoints.PhaseOf(checkpoint) == DuePoints.PhaseOf(id) && checkpoint != id))
             .ToArray();
 
+        var landed = openings.Where(id => DuePoints.HasLanded(id, progress)).ToArray();
+
+        // The floor is context: how many phases have started is a fact about how
+        // much is built, and it is stated so a reader returning nothing is not
+        // read as a corpus with no started phases. The property is the two
+        // directions below.
         Assert.True(started.Length >= 5, $"Read {started.Length} started phases with an opening checkpoint, expected at least 5.");
+
+        // Every started phase's opening checkpoint has landed.
         Assert.DoesNotContain(started, id => !DuePoints.HasLanded(id, progress));
+
+        // And the other way round, which is what a floor cannot say: an opening
+        // checkpoint that has landed belongs to a phase something else in it has
+        // built, save for the one phase being planned now, whose planning entry
+        // has landed and whose building has not started. More than one of those
+        // is a phase planned and abandoned, or a reader landing an opening from
+        // an entry that plans nothing.
+        var plannedNotStarted = landed.Except(started, StringComparer.Ordinal).ToArray();
+
+        Assert.True(
+            plannedNotStarted.Length <= 1,
+            "Opening checkpoints landed for phases nothing has built: " + string.Join(", ", plannedNotStarted) + ".");
 
         Assert.Contains("1.1", built);
         Assert.Contains("1.2", built);

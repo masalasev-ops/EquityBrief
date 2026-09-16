@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Components;
 using EquityBrief.Tests.Harness;
 using DataStore = EquityBrief.Core.Components.Store;
@@ -517,5 +518,53 @@ public class ComponentAccess
         // And a column the matrix does not carry throws rather than mapping to
         // nothing, which is what stops a renamed column reading as a blank row.
         Assert.Throws<InvalidOperationException>(() => ComponentVocabulary.StoresIn("Widgets"));
+    }
+
+    // A count of a row's own parts, as a verdict note would state one: a number
+    // standing next to the thing it counts. `8.3` and `section 14` are numbers
+    // about something else and pass, which is why this reads the word beside the
+    // number rather than the number alone.
+    //
+    // `one` is left out of the number words on purpose, and the limit is stated:
+    // the notes use it as a determiner, as in the one reader or the one cell
+    // width the table gives a mark, so a note meaning one cell as a count would
+    // pass. The nine this refused when it was written all counted in twos and
+    // upward.
+    // see: A verdict note states no count of the row's own parts
+    static readonly Regex CountsTheRowsParts = new(
+        @"\b(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|(?<![\d.])\d+(?![\d.]))\b" +
+        @"(?:(?:\s+[A-Za-z']+)?\s+(?:cells?|stores?|columns?)\b|\s+(?:reads?|written)\b)",
+        RegexOptions.IgnoreCase);
+
+    [Fact]
+    public void NoVerdictNoteStatesACountOfTheRowItDescribes()
+    {
+        // The 8.0 ruling. A count typed into a note is read against nothing: the
+        // phase report prints it whatever the row holds, which is how the read
+        // API's note counted reads a later checkpoint had already added to and
+        // how two notes counted blank cells over rows that had grown. The count
+        // lives in the row, where the row is the only thing that can change it.
+        var notes = Scope.Notes.Concat(PhaseReport.PlacementNotes).ToArray();
+
+        // The population, stated in advance and as context rather than as the
+        // property: how many notes there are is a fact about how much is built.
+        // What carries the property is that none of them counts.
+        Assert.True(notes.Length >= 300, $"Read {notes.Length} verdict note(s), expected at least 300.");
+
+        var counting = notes.Where(note => CountsTheRowsParts.IsMatch(note)).ToArray();
+
+        Assert.Empty(counting);
+
+        // The matcher, shown to refuse the three shapes the ruling found and to
+        // leave a checkpoint, a section, a step and a determiner alone. Without
+        // this a matcher that matched nothing would pass the assertion above over
+        // every note in the map.
+        Assert.All(
+            new[] { "eleven cells", "12 read", "all thirteen cells are blank", "the four stores it reads", "the table's nine columns" },
+            counted => Assert.True(CountsTheRowsParts.IsMatch(counted), $"'{counted}' states a count and was not refused."));
+
+        Assert.All(
+            new[] { "repaired at 4.0", "section 14", "step 17", "8.3", "the one reader", "one call, stores no row", "twenty at most are drawn" },
+            allowed => Assert.False(CountsTheRowsParts.IsMatch(allowed), $"'{allowed}' is not a count of a row's parts and was refused."));
     }
 }

@@ -285,21 +285,18 @@ static async Task<int> NightlyRun(string[] args)
     }
     else if (DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
     {
-        // A session later than the one the machine is in is refused, which is
-        // 6.0's repair for a phase 5 sign-off finding. Such a night stamps every
-        // row it writes with a date in the future, and the run page opens on the
-        // newest night the log carries, so one mistyped digit put a night nobody
-        // meant at the top of the page and kept it there. Refused here rather
-        // than inside the night, because nothing the night does afterwards can
-        // tell a replay of an old session from a replay of a future one.
+        // Which named sessions are refused, and why, is `NightSession`'s rule:
+        // a session later than the one the machine is in, which is 6.0's repair
+        // for a phase 5 sign-off finding, and a session older than the newest the
+        // store holds, which 8.0 added from the trace of what the corporate
+        // action refetch does on that path. Refused here rather than inside the
+        // night, because nothing the night does afterwards can tell a replay of
+        // an old session from a replay of a future one.
         IClock today = SystemClock.ForUnitedStatesSessions();
 
-        if (session > today.SessionDateAt(today.UtcNow))
+        if (NightSession.Refusal(session, today.SessionDateAt(today.UtcNow), NightSession.NewestStored(store.DatabaseFile)) is { } refused)
         {
-            Console.Error.WriteLine(
-                $"nightly: '--session {named}' is later than tonight's session. A night replayed for a " +
-                "future session stamps every row it writes with that date and takes over the run page, " +
-                "which no later run can undo.");
+            Console.Error.WriteLine(refused);
 
             return 1;
         }

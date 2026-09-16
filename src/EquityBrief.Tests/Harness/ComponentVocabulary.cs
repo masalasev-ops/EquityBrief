@@ -46,7 +46,7 @@ internal static class ComponentVocabulary
 
     // The candidate register has no column. Section 16's key gives a reason for
     // every other omission and not for this one, which is logged rather than
-    // silently absorbed: it arrives with the registrar in phase 6.
+    // silently absorbed: it arrives with the registrar at 8.3.
     internal static readonly DataStore[] WithoutAColumn = [DataStore.CandidateRegister];
 
     internal static string ColumnFor(DataStore store) =>

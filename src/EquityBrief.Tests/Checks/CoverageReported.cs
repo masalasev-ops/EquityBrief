@@ -162,6 +162,62 @@ public class CoverageReported
         }
     }
 
+    // What a rostered "from" row is faulted for, named apart from the fact so the
+    // proof below runs the same reader the corpus is measured by. Two faults: a
+    // checkpoint the plan does not have, and one the record shows as landed, which
+    // is a check rostered to start at a point the build has already passed.
+    internal static IReadOnlyList<string> PendingRowFaults(IEnumerable<RosterRow> pending, string plan, string progress)
+    {
+        var faults = new List<string>();
+
+        foreach (var row in pending)
+        {
+            var checkpoint = row.Runs["from ".Length..].Trim();
+
+            if (!DuePoints.InThePlan(checkpoint, plan))
+            {
+                faults.Add($"{row.Check} runs from {checkpoint}, which the plan has neither as a checkpoint nor as a phase.");
+            }
+
+            if (DuePoints.HasLanded(checkpoint, progress))
+            {
+                faults.Add($"{row.Check} is rostered from {checkpoint}, which PROGRESS records as built.");
+            }
+        }
+
+        return faults;
+    }
+
+    [Fact]
+    public void APendingRowNamingAPointThePlanLacksOrTheRecordHasPassedIsFound()
+    {
+        // The permanent proof, over a constructed roster, plan and record. The
+        // corpus cannot exercise either fault while the one row it holds names a
+        // checkpoint of a phase nothing has built, which the phase 8 planning
+        // sweep showed: moving that row back to the checkpoint the phase 7
+        // sign-off found it at left the suite green, because neither 8.1 nor 8.3
+        // has landed and a row naming either passes. So the branch is exercised
+        // here instead of being left to fire for the first time on the night 8.1's
+        // entry is written.
+        const string Plan = "### 8.3 The candidate register\nMigration creating the register.\n\n";
+        const string Record = "### 8.3 - the candidate register   2026-10-01\nBuilt:      the register.\n\n";
+
+        RosterRow Row(string from) => new("register-append-only", "from " + from, "the register refuses updates");
+
+        // A checkpoint the plan has and the record does not: no fault.
+        Assert.Empty(PendingRowFaults([Row("8.3")], Plan, string.Empty));
+
+        // The same checkpoint once the record shows it built.
+        Assert.Equal(
+            ["register-append-only is rostered from 8.3, which PROGRESS records as built."],
+            PendingRowFaults([Row("8.3")], Plan, Record));
+
+        // And a checkpoint the plan does not have at all.
+        Assert.Equal(
+            ["register-append-only runs from 9.9, which the plan has neither as a checkpoint nor as a phase."],
+            PendingRowFaults([Row("9.9")], Plan, string.Empty));
+    }
+
     [Fact]
     public void EveryCheckpointRowNamesOneThatHasNotLanded()
     {
@@ -175,35 +231,31 @@ public class CoverageReported
         // property, which is that every remaining row names a checkpoint that
         // has not landed. It was 5 until 1.4 promoted nightly-cost, then three
         // until 5.4 promoted listings-coverage, then two until 6.3 promoted
-        // claim-admissibility. One remains, the register at 8.1, and the floor
+        // claim-admissibility. One remains, the register at 8.3, and the floor
         // is exact enough to say what is left rather than generous enough to
         // survive anything: a run finding none would pass this half over an
         // empty set.
         Assert.True(pending.Length >= 1, $"Read {pending.Length} checkpoint rows, expected at least 1.");
 
+        // The checkpoint itself exists only once its phase is planned, which
+        // BUILD_PLAN does at the previous phase's sign-off. What has to be true
+        // now is that its phase is in the plan and that nothing has recorded the
+        // checkpoint as landed.
+        //
+        // Both questions go through the same reader the reconciliation uses,
+        // rather than being asked again here with a text match. Asked again, they
+        // were the same prefix defect: "### 1.4 -" in the record reads as landed
+        // whatever the entry beneath it says, so a planning pass headed with a
+        // building checkpoint would have retired a roster row that has not
+        // started running. They are asked through `PendingRowFaults` so the proof
+        // above runs this reader rather than a copy of it.
+        Assert.DoesNotContain(PendingRowFaults(pending, plan, progress), _ => true);
+
         foreach (var row in pending)
         {
-            var checkpoint = row.Runs["from ".Length..].Trim();
-
-            // The checkpoint itself exists only once its phase is planned, which
-            // BUILD_PLAN does at the previous phase's sign-off. What has to be
-            // true now is that its phase is in the plan and that nothing has
-            // recorded the checkpoint as landed.
-            //
-            // Both questions go through the same reader the reconciliation
-            // uses, rather than being asked again here with a text match. Asked
-            // again, they were the same prefix defect: "### 1.4 -" in the record
-            // reads as landed whatever the entry beneath it says, so a planning
-            // pass headed with a building checkpoint would have retired a
-            // roster row that has not started running.
-            Assert.True(
-                DuePoints.InThePlan(checkpoint, plan),
-                $"{row.Check} runs from {checkpoint}, which the plan has neither as a checkpoint nor as a phase.");
-
             Assert.False(
-                DuePoints.HasLanded(checkpoint, progress),
-                $"{row.Check} is rostered from {checkpoint}, which PROGRESS records as built.");
-            Assert.False(Implementations.ContainsKey(row.Check), $"{row.Check} is not due until {checkpoint}.");
+                Implementations.ContainsKey(row.Check),
+                $"{row.Check} is not due until {row.Runs["from ".Length..].Trim()}.");
         }
     }
 }

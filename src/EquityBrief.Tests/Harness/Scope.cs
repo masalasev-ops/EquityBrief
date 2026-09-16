@@ -433,7 +433,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(MatrixTable, "Read API")] = new Scoped(
             Verdict.Pass,
-            "every cell of the row is asserted against the declaration, twelve cells read and the run log's cell read and written",
+            "every cell of the row is asserted against the declaration, each read cell by cell and the run log read and written",
             ByAccess),
         [CheckReach.Key(CatalogueTable, "Mark renderer")] = new Scoped(
             Verdict.Pass,
@@ -441,7 +441,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(MatrixTable, "Mark renderer")] = new Scoped(
             Verdict.Pass,
-            "all thirteen cells are blank and the declaration is empty, asserted cell by cell",
+            "every cell of the row is blank and the declaration is empty, asserted cell by cell",
             ByAccess),
         [CheckReach.Key(CatalogueTable, "Single page app")] = new Scoped(
             Verdict.Pass,
@@ -449,7 +449,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(MatrixTable, "Single page app")] = new Scoped(
             Verdict.Pass,
-            "all thirteen cells are blank and the declaration is empty, asserted cell by cell",
+            "every cell of the row is blank and the declaration is empty, asserted cell by cell",
             ByAccess),
                 [CheckReach.Key("15.5 The mark vocabulary", "Level chart, candles")] = new Scoped(
             Verdict.Pass,
@@ -467,7 +467,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(CatalogueTable, "Night close")] = new Scoped(
             Verdict.Pass,
-            "the class declares the four stores it counts off and the run log it appends to, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the stores it counts off and the run log it appends to, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Forward return filler")] = new Scoped(
             Verdict.Pass,
@@ -524,7 +524,7 @@ internal static class Scope
 
         [CheckReach.Key(CatalogueTable, "Shortlist builder")] = new Scoped(
             Verdict.Pass,
-            "the class declares the seven stores it reads and the listings it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the stores it reads and the listings it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Shortlist builder")] = new Scoped(
             Verdict.Pass,
@@ -617,7 +617,7 @@ internal static class Scope
         // operation.
         [CheckReach.Key(CatalogueTable, "Facts assembler")] = new Scoped(
             Verdict.Pass,
-            "the class declares the eight stores it reads and the facts row it inserts, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the stores it reads and the facts row it inserts, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(CatalogueTable, "Change detector")] = new Scoped(
             Verdict.Pass,
@@ -1262,11 +1262,11 @@ internal static class Scope
         // difference, and the status guarded by the store itself.
         [CheckReach.Key(StoresTable, "Research store")] = new Scoped(
             Verdict.Pass,
-            "the table's nine columns and types are asserted against SCHEMA.md, the reason is asserted to be the only column admitting null, and a status outside the four SCHEMA declares is refused by the store rather than by the checker",
+            "the table's columns and types are asserted against SCHEMA.md, the reason is asserted to be the only column admitting null, and a status outside the four SCHEMA declares is refused by the store rather than by the checker",
             ByMigration),
         [CheckReach.Key(StoresTable, "Theme store")] = new Scoped(
             Verdict.Pass,
-            "the table's ten columns are asserted against SCHEMA.md, which wrote them out at 6.4 rather than describing them as the research table's with a subject renamed, and the store refuses a status it does not declare as the research table's does",
+            "the table's columns are asserted against SCHEMA.md, which wrote them out at 6.4 rather than describing them as the research table's with a subject renamed, and the store refuses a status it does not declare as the research table's does",
             ByMigration),
         // 6.3, the source documents store. Its columns against SCHEMA as every
         // other table's are, plus the two that admit null, which is the first
@@ -1428,7 +1428,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Level builder")] = new Scoped(
             Verdict.Pass,
-            "the class declares the four stores it reads and the levels it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the stores it reads and the levels it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Level builder")] = new Scoped(
             Verdict.Pass,
@@ -2184,7 +2184,7 @@ internal static class Scope
         ["Nightly row coverage"] = "5.4",
         ["Reason record display"] = "8.5",
         ["Minimum resolved setups"] = "8.5",
-        ["Family size and correction"] = "8.1",
+        ["Family size and correction"] = "8.3",
         ["Frozen measurement windows"] = "8.6",
     };
 
@@ -2243,6 +2243,12 @@ internal static class Scope
         [CheckReach.Key("Figure 12.1", "Check every claim")] = "6.4",
         [CheckReach.Key("Figure 12.1", "Store it")] = "6.4",
     };
+
+    // Every verdict note this map holds, for the guard that keeps a count of a
+    // row's own parts out of them: a count typed into a note is read against
+    // nothing and the report prints it whatever the row holds.
+    // see: A verdict note states no count of the row's own parts
+    internal static IEnumerable<string> Notes => Reached.Values.Select(scoped => scoped.Note);
 
     internal static Scoped For(string table, string subject)
     {

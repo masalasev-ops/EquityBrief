@@ -548,4 +548,63 @@ public partial class FixtureExpectations
             Assert.All(facts, fact => Assert.Contains(file, held => held.Name == fact.Name && held.Value == fact.Value));
         }
     }
+
+    [Fact]
+    public void ATableOfTwelveMonthPeriodsAloneIsCarriedAndNamedForItsMonths()
+    {
+        // 8.0's ruling, over a table shaped as an annual report files one: three columns of
+        // twelve months and nothing shorter, which is what the archive served for MSFT's
+        // report for the year to 2026-06-30 in 6.11's run. The assembler took quarters alone
+        // until then, so such a name carried no segment figure and both sections that quote
+        // one fell back for a quarter.
+        // see: A facts file carries the latest period of the segment table, and says which period it is
+        const string Annual = """
+        {
+          "segments": {
+            "periods": [
+              { "months": 12, "ended": "2024-06-30" },
+              { "months": 12, "ended": "2025-06-30" },
+              { "months": 12, "ended": "2026-06-30" }
+            ],
+            "consolidated": [
+              { "lineItem": "Revenue", "months": 12, "ended": "2026-06-30", "value": "270000000000" },
+              { "lineItem": "Revenue", "months": 12, "ended": "2025-06-30", "value": "245000000000" }
+            ],
+            "groups": [
+              {
+                "label": "Productivity",
+                "figures": [
+                  { "lineItem": "Revenue", "months": 12, "ended": "2026-06-30", "value": "80000000000" },
+                  { "lineItem": "Operating income", "months": 12, "ended": "2026-06-30", "value": "37000000000" }
+                ]
+              }
+            ]
+          }
+        }
+        """;
+
+        using var annual = JsonDocument.Parse(Annual);
+
+        var carried = FactsAssembler.Segments(annual.RootElement);
+
+        // The newest period, and only it, with the months in every name so a sentence
+        // quoting a year cannot be read as a quarter.
+        Assert.Equal(3, carried.Count);
+        Assert.All(carried, fact => Assert.EndsWith(" 12 months to 2026-06-30", fact.Name, StringComparison.Ordinal));
+        Assert.Contains(carried, fact => fact.Name == "segment total Revenue 12 months to 2026-06-30" && fact.Value == "270000000000");
+        Assert.Contains(carried, fact => fact.Name == "segment Productivity Operating income 12 months to 2026-06-30");
+
+        // And a table that files a quarter keeps the quarter, whose name has no months in
+        // it, because every stored facts file and every section written from one carries it.
+        var withQuarter = Annual
+            .Replace("{ \"months\": 12, \"ended\": \"2026-06-30\" }", "{ \"months\": 3, \"ended\": \"2026-06-30\" }", StringComparison.Ordinal)
+            .Replace("\"months\": 12, \"ended\": \"2026-06-30\", \"value\": \"270000000000\"", "\"months\": 3, \"ended\": \"2026-06-30\", \"value\": \"70000000000\"", StringComparison.Ordinal);
+
+        using var quarterly = JsonDocument.Parse(withQuarter);
+
+        var quarter = FactsAssembler.Segments(quarterly.RootElement);
+
+        Assert.Contains(quarter, fact => fact.Name == "segment total Revenue 2026-06-30" && fact.Value == "70000000000");
+        Assert.DoesNotContain(quarter, fact => fact.Name.Contains("months to", StringComparison.Ordinal));
+    }
 }

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using EquityBrief.Tests.Harness;
 
 namespace EquityBrief.Tests.Checks;
 
@@ -57,10 +58,12 @@ public class TwoPlatform
     static readonly Regex LocalWindowsRun = new(@"`tools/ci\.ps1`\s+green");
 
     // The checkpoint entries written after the last hosted Windows leg, and the
-    // headings of those that do not say tools/ci.ps1 ran green. A checkpoint
-    // entry is headed with a checkpoint and a dash and does not open "Not a
-    // checkpoint entry", so a planning pass, a ruling and a sign-off are not
-    // read: none of them lands a checkpoint's code.
+    // headings of those that do not say tools/ci.ps1 ran green. Which entries
+    // those are is asked of `DuePoints`, the reader that lands a checkpoint from
+    // the record, rather than answered again here: an entry landing a checkpoint
+    // there and skipped here would land its code and owe no Windows record, and
+    // that is what a heading of a checkpoint and a dash did until 8.0. A planning
+    // pass, a ruling and a sign-off land no checkpoint's code and are not read.
     internal static (int Read, IReadOnlyList<string> Missing) WindowsUnrecorded(string progress)
     {
         var entries = Regex.Matches(progress, @"^### (?<heading>[^\r\n]*)(?<body>(?:(?!^### )[\s\S])*)", RegexOptions.Multiline);
@@ -78,8 +81,7 @@ public class TwoPlatform
 
         var after = entries.Where(entry => entry.Index > anchors[0].Index);
         var checkpoints = after
-            .Where(entry => Regex.IsMatch(entry.Groups["heading"].Value, @"^\d+\.\d+ - "))
-            .Where(entry => !entry.Groups["body"].Value.TrimStart().StartsWith("Not a checkpoint entry", StringComparison.Ordinal))
+            .Where(entry => DuePoints.LandsACheckpoint(entry.Groups["heading"].Value, entry.Groups["body"].Value))
             .ToArray();
 
         var missing = checkpoints
@@ -127,6 +129,17 @@ public class TwoPlatform
         // sweep's mutation dropping it found.
         (read, missing) = WindowsUnrecorded(Before + Anchor + Entry("8.1 - a note on the checkpoint", "Not a checkpoint entry. It builds nothing."));
         Assert.Equal(0, read);
+        Assert.Empty(missing);
+
+        // A heading with no dash lands its checkpoint through `DuePoints` and so
+        // owes the Windows run here too. This reader required the dash until 8.0,
+        // which left an entry headed that way landing its code and owing nothing.
+        Assert.Equal(
+            ["8.1 resolution   2026-09-16"],
+            WindowsUnrecorded(Before + Anchor + Entry("8.1 resolution", "Verified:   `tools/ci.sh` green")).Missing);
+
+        (read, missing) = WindowsUnrecorded(Before + Anchor + Entry("8.1 resolution", "Verified:   `tools/ci.ps1` green"));
+        Assert.Equal(1, read);
         Assert.Empty(missing);
 
         // And the anchor is exactly one heading.

@@ -25,6 +25,123 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - BUILD_PLAN.md - phase 8's section written as the loop it builds, with 8.0's rulings and the model's proposal dropped
+
+Authorised by: The model writes no entry or exit proposal, and the loop scores only what code computes
+Was:
+> 8.0 named the questions it would decide, being the fundamental panel, the volume profile's claim, the theme for a name with no facts file, the segment figures and the count a verdict note states; 8.1 read "Setup resolution"; 8.3 stated a maximum family size without deciding it; 8.4 said nothing shadow reaches any screen; 8.5 named no test; 8.6 named three rules and no bound; 8.7 was the model's proposal and 8.8 the phase report
+Now:
+> 8.0 states each ruling and what it rests on; 8.1 is setup resolution from the entry; 8.3 names the register's evaluator, parameters and version; 8.4 says what the run page's region states; 8.5 names the test and the minimum's night floor; 8.6 names four rules, the enforcement and the bound with its arithmetic; and 8.7 is the phase report, the model's proposal having been dropped
+Why: the operator ruled on 2026-09-15 that the loop is built to the end of phase 8, that the proposal is dropped rather than carved out of the rule that no model is asked for a number, and that the conventions the loop rests on are decided rather than carried.
+
+### 2026-09-16 - BUILD_PLAN.md - the contradictions table gains the shadow region and the model's proposal
+
+Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+Was:
+> the table ended at M
+Now:
+> N, the shadow candidates region against the guardrail that says shadow conditions are shown nowhere, resolved at 8.0 on the decision's side; and O, the model's proposal against the rule that code owns every number, resolved at 8.0 by dropping the checkpoint
+Why: each is two documents disagreeing, which is a finding rather than a licence to change either one, so each is recorded with where it was resolved.
+
+### 2026-09-16 - BUILD_PLAN.md - the three prediction lines that read 7.x
+
+Corrects: the arithmetic in phases 5 and 6 named the improvement loop by its old number, which the phase 7 sign-off carried as wording left behind.
+Was:
+> the 72 that remain at 6.x and 7.x; the 16 that remain at 7.x, twice
+Now:
+> the improvement loop's checkpoints, then numbered 7.x and now 8.x
+Why: a record of what a pass predicted stays as it was, and the checkpoints it names are the ones the plan now has.
+
+### 2026-09-16 - ARCHITECTURE.html - section 13.2 loses the model's proposal and names phase 8
+
+Authorised by: The model writes no entry or exit proposal, and the loop scores only what code computes
+Was:
+> 13.2 Four things that can improve, shallowest first, with a row for the model's own proposal and three rows naming phase 7; the paragraph beneath reading "the other three" and "All four"
+Now:
+> 13.2 Three things that can improve, shallowest first, the rows naming phase 8, and the paragraph reading "the other two" and "All three" with a sentence saying what was dropped and why
+Why: the loop is phase 8, which the 7.0 planning pass moved everywhere but these cells, and the fourth row asked a model for prices.
+
+### 2026-09-16 - ARCHITECTURE.html - section 20's phase 8 row drops the proposal
+
+Authorised by: The model writes no entry or exit proposal, and the loop scores only what code computes
+Was:
+> the improvement loop of section 13: setup resolution, the break-even score, the candidate register, the shadow column and the condition verdicts on the run page; rule versions scored counterfactually; the model's own proposal stored beside the computed one and scored the same way
+Now:
+> the improvement loop of section 13: setup resolution from the entry, the break-even score, the candidate register, the shadow column and the condition verdicts on the run page; rule versions scored counterfactually
+Why: the row lists what the phase builds and the proposal is not built.
+
+### 2026-09-16 - ARCHITECTURE.html - section 15.10's shadow candidates region states what it shows
+
+Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+Was:
+> the same columns for registered candidates that are not on the list, with the correction divisor stated beside the threshold
+Now:
+> how many candidate conditions are registered, the correction divisor that number sets, and one line saying each candidate's record is withheld until it is promoted. No evaluation of a name appears here or anywhere else
+Why: the region as written showed a candidate's record before promotion, which is the thing the shadow exists to prevent, and the decision is the side that stands.
+
+### 2026-09-16 - ARCHITECTURE.html - the momentum panel's row says its neutral rules decide nothing
+
+Authorised by: The momentum panel is context a reader weighs, and nothing computes with it
+Was:
+> The momentum readings on their own small axes beneath the chart, each with its neutral rule drawn. A number like 53 means nothing without the band it sits in.
+Now:
+> the same, with the neutral rules named as reading conventions the panel draws and no component applies
+Why: the panel was the only part of the technical half with no stated purpose, and 8.0 gave it one rather than carrying the question.
+
+### 2026-09-16 - ARCHITECTURE.html - section 17's eligibility row says an average may set an edge
+
+Authorised by: A moving average may widen a band that a tranche sits on, and may never anchor one
+Was:
+> a band straddling the close keeps its full width
+Now:
+> a band straddling the close keeps its full width, and an average among its members may set an edge of that width without making the band eligible
+Why: an average sets 36 of the 446 edges of the zones that fired on 2026-09-15, and two sentences of the corpus disagreed about whether it may.
+
+### 2026-09-16 - ARCHITECTURE.html - section 17's family size row states a decided value
+
+Authorised by: The candidate family is at most eight and the threshold is divided by it
+Was:
+> with a stated maximum family size of 8, proposed
+Now:
+> with a maximum family size of 8
+Why: no count of resolved setups measures a convention, so a proposed marker on it would wait on nothing.
+
+### 2026-09-16 - CLAUDE.md - the nightly rule and the nightly-cost row name the two carve-outs
+
+Corrects: the hard rule said the nightly run makes no per-name network request while the backfill and the corporate action refetch both make one, which the phase 7 sign-off carried as wording the weekly retry left open-ended.
+Was:
+> Any component that adds a per-name call to the nightly path is a defect, not a feature.
+Now:
+> the same, followed by the two carve-outs named: a joiner's backfill, once per name ever, and the corporate action refetch on the five nights after a failed check and once a week after that
+Why: a rule with two standing exceptions that it does not name is a rule a reader has to discover the exceptions to.
+
+### 2026-09-16 - CLAUDE.md - done condition 5 stops naming the matrix
+
+Corrects: the condition still said "Until 0.4 makes the matrix able to run", where the 7.2 ruling removed the hosted Windows leg and left one hosted runner and one machine.
+Was:
+> Until 0.4 makes the matrix able to run, the suite is run on the machine at hand, PROGRESS names which platform that was, and the other runner is carried to 0.4.
+Now:
+> Until 0.4 makes the workflow able to run, ... and the other platform is carried to 0.4, with a sentence saying the workflow carried a hosted Windows leg until the 7.2 ruling removed it
+Why: the word named a shape the workflow no longer has.
+
+### 2026-09-16 - CLAUDE.md - the register's roster row starts at 8.3 and names the evaluator guard
+
+Authorised by: A due point names a checkpoint that exists wherever its phase has been detailed
+Was:
+> | `register-append-only` | from 8.1 | The candidate register refuses updates and deletes, and the correction divisor matches the rows registered before the window opened |
+Now:
+> | `register-append-only` | from 8.3 | ... and a registered candidate whose evaluator's source has moved without its version fails rather than being evaluated under a rule the register does not name |
+Why: 8.3 is the checkpoint whose migration creates the register, and the roster row named 8.1, where nothing creates it; the second half is 8.0's ruling on what a registered candidate is.
+
+### 2026-09-16 - RUNBOOK.md - the suspect row says which surfaces keep their line
+
+Authorised by: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
+Was:
+> until a refetch succeeds or the name leaves the index, when the lines go
+Now:
+> until a refetch succeeds or the name leaves the index. When it leaves, the run page's region stops naming it, because that region is about tonight; its name page and its exported report keep their line
+Why: the row said every line goes, and two of the three are about a name whose stored prices are still the ones that may not carry the action.
+
 ### 2026-09-15 - ARCHITECTURE.html - section 11's breakout on volume row reads resistance at last night's close
 
 Authorised by: Breakout on volume reads resistance at the previous session's close
