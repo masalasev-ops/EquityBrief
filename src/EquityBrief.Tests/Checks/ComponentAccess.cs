@@ -575,4 +575,86 @@ public class ComponentAccess
             new[] { "repaired at 4.0", "section 14", "step 17", "8.3", "the one reader", "one call, stores no row", "twenty at most are drawn" },
             allowed => Assert.False(CountsTheRowsParts.IsMatch(allowed), $"'{allowed}' is not a count of a row's parts and was refused."));
     }
+
+    // A worker verb a document names and the worker does not dispatch is a
+    // behaviour promised to a person with nothing behind it. The 8.6 correction
+    // found one: the catalogue said a rule version's window opens through its
+    // own verb, the component's methods existed, and no command line reached them,
+    // while every check that read the row was reading its stores.
+    [Fact]
+    public void EveryWorkerVerbTheDocumentsNameIsDispatchedAndShownAndEveryDispatchedVerbIsInTheHelp()
+    {
+        var program = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Program.cs"));
+        var dispatched = DispatchedVerbs(program);
+
+        // The population, stated: the six the worker carries from 8.6.
+        Assert.True(dispatched.Count >= 6, $"Read {dispatched.Count} dispatched verb(s), expected at least 6.");
+
+        var named = VerbsNamedIn(Corpus.Read("docs/ARCHITECTURE.html"));
+
+        Assert.True(named.Count >= 3, $"Read {named.Count} verb(s) the architecture names, expected at least 3.");
+
+        // Every verb a component's row says a person or a page runs is one the
+        // worker dispatches, and the runbook shows its command line.
+        Assert.Empty(named.Except(dispatched, StringComparer.Ordinal));
+
+        var runbook = Corpus.Read("docs/RUNBOOK.md");
+
+        Assert.DoesNotContain(named, verb => !ShownIn(runbook, verb));
+
+        // And the help the worker prints with no verb names every verb it
+        // dispatches and says how many there are.
+        var help = HelpText(program);
+
+        Assert.DoesNotContain(dispatched, verb => !help.Contains($"'{verb}", StringComparison.Ordinal));
+        Assert.Contains($"{CountWord(dispatched.Count)} are built", help, StringComparison.Ordinal);
+
+        // The readers, over constructed text, so none of the assertions above
+        // passes by reading nothing.
+        const string Constructed = """
+            return (args.Length > 0 ? args[0] : string.Empty) switch
+            {
+                "alpha" => A(),
+                "beta" => await B(args),
+                _ => NoVerb(),
+            };
+            static int NoVerb()
+            {
+                Console.Error.WriteLine("Two are built: 'alpha' does a thing and 'beta' another.");
+                return 1;
+            }
+            """;
+
+        Assert.Equal(["alpha", "beta"], DispatchedVerbs(Constructed));
+        Assert.Contains("'beta' another", HelpText(Constructed), StringComparison.Ordinal);
+        Assert.Equal(["gamma", "research"], VerbsNamedIn("<td>through the worker's <code>gamma</code> verb, and the <code>research</code> verb</td>"));
+        Assert.True(ShownIn("dotnet run --project src/EquityBrief.Worker -- gamma --rule x", "gamma"));
+        Assert.False(ShownIn("the gamma verb, described and never shown", "gamma"));
+    }
+
+    static IReadOnlyList<string> DispatchedVerbs(string program)
+    {
+        var table = Regex.Match(program, @"args\[0\] : string\.Empty\) switch\s*\{(.*?)_ => NoVerb\(\)", RegexOptions.Singleline);
+
+        return table.Success
+            ? [.. Regex.Matches(table.Groups[1].Value, "\"([a-z-]+)\" =>").Select(match => match.Groups[1].Value)]
+            : [];
+    }
+
+    static IReadOnlyList<string> VerbsNamedIn(string document) =>
+        [.. Regex.Matches(document, @"<code>([a-z-]+)</code> verb").Select(match => match.Groups[1].Value).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+
+    static bool ShownIn(string runbook, string verb) =>
+        Regex.IsMatch(runbook, @"src/EquityBrief\.Worker -- " + Regex.Escape(verb) + @"\b")
+        || runbook.Contains($"`tools/{verb}`", StringComparison.Ordinal);
+
+    static string HelpText(string program) =>
+        Regex.Match(program, @"static int NoVerb\(\)\s*\{(.*?)return 1;", RegexOptions.Singleline).Groups[1].Value;
+
+    static string CountWord(int count) =>
+        count switch
+        {
+            2 => "Two", 3 => "Three", 4 => "Four", 5 => "Five", 6 => "Six", 7 => "Seven", 8 => "Eight", 9 => "Nine", 10 => "Ten",
+            _ => count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        };
 }

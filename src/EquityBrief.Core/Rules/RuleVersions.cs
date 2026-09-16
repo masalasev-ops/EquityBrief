@@ -65,26 +65,42 @@ public static class LadderRules
 // The bound is proposed and its arithmetic is stated rather than assumed: the
 // night of 2026-09-14 took 495 seconds over steps 1 to 16, its level stage 143
 // seconds and its ladder stage 5 at 504 names. A merge distance version therefore
-// costs 148 seconds and every other version 5, which puts fourteen at 688 seconds
-// against a deadline of 900. A projection is not a measurement, and the row that
-// settles it reads the scorer's own nights.
+// costs 148 seconds and every other version 5. The caps are two windows of the
+// merge distance and four of each other rule, each rule's live window among them,
+// so the fullest register they admit replays one merge distance version and nine
+// others, 193 seconds, which puts the night at 688 against a deadline of 900. A
+// projection is not a measurement, and the row that settles it reads the scorer's
+// own nights.
 // owes: The rule version bound set from nights the version scorer ran
+// see: A ladder rule's version is measured beside that rule's live window, and both count against the bound
 public static class RuleVersions
 {
-    // At most four versions of each rule, and fourteen at once.
+    // At most two windows of the merge distance, four of each other rule, and
+    // fourteen at once, every window counted, live ones included.
     //
-    // Both, because four of each of four rules is sixteen and the total is what
-    // the deadline actually bounds. The per-rule cap is what stops one rule
-    // taking the whole budget and leaving the other three unversioned, which
-    // would make the night's cost the same and the comparison narrower.
+    // The merge distance has its own cap because it is the one rule whose
+    // version replays the level stage, at 148 seconds against 5: four of it
+    // would add three level replays and take the night past its deadline on its
+    // own. The other caps stop one rule taking the whole budget and leaving the
+    // others unversioned. Fourteen is the sum of the four caps, so no register
+    // the caps admit exceeds it, and it stays a cap of its own for a register
+    // written by anything other than the verb.
+    public const int MostOfTheMergeDistance = 2;
+
     public const int MostPerRule = 4;
 
     public const int MostAtOnce = 14;
 
-    // The live version of each rule is what the night already computes, so it is
-    // no extra replay and is not counted against the bound. Counting it would
-    // make the bound a bound on versions plus the thing being compared against.
+    // The live version of each rule is what the night already computes, so it
+    // costs no replay. It is still a window, and it counts against the caps: a
+    // version is opened only beside its rule's live window, because the live
+    // window's hash is what stops the night when the code both of them run
+    // through moves, and a version measured with nothing watching that code is a
+    // measurement whose subject can move unseen.
     public const string Live = "live";
+
+    public static int MostFor(string rule) =>
+        LadderRules.ReplaysLevels(rule) ? MostOfTheMergeDistance : MostPerRule;
 
     public const string InSample = "in_sample";
 
@@ -128,39 +144,60 @@ public static class RuleVersions
 
         var forThisRule = open.Count(row => string.Equals(row.Rule, rule, StringComparison.Ordinal));
 
-        if (forThisRule >= MostPerRule)
+        // A version beside nothing. The live window is what the drift check
+        // reads, so without one a code change moves the version's own replay
+        // with nothing to stop the night.
+        if (!string.Equals(version, Live, StringComparison.Ordinal)
+            && !open.Any(row => string.Equals(row.Rule, rule, StringComparison.Ordinal)
+                && string.Equals(row.Version, Live, StringComparison.Ordinal)))
+        {
+            return
+                $"'{rule}' has no open live window. A version is measured beside its rule's live window, " +
+                "because that window's hash is what stops the night when the code both run through moves; " +
+                "open the live window first.";
+        }
+
+        if (forThisRule >= MostFor(rule))
         {
             return FormattableString.Invariant(
-                $"'{rule}' already has {forThisRule} open version(s), which is the most per rule of {MostPerRule}. ")
+                $"'{rule}' already has {forThisRule} open window(s), its live one included, which is the most for this rule of {MostFor(rule)}. ")
                 + "Close one before opening another, because one rule taking the whole budget leaves the "
-                + "others unversioned at the same cost to the night.";
+                + "others unversioned, and the merge distance's cap is lower because its versions replay the level stage.";
         }
 
         return open.Count >= MostAtOnce
             ? FormattableString.Invariant(
-                $"{open.Count} version(s) are already open, which is the most at once of {MostAtOnce}. ")
+                $"{open.Count} window(s) are already open, which is the most at once of {MostAtOnce}. ")
                 + "The night replays the ladder stage once per version and the level stage once per merge "
                 + "distance version, and the bound is what keeps that inside the deadline."
             : null;
     }
 
-    // The seconds a night of these versions is projected to add, from the stage
+    // The seconds a night of these windows is projected to add, from the stage
     // durations the night itself measured.
     //
-    // Projected rather than asserted: the figures are one night's at one index
-    // size, and the row that settles the bound reads the scorer's own nights.
-    // Stated here so the arithmetic is in code rather than only in prose, and so
-    // a test can put the document's own figures to it.
+    // A live window costs nothing, because the scorer replays only the versions
+    // beside it and the night has already computed the live rule. Projected
+    // rather than asserted: the figures are one night's at one index size, and
+    // the row that settles the bound reads the scorer's own nights.
     public static double ProjectedSeconds(
         IReadOnlyList<RuleVersionRow> open,
         double levelStageSeconds,
         double ladderStageSeconds)
     {
-        var merge = open.Count(row => LadderRules.ReplaysLevels(row.Rule));
-        var others = open.Count - merge;
+        var replayed = open.Where(row => !string.Equals(row.Version, Live, StringComparison.Ordinal)).ToArray();
+        var merge = replayed.Count(row => LadderRules.ReplaysLevels(row.Rule));
+        var others = replayed.Length - merge;
 
         return (merge * (levelStageSeconds + ladderStageSeconds)) + (others * ladderStageSeconds);
     }
+
+    // The most the caps let a night add: every rule at its cap, one window of
+    // each being its live one. This is the figure the bound is for, since a bound
+    // whose fullest register runs past the deadline is not a bound on the night.
+    public static double WorstCaseSeconds(double levelStageSeconds, double ladderStageSeconds) =>
+        LadderRules.All.Sum(rule =>
+            (MostFor(rule) - 1) * (LadderRules.ReplaysLevels(rule) ? levelStageSeconds + ladderStageSeconds : ladderStageSeconds));
 
     // A rule's parameters as they stand, hashed, so a change is a thing the night
     // can notice rather than a thing somebody remembers to record.

@@ -11808,3 +11808,149 @@ Carried:    the phase's own sign-off, which is owed on phase 8 as a whole and wh
             threshold calibration, the candidate family size read from resolved setups and the rule
             version bound read from the scorer's own nights are each evidence the calendar produces
             and no checkpoint accumulates.
+
+### 8.6 - correction: the version bound stated to its end, the verb and the night the document promised, and the code a window measures pinned   2026-09-16
+Corrects:   the 8.6 entry above records rule versions scored counterfactually with a bound of four
+            versions of each rule and fourteen at once, a window opened and closed through a verb, and
+            a live rule whose parameters or code have moved stopping the night. Six things it built
+            were not what it recorded.
+            The bound did not bound the night. Four windows of every rule with no live window required
+            admitted four merge distance versions, each replaying the level stage, and ten others: a
+            night of 1,137 seconds against a deadline of 900. The document stated 688 as the bound's
+            figure, which is the night with one merge distance replay and nine others, and the test
+            asserted it as 688 == 495 + the projection - 163, with 163 a literal chosen to make 851
+            read as 688. The projection charged every open window as a replay while the scorer skips
+            live ones, and a comment said live windows count against nothing while the refusal counted
+            them all.
+            No verb opened or closed a window. The catalogue row said a window opens through its own
+            verb and the 8.6 entry said a version is a decision a person takes through one; the worker
+            dispatched migrate, nightly, fundamentals, research and register, and the scorer's open
+            and close were called by tests alone.
+            The code half of the drift check could never fire. The code version hashed into every
+            window was the literal "8.6", so a change to the level or ladder arithmetic left every hash
+            where it was and the night went on scoring a window whose subject had moved.
+            Section 17's row said `nightly-cost` asserts a recorded night at one version and at
+            fourteen. `nightly-cost` carried no version at all, and the claim passed under
+            `rule-versions-scored` on a note that left the clause out.
+            A version could be opened under a parameter name its rule does not read, which the replay
+            answers with the live value, so it would store the live rule's plans under a version's
+            name; and a scored night read the newest bands whatever session it scored, so a backfill,
+            which the catalogue row describes flagging, would have replayed a past close against
+            tonight's bands.
+            And the rule version bound's operating row added 188 seconds to 495 and called it 688.
+Found:      by the session that built phase 8, while gathering the figures for its sign-off handoff on
+            2026-09-16: the verb, the forced literal and the unrun night first, and the code version,
+            the parameter names, the backfill's bands and the row's arithmetic while repairing them. The
+            operator ruled that no sign-off prompt issues until they are repaired. The work is this
+            session's and what it corrects is 8.6's, so it is labelled for the checkpoint that built it.
+Repaired:   the caps are per rule, two windows of the merge distance and four of each other rule, every
+            open window counted, which makes fourteen the sum of the caps; a version opens only beside
+            its rule's live window, which carries the build's own parameters, and under exactly the
+            names its rule is replayed from; a live window is not closed while a version beside it is
+            open; and every refused open or close is a run log row under the outcome refused (see: A
+            ladder rule's version is measured beside that rule's live window, and both count against
+            the bound). The projection charges versions and never live windows, and `WorstCaseSeconds`
+            computes the fullest register the caps admit, 193 seconds, a night of 688. The code version
+            is the pin of the level arithmetic, the ladder arithmetic and the scorer's own file, taken
+            the way 8.3 pins an evaluator, through one `SourcePin` both now use. The scorer reads the
+            bands and trend as of the session it scores. The worker dispatches a `version` verb that
+            opens a live window, opens a version beside it, closes one naming what replaced it,
+            backfills a past night and lists the open windows, and its help says six verbs are built.
+            Section 17's row, the three catalogue rows naming a verb, 8.6's text, the operating row,
+            SCHEMA's `rule_version` notes and four roster rows say so, with their prior text in
+            CHANGELOG; RUNBOOK gains the command lines for both loop verbs, which it had never shown.
+Stored:     nothing to keep or rewrite. The operator's store was at schema 23 when last read on
+            2026-09-16 and holds no `rule_version` table, and no path could have opened a window in any
+            store, so no row was written under the defect. The first night on this code migrates the
+            store to 26 and opens nothing.
+Missed:     each by a different reader, and each is now a check of its own rather than a sharper note.
+            The verb: `component-access` reached the catalogue row by the stores it declares and nothing
+            read a verb a row names against what the worker dispatches. It does now, both ways, with the
+            runbook's command line and the help's count held to the dispatch.
+            The night: `architecture-conformance` reconciles a pass against the check its verdict names
+            and never against a check the row itself names. It now holds every check a row names in its
+            own words to the verdict's check or to the verdict's note, over a population of one row today.
+            The bound: the only test of the arithmetic agreed with the document by a literal, which is a
+            tautology in this corpus's classes, and no test computed the worst case at all. The worst
+            case is now computed from the caps, with the night's measured seconds, stage durations,
+            caps, total, deadline and resulting night read off section 17's row and the deadline held
+            to the one the night is bounded by.
+            The code version: a constant the plan said would be pinned and nothing pinned.
+Guarded:    over constructed rows, a migrated store and the replayed fixture. Each rule's cap refuses the
+            window past it and admits one below, live windows counted; fourteen is the caps' sum; the
+            total refuses a register written around the caps. The fullest register projects to the worst
+            case, a live window costs nothing, and the night the row states sits inside the deadline. A
+            version beside no live window, a live window at other parameters and a version under a name
+            its rule does not read are each refused on the run log, and every live window opened hashes
+            to what the night compares against. A live window is not closed while a version is open. The
+            code version equals the pin of its three sources, each source moves it, the declaring line
+            does not, and a carriage-returned, byte-order-marked copy pins the same. A backfill of a past
+            night writes the same plans after a later band set lands and the later night writes
+            different ones. The verb opens, lists, refuses, backfills and closes over a store. Two whole
+            recorded nights, one version and the fullest register, make the same requests, none on the
+            version step, and ten times the scores.
+Expected:   derived, and derived from the document rather than frozen from a run: the worst case is the
+            arithmetic section 17 states, recomputed from the figures read off the row, and the backfill
+            and version plans are the replayed fixture's own, compared with themselves across a band set
+            the test writes. No expectation file changes, because the bound and the verb produce no
+            stage output the fixture replay reads.
+Tests:      981, from 973. Eight added: the version beside its live window and under its rule's names;
+            the live window not closed beside a version; the verb; the code version pin; the backfill's
+            bands; the recorded nights at one version and the fullest register; the worker verbs
+            reconciled; and a check a row names held to its verdict. Two rewritten in place and renamed
+            for what they now assert: the bound at each rule's cap, and the worst case inside the
+            deadline in place of the forced projection.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being the live
+            window a version stands beside, the per-rule cap, a live window costing nothing, the code
+            version's pin, the session the bands are read at, the check a row names, the verb's
+            dispatch, the version step making no request, and the parameter names. Predicted:
+            M1 the live window requirement dropped from `RuleVersions.Refusal`: the beside-its-live-window
+            test red on the first refusal, and the verb test red on the merge distance version it
+            expects refused.
+            M2 the merge distance's cap raised to four: the bound test red on the cap and on fourteen as
+            the caps' sum, the worst case test red on 688 and on the deadline, and the recorded nights
+            test red, since the fullest register then opens a fifteenth window the total refuses.
+            M3 the projection charging live windows again: the worst case test red on a live window
+            costing nothing.
+            M4 the code version written back as "8.6": the pin test red and nothing else, since every
+            other test reads the constant.
+            M5 the bands read at the newest as-of whatever the session: the backfill test red on the past
+            night's plans, and the pin test red, because the query is in a pinned source.
+            M6 `nightly-cost` removed from the version bound's note: the row-names-a-check test red.
+            M7 the `version` arm removed from the worker's dispatch: the verbs test red, on a verb the
+            catalogue names that nothing dispatches.
+            M8 the version step recording its rows written as requests: the recorded nights test red, and
+            the pin test red.
+            M9 the parameter name refusal dropped: the beside-its-live-window test red on the unread name,
+            and the pin test red.
+            Not mutated, and named so the next sweep has them: the refusal to close a live window beside
+            a version, the refused outcome on the run log, the verb's backfill date parse, and the help's
+            count word.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Ten runs of the whole suite, never a filter, at this entry's commit in a
+            detached worktree under the session scratchpad, each reverted with the tree read clean
+            between them and the worktree removed after. The baseline is 980 of 981 with one red, and
+            that red is this entry: `two-platform` reads every checkpoint entry written since the 7.2
+            ruling for the words `tools/ci.ps1` green and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 2 red, the beside-its-live-window test and the verb test. M2 turned 3, the bound
+            test, the worst case test and the recorded nights test. M3 turned 1, the worst case test.
+            M4 turned 1, the pin test. M5 turned 2, the backfill test and the pin test. M6 turned 1, the
+            row-names-a-check test. M7 turned 1, the verbs test. M8 turned 2, the recorded nights test
+            and the pin test. M9 turned 2, the beside-its-live-window test and the pin test.
+            Worth recording: the pin went red on every mutation made inside the scorer's own file,
+            which is the pin doing what it is for rather than noise. Any edit to the code a window
+            measures is a new code version, and a live window opened under the old one stops the next
+            night until it is closed and opened again. A mutation written the first way for M7, the
+            arm removed from the dispatch, would not have compiled, because the function it called
+            would have been unused and warnings are errors here; it renames the verb instead.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 981 of 981 tests ran
+            with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: every change
+            here is to what a claim's check asserts and to what its note says, not to what the document
+            claims. Both gates ran with this entry in place, and the operator's store under `data/` was
+            not touched by either.
+Carried:    nothing. The rule version bound's operating row stands, restated at the caps; it reads the
+            scorer's own nights, which no checkpoint produces.

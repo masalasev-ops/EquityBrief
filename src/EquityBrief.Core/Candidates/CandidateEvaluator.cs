@@ -1,6 +1,4 @@
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace EquityBrief.Core.Candidates;
 
@@ -67,34 +65,9 @@ public abstract class CandidateEvaluator
     // lets the recorded version be corrected to the value the check demands.
     public const string VersionDeclaration = "public override string Version =>";
 
-    // The pin, in one place for every evaluator and for the check that reads it.
-    //
-    // Normalised before hashing in the two ways a checkout can differ from the
-    // bytes that were committed without anything in the file having changed: a
-    // carriage return before every newline, which is what a Windows checkout of
-    // an LF repository can produce, and a leading byte order mark, which an
-    // editor can add on a save. Without both, the version of an untouched
-    // evaluator would depend on which machine cloned the repository, and the
-    // check would be reporting on the checkout rather than on the code.
-    public static string Pin(string source)
-    {
-        var normalised = source.Replace("\r\n", "\n", StringComparison.Ordinal).TrimStart('﻿');
-
-        var pinned = string.Join(
-            "\n",
-            normalised
-                .Split('\n')
-                .Where(line => !line.TrimStart().StartsWith(VersionDeclaration, StringComparison.Ordinal)));
-
-        var digest = SHA256.HashData(Encoding.UTF8.GetBytes(pinned));
-
-        // Twelve hex characters. The whole digest is a column of noise a person
-        // reading the register cannot hold in their head, and twelve is far more
-        // than enough to make two versions of one evaluator distinguishable,
-        // which is all this is being asked to do: it is a pin, not a signature,
-        // and the check recomputes it from the file rather than trusting it.
-        return Convert.ToHexString(digest)[..12].ToLowerInvariant();
-    }
+    // The pin, in one place for every evaluator and for the check that reads it,
+    // taken the way every source pin in this repository is taken.
+    public static string Pin(string source) => SourcePin.Of([source], VersionDeclaration);
 
     // A registration's parameters, as the register stores them and as an
     // evaluator is handed them. JSON of one flat object of numbers: a candidate

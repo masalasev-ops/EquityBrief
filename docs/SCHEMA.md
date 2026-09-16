@@ -467,6 +467,8 @@ Primary key: `rule`, `version`, `opened_at`.
 
 **The instant is in the key, so a version closed and opened again is two windows and not one.** Scores belong to a window rather than to a version name, and a key without the instant would merge two measurements of the same name taken either side of a change, which is the thing frozen windows exist to prevent.
 
+**A version row stands beside an open `live` row of its rule, and every open row counts against the bound.** The scorer writes every row when a person runs the worker's `version` verb and never during a night: a `live` row carries the build's own parameters and nothing else, a version row is refused where its rule has no open `live` row or where its `parameters` name anything other than what the rule is replayed from, and a `live` row is not closed while a version of its rule is open. At most two rows of the merge distance and four of each other rule are open at once, `live` rows included (see: A ladder rule's version is measured beside that rule's live window, and both count against the bound).
+
 ### version_score
 Grain: one row per name per night per rule per version.
 

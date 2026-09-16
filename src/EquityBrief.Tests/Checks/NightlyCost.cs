@@ -717,6 +717,95 @@ public class NightlyCost
     }
 
     [Fact]
+    public async Task ARecordedNightAtOneRuleVersionAndAtTheFullestRegisterMakesTheSameRequestsAndNoModelCall()
+    {
+        // The rule versions step's half of the property. A version adds
+        // arithmetic, the level and ladder stages replayed from stored bars, so a
+        // night's cost grows with versions times names and never with a request.
+        // Measured over two whole recorded nights, one with a single version open
+        // and one with every rule at its cap, rather than stated.
+        var one = await NightWithVersionsAsync(fullest: false);
+        var full = await NightWithVersionsAsync(fullest: true);
+
+        Assert.Equal(0, one.Code);
+        Assert.Equal(0, full.Code);
+
+        // The windows each night had open, and the versions among them the scorer
+        // replays: one beside its live window, and the fullest register's ten
+        // beside four.
+        Assert.Equal((2, 1), (one.Open, one.Replayed));
+        Assert.Equal((Core.Rules.RuleVersions.MostAtOnce, 10), (full.Open, full.Replayed));
+
+        // The arithmetic grew with the versions: the step wrote a score per
+        // version per name, over the same names both nights.
+        Assert.True(one.Scores > 0, "The one-version night wrote no score, so the counts below compare nothing.");
+        Assert.Equal(one.Scores * 10, full.Scores);
+
+        // And the requests did not: the same count on every step both nights, none
+        // on the step itself, and no model call anywhere on the arithmetic.
+        Assert.Equal(one.Requests, full.Requests);
+        Assert.Equal((0L, 0L), (one.StepRequests, full.StepRequests));
+        Assert.Equal((0L, 0L), (one.ModelCalls, full.ModelCalls));
+    }
+
+    // A whole recorded night over a store whose windows were opened through the
+    // scorer an hour before it, as the verb opens them.
+    static async Task<(int Code, int Open, int Replayed, long Scores, long Requests, long StepRequests, long ModelCalls)> NightWithVersionsAsync(bool fullest)
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var scorer = new Worker.Rules.RuleVersionScorer(FixedClock.At(Night.AddHours(-1), SessionZones.UnitedStates), store.DatabaseFile);
+        var rules = fullest ? Core.Rules.LadderRules.All : [Core.Rules.LadderRules.NearExitSkip];
+
+        foreach (var rule in rules)
+        {
+            Assert.Null(await scorer.OpenLiveAsync(rule, $"open-{rule}-live"));
+
+            var versions = fullest ? Core.Rules.RuleVersions.MostFor(rule) - 1 : 1;
+
+            for (var at = 1; at <= versions; at++)
+            {
+                var parameters = Worker.Rules.RuleVersionScorer.LiveParameters(rule)
+                    .ToDictionary(pair => pair.Key, pair => pair.Key == "nearExitInTypicalDays" || pair.Key == "typicalMoveMultiple" ? pair.Value + at : 1 - pair.Value, StringComparer.Ordinal);
+
+                Assert.Null(await scorer.OpenAsync(rule, FormattableString.Invariant($"v{at}"), parameters, FormattableString.Invariant($"open-{rule}-{at}")));
+            }
+        }
+
+        const string RunId = "run-versions";
+
+        var code = await Nightly.RunAsync(
+            new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
+            FixtureFolder(),
+            Index,
+            FixedClock.At(Night, SessionZones.UnitedStates),
+            new StringWriter(),
+            new StringWriter(),
+            RunId);
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        long Scalar(string sql)
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture);
+        }
+
+        var open = Core.Rules.RuleVersions.OpenAt(await scorer.VersionsAsync(), Night);
+
+        return (
+            code,
+            open.Count,
+            open.Count(row => row.Version != Core.Rules.RuleVersions.Live),
+            Scalar("SELECT COUNT(*) FROM version_score;"),
+            Scalar($"SELECT IFNULL(SUM(network_requests), 0) FROM run_log WHERE run_id = '{RunId}';"),
+            Scalar($"SELECT IFNULL(SUM(network_requests), 0) FROM run_log WHERE run_id = '{RunId}' AND stage = '{Worker.Rules.RuleVersionScorer.Stage}';"),
+            Scalar($"SELECT IFNULL(SUM(model_calls), 0) FROM run_log WHERE run_id = '{RunId}' AND stage <> '{QueueStage}';"));
+    }
+
+    [Fact]
     public async Task TheRunLogRecordsTheNightsCostRatherThanTheTestAssertingIt()
     {
         // A green report is a statement about the build and never about the

@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Time;
@@ -43,24 +44,25 @@ public class RuleVersionsScored
 
         var scorer = new RuleVersionScorer(Clock(Opened), store.DatabaseFile);
 
+        Assert.Null(await scorer.OpenLiveAsync(LadderRules.NearExitSkip, "versions-test-0"));
+
         Assert.Null(await scorer.OpenAsync(
             LadderRules.NearExitSkip,
             "three typical days",
             new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 },
             "versions-test-1"));
 
-        var first = Assert.Single(await scorer.VersionsAsync());
+        var first = Assert.Single(await scorer.VersionsAsync(), row => row.Version != RuleVersions.Live);
 
         Assert.Null(first.ClosedAt);
-        Assert.Equal("8.6", first.CodeVersion);
+        Assert.Equal(RuleVersionScorer.CodeVersion, first.CodeVersion);
 
         // The close writes two fields and no others, and the row stands.
         var later = new RuleVersionScorer(Clock(Opened.AddDays(1)), store.DatabaseFile);
 
-        Assert.True(await later.CloseAsync(
+        Assert.Null(await later.CloseAsync(
             LadderRules.NearExitSkip,
             "three typical days",
-            first.OpenedAt,
             "four typical days",
             "versions-test-2"));
 
@@ -70,9 +72,9 @@ public class RuleVersionsScored
             new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 4 },
             "versions-test-3"));
 
-        var rows = await scorer.VersionsAsync();
+        var rows = (await scorer.VersionsAsync()).Where(row => row.Version != RuleVersions.Live).ToArray();
 
-        Assert.Equal(2, rows.Count);
+        Assert.Equal(2, rows.Length);
 
         var closed = rows.Single(row => row.Version == "three typical days");
 
@@ -97,91 +99,124 @@ public class RuleVersionsScored
     }
 
     [Fact]
-    public void TheBoundRefusesTheFifteenthVersionAndTheFifthOfOneRule()
+    public void TheBoundRefusesTheFifteenthVersionAndTheWindowPastEachRulesCap()
     {
-        // Both caps, at the value each names and one below it. Four of each of
-        // four rules is sixteen, so the total binds first and the per-rule cap
-        // has to be put to a register that has not reached the total.
-        var perRule = Enumerable.Range(1, RuleVersions.MostPerRule)
-            .Select(at => Row(LadderRules.NearExitSkip, FormattableString.Invariant($"v{at}"), Opened))
+        // Each rule's cap, at the value it names and one below it, with the live
+        // window counted: a rule at its cap holds its live window and that many
+        // less one versions beside it.
+        foreach (var rule in LadderRules.All)
+        {
+            var cap = RuleVersions.MostFor(rule);
+
+            var full = new[] { Row(rule, RuleVersions.Live, Opened) }
+                .Concat(Enumerable.Range(1, cap - 1).Select(at => Row(rule, FormattableString.Invariant($"v{at}"), Opened)))
+                .ToArray();
+
+            Assert.Equal(cap, full.Length);
+            Assert.Null(RuleVersions.Refusal(full[..^1], rule, "another", Opened.AddDays(1)));
+
+            var refused = RuleVersions.Refusal(full, rule, "another", Opened.AddDays(1));
+
+            Assert.NotNull(refused);
+            Assert.Contains(FormattableString.Invariant($"the most for this rule of {cap}"), refused, StringComparison.Ordinal);
+        }
+
+        // The merge distance's cap is the lower one, because its versions replay
+        // the level stage, and the other three share the higher.
+        Assert.Equal(2, RuleVersions.MostFor(LadderRules.MergeDistance));
+        Assert.All(
+            LadderRules.All.Where(rule => rule != LadderRules.MergeDistance),
+            rule => Assert.Equal(4, RuleVersions.MostFor(rule)));
+
+        // Fourteen is the sum of the caps, so every rule at its cap is the
+        // fullest register the verb can write and any fifteenth window is past a
+        // cap.
+        var fullest = LadderRules.All
+            .SelectMany(rule => new[] { Row(rule, RuleVersions.Live, Opened) }
+                .Concat(Enumerable.Range(1, RuleVersions.MostFor(rule) - 1).Select(at => Row(rule, FormattableString.Invariant($"{rule} v{at}"), Opened))))
             .ToArray();
 
-        Assert.Null(RuleVersions.Refusal(perRule[..(RuleVersions.MostPerRule - 1)], LadderRules.NearExitSkip, "another", Opened.AddDays(1)));
+        Assert.Equal(RuleVersions.MostAtOnce, LadderRules.All.Sum(RuleVersions.MostFor));
+        Assert.Equal(RuleVersions.MostAtOnce, fullest.Length);
+        Assert.All(LadderRules.All, rule => Assert.NotNull(RuleVersions.Refusal(fullest, rule, "the fifteenth", Opened.AddDays(1))));
 
-        var full = RuleVersions.Refusal(perRule, LadderRules.NearExitSkip, "another", Opened.AddDays(1));
-
-        Assert.NotNull(full);
-        Assert.Contains("most per rule of 4", full, StringComparison.Ordinal);
-
-        // The total, built from four rules so the per-rule cap is not what
-        // refuses: three of each of the four rules is twelve, and two more on a
-        // fifth would exceed neither cap, so the fourteen are spread to leave one
-        // rule with room.
-        var spread = LadderRules.All
-            .SelectMany(rule => Enumerable.Range(1, RuleVersions.MostPerRule)
-                .Select(at => Row(rule, FormattableString.Invariant($"{rule} v{at}"), Opened)))
-            .Take(RuleVersions.MostAtOnce)
+        // The total holds on its own over a register written by something other
+        // than the verb, where one rule sits past its cap and another has room.
+        var lopsided = new[] { Row(LadderRules.MergeDistance, RuleVersions.Live, Opened), Row(LadderRules.NearExitSkip, RuleVersions.Live, Opened) }
+            .Concat(Enumerable.Range(1, RuleVersions.MostAtOnce - 2).Select(at => Row(LadderRules.NearExitSkip, FormattableString.Invariant($"n{at}"), Opened)))
             .ToArray();
 
-        Assert.Equal(RuleVersions.MostAtOnce, spread.Length);
+        Assert.Equal(RuleVersions.MostAtOnce, lopsided.Length);
+        Assert.Contains(
+            "most at once of 14",
+            RuleVersions.Refusal(lopsided, LadderRules.MergeDistance, "m1", Opened.AddDays(1))!,
+            StringComparison.Ordinal);
+        Assert.Null(RuleVersions.Refusal(lopsided[..^1], LadderRules.MergeDistance, "m1", Opened.AddDays(1)));
 
-        // The rule with room left, so what refuses is the total and not the cap.
-        var roomy = spread.GroupBy(row => row.Rule, StringComparer.Ordinal)
-            .First(group => group.Count() < RuleVersions.MostPerRule)
-            .Key;
+        // A closed window counts against nothing, which is what makes closing a
+        // version the way to make room.
+        var closed = fullest.Select(row => row.Version == RuleVersions.Live ? row : row with { ClosedAt = Opened.AddHours(1) }).ToArray();
 
-        var atOnce = RuleVersions.Refusal(spread, roomy, "the fifteenth", Opened.AddDays(1));
-
-        Assert.NotNull(atOnce);
-        Assert.Contains("most at once of 14", atOnce, StringComparison.Ordinal);
-
-        Assert.Null(RuleVersions.Refusal(spread[..(RuleVersions.MostAtOnce - 1)], roomy, "the fourteenth", Opened.AddDays(1)));
-
-        // A closed window does not count against either cap, which is what makes
-        // retiring a version the way to make room.
-        var closed = spread.Select(row => row with { ClosedAt = Opened.AddHours(1) }).ToArray();
-
-        Assert.Null(RuleVersions.Refusal(closed, roomy, "the fifteenth", Opened.AddDays(1)));
+        Assert.All(LadderRules.All, rule => Assert.Null(RuleVersions.Refusal(closed, rule, "the fifteenth", Opened.AddDays(1))));
 
         // A rule the build does not carry is refused whatever the counts, and a
         // version already open is refused rather than opened twice.
         Assert.Contains("is not a ladder rule", RuleVersions.Refusal([], "a rule nobody applies", "v1", Opened)!, StringComparison.Ordinal);
-        Assert.Contains("already has an open window", RuleVersions.Refusal(perRule, LadderRules.NearExitSkip, "v1", Opened.AddDays(1))!, StringComparison.Ordinal);
+        Assert.Contains("already has an open window", RuleVersions.Refusal(fullest, LadderRules.NearExitSkip, RuleVersions.Live, Opened.AddDays(1))!, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void TheProjectedSecondsAreComputedFromTheNightsOwnStageDurations()
+    public void TheBoundsWorstCaseIsComputedFromTheNightsOwnStageDurationsAndSitsInsideTheDeadline()
     {
-        // The bound's arithmetic, put to the figures section 17 states rather
-        // than to figures written beside it. A merge distance version costs a
-        // level replay and a ladder replay; every other version costs a ladder
-        // replay. The night of 2026-09-14 measured 143 and 5 at 504 names.
-        const double Levels = 143;
-        const double Ladders = 5;
+        // The figures section 17 states, read off the row rather than written
+        // beside it, and put to the code: the night's measured seconds, its two
+        // stage durations, the caps, the total, the deadline and the night the
+        // fullest register makes.
+        var row = ArchitectureTables.In(Corpus.Read("docs/ARCHITECTURE.html"))
+            .Single(table => table.Heading == Scope.LimitsTable)
+            .Body.Single(cells => cells.Count > 2 && cells[0] == "Rule versions scored at once");
 
-        var one = RuleVersions.ProjectedSeconds([Row(LadderRules.MergeDistance, "v1", Opened)], Levels, Ladders);
+        var stated = string.Join(" ", row);
 
-        Assert.Equal(148, one, 6);
+        double Figure(string pattern) =>
+            double.Parse(
+                System.Text.RegularExpressions.Regex.Match(stated, pattern).Groups[1].Value,
+                CultureInfo.InvariantCulture);
 
-        var other = RuleVersions.ProjectedSeconds([Row(LadderRules.NearExitSkip, "v1", Opened)], Levels, Ladders);
+        var night = Figure(@"(\d+) seconds over the steps before the close");
+        var levels = Figure(@"a level stage of (\d+) seconds");
+        var ladders = Figure(@"a ladder stage of (\d+) at");
+        var deadline = Figure(@"against a deadline of (\d+)");
+        var worst = Figure(@"puts the night at (\d+) seconds");
 
-        Assert.Equal(5, other, 6);
+        Assert.Equal(RuleVersions.MostOfTheMergeDistance, (int)Figure(@"at most (\d+) windows of the merge distance"));
+        Assert.Equal(RuleVersions.MostPerRule, (int)Figure(@"(\d+) of each of the other"));
+        Assert.Equal(RuleVersions.MostAtOnce, (int)Figure(@"(\d+) at once"));
 
-        // Fourteen at the split the document states: two of the merge distance
-        // and twelve of the rest is 2 x 148 + 12 x 5 = 356, which is inside the
-        // 405 seconds the deadline leaves after the 495 the night took. The
-        // document's own 688 is the total, so the two agree.
-        var fourteen = new[]
-        {
-            Row(LadderRules.MergeDistance, "m1", Opened),
-            Row(LadderRules.MergeDistance, "m2", Opened),
-        }
-            .Concat(Enumerable.Range(1, 12).Select(at => Row(LadderRules.NearExitSkip, FormattableString.Invariant($"n{at}"), Opened)))
+        // The deadline the row states is the one the night is bounded by.
+        Assert.Equal(Core.Providers.RetryPolicy.Standard.Deadline.TotalSeconds, deadline, 6);
+
+        // One replay of each kind, from the night's own stage durations.
+        Assert.Equal(levels + ladders, RuleVersions.ProjectedSeconds([Row(LadderRules.MergeDistance, "v1", Opened)], levels, ladders), 6);
+        Assert.Equal(ladders, RuleVersions.ProjectedSeconds([Row(LadderRules.NearExitSkip, "v1", Opened)], levels, ladders), 6);
+
+        // A live window costs nothing, because the night already computed the
+        // rule it measures and the scorer replays only the versions beside it.
+        Assert.Equal(0, RuleVersions.ProjectedSeconds([.. LadderRules.All.Select(rule => Row(rule, RuleVersions.Live, Opened))], levels, ladders), 6);
+
+        // The fullest register the caps admit, projected window by window, is
+        // the worst case, and the night it makes is the one the row states and
+        // sits inside the deadline.
+        var fullest = LadderRules.All
+            .SelectMany(rule => new[] { Row(rule, RuleVersions.Live, Opened) }
+                .Concat(Enumerable.Range(1, RuleVersions.MostFor(rule) - 1).Select(at => Row(rule, FormattableString.Invariant($"{rule} v{at}"), Opened))))
             .ToArray();
 
-        Assert.Equal(RuleVersions.MostAtOnce, fourteen.Length);
-        Assert.Equal(356, RuleVersions.ProjectedSeconds(fourteen, Levels, Ladders), 6);
-        Assert.Equal(688, 495 + RuleVersions.ProjectedSeconds(fourteen, Levels, Ladders) - 163, 6);
+        Assert.Equal(RuleVersions.WorstCaseSeconds(levels, ladders), RuleVersions.ProjectedSeconds(fullest, levels, ladders), 6);
+        Assert.Equal(worst, night + RuleVersions.WorstCaseSeconds(levels, ladders), 6);
+        Assert.True(
+            night + RuleVersions.WorstCaseSeconds(levels, ladders) <= deadline,
+            FormattableString.Invariant($"The fullest register the caps admit makes a night of {night + RuleVersions.WorstCaseSeconds(levels, ladders)} seconds against a deadline of {deadline}."));
 
         // Which rules replay levels, both ways, because the split is the whole
         // of the arithmetic above and a reader that said yes to everything would
@@ -190,6 +225,155 @@ public class RuleVersionsScored
         Assert.All(
             LadderRules.All.Where(rule => rule != LadderRules.MergeDistance),
             rule => Assert.False(LadderRules.ReplaysLevels(rule)));
+    }
+
+    [Fact]
+    public async Task AVersionIsOpenedOnlyBesideItsRulesLiveWindowAndUnderTheNamesItsRuleIsReplayedFrom()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var scorer = new RuleVersionScorer(Clock(Opened), store.DatabaseFile);
+        var three = new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 };
+
+        // A version with no live window beside it.
+        Assert.Contains(
+            "has no open live window",
+            await scorer.OpenAsync(LadderRules.NearExitSkip, "three typical days", three, "beside-1"),
+            StringComparison.Ordinal);
+
+        // A live window at anything but the build's own parameters.
+        Assert.Contains(
+            "carries the build's own parameters",
+            await scorer.OpenAsync(LadderRules.NearExitSkip, RuleVersions.Live, three, "beside-2"),
+            StringComparison.Ordinal);
+
+        Assert.Null(await scorer.OpenLiveAsync(LadderRules.NearExitSkip, "beside-3"));
+
+        // A version under a name its rule is not replayed from, which the replay
+        // would read past and replay the live rule under the version's name.
+        Assert.Contains(
+            "was given 'nearExitDays'",
+            await scorer.OpenAsync(
+                LadderRules.NearExitSkip,
+                "three typical days",
+                new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitDays"] = 3 },
+                "beside-4"),
+            StringComparison.Ordinal);
+
+        Assert.Null(await scorer.OpenAsync(LadderRules.NearExitSkip, "three typical days", three, "beside-5"));
+
+        // Every live window the verb opens hashes to what the night compares it
+        // against, so opening one cannot stop the next night.
+        var rows = await scorer.VersionsAsync();
+
+        Assert.Empty(RuleVersions.Drifted(RuleVersions.OpenAt(rows, Opened), RuleVersionScorer.HashesNow()));
+        Assert.Equal(2, rows.Count);
+
+        // Three refusals and two opens, each its own row under the outcome it had.
+        Assert.Equal(
+            [RuleVersionScorer.Refused, RuleVersionScorer.Refused, RuleVersionScorer.Ok, RuleVersionScorer.Refused, RuleVersionScorer.Ok],
+            Query(store, $"SELECT outcome FROM run_log WHERE stage = '{RuleVersionScorer.Stage}' ORDER BY run_id;"));
+    }
+
+    [Fact]
+    public async Task ALiveWindowIsNotClosedWhileAVersionOfItsRuleIsOpenBesideIt()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var scorer = new RuleVersionScorer(Clock(Opened), store.DatabaseFile);
+
+        Assert.Null(await scorer.OpenLiveAsync(LadderRules.StopPlacement, "close-1"));
+        Assert.Null(await scorer.OpenAsync(
+            LadderRules.StopPlacement,
+            "stop under the zone",
+            new Dictionary<string, double>(StringComparer.Ordinal) { ["stopTrailsTheLastHigherLow"] = 0 },
+            "close-2"));
+
+        var later = new RuleVersionScorer(Clock(Opened.AddDays(1)), store.DatabaseFile);
+
+        Assert.Contains(
+            "is not closed while 'stop under the zone' is open beside it",
+            await later.CloseAsync(LadderRules.StopPlacement, RuleVersions.Live, null, "close-3"),
+            StringComparison.Ordinal);
+
+        // A window that is not open is not closed, and says so.
+        Assert.Contains(
+            "has no open window to close",
+            await later.CloseAsync(LadderRules.StopPlacement, "a version nobody opened", null, "close-4"),
+            StringComparison.Ordinal);
+
+        // The versions first, then the live window.
+        Assert.Null(await later.CloseAsync(LadderRules.StopPlacement, "stop under the zone", null, "close-5"));
+        Assert.Null(await later.CloseAsync(LadderRules.StopPlacement, RuleVersions.Live, null, "close-6"));
+
+        Assert.Empty(RuleVersions.OpenAt(await later.VersionsAsync(), Opened.AddDays(2)));
+    }
+
+    [Fact]
+    public async Task TheVersionVerbOpensAWindowBesideItsLiveOneListsThemAndClosesOneNamingWhatReplacedIt()
+    {
+        // The verb a person runs, over a store, rather than the scorer's methods
+        // under it: what reaches the store is what the command line says.
+        using var store = new TemporaryStore().Migrated();
+
+        async Task<(int Code, string Said, string Refused)> Run(DateTimeOffset at, params string[] args)
+        {
+            var output = new StringWriter();
+            var error = new StringWriter();
+
+            var code = await VersionVerb.RunAsync([VersionVerb.Name, .. args], Clock(at), store.DatabaseFile, output, error);
+
+            return (code, output.ToString(), error.ToString());
+        }
+
+        var live = await Run(Opened, "--rule", LadderRules.NearExitSkip, "--live-window");
+
+        Assert.Equal(0, live.Code);
+        Assert.Contains("opened the live window of 'the near-exit skip'", live.Said, StringComparison.Ordinal);
+
+        var opened = await Run(Opened.AddMinutes(1), "--rule", LadderRules.NearExitSkip, "--version", "three typical days", "--parameters", "nearExitInTypicalDays=3");
+
+        Assert.Equal(0, opened.Code);
+
+        var listed = await Run(Opened.AddMinutes(2), "--list");
+
+        Assert.Contains("2 open window(s) of the 14", listed.Said, StringComparison.Ordinal);
+        Assert.Contains("'the near-exit skip' 'three typical days' {\"nearExitInTypicalDays\": 3}", listed.Said, StringComparison.Ordinal);
+
+        // A refusal is a non-zero exit with the scorer's reason on the error
+        // stream, and nothing written.
+        var refused = await Run(Opened.AddMinutes(3), "--rule", LadderRules.MergeDistance, "--version", "wider", "--parameters", "typicalMoveMultiple=0.75");
+
+        Assert.Equal(1, refused.Code);
+        Assert.Contains("has no open live window", refused.Refused, StringComparison.Ordinal);
+
+        var unreadable = await Run(Opened.AddMinutes(4), "--rule", LadderRules.NearExitSkip, "--version", "four", "--parameters", "nearExitInTypicalDays=four");
+
+        Assert.Equal(1, unreadable.Code);
+        Assert.Contains("is not a name and a number", unreadable.Refused, StringComparison.Ordinal);
+
+        var closed = await Run(Opened.AddDays(1), "--rule", LadderRules.NearExitSkip, "--close", "three typical days", "--replaced-by", "four typical days");
+
+        Assert.Equal(0, closed.Code);
+
+        var rows = new RuleVersionScorer(Clock(Opened.AddDays(1)), store.DatabaseFile);
+        var kept = Assert.Single(await rows.VersionsAsync(), row => row.Version == "three typical days");
+
+        Assert.NotNull(kept.ClosedAt);
+        Assert.Equal("four typical days", kept.ReplacedBy);
+        Assert.Equal("{\"nearExitInTypicalDays\": 3}", kept.Parameters);
+
+        // The backfill form reaches the scorer for the session it names, and a
+        // session it cannot read is refused before anything is scored.
+        var backfilled = await Run(Opened.AddDays(2), "--backfill", "2026-09-14");
+
+        Assert.Equal(0, backfilled.Code);
+        Assert.Contains("version: scored 2026-09-14 under 1 open window(s)", backfilled.Said, StringComparison.Ordinal);
+        Assert.Equal(1, (await Run(Opened.AddDays(2), "--backfill", "14/09/2026")).Code);
+
+        // And a form the verb does not have says which forms it does.
+        Assert.Equal(1, (await Run(Opened, "--rule", LadderRules.NearExitSkip)).Code);
+        Assert.Equal(1, (await Run(Opened, "--live-window")).Code);
     }
 
     [Fact]
@@ -314,6 +498,8 @@ public class RuleVersionsScored
         var after = new DateTimeOffset(session.AddDays(1).ToDateTime(new TimeOnly(21, 0)), TimeSpan.Zero);
         var scorer = new RuleVersionScorer(Clock(after), store.DatabaseFile);
 
+        Assert.Null(await scorer.OpenLiveAsync(LadderRules.NearExitSkip, "versions-backfill-live"));
+
         Assert.Null(await scorer.OpenAsync(
             LadderRules.NearExitSkip,
             "three typical days",
@@ -353,6 +539,111 @@ public class RuleVersionsScored
         Assert.Equal(
             [RuleVersions.InSample, RuleVersions.Scored],
             Query(store, "SELECT DISTINCT sample FROM version_score ORDER BY sample;"));
+    }
+
+    [Fact]
+    public void TheLadderRulesCodeVersionIsThePinOfTheSourcesAReplayRunsThrough()
+    {
+        // The code half of what stops the night. A window's hash carries the code
+        // version, so the check can only see the code move if the version moves
+        // with it, and a version somebody raises by hand is the thing that does
+        // not. It is recomputed here from the files and held to the constant.
+        var sources = RuleVersionScorer.CodeVersionSources
+            .Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))
+            .ToArray();
+
+        Assert.Equal(3, sources.Length);
+        Assert.All(sources, source => Assert.True(source.Length > 1_000, "A source the pin is taken over read as nearly empty."));
+
+        Assert.Equal(
+            RuleVersionScorer.CodeVersion,
+            SourcePin.Of(sources, RuleVersionScorer.CodeVersionDeclaration));
+
+        // Every one of the three moves it, the declaring line moves nothing, and a
+        // checkout's line endings and byte order mark move nothing either.
+        for (var at = 0; at < sources.Length; at++)
+        {
+            var moved = sources.ToArray();
+            moved[at] += "\n// a changed line";
+
+            Assert.NotEqual(RuleVersionScorer.CodeVersion, SourcePin.Of(moved, RuleVersionScorer.CodeVersionDeclaration));
+        }
+
+        var redeclared = sources.ToArray();
+        redeclared[2] = redeclared[2].Replace(
+            $"{RuleVersionScorer.CodeVersionDeclaration} \"{RuleVersionScorer.CodeVersion}\";",
+            $"{RuleVersionScorer.CodeVersionDeclaration} \"ffffffffffff\";",
+            StringComparison.Ordinal);
+
+        Assert.NotEqual(sources[2], redeclared[2]);
+        Assert.Equal(RuleVersionScorer.CodeVersion, SourcePin.Of(redeclared, RuleVersionScorer.CodeVersionDeclaration));
+
+        var checkedOut = sources.Select(source => "﻿" + source.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\n", "\r\n", StringComparison.Ordinal)).ToArray();
+
+        Assert.Equal(RuleVersionScorer.CodeVersion, SourcePin.Of(checkedOut, RuleVersionScorer.CodeVersionDeclaration));
+    }
+
+    [Fact]
+    public async Task ABackfillScoresAPastNightAgainstThatNightsBandsAndNotTheNewest()
+    {
+        // A past night replayed against bands computed after it would be a plan
+        // no night could have produced, stored as that night's score.
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = Query(store, "SELECT MAX(session_date) FROM bar;").Single();
+        var session = DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var later = session.AddDays(2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var at = new DateTimeOffset(session.AddDays(3).ToDateTime(new TimeOnly(21, 0)), TimeSpan.Zero);
+
+        var scorer = new RuleVersionScorer(Clock(at), store.DatabaseFile);
+
+        Assert.Null(await scorer.OpenLiveAsync(LadderRules.NearExitSkip, "as-of-live"));
+        Assert.Null(await scorer.OpenAsync(
+            LadderRules.NearExitSkip,
+            "three typical days",
+            new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 },
+            "as-of-open"));
+
+        await scorer.RunAsync(session, "as-of-1");
+
+        var first = Query(store, $"SELECT ticker || ' ' || plan FROM version_score WHERE session_date = '{night}' ORDER BY ticker;");
+
+        Assert.True(first.Count >= 3, $"The backfill scored {first.Count} name(s), expected at least 3.");
+
+        // A band set two sessions later with every edge half as high again, and
+        // that later night's bars and indicators, so the later night has bands of
+        // its own that would change any plan read against them.
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"SELECT ticker, '{later}', printf('%.4f', CAST(low_edge AS REAL) * 1.5), printf('%.4f', CAST(high_edge AS REAL) * 1.5), " +
+            $"role, immediate, strength, has_non_average_anchor, members FROM level WHERE as_of = (SELECT MAX(as_of) FROM level);");
+
+        store.Execute(
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+            $"SELECT ticker, '{later}', open, high, low, close, volume, source, observed_at, raw_close FROM bar WHERE session_date = '{night}';");
+
+        store.Execute(
+            "INSERT INTO indicator (ticker, session_date, name, value, bar_count) " +
+            $"SELECT ticker, '{later}', name, value, bar_count FROM indicator WHERE session_date = '{night}';");
+
+        store.Execute("DELETE FROM version_score;");
+
+        await new RuleVersionScorer(Clock(at.AddMinutes(1)), store.DatabaseFile).RunAsync(session, "as-of-2");
+
+        // The past night scored again reads its own bands, so the plans are the
+        // ones it wrote before the later bands existed.
+        Assert.Equal(first, Query(store, $"SELECT ticker || ' ' || plan FROM version_score WHERE session_date = '{night}' ORDER BY ticker;"));
+
+        // And the later night, over the same closes, reads the later bands, which
+        // is what makes the equality above a statement about the read.
+        await new RuleVersionScorer(Clock(at.AddMinutes(2)), store.DatabaseFile).RunAsync(DateOnly.ParseExact(later, "yyyy-MM-dd", CultureInfo.InvariantCulture), "as-of-3");
+
+        var laterPlans = Query(store, $"SELECT ticker || ' ' || plan FROM version_score WHERE session_date = '{later}' ORDER BY ticker;");
+
+        Assert.Equal(first.Count, laterPlans.Count);
+        Assert.NotEqual(
+            first.Select(row => row[(row.IndexOf(' ', StringComparison.Ordinal) + 1)..]),
+            laterPlans.Select(row => row[(row.IndexOf(' ', StringComparison.Ordinal) + 1)..]));
     }
 
     static IReadOnlyList<string> Query(TemporaryStore store, string sql)
