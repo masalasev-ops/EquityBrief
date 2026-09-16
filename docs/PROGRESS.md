@@ -11971,3 +11971,85 @@ Mutated:    nothing, and not an omission: this entry adds no assertion, so there
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree this entry lands in,
             with the figures the 8.7 correction below records, this entry in place.
 Carried:    nothing.
+
+### 8.7 - correction: the guardrails held clause by clause, the loop's silence asserted over a night, and the record's own carried rows   2026-09-16
+Corrects:   the 8.7 entry above records every guardrail mapped to the one test that holds it and the
+            loop asserted to have changed nothing on evidence below its minimum. Neither held.
+            The mapping was a name per guardrail, checked for existing and for not being used twice.
+            Three names were tests about something else: "Unresolved is never a win" pointed at a test
+            of the register's divisor, "Adding restarts the clock" at the divisor over the fixture, and
+            "Corrected for the family" at the verdict floors. A guardrail is several promises and one
+            test per guardrail held at most one of them; "a higher minimum before a live condition may
+            be retired" was held by nothing.
+            The changed-nothing test ended on the reader asked about two empty lists the test itself
+            handed in, which could not come back anything but empty, and the reader reads no minimum.
+            Its Carried field says the three operating rows the loop opened are the condition
+            threshold calibration, the candidate family size read from resolved setups and the rule
+            version bound. The loop opened one, the bound, at 8.0; 8.0 ruled the family size opens no
+            row and the table has none; and the thresholds' row is 5.0's. The table holds eight
+            operating rows and none open.
+            And its Measured field says the register holds no row in the operator's store, which held
+            no register table, for the reason the 8.3 correction above gives.
+Found:      by the session that built phase 8, while gathering the figures for its sign-off handoff on
+            2026-09-16. The operator ruled that no sign-off prompt issues until these are repaired, and
+            the 8.6 correction above went first because the mapping below names the tests it wrote.
+Repaired:   the mapping is by clause: each of the eighteen pairs quotes a clause from its guardrail's
+            cell, names the test that holds it and names the code that test must exercise, and the
+            check reads the test's own body from its source, comments stripped, for that code. A test
+            chosen for its name is refused, a clause the cell no longer carries is refused, a guardrail
+            with no clause mapped is refused, and no test holds two clauses. Two clauses had no test:
+            the higher minimum, now held by the register refusing a live reason's name as a
+            registration and as a retirement with the floor of 400 in its refusal, a constant pinned to
+            section 17 and the runbook; and the verdicts recomputed when a family grows, now held by a
+            record whose exact tail clears at a family of six and not at seven, with the live family
+            held to the count of live reasons the code evaluates. The changed-nothing test runs a whole
+            recorded night over a store holding a registered candidate and a version beside its live
+            window, shows the night evaluated the one and scored the other on fewer resolved setups
+            than the minimum, and reads the register and the windows before and after it, row for
+            row, with the same reader shown to find a retirement and a closed window and not an open
+            one. The 13.3 placement note, the minimum's verdict note, two roster rows and the runbook
+            say so, with prior text in CHANGELOG.
+Missed:     by the check that was the report's own. A mapping reconciled for existence and uniqueness
+            is a tautology over any set of distinct test names, and the entry above recorded M2 as
+            "both names still resolve", which is the property that should have been read as the
+            finding. The changed-nothing half was the same class: an assertion over the test's own
+            constants. Neither is a sharper note now; each is a reader that can be wrong.
+Guarded:    the mapping over the corpus and over a constructed table, suite and source, where a body
+            naming the mechanism only in a comment, a clause the cell lacks, a test the suite does not
+            carry and an unmapped guardrail are each reported. The live reason refused both ways at the
+            register for all six, nothing written and twelve refusals on the run log. The family growing
+            by one flipping a verdict, and a second registration halving a candidate's threshold. The
+            whole night over a store with the loop's rows in it.
+Expected:   derived: the tail at 120 wins of 251 against a bar of 40 per cent is worked by hand to lie
+            between 0.05 over 7 and 0.05 over 6, and the night's population is the committed fixture's
+            replay. No expectation file changes.
+Tests:      983, from 981. Two added: the live reason refused at the register, and a growing family
+            correcting its verdicts. Two rewritten in place: the guardrail mapping, renamed for holding
+            clauses to mechanisms, and the changed-nothing test, now over a night.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being the
+            mechanism a mapped test must exercise, the comment stripping that keeps a comment from
+            counting, the reader of a change, what the night does to the loop's rows, the refusal of a
+            live reason's retirement, and the divisor reaching a verdict. Predicted:
+            M1 "shown nowhere" pointed at `EveryIndexMemberHasARowOnEveryNightTheRunCompleted`, a test
+            that exists and is about something else: the mapping test red on its body not exercising
+            `shadow_reasons`, and nothing else.
+            M2 the comment stripping removed from the body reader: the mapping test red on its
+            constructed proof, where a body naming the mechanism only in a comment is no longer
+            reported.
+            M3 the change reader ignoring retirements: the changed-nothing test red on the retirement it
+            is shown to find.
+            M4 the version scorer closing every window it scored once the night's scores are written:
+            the changed-nothing test red on the windows after the night, and the code version pin red,
+            because the scorer's file is pinned.
+            M5 the live reason refusal dropped from the retirement: the live reason test red on the
+            retirement's outcome, and the registration half green, since it is refused on its own path.
+            M6 the threshold divided by the live family whatever divisor a verdict is handed: the
+            family-grows test red on the family of seven clearing.
+            Not mutated, and named so the next sweep has them: the clause-in-cell refusal over the
+            corpus, the no-test-twice count, the registration half of the live reason refusal, and
+            the runbook pin of 400.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing. The phase's sign-off is owed on phase 8 as a whole by a session that has committed
+            no code. The eight operating rows stand as the table states them, and the one the loop
+            opened is the rule version bound.
