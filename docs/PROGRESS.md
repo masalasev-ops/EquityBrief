@@ -11332,8 +11332,52 @@ Mutated:    the rule, stated before the sweep: break each half of this checkpoin
             Not mutated, and named so the next sweep has them: the parameter-set refusal, the run
             log carrying a refused registration at all, the source-half scan, and the rule that a
             candidate stands by the last row naming it rather than the first.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: all five went red, and two of them said something the prediction did not.
+            Six runs of the whole suite, never a filter, at this entry's commit in a detached
+            worktree under the session scratchpad, each reverted with the tree read clean between
+            them. The baseline is 949 of 950 with one red, and that red is this entry:
+            `two-platform` reads every checkpoint entry written since the 7.2 ruling for the words
+            `tools/ci.ps1` green and this one carried a placeholder until the run below filled it.
+            M1 turned the update and delete test red and nothing else, as predicted. With the
+            triggers gone both statements succeed, so the test fails on the first throw it expected
+            rather than on the register having changed, which is the right shape: nothing else in
+            the suite writes either statement against the table, so nothing else could tell.
+            M2 turned four red rather than three. The three predicted, and also the family maximum
+            case, because the bound is refused through `Refusal`, which asks `Divisor` how many
+            stand. That is worth recording rather than tidying away: the maximum and the divisor are
+            one reader, so a divisor that counts the wrong rows does not only mis-correct a
+            threshold, it also lets a ninth candidate register. The prediction missed it by thinking
+            of the bound as a separate property.
+            M3 turned two red, the hand-worked case at 3 rather than 2 and the fixture's last
+            divisor at 2 rather than 1, both as predicted. The fixture case is the one that matters,
+            because it is the direction that makes a test easier than it was.
+            M4 turned one red rather than two, and the half that did not go red is the finding. The
+            version test failed as predicted, on the source hashing to something the constant does
+            not carry. The fixture's loop asserting each row's version against the code's did not,
+            and could not: the registrar writes whatever version the code holds at the moment it
+            registers, so a row written after the source moved agrees with the moved code. That loop
+            catches a row that has gone stale since it was written and never a source that moved
+            without its version, which is a different question, and the pin is the only thing
+            standing between the two. Recorded as a prediction that named the wrong instrument
+            rather than as a mutation aimed badly, since the mutation found exactly the property the
+            rule named.
+            M5 as first written replaced the refusal's condition with a constant, and it did not
+            compile: unreachable code is a warning and warnings are errors in this repository, so
+            the run never happened. That is recorded because it is a real constraint on how a
+            mutation may be written here. M5b removes the clause instead and turns the standing
+            candidate test red, on the second registration being accepted and on the run log
+            carrying no refusal, as predicted.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 950 of 950 tests
+            ran with none failed, migrations 0 to 25 with one added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 354 claims, 343
+            PASS, 0 FAIL, 11 out of scope, 0 unexamined, 350 placements and verdicts reconciled
+            against a floor of 34, and 35 of 35 roster checks carried and all 35 run, which is the
+            first run in this repository's history with no roster row waiting on a checkpoint. The
+            pair is the one 8.0 predicted: two claims added, being the registrar's catalogue row and
+            its matrix row, and four ended, being section 16's register row, section 18's two
+            register rows and section 17's family size and correction. The 11 out of scope stand at
+            1 at 8.4, 9 at 8.5 and 1 at 8.6. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
 Carried:    nothing. The shadow column that evaluates these rows is 8.4's, the verdicts that divide
             by this divisor are 8.5's, and the register stays empty in the operator's store until a
             person registers something into it, which is the guardrail working rather than a
