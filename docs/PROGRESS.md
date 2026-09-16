@@ -10948,3 +10948,54 @@ Carried:    five rows discharged and one opened. The rule version bound is an op
             wait on nothing. The register's start, the two readers, the session replay, the two
             thin tests and the wording are closed here rather than entered, which is what the
             phase 7 sign-off carried them for.
+
+### 8.1 - setup resolution from the entry   2026-09-16
+Built:      the setup horizon counted from the session the price first reached the entry the plan
+            named, rather than from the listing. `ForwardReturnSeries.OverSetup` takes the entry
+            zone's top edge and the listing night's own close, and resolves a setup as a win, a
+            loss, unresolved at the cap, or never entered, which is a fourth value and a fourth
+            column (see: A setup is scored from its entry, and a target reached before the entry is never a win).
+            The filler reads the zone off the plan the listing stored. The run page's reason
+            record carries the never-entered count beside the resolved count and outside every
+            rate, and the reason track draws no segment for it, since a setup nobody entered is
+            not a slice of a denominator it is not in.
+Rules:      a setup starts on the first close at or below the zone's top edge, the listing night's
+            own close included. A target reached before that close is never entered. A close at or
+            below the top edge that is also through the stop is entered and stopped on that
+            session, because a fall through the whole plan is a trade that happened; its return is
+            null, since the fill was somewhere in the zone and the store does not say where. The
+            cap of 63 sessions runs from the listing, so a setup entered late has the sessions
+            that are left. Everything is read on closes, as the stop and the target already were.
+Rewrote:    nothing yet in the operator's store, and that is the point at which it happens. The
+            filler upserts every setup row it reads, so the first run after this merges rewrites
+            the outcomes already written, once, and the counts it produces are the run page's. The
+            store as read immutable on 2026-09-16 holds 147 wins and 51 losses over 2,522 listings
+            on seven sessions; under this rule the same rows are 42 wins, 51 losses and 105 never
+            entered, which is 105 of 147 stored wins turning out to be moves that happened at
+            prices the plan did not offer to buy at. No verdict has been shown and none could be:
+            the minimum is 250 resolved setups and the store holds 93 under this rule.
+Expected:   derived, and the fixture cannot reach it. The committed fixture's listings sit on its
+            last stored session, so no setup in it has a session after it to resolve on. The
+            expectation states the rule and works four cases by hand from one plan, being a zone
+            whose top edge is 101 with a stop at 90 and a target at 110: entered at the listing and
+            reaching the target, a target reached from above the zone, an entry made later and then
+            stopped, and one session through the zone and the stop together. The suite reads the
+            cases out of the file rather than holding them, so the figures live where a derived
+            figure belongs.
+Tested:     933, from 931. Two added: the four cases above read from the expectation, and the
+            never-entered column drawn on the run page's row with the track carrying no segment
+            for it. The existing setup cases now state an entry, since a plan with none is scored
+            from the listing and the rule is about the entry. `price-storage-form` gained
+            `ForwardReturnSeries.ChangeFromEntry` in its stated set of crossings, which is the
+            method that turns two prices into the move between them.
+Mutated:    the rule, stated before the sweep: break each property this checkpoint adds, being the
+            entry itself, the cap's origin, the stop before the entry, and the column. Predicted:
+            M1 never entered counted as a win: the expectation's cases red, and the run page's
+            column test red with them.
+            M2 the cap counted from the entry rather than from the listing: the late-entry case red.
+            M3 the entry tested before the stop: the fill-and-stop case red.
+            M4 the never-entered count dropped from the row: the column test red.
+            Results: FILLED FROM THE SWEEP
+Verified:   FILLED FROM THE RUN
+Carried:    nothing. The break-even each plan demanded is 8.2's, and the verdicts that read these
+            counts are 8.5's.
