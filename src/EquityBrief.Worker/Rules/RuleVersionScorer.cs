@@ -45,11 +45,32 @@ public sealed class RuleVersionScorer : IComponent
 
     public const string Stage = "rule-versions";
 
+    public const string Ok = "ok";
+
+    // A refused open or close is a row of its own under this outcome rather than
+    // under ok with the refusal in the detail, so the run page and a reader of
+    // the log can tell an attempt that was turned away from one that happened.
+    public const string Refused = "refused";
+
     // The build's version of the ladder rules' own code, hashed into every
-    // window's `parameters_hash`. It moves when the code moves, which is what
-    // makes a code change indistinguishable from a parameter change to the
-    // check that stops the night: both are the subject moving.
-    public const string CodeVersion = "8.6";
+    // window's `parameters_hash`: the pin of the sources a replay runs through,
+    // being the level arithmetic, the ladder arithmetic and this file, less the
+    // line below. `rule-versions-scored` recomputes it from those files and fails
+    // where they disagree, so a change to any of them is a new code version, and
+    // a live window opened under the old one stops the first night after it.
+    // A constant somebody raised by hand would have let the code move under an
+    // open window with the night going on scoring it, which is what 8.6 shipped.
+    public const string CodeVersionDeclaration = "public const string CodeVersion =";
+
+    public const string CodeVersion = "f4b1a98b0489";
+
+    // The sources the pin is taken over, from the repository root.
+    public static IReadOnlyList<string> CodeVersionSources { get; } =
+    [
+        "src/EquityBrief.Core/Levels/LevelSeries.cs",
+        "src/EquityBrief.Core/Ladders/LadderSeries.cs",
+        "src/EquityBrief.Worker/Rules/RuleVersionScorer.cs",
+    ];
 
     // One year retained, as every computed table is.
     // see: Every computed table's writer is its own deleter
@@ -99,16 +120,19 @@ public sealed class RuleVersionScorer : IComponent
         SELECT DISTINCT ticker FROM bar WHERE session_date = $session ORDER BY ticker;
     ";
 
+    // The bands and the trend as they stood on the night being scored. On the
+    // night itself that is the newest set; on a backfill it is that night's, and
+    // reading the newest would replay a past close against tonight's bands.
     const string BandsFor = @"
         SELECT low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members
         FROM level
-        WHERE ticker = $ticker AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker)
+        WHERE ticker = $ticker AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker AND as_of <= $session)
         ORDER BY low_edge;
     ";
 
     const string TrendFor = @"
         SELECT trend_state FROM ladder
-        WHERE ticker = $ticker
+        WHERE ticker = $ticker AND as_of <= $session
         ORDER BY as_of DESC
         LIMIT 1;
     ";
@@ -219,29 +243,35 @@ public sealed class RuleVersionScorer : IComponent
         return new VersionScoreOutcome(open.Count, names.Count, written, dropped);
     }
 
-    // The hash of each live ladder rule as this build applies it. The merge
+    // Each live ladder rule's parameters as this build applies them. The merge
     // distance is a multiple of the typical move rather than a stored constant,
-    // so what is hashed for it is the multiple the level builder passes.
-    public static IReadOnlyDictionary<string, string> HashesNow()
+    // so what it carries is the multiple the level builder passes.
+    //
+    // One statement of them, read by the hash the night compares against and by
+    // the refusal at the open: a version's parameters are named exactly as its
+    // rule's are, because the replay reads each by name and falls back to the
+    // live value where a name is missing, so a mistyped name would replay the
+    // live rule under a version's name.
+    public static IReadOnlyDictionary<string, double> LiveParameters(string rule)
     {
         var ladder = LadderRuleSet.Live.AsParameters;
 
-        return new Dictionary<string, string>(StringComparer.Ordinal)
+        return rule switch
         {
-            [LadderRules.MergeDistance] = RuleVersions.Hash(
-                new Dictionary<string, double>(StringComparer.Ordinal) { ["typicalMoveMultiple"] = 0.5 },
-                CodeVersion),
-            [LadderRules.StopPlacement] = RuleVersions.Hash(
-                new Dictionary<string, double>(StringComparer.Ordinal) { ["stopTrailsTheLastHigherLow"] = ladder["stopTrailsTheLastHigherLow"] },
-                CodeVersion),
-            [LadderRules.NearExitSkip] = RuleVersions.Hash(
-                new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = ladder["nearExitInTypicalDays"] },
-                CodeVersion),
-            [LadderRules.ZoneEdgesFromNonAverageAnchors] = RuleVersions.Hash(
-                new Dictionary<string, double>(StringComparer.Ordinal) { ["zoneEdgesFromNonAverageAnchorsOnly"] = ladder["zoneEdgesFromNonAverageAnchorsOnly"] },
-                CodeVersion),
+            LadderRules.MergeDistance => new Dictionary<string, double>(StringComparer.Ordinal) { ["typicalMoveMultiple"] = 0.5 },
+            LadderRules.StopPlacement => new Dictionary<string, double>(StringComparer.Ordinal) { ["stopTrailsTheLastHigherLow"] = ladder["stopTrailsTheLastHigherLow"] },
+            LadderRules.NearExitSkip => new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = ladder["nearExitInTypicalDays"] },
+            LadderRules.ZoneEdgesFromNonAverageAnchors => new Dictionary<string, double>(StringComparer.Ordinal) { ["zoneEdgesFromNonAverageAnchorsOnly"] = ladder["zoneEdgesFromNonAverageAnchorsOnly"] },
+            _ => throw new ArgumentOutOfRangeException(nameof(rule), rule, "not a ladder rule this build carries"),
         };
     }
+
+    // The hash of each live ladder rule as this build applies it.
+    public static IReadOnlyDictionary<string, string> HashesNow() =>
+        LadderRules.All.ToDictionary(
+            rule => rule,
+            rule => RuleVersions.Hash(LiveParameters(rule), CodeVersion),
+            StringComparer.Ordinal);
 
     public readonly record struct ReplayInputs(
         IReadOnlyList<Level> Bands,
@@ -300,6 +330,45 @@ public sealed class RuleVersionScorer : IComponent
 
     // ---- opening and closing a window ----
 
+    // Why these parameters may not be a window of this rule, or null.
+    //
+    // Named apart from the write so a test puts each refusal to the same reader
+    // the open does. A live window carries exactly the build's parameters,
+    // since its hash is compared against the build's every night and a live
+    // window opened at any other would stop the first night after it.
+    public static string? ParameterRefusal(string rule, string version, IReadOnlyDictionary<string, double> parameters)
+    {
+        if (!LadderRules.All.Contains(rule, StringComparer.Ordinal))
+        {
+            return null;
+        }
+
+        var live = LiveParameters(rule);
+
+        if (!live.Keys.Order(StringComparer.Ordinal).SequenceEqual(parameters.Keys.Order(StringComparer.Ordinal), StringComparer.Ordinal))
+        {
+            return
+                $"'{rule}' is replayed from {string.Join(", ", live.Keys.Select(name => $"'{name}'"))} and was given " +
+                $"{(parameters.Count == 0 ? "none" : string.Join(", ", parameters.Keys.Select(name => $"'{name}'")))}. " +
+                "The replay reads each value by name and uses the live one where a name is missing, so a window " +
+                "with any other names would measure the live rule under a version's name.";
+        }
+
+        if (string.Equals(version, RuleVersions.Live, StringComparison.Ordinal)
+            && live.Any(pair => !parameters[pair.Key].Equals(pair.Value)))
+        {
+            return
+                $"a live window of '{rule}' carries the build's own parameters, " +
+                $"{RuleVersions.Write(live)}, and was given {RuleVersions.Write(parameters)}. A version with other " +
+                "values is opened under its own name beside the live one.";
+        }
+
+        return null;
+    }
+
+    public Task<string?> OpenLiveAsync(string rule, string runId, CancellationToken cancellation = default) =>
+        OpenAsync(rule, RuleVersions.Live, LiveParameters(rule), runId, cancellation);
+
     public async Task<string?> OpenAsync(
         string rule,
         string version,
@@ -314,9 +383,9 @@ public sealed class RuleVersionScorer : IComponent
 
         var rows = await VersionsAsync(connection, cancellation);
 
-        if (RuleVersions.Refusal(rows, rule, version, at) is { } refusal)
+        if ((RuleVersions.Refusal(rows, rule, version, at) ?? ParameterRefusal(rule, version, parameters)) is { } refusal)
         {
-            await RecordAsync(connection, runId, at, 0, "refused: " + refusal, cancellation);
+            await RecordAsync(connection, runId, at, 0, refusal, cancellation, Refused);
 
             return refusal;
         }
@@ -339,10 +408,16 @@ public sealed class RuleVersionScorer : IComponent
 
     // Closing keeps the row and every column it was opened with but the two the
     // close writes, so the scores under it stay scores of the rule as it stood.
-    public async Task<bool> CloseAsync(
+    //
+    // The window closed is the one open now under that name, which there is at
+    // most one of because a version is refused a second open window. A live
+    // window is not closed while a version of its rule is open beside it, since
+    // that would leave the version measured with nothing watching the code it
+    // runs through; the versions are closed first. Returns why nothing was
+    // closed, or null.
+    public async Task<string?> CloseAsync(
         string rule,
         string version,
-        DateTimeOffset openedAt,
         string? replacedBy,
         string runId,
         CancellationToken cancellation = default)
@@ -352,6 +427,29 @@ public sealed class RuleVersionScorer : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
+        var open = RuleVersions.OpenAt(await VersionsAsync(connection, cancellation), at);
+
+        var window = open.FirstOrDefault(row =>
+            string.Equals(row.Rule, rule, StringComparison.Ordinal)
+            && string.Equals(row.Version, version, StringComparison.Ordinal));
+
+        var refusal = window is null
+            ? $"'{version}' of '{rule}' has no open window to close."
+            : string.Equals(version, RuleVersions.Live, StringComparison.Ordinal)
+                && open.Where(row => string.Equals(row.Rule, rule, StringComparison.Ordinal)
+                    && !string.Equals(row.Version, RuleVersions.Live, StringComparison.Ordinal)).ToArray() is { Length: > 0 } beside
+                ? $"the live window of '{rule}' is not closed while {string.Join(", ", beside.Select(row => $"'{row.Version}'"))} " +
+                  "is open beside it: a version with no live window beside it is measured with nothing watching the code " +
+                  "it runs through. Close the versions first."
+                : null;
+
+        if (refusal is not null)
+        {
+            await RecordAsync(connection, runId, at, 0, refusal, cancellation, Refused);
+
+            return refusal;
+        }
+
         await using var command = connection.CreateCommand();
 
         command.CommandText = CloseWindow;
@@ -359,21 +457,19 @@ public sealed class RuleVersionScorer : IComponent
         command.Parameters.AddWithValue("$replaced_by", (object?)replacedBy ?? DBNull.Value);
         command.Parameters.AddWithValue("$rule", rule);
         command.Parameters.AddWithValue("$version", version);
-        command.Parameters.AddWithValue("$opened_at", openedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$opened_at", window!.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
 
-        var closed = await command.ExecuteNonQueryAsync(cancellation) > 0;
+        await command.ExecuteNonQueryAsync(cancellation);
 
         await RecordAsync(
             connection,
             runId,
             at,
-            closed ? 1 : 0,
-            closed
-                ? $"closed '{version}' of '{rule}'" + (replacedBy is null ? string.Empty : $", replaced by '{replacedBy}'")
-                : $"no open window of '{version}' of '{rule}' to close",
+            1,
+            $"closed '{version}' of '{rule}'" + (replacedBy is null ? string.Empty : $", replaced by '{replacedBy}'"),
             cancellation);
 
-        return closed;
+        return null;
     }
 
     public async Task<IReadOnlyList<RuleVersionRow>> VersionsAsync(CancellationToken cancellation = default)
@@ -448,6 +544,7 @@ public sealed class RuleVersionScorer : IComponent
         {
             command.CommandText = BandsFor;
             command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -522,6 +619,7 @@ public sealed class RuleVersionScorer : IComponent
         {
             command.CommandText = TrendFor;
             command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
             trendState = await command.ExecuteScalarAsync(cancellation) as string;
         }
@@ -587,7 +685,8 @@ public sealed class RuleVersionScorer : IComponent
         DateTimeOffset startedAt,
         int written,
         string detail,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        string outcome = Ok)
     {
         await using var command = connection.CreateCommand();
 
@@ -596,7 +695,7 @@ public sealed class RuleVersionScorer : IComponent
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("$outcome", "ok");
+        command.Parameters.AddWithValue("$outcome", outcome);
         command.Parameters.AddWithValue("$rows_written", written);
         command.Parameters.AddWithValue("$detail", detail);
 

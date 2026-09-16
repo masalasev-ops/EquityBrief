@@ -12,6 +12,7 @@ using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Research;
+using EquityBrief.Worker.Rules;
 using Microsoft.Extensions.Configuration;
 
 // The nightly run and the overnight queue. Scheduling lives outside the
@@ -26,13 +27,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "fundamentals" => await FundamentalsFetch(args),
     "research" => await ResearchPass(args),
     "register" => await Register(args),
+    "version" => await VersionWindows(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Five are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Six are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
@@ -40,7 +42,9 @@ static int NoVerb()
         "local lane's sections as well, and " +
         "'register --candidate <name> --rule <rule> --test <test> --evaluator <evaluator> --parameters <name=value,...>' " +
         "registers a candidate condition before anything scores it, with '--retire <name> --evidence <figures>' " +
-        "writing the new row that withdraws one. '--live' " +
+        "writing the new row that withdraws one, and " +
+        "'version --rule <rule> --live-window' opens a ladder rule's live window, '--version <name> --parameters <name=value,...>' " +
+        "opens a version beside it, '--close <name> --replaced-by <name>' closes one, '--backfill <yyyy-MM-dd>' scores a past night under the open windows in sample, and '--list' names the open windows. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -105,7 +109,7 @@ static async Task<int> Register(string[] args)
 
     try
     {
-        parameters = Parameters(Argument(args, "--parameters"));
+        parameters = VerbArguments.Parameters(Argument(args, "--parameters"));
     }
     catch (FormatException refusal)
     {
@@ -128,28 +132,24 @@ static async Task<int> Register(string[] args)
     return 0;
 }
 
-// `name=value,name=value`, parsed against the invariant culture for the reason
-// every date on this path is: a decimal comma read against the machine's locale
-// would register a different condition here and on the runner.
-static IReadOnlyDictionary<string, double> Parameters(string? given)
+// A ladder rule's window opened, closed or listed.
+//
+// A verb rather than a step, for the reason registration is one: a version is a
+// decision a person takes, and a night that opened or closed its own windows
+// would be changing what it measures while it measures it. The verb's work is
+// in `VersionVerb`, so a test runs the verb a person runs rather than a copy of it.
+// see: A ladder rule's version is measured beside that rule's live window, and both count against the bound
+static async Task<int> VersionWindows(string[] args)
 {
-    var read = new Dictionary<string, double>(StringComparer.Ordinal);
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
 
-    foreach (var pair in (given ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries))
-    {
-        var at = pair.IndexOf('=', StringComparison.Ordinal);
-
-        if (at < 0 || !double.TryParse(pair[(at + 1)..], NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
-        {
-            throw new FormatException(
-                $"'{pair.Trim()}' is not a name and a number. A registration's parameters are the values " +
-                "its evaluator is run with, so one nobody can read back is a row the shadow column cannot run.");
-        }
-
-        read[pair[..at].Trim()] = value;
-    }
-
-    return read;
+    return await VersionVerb.RunAsync(
+        args,
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        Console.Out,
+        Console.Error);
 }
 
 // One name's fundamentals, on demand and never from the night.
@@ -499,12 +499,7 @@ static string? RunId(string? session) =>
         ? null
         : FormattableString.Invariant($"night-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}-for-{session}");
 
-static string? Argument(string[] args, string name)
-{
-    var at = Array.IndexOf(args, name);
-
-    return at >= 0 && at + 1 < args.Length ? args[at + 1] : null;
-}
+static string? Argument(string[] args, string name) => VerbArguments.Value(args, name);
 
 static IConfiguration Configuration() =>
     new ConfigurationBuilder()

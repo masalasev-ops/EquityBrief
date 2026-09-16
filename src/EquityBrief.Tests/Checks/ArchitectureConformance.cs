@@ -68,6 +68,76 @@ public partial class ArchitectureConformance
             SuiteOutcomes.EveryCarriedCheckPassed());
     }
 
+    // A row that names a check in its own words is a row saying that check
+    // asserts part of it. Where the verdict names another check and its note is
+    // silent about the one the row names, the report passes the row on what the
+    // verdict's check reached while the named half has nothing behind it, which
+    // is how section 17's version bound passed at 8.6 naming a recorded night
+    // `nightly-cost` did not run.
+    [Fact]
+    public void EveryCheckARowNamesIsTheCheckItsVerdictNamesOrIsNamedInItsNote()
+    {
+        var roster = CoverageReported.Coverage().Select(check => check.Check).ToHashSet(StringComparer.Ordinal);
+        var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
+        var claims = Report().Claims;
+
+        var named = RowsNamingACheck(tables, roster);
+
+        // The population, stated in advance: one row names a check today.
+        Assert.True(named.Count >= 1, $"Read {named.Count} row(s) naming a check, expected at least 1.");
+
+        Assert.Empty(ChecksTheVerdictLeavesUnsaid(named, claims));
+
+        // The reader, over constructed rows and claims, in both directions.
+        IReadOnlyList<(string Heading, string Subject, string Check)> constructed =
+        [
+            ("17. Limits", "A bound", "nightly-cost"),
+            ("17. Limits", "A figure", "read-surface"),
+            ("17. Limits", "A rate", "bar-bounds"),
+        ];
+
+        Claim[] verdicts =
+        [
+            new("17. Limits", "A bound", Verdict.Pass, "the caps refused, and `nightly-cost` over a recorded night", "rule-versions-scored"),
+            new("17. Limits", "A figure", Verdict.Pass, "drawn on the page", "read-surface"),
+            new("17. Limits", "A rate", Verdict.Pass, "the rate withheld", "read-surface"),
+        ];
+
+        Assert.Equal(["A rate names bar-bounds, and its verdict by read-surface does not say what it asserts"], ChecksTheVerdictLeavesUnsaid(constructed, verdicts));
+        Assert.Equal(
+            ["A missing row names nightly-cost and carries no verdict"],
+            ChecksTheVerdictLeavesUnsaid([("17. Limits", "A missing row", "nightly-cost")], verdicts));
+        Assert.Equal(
+            [("7. Catalogue", "A component", "bar-bounds")],
+            RowsNamingACheck(
+                [new ArchitectureTable("7. Catalogue", [["Name", "What"], ["A component", "held by `bar-bounds` and by `a-check-nobody-rosters`"]])],
+                new HashSet<string>(["bar-bounds"], StringComparer.Ordinal)));
+    }
+
+    static IReadOnlyList<(string Heading, string Subject, string Check)> RowsNamingACheck(
+        IReadOnlyList<ArchitectureTable> tables,
+        IReadOnlySet<string> roster) =>
+    [
+        .. tables.SelectMany(table => table.Body
+            .Where(row => row.Count > 1 && row[0].Length > 0)
+            .SelectMany(row => Regex.Matches(string.Join(" ", row.Skip(1)), "`([a-z-]+)`")
+                .Select(match => match.Groups[1].Value)
+                .Where(roster.Contains)
+                .Distinct(StringComparer.Ordinal)
+                .Select(check => (table.Heading, row[0], check)))),
+    ];
+
+    static IReadOnlyList<string> ChecksTheVerdictLeavesUnsaid(
+        IReadOnlyList<(string Heading, string Subject, string Check)> named,
+        IReadOnlyList<Claim> claims) =>
+    [
+        .. named.Select(row => (row, claim: claims.FirstOrDefault(claim => claim.Table == row.Heading && claim.Subject == row.Subject)))
+            .Where(pair => pair.claim is null || (pair.claim.By != pair.row.Check && !pair.claim.Note.Contains(pair.row.Check, StringComparison.Ordinal)))
+            .Select(pair => pair.claim is null
+                ? $"{pair.row.Subject} names {pair.row.Check} and carries no verdict"
+                : $"{pair.row.Subject} names {pair.row.Check}, and its verdict by {pair.claim.By} does not say what it asserts"),
+    ];
+
     [Fact]
     public void EveryTableInTheDocumentIsPlaced()
     {

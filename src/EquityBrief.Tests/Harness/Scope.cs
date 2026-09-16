@@ -400,7 +400,7 @@ internal static class Scope
             ByNight),
         [CheckReach.Key(CatalogueTable, "Rule version scorer")] = new Scoped(
             Verdict.Pass,
-            "the class declares each store it reads, the versions it reads and writes, the scores it writes and drops, and the run log it appends to, reconciled against its row's cells and against SCHEMA's ownership",
+            "the class declares each store it reads, the versions it reads and writes, the scores it writes and drops, and the run log it appends to, reconciled against its row's cells and against SCHEMA's ownership; and the verb the row says a window opens and closes through is one the worker dispatches, names in its help and the runbook shows",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Rule version scorer")] = new Scoped(
             Verdict.Pass,
@@ -420,7 +420,7 @@ internal static class Scope
             ByNight),
         [CheckReach.Key(LimitsTable, "Rule versions scored at once")] = new Scoped(
             Verdict.Pass,
-            "the bound is refused at the fifteenth version and at the fifth of one rule and admitted one below each, and the projection is computed from the night's own stage durations rather than from a figure written beside it",
+            "the window past each rule's cap is refused and one below is admitted, live windows counted, with a version refused beside no live window; the fullest register the caps admit is projected from the night's own stage durations, read off the row, and held inside the deadline the night is bounded by; and `nightly-cost` runs a recorded night at one version and at the fullest register and finds the same requests on both and a score per version per name",
             ByRules),
         // 8.5, the reason verdicts. Nine claims end here and one arrives, being
         // section 17's significance threshold row.
@@ -514,7 +514,7 @@ internal static class Scope
         // The registrar's own two claims, which are what 8.3 adds.
         [CheckReach.Key(CatalogueTable, "Candidate registrar")] = new Scoped(
             Verdict.Pass,
-            "the class declares the register it reads and writes and the run log it appends to, reconciled against its row's cells and against SCHEMA's ownership, which gives it the one insert on the table and no update and no delete",
+            "the class declares the register it reads and writes and the run log it appends to, reconciled against its row's cells and against SCHEMA's ownership, which gives it the one insert on the table and no update and no delete; and the verb the row says it writes through is one the worker dispatches, names in its help and the runbook shows",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Candidate registrar")] = new Scoped(
             Verdict.Pass,
@@ -566,7 +566,7 @@ internal static class Scope
             ByHarness),
         [CheckReach.Key(CatalogueTable, "Read API")] = new Scoped(
             Verdict.Pass,
-            "the class declares the stores it reads and the run log it appends to, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the stores it reads and the run log it appends to, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source; and the verb the row says its control starts is one the worker dispatches, names in its help and the runbook shows",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Read API")] = new Scoped(
             Verdict.Pass,
@@ -1602,7 +1602,7 @@ internal static class Scope
             ByCost),
         [CheckReach.Key(LimitsTable, "Per-name network calls in the nightly run")] = new Scoped(
             Verdict.Pass,
-            "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once; and a suspect name whose refetch keeps failing is measured night by night against a sequence derived from the decision, one request on its action's night and on each retry night and none once its retries are spent, with the figure the row states held to the constant",
+            "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once; a recorded night at one rule version and at the fullest register the bound admits makes the same requests on every step and none on the version step; and a suspect name whose refetch keeps failing is measured night by night against a sequence derived from the decision, one request on its action's night and on each retry night and none once its retries are spent, with the figure the row states held to the constant",
             ByCost),
         [CheckReach.Key(FailureTable, "Bulk price feed unavailable, run log")] = new Scoped(
             Verdict.Pass,

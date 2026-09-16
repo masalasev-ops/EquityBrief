@@ -218,6 +218,37 @@ The name page carries a link, *Export this report as a file*, and the browser sa
 
 The file is the name page's own region, drawn by the same code from the same store, in a document that needs nothing else to be read: its styles are inline, it carries no script and fetches nothing, every disclosure is open, and a link to another of the application's pages is kept as its words (see: A single report can still be exported as a self-contained file). It leaves out the research controls and the pause, which are the application asking the operator something rather than part of the report. It is named for the name and the newest session its figures are from, `EquityBrief-KEYS-2026-09-08.html`, so two exports on different nights are two files, and its opening line states that session. Nothing is written to the store by an export.
 
+### Registering a candidate and versioning a ladder rule
+
+Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.
+
+**A candidate condition** is registered before anything scores it, naming an evaluator the code carries and the values it runs with (see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown):
+
+```
+dotnet run --project src/EquityBrief.Worker -- register --candidate "momentum index at thirty" --rule "the relative strength index at or below thirty" --test "the share of its setups that beat their own break-even" --evaluator momentum-index-reading --parameters level=30
+```
+
+The evaluators carried are `momentum-index-reading`, which reads `level`, and `momentum-histogram-turn`, which reads `margin`. The registrar refuses an evaluator the code does not carry, a parameter the evaluator does not read, a ninth candidate, and any change to a candidate that stands registered. A change is a retirement and a new registration:
+
+```
+dotnet run --project src/EquityBrief.Worker -- register --retire "momentum index at thirty" --evidence "the figures that produced the retirement"
+```
+
+From the next night every standing candidate is evaluated on every name into the shadow column and shown nowhere; the run page states how many are registered and the divisor that sets. Each attempt, refused or not, is a row on the run log under `candidate-register`.
+
+**A version of a ladder rule** is scored beside the rule the night applies, so the rule's live window is opened first, carrying the build's own values, and the version beside it under the same parameter names (see: A ladder rule's version is measured beside that rule's live window, and both count against the bound):
+
+```
+dotnet run --project src/EquityBrief.Worker -- version --rule "the near-exit skip" --live-window
+dotnet run --project src/EquityBrief.Worker -- version --rule "the near-exit skip" --version "three typical days" --parameters nearExitInTypicalDays=3
+dotnet run --project src/EquityBrief.Worker -- version --list
+dotnet run --project src/EquityBrief.Worker -- version --rule "the near-exit skip" --close "three typical days" --replaced-by "four typical days"
+```
+
+The four rules and the names each is replayed from are `merge distance` from `typicalMoveMultiple`, `where the stop sits` from `stopTrailsTheLastHigherLow`, `the near-exit skip` from `nearExitInTypicalDays`, and `zone edges from non-average anchors only` from `zoneEdgesFromNonAverageAnchorsOnly`, where a flag is 1 or 0. At most two windows of the merge distance and four of each other rule are open at once, live windows included, because a merge distance version replays the level stage as well as the ladder stage, where every other version replays the ladder stage alone. A live window is closed only after the versions beside it. `version --backfill 2026-09-14` scores a past night under the windows open now, from that night's own bars and bands, and every score it writes for a night before its window opened is flagged in sample and counts toward no record. Each attempt is a row on the run log under `rule-versions`, with a refusal under the outcome `refused`.
+
+**Where a night stops at the rule versions step** naming a rule that moved, the code or the build's values changed while a window measuring that rule was open, and the scores already written say nothing about the rule as it now stands. Close the rule's versions, then its live window, and open them again: the closed rows are kept with what they were opened with.
+
 ---
 
 ## Moving the installation

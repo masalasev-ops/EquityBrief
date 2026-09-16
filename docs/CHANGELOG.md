@@ -25,6 +25,61 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - ARCHITECTURE.html - the version bound stated to its end, and the verbs three rows name
+
+Corrects: section 17's version bound admitted a night past the deadline and stated 688 seconds as though it were the worst case, and the Rule version scorer's row promised a verb the worker did not carry. Found by the building session while writing phase 8's sign-off handoff.
+Was:
+> at most 4 versions of each of the 4 ladder rules and 14 at once, marked proposed; a version's live rule is what the night already computes and is no extra replay (owes: The rule version bound set from nights the version scorer ran)</td><td>the arithmetic is the night of 2026-09-14: 495 seconds over the steps before the close, a level stage of 143 seconds and a ladder stage of 5 at 504 names, so a merge distance version costs 148 seconds and every other version 5, which puts 14 at 688 seconds against a deadline of 900. Four of each of four rules is sixteen, so the total is what binds first, and the per-rule cap is what stops one rule taking the whole budget and leaving the other three unversioned at the same cost to the night. It grows with versions times names and never with a request</td><td>the bound refused at the fifteenth version and at the fifth of one rule, the projection computed from the night's own stage durations, and `nightly-cost` over a recorded night at one version and at fourteen
+>
+> and in the Rule version scorer's row: opening and closing a version's window through its own verb and never as a side effect of a night; the Candidate registrar's row named no verb, and the Read API's row named "the worker's research verb" without marking it as one.
+Now:
+> the row states at most 2 windows of the merge distance and 4 of each of the other 3 rules, live windows among them and 14 at once, a version opened only beside its rule's live window, the fullest register replaying 1 merge distance version and 9 others for 193 seconds and a night of 688 against 900, and `nightly-cost` over a recorded night at one version and at the fullest register; the three catalogue rows name the <code>version</code>, <code>register</code> and <code>research</code> verbs.
+Why: four windows of every rule with no live window required admitted four level replays and a night of 1,137 seconds, and a verb a row names is checked against the worker's dispatch only once the row names it as a verb.
+
+### 2026-09-16 - BUILD_PLAN.md - 8.6's bound and its operating row restated at the caps that keep the night inside its deadline
+
+Corrects: 8.6's text and the rule version bound's operating row stated four versions of every rule, and the row's arithmetic added 188 seconds to 495 and called it 688. Found by the building session while writing phase 8's sign-off handoff.
+Was:
+> The bound is at most four versions of each of the four rules and fourteen at once, marked proposed, and its arithmetic is stated: the night of 2026-09-14 took 495 seconds over steps 1 to 16, its level stage 143 seconds and its ladder stage 5 at 504 names, so a merge distance version costs a level and a ladder replay and every other version costs a ladder replay, which puts fourteen at 688 seconds against the deadline of 900. The arithmetic grows with versions times names and never with a network request, and `nightly-cost` asserts that over a recorded night at one version and at fourteen (owes: The rule version bound set from nights the version scorer ran).
+>
+> The bound is at most four versions of each of the four ladder rules and fourteen at once, marked proposed, and its arithmetic is the night of 2026-09-14: 495 seconds over steps 1 to 16, a level stage of 143 seconds and a ladder stage of 5 at 504 names, so fourteen versions add 188 seconds and sit at 688 against a deadline of 900.
+Now:
+> two windows of the merge distance and four of each other rule, each rule's live window among them, fourteen at once, a version opened only beside its rule's live window, the fullest register adding 193 seconds for a night of 688 against 900, `nightly-cost` over a recorded night at one version and at the fullest register, and windows opened and closed through the worker's `version` verb.
+Why: the stated bound admitted a night of 1,137 seconds, and 495 and 188 are 683.
+
+### 2026-09-16 - SCHEMA.md - rule_version states the live row a version stands beside
+
+Authorised by: A ladder rule's version is measured beside that rule's live window, and both count against the bound
+Was:
+> nothing: the table's notes said what a window is keyed on and not which rows may be open together.
+Now:
+> a paragraph saying a version row stands beside an open `live` row of its rule, a `live` row carries the build's own parameters, a version row's parameters are named as its rule is replayed from, a `live` row is not closed while a version of its rule is open, and at most two rows of the merge distance and four of each other rule are open at once, `live` rows included.
+Why: the decision rules what rows may stand together, and SCHEMA is where a reader of the table looks for it.
+
+### 2026-09-16 - RUNBOOK.md - registering a candidate and versioning a ladder rule
+
+Corrects: the runbook showed no command line for the `register` verb built at 8.3 or for any way to open a rule version, so the loop phase 8 built could not be started from the operator's manual. Found by the building session while writing phase 8's sign-off handoff.
+Was:
+> nothing: no section named either verb.
+Now:
+> a section showing the `register` and `version` command lines, the evaluators and their parameter names, the four rules and the names each is replayed from, the caps, the backfill, where each attempt is on the run log, and what to do when a night stops at the rule versions step.
+Why: a decision a person takes is taken from this document, and a verb it does not show is one nobody can find.
+
+### 2026-09-16 - .claude/rules/checks.md - four rows state what the 8.6 correction asserts
+
+Corrects: `rule-versions-scored`'s row stated a cap of four for every rule and a projection the test forced to agree with the document; `nightly-cost`'s row did not state the recorded night section 17 said it ran; and neither `component-access` nor `architecture-conformance` stated the reconciliation that would have found the missing verb or the missing night. Found by the building session while writing phase 8's sign-off handoff.
+Was:
+> | `component-access` | every CI run | Every component declares the stores it reads and writes, and the declaration is reconciled against its catalogue row, its read and write matrix row cell by cell with the blanks included, SCHEMA's ownership, and the statements in its own source, in both directions |
+>
+> | `architecture-conformance` | every CI run | Every claim ARCHITECTURE.html makes, in a table, in a figure, or in the nightly run's ordered list, has a verdict: pass, fail, out of scope for this phase, or unexamined; every table and every figure in the document is placed so none can go unread, each against a population read from the document rather than from the reader; a claim that passes names the check that reached it, on both surfaces the report writes; and every placement and every pass is reconciled against what the check it names declares it reaches, in both directions |
+>
+> | `nightly-cost` | every CI run | The nightly path makes zero per-name network requests in its steady state and its arithmetic zero model calls, asserted over the shipped source and over a recorded run, with the run measured over two universe sizes so the count is shown not to grow with the population. The two carve-outs the hard rule names are asserted rather than exempted: a joiner's backfill is one request per name ever, and a suspect name costs one request on each of the five nights of its retries and one a week after them, counted over a constructed name whose refetch fails. The night reaches no lane an open reaches, read off what the components its own file constructs declare, and every model call a whole recorded night makes sits on step 17's own row or on a pass that row names, with nothing spent anywhere, because the queue is carved out of the model-call rule by name and out of nothing else |
+>
+> | `rule-versions-scored` | every CI run | A version change closes the window measuring the old rule and opens a new one, with the closed row keeping every column it was opened with so the scores under it stay scores of the rule as it stood; the bound is refused at the fifteenth version and at the fifth of one rule and admitted one below each, with a closed window counting against neither; the night's added seconds are projected from its own stage durations rather than from a figure written beside them; a live rule whose parameters or code have moved inside an open window is found and one that has not is not, in both directions; a version replays a plan the live rule does not produce; and a score written for a night before its window opened is flagged in sample beside one written for a night after it |
+Now:
+> `component-access` also reconciles the worker verbs a catalogue row names against the worker's dispatch, the runbook and the help; `architecture-conformance` also holds a check a row names to the check its verdict names or to that verdict's note; `nightly-cost` also runs a recorded night at one rule version and at the fullest register; and `rule-versions-scored` states the live window beside every version, the per-rule caps, the worst case held inside the deadline, the code version pinned to the sources a replay runs through, the backfill reading that night's bands, and the `version` verb.
+Why: a roster row is what `coverage-reported` holds a check to, and each of the four now asserts something its row did not say.
+
 ### 2026-09-16 - SCHEMA.md - the rule versions and the scores written under them
 
 Authorised by: Adding a candidate later restarts the clock
