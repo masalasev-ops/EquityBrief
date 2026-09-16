@@ -11,8 +11,20 @@ public readonly record struct ReturnBar(DateOnly SessionDate, decimal Close);
 // `Outcome` is null while the horizon has not matured, which is what an
 // immature row reads as. `unresolved` is a value rather than a null, so a setup
 // that ran out of time is counted in its own column and never in a rate.
+//
+// `BreakEven` is the share of the time the plan had to be right to come out
+// even, and it belongs to the setup horizon alone: the two session horizons ask
+// what the market did and have no plan to demand anything. It is present exactly
+// where `ReturnPct` is on that horizon, because both are measured from the close
+// the setup was entered at and a setup with no known entry close has neither.
 // see: An unresolved setup is never a win
-public sealed record ForwardReturn(string Horizon, string? Outcome, DateOnly? ResolvedOn, double? ReturnPct);
+// see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with
+public sealed record ForwardReturn(
+    string Horizon,
+    string? Outcome,
+    DateOnly? ResolvedOn,
+    double? ReturnPct,
+    double? BreakEven = null);
 
 // What happened five and twenty-one sessions after a listing, and whether a
 // setup reached its target before its stop.
@@ -67,6 +79,11 @@ public static class ForwardReturnSeries
         // a different question from the setup's. It is the question the base
         // rate exists to put in proportion: most names are higher after a month
         // regardless.
+        //
+        // No break-even, and by rule rather than by omission: a break-even is the
+        // bar a plan set for itself, and these two horizons ask what the market
+        // did over a fixed stretch of sessions rather than what a plan demanded.
+        // Their bar is the universe base rate, which the column beside them holds.
         // see: Every forward-return figure is shown against the universe base rate
         return new ForwardReturn(horizon, change > 0 ? Win : Loss, at.SessionDate, change);
     }
@@ -92,7 +109,14 @@ public static class ForwardReturnSeries
     // fill read from a session's low would credit an order the store cannot show
     // was filled. The cap is counted from the listing night, since the plan being
     // scored is the one stored that night and it ages with it.
+    //
+    // The break-even is 8.2's half of the same entry: the share of the time this
+    // plan had to be right to come out even, computed from the entry close it was
+    // measured from. It rides on every outcome the entry close is known for and on
+    // no other, so a row carries a return and a break-even together or carries
+    // neither.
     // see: A setup is scored from its entry, and a target reached before the entry is never a win
+    // see: A condition is judged against the break-even its own plan demands
     public static ForwardReturn OverSetup(
         IReadOnlyList<ReturnBar> after,
         decimal? stop,
@@ -154,8 +178,14 @@ public static class ForwardReturnSeries
                 // measure from: the fill was somewhere in the zone and the store
                 // does not say where, so the outcome is a loss with no figure
                 // rather than a figure of zero, which would read as a trade that
-                // went nowhere.
-                return new ForwardReturn(Setup, Loss, bar.SessionDate, entry is { } at ? ChangeFromEntry(at, bar.Close) : null);
+                // went nowhere. The break-even goes with it, for the same reason
+                // and not a second one: it is the bar the entry close set, and an
+                // entry close nobody knows sets none. Five of the 93 setups the
+                // operator's store had resolved on 2026-09-16 are this shape, so
+                // it is a population to state rather than a case to wave at.
+                return entry is { } at
+                    ? new ForwardReturn(Setup, Loss, bar.SessionDate, ChangeFromEntry(at, bar.Close), BreakEven(at, floor, ceiling))
+                    : new ForwardReturn(Setup, Loss, bar.SessionDate, null, null);
             }
 
             if (entry is null)
@@ -177,7 +207,12 @@ public static class ForwardReturnSeries
 
             if (bar.Close >= ceiling)
             {
-                return new ForwardReturn(Setup, Win, bar.SessionDate, ChangeFromEntry(entry.Value, bar.Close));
+                return new ForwardReturn(
+                    Setup,
+                    Win,
+                    bar.SessionDate,
+                    ChangeFromEntry(entry.Value, bar.Close),
+                    BreakEven(entry.Value, floor, ceiling));
             }
         }
 
@@ -193,13 +228,60 @@ public static class ForwardReturnSeries
 
         return entry is null
             ? new ForwardReturn(Setup, NeverEntered, last.SessionDate, null)
-            : new ForwardReturn(Setup, Unresolved, last.SessionDate, ChangeFromEntry(entry.Value, last.Close));
+            : new ForwardReturn(
+                Setup,
+                Unresolved,
+                last.SessionDate,
+                ChangeFromEntry(entry.Value, last.Close),
+                BreakEven(entry.Value, floor, ceiling));
     }
 
     // What the trade made, from the close it was entered at to the close it
     // resolved on. Null for a setup nobody entered, which has no trade to measure.
     static double? ChangeFromEntry(decimal entry, decimal at) =>
         entry <= 0 ? null : Statistic.FromRatio((at - entry) / entry) * 100;
+
+    // The bar the plan set for itself: the share of the time its target has to be
+    // reached before its stop for the setup to come out even.
+    //
+    // Section 13 derives it from where the bands sit rather than from a benchmark
+    // borrowed from elsewhere, which is what makes it the thing a reason is scored
+    // against. Its worked example is the case this is asserted over: an entry at
+    // 920, a stop at 855 and a first traded target at 1057 put 65 points at risk
+    // against 137 of reward, so the setup breaks even at 65 of 202, about 32 per
+    // cent. A reason clears its bar by winning more often than its own setups
+    // demanded, and a setup with a distant target is allowed to be right rarely.
+    //
+    // Measured from the close the setup was entered at rather than from the
+    // listing's, for the reason the return is: a plan filled at the bottom of its
+    // zone risked less and stood to gain more than the same plan filled at the
+    // top, and one bar over both scores a trade nobody took.
+    //
+    // Risk and reward sum to the plan's whole range whichever side of it the entry
+    // landed on, so the denominator is `target - stop` and the figure is a share
+    // of it. That is why it exists only where the entry sits inside the range: a
+    // plan entered above its own target or below its own stop yields no share, and
+    // it refuses rather than returning a number outside nought and one. Neither is
+    // a shape the builder writes, since a close through the stop resolves before
+    // the entry is read and a close at the target resolves before the zone is, and
+    // the refusal is here for the same reason the stop-at-or-above-target refusal
+    // in the caller is.
+    //
+    // A percentage rather than a fraction, which is the form the two figures on
+    // the same row carry and the form the share it is tested against carries. The
+    // plan arithmetic the name page draws states its own break-even as a fraction,
+    // and the two are different numbers about different entries.
+    // see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with
+    // see: A condition is judged against the break-even its own plan demands
+    static double? BreakEven(decimal entry, decimal stop, decimal target)
+    {
+        var risk = entry - stop;
+        var reward = target - entry;
+
+        return risk < 0 || reward < 0 || risk + reward <= 0
+            ? null
+            : Statistic.FromRatio(risk / (risk + reward)) * 100;
+    }
 
     // The universe base rate for one horizon: the share of every name-night in
     // the window that won.
@@ -211,7 +293,46 @@ public static class ForwardReturnSeries
     //
     // A window with nothing resolved has no rate rather than a rate of zero: a
     // zero says every name fell and nothing says nothing has matured.
-    public static double? BaseRate(IReadOnlyList<string?> outcomes)
+    public static double? BaseRate(IReadOnlyList<string?> outcomes) => WinShare(outcomes);
+
+    // One reason's record over the setups it produced: how many set a bar at all,
+    // how often they cleared it, and the bar itself.
+    //
+    // The population is the resolved setups carrying a break-even and no others,
+    // because the share and the bar are a pair. A share tested against a bar has
+    // to be the share of the rows that bar was averaged over, and a setup that
+    // entered and stopped on one session is resolved and set no bar. Five of the
+    // 93 the operator's store had resolved on 2026-09-16 are that shape, so the
+    // two counts are stated apart rather than assumed equal.
+    //
+    // The arithmetic is here rather than in the projection that calls it, for the
+    // reason the base rate's is: a rendering layer that computes is a second
+    // implementation of one rule, and the two disagree eventually. Nothing here
+    // decides whether the figures are shown. That is the minimum's job.
+    // see: A screen reads and renders, and computes nothing
+    // see: A condition is judged against the break-even its own plan demands
+    public static (int Scored, double? Share, double? BreakEven) Record(
+        IReadOnlyList<(string? Outcome, double? BreakEven)> setups)
+    {
+        var scored = setups
+            .Where(setup => setup.Outcome is Win or Loss && setup.BreakEven is not null)
+            .ToArray();
+
+        return scored.Length == 0
+            ? (0, null, null)
+            : (scored.Length,
+                WinShare([.. scored.Select(setup => setup.Outcome)]),
+                scored.Average(setup => setup.BreakEven!.Value));
+    }
+
+    // The share of a set of outcomes that won, as a percentage, and none where
+    // nothing among them has matured.
+    //
+    // One piece of arithmetic under two figures, which are the same question
+    // asked of two populations: every name-night in a window, and the setups one
+    // reason produced. Each names its own population rather than sharing a word
+    // for both.
+    static double? WinShare(IReadOnlyList<string?> outcomes)
     {
         var counted = outcomes.Where(outcome => outcome is Win or Loss).ToArray();
 

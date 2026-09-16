@@ -201,11 +201,20 @@ public sealed record ReasonTotal(string Reason, int Names);
 
 // One reason's record, as the run page draws it.
 //
-// Counts and no rate. The share that reached target before stop and the
-// break-even those setups demanded are the other half of 15.10's row and arrive
-// at 8.5 with the verdicts; what this carries is how much has been scored and
-// how far that is from the minimum a verdict needs.
+// `Share` and `BreakEven` are the two figures 15.10's row pairs: how often this
+// reason's setups reached their target before their stop, and the bar those
+// setups' own plans set. Both are null below the minimum and the read surface is
+// what withholds them, so a reason that has not earned a verdict carries no rate
+// for any surface to draw. They are drawn at 8.5, with the verdict that reads
+// them; what this carries until then is how much has been scored and how far that
+// is from the minimum a verdict needs.
+//
+// `Scored` is their population, and it is not `Resolved`: a setup that entered
+// and stopped on one session is resolved and has no entry close, so it set no bar
+// and is in neither figure. Stating the two counts apart is what keeps the share
+// and the break-even over one population.
 // see: An unresolved setup is never a win
+// see: A condition is judged against the break-even its own plan demands
 public sealed record ReasonRecord(
     string Reason,
     int Fired,
@@ -213,7 +222,10 @@ public sealed record ReasonRecord(
     int Lost,
     int Unresolved,
     int Minimum,
-    int NeverEntered = 0)
+    int NeverEntered = 0,
+    int Scored = 0,
+    double? Share = null,
+    double? BreakEven = null)
 {
     // A setup that has done nothing is neither right nor wrong, so it is in
     // neither half of this, and one whose price never reached the entry the plan

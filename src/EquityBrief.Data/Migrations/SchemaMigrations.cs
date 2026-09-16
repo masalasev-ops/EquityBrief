@@ -540,7 +540,24 @@ public static class SchemaMigrations
         new Migration(21, "create research_section and theme_section", CreateResearchSections),
         new Migration(22, "add membership.industry", AddMembershipIndustry),
         new Migration(23, "add series_state.retries", AddSeriesStateRetries),
+        new Migration(24, "add forward_return.break_even", AddForwardReturnBreakEven),
     ];
+
+    // The bar each plan set for itself, beside the setup it belongs to.
+    //
+    // An alter rather than a rebuild, because the column is nullable and carries
+    // no key: every stored row reads as a row whose break-even has not been
+    // computed yet, which it has not, and the filler writes it on the next night
+    // as it rewrites every other figure on the row.
+    //
+    // `REAL` rather than `TEXT`, because a break-even is a share of a plan's range
+    // and not a price. The prices it is computed from are decimal in code and TEXT
+    // in storage, and the crossing between them happens once, in a helper named
+    // for it.
+    // see: A condition is judged against the break-even its own plan demands
+    const string AddForwardReturnBreakEven = @"
+        ALTER TABLE forward_return ADD COLUMN break_even REAL;
+    ";
 
     // The provider carries no join date for 145 of the 822 spans it returns,
     // and two of those are current members. Dropping them takes two real names

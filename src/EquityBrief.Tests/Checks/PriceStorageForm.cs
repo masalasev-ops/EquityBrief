@@ -174,8 +174,15 @@ public class PriceStorageForm
         // crosses in the open and is named for what it does; the crossing itself
         // is still `Statistic.FromRatio` one call in.
         // see: A setup is scored from its entry, and a target reached before the entry is never a win
+        //
+        // `ForwardReturnSeries.BreakEven` joined it at 8.2 and is the same shape:
+        // three prices in, the share of the plan's range that sat below the entry
+        // out, and `Statistic.FromRatio` one call in. It is the crossing 8.2's own
+        // text predicted, which is why this set is stated rather than counted.
+        // see: A condition is judged against the break-even its own plan demands
         Assert.Equal(
             [
+                "ForwardReturnSeries.cs: BreakEven",
                 "ForwardReturnSeries.cs: ChangeFromEntry",
                 "MarkRenderer.cs: PlotValue",
                 "MarkRenderer.cs: Y",
