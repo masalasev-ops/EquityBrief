@@ -1,0 +1,248 @@
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
+
+namespace EquityBrief.Core.Rules;
+
+// One version of one ladder rule, as the store holds it.
+//
+// `ClosedAt` is null while the window is open, and a closed window keeps its row
+// rather than being replaced: a measurement whose subject moved says nothing
+// about either version, so the only way to change a rule is to close the window
+// measuring it and open another, with both rows standing afterwards.
+// see: Adding a candidate later restarts the clock
+public sealed record RuleVersionRow(
+    string Rule,
+    string Version,
+    string Parameters,
+    string ParametersHash,
+    string CodeVersion,
+    DateTimeOffset OpenedAt,
+    DateTimeOffset? ClosedAt,
+    string? ReplacedBy);
+
+// The four ladder rules that carry named versions.
+//
+// Four rather than every constant the builder holds, and the four are the ones a
+// plan's shape actually turns on: where two bands become one zone, where the stop
+// sits, whether a tranche too close to an exit is skipped, and whether a zone's
+// edges come from its non-average anchors alone. The last arrives from 8.0's
+// trace, which found a moving average widening 35 of 223 fired zones and three of
+// them no longer holding the close if the average were dropped, and registered
+// the alternative here rather than deciding it by taste.
+// see: A moving average may widen a band that a tranche sits on, and may never anchor one
+public static class LadderRules
+{
+    public const string MergeDistance = "merge distance";
+
+    public const string StopPlacement = "where the stop sits";
+
+    public const string NearExitSkip = "the near-exit skip";
+
+    public const string ZoneEdgesFromNonAverageAnchors = "zone edges from non-average anchors only";
+
+    public static IReadOnlyList<string> All { get; } =
+    [
+        MergeDistance,
+        StopPlacement,
+        NearExitSkip,
+        ZoneEdgesFromNonAverageAnchors,
+    ];
+
+    // Which rules a version of this rule makes the night replay.
+    //
+    // The merge distance decides where a band's edges are, so a version of it
+    // replays the level stage and then the ladder stage. The other three read
+    // the bands as they stand and replay the ladder stage alone. That split is
+    // the whole of the bound's arithmetic: a merge distance version costs a level
+    // replay and a ladder replay, and every other version costs a ladder replay.
+    public static bool ReplaysLevels(string rule) =>
+        string.Equals(rule, MergeDistance, StringComparison.Ordinal);
+}
+
+// The bound, the windows and the drift check.
+//
+// The bound is proposed and its arithmetic is stated rather than assumed: the
+// night of 2026-09-14 took 495 seconds over steps 1 to 16, its level stage 143
+// seconds and its ladder stage 5 at 504 names. A merge distance version therefore
+// costs 148 seconds and every other version 5, which puts fourteen at 688 seconds
+// against a deadline of 900. A projection is not a measurement, and the row that
+// settles it reads the scorer's own nights.
+// owes: The rule version bound set from nights the version scorer ran
+public static class RuleVersions
+{
+    // At most four versions of each rule, and fourteen at once.
+    //
+    // Both, because four of each of four rules is sixteen and the total is what
+    // the deadline actually bounds. The per-rule cap is what stops one rule
+    // taking the whole budget and leaving the other three unversioned, which
+    // would make the night's cost the same and the comparison narrower.
+    public const int MostPerRule = 4;
+
+    public const int MostAtOnce = 14;
+
+    // The live version of each rule is what the night already computes, so it is
+    // no extra replay and is not counted against the bound. Counting it would
+    // make the bound a bound on versions plus the thing being compared against.
+    public const string Live = "live";
+
+    public const string InSample = "in_sample";
+
+    public const string Scored = "scored";
+
+    // The versions open at an instant, being those whose window opened at or
+    // before it and has not closed by it.
+    public static IReadOnlyList<RuleVersionRow> OpenAt(IEnumerable<RuleVersionRow> rows, DateTimeOffset at) =>
+    [
+        .. rows
+            .Where(row => row.OpenedAt <= at)
+            .Where(row => row.ClosedAt is null || row.ClosedAt > at)
+            .OrderBy(row => row.Rule, StringComparer.Ordinal)
+            .ThenBy(row => row.OpenedAt),
+    ];
+
+    // Why a version may not be opened, or null.
+    //
+    // Named apart from the write so the check reads the same reader the verb
+    // does rather than a copy of it, and so each refusal can be put to it over
+    // constructed rows.
+    public static string? Refusal(IReadOnlyList<RuleVersionRow> rows, string rule, string version, DateTimeOffset at)
+    {
+        if (!LadderRules.All.Contains(rule, StringComparer.Ordinal))
+        {
+            return
+                $"'{rule}' is not a ladder rule this build carries. A version of a rule nothing applies " +
+                $"is a window measuring nothing. Carried: {string.Join(", ", LadderRules.All)}.";
+        }
+
+        var open = OpenAt(rows, at);
+
+        if (open.Any(row => string.Equals(row.Rule, rule, StringComparison.Ordinal)
+            && string.Equals(row.Version, version, StringComparison.Ordinal)))
+        {
+            return
+                $"'{version}' of '{rule}' already has an open window. A version is opened once and closed " +
+                "once, and re-opening one would put two windows on the same subject with nothing saying " +
+                "which a score belongs to.";
+        }
+
+        var forThisRule = open.Count(row => string.Equals(row.Rule, rule, StringComparison.Ordinal));
+
+        if (forThisRule >= MostPerRule)
+        {
+            return FormattableString.Invariant(
+                $"'{rule}' already has {forThisRule} open version(s), which is the most per rule of {MostPerRule}. ")
+                + "Close one before opening another, because one rule taking the whole budget leaves the "
+                + "others unversioned at the same cost to the night.";
+        }
+
+        return open.Count >= MostAtOnce
+            ? FormattableString.Invariant(
+                $"{open.Count} version(s) are already open, which is the most at once of {MostAtOnce}. ")
+                + "The night replays the ladder stage once per version and the level stage once per merge "
+                + "distance version, and the bound is what keeps that inside the deadline."
+            : null;
+    }
+
+    // The seconds a night of these versions is projected to add, from the stage
+    // durations the night itself measured.
+    //
+    // Projected rather than asserted: the figures are one night's at one index
+    // size, and the row that settles the bound reads the scorer's own nights.
+    // Stated here so the arithmetic is in code rather than only in prose, and so
+    // a test can put the document's own figures to it.
+    public static double ProjectedSeconds(
+        IReadOnlyList<RuleVersionRow> open,
+        double levelStageSeconds,
+        double ladderStageSeconds)
+    {
+        var merge = open.Count(row => LadderRules.ReplaysLevels(row.Rule));
+        var others = open.Count - merge;
+
+        return (merge * (levelStageSeconds + ladderStageSeconds)) + (others * ladderStageSeconds);
+    }
+
+    // A rule's parameters as they stand, hashed, so a change is a thing the night
+    // can notice rather than a thing somebody remembers to record.
+    //
+    // The same normalisation the evaluator pin uses and for the same reason: the
+    // hash has to be the same on both machines and on a runner that checked the
+    // tree out with either line ending.
+    public static string Hash(IReadOnlyDictionary<string, double> parameters, string codeVersion)
+    {
+        var written = string.Join(
+            ";",
+            parameters
+                .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                .Select(pair => FormattableString.Invariant($"{pair.Key}={pair.Value}")));
+
+        var digest = SHA256.HashData(Encoding.UTF8.GetBytes(written + "|" + codeVersion));
+
+        return Convert.ToHexString(digest)[..12].ToLowerInvariant();
+    }
+
+    public static string Write(IReadOnlyDictionary<string, double> parameters) =>
+        "{" + string.Join(
+            ", ",
+            parameters
+                .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                .Select(pair => FormattableString.Invariant($"\"{pair.Key}\": {pair.Value}"))) + "}";
+
+    public static IReadOnlyDictionary<string, double> Read(string parameters)
+    {
+        var read = new Dictionary<string, double>(StringComparer.Ordinal);
+
+        foreach (var part in parameters.Trim('{', '}', ' ').Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var at = part.IndexOf(':', StringComparison.Ordinal);
+
+            if (at < 0)
+            {
+                throw new FormatException(
+                    $"'{part.Trim()}' in a version's parameters is not a name and a value. A version nobody " +
+                    "can read back is a window nothing can be replayed under.");
+            }
+
+            read[part[..at].Trim().Trim('"')] = double.Parse(part[(at + 1)..].Trim(), CultureInfo.InvariantCulture);
+        }
+
+        return read;
+    }
+
+    // The live rules whose parameters or code have moved while a window measuring
+    // them is open.
+    //
+    // This is what stops the night rather than a note on its row. A measurement
+    // whose subject moved says nothing about either version: the scores already
+    // written under the open window were computed against the old rule, the
+    // scores tonight would be computed against the new one, and a record holding
+    // both is a record of neither. The only way through is to close the window
+    // and open a new one, which keeps the old rows and says what they were of.
+    // see: Adding a candidate later restarts the clock
+    public static IReadOnlyList<string> Drifted(
+        IReadOnlyList<RuleVersionRow> open,
+        IReadOnlyDictionary<string, string> hashesNow)
+    {
+        var moved = new List<string>();
+
+        foreach (var row in open.Where(row => string.Equals(row.Version, Live, StringComparison.Ordinal)))
+        {
+            if (!hashesNow.TryGetValue(row.Rule, out var now))
+            {
+                moved.Add($"'{row.Rule}' has an open live window and this build applies no such rule.");
+
+                continue;
+            }
+
+            if (!string.Equals(now, row.ParametersHash, StringComparison.Ordinal))
+            {
+                moved.Add(
+                    $"'{row.Rule}' has an open window opened at hash {row.ParametersHash} and the build now " +
+                    $"hashes to {now}. A window measuring a rule that moved says nothing about either " +
+                    "version: close it and open a new one.");
+            }
+        }
+
+        return moved;
+    }
+}

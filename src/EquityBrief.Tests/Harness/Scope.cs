@@ -51,6 +51,7 @@ internal static class Scope
     const string ByListings = "listings-coverage";
     const string ByAdmissibility = "claim-admissibility";
     const string ByRegister = "register-append-only";
+    const string ByRules = "rule-versions-scored";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -390,6 +391,37 @@ internal static class Scope
             Verdict.Pass,
             "the unexamined count is drawn separately from out of scope",
             ByReadSurface),
+        // 8.6, the rule versions. One claim ends and six arrive, being the
+        // scorer's catalogue and matrix rows, the two store rows, the nightly
+        // step and the bound.
+        [CheckReach.Key(LimitsTable, "Frozen measurement windows")] = new Scoped(
+            Verdict.Pass,
+            "a version change closes the window measuring the old rule and opens a new one, with the closed row keeping every column it was opened with so the scores under it stay scores of the rule as it stood, and a live rule that moved inside an open window stops the night at its own step naming the rule",
+            ByNight),
+        [CheckReach.Key(CatalogueTable, "Rule version scorer")] = new Scoped(
+            Verdict.Pass,
+            "the class declares each store it reads, the versions it reads and writes, the scores it writes and drops, and the run log it appends to, reconciled against its row's cells and against SCHEMA's ownership",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Rule version scorer")] = new Scoped(
+            Verdict.Pass,
+            "its row is read against the declaration cell by cell with the blanks included, the version columns filled and every store it does not touch left empty",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Rule versions")] = new Scoped(
+            Verdict.Pass,
+            "a window carries its rule, version, parameters, their hash with the code version, and the instant it opened, and a closed one carries when it closed and what replaced it with every other column as it was opened with, read back off a migrated store",
+            ByRules),
+        [CheckReach.Key(StoresTable, "Version scores")] = new Scoped(
+            Verdict.Pass,
+            "a score carries the name, the night, the rule, the version, the window it belongs to and the plan that version produced, with a score written for a night before its window opened flagged in sample, read back off a migrated store",
+            ByRules),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Replay tonight's name-nights under every open version of each ladder rule from the stored bars, and store the plan each version produced, flagging as in sample any score written for a night before its version's window opened so it counts toward no record. This makes no request: the bars are already stored, so a version costs the ladder arithmetic run again and, for a version of the merge distance, the level arithmetic as well. A live rule whose parameters or code have moved while a window measuring it is open stops the night at this step and names the rule (see: Adding a candidate later restarts the clock).")] = new Scoped(
+            Verdict.Pass,
+            "the step runs after the arithmetic it replays and before the close, writes a score per name per open version from stored bars, makes no request and no model call, and stops the night naming the rule where a live rule moved inside an open window",
+            ByNight),
+        [CheckReach.Key(LimitsTable, "Rule versions scored at once")] = new Scoped(
+            Verdict.Pass,
+            "the bound is refused at the fifteenth version and at the fifth of one rule and admitted one below each, and the projection is computed from the night's own stage durations rather than from a figure written beside it",
+            ByRules),
         // 8.5, the reason verdicts. Nine claims end here and one arrives, being
         // section 17's significance threshold row.
         [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = new Scoped(
@@ -2329,11 +2361,12 @@ internal static class Scope
         ["Tranche eligibility"] = "4.4",
         ["Earnings horizon"] = "4.7",
         ["Nightly row coverage"] = "5.4",
-        ["Frozen measurement windows"] = "8.6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
     {
+        // 8.6, the rule version scorer's own step.
+        ["Replay tonight's name-nights"] = "8.6",
         // The step is a claim about the nightly script running it in order, and
         // the script is built at 1.4. A step whose component lands earlier is
         // still not run by a night until then.

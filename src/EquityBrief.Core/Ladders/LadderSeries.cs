@@ -128,6 +128,32 @@ public readonly record struct LadderBar(DateOnly SessionDate, decimal High, deci
 // It places a position and never sizes one.
 // see: The plan places a position and never sizes one
 // see: Code owns every number
+// The three ladder rules a version may vary, with the live values as defaults.
+//
+// A record with defaults rather than parameters threaded through every call,
+// because every existing caller is the live rule and a seam that made them all
+// pass the live values would be a change to the thing being measured in order to
+// measure it. The merge distance is not here: it is already a parameter of the
+// level arithmetic, which is what makes a version of it replay levels as well.
+// see: Adding a candidate later restarts the clock
+public sealed record LadderRuleSet(
+    int NearExitInTypicalDays = LadderSeries.NearExitInTypicalDays,
+    bool StopTrailsTheLastHigherLow = true,
+    bool ZoneEdgesFromNonAverageAnchorsOnly = false)
+{
+    public static LadderRuleSet Live { get; } = new();
+
+    // What a version of this rule set is hashed over, which is how the night
+    // notices a live rule that moved inside an open window.
+    public IReadOnlyDictionary<string, double> AsParameters =>
+        new Dictionary<string, double>(StringComparer.Ordinal)
+        {
+            ["nearExitInTypicalDays"] = NearExitInTypicalDays,
+            ["stopTrailsTheLastHigherLow"] = StopTrailsTheLastHigherLow ? 1 : 0,
+            ["zoneEdgesFromNonAverageAnchorsOnly"] = ZoneEdgesFromNonAverageAnchorsOnly ? 1 : 0,
+        };
+}
+
 public static class LadderSeries
 {
     // Section 17's counts. Three steps is enough to stage a purchase across a
@@ -158,8 +184,13 @@ public static class LadderSeries
         IReadOnlyList<LadderBar> recent,
         string trendState,
         IReadOnlyList<decimal>? swingLows = null,
-        DateOnly? nextEvent = null)
+        DateOnly? nextEvent = null,
+        LadderRuleSet? rules = null)
     {
+        // The live rules unless a caller names another version, so every caller
+        // that was here before this seam existed goes on computing what it did.
+        rules ??= LadderRuleSet.Live;
+
         // A downtrend carries no tranches at all, and a name whose trend could
         // not be classified carries none either: the label decides whether a
         // plan exists, and a plan placed on a label nobody could read is a
@@ -219,11 +250,24 @@ public static class LadderSeries
                 .OrderByDescending(other => other.LowEdge)
                 .FirstOrDefault();
 
+            // The zone's edges. Live, they are the band's own and it keeps its
+            // full width, which is what section 17's eligibility row says and
+            // what 8.0 reconciled with the rule that an average may widen a band
+            // and never anchor one. The version narrows them to the range of the
+            // band's non-average members, which is the alternative 8.0 measured
+            // at 35 of 223 zones widened and three no longer holding the close.
+            // see: A moving average may widen a band that a tranche sits on, and may never anchor one
+            var (low, high) = rules.ZoneEdgesFromNonAverageAnchorsOnly
+                ? NonAverageEdgesOf(band)
+                : (band.LowEdge, band.HighEdge);
+
             tranches.Add(new Tranche(
-                band.LowEdge,
-                band.HighEdge,
+                low,
+                high,
                 ConditionFor(band, close, typicalMove, recent),
-                StopFor(band, beneath?.LowEdge, trendState, swingLows ?? [])));
+                rules.StopTrailsTheLastHigherLow
+                    ? StopFor(band, beneath?.LowEdge, trendState, swingLows ?? [])
+                    : beneath?.LowEdge));
         }
 
         // The whole position is wrong below the lowest band the structure
@@ -237,7 +281,7 @@ public static class LadderSeries
 
         return new Ladder(
             tranches,
-            ExitsFor(bands, tranches, typicalMove),
+            ExitsFor(bands, tranches, typicalMove, rules.NearExitInTypicalDays),
             invalidation,
             null,
             EventsFor(bands, close, typicalMove, nextEvent, recent));
@@ -257,6 +301,25 @@ public static class LadderSeries
     // that has run a long way is far below the band beneath and is looser
     // protection than the range rule gives. A trailing stop that can sit below
     // the range floor is not trailing anything.
+    // The range of a band's non-average members, or the band's own edges where it
+    // carries none that are not an average.
+    //
+    // The fallback is not a detail: a band with no non-average member carries no
+    // tranche at all, so this is only ever asked of a band that has one, and
+    // returning the band's edges where it somehow does not is a narrowing that
+    // narrows to nothing rather than a silent widening.
+    static (decimal Low, decimal High) NonAverageEdgesOf(Level band)
+    {
+        var anchors = band.Members
+            .Where(member => member.Source != MemberSource.Average)
+            .Select(member => member.Price)
+            .ToArray();
+
+        return anchors.Length == 0
+            ? (band.LowEdge, band.HighEdge)
+            : (anchors.Min(), anchors.Max());
+    }
+
     public static decimal? StopFor(
         Level band,
         decimal? beneath,
@@ -292,7 +355,8 @@ public static class LadderSeries
     public static IReadOnlyList<Exit> ExitsFor(
         IReadOnlyList<Level> bands,
         IReadOnlyList<Tranche> tranches,
-        decimal typicalMove)
+        decimal typicalMove,
+        int nearExitInTypicalDays = NearExitInTypicalDays)
     {
         if (tranches.Count == 0)
         {
@@ -305,7 +369,7 @@ public static class LadderSeries
             .ToArray();
 
         var blended = midpoints.Sum() / midpoints.Length;
-        var near = typicalMove * NearExitInTypicalDays;
+        var near = typicalMove * nearExitInTypicalDays;
 
         var above = bands
             .Where(band => band.Role == LevelSeries.Resistance)
@@ -340,7 +404,7 @@ public static class LadderSeries
                     isTraded ? share : "0",
                     isTraded
                         ? null
-                        : FormattableString.Invariant($"closer than {NearExitInTypicalDays} typical days' moves to the blended entry"));
+                        : FormattableString.Invariant($"closer than {nearExitInTypicalDays} typical days' moves to the blended entry"));
             }),
         ];
     }

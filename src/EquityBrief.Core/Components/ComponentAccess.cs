@@ -41,6 +41,8 @@ public enum Store
     ThemeSection,
     SourceDocument,
     CandidateRegister,
+    RuleVersion,
+    VersionScore,
     SeriesState,
     RunLog,
 }

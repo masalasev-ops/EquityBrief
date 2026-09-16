@@ -41,6 +41,8 @@ internal static class ComponentVocabulary
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
         ("Sources", [DataStore.SourceDocument]),
         ("Candidate register", [DataStore.CandidateRegister]),
+        ("Rule versions", [DataStore.RuleVersion]),
+        ("Version scores", [DataStore.VersionScore]),
         ("Series state", [DataStore.SeriesState]),
         ("Run log", [DataStore.RunLog]),
     ];
@@ -143,6 +145,8 @@ internal static class ComponentVocabulary
         ["membership"] = DataStore.Membership,
         ["calendar"] = DataStore.Calendar,
         ["candidate register"] = DataStore.CandidateRegister,
+        ["rule versions"] = DataStore.RuleVersion,
+        ["version scores"] = DataStore.VersionScore,
     };
 
     internal sealed record CellReading(DataStore[] Stores, Feed[] Feeds, string[] Unresolved);

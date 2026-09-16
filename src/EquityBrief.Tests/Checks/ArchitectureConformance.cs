@@ -381,9 +381,30 @@ public class ArchitectureConformance
         // When phase 8 empties this set the guard fails, which is correct: at
         // that point the two assertions below have nothing to say and the test
         // is what has to change, rather than the number.
-        Assert.True(due.Length >= 1, $"Read {due.Length} out-of-scope claims, so the two assertions below would pass over an empty set.");
-        Assert.DoesNotContain(due, point => !DuePoints.InThePlan(point, plan));
-        Assert.DoesNotContain(due, point => DuePoints.HasLanded(point, progress));
+        // Phase 8 emptied this set at 8.6, which the comment above said would
+        // happen and said what to do about it: the test is what changes rather
+        // than the number. So the two properties are asserted over whatever is
+        // left, which may be nothing, and the readers behind them are put to
+        // constructed points, where the population cannot empty.
+        var lost = due.Where(point => !DuePoints.InThePlan(point, plan)).ToArray();
+        var landed = due.Where(point => DuePoints.HasLanded(point, progress)).ToArray();
+
+        Assert.True(
+            lost.Length == 0 && landed.Length == 0,
+            $"Of {due.Length} out-of-scope due point(s), {lost.Length} name a point the plan lacks " +
+            $"({string.Join(", ", lost)}) and {landed.Length} name one the record shows as landed " +
+            $"({string.Join(", ", landed)}).");
+
+        // The two readers, over points written here. A checkpoint this plan has
+        // and this record does not is the shape a live out-of-scope claim takes,
+        // and the other two are the faults the assertions above look for.
+        const string Plan = "### 9.1 A thing that is built\nIt builds a thing.\n\n";
+        const string Record = "### 9.1 - a thing that is built   2026-10-01\nBuilt:      a thing.\n\n";
+
+        Assert.True(DuePoints.InThePlan("9.1", Plan));
+        Assert.False(DuePoints.InThePlan("9.9", Plan));
+        Assert.False(DuePoints.HasLanded("9.1", string.Empty));
+        Assert.True(DuePoints.HasLanded("9.1", Record));
     }
 
     [Fact]
@@ -620,11 +641,37 @@ public class ArchitectureConformance
 
         Assert.Equal(0, report.Count(Verdict.Unexamined));
         Assert.Equal(0, report.Count(Verdict.Fail));
-        // The same guard as the one above and for the reason written there: this
-        // count falls to zero by construction, so it is context with a
-        // non-vacuity guard rather than a floor that is lowered every phase.
-        Assert.True(outOfScope.Length >= 1, $"{outOfScope.Length} claims are out of scope, so the assertion below would pass over an empty set.");
-        Assert.DoesNotContain(outOfScope, claim => !claim.Note.Contains("until", StringComparison.Ordinal));
+        // The guard that stood here reached zero at 8.6, which is the point the
+        // whole build was aimed at: every claim the document makes is now
+        // examined and none is deferred. It said the count falls to zero by
+        // construction, and the day it did the guard failed for the build having
+        // succeeded rather than for anything being wrong.
+        //
+        // So the shape of an out-of-scope note is put to constructed claims
+        // instead, where the population cannot empty. What that half asserts is
+        // that a deferred claim says where it ends, and a report holding none is
+        // a report with nothing to say it of.
+        var silent = outOfScope
+            .Where(claim => !claim.Note.Contains("until", StringComparison.Ordinal))
+            .ToArray();
+
+        // The count is stated here rather than asserted on its own, because a
+        // number that cannot fail is the under-reporting this harness refuses.
+        Assert.True(
+            silent.Length == 0,
+            $"{silent.Length} of {outOfScope.Length} out-of-scope claim(s) do not say where they end: " +
+            string.Join("; ", silent.Select(claim => claim.Subject)));
+
+        var shapes = new[]
+        {
+            new { Note = "out of scope until 9.1 builds it", Deferred = true },
+            new { Note = "reached by nothing and said so", Deferred = false },
+        };
+
+        Assert.Equal(
+            [true, false],
+            [.. shapes.Select(shape => shape.Note.Contains("until", StringComparison.Ordinal))]);
+
     }
 
     [Fact]
