@@ -228,7 +228,7 @@ Both are decisions a person takes, from the repository root, and a night never t
 dotnet run --project src/EquityBrief.Worker -- register --candidate "momentum index at thirty" --rule "the relative strength index at or below thirty" --test "the share of its setups that beat their own break-even" --evaluator momentum-index-reading --parameters level=30
 ```
 
-The evaluators carried are `momentum-index-reading`, which reads `level`, and `momentum-histogram-turn`, which reads `margin`. The registrar refuses an evaluator the code does not carry, a parameter the evaluator does not read, a ninth candidate, and any change to a candidate that stands registered. A change is a retirement and a new registration:
+The evaluators carried are `momentum-index-reading`, which reads `level`, and `momentum-histogram-turn`, which reads `margin`. The registrar refuses an evaluator the code does not carry, a parameter the evaluator does not read, a ninth candidate, a live reason's name, and any change to a candidate that stands registered. A live reason is retired only by changing section 11 and the code together, once its record holds 400 resolved setups. A change is a retirement and a new registration:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- register --retire "momentum index at thirty" --evidence "the figures that produced the retirement"

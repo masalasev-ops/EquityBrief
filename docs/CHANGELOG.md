@@ -25,6 +25,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - .claude/rules/checks.md - the guardrails held clause by clause, the loop's silence asserted over a night, and a live reason refused at the register
+
+Corrects: `architecture-conformance` held each 13.3 guardrail to one test by name alone, and three of the eight named tests about something else; the loop's changed-nothing assertion was made over two empty lists; and nothing refused a live reason's name at the register, where section 17 says a live condition is retired only at a higher floor. Found by the building session while writing phase 8's sign-off handoff.
+Was:
+> | `architecture-conformance` | every CI run | Every claim ARCHITECTURE.html makes, in a table, in a figure, or in the nightly run's ordered list, has a verdict: pass, fail, out of scope for this phase, or unexamined; every table and every figure in the document is placed so none can go unread, each against a population read from the document rather than from the reader; a claim that passes names the check that reached it, on both surfaces the report writes; and every placement and every pass is reconciled against what the check it names declares it reaches, in both directions; and a check a row names in its own words is the check its verdict names or is named in that verdict's note |
+>
+> | `register-append-only` | every CI run | The candidate register refuses updates and deletes, at the table itself rather than only in what writes to it, and the register still reads as it did after each is refused; a retirement is a new row naming what it retires and the row it retires still stands; the correction divisor counts the candidates registered before the window opened and not retired before it opened, over hand-worked rows and over a store by two routes; and a registered candidate whose evaluator's source has moved without its version fails rather than being evaluated under a rule the register does not name, the version being a hash of the evaluator's own source taken over line endings normalised and a leading byte order mark removed |
+Now:
+> `architecture-conformance` also maps section 13.3's guardrails clause by clause to a test whose own body exercises the code the clause is enforced by, with no test holding two, and shows the loop changed nothing over the register's rows and version windows a whole recorded night ran over; `register-append-only` also refuses a live reason's name as a registration and as a retirement, naming the floor section 17 sets.
+Why: a mapping that asks only that a name exists passes a test chosen for its name, and an assertion over lists the test itself hands in cannot come back anything but empty.
+
+### 2026-09-16 - RUNBOOK.md - a live reason's name among the registrar's refusals
+
+Corrects: the registration section written at the 8.6 correction listed the registrar's refusals without the live reason's name, which the 8.7 correction adds. Found while making that refusal.
+Was:
+> The registrar refuses an evaluator the code does not carry, a parameter the evaluator does not read, a ninth candidate, and any change to a candidate that stands registered.
+Now:
+> The registrar refuses an evaluator the code does not carry, a parameter the evaluator does not read, a ninth candidate, a live reason's name, and any change to a candidate that stands registered. A live reason is retired only by changing section 11 and the code together, once its record holds 400 resolved setups.
+Why: the operator reads what a registration is refused for here, and a refusal the page does not list is one they meet first as a failed command.
+
 ### 2026-09-16 - ARCHITECTURE.html - the version bound stated to its end, and the verbs three rows name
 
 Corrects: section 17's version bound admitted a night past the deadline and stated 688 seconds as though it were the worst case, and the Rule version scorer's row promised a verb the worker did not carry. Found by the building session while writing phase 8's sign-off handoff.

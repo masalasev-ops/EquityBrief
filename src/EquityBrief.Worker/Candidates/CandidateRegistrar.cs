@@ -1,6 +1,8 @@
 using System.Globalization;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Returns;
+using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using Microsoft.Data.Sqlite;
 
@@ -138,6 +140,13 @@ public sealed class CandidateRegistrar : IComponent
 
         var rows = await RowsAsync(connection, cancellation);
 
+        if (LiveReasonRefusal(candidate) is { } live)
+        {
+            await RecordAsync(connection, runId, startedAt, Refused, 0, live, cancellation);
+
+            return new RegistrationOutcome(Refused, null, live);
+        }
+
         if (!CandidateFamily.StandsAt(rows, candidate, startedAt))
         {
             var refusal =
@@ -179,6 +188,23 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Retired, id, detail);
     }
 
+    // A live reason's name, refused in both directions.
+    //
+    // The six live reasons are section 11's and the code's, a family of their own,
+    // and none of them is a row here. Registering a candidate under one's name
+    // would give a retirement of that name two meanings, and retiring one through
+    // this door would withdraw a live reason on the strength of a register row.
+    // A live reason is retired only by a person changing section 11 and the code
+    // together, once its record holds the higher floor section 17 states.
+    // see: An unresolved setup is never a win
+    public static string? LiveReasonRefusal(string candidate) =>
+        ShortlistSeries.Reasons.Contains(candidate.Trim(), StringComparer.OrdinalIgnoreCase)
+            ? $"'{candidate}' is a live reason, which is not a row in the register. A live reason is retired " +
+              "only by a change to section 11 and the code's reasons together, once its record holds " +
+              FormattableString.Invariant($"{ReasonVerdict.MinimumBeforeALiveReasonIsRetired} resolved setups, ") +
+              "and a candidate under its name would give that name two meanings."
+            : null;
+
     // Why a registration is refused, or null. Apart from the write so the check
     // reads the same reader the registrar does rather than a copy of it, and so
     // each refusal can be put to it over constructed rows.
@@ -189,6 +215,11 @@ public sealed class CandidateRegistrar : IComponent
         IReadOnlyDictionary<string, double> parameters,
         DateTimeOffset at)
     {
+        if (LiveReasonRefusal(candidate) is { } live)
+        {
+            return live;
+        }
+
         if (CandidateFamily.StandsAt(rows, candidate, at))
         {
             return

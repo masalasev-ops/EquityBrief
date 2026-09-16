@@ -1,5 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Returns;
+using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Candidates;
@@ -600,6 +602,47 @@ public class RegisterAppendOnly
         Assert.Contains(
             SourceStatements.In($"DELETE FROM {Table} WHERE id = 1;"),
             write => write.Operation == SourceStatements.Delete && write.Table == Table);
+    }
+
+    [Fact]
+    public async Task ALiveReasonIsNeitherRegisteredNorRetiredThroughTheRegister()
+    {
+        // 13.3's minimum guardrail has a second clause: a higher minimum before a
+        // live condition may be retired. Nothing at runtime retires one, and this
+        // is the door that could: a retirement of a live reason's name refused,
+        // and a candidate registered under one refused, since a later retirement
+        // of that name would then have two meanings.
+        using var store = new TemporaryStore().Migrated();
+
+        var registrar = new CandidateRegistrar(Clock(Opened), store.DatabaseFile);
+
+        Assert.Equal(6, ShortlistSeries.Reasons.Length);
+
+        foreach (var reason in ShortlistSeries.Reasons)
+        {
+            var retired = await registrar.RetireAsync(reason, "a record at 400 resolved setups", $"live-retire-{reason}");
+
+            Assert.Equal(CandidateRegistrar.Refused, retired.Outcome);
+            Assert.Contains(FormattableString.Invariant($"once its record holds {ReasonVerdict.MinimumBeforeALiveReasonIsRetired} resolved setups"), retired.Detail, StringComparison.Ordinal);
+
+            var registered = await registrar.RegisterAsync(
+                reason.ToUpperInvariant(),
+                "a rule",
+                "a test",
+                MomentumIndexReading.EvaluatorName,
+                new Dictionary<string, double>(StringComparer.Ordinal) { [MomentumIndexReading.Level] = 30 },
+                $"live-register-{reason}");
+
+            Assert.Equal(CandidateRegistrar.Refused, registered.Outcome);
+            Assert.Contains("is a live reason", registered.Detail, StringComparison.Ordinal);
+        }
+
+        // Nothing written, and every attempt on the run log as a refusal.
+        Assert.Empty(await RowsAsync(store));
+        Assert.Equal(12, Refusals(store).Count);
+
+        // A candidate under a name no live reason carries is not caught by it.
+        Assert.Null(CandidateRegistrar.LiveReasonRefusal("momentum index at thirty"));
     }
 
     [Fact]

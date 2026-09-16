@@ -51,6 +51,14 @@ public static class ReasonVerdict
 
     public const int MinimumSessions = 60;
 
+    // The higher floor a live reason's record has to reach before a change may
+    // retire it. Nothing at runtime retires a live reason: they are section 11's
+    // six and the code's, changed together by a person, and the register refuses
+    // a live reason's name in both directions with this floor in its refusal. It
+    // is a constant rather than prose so that refusal and section 17's row are
+    // held to one figure.
+    public const int MinimumBeforeALiveReasonIsRetired = 400;
+
     public const string BelowTheResolvedMinimum = "resolved";
 
     public const string BelowTheSessionMinimum = "sessions";
