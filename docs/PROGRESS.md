@@ -10702,6 +10702,10 @@ Found:      by the pass planning 8.0, reading the live store immutable for the f
             499, 496, 495 and 499. The operator ruled on 2026-09-15 that this
             is a correction at 5.4 landed before 8.0's planning resumes, and that breakout on
             volume reads resistance at the previous session's close, folded into the same change.
+            The work is phase 8's and what it corrects is phase 5's: the pass planning 8.0 found
+            both defects and made this change, and it is labelled for the checkpoint that built
+            them rather than for the pass that repaired them, which is what a correction entry is.
+            8.0's own planning entry is not written yet and lands after this.
 Repaired:   the sessions to a dated event are counted on the exchange calendar, the count the
             universe screen has made since 5.8, moved into `ExchangeClosures.SessionsUntil` so the
             screen and the shortlist builder read one method. The earnings soon values carry the
