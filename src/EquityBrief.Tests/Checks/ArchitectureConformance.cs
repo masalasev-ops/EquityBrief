@@ -1039,7 +1039,12 @@ public class ArchitectureConformance
         // ruling: the name screen's line for a suspect name arrives as the three parts its
         // row enumerates, and tonight's list row gains the line it draws beside the name.
         // 122 at 8.1, the run page's reason records row gaining the never-entered count.
-        Assert.Equal(122, inDocument.Length);
+        // 124 at 8.4, the run page's shadow candidates row decomposed into the three
+        // things it states: one leaves and three arrive. 8.0 predicted the row as one
+        // claim ending here, and the harness reads it as three, because a row passes
+        // for what it says and a single verdict over three statements passes when one
+        // is drawn and two are not.
+        Assert.Equal(124, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1109,8 +1114,9 @@ public class ArchitectureConformance
         // 124 at 6.7, being section 18's spend cap row and section 15.9's research
         // paused row at two parts each. 128 at the 7.0 ruling, being tonight's list row's
         // line beside a suspect name and the name screen's line for it at three parts.
-        // 129 at 8.1, the reason records row's never-entered count.
-        Assert.Equal(129, checkedElements);
+        // 129 at 8.1, the reason records row's never-entered count. 132 at 8.4, the
+        // shadow candidates row's three.
+        Assert.Equal(132, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

@@ -56,6 +56,14 @@ public partial class ReadSurface
             // 6.10, the run page's overnight queue region, and the night the machine slept,
             // which is a claim about what that region states.
             CheckReach.Key("15.10 Run", "Overnight queue"),
+
+            // 8.4, the shadow candidates region: how many stand registered, the
+            // divisor that number sets, the line saying each record is withheld
+            // until promotion, and the half asserted by its absence, which is
+            // that no evaluation of a name reaches any route.
+            CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered"),
+            CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets"),
+            CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted"),
             CheckReach.Key(Scope.FailureTable, "The machine slept and the overnight queue did not run"),
 
             // 5.6, the run page. Every one of these is a claim about a surface,
@@ -3371,9 +3379,11 @@ public partial class ReadSurface
     [Fact]
     public async Task TheRunPageDrawsEveryRegionSectionFifteenTenNamesAndStatesTheTwoThatAreAbsent()
     {
-        // The six regions in the order that section states them, with the two
-        // that need what phase 8 builds stated as absent rather than drawn
-        // empty. An empty region reads as a night that produced nothing.
+        // The six regions in the order that section states them. The shadow
+        // region was stated as absent until 8.4 built it, because an empty
+        // region reads as a night that produced nothing; it is now drawn, and
+        // what it states over a store with no registration is that nothing is
+        // registered rather than that nothing ran.
         using var store = await FixtureExpectations.WithReturns();
 
         var api = Api(store);
@@ -3396,7 +3406,8 @@ public partial class ReadSurface
             RunScreen.Refused(await api.RefusedDocumentsAsync(night)),
             RunScreen.FellBack(await api.FellBackAsync(night)),
             RunScreen.Queue(await api.QueueRowsAsync(), night, _ => true),
-            RunScreen.Harness(null));
+            RunScreen.Harness(null),
+            RunScreen.Shadow(await api.RegisteredCandidatesAsync(), Utc("2026-09-08T22:00:00Z")));
 
         foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "overnight-queue", "harness" })
         {
@@ -3410,8 +3421,11 @@ public partial class ReadSurface
 
         Assert.Equal([.. at.Order()], at);
 
-        Assert.Contains("data-shadow=\"absent\"", page, StringComparison.Ordinal);
-        Assert.Contains("8.3", page, StringComparison.Ordinal);
+        // The register holds nothing here, so the region says so with the
+        // maximum the family may reach and never with an empty row.
+        Assert.Contains("data-shadow=\"0\"", page, StringComparison.Ordinal);
+        Assert.Contains("no candidate condition is registered", page, StringComparison.Ordinal);
+        Assert.Contains("withheld until it is promoted", page, StringComparison.Ordinal);
 
         // And the route is a link, which is what makes the page shareable.
         Assert.Contains(SinglePageApp.RunRoute, new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);

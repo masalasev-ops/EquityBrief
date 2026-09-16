@@ -390,6 +390,22 @@ internal static class Scope
             Verdict.Pass,
             "the unexamined count is drawn separately from out of scope",
             ByReadSurface),
+        // 8.4, the shadow candidates region, read as the three claims its row
+        // states. The half none of them says out loud is asserted with them: no
+        // evaluation of a name reaches any route, which is what the region
+        // exists to keep true.
+        [CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered")] = new Scoped(
+            Verdict.Pass,
+            "the count is read off the region's markup against the register, at nothing registered, at two, and at one after a retirement, so it moves with the register rather than being drawn once",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets")] = new Scoped(
+            Verdict.Pass,
+            "the divisor is drawn beside the count and equals it, and both move together when a candidate is retired, which is what dividing the threshold by the family that stands means",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted")] = new Scoped(
+            Verdict.Pass,
+            "the line is drawn whether or not anything is registered, and over a store holding a shadow evaluation of every name on the night no evaluation and no candidate name reaches the run, tonight, universe or name routes, read off the rendered markup of each",
+            ByReadSurface),
         // 8.3, the candidate register. The store row, the two failure rows and
         // section 17's family row all end here, because the migration that
         // creates the table is what lets each be put to something.
@@ -1757,6 +1773,13 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = "5.2",
         [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = "6.6",
         [CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture")] = "5.8",
+        // 8.4, the shadow candidates row's three parts. Each carries its own
+        // point rather than inheriting the row's, which is what contradiction D
+        // was: a part added to the document with no point of its own is a claim
+        // nobody decided when it is owed.
+        [CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered")] = "8.4",
+        [CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets")] = "8.4",
+        [CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted")] = "8.4",
         [CheckReach.Key("15.10 Run", "Operational header, what ran")] = "5.6",
         [CheckReach.Key("15.10 Run", "Operational header, the instant each stage started and how long it took")] = "5.6",
         [CheckReach.Key("15.10 Run", "Operational header, model calls")] = "5.6",
@@ -1829,7 +1852,6 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Walk")] = "5.4",
         // 8.5 is "Reason verdicts on the run page" and 8.4 is "The shadow
         // column", so two rows of this section are owed three phases after it.
-        [CheckReach.Key("15.10 Run", "Shadow candidates")] = "8.4",
         [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, the stage a night stopped on")] = "5.6",
         [CheckReach.Key("15.10 Run", "Stale and failed, sections that fell back")] = "6.4",
@@ -1908,6 +1930,21 @@ internal static class Scope
             ["the resolved count", "the never-entered count", "the share that reached target before stop", "one row per reason with the reason track mark", "the break-even those setups demanded"],
         [CheckReach.Key("15.10 Run", "Harness")] =
             ["passed", "failed", "unexamined"],
+
+        // 8.4. The row states three things and the harness reads it as three
+        // claims, for the reason every other decomposed row is read that way: a
+        // row passes for what it says, and a single verdict over three
+        // statements passes when one of them is drawn and two are not. The
+        // count and the divisor are separate claims even though the page draws
+        // one number as both, because they are separate statements: one is how
+        // many stand registered and the other is what a threshold is divided by,
+        // and the day those stop being the same number the row has to fail.
+        [CheckReach.Key("15.10 Run", "Shadow candidates")] =
+        [
+            "how many candidate conditions are registered",
+            "the correction divisor that number sets",
+            "one line saying each candidate's record is withheld until it is promoted",
+        ],
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
             ["candles", "the level bands", "the moving averages", "a volume pane"],
 

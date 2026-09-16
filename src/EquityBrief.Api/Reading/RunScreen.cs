@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Web.Marks;
@@ -166,6 +167,31 @@ public static class RunScreen
     // picture, which is the thing the gate exists to prevent. The mark keeps its
     // three states as section 15.5 defines them and draws what it is given.
     // see: The record column stays empty until it has earned a number
+    // The shadow region, which is a count and a divisor and never a name.
+    //
+    // A screen shows how many candidate conditions are registered and that each
+    // one's record is withheld until it is promoted. It shows no evaluation of a
+    // name, here or anywhere else: seeing a candidate's record before it is
+    // promoted is the thing the shadow exists to prevent, and a page that drew
+    // one would make the register a formality.
+    //
+    // The instant is the one the page is read at rather than the night's, because
+    // what the region states is how hard the correction is now, which is what a
+    // reader comparing it against a verdict needs.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    public static ShadowRegion Shadow(IReadOnlyList<CandidateRow> rows, DateTimeOffset at)
+    {
+        var register = rows
+            .Select(row => new RegisterRow(
+                row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+                "{}", string.Empty, row.Event, row.Retires, row.RegisteredAt, null))
+            .ToArray();
+
+        return new ShadowRegion(
+            CandidateFamily.Divisor(register, at),
+            CandidateFamily.Maximum);
+    }
+
     public static IReadOnlyList<ReasonTrackRow> Tracks(IReadOnlyList<ReasonRecord> records) =>
     [
         .. records.Select(record => record.Resolved >= record.Minimum

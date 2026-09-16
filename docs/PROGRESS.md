@@ -11382,3 +11382,76 @@ Carried:    nothing. The shadow column that evaluates these rows is 8.4's, the v
             by this divisor are 8.5's, and the register stays empty in the operator's store until a
             person registers something into it, which is the guardrail working rather than a
             checkpoint left half done.
+
+### 8.4 - the shadow column   2026-09-16
+Built:      registered candidates evaluated on every name-night exactly as the live reasons are, into
+            the shadow column of the same listing rows, and shown nowhere (see: Candidate conditions
+            are registered before they are scored, and scored in shadow before they are shown).
+            `ShadowColumn` in Core answers which candidates a night evaluates and evaluates them;
+            `ShortlistBuilder` reads the register once at the top of the stage and writes the column
+            for every member; the read API reads the register and `RunScreen.Shadow` projects the
+            count and the divisor; `MarkRenderer.ShadowCandidates` draws section 15.10's third
+            region, which replaced the placeholder that said the register arrives at 8.3. No
+            migration: `listing.shadow_reasons` has existed since 5.4 and this is the checkpoint
+            that writes something into it.
+Rules:      the candidates a night evaluates are those standing registered at the instant the night
+            started, read once for the whole index rather than per name. Once, because a register
+            read inside the loop would give a candidate registered mid-night to the names below it
+            in the alphabet and not to the ones above, and nothing afterwards could say which. The
+            start rather than now, because a candidate registered while the night ran would be
+            scored on a name-night it was not registered before. Every member is evaluated,
+            including the ones no live reason fired on, which is what the every-name listing row
+            exists for: most of the nights a candidate would have fired on are nights nothing
+            surfaced the name. A stale or gapped name is evaluated over the same nothing the live
+            reasons are, so no shadow score is computed across a hole. The column holds two lists
+            rather than one: a candidate that did not fire is a measurement and a candidate nothing
+            evaluated is a hole in one, and a candidate whose evaluator's version has moved goes in
+            the second with its reason. That is named as a failure on the stage's own run log row,
+            under an outcome of its own rather than the night's failure word, because the night did
+            not stop and a reader has to be able to tell the two apart.
+Measured:   nothing is registered in the operator's store, so the column it writes there is the
+            empty pair on every row: the register is a table a person fills by a decision and a
+            build that seeded it would be registering candidates nobody chose. What is measured is
+            the boundary rather than a population. Over the five constructed name-nights the
+            expectation works, the index reading fires on 2 and the histogram turn on 3, and each
+            candidate is evaluated on all 5 whichever way it went.
+Expected:   derived. `shadow-column.json` works five name-nights by hand from the two evaluators'
+            own rules, and it is constructed rather than taken from the fixture with the reason
+            stated: over four names of real bars every one fires a live reason, so the fixture
+            cannot supply the name-night this is most about, which is one no live reason surfaced.
+            Two cases sit exactly on the level and one a hundredth above it, and one sits on both
+            ends of the histogram rule at once, last night exactly zero and tonight exactly the
+            margin. The totals are worked too, so an expectation that was all false could not be
+            satisfied by a run that was also all false.
+Tested:     956, from 950. Six added: a shadow candidate evaluated on a night no live reason fired,
+            over a constructed member that trades and fires nothing; a candidate registered after
+            the night started not evaluated by it, with both shown to stand so what excluded the
+            second is its instant; a drifted evaluator skipped on every row and named as a failure
+            on the run log, with the night going green again once it is retired rather than
+            deleted; the region's count and divisor moving with a registration and with a
+            retirement; no evaluation of a name on the run, tonight, universe or name routes over a
+            store that holds one for every name; and the five hand-worked name-nights.
+Corrects:   two counts this checkpoint moved, each stated where it is asserted rather than here.
+            Section 15's rows with their own due point go from 122 to 124 and the elements a
+            decomposition names from 129 to 132.
+Mutated:    the rule, stated before the sweep: break each half of this checkpoint's done condition,
+            being the population evaluated, the instant it is read at, and what a screen may show,
+            and take the population first because it is the half the every-name listing row exists
+            for. Predicted:
+            M1 the shadow evaluation written only where a live reason fired: the quiet-name test red
+            on that name carrying no evaluation, and nothing else, because every other name in the
+            fixture fires something.
+            M2 the register read with the standing instant taken as the moment each name is reached
+            rather than the night's start: the registered-after test red on the second candidate
+            reaching the rows.
+            M3 the version check dropped, so a drifted evaluator is evaluated under the moved code:
+            the drift test red on the skip being absent and on the stage's outcome.
+            M4 the region drawing each registered candidate's name: the no-screen test red on the
+            run route.
+            Not mutated, and named so the next sweep has them: the two-list shape of the column, the
+            refusal to evaluate a stale or gapped name, and the reading of a previous session's
+            indicator under its suffixed name.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing. The verdicts that read these evaluations are 8.5's, and the register stays
+            empty in the operator's store until a person registers something into it.

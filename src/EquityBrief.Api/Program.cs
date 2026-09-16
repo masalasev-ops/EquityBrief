@@ -490,7 +490,8 @@ app.MapGet("/screens/run/{night?}", async (
     string? night,
     ReadApi read,
     MarkRenderer marks,
-    SinglePageApp page) =>
+    SinglePageApp page,
+    IClock clock) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
@@ -531,6 +532,7 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.FellBack(await read.FellBackAsync(dated)),
             RunScreen.Queue(await read.QueueRowsAsync(), dated, Traded),
             RunScreen.Harness(PhaseReport(builder)),
+            RunScreen.Shadow(await read.RegisteredCandidatesAsync(), clock.UtcNow),
             RunScreen.Priced(await read.PaidCallSpendsAsync()),
             TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated))),
         "text/html; charset=utf-8");

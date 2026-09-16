@@ -190,6 +190,22 @@ public sealed record ForwardReturnRow(
     double? BaseRate,
     double? BreakEven = null);
 
+// One row of the candidate register, as the run page reads it.
+//
+// The rule, the test, the parameters and the evidence are not carried, because
+// the region states how many candidates are registered and the divisor that
+// number sets and nothing else: a candidate's own record is withheld until it is
+// promoted, and a row a page never draws is a row the page has no business
+// holding.
+// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+public sealed record CandidateRow(
+    long Id,
+    string Candidate,
+    string Evaluator,
+    string Event,
+    string? Retires,
+    DateTimeOffset RegisteredAt);
+
 // One of a name's biggest moves, as the store holds it.
 //
 // No cause. It is a researched claim and lives in `research_section` with its
@@ -246,12 +262,15 @@ public sealed class ReadApi : IComponent
     // Reads every store and appends to the run log, which is section 7's row
     // for this component and the R cells plus one W in its matrix row.
     //
-    // Every store means every store the matrix has a column for. The candidate
-    // register has no column and is not in the catalogue's phrase, so it is not
-    // declared here either; it arrives with the registrar in phase 8. Series
-    // state was the one column the row left blank until the 7.0 ruling, which
-    // has the name page and tonight's list say where a name's prices may not
-    // reflect a dividend or split.
+    // Every store means every store the matrix has a column for, and from 8.4
+    // that includes the candidate register: the run page states how many
+    // candidates are registered and the divisor that number sets, and a count
+    // drawn on a page is a count something read. It reads the register and
+    // never a shadow evaluation of a name, which is the decision as it stands.
+    // Series state was the one column the row left blank until the 7.0 ruling,
+    // which has the name page and tonight's list say where a name's prices may
+    // not reflect a dividend or split.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
     public static ComponentAccess Access => new(
         Stores:
         [
@@ -272,6 +291,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.ResearchSection, Touch.Read),
             new StoreTouch(Store.ThemeSection, Touch.Read),
             new StoreTouch(Store.SourceDocument, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
@@ -780,6 +800,14 @@ public sealed class ReadApi : IComponent
         SELECT ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even
         FROM forward_return
         ORDER BY session_date, ticker, horizon;
+    ";
+
+    // The candidate register, for the run page's count and its divisor. The
+    // columns the region draws from and no others.
+    const string RegisteredCandidates = @"
+        SELECT id, candidate, evaluator, event, retires, registered_at
+        FROM candidate_register
+        ORDER BY id;
     ";
 
     // The current members whose stored series does not end on the newest session
@@ -1788,6 +1816,41 @@ public sealed class ReadApi : IComponent
                 reader.GetString(1),
                 reader.GetInt32(2),
                 reader.IsDBNull(3) ? null : reader.GetString(3)));
+        }
+
+        return rows;
+    }
+
+    // The candidate register, whole, for the run page's shadow region.
+    //
+    // Whole rather than filtered to what stands, because what stands is a
+    // question about an instant and the answer is arithmetic over every row: a
+    // retirement is a row like any other, and a query that returned only the
+    // registrations would be a reader that could not see one.
+    public async Task<IReadOnlyList<CandidateRow>> RegisteredCandidatesAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RegisteredCandidates;
+
+        var rows = new List<CandidateRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new CandidateRow(
+                reader.GetInt64(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.IsDBNull(4) ? null : reader.GetString(4),
+                DateTimeOffset.ParseExact(
+                    reader.GetString(5),
+                    "yyyy-MM-ddTHH:mm:ssZ",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal)));
         }
 
         return rows;
