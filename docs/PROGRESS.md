@@ -12151,11 +12151,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             night's own failure reproduced. M2 turned 1, the second test, on the skip it reads finding
             none because the member was evaluated at the session before's reading. M3 turned 1, the
             second test, the same way, evaluated at zero.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 985 of 985 tests ran
             with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
-            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
-            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
-            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: the repair
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: the repair
             changes what a stage does with a null and no claim the document makes. Both gates ran with
             this entry in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. Noted, because the repair adds a path to it: the listings
