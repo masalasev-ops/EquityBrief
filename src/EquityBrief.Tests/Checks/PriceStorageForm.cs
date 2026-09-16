@@ -168,8 +168,15 @@ public class PriceStorageForm
         // ratio to the boundary is not a crossing this reader can see, which is
         // the limit stated in the roster row rather than a property lost here:
         // the cast half of this check is what covers it.
+        // `ForwardReturnSeries.ChangeFromEntry` joined the set at 8.1, where a
+        // setup's return became the move from the close it was entered at rather
+        // than nothing at all. It takes two prices and returns a statistic, so it
+        // crosses in the open and is named for what it does; the crossing itself
+        // is still `Statistic.FromRatio` one call in.
+        // see: A setup is scored from its entry, and a target reached before the entry is never a win
         Assert.Equal(
             [
+                "ForwardReturnSeries.cs: ChangeFromEntry",
                 "MarkRenderer.cs: PlotValue",
                 "MarkRenderer.cs: Y",
                 "Statistic.cs: FromPrice",

@@ -25,6 +25,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - ARCHITECTURE.html - section 17's setup resolution row counts from the entry
+
+Authorised by: A setup is scored from its entry, and a target reached before the entry is never a win
+Was:
+> a listed setup resolves when its target is reached, its stop is closed through, or 63 sessions pass; a timed-out setup is counted in its own column and never as a win
+Now:
+> a listed setup starts on the first close at or below its entry zone's top edge and resolves when its target is reached, its stop is closed through, or 63 sessions pass from the listing; a timed-out setup and one whose price never reached that entry are each counted in their own column and never as a win
+Why: the filler scored from the listing, so a name that ran to its target from above the entry zone counted as a win for a purchase the plan did not offer, which is 105 of 147 stored wins.
+
+### 2026-09-16 - ARCHITECTURE.html - the run page's reason records row gains the never-entered count
+
+Authorised by: A setup is scored from its entry, and a target reached before the entry is never a win
+Was:
+> one row per reason with the reason track mark, the resolved count, the share that reached target before stop, and the break-even those setups demanded
+Now:
+> the same with the never-entered count between the resolved count and the share
+Why: a setup nobody entered is in neither half of a rate, so the reader needs it stated rather than left out of every column.
+
+### 2026-09-16 - SCHEMA.md - the forward return's outcome and return notes
+
+Authorised by: A setup is scored from its entry, and a target reached before the entry is never a win
+Was:
+> | `outcome` | TEXT | `win`, `loss`, `unresolved`, or null while immature |
+> | `return_pct` | REAL | null for the `setup` horizon |
+Now:
+> the outcome adds `never entered`, the setup horizon's alone; `return_pct` for that horizon is the move from the close the setup was entered at, and null where nothing was entered or the entry and the stop fell on one session
+Why: the outcome gained a fourth value and the setup horizon gained a return that means something, being the trade's own move rather than the listing's.
+
 ### 2026-09-16 - BUILD_PLAN.md - phase 8's section written as the loop it builds, with 8.0's rulings and the model's proposal dropped
 
 Authorised by: The model writes no entry or exit proposal, and the loop scores only what code computes

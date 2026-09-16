@@ -36,7 +36,7 @@ public static class RunScreen
     {
         var byReason = ShortlistSeries.Reasons.ToDictionary(
             reason => reason,
-            _ => (Fired: 0, Won: 0, Lost: 0, Unresolved: 0),
+            _ => (Fired: 0, Won: 0, Lost: 0, Unresolved: 0, NeverEntered: 0),
             StringComparer.Ordinal);
 
         var listedOn = new Dictionary<string, List<string>>(StringComparer.Ordinal);
@@ -88,6 +88,12 @@ public static class RunScreen
                     ForwardReturnSeries.Win => counted with { Won = counted.Won + 1 },
                     ForwardReturnSeries.Loss => counted with { Lost = counted.Lost + 1 },
 
+                    // A setup whose price never reached the entry the plan named.
+                    // Its own column, because it is not a trade that went badly
+                    // but a trade that never happened.
+                    // see: A setup is scored from its entry, and a target reached before the entry is never a win
+                    ForwardReturnSeries.NeverEntered => counted with { NeverEntered = counted.NeverEntered + 1 },
+
                     // Matured and neither, or not yet matured. Its own state and
                     // never a smaller amount of losing.
                     _ => counted with { Unresolved = counted.Unresolved + 1 },
@@ -107,7 +113,8 @@ public static class RunScreen
                     counted.Won,
                     counted.Lost,
                     counted.Unresolved,
-                    MinimumResolvedSetups);
+                    MinimumResolvedSetups,
+                    counted.NeverEntered);
             }),
         ];
     }

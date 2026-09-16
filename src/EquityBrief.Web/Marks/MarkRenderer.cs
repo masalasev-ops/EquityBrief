@@ -212,10 +212,13 @@ public sealed record ReasonRecord(
     int Won,
     int Lost,
     int Unresolved,
-    int Minimum)
+    int Minimum,
+    int NeverEntered = 0)
 {
     // A setup that has done nothing is neither right nor wrong, so it is in
-    // neither half of this.
+    // neither half of this, and one whose price never reached the entry the plan
+    // named is not a trade at all, so it is in neither either.
+    // see: A setup is scored from its entry, and a target reached before the entry is never a win
     public int Resolved => Won + Lost;
 
     public bool HasEarnedAVerdict => Resolved >= Minimum;
@@ -1477,7 +1480,7 @@ public sealed class MarkRenderer : IComponent
         table.Append(Invariant, $"<p class=\"nights\" data-nights=\"{nights}\">the record below stands on {nights} night(s) of listings</p>");
 
         table.Append("<table class=\"records-table\">");
-        table.Append("<tr><th>Reason</th><th>Track</th><th>Fired</th><th>Resolved</th><th>Record</th></tr>");
+        table.Append("<tr><th>Reason</th><th>Track</th><th>Fired</th><th>Resolved</th><th>Never entered</th><th>Record</th></tr>");
 
         var byReason = tracks.ToDictionary(track => track.Reason, StringComparer.Ordinal);
 
@@ -1489,6 +1492,11 @@ public sealed class MarkRenderer : IComponent
             table.Append(Invariant, $"<td>{(byReason.TryGetValue(record.Reason, out var track) ? ReasonTrack([track]) : string.Empty)}</td>");
             table.Append(Invariant, $"<td>{record.Fired}</td>");
             table.Append(Invariant, $"<td>{record.Resolved}</td>");
+
+            // The setups whose price never came back to the entry the plan named,
+            // in their own column: never a win, never a loss and never in a rate.
+            // see: A setup is scored from its entry, and a target reached before the entry is never a win
+            table.Append(Invariant, $"<td class=\"never-entered\" data-never-entered=\"{record.NeverEntered}\">{record.NeverEntered}</td>");
 
             // The count against the minimum, inside the dashed outline. The
             // count is what makes the absence readable: a reader sees how far
