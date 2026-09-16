@@ -12140,8 +12140,24 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             M3 a null read as zero rather than left out: the second test red, on the candidate
             evaluated and firing at zero where it should be skipped, and the first green, since the
             null there is a reading no candidate reads.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Four runs of the whole suite, never a filter, at this entry's commit, each
+            in its own detached worktree under the session scratchpad, reverted with the tree read clean
+            and the worktree removed after. The baseline is 984 of 985 with one red, and that red is this
+            entry: `two-platform` reads every checkpoint entry written since the 7.2 ruling for its
+            Windows record, and this one carried a placeholder until the run below filled it, so each
+            count that follows is on top of it.
+            M1 turned 2 red, both new tests, each on "The data is NULL at ordinal 2", which is the
+            night's own failure reproduced. M2 turned 1, the second test, on the skip it reads finding
+            none because the member was evaluated at the session before's reading. M3 turned 1, the
+            second test, the same way, evaluated at zero.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+            with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
+            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: the repair
+            changes what a stage does with a null and no claim the document makes. Both gates ran with
+            this entry in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. Noted, because the repair adds a path to it: the listings
             stage's failure sentence says a candidate skipped on one name-night was "not evaluated on
             any name-night", and a registered candidate reading the two hundred day average would now
