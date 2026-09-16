@@ -12228,11 +12228,11 @@ Mutated:    the rule, stated before the sweep: break the one property this corre
             backfill-bands test on finding no score, `nightly-cost`'s recorded nights test on the
             one-version night writing no score, and the changed-nothing test on the night scoring no
             version.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 986 of 986 tests ran
             with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
-            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
-            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
-            <K> of <K> roster checks carried and all <K> run. No claim added and none moved. Both gates
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved. Both gates
             ran with this entry in place, and the operator's store under `data/` was not touched by
             either.
 Carried:    nothing owed by this repair beyond the read named above.
