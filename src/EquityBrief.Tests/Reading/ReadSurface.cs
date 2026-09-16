@@ -61,6 +61,22 @@ public partial class ReadSurface
             // divisor that number sets, the line saying each record is withheld
             // until promotion, and the half asserted by its absence, which is
             // that no evaluation of a name reaches any route.
+            // 8.5, the reason verdicts: nine claims and the significance row
+            // that arrives with them.
+            CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop"),
+            CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded"),
+            CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum"),
+            CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the share that reached the target before the stop"),
+            CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the number resolved"),
+            CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the break-even those setups demanded"),
+            CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, always the three together"),
+            CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups"),
+            CheckReach.Key("15.11 How a reason's record is displayed", "Never shown"),
+            CheckReach.Key(Scope.FailureTable, "A condition has fired but nothing has resolved yet"),
+            CheckReach.Key(Scope.LimitsTable, "Reason record display"),
+            CheckReach.Key(Scope.LimitsTable, "Minimum resolved setups"),
+            CheckReach.Key(Scope.LimitsTable, "Significance threshold"),
+
             CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered"),
             CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets"),
             CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted"),
@@ -2574,13 +2590,30 @@ public partial class ReadSurface
         // none.
         var marks = new MarkRenderer();
 
-        var below = new ReasonRecord(ShortlistSeries.AtEntryZone, 400, 6, 5, 40, RunScreen.MinimumResolvedSetups);
-        var above = new ReasonRecord(ShortlistSeries.CrossedALevel, 900, 150, 130, 60, RunScreen.MinimumResolvedSetups);
+        // Both floors from 8.5, so a record that clears the rows and not the
+        // nights is the third case rather than an oversight. The one above
+        // clears both; the one below clears neither; and the middle one clears
+        // the rows on 12 sessions, which is the case a single floor would have
+        // drawn a verdict for.
+        var below = new ReasonRecord(
+            ShortlistSeries.AtEntryZone, 400, 6, 5, 40, RunScreen.MinimumResolvedSetups,
+            Sessions: 4, SessionMinimum: ReasonVerdict.MinimumSessions);
+
+        var above = new ReasonRecord(
+            ShortlistSeries.CrossedALevel, 900, 150, 130, 60, RunScreen.MinimumResolvedSetups,
+            Share: 53.57d, BreakEven: 41d, Sessions: 90, SessionMinimum: ReasonVerdict.MinimumSessions,
+            Cleared: true, PValue: 0.0001d, Threshold: ReasonVerdict.Significance / ReasonVerdict.LiveFamily,
+            Divisor: ReasonVerdict.LiveFamily);
+
+        var fewNights = new ReasonRecord(
+            ShortlistSeries.UnusualVolume, 900, 150, 130, 60, RunScreen.MinimumResolvedSetups,
+            Sessions: 12, SessionMinimum: ReasonVerdict.MinimumSessions);
 
         Assert.False(below.HasEarnedAVerdict);
         Assert.True(above.HasEarnedAVerdict);
+        Assert.False(fewNights.HasEarnedAVerdict);
 
-        var records = new[] { below, above };
+        var records = new[] { below, above, fewNights };
         var drawn = marks.ReasonRecords(records, RunScreen.Tracks(records), Rates(1.2, 3.4), 60);
 
         // One row per reason with the reason track mark, which is what section
@@ -2592,11 +2625,17 @@ public partial class ReadSurface
         Assert.Contains("11 of 250 resolved", drawn, StringComparison.Ordinal);
         Assert.Contains("data-verdict=\"none\"", drawn, StringComparison.Ordinal);
 
-        // No rate anywhere on the region, for either row. The share that reached
-        // target before stop and the break-even those setups demanded are the
-        // other half of this row and arrive at 8.5 with the verdicts.
-        Assert.DoesNotContain("%", drawn, StringComparison.Ordinal);
-        Assert.Contains("8.5", drawn, StringComparison.Ordinal);
+        // Which floor is short is named, because a reader who cannot tell whether
+        // they are waiting for rows or for nights cannot tell how long for.
+        Assert.Contains("data-short=\"resolved\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-short=\"sessions\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("280 of 250 resolved over 12 of 60 listing session(s)", drawn, StringComparison.Ordinal);
+
+        // The row that cleared both draws the three together with its verdict and
+        // divisor; neither of the other two draws a rate at all.
+        Assert.Contains("53.57 per cent of 280 resolved", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-divisor=\"6\"", drawn, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(drawn, "per cent of [0-9]+ resolved"));
 
         // The nights the record stands on, which is what the three operating
         // obligations read on this page are counted in.
@@ -2614,6 +2653,13 @@ public partial class ReadSurface
         Assert.Equal(150, tracks[1].Won);
         Assert.Equal(130, tracks[1].Lost);
         Assert.Equal(0, tracks[1].ResolvedUnsplit);
+
+        // And the night floor gates the picture as well as the column, which is
+        // the same rule one channel along: a reason with 280 resolved over 12
+        // sessions has its split withheld from the mark too.
+        Assert.Equal(0, tracks[2].Won);
+        Assert.Equal(0, tracks[2].Lost);
+        Assert.Equal(280, tracks[2].ResolvedUnsplit);
     }
 
     static IReadOnlyList<BaseRateLine> Rates(double? five, double? twentyOne) =>

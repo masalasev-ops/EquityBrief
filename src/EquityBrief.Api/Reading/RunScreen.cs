@@ -51,6 +51,16 @@ public static class RunScreen
             _ => new List<(string? Outcome, double? BreakEven)>(),
             StringComparer.Ordinal);
 
+        // The same setups again, carrying the session each was listed on, which
+        // is what the night floor counts over. Kept apart from the pair above
+        // rather than widening it, because that pair is what the arithmetic in
+        // `ForwardReturnSeries` is handed and a session means nothing to it.
+        // see: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold
+        var verdictSetups = ShortlistSeries.Reasons.ToDictionary(
+            reason => reason,
+            _ => new List<ReasonVerdict.ScoredSetup>(),
+            StringComparer.Ordinal);
+
         var listedOn = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
         foreach (var listing in listings)
@@ -101,6 +111,11 @@ public static class RunScreen
                 // see: A condition is judged against the break-even its own plan demands
                 setupsByReason[reason].Add((setup.Outcome, setup.BreakEven));
 
+                verdictSetups[reason].Add(new ReasonVerdict.ScoredSetup(
+                    setup.Outcome == ForwardReturnSeries.Win,
+                    setup.BreakEven,
+                    setup.SessionDate));
+
                 byReason[reason] = setup.Outcome switch
                 {
                     ForwardReturnSeries.Win => counted with { Won = counted.Won + 1 },
@@ -126,6 +141,14 @@ public static class RunScreen
                 var counted = byReason[reason];
                 var scored = ForwardReturnSeries.Record(setupsByReason[reason]);
 
+                // The verdict, from 8.5. The family is the six live reasons,
+                // registered by section 11 before the first listing night; a
+                // candidate promoted to live would join them and restart the
+                // window, which is why the divisor is the family and not a
+                // count of anything this page holds.
+                // see: Adding a candidate later restarts the clock
+                var tested = ReasonVerdict.For(verdictSetups[reason], ReasonVerdict.LiveFamily);
+
                 var record = new ReasonRecord(
                     reason,
                     counted.Fired,
@@ -134,7 +157,11 @@ public static class RunScreen
                     counted.Unresolved,
                     MinimumResolvedSetups,
                     counted.NeverEntered,
-                    scored.Scored);
+                    scored.Scored,
+                    Sessions: tested.Sessions,
+                    SessionMinimum: ReasonVerdict.MinimumSessions,
+                    Threshold: tested.Threshold,
+                    Divisor: tested.Divisor);
 
                 // The two figures 8.2 adds, withheld here rather than at the page.
                 // A reason below the minimum has no share and no mean break-even
@@ -151,7 +178,13 @@ public static class RunScreen
                 // see: The record column stays empty until it has earned a number
                 // see: A reason's record is displayed, beside the reason and never beside the name
                 return record.HasEarnedAVerdict
-                    ? record with { Share = scored.Share, BreakEven = scored.BreakEven }
+                    ? record with
+                    {
+                        Share = scored.Share,
+                        BreakEven = scored.BreakEven,
+                        Cleared = tested.Cleared,
+                        PValue = tested.PValue,
+                    }
                     : record;
             }),
         ];
@@ -194,7 +227,15 @@ public static class RunScreen
 
     public static IReadOnlyList<ReasonTrackRow> Tracks(IReadOnlyList<ReasonRecord> records) =>
     [
-        .. records.Select(record => record.Resolved >= record.Minimum
+        // Gated on the record's own answer rather than on the count, from 8.5.
+        //
+        // It read `Resolved >= Minimum` here and `HasEarnedAVerdict` in the
+        // column, which was one gate written twice and agreed only while there
+        // was one floor. The night floor arrived and the two came apart at once:
+        // a reason with 280 resolved over 12 sessions had its verdict withheld
+        // from the column and its win-loss split drawn in the picture, which is
+        // the same figure through the second channel this split exists to close.
+        .. records.Select(record => record.HasEarnedAVerdict
             ? new ReasonTrackRow(record.Reason, record.Won, record.Lost, record.Unresolved)
             : new ReasonTrackRow(record.Reason, 0, 0, record.Unresolved, record.Resolved)),
     ];

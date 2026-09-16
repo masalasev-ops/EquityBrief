@@ -1,0 +1,107 @@
+{
+ "stage": "reason-verdicts",
+ "derivation": "derived",
+ "derivedFrom": "the null that each resolved setup wins with the probability its own plan demanded, worked by hand rather than read back from a run. The wins are then a sum of independent draws with different probabilities, so the tail is a Poisson binomial's and not a binomial's, and each case below is small enough to be worked out longhand: the three-setup cases are written as the sums of their own terms in the arithmetic column. The display cases are constructed counts rather than fixture rows, because the minimum is 250 resolved setups over 60 distinct listing sessions and the committed fixture holds one listing night, so no reason in it can resolve anything at all.",
+ "tables": [
+  "forward_return"
+ ],
+ "constructed": true,
+ "significance": 0.05,
+ "liveFamily": 6,
+ "minimumResolved": 250,
+ "minimumSessions": 60,
+ "tails": [
+  {
+   "case": "three setups each demanding a half, at least two wins",
+   "breakEvens": [0.5, 0.5, 0.5],
+   "atLeast": 2,
+   "tail": 0.5,
+   "arithmetic": "the three ways to win exactly two plus the one way to win all three, over eight: 4/8"
+  },
+  {
+   "case": "two setups demanding a fifth and three fifths, at least one win",
+   "breakEvens": [0.2, 0.6],
+   "atLeast": 1,
+   "tail": 0.68,
+   "arithmetic": "one minus both losing: 1 - 0.8 x 0.4 = 0.68"
+  },
+  {
+   "case": "the same two, both winning",
+   "breakEvens": [0.2, 0.6],
+   "atLeast": 2,
+   "tail": 0.12,
+   "arithmetic": "0.2 x 0.6 = 0.12"
+  },
+  {
+   "case": "three setups whose demands all differ, at least two wins, which is where a binomial at any single value gets it wrong",
+   "breakEvens": [0.1, 0.2, 0.3],
+   "atLeast": 2,
+   "tail": 0.098,
+   "arithmetic": "exactly two is 0.1 x 0.2 x 0.7 + 0.1 x 0.8 x 0.3 + 0.9 x 0.2 x 0.3 = 0.014 + 0.024 + 0.054 = 0.092, and all three is 0.1 x 0.2 x 0.3 = 0.006, so 0.098"
+  },
+  {
+   "case": "the same three, all winning",
+   "breakEvens": [0.1, 0.2, 0.3],
+   "atLeast": 3,
+   "tail": 0.006,
+   "arithmetic": "0.1 x 0.2 x 0.3 = 0.006"
+  },
+  {
+   "case": "the same three, at least one winning",
+   "breakEvens": [0.1, 0.2, 0.3],
+   "atLeast": 1,
+   "tail": 0.496,
+   "arithmetic": "one minus all three losing: 1 - 0.9 x 0.8 x 0.7 = 1 - 0.504 = 0.496"
+  }
+ ],
+ "binomialAtTheMean": {
+  "case": "the same three read as a binomial at their mean of a fifth, at least two wins, which is the number the exact test does not use",
+  "breakEvens": [0.1, 0.2, 0.3],
+  "atLeast": 2,
+  "tail": 0.104,
+  "arithmetic": "3 x 0.2 x 0.2 x 0.8 + 0.2 x 0.2 x 0.2 = 0.096 + 0.008 = 0.104, which differs from the exact 0.098"
+ },
+ "display": [
+  {
+   "state": "below the minimum, short of resolved setups",
+   "wins": 125,
+   "losses": 124,
+   "breakEven": 40,
+   "sessions": 60,
+   "resolved": 249,
+   "short": "resolved",
+   "verdict": null
+  },
+  {
+   "state": "below the minimum, short of listing sessions",
+   "wins": 150,
+   "losses": 150,
+   "breakEven": 40,
+   "sessions": 59,
+   "resolved": 300,
+   "short": "sessions",
+   "verdict": null
+  },
+  {
+   "state": "at or above both floors, and the wins beat the bar the plans demanded",
+   "wins": 125,
+   "losses": 125,
+   "breakEven": 40,
+   "sessions": 60,
+   "resolved": 250,
+   "short": "none",
+   "verdict": true
+  },
+  {
+   "state": "at or above both floors, and the wins sit exactly on the bar, which is not beating it",
+   "wins": 100,
+   "losses": 150,
+   "breakEven": 40,
+   "sessions": 60,
+   "resolved": 250,
+   "short": "none",
+   "verdict": false
+  }
+ ],
+ "note": "The threshold every display case is judged at is 0.05 divided by the live family of 6, which is 0.00833 to five places. The last two cases share a bar and differ only in their wins, so what separates them is the count and not the plans."
+}

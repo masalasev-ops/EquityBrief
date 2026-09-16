@@ -1044,7 +1044,10 @@ public class ArchitectureConformance
         // claim ending here, and the harness reads it as three, because a row passes
         // for what it says and a single verdict over three statements passes when one
         // is drawn and two are not.
-        Assert.Equal(124, inDocument.Length);
+        // 127 at 8.5, section 15.11's "at or above the minimum" row decomposed into
+        // the three figures it names and the claim that they arrive together: one
+        // leaves and four arrive.
+        Assert.Equal(127, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1116,7 +1119,8 @@ public class ArchitectureConformance
         // line beside a suspect name and the name screen's line for it at three parts.
         // 129 at 8.1, the reason records row's never-entered count. 132 at 8.4, the
         // shadow candidates row's three.
-        Assert.Equal(132, checkedElements);
+        // 136 at 8.5, that row's four.
+        Assert.Equal(136, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
