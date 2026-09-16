@@ -11557,6 +11557,36 @@ Mutated:    the rule, stated before the sweep: break each half of this checkpoin
             Not mutated, and named so the next sweep has them: the one-sidedness of the test, the
             refusal of a family of none, and the exclusion of setups that set no bar from the
             population.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, and each mutation turned red in more places than the one
+            it aimed at, which is what a checkpoint whose halves rest on one another looks like.
+            Five runs of the whole suite, never a filter, at this entry's commit in a detached
+            worktree under the session scratchpad, each reverted with the tree read clean between
+            them. The baseline is 962 of 963 with one red, and that red is this entry:
+            `two-platform` reads every checkpoint entry written since the 7.2 ruling for the words
+            `tools/ci.ps1` green and this one carried a placeholder until the run below filled it.
+            M1 turned three red: the hand-worked cases, the expectation's tails, and the bound test,
+            the last because with both routes computing the same thing the bound stopped being
+            strictly larger over a spread. The three equal-probability cases stayed green inside the
+            hand-worked test, which is the case the two distributions genuinely agree on and the
+            reason the uneven case is in the set at all.
+            M2 turned three red: the boundary test at 59 sessions, the expectation's
+            short-of-sessions case, and the three-state test on the row that clears the rows and not
+            the nights.
+            M3 turned three red: the boundary test, the expectation's short-of-resolved case, and
+            8.2's own withholding test at 249, which is the assertion that checkpoint wrote and this
+            one inherits.
+            M4 turned two red: the boundary test on the threshold every verdict carries, and the
+            drawn divisor and threshold. The verdict at the exactly-on-the-bar case stayed as it
+            was, as predicted, because that one sits nowhere near either threshold.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 963 of 963 tests
+            ran with none failed, migrations 0 to 25 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 360 claims, 359
+            PASS, 0 FAIL, 1 out of scope, 0 unexamined, 366 placements and verdicts reconciled
+            against a floor of 34, 35 of 35 roster checks carried and all 35 run. The one claim left
+            out of scope is Frozen measurement windows at 8.6, which is the split 8.0 predicted for
+            this point. Claims and PASS stand five above the prediction of 355 and 354, two from
+            8.4's decomposition and three from this checkpoint's: section 15.11's at-or-above row
+            states three figures and then states that they arrive together, which is four claims and
+            not one, and the fourth is the one the other three rest on. Both gates ran with this
+            entry in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing. The rule versions are 8.6's and the phase report 8.7's.
