@@ -3776,6 +3776,21 @@ public partial class FixtureExpectations
         Assert.Equal("920", cases[0].GetProperty("entryClose").GetString());
         Assert.Equal(32.17821782178218, Score(cases[0], 1057m).BreakEven!.Value, 6);
 
+        // The price the bar is measured from, stated on its own rather than left
+        // to a case where the two prices happen to agree. One plan, listed at 120
+        // and entered at 99 when the price came back to the zone: the bar is the
+        // one the entry set, and the listing's own close sits outside the plan
+        // entirely and would set none.
+        // see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with
+        var plan = Expected("forward-returns").GetProperty("constructed").GetProperty("plan");
+        var (stop, target, top) = (Price(plan, "stop"), Price(plan, "firstTradedTarget"), Price(plan, "entryHigh"));
+
+        var entered = ForwardReturnSeries.OverSetup(Closes(99m, 110m), stop, target, top, 120m);
+
+        Assert.Equal(ForwardReturnSeries.Win, entered.Outcome);
+        Assert.Equal(45d, entered.BreakEven!.Value, 6);
+        Assert.Null(ForwardReturnSeries.OverSetup(Closes(110m), stop, target, top, 120m).BreakEven);
+
         // The refusal, over the one shape of it a stored plan can take. The other
         // half, an entry below the stop, the series cannot produce, and the
         // expectation states that as the invariant it is rather than asserting it

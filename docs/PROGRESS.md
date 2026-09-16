@@ -11072,8 +11072,14 @@ Tested:     937, from 933. Four added: the six break-even cases and the refusal 
 Mutated:    the rule, stated before the sweep: break each property this checkpoint adds, being the
             arithmetic itself, the price it is measured from, the gate that withholds it, and the
             population the share is over. Predicted:
-            M1 the bar measured from the listing close rather than the entry close: the expectation
-            cases red, since three of the six enter below the listing.
+            M1 the bar measured from the listing close rather than the entry close: the case that is
+            listed at 120 and entered at 99 red, both where the expectation works it and where the
+            price the bar is measured from is asserted on its own. Restated before the sweep: the
+            first form of this prediction said three of the six break-even cases would go red, and
+            they would not, because each of the six is constructed to enter on its listing night so
+            that the two prices agree. The property was covered by one case in a loop, which is
+            thin for the thing this checkpoint is about, so an assertion naming the two prices apart
+            was added before the sweep and the prediction names it.
             M2 risk and reward swapped, so the bar is reward over the range: every expectation case
             red but the two ends, which are symmetric.
             M3 the withholding gate loosened by one, so a verdict shows at 249: the boundary test red.
