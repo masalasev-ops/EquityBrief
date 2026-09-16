@@ -2,7 +2,7 @@
 
 The prior text of every clean edit to a spec. `changelog-reconciles` reads the git history and fails any commit that deleted a line from a spec without changing this file.
 
-Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RUNBOOK.md`. Records correct themselves with new dated entries and do not appear here.
+Specs are `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RUNBOOK.md`, and the four files under `.claude/rules/`, which carry `CLAUDE.md`'s own text and are edited on the same terms. Records correct themselves with new dated entries and do not appear here.
 
 Nothing in the corpus is struck through. A spec is edited cleanly and what it said before is written down here, with the decision that authorised the change or the defect it repairs.
 
@@ -24,6 +24,80 @@ An entry names one or the other and never neither. A change that alters what the
 ---
 
 ## Entries
+
+### 2026-09-16 - CLAUDE.md - the build state stated directly, which the paragraph under it forbids
+
+Corrects: the file stated a build state in the one place the paragraph beneath it says a build state must not live, and the statement was false at the checkpoint the record shows. Found by reading the section against its own next paragraph.
+Was:
+> Nothing is built. What the build has reached is recorded below rather than stated here.
+Now:
+> What the build has reached is recorded below rather than stated here.
+Why: which checkpoint the build is on is what `PROGRESS.md` records, and a second place for that fact goes stale the moment a checkpoint lands, which this one had.
+
+### 2026-09-16 - CLAUDE.md - the commands table described rather than promised
+
+Corrects: a line conditioning the table on a checkpoint that landed long ago, so the table read as a contract rather than a description.
+Was:
+> Checkpoint 0.4 is what makes this table true. Until it lands, these are the contract rather than a description.
+Now:
+> the line is removed; the table stands as a description of what the repository holds.
+Why: 0.4 landed, every script the table names exists, and a reader has no way to tell a promise from a description while the sentence stands.
+
+### 2026-09-16 - CLAUDE.md - the two done conditions no longer conditioned on 0.4
+
+Corrects: conditions 2 and 5 each carried a clause describing what to do before 0.4 built the scripts and the workflow, which no session can now reach.
+Was, in condition 2:
+> Until 0.4 builds those scripts, the checkpoint's own verification is run by hand and PROGRESS records the figures it produced and states that nothing guards them yet.
+Was, in condition 5:
+> Until 0.4 makes the workflow able to run, the suite is run on the machine at hand, PROGRESS names which platform that was, and the other platform is carried to 0.4.
+Now:
+> both clauses are removed. The rest of both conditions stands, including condition 5's decision citation and its sentence about the hosted Windows leg the 7.2 ruling removed.
+Why: a done condition carrying an escape nobody can take is read by every session and applies to none of them.
+
+### 2026-09-16 - CLAUDE.md - the checks roster moved to .claude/rules/checks.md
+
+Corrects: no defect. The section is 18,478 bytes and a third of the file, and no session outside `tools/` or the test project reads it, while every session loaded it.
+Was:
+> the whole `## Checks` section: the lead sentence, the roster table of thirty-five rows, and the eight paragraphs under it, from "The table lists every check that runs" to the `path-casing` paragraph.
+Now:
+> the same text, word for word, in `.claude/rules/checks.md`, which loads for a session reading `tools/**` or `src/EquityBrief.Tests/**`.
+Why: a path-scoped file keeps every word of its reasoning and costs nothing to a session working elsewhere. `coverage-reported` locates the roster in one place and that place is the rules file; the corpus checks read it as they read this file.
+
+### 2026-09-16 - CLAUDE.md - the verification rules moved to .claude/rules/writing-tests.md
+
+Corrects: no defect. They govern how an assertion is written and are read by a session writing tests.
+Was:
+> the whole `## Verification` section: its lead sentence, its twelve bullets and the paragraph naming the two rules specific to this tool.
+Now:
+> the same text, word for word, in `.claude/rules/writing-tests.md`, which loads for a session reading `src/EquityBrief.Tests/**`.
+Why: as above. Nothing is dropped or reworded, and the two rules the script mechanics point at are named in that file's opening so the pointer still resolves.
+
+### 2026-09-16 - CLAUDE.md - the corpus editing conventions moved to .claude/rules/corpus-edits.md
+
+Corrects: no defect. They are read by a session editing a document.
+Was:
+> eight conventions from `## Conventions`: decisions are named not numbered and the paragraph on citing one; a deferral names what produces the evidence; a done condition may not require calendar time; obligations are named and cited; a decision is changed only by another decision; nothing in the corpus is struck through; components are named not coded; headings in ARCHITECTURE.html carry numbers.
+Now:
+> the same text, word for word, in `.claude/rules/corpus-edits.md`, which loads for a session reading `docs/**`.
+Why: as above. Five conventions stay in `CLAUDE.md` because they bind a session working anywhere: the prose convention, on which `banned-prose` matches its single exemption in that file; the commit subject; which checkpoint a commit belongs to; the planning pass; and anything issued in conversation landing in the repo when it is issued.
+
+### 2026-09-16 - CLAUDE.md - the script mechanics moved to .claude/rules/scripts.md
+
+Corrects: no defect. They describe what the scripts do and what a green report says, and are read by a session running or editing one.
+Was:
+> five paragraphs from `## Commands`: the Shell column and the wrapper contract; what `tools/verify-phase` is and what a green report says; the report being one instrument reading another; `tools/ci.*` not being a wrapper around `dotnet test`; and the store it drops being `/data-ci` and never `/data`.
+Now:
+> the same text, word for word, in `.claude/rules/scripts.md`, which loads for a session reading `tools/**`.
+Why: as above. The command table stays in `CLAUDE.md` with the target framework paragraph, the PowerShell parity sentence and the secrets paragraph.
+
+### 2026-09-16 - CLAUDE.md - the read order names the rules directory, and the lifecycle exempts it
+
+Corrects: after the four moves a session reading `CLAUDE.md` alone no longer sees the roster, the conventions, the verification rules or the script rules, and had no way to learn they exist.
+Was:
+> the read order ended at the five numbered documents and the sentence about not reading the whole corpus; the document lifecycle exempted the screens document and `fixtures/README.md` and named nothing else.
+Now:
+> the read order carries a table of the four rules files with the paths each is scoped to and what each covers, and a sentence saying a path-scoped rule loads when a session reads a matching file and not before. The lifecycle gains a paragraph in the form of the two beside it, saying the rules directory is not a ninth document and that a rule lives in exactly one of the two places.
+Why: a file that loads conditionally is a file a session has to be told about, and the eight-document cap is a rule about where facts live rather than about how many files the repository holds.
 
 ### 2026-09-16 - ARCHITECTURE.html - section 17's setup resolution row counts from the entry
 
