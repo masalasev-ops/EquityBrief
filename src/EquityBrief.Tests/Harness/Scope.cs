@@ -371,6 +371,12 @@ internal static class Scope
             Verdict.Pass,
             "one row per reason, each carrying the reason track mark",
             ByReadSurface),
+        // 8.1. The setups whose price never reached the entry the plan named, in
+        // their own column beside the resolved count and outside every rate.
+        [CheckReach.Key("15.10 Run", "Reason records, the never-entered count")] = new Scoped(
+            Verdict.Pass,
+            "the setups a reason fired for whose price never closed at or below the entry zone's top edge, counted in a column of their own and in neither the resolved count nor any rate, read off the rendered row",
+            ByReadSurface),
         [CheckReach.Key("15.10 Run", "Harness, passed")] = new Scoped(
             Verdict.Pass,
             "the passed count is drawn from the phase report and never summed with the others",
@@ -1349,6 +1355,11 @@ internal static class Scope
             Verdict.Pass,
             "the second book is keyed to the next dated event the calendar holds, a name with none produces no setups and says why, and every setup carries a trigger, an entry, a stop and a target with each figure stated on the page as a proposal; and earnings soon fires on the sessions the exchange calendar counts to that event, asserted through the shipped builder over a store holding no bar after its night at the night itself, the twentieth session, the twenty-first, across the year-end closures, forty sessions out and past the closure table's end, with the fixture's two dated prints recomputed from the calendar against counts walked by hand",
             ByExpectations),
+        // 8.1, the setup horizon counted from the entry.
+        [CheckReach.Key(LimitsTable, "Setup resolution")] = new Scoped(
+            Verdict.Pass,
+            "a setup starts on the first close at or below its entry zone's top edge and resolves as a win, a loss, unresolved at the cap or never entered, each asserted over the cases the forward returns expectation works by hand, with the cap counted from the listing and the return measured from the entry close",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Tranches, exits")] = new Scoped(
             Verdict.Pass,
             "at most three tranches and at most five exits over four names, and an exit within two typical days' moves of the blended entry is listed and not traded with its reason on the row rather than omitted",
@@ -1724,6 +1735,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Operational header, spend")] = "5.6",
         [CheckReach.Key("15.10 Run", "Operational header, what each stage said about itself")] = "5.6",
         [CheckReach.Key("15.10 Run", "Reason records, the resolved count")] = "5.6",
+        [CheckReach.Key("15.10 Run", "Reason records, the never-entered count")] = "8.1",
         [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "8.5",
         [CheckReach.Key("15.10 Run", "Reason records, one row per reason with the reason track mark")] = "5.6",
         [CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded")] = "8.5",
@@ -1864,7 +1876,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Operational header")] =
             ["what ran", "the instant each stage started and how long it took", "model calls", "network requests", "spend", "what each stage said about itself"],
         [CheckReach.Key("15.10 Run", "Reason records")] =
-            ["the resolved count", "the share that reached target before stop", "one row per reason with the reason track mark", "the break-even those setups demanded"],
+            ["the resolved count", "the never-entered count", "the share that reached target before stop", "one row per reason with the reason track mark", "the break-even those setups demanded"],
         [CheckReach.Key("15.10 Run", "Harness")] =
             ["passed", "failed", "unexamined"],
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =

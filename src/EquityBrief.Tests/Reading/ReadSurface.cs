@@ -153,6 +153,7 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "Operational header, spend"),
             CheckReach.Key("15.10 Run", "Operational header, what each stage said about itself"),
             CheckReach.Key("15.10 Run", "Reason records, the resolved count"),
+            CheckReach.Key("15.10 Run", "Reason records, the never-entered count"),
             CheckReach.Key("15.10 Run", "Reason records, one row per reason with the reason track mark"),
             CheckReach.Key("15.10 Run", "Harness, passed"),
             CheckReach.Key("15.10 Run", "Harness, failed"),
@@ -2509,6 +2510,51 @@ public partial class ReadSurface
             () => RunScreen.Records([new ListingRow("AAAA", night, FiredNamed("a seventh reason"), 1, "{}")], []));
 
         Assert.Contains("a seventh reason", unknown.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ASetupNobodyEnteredIsDrawnInItsOwnColumnAndCountsTowardNoRate()
+    {
+        // 8.1's column. A setup whose price never reached the entry the plan named
+        // is not a trade that went badly, so it is neither resolved nor in any
+        // rate, and a reader has to be able to see how many of them there were: it
+        // is the difference between a reason that fires where nothing can be
+        // bought and one that fires where something can.
+        // see: A setup is scored from its entry, and a target reached before the entry is never a win
+        var night = new DateOnly(2026, 9, 4);
+
+        var records = RunScreen.Records(
+            [
+                new ListingRow("AAAA", night, FiredNamed(ShortlistSeries.AtEntryZone), 1, "{}"),
+                new ListingRow("BBBB", night, FiredNamed(ShortlistSeries.AtEntryZone), 1, "{}"),
+                new ListingRow("CCCC", night, FiredNamed(ShortlistSeries.AtEntryZone), 1, "{}"),
+            ],
+            [
+                new ResolvedSetup("AAAA", night, ForwardReturnSeries.Win),
+                new ResolvedSetup("BBBB", night, ForwardReturnSeries.NeverEntered),
+                new ResolvedSetup("CCCC", night, ForwardReturnSeries.NeverEntered),
+            ]);
+
+        var record = records.Single(one => one.Reason == ShortlistSeries.AtEntryZone);
+
+        Assert.Equal(2, record.NeverEntered);
+        Assert.Equal(1, record.Resolved);
+        Assert.Equal((1, 0, 0), (record.Won, record.Lost, record.Unresolved));
+
+        // Drawn in its own column on the row the run page renders, beside the
+        // resolved count rather than inside it.
+        var row = Assert.Single(Blocks(
+            new MarkRenderer().ReasonRecords(records, RunScreen.Tracks(records), [new BaseRateLine("5", 50d)], nights: 1),
+            $"<tr data-reason=\"{ShortlistSeries.AtEntryZone}\".*?</tr>"));
+
+        Assert.Contains("data-resolved=\"1\"", row, StringComparison.Ordinal);
+        Assert.Contains("data-never-entered=\"2\"", row, StringComparison.Ordinal);
+
+        // And the track the mark draws carries no never-entered segment, since a
+        // setup nobody entered is not a slice of a denominator it is not in.
+        var track = RunScreen.Tracks(records).Single(one => one.Reason == ShortlistSeries.AtEntryZone);
+
+        Assert.Equal(1, track.Total);
     }
 
     [Fact]

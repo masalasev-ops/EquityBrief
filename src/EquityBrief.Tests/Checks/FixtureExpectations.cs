@@ -145,6 +145,9 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.FixtureTable, "archive extracts"),
             CheckReach.Key(Scope.FailureTable, "Earnings date missing, the calendar"),
             CheckReach.Key(Scope.LimitsTable, "Earnings horizon"),
+
+            // 8.1, the setup horizon scored from the entry.
+            CheckReach.Key(Scope.LimitsTable, "Setup resolution"),
             CheckReach.Key(Scope.LimitsTable, "Tranches, exits"),
             CheckReach.Key(Scope.LimitsTable, "Tranche eligibility"),
             CheckReach.Key(Scope.FailureTable, "No band is eligible to carry a tranche"),
@@ -3553,14 +3556,15 @@ public partial class FixtureExpectations
         // The setup: the stop is tested before the target, so a session that
         // closed through both was stopped out before it could reach anything. A
         // rule that took the target first would score a gap through the stop as
-        // a win.
+        // a win. Each of these is entered on the listing night, the close of 100
+        // sitting inside a zone whose top edge is 101.
         var through = new ReturnBar[] { new(new DateOnly(2026, 1, 2), 80m) };
 
-        Assert.Equal(ForwardReturnSeries.Loss, ForwardReturnSeries.OverSetup(through, 90m, 110m).Outcome);
+        Assert.Equal(ForwardReturnSeries.Loss, ForwardReturnSeries.OverSetup(through, 90m, 110m, 101m, 100m).Outcome);
 
         var reached = new ReturnBar[] { new(new DateOnly(2026, 1, 2), 120m) };
 
-        Assert.Equal(ForwardReturnSeries.Win, ForwardReturnSeries.OverSetup(reached, 90m, 110m).Outcome);
+        Assert.Equal(ForwardReturnSeries.Win, ForwardReturnSeries.OverSetup(reached, 90m, 110m, 101m, 100m).Outcome);
 
         // Running out of sessions is unresolved, which is a value rather than a
         // null so it is counted in its own column and never in a rate.
@@ -3569,15 +3573,15 @@ public partial class FixtureExpectations
             .Select(at => new ReturnBar(new DateOnly(2026, 1, 1).AddDays(at), 100m))
             .ToArray();
 
-        Assert.Equal(ForwardReturnSeries.Unresolved, ForwardReturnSeries.OverSetup(flat, 90m, 110m).Outcome);
+        Assert.Equal(ForwardReturnSeries.Unresolved, ForwardReturnSeries.OverSetup(flat, 90m, 110m, 101m, 100m).Outcome);
 
         // One session short of the cap is not yet matured, which is a different
         // thing from unresolved and is stated as one.
-        Assert.Null(ForwardReturnSeries.OverSetup([.. flat.Take(flat.Length - 1)], 90m, 110m).Outcome);
+        Assert.Null(ForwardReturnSeries.OverSetup([.. flat.Take(flat.Length - 1)], 90m, 110m, 101m, 100m).Outcome);
 
         // A listing with no plan has no setup to resolve, which is an absence
         // rather than an unresolved setup.
-        Assert.Null(ForwardReturnSeries.OverSetup(flat, null, null).Outcome);
+        Assert.Null(ForwardReturnSeries.OverSetup(flat, null, null, 101m, 100m).Outcome);
 
         // The invariant the branch order rests on, asserted rather than assumed.
         // 5.5's own mutation showed that swapping the stop and the target
@@ -3587,11 +3591,11 @@ public partial class FixtureExpectations
         // the invariant, and a plan that breaks it refuses rather than being
         // scored by whichever branch ran first.
         var broken = Assert.Throws<InvalidOperationException>(
-            () => ForwardReturnSeries.OverSetup(flat, 110m, 90m));
+            () => ForwardReturnSeries.OverSetup(flat, 110m, 90m, 101m, 100m));
 
         Assert.Contains("not a plan", broken.Message, StringComparison.Ordinal);
 
-        Assert.Throws<InvalidOperationException>(() => ForwardReturnSeries.OverSetup(flat, 100m, 100m));
+        Assert.Throws<InvalidOperationException>(() => ForwardReturnSeries.OverSetup(flat, 100m, 100m, 101m, 100m));
 
         // And the invariant holds over every plan the store carries, which is
         // where it has to hold rather than only over constructed input.
@@ -3610,6 +3614,84 @@ public partial class FixtureExpectations
                     $"a stored plan has its stop at {stop.GetString()} and its target at {target.GetString()}.");
             }
         }
+    }
+
+    // One session of a constructed series, dated a day apart so the order is the
+    // one the arithmetic walks.
+    static ReturnBar[] Closes(params decimal[] closes) =>
+        [.. closes.Select((close, at) => new ReturnBar(new DateOnly(2026, 1, 2).AddDays(at), close))];
+
+    [Fact]
+    public void ASetupIsScoredFromItsEntryAndATargetReachedBeforeItIsNeverAWin()
+    {
+        // 8.1's rule, each outcome its own case. The plan and the cases are the
+        // expectation's, worked by hand there rather than written here, because a
+        // fixture whose listings have no session after them can resolve no setup
+        // and the file is where a derived figure belongs.
+        var constructed = Expected("forward-returns").GetProperty("constructed");
+        var plan = constructed.GetProperty("plan");
+
+        decimal Price(string name) => decimal.Parse(plan.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
+
+        var (stop, target, entryHigh) = (Price("stop"), Price("firstTradedTarget"), Price("entryHigh"));
+
+        ForwardReturn Score(decimal listedAt, params decimal[] closes) =>
+            ForwardReturnSeries.OverSetup(Closes(closes), stop, target, entryHigh, listedAt);
+
+        var cases = constructed.GetProperty("cases").EnumerateArray().ToArray();
+
+        Assert.Equal(4, cases.Length);
+
+        foreach (var expected in cases)
+        {
+            var listedAt = decimal.Parse(expected.GetProperty("listedAt").GetString()!, CultureInfo.InvariantCulture);
+            var closes = expected.GetProperty("closes").EnumerateArray()
+                .Select(close => decimal.Parse(close.GetString()!, CultureInfo.InvariantCulture))
+                .ToArray();
+
+            var scored = Score(listedAt, closes);
+            var what = expected.GetProperty("case").GetString();
+
+            Assert.Equal((what, expected.GetProperty("outcome").GetString()), (what, scored.Outcome));
+            Assert.Equal(
+                (what, DateOnly.ParseExact(expected.GetProperty("resolvedOn").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                (what, scored.ResolvedOn));
+
+            if (expected.GetProperty("returnPct").ValueKind == JsonValueKind.Null)
+            {
+                Assert.Null(scored.ReturnPct);
+            }
+            else
+            {
+                Assert.Equal(expected.GetProperty("returnPct").GetDouble(), scored.ReturnPct!.Value, 6);
+            }
+        }
+
+        // The rule the cases are of, stated here as the expectation states it: the
+        // entry is the first close at or below the zone's top edge, and a target
+        // reached before it is never a win. That is what made 105 of 147 stored
+        // wins in the operator's store on 2026-09-16 not wins.
+        Assert.Equal(ForwardReturnSeries.NeverEntered, Score(120m, 125m, 130m).Outcome);
+
+        // A setup that entered and reached neither by the cap is unresolved; one
+        // that never entered by the cap is never entered. Both are matured and
+        // they are different statements.
+        var flat = Enumerable.Range(0, ForwardReturnSeries.SetupSessionCap).Select(_ => 100m).ToArray();
+        var above = Enumerable.Range(0, ForwardReturnSeries.SetupSessionCap).Select(_ => 105m).ToArray();
+
+        Assert.Equal(ForwardReturnSeries.Unresolved, Score(100m, flat).Outcome);
+        Assert.Equal(ForwardReturnSeries.NeverEntered, Score(120m, above).Outcome);
+
+        // And the cap is counted from the listing night rather than from the
+        // entry, so a setup entered late has the sessions that are left and no
+        // more: entering on the last session inside the cap leaves none.
+        var late = Enumerable.Range(0, ForwardReturnSeries.SetupSessionCap - 1).Select(_ => 105m).Append(100m).ToArray();
+
+        Assert.Equal(ForwardReturnSeries.Unresolved, Score(120m, late).Outcome);
+
+        // Short of the cap and still open is not yet matured, which is neither.
+        Assert.Null(Score(100m, 100m, 100m).Outcome);
+        Assert.Null(Score(120m, 105m, 105m).Outcome);
     }
 
     [Fact]

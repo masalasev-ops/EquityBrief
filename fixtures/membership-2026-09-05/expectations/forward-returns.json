@@ -1,7 +1,7 @@
 {
  "stage": "forward returns",
  "derivation": "derived",
- "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero.",
+ "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero. The setup outcomes 8.1 added cannot be reached over a fixture whose listings have no session after them, so the cases below are worked by hand from one plan and read by the suite from this file rather than written into the test.",
  "tables": [
   "forward_return"
  ],
@@ -16,9 +16,68 @@
   "unresolved": "a value rather than a null, so it is counted in its own column and never in a rate",
   "stopBeforeTarget": "a session that closed through both was stopped out before it could reach anything",
   "baseRatePopulation": "every name-night in the window, not the rows where a reason fired",
-  "baseRateForSetup": "null, because target before stop is a question about a plan and a name with no plan has no answer to it"
+  "baseRateForSetup": "null, because target before stop is a question about a plan and a name with no plan has no answer to it",
+  "entry": "a setup starts on the first close at or below its entry zone's top edge, the listing night's own close included",
+  "neverEntered": "a target reached before that close, and a setup still unentered at the cap: its own value and its own column, never a win and never in a rate",
+  "stopBeforeEntry": "a close at or below the zone's top edge that is also through the stop is entered and stopped on that session, because a fall through the whole plan is a trade that happened",
+  "capFromTheListing": "the 63 sessions are counted from the listing night and not from the entry, since the plan being scored is the one stored that night",
+  "returnFromTheEntry": "the setup horizon's return is the move from the close it was entered at to the close it resolved on, and null for a setup nobody entered"
  },
  "counts": {
   "rowsPerListing": 3
+ },
+ "constructed": {
+  "note": "one plan, and the cases the entry rule is derived over, each walked by hand: the zone's top edge is 101, the stop 90 and the first traded target 110, and closes run one session apart from 2026-01-02.",
+  "plan": {
+   "entryHigh": "101",
+   "stop": "90",
+   "firstTradedTarget": "110"
+  },
+  "cases": [
+   {
+    "case": "entered on the listing night and reached",
+    "listedAt": "100",
+    "closes": [
+     "105",
+     "112"
+    ],
+    "outcome": "win",
+    "resolvedOn": "2026-01-03",
+    "returnPct": 12.0
+   },
+   {
+    "case": "the target reached from above the zone, which the price never returns to",
+    "listedAt": "120",
+    "closes": [
+     "125",
+     "130"
+    ],
+    "outcome": "never entered",
+    "resolvedOn": "2026-01-02",
+    "returnPct": null
+   },
+   {
+    "case": "entered later, when the price comes back to the zone, and then stopped",
+    "listedAt": "120",
+    "closes": [
+     "105",
+     "99",
+     "80"
+    ],
+    "outcome": "loss",
+    "resolvedOn": "2026-01-04",
+    "returnPct": -19.19191919191919
+   },
+   {
+    "case": "one session through the zone and the stop together, which is a fill and a stop",
+    "listedAt": "120",
+    "closes": [
+     "80"
+    ],
+    "outcome": "loss",
+    "resolvedOn": "2026-01-02",
+    "returnPct": null
+   }
+  ]
  }
 }

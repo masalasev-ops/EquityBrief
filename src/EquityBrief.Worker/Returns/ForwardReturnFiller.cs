@@ -139,13 +139,18 @@ public sealed class ForwardReturnFiller : IComponent
         {
             var after = await SessionsAfterAsync(connection, listing.Ticker, listing.SessionDate, cancellation);
             var listedAt = await CloseOnAsync(connection, listing.Ticker, listing.SessionDate, cancellation);
-            var (stop, target) = PlanBounds(listing.Plan);
+            var (stop, target, entryHigh) = PlanBounds(listing.Plan);
 
             var filled = new List<ForwardReturn>
             {
                 ForwardReturnSeries.Over(5, after, listedAt ?? 0m),
                 ForwardReturnSeries.Over(21, after, listedAt ?? 0m),
-                ForwardReturnSeries.OverSetup(after, stop, target),
+
+                // The entry zone and the listing night's own close, so a setup is
+                // scored from the session the price first reached the entry the
+                // plan named rather than from the listing.
+                // see: A setup is scored from its entry, and a target reached before the entry is never a win
+                ForwardReturnSeries.OverSetup(after, stop, target, entryHigh, listedAt),
             };
 
             foreach (var outcome in filled)
@@ -193,10 +198,11 @@ public sealed class ForwardReturnFiller : IComponent
         return new ForwardReturnOutcome(listings.Count, written, matured, written - matured);
     }
 
-    // The stop and the first traded target as they stood the night of the
-    // listing. Bars can be replayed and the plan cannot, which is why the
-    // listing carries it rather than this reading tonight's ladder.
-    static (decimal? Stop, decimal? Target) PlanBounds(string plan)
+    // The stop, the first traded target and the entry zone's top edge as they
+    // stood the night of the listing. Bars can be replayed and the plan cannot,
+    // which is why the listing carries it rather than this reading tonight's
+    // ladder.
+    static (decimal? Stop, decimal? Target, decimal? EntryHigh) PlanBounds(string plan)
     {
         using var document = JsonDocument.Parse(plan);
         var root = document.RootElement;
@@ -206,7 +212,7 @@ public sealed class ForwardReturnFiller : IComponent
                 ? decimal.Parse(value.GetString()!, CultureInfo.InvariantCulture)
                 : null;
 
-        return (Read("stop"), Read("firstTradedTarget"));
+        return (Read("stop"), Read("firstTradedTarget"), Read("entryHigh"));
     }
 
     async Task WriteAsync(

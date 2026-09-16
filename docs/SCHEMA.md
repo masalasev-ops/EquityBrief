@@ -273,9 +273,9 @@ Grain: one row per listing per horizon.
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the listing's date |
 | `horizon` | TEXT | `5`, `21`, or `setup` |
-| `outcome` | TEXT | `win`, `loss`, `unresolved`, or null while immature |
+| `outcome` | TEXT | `win`, `loss`, `unresolved`, `never entered`, or null while immature. `never entered` is the setup horizon's alone: the price never closed at or below the entry zone's top edge, so there was no purchase to score (see: A setup is scored from its entry, and a target reached before the entry is never a win) |
 | `resolved_on` | TEXT | date, null while unresolved |
-| `return_pct` | REAL | null for the `setup` horizon |
+| `return_pct` | REAL | for the two session horizons, the move from the listing's close; for the `setup` horizon, the move from the close the setup was entered at, and null where nothing was entered or the entry and the stop fell on one session (see: A setup is scored from its entry, and a target reached before the entry is never a win) |
 | `base_rate` | REAL | the universe figure for this horizon, over every name-night in the window rather than over the listed ones, and null for the `setup` horizon |
 
 Primary key: `ticker`, `session_date`, `horizon`.
