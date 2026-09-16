@@ -50,6 +50,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `theme_section` | ThemeResearchRunner | ClaimChecker | none |
 | `source_document` | ResearchRunner, ThemeResearchRunner | none | none |
 | `candidate_register` | CandidateRegistrar | none | none |
+| `rule_version` | RuleVersionScorer | RuleVersionScorer | none |
+| `version_score` | RuleVersionScorer | RuleVersionScorer | RuleVersionScorer |
 | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
 | `run_log` | every component that writes appends | RunLog | none |
 
@@ -72,6 +74,10 @@ The `DELETE` lives in each component's own file rather than in a shared helper, 
 **`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below. The delete is the assembler's, and it removes one row only: tonight's file for a name, where it differs from the one the store now computes, so the insert writes the new one in its place (see: A re-run replaces a night's facts file where the store now computes a different one).
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
+
+**`rule_version` has one updater and no deleter, and the update is the close.** A window is opened by an insert and closed by writing its `closed_at` and `replaced_by`, which is the one field a version row ever changes: a closed window keeps every other column it was opened with, because the scores written under it are of the rule as it stood then and a row edited afterwards would make them scores of something else. Nothing deletes a version, for the reason nothing deletes a registration.
+
+**`version_score` has a deleter and it is the retention, not a correction.** The scorer drops the scores that fall out of the one-year window on the night they fall out of it, as every computed table's writer does (see: Every computed table's writer is its own deleter). A score inside the window is replaced rather than corrected: a re-run of a night writes that night's set again, inside the transaction that writes it, which is the update this table declares. It is the same shape the two as-of-keyed computed tables have, where a second run for one night after a refetch moved the prices would otherwise leave both sets standing.
 
 **`candidate_register` has no updater and no deleter, and that is load bearing.** Pre-registration only works if a registered candidate cannot be changed after results arrive. A retirement is a new dated row naming what it retires. `register-append-only` asserts the absence in both the source and a live attempt.
 
@@ -442,6 +448,43 @@ Primary key: `id`.
 No update, no delete. A correction is a new row.
 
 **The three evaluator columns are what make the row a registration rather than a description.** A candidate naming its rule in prose alone is a row a later session has to re-implement from words, and what it implements is then whatever it read the words to mean, which is the thing pre-registration exists to stop. `evaluator` names code that exists, `parameters` carries the values it is run with, and `evaluator_version` is a hash of that evaluator's source with line endings normalised to LF and any leading byte order mark removed, so the same evaluator hashes the same on both platforms and on a runner that checked the tree out with either ending. A changed evaluator is a new registration retiring the old one, never an edited row, and `register-append-only` fails a registered, unretired candidate whose evaluator's source has moved away from the version its row names.
+
+### rule_version
+Grain: one row per rule per version. Append only but for the close.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | one of the four ladder rules the build carries, refused at the write where it carries none |
+| `version` | TEXT | the version's name, `live` for the rule the night itself applies |
+| `parameters` | TEXT | JSON, the values this version is replayed with |
+| `parameters_hash` | TEXT | a hash of those parameters with the code version, which is what the night compares the live rule against |
+| `code_version` | TEXT | the build's version of the rule's own code, hashed into `parameters_hash` |
+| `opened_at` | TEXT | UTC instant the window opened |
+| `closed_at` | TEXT | UTC instant it closed, null while open |
+| `replaced_by` | TEXT | for a closed window, the version that replaced it |
+
+Primary key: `rule`, `version`, `opened_at`.
+
+**The instant is in the key, so a version closed and opened again is two windows and not one.** Scores belong to a window rather than to a version name, and a key without the instant would merge two measurements of the same name taken either side of a change, which is the thing frozen windows exist to prevent.
+
+### version_score
+Grain: one row per name per night per rule per version.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the listing night scored |
+| `rule` | TEXT | |
+| `version` | TEXT | |
+| `opened_at` | TEXT | the window the score belongs to, which is what makes it a score of a rule as it stood |
+| `plan` | TEXT | JSON, the plan this version produced for that name-night |
+| `sample` | TEXT | `scored` or `in_sample`; a score a backfill wrote for a night before its version opened is `in_sample` and counts toward no record and no verdict |
+
+Primary key: `ticker`, `session_date`, `rule`, `version`, `opened_at`.
+
+**`sample` is the column that keeps a backfill from becoming evidence.** A version added later may be scored over the nights before it, because seeing what it would have done is the point of scoring counterfactually at all. What it may not do is count: a rule written after those nights were seen and then scored on them is measured in sample, and a record holding such a score is a record of having fitted the rule to what already happened. The scorer writes the flag from the window's own `opened_at` against the night being scored, so the classification is arithmetic rather than a caller's claim about itself.
+
+One year retained, dropped by the scorer on the night the rows fall out of the window, at the order of the index times the versions open.
 
 ### series_state
 Grain: one row per ticker.

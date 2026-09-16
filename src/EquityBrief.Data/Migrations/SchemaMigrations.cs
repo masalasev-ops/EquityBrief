@@ -565,6 +565,46 @@ public static class SchemaMigrations
         END;
     ";
 
+    // The rule versions and the scores written under them.
+    //
+    // A version's window is opened by an insert and closed by writing its
+    // `closed_at` and `replaced_by`, and nothing else on the row ever changes:
+    // the scores written under it are of the rule as it stood when it opened, and
+    // a row edited afterwards would make them scores of something else. The
+    // instant is in the key, so a version closed and opened again is two windows
+    // and not one.
+    //
+    // `sample` is what keeps a backfill from becoming evidence. A version added
+    // later may be scored over the nights before it, because seeing what it would
+    // have done is the point of scoring counterfactually. What it may not do is
+    // count, so a score written for a night before its window opened is
+    // `in_sample` and reaches no record and no verdict.
+    // see: Adding a candidate later restarts the clock
+    const string CreateRuleVersions = @"
+        CREATE TABLE rule_version (
+            rule             TEXT NOT NULL,
+            version          TEXT NOT NULL,
+            parameters       TEXT NOT NULL,
+            parameters_hash  TEXT NOT NULL,
+            code_version     TEXT NOT NULL,
+            opened_at        TEXT NOT NULL,
+            closed_at        TEXT,
+            replaced_by      TEXT,
+            PRIMARY KEY (rule, version, opened_at)
+        ) STRICT;
+
+        CREATE TABLE version_score (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            rule          TEXT NOT NULL,
+            version       TEXT NOT NULL,
+            opened_at     TEXT NOT NULL,
+            plan          TEXT NOT NULL,
+            sample        TEXT NOT NULL CHECK (sample IN ('scored', 'in_sample')),
+            PRIMARY KEY (ticker, session_date, rule, version, opened_at)
+        ) STRICT;
+    ";
+
     public static IReadOnlyList<Migration> All { get; } =
     [
         new Migration(1, "create run_log", CreateRunLog),
@@ -592,6 +632,7 @@ public static class SchemaMigrations
         new Migration(23, "add series_state.retries", AddSeriesStateRetries),
         new Migration(24, "add forward_return.break_even", AddForwardReturnBreakEven),
         new Migration(25, "create candidate_register", CreateCandidateRegister),
+        new Migration(26, "create rule_version and version_score", CreateRuleVersions),
     ];
 
     // The bar each plan set for itself, beside the setup it belongs to.

@@ -25,6 +25,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - SCHEMA.md - the rule versions and the scores written under them
+
+Authorised by: Adding a candidate later restarts the clock
+Was:
+> neither table existed, and `level`'s members carried a kind, a price and a date.
+Now:
+> `rule_version` holds a window per rule per version with its parameters, their hash with the code version, and the instants it opened and closed; `version_score` holds a plan per name per night per rule per version with the window it belongs to and whether it counts or was written in sample; and a level member carries its own source beside its kind.
+Why: the band already carried whether any member is not a moving average, which is a fact derived from the sources, and stored the derived fact while dropping the fact it came from, so nothing could read a band back and say which member was the average. The instant is in the version key because scores belong to a window: a version closed and opened again is two measurements and not one.
+
+### 2026-09-16 - ARCHITECTURE.html - the rule version scorer, its step, its two stores and its bound
+
+Authorised by: Adding a candidate later restarts the clock
+Was:
+> section 7 carried no scorer, the matrix carried fourteen store columns, section 16 carried neither store, section 14 had sixteen steps with the arithmetic being steps 1 to 16 and the queue step 17, and section 17 carried no bound on versions.
+Now:
+> a **Rule version scorer** catalogue row and matrix row, two store columns and two store rows, a step between the news pulse and the close with the arithmetic now steps 1 to 17 and the queue step 18, and a **Rule versions scored at once** row stating at most 4 of each of the 4 rules and 14 at once with the arithmetic that sets it.
+Why: 8.6 is the checkpoint that builds the scorer, and a step the document does not carry is a step the harness reads as unexamined. The step counts move because a step was inserted before the close.
+
+### 2026-09-16 - .claude/rules/checks.md - rule-versions-scored joins the roster
+
+Authorised by: Adding a candidate later restarts the clock
+Was:
+> the roster carried 35 rows and none for the version store.
+Now:
+> a `rule-versions-scored` row running on every CI run, asserting the window's close keeps what it was opened with, the bound at each cap and one below, the projection from the night's own durations, the drift check in both directions, a version producing a plan the live rule does not, and a backfilled score flagged in sample.
+Why: the two store rows and the bound needed a check to reach them, and the register's own check is about the register rather than about windows.
+
+
 ### 2026-09-16 - ARCHITECTURE.html - section 17 states the significance threshold, and the minimum gains its night floor
 
 Authorised by: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold

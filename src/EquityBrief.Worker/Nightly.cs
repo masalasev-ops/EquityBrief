@@ -13,6 +13,7 @@ using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.News;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Returns;
+using EquityBrief.Worker.Rules;
 using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
@@ -311,6 +312,25 @@ public static class Nightly
                 return $"{outcome.Articles} article(s) over {outcome.Requests} page(s), " +
                     $"{outcome.RowsWritten} row(s), {outcome.NamesCounted} name(s) with news, " +
                     $"{outcome.RowsDropped} dropped";
+            }),
+            // Section 14's step 16, from 8.6. Counterfactual and free: the bars
+            // are already stored, so scoring a version costs the ladder stage run
+            // again per version and the level stage as well for a version of the
+            // merge distance, and never a request. It runs after the arithmetic
+            // it replays and before the close, so the close's counts are of the
+            // night the live rules produced.
+            //
+            // It throws where a live rule moved inside an open window, which
+            // stops the night at this step by the same path every other failure
+            // takes. That is the point rather than a harshness: a measurement
+            // whose subject moved says nothing about either version.
+            new("rule-versions", async () =>
+            {
+                var outcome = await new RuleVersionScorer(clock, store.DatabaseFile)
+                    .RunAsync(clock.SessionDateAt(clock.UtcNow), runId, night.Token);
+
+                return $"{outcome.Versions} open version(s), {outcome.RowsWritten} score(s) over " +
+                    $"{outcome.NamesScored} name(s), {outcome.RowsDropped} dropped";
             }),
             // Section 14's step 16, which closes the arithmetic and records its
             // counts. It computes nothing: every figure is counted off the

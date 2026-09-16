@@ -11590,3 +11590,87 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             not one, and the fourth is the one the other three rest on. Both gates ran with this
             entry in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing. The rule versions are 8.6's and the phase report 8.7's.
+
+### 8.6 - rule versions scored counterfactually   2026-09-16
+Built:      each ladder rule a named version, and every night's name-nights replayed under every open
+            version from the stored bars (see: Adding a candidate later restarts the clock).
+            Migration 26 creates `rule_version` and `version_score`. `RuleVersions` in Core holds the
+            windows, the bound and the drift check; `LadderRuleSet` is the seam a version is replayed
+            through, with the live values as its defaults so every caller that names none computes
+            what it did; `RuleVersionScorer` is the component, and its step sits between the news
+            pulse and the close as section 14's step 16, which makes the arithmetic steps 1 to 17 and
+            the queue step 18. Section 17 gains a **Rule versions scored at once** row and the roster
+            gains `rule-versions-scored`.
+Rules:      the four rules are the merge distance, where the stop sits, the near-exit skip and, from
+            8.0's ruling on a tranche zone's edges, zone edges from non-average anchors only. A
+            version change closes the window measuring the old rule and opens a new one, and the
+            closed row keeps every column it was opened with but the two the close writes, because
+            the scores under it are of the rule as it stood. The instant is in the key, so a version
+            closed and opened again is two windows and not one. A live rule whose parameters or code
+            have moved inside an open window stops the night at this step and names the rule, before
+            anything is scored, because a score written under a window whose subject has moved is the
+            thing being prevented rather than a row to be corrected. A score written for a night
+            before its window opened is flagged in sample and counts toward no record, read off the
+            window's own instant against the night rather than from a caller's claim about itself.
+            The bound is at most four versions of a rule and fourteen at once, and a version's live
+            rule is what the night already computes, so it is no extra replay and is not counted.
+Measured:   the bound's arithmetic is put to the night of 2026-09-14's own figures rather than to
+            figures written beside it: a level stage of 143 seconds and a ladder stage of 5 at 504
+            names make a merge distance version 148 seconds and every other version 5, which the
+            code computes and the test asserts. Fourteen at two merge distance versions and twelve
+            others is 356 seconds. Nothing is opened in the operator's store: a version is a decision
+            a person takes through a verb, and a build that opened one would be measuring a rule
+            nobody chose to vary.
+Expected:   derived, and it is the replay itself rather than a file. A version of the near-exit skip
+            at three typical days rather than two takes the exit at 101 out of the traded set against
+            a blended entry of 92.5, where the live rule trades it at 8.5 against a bar of 8; and the
+            zone edges version narrows the first tranche from 90 to 95 down to 90 alone, being its
+            one non-average anchor. Both are worked in the test from the bands it constructs, and the
+            live plan is asserted identical to the plan the live rule set produces, so the seam is
+            shown to have changed nothing about what the night computes.
+Tested:     969, from 963. Six added, all under the new roster row: a version change keeping the
+            closed window with every column it was opened with and the closed one still open at an
+            instant inside it; the bound refused at the fifteenth version and at the fifth of one
+            rule and admitted one below each, with a closed window counting against neither and a
+            rule the build does not carry refused whatever the counts; the projected seconds computed
+            from the night's own stage durations with the level-replaying rule asserted in both
+            directions; the drift check finding a moved live rule and not finding a steady one, with
+            a version's own window not asked about and a code change and a parameter change shown to
+            hash differently; a version producing a plan the live rule does not, on two of the three
+            ladder rules; and a backfilled score flagged in sample beside one written for a night
+            after its window.
+Corrects:   a fact the store was deriving and not keeping. A level's members carried a kind, a price
+            and a date, and the band carried whether any member is not a moving average, so the store
+            held the derived fact and dropped the fact it came from: nothing could read a band back
+            and say which member was the average, which is what a version that narrows a zone to its
+            non-average anchors needs. The member now carries its own source. And `version_score`'s
+            upsert is an update rather than an insert, which SCHEMA did not declare until
+            `writer-ownership` said so on the run it landed.
+Amended:    three checks, not a done condition, and each is the same shape the two before it were.
+            `architecture-conformance` carried three guards whose populations empty as the build
+            advances: one that at least one claim be out of scope, one that at least one out-of-scope
+            claim name a due point, and the split by origin's own floor. All three reached zero here,
+            because this is the checkpoint at which every claim the document makes is examined and
+            none is deferred. The comment on the second said in so many words that when phase 8
+            empties the set the guard fails and the test is what has to change rather than the
+            number, and that is what was done: each property is asserted over whatever is left, which
+            may be nothing, and the readers behind them are put to constructed plans and records
+            where the population cannot empty.
+Mutated:    the rule, stated before the sweep: break each half of this checkpoint's done condition,
+            being the window's close, the stopping behaviour, the in-sample flag and the bound, and
+            take the close first because every other half rests on a window meaning what it says.
+            Predicted:
+            M1 the close implemented as a delete of the old row rather than an update of two fields:
+            the window test red on the row count and on the closed row's columns.
+            M2 the drift check dropped, so a moved live rule is scored under the window it moved
+            inside: the drift test red in both of its directions.
+            M3 the in-sample flag written from the caller rather than from the window's instant
+            against the night: the backfill test red on both of its flags.
+            M4 the total bound removed, leaving only the per-rule cap: the bound test red on the
+            fifteenth version and green on the fifth of one rule, because that cap still holds.
+            Not mutated, and named so the next sweep has them: the retention drop, the refusal of a
+            rule the build does not carry, and the live version not being counted against the bound.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing. The bound stays proposed and its operating row is unchanged: a projection is not
+            a measurement, and the row reads the scorer's own nights, which no checkpoint produces.

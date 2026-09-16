@@ -251,9 +251,20 @@ public sealed class LevelBuilder : IComponent
     // The members, as SCHEMA's column describes them: each member's kind, price
     // and date. The price is written in the storage form rather than as a JSON
     // number, because a JSON number is a double and a price is not.
+    // The member's own source is stored beside its kind from 8.6.
+    //
+    // The band already carried whether any member is not a moving average, which
+    // is a fact derived from the sources, and stored the derived fact while
+    // dropping the fact it came from. Nothing could read the band back and say
+    // which member was the average, so a rule version that re-merges the
+    // candidates or narrows a zone to its non-average anchors had no way to tell
+    // them apart. The kind is a label the source chooses and not the source: two
+    // sources can write the same word and one source writes several.
+    // see: A moving average may widen a band that a tranche sits on, and may never anchor one
     static string Serialised(IReadOnlyList<LevelMember> members) =>
         JsonSerializer.Serialize(members.Select(member => new
         {
+            source = member.Source.ToString(),
             kind = member.Kind,
             price = Money.ToStorage(member.Price),
             date = member.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),

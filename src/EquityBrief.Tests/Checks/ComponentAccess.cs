@@ -26,6 +26,10 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 8.6, the rule version scorer.
+            CheckReach.Key(Scope.CatalogueTable, "Rule version scorer"),
+            CheckReach.Key(Scope.MatrixTable, "Rule version scorer"),
+
             // 8.3, the candidate registrar.
             CheckReach.Key(Scope.CatalogueTable, "Candidate registrar"),
             CheckReach.Key(Scope.MatrixTable, "Candidate registrar"),

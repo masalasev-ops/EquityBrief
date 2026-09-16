@@ -60,6 +60,7 @@ public class CoverageReported
         ["ci-parity"] = "CiParity",
         ["two-platform"] = "TwoPlatform",
         ["register-append-only"] = "RegisterAppendOnly",
+        ["rule-versions-scored"] = "RuleVersionsScored",
     };
 
     internal static IReadOnlyList<RosterRow> Roster()
