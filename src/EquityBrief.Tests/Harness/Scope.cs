@@ -470,7 +470,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "Minimum resolved setups")] = new Scoped(
             Verdict.Pass,
-            "no verdict of any kind appears below 250 resolved setups or below 60 distinct listing sessions, asserted at each boundary and one either side, with the count drawn beside every withheld verdict",
+            "no verdict of any kind appears below 250 resolved setups or below 60 distinct listing sessions, asserted at each boundary and one either side, with the count drawn beside every withheld verdict; and the higher floor a live condition's retirement waits on is the constant the register names when it refuses a live reason",
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "Significance threshold")] = new Scoped(
             Verdict.Pass,

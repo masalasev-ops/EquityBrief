@@ -1,4 +1,5 @@
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Web.Marks;
@@ -111,10 +112,68 @@ public partial class ReadSurface
             architecture,
             StringComparison.Ordinal);
 
+        // The higher floor a live reason's retirement waits on, where section 17
+        // states it and as the constant the register's refusal names.
+        Assert.Contains(
+            FormattableString.Invariant($"; {ReasonVerdict.MinimumBeforeALiveReasonIsRetired} before a live condition may be retired"),
+            architecture,
+            StringComparison.Ordinal);
+
+        Assert.Contains(
+            FormattableString.Invariant($"once its record holds {ReasonVerdict.MinimumBeforeALiveReasonIsRetired} resolved setups"),
+            Checks.Corpus.Read("docs/RUNBOOK.md"),
+            StringComparison.Ordinal);
+
+        Assert.True(ReasonVerdict.MinimumBeforeALiveReasonIsRetired > ReasonVerdict.MinimumResolved);
+
         // The read API's own minimum is the same number, stated in two places
         // because the projection and the test are two components, and asserted
         // equal so the two cannot drift.
         Assert.Equal(ReasonVerdict.MinimumResolved, RunScreen.MinimumResolvedSetups);
+    }
+
+    [Fact]
+    public void AFamilyThatGrowsCorrectsEveryVerdictReadFromItAgain()
+    {
+        // 13.3's "adding restarts the clock": a family that gains a member changes
+        // the correction, and the verdicts under it are recomputed. They are,
+        // because no verdict is stored: each is read from the record and the
+        // divisor at the moment it is drawn. What this holds is that the divisor
+        // reaching a verdict is the family as it stands.
+
+        // The live family is the count of live reasons the code evaluates, so a
+        // reason added to section 11 and the code leaves this red until the family
+        // it divides by grows with it.
+        Assert.Equal(ReasonVerdict.LiveFamily, ShortlistSeries.Reasons.Length);
+
+        // 120 wins of 251 against a bar of 40 per cent has an exact tail of about
+        // 0.00727: under 0.05 over 6, which is 0.00833, and over 0.05 over 7, which
+        // is 0.00714. The same record clears at six and does not at seven.
+        var record = Scored(120, 131, 40, ReasonVerdict.MinimumSessions);
+
+        var six = ReasonVerdict.For(record, ReasonVerdict.LiveFamily);
+        var seven = ReasonVerdict.For(record, ReasonVerdict.LiveFamily + 1);
+
+        Assert.Equal(six.PValue, seven.PValue);
+        Assert.True(six.Cleared);
+        Assert.False(seven.Cleared);
+        Assert.Equal((6, 7), (six.Divisor, seven.Divisor));
+
+        // A candidate's family is read off the register the same way: a second
+        // registration before the window opened is a divisor of two where one
+        // stood, and the threshold a verdict under it carries halves.
+        var opened = new DateTimeOffset(2026, 9, 20, 21, 0, 0, TimeSpan.Zero);
+        RegisterRow Row(long id, string name, DateTimeOffset at) =>
+            new(id, name, "a rule", "a test", Core.Candidates.MomentumIndexReading.EvaluatorName, "{}", "000000000000", CandidateFamily.Registered, null, at, null);
+
+        RegisterRow[] one = [Row(1, "first", opened.AddDays(-2))];
+        RegisterRow[] two = [.. one, Row(2, "second", opened.AddDays(-1))];
+
+        var byOne = ReasonVerdict.For(record, CandidateFamily.Divisor(one, opened));
+        var byTwo = ReasonVerdict.For(record, CandidateFamily.Divisor(two, opened));
+
+        Assert.Equal((1, 2), (byOne.Divisor, byTwo.Divisor));
+        Assert.Equal(byOne.Threshold / 2, byTwo.Threshold, 12);
     }
 
     [Fact]

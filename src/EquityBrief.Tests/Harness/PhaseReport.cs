@@ -168,7 +168,7 @@ internal static class PhaseReport
             "the loop's own plan, each row read against the checkpoint its Phase cell names and against what the record shows built, with the row that names no checkpoint asserted to be the one an operating obligation carries",
             Check: "architecture-conformance"),
         ["13.3 The guardrails"] = new Placement(
-            "the loop's guardrails, each mapped to the test that holds it, with the mapping reconciled against the suite in both directions and the loop asserted to have changed nothing on evidence below its stated minimum",
+            "the loop's guardrails, each clause quoted from its cell and mapped to the test that holds it, whose own body has to exercise the code the clause is enforced by, with every guardrail mapped and no test holding two clauses; and the loop asserted to have changed nothing on evidence below its stated minimum over the register's rows and the version windows a whole recorded night ran over",
             Check: "architecture-conformance"),
         // 1.8, and the journey here is worth stating because it was wrong twice.
         //
