@@ -177,6 +177,12 @@ internal static class Scope
             Verdict.Pass,
             "the row of a name whose stored series is suspect carries the line beside the name with the row's instant and reason as its title, escaped, and a trusted name's row carries none, read off tonight's route over a store the whole pipeline populated",
             ByReadSurface),
+        // The 5.4 correction's row: listings written before it are kept as written and the
+        // routes drawing their session say what those rows could not do.
+        [CheckReach.Key(FailureTable, "Listings written before the 5.4 correction")] = new Scoped(
+            Verdict.Pass,
+            "the tonight, run and universe routes each draw the line once for a session whose rows carry no event date among earnings soon's values, naming that session and no other, and the tonight and run routes draw none for a session the corrected rule wrote, read over a store the pipeline populated beside one session written in the old shape; the run page's record counts earnings soon and breakout on volume only off rows carrying their markers",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "Prices may be out of date, one line saying its prices may not reflect a recent dividend or split")] = new Scoped(
             Verdict.Pass,
             "the name route and the exported file each draw the line once for a name whose stored series is suspect, and the name route none for a trusted name",
@@ -1341,7 +1347,7 @@ internal static class Scope
             ByGap),
                 [CheckReach.Key(LimitsTable, "Earnings horizon")] = new Scoped(
             Verdict.Pass,
-            "the second book is keyed to the next dated event the calendar holds, a name with none produces no setups and says why, and every setup carries a trigger, an entry, a stop and a target with each figure stated on the page as a proposal",
+            "the second book is keyed to the next dated event the calendar holds, a name with none produces no setups and says why, and every setup carries a trigger, an entry, a stop and a target with each figure stated on the page as a proposal; and earnings soon fires on the sessions the exchange calendar counts to that event, asserted through the shipped builder over a store holding no bar after its night at the night itself, the twentieth session, the twenty-first, across the year-end closures, forty sessions out and past the closure table's end, with the fixture's two dated prints recomputed from the calendar against counts walked by hand",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Tranches, exits")] = new Scoped(
             Verdict.Pass,

@@ -1,14 +1,14 @@
 {
  "stage": "run page",
  "derivation": "derived",
- "derivedFrom": "the rules in section 15.10, section 15.11 and section 17 applied to the stored listings and forward returns, not from a run. Every count below is recomputed in the suite from the two tables: a reason's fired count is the listings whose reasons name it, and its resolved count is the setup-horizon rows that reached an outcome for a name listed that night.",
+ "derivedFrom": "the rules in section 15.10, section 15.11 and section 17 applied to the stored listings and forward returns, not from a run. Every count below is recomputed in the suite from the two tables: a reason's fired count is the listings whose reasons name it, and its resolved count is the setup-horizon rows that reached an outcome for a name listed that night. The fired count was 8 until the 5.4 correction, when AAPL and NFLX each fired earnings soon on a count of 0 read off stored bars after the night, where their prints are thirty-eight and thirty-one sessions out and fire nothing.",
  "tables": [
   "listing",
   "forward_return"
  ],
  "counts": {
   "reasons": 6,
-  "fired": 8,
+  "fired": 6,
   "resolved": 0
  },
  "rules": {

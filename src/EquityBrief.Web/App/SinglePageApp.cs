@@ -347,7 +347,8 @@ public sealed class SinglePageApp : IComponent
         string? sectorFilter = null,
         IReadOnlyList<UniverseCell>? page = null,
         int at = 1,
-        int pageSize = 0)
+        int pageSize = 0,
+        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null)
     {
         var shown = rows
             .Where(row => trendFilter is null || (row.TrendState ?? "not classified") == trendFilter)
@@ -366,6 +367,7 @@ public sealed class SinglePageApp : IComponent
         region.Append(Invariant($"data-drawn=\"{drawn.Count}\" data-page=\"{at}\" "));
         region.Append(Invariant($"data-trend-filter=\"{Escaped(trendFilter ?? "all")}\" data-sector-filter=\"{Escaped(sectorFilter ?? "all")}\">"));
 
+        region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
         region.Append(marks.SectorStrip(sectors));
         region.Append(marks.UniverseFilters(rows));
         region.Append(marks.UniverseTable(drawn));
@@ -397,7 +399,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<ReasonRecord>? records = null,
         IReadOnlyList<ReasonTrackRow>? totals = null,
         NightSpend? spend = null,
-        NightProse? prose = null)
+        NightProse? prose = null,
+        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null)
     {
         var region = new StringBuilder();
 
@@ -405,6 +408,7 @@ public sealed class SinglePageApp : IComponent
         region.Append(Invariant($"data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
         region.Append(marks.NightHeader(night, index, fired, duration, harness, spend, prose));
+        region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
         region.Append(marks.WatchList(watched));
         region.Append(marks.TonightList(rows, TonightDrawn, records));
 
@@ -428,6 +432,26 @@ public sealed class SinglePageApp : IComponent
     // Section 17's list display count, held here so the app and the projection
     // agree about it rather than each stating it.
     public const int TonightDrawn = 20;
+
+    // Section 18's row for listings written before the 5.4 correction: the rows
+    // stay as written, since a listing records what that night listed, and a
+    // route drawing a session they belong to says what they could not do. Absent
+    // for a session written since, which is every session from the correction on.
+    // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+    public const string WrittenBeforeTheCorrectionText =
+        "earnings soon on those rows counted every future print as tonight's, and breakout on volume could not fire";
+
+    static string WrittenBeforeTheCorrectionLine(IReadOnlyList<DateOnly>? sessions)
+    {
+        if (sessions is not { Count: > 0 })
+        {
+            return string.Empty;
+        }
+
+        var dates = string.Join(", ", sessions.Select(session => session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+
+        return $"<p class=\"written-before-correction\" data-sessions=\"{Escaped(dates)}\">The listings for {Escaped(dates)} were written before a correction: {WrittenBeforeTheCorrectionText}.</p>";
+    }
 
     // The run page, section 15.10's six regions, in the order that section
     // states them.
@@ -455,13 +479,15 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<LeftOutSection> fellBack,
         QueueNight queue,
         HarnessCounts? harness,
-        PricedCalls? priced = null)
+        PricedCalls? priced = null,
+        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null)
     {
         var region = new StringBuilder();
 
         region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-stages=\"{stages.Count}\">"));
 
         region.Append(marks.OperationalHeader(night, stages, priced));
+        region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
         region.Append(marks.ReasonRecords(records, tracks, baseRates, nights));
 
         region.Append("<section class=\"shadow-candidates\" data-shadow=\"absent\">");

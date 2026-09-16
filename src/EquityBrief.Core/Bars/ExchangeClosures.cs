@@ -91,6 +91,40 @@ public static class ExchangeClosures
         return sessions;
     }
 
+    // The sessions between a night and a dated event after it, which is what the
+    // universe screen's column states and what the earnings soon reason fires on.
+    //
+    // Counted off the exchange's own calendar rather than off stored bars,
+    // because the event is ahead of the night and no bar exists for a session
+    // that has not happened. It is the sessions strictly after the night up to
+    // and including the event's own day where that day is a session, so an event
+    // on tomorrow's session reads as 1 and one on tonight's reads as 0. The night
+    // runs after the close, so 0 is tonight's print, already reported.
+    //
+    // Moved here from the universe screen at the 5.4 correction, where it had been
+    // right since 5.8 while the shortlist builder counted stored bars after tonight
+    // and read every future print as 0. One count in one place, reachable from the
+    // worker and the read surface alike.
+    // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+    //
+    // An event past the end of the closure table gives no count rather than a
+    // wrong one. The table covers three years and a night says so on its closing
+    // line within a quarter of the end, and a count that guessed weekdays past
+    // it would be the guess that row exists to refuse.
+    // owes: The exchange closure table extended before the nights reach its end
+    public static int? SessionsUntil(DateOnly night, DateOnly eventDate)
+    {
+        if (eventDate < night || eventDate > CoveredThrough || night < CoveredFrom)
+        {
+            return null;
+        }
+
+        return eventDate == night
+            ? 0
+            : SessionsBetween(night, eventDate).Count
+                + (IsSession(eventDate) ? 1 : 0);
+    }
+
     static void Covering(DateOnly day)
     {
         if (day < CoveredFrom || day > CoveredThrough)

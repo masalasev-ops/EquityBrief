@@ -25,6 +25,70 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-15 - ARCHITECTURE.html - section 11's breakout on volume row reads resistance at last night's close
+
+Authorised by: Breakout on volume reads resistance at the previous session's close
+Was:
+> the close is above a resistance band on volume above the fifty-day average
+Now:
+> the close is above a band that sat at or above last night's close, on volume above the fifty-day average (see: Breakout on volume reads resistance at the previous session's close)
+Why: the stored role is set against tonight's close, so the reason as built could never fire; the 5.4 correction reads the side a band was on last night.
+
+### 2026-09-15 - ARCHITECTURE.html - section 11's earnings soon row says the twenty sessions are the exchange's
+
+Authorised by: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+Was:
+> the next earnings date is within twenty sessions
+Now:
+> the next earnings date is within twenty sessions, counted on the exchange's calendar (see: Sessions to a dated event are counted on the exchange calendar and never on stored bars)
+Why: the builder counted stored bars after the night, which a live store never holds, so every future print read as 0 and fired.
+
+### 2026-09-15 - ARCHITECTURE.html - section 11's flag says what the first night's 477 was
+
+Authorised by: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+Was:
+> The first night at index size fired 477 of 503 on 798 reasons, which is what the first sentence above predicted in the abstract and is well past the hundred this one illustrates with.
+Now:
+> The first night at index size fired 477 of 503 on 798 reasons, and most of that was not the thresholds: earnings soon counted the stored bars after the night, which a live store never holds, so every future print read as tonight's and fired, while breakout on volume read a role set against tonight's close and could not fire at all. Both were corrected at 5.4, and the rows written before are kept as written with a line saying so where a page draws them (see: Sessions to a dated event are counted on the exchange calendar and never on stored bars) (see: Breakout on volume reads resistance at the previous session's close).
+Why: the sentence read a defect's output as evidence for the thresholds, which the correction's trace showed it was not.
+
+### 2026-09-15 - ARCHITECTURE.html - section 17's earnings horizon row states the count's basis and the refusal past the closure table
+
+Authorised by: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+Was:
+> <tr><td>Earnings horizon</td><td>20 sessions</td><td>about a month of trading, which is far enough ahead that a position can still be staged or trimmed before the date and near enough that the date is worth stating; the worked example sits 20 sessions before its print and applies the rule</td><td>ladder builder unit test</td></tr>
+Now:
+> the value cell adds "counted on the exchange's calendar from the night to the date; a date past the last date the closure table covers is not counted, does not fire and is named on the run log", and the test cell adds "and the shortlist builder over a store holding no bar after its night at the horizon and either side of it"
+Why: the horizon was stated in sessions and never said whose sessions, which is the gap the bar count fell through.
+
+### 2026-09-15 - ARCHITECTURE.html - section 18 gains a row for listings written before the 5.4 correction
+
+Authorised by: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+Was:
+> no row
+Now:
+> Listings written before the 5.4 correction: the rows are kept as written, and the run page's record counts earnings soon and breakout on volume only off rows carrying the value the corrected rule writes; the tonight, run and universe routes for such a session carry one line saying earnings soon on those rows counted every future print as tonight's, and breakout on volume could not fire
+Why: the operator's ruling on 2026-09-15 that those routes say so rather than presenting what the defect wrote as that night's reading.
+
+### 2026-09-15 - SCHEMA.md - the listing's reasons note names the two markers, and fired_count's note states its mechanism
+
+Authorised by: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+Was:
+> | `reasons` | TEXT | JSON: each of the six reasons with fired true or false and the values that made it so |
+> | `fired_count` | INTEGER | zero for most rows |
+Now:
+> the reasons note adds that from the 5.4 correction earnings soon's values carry `next dated event` and breakout on volume's carry `previous close`, and a row without them was written before it; the fired_count note reads "how many of the six reasons fired on the row, counted from `reasons`"
+Why: "zero for most rows" was false on every whole-index night the store holds, and a figure about what a night produced belongs in the record rather than in a spec, where it goes stale.
+
+### 2026-09-15 - RUNBOOK.md - two symptoms added to the morning table, the refusal past the closure table and the line on listings written before the correction
+
+Authorised by: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+Was:
+> no rows
+Now:
+> a row for a name the listings stage names as having a dated event beyond the exchange calendar, and a row for a past night whose pages say its listings were written before a correction
+Why: each is a line a person reads on a surface in the morning, and each says what to do rather than leaving the line to be read as a fault.
+
 ### 2026-09-15 - CLAUDE.md - the workflow's layout line names the macOS job, and says where Windows is verified
 
 Authorised by: Windows is verified on the operator's machine, and the hosted runners are macOS and Linux

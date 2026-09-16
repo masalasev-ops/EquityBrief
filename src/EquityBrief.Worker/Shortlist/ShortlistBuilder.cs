@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Levels;
@@ -102,15 +103,6 @@ public sealed class ShortlistBuilder : IComponent
         LIMIT 2;
     ";
 
-    // Sessions between tonight and the next dated event, counted in stored
-    // sessions rather than in days, because the horizon is stated in sessions
-    // and a month of days is not a month of trading.
-    const string SessionsToNextEventFor = @"
-        SELECT COUNT(*)
-        FROM bar
-        WHERE ticker = $ticker AND session_date > $session_date AND session_date <= $event_date;
-    ";
-
     const string NextEventFor = @"
         SELECT event_date
         FROM calendar
@@ -184,6 +176,7 @@ public sealed class ShortlistBuilder : IComponent
         var fired = 0;
         var reasonsFired = 0;
         var stop = new SeriesGapStop();
+        var beyondTheCalendar = new List<string>();
 
         // One transaction around the whole loop rather than one per row. A row
         // that commits on its own costs a disk sync, and a sync costs the same
@@ -230,6 +223,14 @@ public sealed class ShortlistBuilder : IComponent
 
             var outcomes = ShortlistSeries.For(stale || gapped ? NoBarTonight : inputs);
             var count = outcomes.Count(outcome => outcome.Fired);
+
+            // A dated event the exchange calendar cannot count to, named on the
+            // stage's own row with the table's end, so a refusal is visible on the
+            // run page and not only in a hover.
+            if (!(stale || gapped) && inputs.NextEvent is not null && inputs.SessionsToNextEvent is null)
+            {
+                beyondTheCalendar.Add(ticker);
+            }
 
             await using var command = connection.CreateCommand();
 
@@ -278,7 +279,14 @@ public sealed class ShortlistBuilder : IComponent
 
         await transaction.CommitAsync(cancellation);
 
-        await RecordAsync(connection, runId, startedAt, members.Count, fired, reasonsFired, stop.Report(), cancellation);
+        var beyond = beyondTheCalendar.Count == 0
+            ? string.Empty
+            : "; " + beyondTheCalendar.Count.ToString(CultureInfo.InvariantCulture) +
+                " name(s) with a dated event beyond the exchange calendar, which ends " +
+                ExchangeClosures.CoveredThrough.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
+                ", not counted and not fired: " + string.Join(", ", beyondTheCalendar);
+
+        await RecordAsync(connection, runId, startedAt, members.Count, fired, reasonsFired, stop.Report() + beyond, cancellation);
 
         return new ShortlistOutcome(members.Count, members.Count, fired, reasonsFired);
     }
@@ -318,7 +326,7 @@ public sealed class ShortlistBuilder : IComponent
 
     // What a member with no bar for tonight is evaluated over, which is nothing:
     // the same inputs a member the store holds no bar for at all has.
-    static readonly ReasonInputs NoBarTonight = new(null, null, null, null, [], [], null, null, null);
+    static readonly ReasonInputs NoBarTonight = new(null, null, null, null, [], [], [], null, null, null, null);
 
     // The plan as it stood tonight: the entry zone, the stop and the first
     // traded target. Bars can be replayed and this cannot, because by the time a
@@ -429,6 +437,7 @@ public sealed class ShortlistBuilder : IComponent
         }
 
         var edges = new List<EdgeAt>();
+        var bands = new List<Band>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -440,9 +449,12 @@ public sealed class ShortlistBuilder : IComponent
             while (await reader.ReadAsync(cancellation))
             {
                 var role = reader.GetString(2);
+                var low = Money.FromStorage(reader.GetString(0));
+                var high = Money.FromStorage(reader.GetString(1));
 
-                edges.Add(new EdgeAt(Money.FromStorage(reader.GetString(0)), role));
-                edges.Add(new EdgeAt(Money.FromStorage(reader.GetString(1)), role));
+                edges.Add(new EdgeAt(low, role));
+                edges.Add(new EdgeAt(high, role));
+                bands.Add(new Band(low, high));
             }
         }
 
@@ -486,6 +498,7 @@ public sealed class ShortlistBuilder : IComponent
                     decimal.Parse(tranche.GetProperty("highEdge").GetString()!, CultureInfo.InvariantCulture))));
         }
 
+        DateOnly? nextEvent = null;
         int? sessionsToEvent = null;
 
         if (sessionDate is { } dated)
@@ -498,18 +511,16 @@ public sealed class ShortlistBuilder : IComponent
 
             if (await next.ExecuteScalarAsync(cancellation) is string eventDate)
             {
-                await using var counted = connection.CreateCommand();
+                nextEvent = DateOnly.ParseExact(eventDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-                counted.CommandText = SessionsToNextEventFor;
-                counted.Parameters.AddWithValue("$ticker", ticker);
-                counted.Parameters.AddWithValue("$session_date", dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                counted.Parameters.AddWithValue("$event_date", eventDate);
-
-                // Sessions the store holds between tonight and the event. A date
-                // beyond the stored series counts the sessions there are, which
-                // is fewer than the horizon and is why the reason reads the
-                // count rather than the date.
-                sessionsToEvent = Convert.ToInt32(await counted.ExecuteScalarAsync(cancellation));
+                // The sessions the exchange trades between tonight and the event,
+                // off its own calendar. Never the stored bars after tonight: the
+                // store holds no bar for a session that has not happened, so that
+                // count was 0 for every future print and the reason fired on all
+                // of them. A date past the closure table's end has no count, and
+                // the reason says so rather than guessing.
+                // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+                sessionsToEvent = ExchangeClosures.SessionsUntil(dated, nextEvent.Value);
             }
         }
 
@@ -547,9 +558,11 @@ public sealed class ShortlistBuilder : IComponent
                 volume,
                 average,
                 edges,
+                bands,
                 zones,
                 trendState,
                 previousTrendState,
+                nextEvent,
                 sessionsToEvent),
             sessionDate,
             plan);

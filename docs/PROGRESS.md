@@ -10675,3 +10675,156 @@ Signed:     phase 7 is signed off at c9b8c7f. Its three checkpoints are built an
             gates are green on the tree being signed, every merge's jobs concluded success on the
             runners the workflow named at that merge, nothing is owed inside the phase, and 8.0 is
             unblocked.
+
+### 5.4 - correction: two reasons that never read what section 11 says   2026-09-15
+Corrects:   the 5.4 entry above records the six reasons of section 11 evaluated for every member
+            every night. Two of them were not the reasons the section states. Earnings soon counted
+            the stored bars after the night up to the event date, and a live store holds no bar
+            for a session that has not happened, so every future print counted 0 sessions away and
+            fired. Breakout on volume asked whether the close was above a band the level builder
+            stores as resistance, and that role is set against tonight's close, so every such band
+            sits at or above the close and the reason could not fire. Both were built at 5.4
+            (358c261) and both have run every night since.
+Found:      by the pass planning 8.0, reading the live store immutable for the fire shares the
+            handover asked about. Over the four whole-index nights, listing rows per session:
+            2026-09-09 501 rows, 399 fired earnings soon, all at a count of 0, 114 listed on it
+            alone; 2026-09-10 507, 477, 168; 2026-09-11 504, 474, 175; 2026-09-14 504, 476, 135.
+            Against the calendar table as it now stands, 30, 31, 28 and 28 names had a print
+            within twenty sessions of those nights; the table's rows were observed again on
+            2026-09-14, so what each earlier night's calendar held is not recoverable and those
+            four figures read the calendar as it stands. The night of 2026-09-15 ran clean at
+            23:30:07Z while this correction was being built, ending 23:43:20Z, and wrote a fifth:
+            504 rows, 478 fired earnings soon, 499 fired something, against 33 names with a print
+            within twenty sessions. Breakout on volume fired on 0 of the 2,522 rows over all seven
+            sessions the store holds, and every row states 0 resistance bands below the close.
+            Recounted, earnings soon from the calendar and the other five as stored, 372, 342, 333,
+            366 and 344 names fired a reason on those five nights, where the stored counts are 475,
+            499, 496, 495 and 499. The operator ruled on 2026-09-15 that this
+            is a correction at 5.4 landed before 8.0's planning resumes, and that breakout on
+            volume reads resistance at the previous session's close, folded into the same change.
+            The work is phase 8's and what it corrects is phase 5's: the pass planning 8.0 found
+            both defects and made this change, and it is labelled for the checkpoint that built
+            them rather than for the pass that repaired them, which is what a correction entry is.
+            8.0's own planning entry is not written yet and lands after this.
+Repaired:   the sessions to a dated event are counted on the exchange calendar, the count the
+            universe screen has made since 5.8, moved into `ExchangeClosures.SessionsUntil` so the
+            screen and the shortlist builder read one method. The earnings soon values carry the
+            event date, the count, not on file, or beyond the exchange calendar for a date past
+            2027-12-31, which is refused, not fired, and named with the table's end on the
+            listings stage's run log. Breakout on volume reads tonight's bands and fires where a
+            band's low edge was at or above the previous session's close and tonight's close is
+            above its high edge, on volume above the fifty-day average. Two decisions state both
+            (see: Sessions to a dated event are counted on the exchange calendar and never on stored bars)
+            (see: Breakout on volume reads resistance at the previous session's close). Section
+            11's two rows and its flag, section 17's earnings horizon row, SCHEMA's two listing
+            notes and two RUNBOOK rows say so, with their prior text in CHANGELOG.
+Stored:     kept as written, by the operator's ruling. 2,522 listing rows over 7 sessions before
+            and after, 2,306 of them with earnings soon fired as the defect wrote it. Re-running
+            was ruled out by trace: the shortlist builder dates each row by the name's newest
+            stored bar and reads the newest band set, so a `--session` replay of 2026-09-09 would
+            rewrite 2026-09-14's rows and not 2026-09-09's, and the corporate action refetch on
+            that path deletes a due name's series and refetches only to the replayed session.
+            forward_return is unchanged at 7,566 rows, 3 horizons for each of the 2,522
+            name-nights, since no outcome reads a reason flag. The rows are told apart by shape: a
+            row written since carries `next dated event` among earnings soon's values and
+            `previous close` among breakout on volume's. The run page's record counts those two
+            reasons only off rows carrying their marker, which removes from earnings soon's
+            record, over the seven sessions, 2,306 fired, 127 won and 44 lost, and from breakout on
+            volume's nothing, since it never fired; the other four records are unchanged, being
+            crossed a level at 70 won and 18 lost, at entry zone at 36 and 35, trend state changed
+            at 7 and 2, and unusual volume at none resolved. The
+            tonight, run and universe routes for a session whose rows lack earnings soon's marker
+            draw one line saying earnings soon on those rows counted every future print as
+            tonight's and breakout on volume could not fire, by the operator's ruling, with
+            section 18's new row "Listings written before the 5.4 correction". Surfaces that keep
+            showing those rows otherwise unchanged: each past night's run page, whose night header
+            counts the names that fired as the rows hold them, each past night's tonight list, and
+            the universe screen's listing strip.
+Missed:     the suite recomputed five reasons and said six. The listings expectation read "each of
+            the six reasons is recomputed"; earnings soon was asserted only over a count handed to
+            the pure function, and breakout on volume was recomputed from the stored role and
+            agreed with a builder that could not fire, a tautology. Section 11's placement names
+            `fixture-expectations` with that sentence, and section 17's "Earnings horizon" claim
+            passed under `fixture-expectations` on a note about the event book's second book that
+            never reached the shortlist's count. The fixture's shape did not hide it: its two
+            names with a dated print, AAPL on 2026-10-29 and NFLX on 2026-10-20, fired earnings
+            soon at a count of 0 in every replay, and nothing read it. The universe screen got the
+            same count right at 5.8 with its reason written beside it, and no sweep looked for the
+            shape in the builder. The 5.7 entry above read the first night's 477 of 503 as the
+            flood section 11's flag predicted, the flag said the same until this change, and the
+            phase 7 sign-off's handover carried the fire share as "about 95 percent" as an
+            observation; neither sign-off entry states it. Recorded, not reopened: the defect is
+            5.4's and it broke no check.
+Guarded:    through the shipped builder over the replayed store, whose bars end on the fixture's
+            night of 2026-09-04 as a live store's end on tonight, with expected dates walked by
+            hand in the test over weekdays less the closures it names: a print on the night fires
+            at 0; the twentieth session, 2026-10-05, fires; the twenty-first does not; across the
+            year-end closures from 2026-12-04 the twentieth session is 2027-01-05, thirty-two days
+            out, and fires at 20; forty sessions out does not fire; 2028-01-10 is refused and named
+            on the run log; no date says not on file. Breakout on volume over one band, 100 to 105,
+            written with the role the level builder would store: last night 99, tonight 106 on
+            volume fires; the same on light volume, last night 101, and a close of 104 do not. The
+            replay recomputes earnings soon from the calendar and breakout from the band edges and
+            last night's close, never from a stored role. The run page's record counts the two
+            reasons only off marked rows over constructed listings, and the three routes draw the
+            line for a session in the old shape and none for the corrected night, under
+            `read-surface`, whose declared reach widens to section 18's new row.
+Expected:   derived. The listings expectation states per name from the fixture's night, walked by
+            hand: AAPL 2026-10-29 at 38 sessions and NFLX 2026-10-20 at 31, neither fired, KEYS and
+            MSFT not on file. The plan stated 37 and 30, counted from 2026-09-08, which is the
+            night the queue's replay lists and not the night the listings replay does; corrected
+            here as unpredicted. Downstream, the fixture's queue night of 2026-09-08 lists AAPL,
+            KEYS and MSFT with one reason each and NFLX with none, where it listed all four with
+            AAPL at two, so the overnight queue expectation queues three names over four model
+            calls, its limit test moves its boundaries one name earlier, and the run page's fired
+            count over the replayed store is 6 where it was 8.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being the
+            count's basis, the refusal past the table, the horizon's inclusive edge, the record's
+            marker filter, breakout's side read at last night's close, and the line on the three
+            routes. Predicted before any run, each in a detached worktree under the session
+            scratchpad at this entry's commit, reverted, over an unmutated baseline:
+            M1 the bar count put back: red on the listings replay, builder cases for the twentieth,
+            twenty-first, year-end, forty-session and beyond-the-table events, the overnight queue
+            tests that read which names fired and the run page's fired count; green on the night's
+            own print and on not on file.
+            M2 the refusal past the closure table dropped from `SessionsUntil`: red on the
+            beyond-the-table case and the universe screen's count test, each by the table's own
+            refusal to place a weekday past its end.
+            M3 the horizon's edge made exclusive: red on the twentieth-session and year-end cases
+            and on the pure horizon test.
+            M4 the record's marker filter dropped: red on the record case alone.
+            M5 breakout's side read from the stored role against tonight's close: red on the case
+            that fires; green on the other three and on the replay, where no fixture name fires it
+            under either rule.
+            M6 the routes' line dropped: red on the route case alone.
+            Properties added and not mutated: the run log line naming a name past the table apart
+            from the refusal itself, and the universe screen's delegation, which its existing count
+            test covers.
+            Results: every prediction held. Seven runs of the whole suite, never a filter, at
+            5871020, each mutation reverted with the tree read clean between them and the worktree
+            removed after. The baseline is 924 of 925 with one red, and that red is this entry:
+            `two-platform` reads every checkpoint entry written since the 7.2 ruling for the words
+            `tools/ci.ps1` green, and this one carried a placeholder until the run below filled it,
+            so each mutation's reds are the ones above that. M1 turned 13 more red: the replay's
+            six-reason recompute, the five builder cases the count reaches, the four overnight
+            queue tests that read which names fired, the queue's limit test and the run page's
+            fired count, with the night's own print and not on file green. M2 turned 2 more red,
+            the beyond-the-table case and the universe screen's count test. M3 turned 3 more red,
+            the twentieth-session case, the year-end case and the pure horizon test. M4, M5 and M6
+            turned 1 more red each, the record case, the breakout case that fires and the route
+            case, and M5 left the other three breakout cases and the replay green as predicted.
+Tests:      925, from 912: 7 earnings soon builder cases, 4 breakout builder cases, the record
+            case and the route case. `tools/ci.ps1` green end to end, all six steps, 0 warnings,
+            0 errors, migrations 0 to 23 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 351 claims, 335 PASS,
+            0 FAIL, 16 out of scope, 0 unexamined, the claim added being section 18's row for
+            listings written before this correction, with the out-of-scope split unchanged at 2 at
+            8.1, 3 at 8.3, 1 at 8.4, 9 at 8.5 and 1 at 8.6. Both gates ran with this entry in
+            place. The operator's store under `data/` was not touched by either gate.
+Carried:    nothing entered. The `--session` replay older than the stored bars is traced above and
+            its ruling is owed by 8.0's planning pass, which the phase 7 sign-off carried it to.
+Dated:      the heading's date is the day the entry was written and first committed, 2026-09-15 in
+            UTC. The gates below ran after midnight on 2026-09-16, and the heading stays as it was
+            written: `record-append-only` reads every heading ever committed and a heading that
+            changes is one the record has lost, which is what it refused when this one was moved a
+            day forward.

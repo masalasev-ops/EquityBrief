@@ -119,6 +119,7 @@ public partial class ReadSurface
             CheckReach.Key("15.7 Tonight", "The list, the reasons"),
             CheckReach.Key("15.7 Tonight", "The list, beside the name a line saying so where its prices may not reflect a dividend or split"),
             CheckReach.Key("15.9 Name", "Prices may be out of date, one line saying its prices may not reflect a recent dividend or split"),
+            CheckReach.Key(Scope.FailureTable, "Listings written before the 5.4 correction"),
             CheckReach.Key("15.9 Name", "Prices may be out of date, when the refetch was last tried and why it failed"),
             CheckReach.Key("15.9 Name", "Prices may be out of date, above everything the page draws from those prices"),
             CheckReach.Key("15.7 Tonight", "Selected name, the plan column"),
@@ -3780,15 +3781,15 @@ public partial class ReadSurface
         // the table; a day to itself is none; and the week holding Thanksgiving
         // is four sessions rather than five, which is what makes this the
         // exchange's calendar rather than a subtraction.
-        Assert.Equal(0, UniverseScreen.SessionsUntil(new DateOnly(2026, 9, 11), new DateOnly(2026, 9, 11)));
-        Assert.Equal(1, UniverseScreen.SessionsUntil(new DateOnly(2026, 9, 11), new DateOnly(2026, 9, 14)));
-        Assert.Equal(4, UniverseScreen.SessionsUntil(new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 27)));
+        Assert.Equal(0, ExchangeClosures.SessionsUntil(new DateOnly(2026, 9, 11), new DateOnly(2026, 9, 11)));
+        Assert.Equal(1, ExchangeClosures.SessionsUntil(new DateOnly(2026, 9, 11), new DateOnly(2026, 9, 14)));
+        Assert.Equal(4, ExchangeClosures.SessionsUntil(new DateOnly(2026, 11, 20), new DateOnly(2026, 11, 27)));
 
         // Two absences, stated as two. A name with no dated event has nothing to
         // count to; a name whose event is past the end of the closure table has
         // an event nobody can count the sessions to, and the table refuses to
         // guess the weekdays past its end rather than answering with a number.
-        Assert.Null(UniverseScreen.SessionsUntil(new DateOnly(2026, 9, 11), ExchangeClosures.CoveredThrough.AddDays(1)));
+        Assert.Null(ExchangeClosures.SessionsUntil(new DateOnly(2026, 9, 11), ExchangeClosures.CoveredThrough.AddDays(1)));
 
         var neither = new UniverseCell("ZZZZ", "Tech", 10m, "uptrend", null, null, null, null, 0);
         var beyond = neither with

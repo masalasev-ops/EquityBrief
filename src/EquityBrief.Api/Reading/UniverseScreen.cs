@@ -115,33 +115,6 @@ public static class UniverseScreen
     // rows the filters left, which is what the nav states.
     public sealed record Shown(IReadOnlyList<UniverseCell> Page, int At, int Rows);
 
-    // The sessions between a night and a name's next dated event, which is what
-    // section 15.8's column states.
-    //
-    // Counted off the exchange's own calendar rather than off stored bars,
-    // because the event is ahead of the night and no bar exists for a session
-    // that has not happened. It is the sessions strictly after the night up to
-    // and including the event's own day where that day is a session, so an event
-    // on tomorrow's session reads as 1 and one on tonight's reads as 0.
-    //
-    // An event past the end of the closure table gives no count rather than a
-    // wrong one. The table covers three years and a night says so on its closing
-    // line within a quarter of the end, and a column that guessed weekdays past
-    // it would be the guess that row exists to refuse.
-    // owes: The exchange closure table extended before the nights reach its end
-    public static int? SessionsUntil(DateOnly night, DateOnly eventDate)
-    {
-        if (eventDate < night || eventDate > ExchangeClosures.CoveredThrough || night < ExchangeClosures.CoveredFrom)
-        {
-            return null;
-        }
-
-        return eventDate == night
-            ? 0
-            : ExchangeClosures.SessionsBetween(night, eventDate).Count
-                + (ExchangeClosures.IsSession(eventDate) ? 1 : 0);
-    }
-
     static UniverseCell Cell(
         UniverseRow row,
         IReadOnlyDictionary<string, IReadOnlyList<ListingRow>>? history,
@@ -179,7 +152,9 @@ public static class UniverseScreen
             Nearest(toSupport, toResistance),
             listed.Length == 0 ? null : listed.Max(listing => listing.SessionDate),
             [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)],
-            nextEvent is { } dated && night is { } on ? SessionsUntil(on, dated) : null,
+            // The sessions to it, section 15.8's column, counted where the
+            // shortlist builder counts the same thing.
+            nextEvent is { } dated && night is { } on ? ExchangeClosures.SessionsUntil(on, dated) : null,
             nextEvent,
             nextEvent is { } beyond && beyond > ExchangeClosures.CoveredThrough);
     }
