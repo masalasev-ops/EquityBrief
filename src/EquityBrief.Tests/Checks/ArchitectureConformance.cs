@@ -26,6 +26,16 @@ public class ArchitectureConformance
             CheckReach.Key(Scope.FailureTable, "The harness cannot parse this document"),
             "19.3 What it produces",
 
+            // 19.2 from 8.3, whole. Its rows say what each claim source is
+            // checked for and how each fails, which is a description of this
+            // check's own reconciliation: the catalogue and the matrix in both
+            // directions, a figure nothing placed, an expectation reporting FAIL
+            // or UNEXAMINED. It was due at 8.3 while its last row, the candidate
+            // register, named a table no migration had created, because a table
+            // whose rows cannot all be put to something is a table claimed before
+            // most of it exists.
+            "19.2 What the harness checks",
+
             // The system diagram, whole. Its placement says its boxes are the
             // components and stores sections 7 and 16 claim name for name, and
             // this check is what holds that reason to being true.
@@ -926,13 +936,49 @@ public class ArchitectureConformance
         // number was lowered anyway. What carries the property is the split by
         // origin above, which cannot be satisfied by an empty set, and the one
         // thing a number here can catch is a derivation that has stopped
-        // resolving anything at all, which is what one catches.
+        // resolving anything at all, which is what one caught.
+        //
+        // It reached zero at 8.3, which is the case that comment predicted. The
+        // last claim the plan half answered was section 16's candidate register
+        // row, and the migration that creates the table is what let it be put to
+        // something. So a guard of one is now a guard that fails for the opposite
+        // of its reason: not because the derivation stopped, but because the
+        // build reached the point the comment said it would.
+        //
+        // The guard is kept and moved off the corpus. What it was protecting is
+        // that `Scope.Resolve` still falls through to the plan and that the plan
+        // reader still answers, and both are put to constructed input below,
+        // where the population cannot empty as the build advances. The counts
+        // stay as context in the message, because a check states its own scope in
+        // numbers whether or not a number is being asserted.
+        Assert.Equal(
+            outOfScope.Length,
+            plan + screens + written + excepted);
+
+        // The derivation, over a plan written here. Two checkpoints, and the
+        // earlier one answers, which is the rule: a subject named twice is first
+        // owed where it first appears.
+        var constructed = PlanCheckpoints.In(
+            "### 9.1 A thing that is built\nIt names the widget register and builds it.\n\n" +
+            "### 9.2 Another thing\nIt names the widget register again, and the sprocket table.\n\n",
+            floor: 2);
+
+        Assert.Equal("9.1", PlanCheckpoints.DueFor("widget register", constructed));
+        Assert.Equal("9.2", PlanCheckpoints.DueFor("sprocket table", constructed));
+        Assert.Null(PlanCheckpoints.DueFor("a subject this plan never names", constructed));
+
+        // And that Resolve still reaches it, over a subject no written map in
+        // Scope carries and the real plan does. Without this half the reader
+        // above could go on answering while nothing asked it.
+        var throughResolve = Scope.Resolve(Scope.StoresTable, "Candidate register");
+
+        Assert.Equal(DueOrigin.Plan, throughResolve.Origin);
+        Assert.Equal("8.3", throughResolve.Due);
+
         Assert.True(
-            plan >= 1,
-            $"{plan} out-of-scope claims take their due point from BUILD_PLAN, so the derivation has " +
-            $"stopped resolving anything at all. 59 did when a floor was first set here, over " +
-            $"{outOfScope.Length} claims out of scope, beside {screens} from section 15, {written} " +
-            $"written into Scope and {excepted} declared exceptions.");
+            Count(DueOrigin.Nothing) == 0,
+            $"{outOfScope.Length} claims are out of scope: {plan} from BUILD_PLAN, {screens} from " +
+            $"section 15, {written} written into Scope and {excepted} declared exceptions.");
     }
 
     [Fact]
