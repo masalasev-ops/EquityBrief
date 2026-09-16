@@ -12038,9 +12038,10 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             reported.
             M3 the change reader ignoring retirements: the changed-nothing test red on the retirement it
             is shown to find.
-            M4 the version scorer closing every window it scored once the night's scores are written:
-            the changed-nothing test red on the windows after the night, and the code version pin red,
-            because the scorer's file is pinned.
+            M4 the night's rule versions step closing every open window once the scorer has run: the
+            changed-nothing test red on the windows after the night, and `nightly-cost`'s recorded
+            nights test red, since it counts the windows open at its night. Made in the night's step
+            rather than in the scorer, so the tests that call the scorer alone are not what it reaches.
             M5 the live reason refusal dropped from the retirement: the live reason test red on the
             retirement's outcome, and the registration half green, since it is refused on its own path.
             M6 the threshold divided by the live family whatever divisor a verdict is handed: the
