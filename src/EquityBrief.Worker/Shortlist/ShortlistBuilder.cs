@@ -449,7 +449,14 @@ public sealed class ShortlistBuilder : IComponent
         {
             var session = DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+            // Set before the null check, so a session whose values are all null is still the newest.
             newest ??= session;
+
+            // A null value is a reading not available; left out, a candidate that reads it is skipped.
+            if (reader.IsDBNull(2))
+            {
+                continue;
+            }
 
             values[session == newest ? reader.GetString(1) : reader.GetString(1) + PreviousSuffix] = reader.GetDouble(2);
         }
