@@ -11670,7 +11670,37 @@ Mutated:    the rule, stated before the sweep: break each half of this checkpoin
             fifteenth version and green on the fifth of one rule, because that cap still holds.
             Not mutated, and named so the next sweep has them: the retention drop, the refusal of a
             rule the build does not carry, and the live version not being counted against the bound.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, and M1 went red in three more places than it aimed at,
+            which is the finding. Five runs of the whole suite, never a filter, at this entry's
+            commit in a detached worktree under the session scratchpad, each reverted with the tree
+            read clean between them. The baseline is 968 of 969 with one red, and that red is this
+            entry: `two-platform` reads every checkpoint entry written since the 7.2 ruling for the
+            words `tools/ci.ps1` green and this one carried a placeholder until the run below filled
+            it.
+            M1 turned the window test red as predicted, and also all three of `writer-ownership`'s
+            directions, because closing by removing the row is a delete on a table SCHEMA gives no
+            deleter. That is worth recording rather than tidying away: the property that a closed
+            window is kept is held twice over, once by the test that reads the row back and once by
+            the ownership table, and neither knew about the other. A corpus that only had the second
+            would still have caught this.
+            M2 turned the drift test red in both of its directions, as predicted, and nothing else,
+            because nothing else asks the question.
+            M3 turned the backfill test red on both flags, as predicted.
+            M4 turned the bound test red on the fifteenth version and left the fifth of one rule
+            green, as predicted, which is the two caps being separate things rather than one written
+            twice.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 969 of 969 tests
+            ran with none failed, migrations 0 to 26 with one added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 373 placements and verdicts reconciled
+            against a floor of 34, 36 of 36 roster checks carried and all 36 run. Every claim
+            `ARCHITECTURE.html` makes is now examined and none is deferred, which is what 8.0
+            predicted for this point and the reason three guards in
+            `architecture-conformance` had to move: each was written against a population that
+            empties here. Claims and PASS stand six above 8.0's prediction of 360 and 360, being the
+            five the decompositions at 8.4 and 8.5 added and one more this checkpoint added by
+            giving the version store its own roster row rather than folding its claims into an
+            existing check. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing. The bound stays proposed and its operating row is unchanged: a projection is not
             a measurement, and the row reads the scorer's own nights, which no checkpoint produces.
