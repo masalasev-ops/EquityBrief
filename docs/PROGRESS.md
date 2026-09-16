@@ -11014,3 +11014,72 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             `data/` was not touched by either.
 Carried:    nothing. The break-even each plan demanded is 8.2's, and the verdicts that read these
             counts are 8.5's.
+
+### 8.2 - the break-even score   2026-09-16
+Built:      the bar each setup's own plan set, stored beside the setup and measured from the close
+            the setup was entered at (see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with).
+            Migration 24 adds `forward_return.break_even`, which the setup horizon alone carries.
+            `ForwardReturnSeries.BreakEven` is the named crossing helper this checkpoint's own text
+            predicted, taking three prices and handing back the share of the plan's range that sat
+            below the entry, and `price-storage-form`'s stated set of crossing sites gains it.
+            `ForwardReturnSeries.Record` computes one reason's share and the mean of its bars,
+            beside the base rate whose arithmetic it now shares, and `RunScreen` counts and pairs
+            as it did (see: A screen reads and renders, and computes nothing). Nothing new is drawn.
+Rules:      risk over risk plus reward, as a percentage, where risk is the fall from the entry
+            close to the stop and reward is the rise from it to the first traded target, so the
+            denominator is the plan's whole range whichever side of it the entry landed on. It is
+            present exactly where the setup horizon's return is and absent exactly where that is,
+            being one rule rather than two, because both are measured from the entry close: a
+            setup nobody entered has none, one that entered and stopped on a single session has
+            none, and a row that has not matured has none. A reason's share and its mean bar are
+            over the setups that set a bar rather than over every resolved row, since a share
+            tested against a bar has to be the share of the rows that bar was averaged over, and
+            the record carries the two counts apart. Both are withheld below the minimum of 250 by
+            the read surface rather than by the page, so no surface can draw a rate by forgetting
+            to ask. A percentage rather than a fraction, which is the form of the two figures on
+            the same row and of the share it is tested against; the plan arithmetic the name page
+            draws states its own break-even as a fraction and is never stored, and the entry it is
+            measured from is the zone's midpoint rather than a close.
+Measured:   over the operator's store as read immutable on 2026-09-16, being 2,522 listings on
+            seven sessions, 93 setups have resolved under 8.1's entry rule and 88 of them set a
+            bar; the other 5 entered and stopped on one session and set none, being LH and URI on
+            2026-09-09, BAC and Q on 2026-09-11 and YUM on 2026-09-14. Over those 88 the bar runs
+            from 2.69 to 83.90 per cent with a mean of 47.00, and 42 of them won, which is 47.73
+            per cent. Nothing is shown and nothing can be: 88 against a minimum of 250. The two
+            figures sitting three quarters of a point apart is exactly the reading a minimum
+            exists to refuse, since at 88 setups that difference is noise.
+Expected:   derived, and the fixture cannot reach it for the reason 8.1 stated: its listings sit on
+            its last stored session, so no setup in it resolves and no row in it carries a bar. The
+            expectation gains a break-even block working six cases by hand from three prices each,
+            the first being section 13's own first tranche at an entry of 920, a stop of 855 and a
+            target of 1057, which the document states as 65 against 137 at about 32 per cent and
+            the code produces as 32.17821782178218. The others are the constructed plan entered at
+            100 and at 99, a distant target at 9.09 per cent, and the two ends of the rule, an
+            entry on the stop at nought and an entry on the target at one hundred. The four setup
+            cases 8.1 worked gain the bar each of them set. The refusal is stated over the one
+            shape of it a stored plan can take, an entry above the plan's own target; the other
+            half, an entry below the stop, the series cannot produce, because a close through the
+            stop resolves as a loss before the entry is read and the listing night's own close is
+            admitted only at or above the stop, and the file states that as the invariant it is
+            rather than asserting it over a shape the world does not hold.
+Tested:     937, from 933. Four added: the six break-even cases and the refusal read from the
+            expectation; the bar each of the four setup cases set, asserted present exactly where
+            the return is; the withholding at the boundary, being 249 resolved with no share and no
+            bar and 250 with both, and a mixed population where 256 resolved rows set 250 bars; and
+            the run page drawing neither figure for a reason that has earned a verdict. The last is
+            the one a green report is blind to, since the claim map reports those two parts out of
+            scope whether or not a page draws them.
+Mutated:    the rule, stated before the sweep: break each property this checkpoint adds, being the
+            arithmetic itself, the price it is measured from, the gate that withholds it, and the
+            population the share is over. Predicted:
+            M1 the bar measured from the listing close rather than the entry close: the expectation
+            cases red, since three of the six enter below the listing.
+            M2 risk and reward swapped, so the bar is reward over the range: every expectation case
+            red but the two ends, which are symmetric.
+            M3 the withholding gate loosened by one, so a verdict shows at 249: the boundary test red.
+            M4 the share counted over every resolved row rather than over the rows that set a bar:
+            the mixed-population case red.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing. The candidate register is 8.3's, the shadow column 8.4's, and the verdicts
+            that read this bar are 8.5's, which is where the share and the break-even are drawn.
