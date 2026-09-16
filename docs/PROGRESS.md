@@ -12040,8 +12040,10 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             is shown to find.
             M4 the night's rule versions step closing every open window once the scorer has run: the
             changed-nothing test red on the windows after the night, and `nightly-cost`'s recorded
-            nights test red, since it counts the windows open at its night. Made in the night's step
-            rather than in the scorer, so the tests that call the scorer alone are not what it reaches.
+            nights test red, since it counts the windows open at its night; and `writer-ownership` red,
+            since the update runs from a file SCHEMA does not declare as the table's updater. Made in
+            the night's step rather than in the scorer, so the tests that call the scorer alone are not
+            what it reaches.
             M5 the live reason refusal dropped from the retirement: the live reason test red on the
             retirement's outcome, and the registration half green, since it is refused on its own path.
             M6 the threshold divided by the live family whatever divisor a verdict is handed: the
