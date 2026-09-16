@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - BUILD_PLAN.md - phase 8's opening carries the ruling that moves the reference material
+
+Corrects: the pass moving `CLAUDE.md`'s reference material had no checkpoint that owed it, and a commit subject may not name a number the plan does not carry.
+Was:
+> the phase opened with the paragraph on the pass that carries repairs, and nothing in the plan said where the reference material lives or why.
+Now:
+> a paragraph above it states the ruling taken at 8.2: what moves to `.claude/rules/`, that nothing is reworded, that the populations widen first, and why it is a ruling on an existing checkpoint rather than a checkpoint of its own.
+Why: the loop's numbers are fixed by the claims still out of scope at 8.3 to 8.6 and by 8.0's landed done condition, and a checkpoint appended after the phase report would be the plan's last, which no entry may record as built while work in the phase remains. It was written as a checkpoint numbered 8.8 first and the harness refused it, which is the reason this reads as a ruling. It sits in the phase's opening rather than inside a checkpoint's text, so it supplies no due point.
+
 ### 2026-09-16 - CLAUDE.md - the build state stated directly, which the paragraph under it forbids
 
 Corrects: the file stated a build state in the one place the paragraph beneath it says a build state must not live, and the statement was false at the checkpoint the record shows. Found by reading the section against its own next paragraph.

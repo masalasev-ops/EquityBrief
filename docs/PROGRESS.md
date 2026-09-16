@@ -11117,3 +11117,94 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             `data/` was not touched by either.
 Carried:    nothing. The candidate register is 8.3's, the shadow column 8.4's, and the verdicts
             that read this bar are 8.5's, which is where the share and the break-even are drawn.
+
+### 8.2 ruling - the rules directory   2026-09-16
+Built:      `CLAUDE.md`'s reference material moved into four path-scoped files under
+            `.claude/rules/`, each opening with a `paths` front matter block so the agent loads
+            it when a session reads a file it matches and not before. `checks.md` carries the
+            roster and the eight paragraphs under it for a session in `tools/` or the test
+            project; `writing-tests.md` the verification rules; `corpus-edits.md` eight editing
+            conventions for a session in `docs/`; `scripts.md` five script paragraphs. Every one
+            is the file's own text word for word. Five conventions stayed, being the ones that
+            bind a session working anywhere: the prose convention, on which `banned-prose`
+            matches its single exemption in that file, the commit subject, which checkpoint a
+            commit belongs to, the planning pass, and anything issued in conversation landing in
+            the repo when it is issued. The command table stayed with it, and so did the target
+            framework paragraph, the parity sentence and the secrets paragraph.
+Size:       `CLAUDE.md` was 54,484 bytes over 312 lines and is 24,521 over 219, so 29,963 bytes
+            and 93 lines left the file every session reads before any work starts. The four
+            rules files hold 34,127 bytes between them, being 19,010, 5,840, 5,469 and 3,808,
+            which is the moved text plus each file's front matter and the paragraph saying where
+            it came from and how to read a cross-reference written in its old home.
+Stale:      three statements removed as clean edits, prior text in `CHANGELOG.md`. A sentence
+            stating a build state, which the paragraph beneath it forbids as a second place for
+            a fact `PROGRESS.md` owns and which the record had already falsified; the line
+            conditioning the commands table on 0.4, which landed in phase 0; and the clauses in
+            done conditions 2 and 5 describing what to do before 0.4 built the scripts and the
+            workflow. The rest of both conditions stands, condition 5's decision citation and
+            its sentence on the hosted Windows leg included, and the done conditions still
+            number nine.
+Widened:    the populations first, because the moved text carries two decision citations and one
+            obligation citation that four checks read only from a fixed list, and a citation
+            leaving that list would stop being read with nothing going red. `Corpus.Rules` reads
+            the directory rather than listing it, so a fifth rules file cannot be added outside
+            every check at once, and refuses below four, because a directory read is the one
+            population shape that returns empty and reports green. `Corpus.Documents` and
+            `Corpus.SpecsAndRules` carry the rules files, which puts them in front of
+            `decision-resolves`, `no-superseded-citation`, `obligation-reconciles`,
+            `pinned-constants` and `changelog-reconciles`. `banned-prose` already scanned every
+            tracked text file and now asserts a rules file is in what it scanned, beside the
+            assertion that `CLAUDE.md` is. `coverage-reported` locates the roster in the rules
+            file, which is the only place in the repository that locates it, and the refusal
+            message and the assertion matching it name that file together.
+Measured:   the populations, before and after, over the five specs, the three records and every
+            `.cs` and `.csproj` under `src/` less `bin` and `obj`, which is what the citation
+            readers walk. Files walked: 241 before, 245 after. Citations in the parenthesised
+            form a document uses: 446 decision and 114 obligation, the same before and after,
+            the three sitting in the moved text having changed file rather than left. `CLAUDE.md`
+            carried 16 decision citations and 1 obligation citation and now carries 14 and none,
+            the obligation one being in the moved conventions. Roster rows: 35, read from
+            `CLAUDE.md` before and from `.claude/rules/checks.md` after. Tracked files: 406
+            before, 410 after.
+Gitignore:  `/.claude/` excluded the directory outright, so the carve-out is the star form,
+            `/.claude/*` with `!/.claude/rules/` under it. A negation under the plain directory
+            form does not work and was tested rather than argued: git never descends into a
+            directory it has excluded, so the rules would have been untracked, absent from both
+            hosted jobs, and read as a corpus that simply does not contain those words. The
+            operator's local settings stay excluded.
+Corrects:   the 0.0 entry above says `.claude/` is gitignored and untracked, that it is
+            per-machine harness state and not a corpus document, and that the layout block does
+            not name it. All three are false from this checkpoint. The entry is not edited, for
+            the reason `PROGRESS.md` is append only, and this names what it corrects.
+Tested:     938, from 937. One added: the constructed proof that a citation inside a rules file
+            is read by `decision-resolves` and that the population as it stood before this pass
+            reaches none of the four, asserted as the counts it is, eight files before and twelve
+            after. The proof is over a constructed file rather than the real ones, so it asserts
+            the reader and the population rather than today's contents.
+Mutated:    the rule, stated before the sweep: the property worth breaking is the widened
+            population rather than the move, because the move is visible in a diff and the
+            widening is the thing that fails silently. So the mutation is a check that no longer
+            reaches a rules file. Predicted:
+            M1 `Corpus.Documents` returns the specs and the records alone, as it did before this
+            pass: the constructed proof red on the count, and nothing else, which is the finding
+            rather than the failure, since a citation that no reader reaches breaks no other test.
+            M2 `Corpus.Rules` returns what it found instead of refusing below four: green, and
+            that is the prediction. It is the silent mode written down, and M3 is what makes it
+            visible.
+            M3 `Corpus.Rules` returns an empty set with the refusal removed: the constructed
+            proof red, which is the floor doing the work the refusal exists for.
+            M4 the roster left in `CLAUDE.md` and `coverage-reported` pointed back at it: green
+            on this tree, because the table is in both files while the move is in flight, and red
+            once it is not. Recorded as the reason the roster must live in one file rather than
+            two.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Numbered:   a ruling on 8.2 rather than a checkpoint of its own. It was written as 8.8 first, and
+            the harness refused it: the plan's last checkpoint may not be recorded as built while
+            work in the phase remains, and a checkpoint appended after the phase report is the
+            plan's last. Inserting it between 8.2 and 8.3 was not available either, since 8.0's
+            landed done condition fixes the register's start at 8.3 and the claims still out of
+            scope name 8.3 to 8.6. So it takes the shape the 7.2 ruling took, an entry under a
+            checkpoint the plan already carries, and the plan carries the ruling in phase 8's
+            opening rather than as a heading. The operator ruled between the three on 2026-09-16.
+Carried:    nothing. The loop is unmoved and 8.3 builds the candidate register next.
