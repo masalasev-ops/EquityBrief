@@ -577,20 +577,50 @@ public partial class ArchitectureConformance
         Assert.Contains("1.1", built);
         Assert.Contains("1.2", built);
 
-        // The other direction, against a checkpoint far enough out that this
-        // does not have to be edited as the build advances. The first version
-        // of it named 1.3, which was true when it was written and false an hour
-        // later when 1.3's entry landed: a negative direction keyed on the
-        // checkpoint in hand is one that has to be rewritten to stay true, and
-        // one rewritten that often stops being read. The second named 6.8, which
-        // was far enough out until 6.8's own entry landed, so it is read from the
-        // plan now: its last checkpoint, which no entry records while any work in
-        // it is still to build. The reader refuses a plan of fewer than thirty
-        // checkpoints, so this is not the last of a parse that read nothing.
-        var last = PlanCheckpoints.All()[^1].Id;
+        // The other direction, against a checkpoint far enough out that this does
+        // not have to be edited as the build advances. It named 1.3 first, which
+        // was true when it was written and false an hour later when 1.3's entry
+        // landed; then 6.8, until 6.8's own entry landed; then the plan's last
+        // checkpoint, on the reasoning that no entry records it while any work in
+        // the phase is still to build.
+        //
+        // That third anchor failed at 8.7, and it failed for the reason the first
+        // two did. The plan's last checkpoint is exactly the one a phase's final
+        // checkpoint is, so the assertion forbade the last checkpoint of any phase
+        // from ever being recorded as built: the same guard that refused a ruling
+        // numbered 8.8 at the 8.2 ruling, arriving from the other end. Each
+        // anchor was chosen to be far enough out and each was overtaken.
+        //
+        // So the negative is derived rather than named. Every plan checkpoint the
+        // record does not show as landed is absent from what it does, which is a
+        // direction over real checkpoints and cannot be overtaken because it
+        // moves with the build. Where the build has reached the end of the plan
+        // that set is empty, so the assertion that cannot empty is the
+        // constructed one below it.
+        var unbuilt = PlanCheckpoints.All()
+            .Select(point => point.Id)
+            .Where(id => !DuePoints.HasLanded(id, progress))
+            .ToArray();
 
-        Assert.DoesNotContain(last, built);
+        var wrongly = unbuilt.Where(built.Contains).ToArray();
+
+        Assert.True(
+            wrongly.Length == 0,
+            $"{wrongly.Length} of {unbuilt.Length} unbuilt plan checkpoint(s) are read as built: " +
+            string.Join(", ", wrongly));
+
+        // A checkpoint the plan does not have at all, which no build can overtake.
         Assert.DoesNotContain("9.9", built);
+
+        // And the reader told apart over a record written here, so the direction
+        // above holds whether or not the plan still has an unbuilt checkpoint in
+        // it. Without this the day the plan runs out is the day the negative
+        // stops being asserted over anything.
+        var constructed = DuePoints.Built(
+            "### 9.1 - a thing that is built   2026-10-01\nBuilt:      a thing.\n\n");
+
+        Assert.Contains("9.1", constructed);
+        Assert.DoesNotContain("9.2", constructed);
     }
 
     [Fact]

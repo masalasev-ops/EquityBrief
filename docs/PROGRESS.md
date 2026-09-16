@@ -11741,6 +11741,20 @@ Tested:     973, from 969. Four added: every guardrail mapped to a test that exi
             shown to have changed nothing with the same reader shown to find a retirement and a
             closed window when there is one, and an open window shown not to be a change; and the
             pair checked against the prediction.
+Corrects:   a guard that forbade the last checkpoint of any phase from ever being recorded as built,
+            found by the sweep below rather than by the run that preceded it.
+            `architecture-conformance` asserts that what the record reads as built is not everything,
+            and it anchored that negative on a checkpoint it expected never to be built. The anchor
+            was 1.3 first, which was true when written and false an hour later; then 6.8, until 6.8
+            landed; then the plan's last checkpoint, on the reasoning that no entry records it while
+            any work in the phase is still to build. That third anchor is exactly what a phase's
+            final checkpoint is, so it refused this entry: the same guard that refused a ruling
+            numbered 8.8 at the 8.2 ruling, arriving from the other end. Each anchor was chosen to
+            be far enough out and each was overtaken. The negative is now derived rather than named,
+            being every plan checkpoint the record does not show as landed asserted absent from what
+            it does, which moves with the build and cannot be overtaken, beside a checkpoint the plan
+            does not have and a constructed record that tells the reader apart where the derived set
+            is empty, as it is now.
 Mutated:    the rule, stated before the sweep: break each half of this checkpoint's done condition,
             being the mapping's two directions, the reader that says what a change is, and the pair.
             Predicted:
@@ -11755,8 +11769,39 @@ Mutated:    the rule, stated before the sweep: break each half of this checkpoin
             retirement it is shown to find.
             Not mutated, and named so the next sweep has them: the pair's floor, the reading of
             13.2's third row, and the assembly lookup that makes a renamed test fail the mapping.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, and the baseline is what found the guard above. Six runs
+            of the whole suite, never a filter, at this entry's commit in a detached worktree under
+            the session scratchpad, each reverted with the tree read clean between them. The
+            baseline was 971 of 973 with two red rather than the one every other checkpoint's has
+            been: `two-platform` on this entry's `tools/ci.ps1` green placeholder, and
+            `TheRecordsOwnEntriesAreReadAsBuiltOrAsPlanning` on the anchor the Corrects field names.
+            The second is the finding, and it is worth saying where it came from: the run before the
+            entry was written was green at 973 of 973, because the entry is what makes 8.7 landed.
+            Condition 8 exists for defects of exactly that shape, and this is the first time in the
+            phase it has caught one the run order alone would have hidden.
+            M1 turned the mapping test red on the missing half and nothing else.
+            M2 turned the mapping test red on the distinct count and nothing else, both names still
+            resolving, which is the pair of directions being separate.
+            M3 turned the changed-nothing test red on the open window.
+            M4 turned the changed-nothing test red on the retirement it is shown to find.
+            The four were run against the anchor as it stood, so each carried that second red with
+            it; the counts above are of the mutation's own test.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 973 of 973 tests
+            ran with none failed, migrations 0 to 26 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 373 placements and verdicts reconciled
+            against a floor of 34, 36 of 36 roster checks carried and all 36 run. The pair 8.0
+            predicted was 361 and 361 with nothing out of scope: the third is exact and the first
+            two stand five above it, six of the section 15 rows the prediction counted as one claim
+            each being read by the harness as the things they state, and the version store's claims
+            having a roster row of their own rather than being folded into an existing check.
+            Nothing was added to `ARCHITECTURE.html`'s rows by those; what moved is the number of
+            verdicts over them. The claims phase 8 added are the ones each checkpoint's entry names:
+            the never-entered part at 8.1, the registrar's two rows at 8.3, the shadow region's
+            three at 8.4, the significance row and the at-or-above row's four at 8.5, and the
+            scorer's two rows, the two store rows, the nightly step and the bound at 8.6. Both gates
+            ran with this entry in place, and the operator's store under `data/` was not touched by
+            either.
 Carried:    the phase's own sign-off, which is owed on phase 8 as a whole and which this session may
             not do: a session that has committed code to this repository must not sign that code off.
             The three operating rows the loop opened stay open and are correct to: the condition
