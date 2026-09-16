@@ -10995,7 +10995,22 @@ Mutated:    the rule, stated before the sweep: break each property this checkpoi
             M2 the cap counted from the entry rather than from the listing: the late-entry case red.
             M3 the entry tested before the stop: the fill-and-stop case red.
             M4 the never-entered count dropped from the row: the column test red.
-            Results: FILLED FROM THE SWEEP
-Verified:   FILLED FROM THE RUN
+            Results: every prediction held. Five runs of the whole suite, never a filter, at this
+            entry's commit in a detached worktree under the session scratchpad, each reverted with
+            the tree read clean between them. The baseline is 932 of 933 with one red, and that
+            red is this entry: `two-platform` reads every checkpoint entry written since the 7.2
+            ruling for the words `tools/ci.ps1` green and this one carried a placeholder until the
+            run below filled it. M1, M2 and M3 each turned the expectation's cases red on top of
+            that, one case each, and M4 turned the column test red.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 933 of 933 tests
+            ran with none failed, migrations 0 to 23 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 352 claims, 337
+            PASS, 0 FAIL, 15 out of scope, 0 unexamined, 344 placements and verdicts reconciled
+            against a floor of 34, 34 of 35 roster checks carried and all 34 run. The pair is the
+            one 8.0 predicted for this checkpoint. The two claims that moved are section 17's
+            setup resolution row, which this checkpoint makes assertable, and the run page's
+            never-entered count, which it draws; the 15 remaining are 4 at 8.3, 1 at 8.4, 9 at 8.5
+            and 1 at 8.6. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing. The break-even each plan demanded is 8.2's, and the verdicts that read these
             counts are 8.5's.
