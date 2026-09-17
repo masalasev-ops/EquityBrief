@@ -79,7 +79,7 @@ The `DELETE` lives in each component's own file rather than in a shared helper, 
 
 **`version_score` has a deleter and it is the retention, not a correction.** The scorer drops the scores that fall out of the one-year window on the night they fall out of it, as every computed table's writer does (see: Every computed table's writer is its own deleter). A score inside the window is replaced rather than corrected: a re-run of a night writes that night's set again, inside the transaction that writes it, which is the update this table declares. It is the same shape the two as-of-keyed computed tables have, where a second run for one night after a refetch moved the prices would otherwise leave both sets standing.
 
-**`candidate_register` has no updater and no deleter, and that is load bearing.** Pre-registration only works if a registered candidate cannot be changed after results arrive. A retirement is a new dated row naming what it retires. `register-append-only` asserts the absence in both the source and a live attempt.
+**`candidate_register` has no updater and no deleter, and that is load bearing.** Pre-registration only works if a registered candidate cannot be changed after results arrive. A retirement is a new dated row naming what it retires, and a name retired may be registered again, standing once by its last row (see: A candidate stands by the last row naming it, and a name retired and registered again stands once). `register-append-only` asserts the absence in both the source and a live attempt, a replace included.
 
 ---
 
@@ -439,17 +439,17 @@ Grain: one row per registration event. Append only.
 | `test` | TEXT | the test it will be judged by |
 | `evaluator` | TEXT | the name of an evaluator the Core code carries, refused at the write where it carries none |
 | `parameters` | TEXT | JSON, the values that evaluator is run with |
-| `evaluator_version` | TEXT | that evaluator's version as the code carried it when the row was written, which is a hash of the evaluator's own source |
+| `evaluator_version` | TEXT | that evaluator's version as the code carried it when the row was written, which is the pin of every source its evaluation runs through |
 | `event` | TEXT | `registered` or `retired`, constrained in the table |
 | `retires` | TEXT | for a retirement, the candidate it retires |
-| `registered_at` | TEXT | UTC instant |
+| `registered_at` | TEXT | UTC instant, held to the second, and a row in the same second as a night's start or a window's opening is read as after it |
 | `evidence` | TEXT | for a retirement, the figures that produced it |
 
 Primary key: `id`.
 
-No update, no delete. A correction is a new row.
+No update, no delete and no replace, each refused by the table. A correction is a new row.
 
-**The three evaluator columns are what make the row a registration rather than a description.** A candidate naming its rule in prose alone is a row a later session has to re-implement from words, and what it implements is then whatever it read the words to mean, which is the thing pre-registration exists to stop. `evaluator` names code that exists, `parameters` carries the values it is run with, and `evaluator_version` is a hash of that evaluator's source with line endings normalised to LF and any leading byte order mark removed, so the same evaluator hashes the same on both platforms and on a runner that checked the tree out with either ending. A changed evaluator is a new registration retiring the old one, never an edited row, and `register-append-only` fails a registered, unretired candidate whose evaluator's source has moved away from the version its row names.
+**The three evaluator columns are what make the row a registration rather than a description.** A candidate naming its rule in prose alone is a row a later session has to re-implement from words, and what it implements is then whatever it read the words to mean, which is the thing pre-registration exists to stop. `evaluator` names code that exists, `parameters` carries the values it is run with, and `evaluator_version` is the pin of that evaluator's source and every source its evaluation runs through, with line endings normalised to LF and any leading byte order mark removed, so the same code pins the same on both platforms and on a runner that checked the tree out with either ending (see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through). A changed evaluation is a new registration retiring the old one, never an edited row, and `register-append-only` fails a standing candidate whose evaluation's sources have moved away from the version its row names.
 
 ### rule_version
 Grain: one row per rule per version. Append only but for the close.

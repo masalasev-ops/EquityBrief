@@ -22,6 +22,7 @@ public sealed record RegisterRow(
 // per cent and with twenty it is about 64, and eight is the size at which the
 // correction stays a correction rather than a bar no candidate could clear.
 // see: The candidate family is at most eight and the threshold is divided by it
+// see: A candidate stands by the last row naming it, and a name retired and registered again stands once
 public static class CandidateFamily
 {
     public const int Maximum = 8;
@@ -30,8 +31,7 @@ public static class CandidateFamily
 
     public const string Retired = "retired";
 
-    // The divisor: the candidates registered before the window opened and not
-    // retired before it opened either.
+    // The divisor: the candidates standing registered before the window opened.
     //
     // Before, on both halves, and that is the whole point of the figure rather
     // than a detail of it. A candidate registered after the window opened was not
@@ -44,43 +44,36 @@ public static class CandidateFamily
     // components that reach it.
     // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
     // see: Adding a candidate later restarts the clock
-    public static int Divisor(IEnumerable<RegisterRow> rows, DateTimeOffset windowOpenedAt)
-    {
-        var before = rows.Where(row => row.RegisteredAt < windowOpenedAt).ToArray();
+    public static int Divisor(IEnumerable<RegisterRow> rows, DateTimeOffset windowOpenedAt) =>
+        StandingBefore(rows, windowOpenedAt).Count;
 
-        var registered = before
+    // The registration each candidate stands by before an instant, the instant taken to the second the register holds.
+    // see: A register row in the same second as the instant it is compared with is read as after it
+    public static IReadOnlyList<RegisterRow> StandingBefore(IEnumerable<RegisterRow> rows, DateTimeOffset at)
+    {
+        var second = new DateTimeOffset(at.UtcTicks - (at.UtcTicks % TimeSpan.TicksPerSecond), TimeSpan.Zero);
+
+        return LastWords(rows.Where(row => row.RegisteredAt < second));
+    }
+
+    // The registration each candidate stands by as of an instant, the rows written at it included,
+    // which is what the registrar asks of the register it has just read.
+    public static IReadOnlyList<RegisterRow> Standing(IEnumerable<RegisterRow> rows, DateTimeOffset at) =>
+        LastWords(rows.Where(row => row.RegisteredAt <= at));
+
+    public static bool StandsAt(IEnumerable<RegisterRow> rows, string candidate, DateTimeOffset at) =>
+        Standing(rows, at).Any(row => string.Equals(row.Candidate, candidate, StringComparison.Ordinal));
+
+    // The last row naming each candidate, kept where it is a registration: the first would make a
+    // retirement permanent in a table that can only be appended to.
+    static IReadOnlyList<RegisterRow> LastWords(IEnumerable<RegisterRow> rows) =>
+    [
+        .. rows
+            .Select(row => (Row: row, Names: row.Event == Registered ? row.Candidate : row.Retires))
+            .Where(named => named.Names is not null)
+            .GroupBy(named => named.Names!, StringComparer.Ordinal)
+            .Select(group => group.OrderBy(named => named.Row.RegisteredAt).ThenBy(named => named.Row.Id).Last().Row)
             .Where(row => row.Event == Registered)
-            .Select(row => row.Candidate)
-            .ToHashSet(StringComparer.Ordinal);
-
-        var retired = before
-            .Where(row => row.Event == Retired && row.Retires is not null)
-            .Select(row => row.Retires!)
-            .ToHashSet(StringComparer.Ordinal);
-
-        registered.ExceptWith(retired);
-
-        return registered.Count;
-    }
-
-    // Whether a candidate stands registered as of an instant, which is what the
-    // shadow column asks of each row and what a second registration of the same
-    // name is refused against.
-    public static bool StandsAt(IEnumerable<RegisterRow> rows, string candidate, DateTimeOffset at)
-    {
-        var mine = rows
-            .Where(row => row.RegisteredAt <= at)
-            .Where(row => row.Event == Registered
-                ? string.Equals(row.Candidate, candidate, StringComparison.Ordinal)
-                : string.Equals(row.Retires, candidate, StringComparison.Ordinal))
-            .OrderBy(row => row.RegisteredAt)
-            .ThenBy(row => row.Id)
-            .ToArray();
-
-        // The last word rather than the first, because a candidate retired and
-        // registered again is registered: the corpus's own convention for a
-        // superseded thing is a new dated row, and reading the first row would
-        // make a retirement permanent in a table that can only be appended to.
-        return mine.Length > 0 && mine[^1].Event == Registered;
-    }
+            .OrderBy(row => row.Candidate, StringComparer.Ordinal),
+    ];
 }

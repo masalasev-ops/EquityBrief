@@ -501,15 +501,15 @@ internal static class Scope
             ByRegister),
         [CheckReach.Key(FailureTable, "Something tries to edit or delete a register row")] = new Scoped(
             Verdict.Pass,
-            "an update and a delete against a migrated store are each refused by the table itself and the register reads afterwards exactly as it did, and a change asked of the registrar is refused with the attempt on the run log naming the candidate that already stands",
+            "an update, a delete and a replace in each form SQLite accepts one, against a migrated store with recursive triggers off and on, are each refused by the table itself, the register reads afterwards exactly as it did and nothing reaches the run log, because the refusal rolls back the statement it refuses; a change asked of the registrar is refused with the attempt on the run log naming the candidate that already stands; and nothing in the shipped source updates, deletes or replaces a register row, read in each of those forms",
             ByRegister),
         [CheckReach.Key(FailureTable, "The candidate register and the correction disagree")] = new Scoped(
             Verdict.Pass,
-            "the divisor is computed over the register by two routes, through the reader and by a query against the store, and the check fails where they differ rather than reporting whichever answered",
+            "the divisor is computed over a register holding a retirement, a name retired and registered again and rows after the window, by two routes that state the rule differently, through the reader by the last row naming each candidate and by a query counting the registrations no later row names, at instants taking at least three values, and the check fails where they differ rather than reporting whichever answered; over the same store a set of the names registered less the names retired gives a different answer, so the routes do not share that rule",
             ByRegister),
         [CheckReach.Key(LimitsTable, "Family size and correction")] = new Scoped(
             Verdict.Pass,
-            "the maximum the row states is the bound the registrar refuses at, asserted at the bound and one below it, and the divisor counts the candidates registered before the window opened and not retired before it opened, over hand-worked rows covering a registration after the window and a retirement after it",
+            "the maximum the row states is the bound the registrar refuses at, asserted at the bound and one below it and over a name retired and registered again, which stands once so the ninth candidate is refused; and the divisor counts the candidates standing before the window opened, over hand-worked rows covering a registration after the window, a retirement after it, a name retired and registered again and a registration in the second the window opened, which is read as after it, and over the fixture's derived rows",
             ByRegister),
         // The registrar's own two claims, which are what 8.3 adds.
         [CheckReach.Key(CatalogueTable, "Candidate registrar")] = new Scoped(
