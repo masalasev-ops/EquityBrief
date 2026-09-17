@@ -12357,8 +12357,28 @@ Mutated:    the rule, stated before the sweep: one mutation per property this co
             `ASetupIsScoredFromItsEntryAndATargetReachedBeforeItIsNeverAWin` red on a win on 2026-03-12
             where unresolved on 2026-03-05 is expected; nothing else, the filler's own read stopping at
             the cap.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, and the pin test green throughout. Six runs of the whole suite, never a
+            filter, at this entry's commit, each in its own detached worktree under the session
+            scratchpad, with the tree read after to hold only the mutated file and the worktree removed.
+            The baseline is 989 of 990 with one red, and that red is this entry: `two-platform` reads
+            every checkpoint entry written since the 7.2 ruling for its Windows record, and this one
+            carried a placeholder until the run below filled it, so each count that follows is on top
+            of it.
+            M1 turned 2 red: the kept-outcome test on the base rate, 0 on both five-session rows where
+            50 is expected, and the no-read test on the `FormatException` of the unparseable close read
+            from the decided listing. M2 turned 1 red: the restatement test on the first case, not yet
+            matured where a win on 2026-01-03 at 10 per cent and 50 is expected. M3 turned 1 red: the
+            open-horizon test on the setup never entered on 2026-03-05. M4 turned 1 red: the no-read
+            test on the same `FormatException`, the session after the cap read. M5 turned 1 red: the
+            setup cases on a win where unresolved is expected.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+            with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
+            <K> of <K> roster checks carried and all <K> run. No claim added and none moved. Both gates
+            ran with this entry in place, and the operator's store under `data/` was not touched by
+            either.
 Carried:    nothing owed by this repair. Noted, because the ruling leaves them as written: the 8 rows
             under Stored. A name whose refetch failed keeps its bars unrestated and its plan at a factor
             of one, so its setups are scored over its stored series as its levels are.
