@@ -12519,11 +12519,11 @@ Mutated:    the rule, stated before the sweep: break each property the findings 
             red: the source half and `bar-append-only`'s delete in a file the schema does not name. M4
             turned 3 red: the hand-worked divisor test, the two-routes test and the fixture test. M5
             turned 1 red: the version pin test.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 992 of 992 tests ran
             with none failed, migrations 0 to 27 with one added and none pending, exit 0, against
-            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
-            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
-            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: three
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: three
             verdict notes are rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. Noted, because it is the cost the decision buys: every later
