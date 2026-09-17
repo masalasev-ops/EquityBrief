@@ -12,7 +12,7 @@
  },
  "lookback": {
   "barsEachSide": 3,
-  "note": "three bars each side, so a swing is decided over seven sessions. Stated here as a number the check reads rather than as a sentence, because section 17's row is asserted by this diff and a lookback written twice drifts."
+  "note": "three bars each side, so a swing is decided over seven sessions. Stated as a number and read against the finder's constant and against the number section 17's row states, so a lookback written in three places is read in all three."
  },
  "namesComputed": [
   "AAPL",

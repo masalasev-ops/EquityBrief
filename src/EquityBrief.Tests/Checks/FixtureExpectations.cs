@@ -767,19 +767,29 @@ public partial class FixtureExpectations
                 Query(store, $"SELECT SUM(direction = 'high'), SUM(direction = 'low') FROM swing WHERE ticker = '{ticker}';"));
         }
 
-        // The lookback the expectation was derived at is the one the code uses.
-        // Section 17 states the number and this diff is its Asserted by column,
-        // so the two are read against each other here rather than left to agree
-        // by coincidence.
-        Assert.Equal(
-            SwingSeries.Lookback,
-            expected.GetProperty("lookback").GetProperty("barsEachSide").GetInt32());
-
         // The session count is the same population the indicators run over, so
         // a fixture whose window moved would fail here as well as there.
         Assert.Equal(
             expected.GetProperty("sessionsPerName").GetInt32().ToString(),
             Query(store, "SELECT COUNT(DISTINCT session_date) FROM bar WHERE ticker = 'AAPL';").Single());
+    }
+
+    [Fact]
+    public void TheSwingLookbackSectionSeventeenStatesIsTheFindersAndTheOneTheExpectationWasDerivedAt()
+    {
+        var row = ArchitectureTables
+            .In(File.ReadAllText(Repository.Architecture))
+            .Single(table => table.Heading == Scope.LimitsTable)
+            .Body.Single(cells => cells.Count > 1 && cells[0] == "Swing lookback");
+
+        var stated = Regex.Match(row[1], @"^(\d+) bars each side\b");
+
+        Assert.True(stated.Success, $"The Swing lookback row states no number of bars each side in digits: '{row[1]}'.");
+
+        var barsEachSide = int.Parse(stated.Groups[1].Value, CultureInfo.InvariantCulture);
+
+        Assert.Equal(SwingSeries.Lookback, barsEachSide);
+        Assert.Equal(barsEachSide, Expected("swings").GetProperty("lookback").GetProperty("barsEachSide").GetInt32());
     }
 
     [Fact]
