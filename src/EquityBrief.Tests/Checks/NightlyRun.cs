@@ -1834,7 +1834,7 @@ public class NightlyRun
         // with nothing written, since a refusal at the argument comes before the night's store.
         var older = Night("2020-01-02");
 
-        Assert.Equal(1, older.ExitCode);
+        Assert.True(older.ExitCode == 1, $"Exit {older.ExitCode}: {older.StandardError}");
         Assert.Contains("'--session 2020-01-02' is older than 2020-01-03", older.StandardError, StringComparison.Ordinal);
         Assert.Equal(0, RunLogRows());
 
@@ -1843,7 +1843,7 @@ public class NightlyRun
         // with a row of its own.
         var newest = Night("2020-01-03");
 
-        Assert.Equal(1, newest.ExitCode);
+        Assert.True(newest.ExitCode == 1, $"Exit {newest.ExitCode}: {newest.StandardError}");
         Assert.DoesNotContain("is older than", newest.StandardError, StringComparison.Ordinal);
         Assert.Contains("no-such-capture", newest.StandardError, StringComparison.Ordinal);
         Assert.Equal(1, RunLogRows());
