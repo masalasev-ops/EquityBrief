@@ -596,7 +596,7 @@ internal static class Scope
         // The forward returns, the news pulse and the night's close, 5.5.
         [CheckReach.Key(CatalogueTable, "Forward return filler")] = new Scoped(
             Verdict.Pass,
-            "the class declares the bars and listings it reads and the forward returns it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the bars, listings and forward returns it reads and the forward returns it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(CatalogueTable, "News pulse counter")] = new Scoped(
             Verdict.Pass,
@@ -632,7 +632,7 @@ internal static class Scope
             ByGap),
         [CheckReach.Key(FixtureTable, "forward returns")] = new Scoped(
             Verdict.Pass,
-            "every horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, with the matured cases over constructed series because the committed fixture has no session after its listings",
+            "every horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, with the matured cases over constructed series and constructed stores because the committed fixture has no session after its listings",
             ByExpectations),
         [CheckReach.Key(FixtureTable, "news pulse")] = new Scoped(
             Verdict.Pass,
@@ -648,7 +648,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate.")] = new Scoped(
             Verdict.Pass,
-            "the night runs the stage once rather than per name, and its run log row records the listings, the matured rows and the ones not yet matured apart",
+            "the night runs the stage once rather than per name, and its run log row records the listings, the rows written, the rows kept as decided, the newly matured and the ones not yet matured apart",
             ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, "Count today's articles per name from one dated news query, paged until the day is covered and every page counted, fanned out to names in code rather than asked for per name. The page count follows the day's news volume and not the size of the universe (see: News is one dated query, paged to cover the day, and attributed to names locally).")] = new Scoped(
             Verdict.Pass,
@@ -1489,7 +1489,7 @@ internal static class Scope
         // 8.1, the setup horizon counted from the entry.
         [CheckReach.Key(LimitsTable, "Setup resolution")] = new Scoped(
             Verdict.Pass,
-            "a setup starts on the first close at or below its entry zone's top edge and resolves as a win, a loss, unresolved at the cap or never entered, each asserted over the cases the forward returns expectation works by hand, with the cap counted from the listing and the return measured from the entry close",
+            "a setup starts on the first close at or below its entry zone's top edge and resolves as a win, a loss, unresolved at the cap or never entered, each asserted over the cases the forward returns expectation works by hand, with the cap counted from the listing, a target past the cap left unresolved on the cap's own session and the return measured from the entry close; the filler scores a setup still in play with its plan scaled by the listing session's adjustment over cases restated by a dividend and a split, and keeps a decided row when the bars it was scored on leave the store",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Tranches, exits")] = new Scoped(
             Verdict.Pass,

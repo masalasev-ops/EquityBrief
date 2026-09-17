@@ -12236,3 +12236,149 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             ran with this entry in place, and the operator's store under `data/` was not touched by
             either.
 Carried:    nothing owed by this repair beyond the read named above.
+
+### 5.5 - correction: a decided outcome written again every night, and a plan scored against closes a split or dividend had restated   2026-09-16
+Corrects:   the filler 5.5 built fills the five and twenty-one session outcomes of past listings "as
+            those sessions mature", in its catalogue row's words. It wrote every row of every listing on
+            every night, decided or not, so two things the store does after a listing rewrote outcomes
+            already written. A corporate action refetch restates every stored close before its ex-date
+            and leaves the plan stored on the listing night at its own scale: a two-for-one split scores
+            every setup listed before it as a loss against a stop at twice the price, and a dividend
+            moves a close across the stop, the target or, from 8.1, the entry zone's top edge. And the
+            bar store keeps a year: once a listing's own session leaves it, the next fill writes the
+            matured horizons back to not yet matured and scores the setup over the sessions left. 8.1
+            and 8.2 kept the rewrite and added the entry and the break-even to what it moves. Nothing
+            ran a setup past its cap, so the loop's bound could be removed with the suite green, and
+            two bar queries ran per listing ever written, every night. SCHEMA's `resolved_on` note has
+            said "date, null while unresolved" since the corpus was delivered, and the filler has
+            written the cap's own session on an unresolved row since 5.5.
+Found:      by the phase 8 sign-off review on 2026-09-16, which reproduced both with the shipped
+            filler over constructed stores: a win at a break-even of 52.5 read as unresolved at 49.99
+            once every close was scaled by 0.995, the same win read as a loss with no return after a
+            two-for-one split, and a listing's matured five and twenty-one session wins written back to
+            null and its setup to never entered once its session's bar and the next were dropped. The
+            review asked which checkpoint built it, and this entry measured that: under the rule 5.5
+            built, scored from the listing, restated listings already read differently at the stored
+            plan and the scaled one (below), and the nightly write of every listing is the filler's as
+            5.5 built it, so the rewrite and the plan read at its stored prices are 5.5's.
+Measured:   read immutable from the operator's store after the night of 2026-09-16
+            (`night-20260916T233007Z`, schema 26), which ran forward returns ok over 3026 listings:
+            0 bars with no raw close, 0 bulk bars whose close is not their raw close, and 0 listing
+            sessions restated whose bar is not the refetch's, so a listing's own session carries a
+            factor of one on its night. 63 names hold a year the refetch wrote, and 114 of the 3026
+            listings sit on a session it restated. Over the same bars the scaled plan reads 10 setups
+            differently from the stored one under the rule 5.5 built, being 1 win and 2 losses resolved
+            on another session, 3 losses still in play and 4 open setups that are wins, and 12 under
+            the entry rule, being 2 wins never entered, 1 never entered and 2 losses on another session,
+            3 losses still in play and 4 open setups never entered. 1345 of the listings carry no stop
+            or no target, and read no bar once their two session horizons are decided.
+Repaired:   a decided outcome and a matured return are written once (see: An outcome once decided is
+            never rewritten, and a setup still in play is scored with its plan scaled by its listing
+            session's adjustment factor). A setup unresolved at the cap counts as decided, because it is
+            written only once the cap has passed. The filler reads the outcomes it has written beside
+            every listing and leaves a row alone once its outcome is not null, counting the kept outcome
+            in the base rate, which is the one figure still written over it. It writes a row only where
+            it is new or decided on this night, so a row still not yet matured is not written again. A
+            setup still in play is scored with its stop, first traded target and zone top edge each
+            multiplied by the listing session's close over its raw close, and a listing bar with no raw
+            close refuses, naming the name. A listing whose close has left the store is handed no
+            sessions and stays open. A listing with nothing open reads no bar, a setup with no plan reads
+            none for itself, and a listing still open reads no session past the cap. The run log row and
+            the night's line count the rows written, kept as decided, newly matured and not yet matured
+            apart. The ruling is in DECISIONS; SCHEMA, section 17's setup resolution row, the filler's
+            catalogue row and its matrix cell say so, and SCHEMA's `resolved_on` note names the session a
+            row resolved on.
+Stored:     the rows decided before this lands are kept as written: the ruling makes a decided outcome
+            final, and it ruled that the entry rule's rewrite of the stored outcomes run first, on the
+            night of 2026-09-16, after which 0 setup rows are left in the shape only the rule before the
+            entry wrote. 8 of the kept rows were decided on a plan read at its stored prices against
+            closes a refetch had restated, and are named because they stay: DVN 2026-09-09's win on
+            2026-09-10, which the scaled plan never enters; GPN 2026-09-09's never entered on 2026-09-14,
+            which is on 2026-09-10; NDAQ 2026-09-09's loss on 2026-09-15, which is on 2026-09-16; PPL
+            2026-09-09's loss on 2026-09-15, still in play; XEL 2026-09-09's loss on 2026-09-14, which is
+            on 2026-09-15; ADP 2026-09-10's win on 2026-09-14, never entered; WMB 2026-09-10's loss on
+            2026-09-16, still in play; and TROW 2026-09-14's loss on 2026-09-16, still in play. No
+            decided row changes on the first night this runs.
+Missed:     by every store the suite built. The committed fixture's listings sit on its last session, so
+            no fixture night has a session after a listing, and no constructed store held a restatement,
+            a dropped year or a series past the cap.
+Guarded:    through the shipped filler over constructed stores: three restated cases, being a dividend
+            restating the listing session and both sessions after it, a two-for-one split restating the
+            same, and a dividend going ex between the two sessions after the listing, each stored as the
+            rule scores it at the listing session's adjustment and each shown to read differently at the
+            stored prices; a listing decided on a first night whose listing session and the two after it
+            then leave the store, kept on the second with the base rate over both listings; a listing
+            whose close has gone, left open over a whole cap of sessions; a listing with every horizon
+            decided and a setup with no plan reading no bar, and a listing still open reading no session
+            past the cap, each shown by a stored close no reader could parse placed where the read would
+            reach it; and a listing bar with no raw close refused by name. Over the replayed fixture,
+            every listing's own session carries a factor of one. Over the series, a target reached seven
+            sessions past the cap leaves the setup unresolved on the cap's own session. Over two fixture
+            nights on one session, the night's line counts the rows apart and the second night writes
+            none.
+Expected:   derived, and the fixture cannot reach it. `forward-returns.json` gains the rules for a
+            decided row, the restatement and a listing whose close has gone; the constructed plan gains
+            its zone's bottom edge at 95; `pastTheCap` works a setup entered at 100, at 105 for 69
+            sessions and 112 on the 70th, to unresolved on 2026-03-05 at 5 per cent with a break-even of
+            50; and `restated` works three cases from the same plan listed at a raw close of 100, each
+            beside what the stored prices give: 0.99 on the listing session and both after it to a win on
+            2026-01-03 at 10 per cent and 50 where the stored prices leave it open, a half on the same
+            sessions to the same win where they give a loss on 2026-01-02, and 0.99 before an ex-date to
+            still open where they give a loss on 2026-01-03. The suite reads every figure from the file.
+Tests:      990, from 986. Four added to `fixture-expectations`: a setup still in play scored at the
+            listing session's adjustment, a decided outcome kept when its bars leave the store, an open
+            horizon whose listing close has gone left open, and a listing reading no bar it has nothing
+            to score from and no session past the cap. Two widened: the setup cases with the setup past
+            the cap, and `nightly-run`'s steps with the forward returns line over two nights.
+Mutated:    the rule, stated before the sweep: one mutation per property this correction repairs, each
+            breaking that property alone, being a decided row left alone, the plan read at the listing
+            session's adjustment, a listing whose close has gone left open, no session read past the cap
+            by the filler, and nothing past the cap deciding a setup in the series. Added and not
+            mutated: a row still not yet matured not written again, a setup with no plan reading no bar,
+            the refusal of a bar with no raw close, and the factor of one on a listing's own session,
+            which is an invariant asserted where it holds. No file this correction edits is a source the
+            rule versions' code version pins, so the pin test is predicted green throughout. Predicted:
+            M1 `Decided` answers false for every outcome:
+            `AnOutcomeOnceDecidedIsNeverRewrittenWhenTheBarsItWasScoredOnLeaveTheStore` red on the base
+            rate, the kept listing's wins counted as not yet matured, and
+            `AListingWithNothingLeftToScoreReadsNoBarAndAnOpenOneReadsNoSessionPastTheCap` red on the
+            decided listing's unparseable close being read; nothing else.
+            M2 the restatement fixed at one:
+            `ASetupStillInPlayIsScoredWithItsPlanScaledByTheListingSessionsAdjustment` red on the first
+            case not yet matured where a win on 2026-01-03 is expected; nothing else.
+            M3 sessions read for a listing whose close has gone, the guard reading whether the listing is
+            scorable in place of whether its close was found:
+            `AnOpenHorizonWhoseListingCloseHasLeftTheStoreStaysOpen` red on the setup never entered on
+            2026-03-05; nothing else.
+            M4 no limit on the sessions read:
+            `AListingWithNothingLeftToScoreReadsNoBarAndAnOpenOneReadsNoSessionPastTheCap` red on the
+            session after the cap being read; nothing else.
+            M5 the setup walked over every session after the listing rather than the cap's:
+            `ASetupIsScoredFromItsEntryAndATargetReachedBeforeItIsNeverAWin` red on a win on 2026-03-12
+            where unresolved on 2026-03-05 is expected; nothing else, the filler's own read stopping at
+            the cap.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, and the pin test green throughout. Six runs of the whole suite, never a
+            filter, at this entry's commit, each in its own detached worktree under the session
+            scratchpad, with the tree read after to hold only the mutated file and the worktree removed.
+            The baseline is 989 of 990 with one red, and that red is this entry: `two-platform` reads
+            every checkpoint entry written since the 7.2 ruling for its Windows record, and this one
+            carried a placeholder until the run below filled it, so each count that follows is on top
+            of it.
+            M1 turned 2 red: the kept-outcome test on the base rate, 0 on both five-session rows where
+            50 is expected, and the no-read test on the `FormatException` of the unparseable close read
+            from the decided listing. M2 turned 1 red: the restatement test on the first case, not yet
+            matured where a win on 2026-01-03 at 10 per cent and 50 is expected. M3 turned 1 red: the
+            open-horizon test on the setup never entered on 2026-03-05. M4 turned 1 red: the no-read
+            test on the same `FormatException`, the session after the cap read. M5 turned 1 red: the
+            setup cases on a win where unresolved is expected.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 990 of 990 tests ran
+            with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved. Both gates
+            ran with this entry in place, and the operator's store under `data/` was not touched by
+            either.
+Carried:    nothing owed by this repair. Noted, because the ruling leaves them as written: the 8 rows
+            under Stored. A name whose refetch failed keeps its bars unrestated and its plan at a factor
+            of one, so its setups are scored over its stored series as its levels are.

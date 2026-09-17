@@ -124,7 +124,8 @@ public static class SchemaMigrations
     // than prices, and both are null for the `setup` horizon: target before stop
     // is a question about a plan, and a name with no plan has no answer to it.
     //
-    // No deleter. This is the operator's own record and it is kept forever.
+    // No deleter, and a decided row is never written again: this is the
+    // operator's own record and it is kept forever.
     const string CreateForwardReturn = @"
         CREATE TABLE forward_return (
             ticker       TEXT NOT NULL,
@@ -639,8 +640,8 @@ public static class SchemaMigrations
     //
     // An alter rather than a rebuild, because the column is nullable and carries
     // no key: every stored row reads as a row whose break-even has not been
-    // computed yet, which it has not, and the filler writes it on the next night
-    // as it rewrites every other figure on the row.
+    // computed yet, which it has not, and the filler writes it on every setup it
+    // scores from then on.
     //
     // `REAL` rather than `TEXT`, because a break-even is a share of a plan's range
     // and not a price. The prices it is computed from are decimal in code and TEXT

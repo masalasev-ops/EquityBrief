@@ -1,7 +1,7 @@
 {
  "stage": "forward returns",
  "derivation": "derived",
- "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero. The setup outcomes 8.1 added cannot be reached over a fixture whose listings have no session after them, so the cases below are worked by hand from one plan and read by the suite from this file rather than written into the test. The break-even cases below are worked the same way, from the plan's own three prices rather than from a run, and they include section 13's own tranche so the figure the document states is the figure the code produces.",
+ "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero. The setup outcomes 8.1 added cannot be reached over a fixture whose listings have no session after them, so the cases below are worked by hand from one plan and read by the suite from this file rather than written into the test. The break-even cases below are worked the same way, from the plan's own three prices rather than from a run, and they include section 13's own tranche so the figure the document states is the figure the code produces. A setup scored after a split or dividend has restated its closes, an outcome kept once it is decided, and a setup that reaches its target only after the cap are worked by hand the same way, each from the rule rather than from a run, because no fixture night has a session after its listings, let alone a restatement after one.",
  "tables": [
   "forward_return"
  ],
@@ -24,14 +24,18 @@
   "returnFromTheEntry": "the setup horizon's return is the move from the close it was entered at to the close it resolved on, and null for a setup nobody entered",
   "breakEven": "risk over risk plus reward, as a percentage, where risk is the fall from the close the setup was entered at to the stop and reward is the rise from it to the first traded target, so the denominator is the plan's whole range whichever side of it the entry landed on",
   "breakEvenPopulation": "present exactly where the setup horizon's return is, being every outcome whose entry close is known, and absent on a setup nobody entered, on one that entered and stopped on a single session, and on a row that has not matured",
-  "breakEvenIsNotTheLadders": "the ladder's plan arithmetic states its own break-even as a fraction from the entry zone's midpoint and is never stored; this one is a percentage from the entry close and is stored, because it is set against a share written as a percentage"
+  "breakEvenIsNotTheLadders": "the ladder's plan arithmetic states its own break-even as a fraction from the entry zone's midpoint and is never stored; this one is a percentage from the entry close and is stored, because it is set against a share written as a percentage",
+  "decidedIsFinal": "a horizon's outcome once written, being a win, a loss, never entered or unresolved, is never written again, and a matured five or twenty-one session return with it; only a row not yet matured is filled on a later night, and the base rate beside a decided row is the one figure that moves",
+  "restatement": "a setup still in play is scored with its stop, its target and its entry zone's top edge multiplied by the listing session's stored close over its raw close, which is one on the night the listing is written and is the provider's adjustment since",
+  "listingCloseGone": "a listing whose close the store no longer holds has nothing its horizons are measured from, so it is handed no sessions and its open rows stay not yet matured"
  },
  "counts": {
   "rowsPerListing": 3
  },
  "constructed": {
-  "note": "one plan, and the cases the entry rule is derived over, each walked by hand: the zone's top edge is 101, the stop 90 and the first traded target 110, and closes run one session apart from 2026-01-02.",
+  "note": "one plan, and the cases the entry rule is derived over, each walked by hand: the zone runs from 95 to a top edge of 101, the stop 90 and the first traded target 110, and closes run one session apart from 2026-01-02.",
   "plan": {
+   "entryLow": "95",
    "entryHigh": "101",
    "stop": "90",
    "firstTradedTarget": "110"
@@ -85,7 +89,26 @@
     "returnPct": null,
     "breakEven": null
    }
-  ]
+  ],
+  "pastTheCap": {
+   "case": "entered on the listing night, inside the zone and short of the target for the whole cap, and at the target seven sessions after it",
+   "listedAt": "100",
+   "runs": [
+    {
+     "close": "105",
+     "sessions": 69
+    },
+    {
+     "close": "112",
+     "sessions": 1
+    }
+   ],
+   "outcome": "unresolved",
+   "resolvedOnSession": 63,
+   "resolvedOn": "2026-03-05",
+   "returnPct": 5.0,
+   "breakEven": 50.0
+  }
  },
  "breakEven": {
   "note": "the bar each plan set for itself, worked by hand from three prices. The first is section 13's own first tranche, whose figures the document states; the next three are the plan the cases above use, entered at three different prices; the last two are the ends of the rule, where the entry sits on the stop and on the target.",
@@ -154,5 +177,73 @@
    }
   ],
   "refusedNote": "an entry above the plan's own target is a shape a stored plan can take, being an entry zone whose top edge sits at or above the target, and the arithmetic refuses it rather than returning a number outside nought and one hundred. The other half of the refusal, an entry below the stop, is a shape the series cannot produce: a close through the stop resolves as a loss before the entry is read, and the listing night's own close is admitted as an entry only at or above the stop. That half is stated here as the invariant it is rather than asserted over a case the world does not hold."
+ },
+ "restated": {
+  "note": "the same plan, listed on 2026-01-01 at a raw close of 100 and scored after the provider restated the store's closes. `listedAt` and `closes` are the adjusted closes as the store now holds them, `rawListedAt` and `rawCloses` what traded, and the restatement is the listing session's close over its raw close. `withoutTheRestatement` is what the plan at its stored prices gives over the same closes, stated so each case is shown to separate the two.",
+  "cases": [
+   {
+    "case": "a dividend restates the listing session and both sessions after it by 0.99, and the target is reached at the restated price",
+    "listedAt": "99",
+    "rawListedAt": "100",
+    "closes": [
+     "103.95",
+     "108.9"
+    ],
+    "rawCloses": [
+     "105",
+     "110"
+    ],
+    "outcome": "win",
+    "resolvedOn": "2026-01-03",
+    "returnPct": 10.0,
+    "breakEven": 50.0,
+    "withoutTheRestatement": {
+     "outcome": null,
+     "resolvedOn": null
+    }
+   },
+   {
+    "case": "a two-for-one split halves the listing session and both sessions after it, and the target is reached at the halved price",
+    "listedAt": "50",
+    "rawListedAt": "100",
+    "closes": [
+     "52.5",
+     "55"
+    ],
+    "rawCloses": [
+     "105",
+     "110"
+    ],
+    "outcome": "win",
+    "resolvedOn": "2026-01-03",
+    "returnPct": 10.0,
+    "breakEven": 50.0,
+    "withoutTheRestatement": {
+     "outcome": "loss",
+     "resolvedOn": "2026-01-02"
+    }
+   },
+   {
+    "case": "a dividend goes ex between the two sessions after the listing, restating the listing session and the first by 0.99 and leaving the ex-date as it traded, which closes below the stop at its stored price and above it restated",
+    "listedAt": "99",
+    "rawListedAt": "100",
+    "closes": [
+     "94.05",
+     "89.5"
+    ],
+    "rawCloses": [
+     "95",
+     "89.5"
+    ],
+    "outcome": null,
+    "resolvedOn": null,
+    "returnPct": null,
+    "breakEven": null,
+    "withoutTheRestatement": {
+     "outcome": "loss",
+     "resolvedOn": "2026-01-03"
+    }
+   }
+  ]
  }
 }
