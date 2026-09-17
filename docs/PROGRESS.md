@@ -13313,11 +13313,25 @@ Mutated:    the rule, stated before the sweep: break each finding's own failure 
             the same 2 red. M3 turned 1 red: the fixture's no-quarter test. M4 turned 1 red: the theme
             record test. M5 turned 1 red: the process test. M6 turned 1 red: the opening proof. M7
             turned 1 red: the opening proof.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1015 of 1015 tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
             with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
-            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
-            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
-            36 of 36 roster checks carried and all 36 run. No claim added and none moved: one
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
+            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: one
             verdict note is rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
+Notes:      the first hosted run over this entry, at e80c027, failed on both jobs, macOS and the Linux
+            case-sensitivity job, on the worker process test alone: the worker exited 134 before its
+            first line, unable to load `Microsoft.Extensions.Configuration.Abstractions`. The test
+            started the worker from the suite's own build output. The suite runs on the ASP.NET
+            framework as well as the base one, and the hosted builds left the configuration packages
+            out of that output, the framework carrying those assemblies, where the operator's build
+            copied them in, so the sweep and both gates ran green over it. The worker names the base
+            framework alone and on both hosted images found them nowhere. Nothing shipped is affected:
+            `tools/nightly` runs the worker from its own build output, which carries every package it
+            names. The test now starts the worker from that output and names the worker's standard
+            error when it exits otherwise than refused, and both gates are run again over it below. M5
+            is run again over the moved test, at the commit that moves it, with its prediction
+            unchanged: the process test red and nothing else.
+            Rerun: FILLED IN BELOW AFTER THE RERUN.
 Carried:    nothing owed by this repair.

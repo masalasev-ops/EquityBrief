@@ -1802,6 +1802,8 @@ public class NightlyRun
     {
         // The worker's own entry point over a store in a throwaway root. The capture named does
         // not exist, so a session that passes the refusal stops on the feeds before any provider.
+        // It starts from the worker's own build output, since the suite's output carries the
+        // packages the suite resolves rather than the ones the worker names.
         using var store = new TemporaryStore().Migrated();
 
         store.Execute(
@@ -1810,7 +1812,7 @@ public class NightlyRun
             "('AAPL', '2020-01-03', '1', '1', '1', '1', 1, 'test', '2020-01-03T21:10:00Z');");
 
         var dotnet = Shell.Locate("dotnet");
-        var worker = Path.Combine(AppContext.BaseDirectory, "EquityBrief.Worker.dll");
+        var worker = Repository.BuildOutput("EquityBrief.Worker", "EquityBrief.Worker.dll");
 
         Assert.NotNull(dotnet);
         Assert.True(File.Exists(worker), $"No worker assembly at {worker}.");
