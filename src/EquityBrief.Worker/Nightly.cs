@@ -118,7 +118,9 @@ public static class Nightly
         // and the night fails on its first step, which is exactly what a
         // re-run is for. The caller may name its own, which is how a replay
         // records under an id it chose.
-        runId ??= FormattableString.Invariant($"night-{clock.UtcNow:yyyyMMddTHHmmssZ}");
+        var nightStartedAt = clock.UtcNow;
+
+        runId ??= FormattableString.Invariant($"night-{nightStartedAt:yyyyMMddTHHmmssZ}");
 
         var (membership, historical, bulkFeed, corporate, calendar, _) = feeds;
 
@@ -269,7 +271,7 @@ public static class Nightly
             new("listings", async () =>
             {
                 var outcome = await new ShortlistBuilder(clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, night.Token);
+                    .RunAsync(indexCode, runId, nightStartedAt, night.Token);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.MembersConsidered} member(s), " +
                     $"{outcome.Fired} fired, {outcome.ReasonsFired} reason(s) fired";

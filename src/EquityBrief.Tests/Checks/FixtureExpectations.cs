@@ -2408,7 +2408,7 @@ public partial class FixtureExpectations
         var store = await WithFacts();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
 
-        await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings");
+        await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings", Instant);
 
         return store;
     }
@@ -4131,7 +4131,7 @@ public partial class FixtureExpectations
 
         Insert(store, BarlessMember);
 
-        await new ShortlistBuilder(late, store.DatabaseFile).RunAsync(Index, "replay-listings-late");
+        await new ShortlistBuilder(late, store.DatabaseFile).RunAsync(Index, "replay-listings-late", LateInstant);
 
         Assert.Equal(
             [session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)],
@@ -4163,7 +4163,7 @@ public partial class FixtureExpectations
         Insert(store, $"DELETE FROM facts WHERE ticker = 'AAPL';");
         Insert(store, $"INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('AAPL', '{earlier}', '{{}}', 'h');");
 
-        var outcome = await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings-behind");
+        var outcome = await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings-behind", clock.UtcNow);
 
         Assert.Equal(FixtureExpectation.CurrentMembers.Length, outcome.RowsWritten);
 
@@ -4172,7 +4172,7 @@ public partial class FixtureExpectations
         Insert(store, $"INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('AAPL', '{later}', '{{}}', 'h');");
 
         var refused = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings-ahead"));
+            () => new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "replay-listings-ahead", clock.UtcNow));
 
         Assert.Contains($"is dated {later}", refused.Message, StringComparison.Ordinal);
         Assert.Contains("the bars end on " + Assert.Single(listed), refused.Message, StringComparison.Ordinal);
@@ -4578,7 +4578,7 @@ public partial class FixtureExpectations
 
         Insert(store, "DELETE FROM listing;");
 
-        await new ShortlistBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile).RunAsync(Index, runId);
+        await new ShortlistBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile).RunAsync(Index, runId, Instant);
 
         return (
             ReasonFired(store, "AAPL", ShortlistSeries.EarningsSoon),
@@ -4647,7 +4647,7 @@ public partial class FixtureExpectations
         await new LevelBuilder(clock, store.DatabaseFile).RunAsync("momentum-levels");
         await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, "momentum-ladders");
         await new FactsAssembler(clock, store.DatabaseFile).RunAsync("momentum-facts");
-        await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "momentum-listings");
+        await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, "momentum-listings", clock.UtcNow);
 
         Assert.Equal(before.Swings, Rows("SELECT ticker, session_date, direction, price FROM swing ORDER BY ticker, session_date, direction;"));
         Assert.Equal(before.Levels, Rows("SELECT ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members FROM level ORDER BY ticker, as_of, low_edge;"));
@@ -4819,7 +4819,7 @@ public partial class FixtureExpectations
             $"volume = {Math.Round(average * (heavy ? 1.5 : 0.5)).ToString(CultureInfo.InvariantCulture)} WHERE ticker = 'AAPL' AND session_date = '{tonight}';");
         Insert(store, "DELETE FROM listing;");
 
-        await new ShortlistBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile).RunAsync(Index, runId);
+        await new ShortlistBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile).RunAsync(Index, runId, Instant);
 
         // The rule, read off what this test wrote.
         var expected = low >= previousClose && close > high && heavy;

@@ -280,7 +280,7 @@ public sealed record BaseRateLine(string Window, double? Rate);
 // register is only a pre-registration for as long as nobody can see how a
 // candidate is doing before deciding whether to keep it.
 // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
-public sealed record ShadowRegion(int Registered, int Maximum);
+public sealed record ShadowRegion(int Registered, int Divisor, int Maximum);
 
 // The four verdict counts of the last phase report.
 //
@@ -2131,20 +2131,19 @@ public sealed class MarkRenderer : IComponent
     // keep it be taken on the result, which is what registering in advance is
     // for.
     //
-    // The divisor is the count rather than a figure of its own, because the
-    // threshold is divided by the family and the family is what stands
-    // registered. Stating both would be one fact in two places.
+    // The count and the divisor are drawn from two figures computed apart, so a register and a
+    // correction that disagree show it on the page rather than agreeing by construction.
     // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
     // see: The significance threshold is divided by the family size, and the divisor is shown
     public string ShadowCandidates(ShadowRegion shadow)
     {
         var region = new StringBuilder();
 
-        region.Append(Invariant, $"<section class=\"shadow-candidates\" data-shadow=\"{shadow.Registered}\" data-divisor=\"{shadow.Registered}\" data-maximum=\"{shadow.Maximum}\">");
+        region.Append(Invariant, $"<section class=\"shadow-candidates\" data-shadow=\"{shadow.Registered}\" data-divisor=\"{shadow.Divisor}\" data-maximum=\"{shadow.Maximum}\">");
 
-        region.Append(shadow.Registered == 0
-            ? Formatted($"<p data-shadow=\"none\">no candidate condition is registered, so no threshold is divided; the family may hold at most {shadow.Maximum}</p>")
-            : Formatted($"<p data-shadow=\"{shadow.Registered}\">{shadow.Registered} candidate condition(s) registered, of at most {shadow.Maximum}, so a threshold is divided by {shadow.Registered}</p>"));
+        region.Append(shadow is { Registered: 0, Divisor: 0 }
+            ? Formatted($"<p data-shadow=\"none\">no candidate condition is registered as this page is read, so no candidate's threshold is divided; the candidate family may hold at most {shadow.Maximum}</p>")
+            : Formatted($"<p data-shadow=\"{shadow.Registered}\">{shadow.Registered} candidate condition(s) registered as this page is read, of at most {shadow.Maximum}, so a candidate's threshold is divided by {shadow.Divisor}</p>"));
 
         region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until it is promoted, and no evaluation of a name is shown here or anywhere else</p>");
 

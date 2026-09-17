@@ -11,7 +11,24 @@ public sealed record ShadowOutcome(string Candidate, bool Fired, IReadOnlyDictio
 // a measurement; a candidate nothing evaluated is a hole in one, and folding the
 // second into the first is how a record of having skipped a night stops
 // existing.
-public sealed record ShadowSkip(string Candidate, string Reason);
+public sealed record ShadowSkip(string Candidate, string Reason, ShadowSkipCause Cause)
+{
+    // A fault in the code rather than a name-night without the readings, and the one kind that fails the stage.
+    // see: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip
+    public bool IsFault => Cause is ShadowSkipCause.NoEvaluator or ShadowSkipCause.VersionMoved;
+}
+
+public enum ShadowSkipCause
+{
+    NoEvaluator,
+    VersionMoved,
+    Stale,
+    Gapped,
+    NotAvailable,
+}
+
+// Why a night hands a name no readings at all, with the sentence its row carries.
+public sealed record NameWithheld(ShadowSkipCause Cause, string Reason);
 
 public sealed record ShadowResult(IReadOnlyList<ShadowOutcome> Outcomes, IReadOnlyList<ShadowSkip> Skipped);
 
@@ -30,9 +47,9 @@ public static class ShadowColumn
     // registered while the night was running would be evaluated on a name-night
     // it was not registered before, which is a candidate scored on evidence that
     // was already in, and the register cannot afterwards say which names were
-    // reached before it landed and which after. Taking the instant once, at the
-    // top of the stage, is what makes the answer the same for every name in the
-    // index rather than a function of how far down the loop the night had got.
+    // reached before it landed and which after. The instant is the one the night
+    // took before its first step and handed to the stage, never the stage's own
+    // start, which comes minutes later.
     public static IReadOnlyList<RegisterRow> StandingAt(IReadOnlyList<RegisterRow> rows, DateTimeOffset nightStartedAt) =>
         CandidateFamily.StandingBefore(rows, nightStartedAt);
 
@@ -42,7 +59,7 @@ public static class ShadowColumn
     // to be evaluated on the nights it would have fired, most of which are nights
     // no live reason surfaced that name.
     // see: The base rate is over every name-night, and never over the listed ones
-    public static ShadowResult Evaluate(IReadOnlyList<RegisterRow> standing, CandidateNight night)
+    public static ShadowResult Evaluate(IReadOnlyList<RegisterRow> standing, CandidateNight night, NameWithheld? withheld = null)
     {
         var outcomes = new List<ShadowOutcome>();
         var skipped = new List<ShadowSkip>();
@@ -55,7 +72,8 @@ public static class ShadowColumn
             {
                 skipped.Add(new ShadowSkip(
                     row.Candidate,
-                    $"the code carries no evaluator named '{row.Evaluator}'"));
+                    $"the code carries no evaluator named '{row.Evaluator}'",
+                    ShadowSkipCause.NoEvaluator));
 
                 continue;
             }
@@ -72,7 +90,16 @@ public static class ShadowColumn
                 skipped.Add(new ShadowSkip(
                     row.Candidate,
                     $"registered under {row.Evaluator} at {row.EvaluatorVersion} and the code carries " +
-                    $"{evaluator.Version}, so a score would be about a rule the register does not name"));
+                    $"{evaluator.Version}, so a score would be about a rule the register does not name",
+                    ShadowSkipCause.VersionMoved));
+
+                continue;
+            }
+
+            // After the two faults, so a moved evaluator is named on a stale or gapped name's row too.
+            if (withheld is not null)
+            {
+                skipped.Add(new ShadowSkip(row.Candidate, withheld.Reason, withheld.Cause));
 
                 continue;
             }
@@ -81,7 +108,8 @@ public static class ShadowColumn
             {
                 skipped.Add(new ShadowSkip(
                     row.Candidate,
-                    $"the night computed no '{missing}' for {night.Ticker}"));
+                    $"the night computed no '{missing}' for {night.Ticker}",
+                    ShadowSkipCause.NotAvailable));
 
                 continue;
             }

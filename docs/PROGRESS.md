@@ -12530,3 +12530,159 @@ Carried:    nothing owed by this repair. Noted, because it is the cost the decis
             edit to one of the nine sources an evaluation runs through moves both versions, the pin
             test names the value to write, and once candidates are registered each is skipped on the
             listings row until retired and registered again.
+
+### 8.4 - correction: the register read at the night's start, a name-night without readings counted rather than failed, the column's two lists and the session before asserted, and the run page's count and divisor drawn apart   2026-09-16
+Corrects:   the 8.4 entry above records under Rules that the candidates a night evaluates are
+            "those standing registered at the instant the night started". They were those standing
+            at the instant the listings stage started: the stage read its own clock at its top and
+            no night handed it the instant the night began, so a candidate registered between a
+            night's start and its listings stage, minutes later, was evaluated by that night. Its
+            Tested field's "a candidate registered after the night started not evaluated by it" ran
+            the stage alone under a clock that does not move, where the two instants are one.
+            Its Rules field also says that a candidate whose evaluator's version has moved "is named
+            as a failure on the stage's own run log row". Every skip was: a stale name, a gapped
+            name and a reading not available each put the stage under failures under the sentence
+            "registered candidate(s) were not evaluated on any name-night", which is false for a
+            candidate evaluated on every other name. With one candidate registered, one stale member
+            would have done it every night.
+            Its Measured field says "nothing is registered in the operator's store, so the column it
+            writes there is the empty pair on every row". The store was at schema version 23 with
+            no `candidate_register` table and no night had run on 8.4's code; its 2522 listing rows
+            carried an empty `candidates` and a note saying when the register would arrive, 2018 of
+            them naming 7.3 over 6 sessions from 2026-04-16 to 2026-09-14 and 504 naming 8.3 on
+            2026-09-15, and none carried `skipped`. The empty pair was what the first night on 8.4's
+            code would write while nothing is registered, and it was not read off the store.
+            Its Expected field says `shadow-column.json` "works five name-nights by hand from the two
+            evaluators' own rules": it put 8.3's evaluators to values handed to them, and no derived
+            expectation read the column 8.4 writes. Its Mutated field named the two-list shape, the
+            refusal to read a stale or gapped name and the read of the session before as not
+            mutated; the review's sweep broke the first two and each survived 983 of 983.
+            The 8.4 correction above says under Expected "No expectation file changes, because the
+            committed fixture holds no member under two hundred bars and its replay reads no null",
+            and carried nothing: a member constructed into the replayed fixture reaches the null,
+            and this correction's expectation holds one. Its Carried note, that the failure sentence
+            would be drawn every night a member held fewer than two hundred bars, is discharged here.
+Found:      by the phase 8 sign-off review on 2026-09-16: the false failure by a probe over one stale
+            member, the stage's instant, the unread session before, the region's instant and its one
+            field drawn twice by reading PR 102, the Measured line against the store, and b3 and b4
+            by the review's own mutation sweep. The instant was reproduced over a whole night of the
+            fixture at a9b1be3 before the repair: under a clock whose stages ran fifteen minutes after
+            the night's start, a candidate registered five minutes after it was evaluated on all 4
+            listing rows. The operator ruled on 2026-09-16 that everything the review found is
+            corrected before a sign-off handoff, and ruled which skips fail the shadow column.
+Measured:   read immutable from the operator's store after the night of 2026-09-16, with no night
+            run since: `user_version` 26,
+            `candidate_register` present with 0 rows, and the first night on phase 8's code,
+            `night-20260916T233007Z`, wrote 504 listing rows for 2026-09-16 carrying
+            `{"candidates":[],"skipped":[]}` under the line "no candidate stands registered, so nothing
+            was evaluated in shadow" and outcome ok, beside the 2522 older rows in the note shapes the
+            Corrects field names. So the empty pair is now observed, on one night.
+            Queries: `PRAGMA user_version;`, `SELECT COUNT(*) FROM sqlite_master WHERE name =
+            'candidate_register';`, `SELECT COUNT(*) FROM candidate_register;` and `SELECT
+            shadow_reasons, COUNT(*), MIN(session_date), MAX(session_date), COUNT(DISTINCT
+            session_date) FROM listing GROUP BY shadow_reasons;`.
+Repaired:   the night takes its start once, before its first step, stamps its run id with it and
+            hands it to the listings stage, which reads the register at it and keeps its own start
+            for its run log row. A skip carries its cause. A candidate whose evaluator the code does
+            not carry or whose version has moved is a fault: skipped on every row, named once on the
+            stage's line after "FAILURE", and the outcome is "ok, with a registered candidate's
+            evaluator missing or moved". A stale name and a gapped name are withheld: every
+            candidate skips them with a reason naming the last stored session or the gap's date,
+            after the two fault checks, and their readings are not read. A reading not available is
+            skipped by the candidate that reads it. Those three are counted by cause on the stage's
+            line, "skipped on a name-night without the readings: n stale, n gapped, n with a reading
+            not available", and fail nothing (see: Only a missing or moved evaluator fails the shadow
+            column, and a name-night without the readings is a counted skip). The run page's shadow
+            region takes its count from the candidates standing, the set a night evaluates, and its
+            divisor from the family's own figure, draws each from its own field, says both are as
+            the register stands when the page is read, and names the candidate family where nothing
+            is registered, since the live reasons' threshold beside it is divided by their own. The
+            region's instant stays the page's rather than the night's: it sits with the page's
+            judging regions, which read the store as it stands, and a test now holds it at the
+            route. SCHEMA, the catalogue row, 8.4's paragraph, the roster row and the runbook say so,
+            with prior text in CHANGELOG, and SCHEMA's column says what a row written before 8.4
+            carries. No migration.
+Stored:     nothing to keep or rewrite. The operator's store holds no registered candidate, so no row
+            carries a skip and no listings line has been written in the form this changes.
+Missed:     every test of the instant ran the stage alone under a clock that does not move. Every
+            test that registered a candidate ran over the fixture, which holds no stale or gapped
+            member, and the tests holding one registered nothing. The one assertion on the column's
+            shape ran on a night with no skip, and the drift test read the column as one string. No
+            night registered the histogram turn, so the session before was never read through the
+            builder. The region drew one field as both of its figures, and its test read them as one.
+Guarded:    in `listings-coverage`: a whole night of the fixture whose listings stage starts after a
+            registration it does not evaluate; the stage run under a clock past a registration and
+            handed the night's start; a stale and a gapped member holding readings that would fire,
+            each skipped with its own reason, nothing read, counted and failing nothing; a moved
+            evaluator read as the whole of `skipped` beside the standing candidate as the whole of
+            `candidates`; a reading not available counted with the stage ok; every key an evaluator
+            reads being one the night hands over; and the worked night over the replayed fixture. In
+            `read-surface`: the count and divisor computed apart and agreeing at four instants, a
+            region handed two different figures drawing each, and one past night's page read before
+            and after a retirement.
+Expected:   derived. `shadow-column.json` gains `overTheReplayedNight`: the replayed fixture with six
+            members constructed into it, a candidate registered before the night's start at 21:10, a
+            second, and a third at 21:15 before the stage's 21:25; the index reading at one hundred
+            fires wherever evaluated because the index lies between 0 and 100, the turn on a fixture
+            name is recomputed from its own two newest stored histograms, and each constructed row is
+            worked by hand: a crossing read in the right session order, a turn evaluated and not
+            fired, a name with one session of readings, a reading stored as not available beside 42
+            the session before, a stale name and a gapped name. 14 evaluations and 6 skips over 10
+            rows, which is 2 candidates times 10 members, none failing; and with a moved evaluator
+            added, 10 more skips, one failure named once, and the other counts unmoved.
+Tests:      997, from 992. Five added: four to `listings-coverage`, the whole night's instant, the
+            stale and gapped skips, the evaluators' keys and the worked night, and one to
+            `read-surface`, a past night's page. Four rewritten in place: the registered-after test
+            under a later stage clock, the moved evaluator read as two lists, the null reading's line,
+            and the region's two figures. Both evaluators' versions move, because the builder and
+            the column are sources their evaluation runs through: `momentum-index-reading` from
+            ee3854c439ec to c638db3145b4, and `momentum-histogram-turn` from c8dc4dd4300b to cacff9914aac.
+Mutated:    the rule, stated before the sweep: break each property this correction adds to what a
+            night writes, being the instant the register is read at, the refusal to read a stale or
+            gapped name, which skips fail the stage, the two lists, and the session a reading is
+            handed under. Predicted:
+            M1 the night hands the listings stage its clock at the step rather than the instant taken
+            before its first step: the whole-night test red, on a row carrying the candidate
+            registered while the night ran, and nothing else, since every other test runs the stage
+            with the instant handed in or registers before the night.
+            M2 a stale or gapped name handed its readings and nothing withheld: the stale-and-gapped
+            test red, on a row carrying the candidate fired over readings it should not have read,
+            and the worked night red on the same rows; nothing else, since no other test registers a
+            candidate over a stale or gapped member.
+            M3 every skip a fault: the stale-and-gapped test, the null reading test and the worked
+            night red, each on the stage's outcome and line; the moved evaluator test green, since
+            its one skip is a fault either way.
+            M4 the skips folded into `candidates` as a non-fire with `skipped` left empty: the
+            moved evaluator test, the stale-and-gapped test, the null reading test and the worked
+            night red, each on the lists; nothing else, since every other test reads a night with no
+            skip.
+            M5 the session before offered under the plain name and the latest under the suffix: the
+            worked night red on the constructed rows, and the null reading test red on the candidate
+            evaluated over the session before's 42; nothing else, since every other night's readings
+            fire at a level of one hundred whichever session they are read from.
+            M2 to M5 each also turn the evaluators' version pin test red, being edits inside a source
+            their evaluation runs through; M1's is not.
+            Not mutated, and named so the next sweep has them: the region's two routes and its two
+            fields, the region's instant at the route, the fault named once per candidate, and the
+            evaluators' keys against the night's.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Six runs of the whole suite, never a filter, at this entry's commit, each
+            in its own detached worktree under the session scratchpad, with the tree read after to hold
+            only the mutated file and the worktree removed. The baseline is 996 of 997 with one red, and
+            that red is this entry: `two-platform` reads every checkpoint entry written since the 7.2
+            ruling for its Windows record, and this one carried a placeholder until the run below
+            filled it, so each count that follows is on top of it.
+            M1 turned 1 red: the whole-night test. M2 turned 3 red: the stale-and-gapped test, the
+            worked night and the version pin test. M3 turned 4 red: the stale-and-gapped test, the null
+            reading test, the worked night and the version pin test. M4 turned 5 red: the moved
+            evaluator test, the stale-and-gapped test, the null reading test, the worked night and the
+            version pin test. M5 turned 3 red: the worked night, the null reading test and the version
+            pin test.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 997 of 997 tests ran
+            with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: two
+            verdict notes are rewritten and no placement changes. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
+Carried:    nothing.

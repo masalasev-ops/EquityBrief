@@ -97,7 +97,7 @@ public class FixtureReplay
         await new MoveAnnotator(night, store.DatabaseFile).RunAsync("replay-moves");
         await new FactsAssembler(night, store.DatabaseFile).RunAsync("replay-facts");
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes");
-        await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings");
+        await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings", Night);
 
         // The detector again, in the order the night takes: the shortlist is
         // step 12 and the facts file is step 13, and the detector's retention

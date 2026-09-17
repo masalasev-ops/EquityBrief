@@ -84,7 +84,55 @@ public partial class ReadSurface
             RunScreen.Shadow(await api.RegisteredCandidatesAsync(), Registered.AddDays(2)));
 
         Assert.Contains("data-shadow=\"1\"", one, StringComparison.Ordinal);
+        Assert.Contains("data-divisor=\"1\"", one, StringComparison.Ordinal);
         Assert.Contains("divided by 1", one, StringComparison.Ordinal);
+
+        // The two figures are computed apart and drawn from their own fields, so a divisor that is not the count shows.
+        foreach (var (at, count) in new[] { (Registered.AddMinutes(-1), 0), (Registered.AddSeconds(30), 1), (Registered.AddMinutes(30), 2), (Registered.AddDays(2), 1) })
+        {
+            var region = RunScreen.Shadow(await api.RegisteredCandidatesAsync(), at);
+
+            Assert.Equal((at, count, count), (at, region.Registered, region.Divisor));
+        }
+
+        var apart = new MarkRenderer().ShadowCandidates(new ShadowRegion(Registered: 2, Divisor: 3, Maximum: 8));
+
+        Assert.Contains("data-shadow=\"2\"", apart, StringComparison.Ordinal);
+        Assert.Contains("data-divisor=\"3\"", apart, StringComparison.Ordinal);
+        Assert.Contains("2 candidate condition(s) registered", apart, StringComparison.Ordinal);
+        Assert.Contains("divided by 3", apart, StringComparison.Ordinal);
+
+        // The empty region names the candidate family, since the live reasons' threshold is divided by their own.
+        Assert.Contains("so no candidate's threshold is divided", empty, StringComparison.Ordinal);
+        Assert.DoesNotContain("no threshold is divided", empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task APastNightsRunPageStatesTheRegisterAsThePageIsRead()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        await RegisterForTheRegionAsync(store, "momentum index at thirty", 30, Registered);
+        await RegisterForTheRegionAsync(store, "momentum index at twenty", 20, Registered.AddMinutes(1));
+
+        var withdrawn = await new CandidateRegistrar(
+            FixedClock.At(Registered.AddDays(3), SessionZones.UnitedStates),
+            store.DatabaseFile).RetireAsync("momentum index at thirty", "0 resolved setups of a minimum of 250", "shadow-region-past-night");
+
+        Assert.Equal(CandidateRegistrar.Retired, withdrawn.Outcome);
+
+        // One night's page read before the retirement and after it: the count follows the reading, not the night.
+        foreach (var (readAt, standing) in new[] { (Registered.AddDays(2), 2), (Registered.AddDays(5), 1) })
+        {
+            using var host = new ClockedHost(store.Root, FixedClock.At(readAt, SessionZones.UnitedStates));
+            using var client = host.CreateClient();
+
+            var run = await client.GetStringAsync("/screens/run/2026-09-08");
+
+            Assert.Contains("data-night=\"2026-09-08\"", run, StringComparison.Ordinal);
+            Assert.Contains($"data-shadow=\"{standing}\"", run, StringComparison.Ordinal);
+            Assert.Contains($"{standing} candidate condition(s) registered as this page is read", run, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
@@ -102,7 +150,7 @@ public partial class ReadSurface
 
         await new Worker.Shortlist.ShortlistBuilder(
             FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
-            store.DatabaseFile).RunAsync("GSPC", "shadow-screens");
+            store.DatabaseFile).RunAsync("GSPC", "shadow-screens", new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero));
 
         // The store carries them, which is what makes the absence below a
         // statement about the screens rather than about an empty column.

@@ -1,5 +1,6 @@
 using System.Globalization;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
@@ -119,7 +120,7 @@ public class ListingsCoverage
 
         await new ShortlistBuilder(
             FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
-            store.DatabaseFile).RunAsync("GSPC", "coverage-check");
+            store.DatabaseFile).RunAsync("GSPC", "coverage-check", new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero));
 
         var rows = Query(store, "SELECT COUNT(*) FROM listing WHERE ticker = 'ZZZZ';").Single();
 
@@ -164,7 +165,7 @@ public class ListingsCoverage
 
         await new ShortlistBuilder(
             FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
-            store.DatabaseFile).RunAsync("GSPC", "coverage-stale");
+            store.DatabaseFile).RunAsync("GSPC", "coverage-stale", new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero));
 
         // Every member has the night's row, the stale one included, and no row
         // is dated by the stale member's last session.
@@ -239,15 +240,36 @@ public class ListingsCoverage
         }
     }
 
-    static async Task<IReadOnlyList<string>> RunTheNightAsync(TemporaryStore store, string runId)
+    // The stage runs under a clock later than the night's start, as it does on a night, and is handed that start.
+    static async Task<IReadOnlyList<string>> RunTheNightAsync(TemporaryStore store, string runId, DateTimeOffset? stageAt = null)
     {
         Insert(store, "DELETE FROM listing;");
 
         await new ShortlistBuilder(
-            FixedClock.At(NightStart, SessionZones.UnitedStates),
-            store.DatabaseFile).RunAsync("GSPC", runId);
+            FixedClock.At(stageAt ?? NightStart.AddMinutes(15), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("GSPC", runId, NightStart);
 
         return Query(store, "SELECT ticker FROM listing ORDER BY ticker;");
+    }
+
+    // The two lists a shadow column holds, read apart.
+    static (string[] Candidates, (string Candidate, string Reason)[] Skipped) Lists(string column)
+    {
+        var root = System.Text.Json.JsonDocument.Parse(column).RootElement;
+
+        return (
+            [.. root.GetProperty("candidates").EnumerateArray().Select(one => one.GetProperty("candidate").GetString()!)],
+            [.. root.GetProperty("skipped").EnumerateArray().Select(one => (one.GetProperty("candidate").GetString()!, one.GetProperty("reason").GetString()!))]);
+    }
+
+    // The night's start on the first read and a quarter of an hour on after it, so every stage runs later than the night began.
+    sealed class StartedEarlierClock(DateTimeOffset start) : IClock
+    {
+        int reads;
+
+        public DateTimeOffset UtcNow => Interlocked.Increment(ref reads) == 1 ? start : start.AddMinutes(15);
+
+        public TimeZoneInfo SessionZone { get; } = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
     }
 
     [Fact]
@@ -315,13 +337,14 @@ public class ListingsCoverage
         await RegisterAsync(store, "registered before the night", 100, NightStart.AddSeconds(-1));
         await RegisterAsync(store, "registered after the night started", 100, NightStart.AddSeconds(1));
 
-        var listed = await RunTheNightAsync(store, "coverage-shadow-after");
+        // The stage's clock is past both, so only the instant it is handed can exclude the second.
+        var listed = await RunTheNightAsync(store, "coverage-shadow-after", stageAt: NightStart.AddMinutes(15));
 
         foreach (var ticker in listed)
         {
             var shadow = Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{ticker}';").Single();
 
-            Assert.Contains("registered before the night", shadow, StringComparison.Ordinal);
+            Assert.Equal(["registered before the night"], Lists(shadow).Candidates);
             Assert.DoesNotContain("registered after the night started", shadow, StringComparison.Ordinal);
         }
 
@@ -370,10 +393,12 @@ public class ListingsCoverage
             // The one that stands is evaluated and the drifted one is skipped
             // with its reason, on every row, so a later reader of any name-night
             // can see the hole rather than reading an absence as a non-fire.
-            Assert.Contains("momentum index at one hundred", shadow, StringComparison.Ordinal);
-            Assert.Contains("a candidate whose evaluator moved", shadow, StringComparison.Ordinal);
-            Assert.Contains("000000000000", shadow, StringComparison.Ordinal);
-            Assert.Contains("the register does not name", shadow, StringComparison.Ordinal);
+            var (candidates, skipped) = Lists(shadow);
+
+            Assert.Equal(["momentum index at one hundred"], candidates);
+            Assert.Equal("a candidate whose evaluator moved", Assert.Single(skipped).Candidate);
+            Assert.Contains("000000000000", skipped[0].Reason, StringComparison.Ordinal);
+            Assert.Contains("the register does not name", skipped[0].Reason, StringComparison.Ordinal);
         }
 
         // The stage's own row: a failure rather than a note, with the candidate
@@ -381,8 +406,8 @@ public class ListingsCoverage
         // reader can tell a night that stopped from a night that skipped.
         var row = Query(store, "SELECT outcome || ' :: ' || detail FROM run_log WHERE stage = 'listings' AND run_id = 'coverage-shadow-drift';").Single();
 
-        Assert.StartsWith(ShortlistBuilder.Failed, row, StringComparison.Ordinal);
-        Assert.Contains("FAILURE", row, StringComparison.Ordinal);
+        Assert.StartsWith(ShortlistBuilder.Failed + " :: ", row, StringComparison.Ordinal);
+        Assert.Contains("FAILURE: 1 registered candidate(s) skipped on every name", row, StringComparison.Ordinal);
         Assert.Contains("a candidate whose evaluator moved", row, StringComparison.Ordinal);
 
         // And the same night once the drifted candidate is withdrawn says ok, so
@@ -403,7 +428,7 @@ public class ListingsCoverage
 
         await new ShortlistBuilder(
             FixedClock.At(NightStart, SessionZones.UnitedStates),
-            store.DatabaseFile).RunAsync("GSPC", "coverage-shadow-clean");
+            store.DatabaseFile).RunAsync("GSPC", "coverage-shadow-clean", NightStart);
 
         var clean = Query(store, "SELECT outcome FROM run_log WHERE stage = 'listings' AND run_id = 'coverage-shadow-clean';").Single();
 
@@ -417,6 +442,264 @@ public class ListingsCoverage
         Assert.Contains("momentum index at one hundred", after, StringComparison.Ordinal);
         Assert.DoesNotContain("a candidate whose evaluator moved", after, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task ACandidateRegisteredWhileTheNightRanIsNotEvaluatedByItsListingsStage()
+    {
+        // The night's start is taken before its first step, and its listings stage starts later.
+        using var store = new TemporaryStore().Migrated();
+
+        var night = new DateTimeOffset(2026, 9, 8, 21, 10, 0, TimeSpan.Zero);
+
+        await RegisterAsync(store, "registered before the night", 100, night.AddHours(-1));
+        await RegisterAsync(store, "registered while the night ran", 100, night.AddMinutes(5));
+
+        var code = await Worker.Nightly.RunAsync(
+            new Core.Configuration.StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
+            Path.Combine(Repository.Root, "fixtures", "membership-2026-09-05"),
+            "GSPC",
+            new StartedEarlierClock(night),
+            new StringWriter(),
+            new StringWriter(),
+            "coverage-night-started");
+
+        Assert.Equal(0, code);
+
+        // The stage started after the second registration, so a stage reading its own start would evaluate it.
+        var started = Query(store, "SELECT started_at FROM run_log WHERE run_id = 'coverage-night-started' AND stage = 'listings';").Single();
+        var stageStarted = DateTimeOffset.Parse(started, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+        Assert.True(stageStarted > night.AddMinutes(5), $"The listings stage started at {stageStarted.ToString("O", CultureInfo.InvariantCulture)}, which is not after the registration it is meant to exclude.");
+
+        var rows = Query(store, "SELECT shadow_reasons FROM listing;");
+
+        Assert.Equal(FixtureExpectation.CurrentMembers.Length, rows.Count);
+        Assert.All(rows, row => Assert.Equal(["registered before the night"], Lists(row).Candidates));
+        Assert.All(rows, row => Assert.DoesNotContain("registered while the night ran", row, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AStaleOrGappedNameIsSkippedOnItsOwnRowAndCountedWithoutFailingTheStage()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        await RegisterAsync(store, "momentum index at one hundred", 100, NightStart.AddDays(-1));
+
+        var sessions = Query(store, "SELECT DISTINCT session_date FROM bar ORDER BY session_date DESC LIMIT 4;");
+
+        Assert.Equal(4, sessions.Count);
+
+        // Readings of 20 fire at a level of 100, so a stale or gapped name that was read shows up as a fire.
+        ConstructedMember(store, "STALE", [sessions[2], sessions[1]], new() { [sessions[1]] = (20, 0.3), [sessions[2]] = (22, -0.4) });
+        ConstructedMember(store, "GAPPED", [sessions[3], sessions[1], sessions[0]], new() { [sessions[0]] = (20, 0.3), [sessions[1]] = (22, -0.4) });
+
+        var listed = await RunTheNightAsync(store, "coverage-stale-gapped");
+
+        Assert.Equal([.. FixtureExpectation.CurrentMembers.Append("GAPPED").Append("STALE").Order(StringComparer.Ordinal)], listed);
+
+        var stale = Lists(Query(store, "SELECT shadow_reasons FROM listing WHERE ticker = 'STALE';").Single());
+        var gapped = Lists(Query(store, "SELECT shadow_reasons FROM listing WHERE ticker = 'GAPPED';").Single());
+
+        Assert.Empty(stale.Candidates);
+        Assert.Equal([("momentum index at one hundred", $"no bar for this session; the last session stored for the name is {sessions[1]}")], stale.Skipped);
+        Assert.Empty(gapped.Candidates);
+        Assert.Equal([("momentum index at one hundred", $"the stored series has a gap at {sessions[2]}, so nothing is computed across it")], gapped.Skipped);
+
+        foreach (var ticker in FixtureExpectation.CurrentMembers)
+        {
+            var other = Lists(Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{ticker}';").Single());
+
+            Assert.Equal(["momentum index at one hundred"], other.Candidates);
+            Assert.Empty(other.Skipped);
+        }
+
+        var row = Query(store, "SELECT outcome || ' :: ' || detail FROM run_log WHERE stage = 'listings' AND run_id = 'coverage-stale-gapped';").Single();
+
+        Assert.StartsWith(ShortlistBuilder.Ok + " :: ", row, StringComparison.Ordinal);
+        Assert.Contains("1 candidate(s) registered, 4 shadow evaluation(s) written, 2 skipped on a name-night without the readings: 1 stale, 1 gapped, 0 with a reading not available", row, StringComparison.Ordinal);
+        Assert.DoesNotContain("FAILURE", row, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EveryReadingAnEvaluatorReadsIsOneTheNightHandsOver()
+    {
+        var handed = IndicatorSeries.Names
+            .Concat(IndicatorSeries.Names.Select(name => name + ShortlistBuilder.PreviousSuffix))
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.True(CandidateEvaluators.All.Count >= 2, $"Read {CandidateEvaluators.All.Count} evaluator(s), expected at least 2.");
+        Assert.All(CandidateEvaluators.All, evaluator => Assert.All(evaluator.Reads, key => Assert.Contains(key, handed)));
+        Assert.Contains(CandidateEvaluators.All, evaluator => evaluator.Reads.Any(key => key.EndsWith(ShortlistBuilder.PreviousSuffix, StringComparison.Ordinal)));
+    }
+
+    // A member with bars on the given sessions, and a momentum reading and histogram on each session given readings.
+    static void ConstructedMember(TemporaryStore store, string ticker, IReadOnlyList<string> bars, Dictionary<string, (double? Reading, double? Histogram)> readings)
+    {
+        Insert(
+            store,
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
+            $"VALUES ('GSPC', '{ticker}', '2026-01-02', NULL, '2026-09-08T00:00:00Z', 'Utilities');");
+
+        foreach (var session in bars)
+        {
+            Insert(
+                store,
+                "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+                $"('{ticker}', '{session}', '100.0000', '101.0000', '99.0000', '100.0000', 1000, 'test', '2026-09-08T21:00:00Z', '100.0000');");
+        }
+
+        foreach (var (session, (reading, histogram)) in readings)
+        {
+            Insert(
+                store,
+                "INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES " +
+                $"('{ticker}', '{session}', '{MomentumIndexReading.Reading}', {Sql(reading)}, 2), " +
+                $"('{ticker}', '{session}', '{MomentumHistogramTurn.Histogram}', {Sql(histogram)}, 2);");
+        }
+
+        static string Sql(double? value) => value is { } read ? read.ToString(CultureInfo.InvariantCulture) : "NULL";
+    }
+
+    static double? Reading(System.Text.Json.JsonElement session, string name) =>
+        session.GetProperty(name).ValueKind == System.Text.Json.JsonValueKind.Null ? null : session.GetProperty(name).GetDouble();
+
+    [Fact]
+    public async Task EveryShadowRowOverTheReplayedFixtureMatchesTheOneWorkedByHand()
+    {
+        var expected = Expected("shadow-column").GetProperty("overTheReplayedNight");
+        var nightStarted = DateTimeOffset.Parse(expected.GetProperty("nightStartedAt").GetString()!, CultureInfo.InvariantCulture);
+        var stageStarted = DateTimeOffset.Parse(expected.GetProperty("stageStartedAt").GetString()!, CultureInfo.InvariantCulture);
+        var session = expected.GetProperty("session").GetString()!;
+
+        using var store = await FixtureExpectations.WithListings();
+
+        Assert.Equal(session, Query(store, "SELECT MAX(session_date) FROM bar;").Single());
+
+        foreach (var one in expected.GetProperty("registrations").EnumerateArray())
+        {
+            var outcome = await new CandidateRegistrar(
+                FixedClock.At(DateTimeOffset.Parse(one.GetProperty("registeredAt").GetString()!, CultureInfo.InvariantCulture), SessionZones.UnitedStates),
+                store.DatabaseFile).RegisterAsync(
+                    one.GetProperty("candidate").GetString()!,
+                    "a rule",
+                    "a test",
+                    one.GetProperty("evaluator").GetString()!,
+                    one.GetProperty("parameters").EnumerateObject().ToDictionary(pair => pair.Name, pair => pair.Value.GetDouble(), StringComparer.Ordinal),
+                    "shadow-expectation-" + one.GetProperty("candidate").GetString()!.Replace(' ', '-'));
+
+            Assert.Equal(CandidateRegistrar.Registered, outcome.Outcome);
+        }
+
+        foreach (var member in expected.GetProperty("members").EnumerateArray())
+        {
+            ConstructedMember(
+                store,
+                member.GetProperty("ticker").GetString()!,
+                [.. member.GetProperty("bars").EnumerateArray().Select(bar => bar.GetString()!)],
+                member.GetProperty("readings").EnumerateObject().ToDictionary(
+                    on => on.Name,
+                    on => (Reading(on.Value, MomentumIndexReading.Reading), Reading(on.Value, MomentumHistogramTurn.Histogram))));
+        }
+
+        var rows = expected.GetProperty("rows");
+
+        async Task<string> NightAsync(string runId)
+        {
+            Insert(store, "DELETE FROM listing;");
+
+            await new ShortlistBuilder(FixedClock.At(stageStarted, SessionZones.UnitedStates), store.DatabaseFile).RunAsync("GSPC", runId, nightStarted);
+
+            Assert.Equal(
+                expected.GetProperty("rowsWritten").GetInt32(),
+                int.Parse(Query(store, $"SELECT COUNT(*) FROM listing WHERE session_date = '{session}';").Single(), CultureInfo.InvariantCulture));
+
+            return Query(store, $"SELECT outcome || ' :: ' || detail FROM run_log WHERE stage = 'listings' AND run_id = '{runId}';").Single();
+        }
+
+        var line = await NightAsync("shadow-expectation");
+
+        Assert.StartsWith((expected.GetProperty("fails").GetBoolean() ? ShortlistBuilder.Failed : ShortlistBuilder.Ok) + " :: ", line, StringComparison.Ordinal);
+        Assert.EndsWith("; " + expected.GetProperty("line").GetString(), line, StringComparison.Ordinal);
+
+        var evaluations = 0;
+        var skips = 0;
+
+        foreach (var ticker in Query(store, "SELECT ticker FROM listing ORDER BY ticker;"))
+        {
+            var column = System.Text.Json.JsonDocument.Parse(Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{ticker}';").Single()).RootElement;
+
+            evaluations += column.GetProperty("candidates").GetArrayLength();
+            skips += column.GetProperty("skipped").GetArrayLength();
+
+            Assert.DoesNotContain("registered while the night ran", column.GetRawText(), StringComparison.Ordinal);
+
+            if (rows.TryGetProperty(ticker, out var worked))
+            {
+                Assert.Equal((ticker, Canonical(worked.GetProperty("candidates"))), (ticker, Canonical(column.GetProperty("candidates"))));
+                Assert.Equal((ticker, Canonical(worked.GetProperty("skipped"))), (ticker, Canonical(column.GetProperty("skipped"))));
+
+                continue;
+            }
+
+            // A fixture name: both evaluated and neither skipped, the reading fires, and the turn is recomputed from its own two newest histograms.
+            Assert.Contains(ticker, FixtureExpectation.CurrentMembers);
+            Assert.Equal(0, column.GetProperty("skipped").GetArrayLength());
+
+            var fired = column.GetProperty("candidates").EnumerateArray()
+                .ToDictionary(one => one.GetProperty("candidate").GetString()!, one => one.GetProperty("fired").GetBoolean(), StringComparer.Ordinal);
+
+            var latest = double.Parse(
+                Query(store, $"SELECT value FROM indicator WHERE ticker = '{ticker}' AND name = '{MomentumHistogramTurn.Histogram}' AND session_date = '{session}';").Single(),
+                CultureInfo.InvariantCulture);
+            var before = double.Parse(
+                Query(store, $"SELECT value FROM indicator WHERE ticker = '{ticker}' AND name = '{MomentumHistogramTurn.Histogram}' AND session_date = (SELECT MAX(session_date) FROM bar WHERE ticker = '{ticker}' AND session_date < '{session}');").Single(),
+                CultureInfo.InvariantCulture);
+
+            Assert.Equal(2, fired.Count);
+            Assert.Equal((ticker, true), (ticker, fired["momentum index at one hundred"]));
+            Assert.Equal((ticker, before <= 0 && latest >= 0), (ticker, fired["momentum histogram turning up"]));
+        }
+
+        Assert.Equal(expected.GetProperty("evaluations").GetInt32(), evaluations);
+        Assert.Equal(expected.GetProperty("skips").EnumerateObject().Sum(cause => cause.Value.GetInt32()), skips);
+
+        // The same night with a candidate whose evaluator moved: the one skip that fails the stage, on every row, named once.
+        var moved = expected.GetProperty("withAMovedEvaluator");
+        var name = moved.GetProperty("candidate").GetString()!;
+        var parameters = moved.GetProperty("parameters").EnumerateObject().ToDictionary(pair => pair.Name, pair => pair.Value.GetDouble(), StringComparer.Ordinal);
+
+        Insert(
+            store,
+            "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) VALUES " +
+            $"(90, '{name}', 'a rule', 'a test', '{moved.GetProperty("evaluator").GetString()}', '{CandidateEvaluator.Write(parameters)}', " +
+            $"'{moved.GetProperty("evaluatorVersion").GetString()}', 'registered', NULL, '{moved.GetProperty("registeredAt").GetString()}', NULL);");
+
+        var failed = await NightAsync("shadow-expectation-moved");
+
+        Assert.StartsWith((moved.GetProperty("fails").GetBoolean() ? ShortlistBuilder.Failed : ShortlistBuilder.Ok) + " :: ", failed, StringComparison.Ordinal);
+        Assert.Contains("; " + moved.GetProperty("line").GetString(), failed, StringComparison.Ordinal);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(failed, "'" + name + "'"));
+
+        var reason = moved.GetProperty("reason").GetString()!.Replace("{version}", CandidateEvaluators.Find(moved.GetProperty("evaluator").GetString()!)!.Version, StringComparison.Ordinal);
+
+        Assert.Equal(
+            moved.GetProperty("rowsSkipped").GetInt32(),
+            Query(store, "SELECT shadow_reasons FROM listing;").Count(column => Lists(column).Skipped.Contains((name, reason)) && !Lists(column).Candidates.Contains(name)));
+    }
+
+    // A list of objects keyed in a fixed order and sorted, so two lists holding the same entries compare equal.
+    static string Canonical(System.Text.Json.JsonElement list) =>
+        string.Join(
+            "\n",
+            list.EnumerateArray()
+                .Select(one => string.Join(
+                    ";",
+                    one.EnumerateObject()
+                        .OrderBy(pair => pair.Name, StringComparer.Ordinal)
+                        .Select(pair => pair.Name + "=" + (pair.Value.ValueKind == System.Text.Json.JsonValueKind.Object
+                            ? string.Join(",", pair.Value.EnumerateObject().OrderBy(inner => inner.Name, StringComparer.Ordinal).Select(inner => inner.Name + ":" + inner.Value.ToString()))
+                            : pair.Value.ToString()))))
+                .Order(StringComparer.Ordinal));
 
     // A member with bars on the two newest sessions, a null sma200 on both, and the given momentum readings.
     static void ShortHistoryMember(TemporaryStore store, double? tonightsReading, double? previousReading)
@@ -505,6 +788,12 @@ public class ListingsCoverage
 
             Assert.Contains("\"skipped\":[]", other.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparison.Ordinal);
         }
+
+        // A reading not available is counted on the stage's line and fails nothing.
+        var row = Query(store, "SELECT outcome || ' :: ' || detail FROM run_log WHERE stage = 'listings' AND run_id = 'coverage-not-available-tonight';").Single();
+
+        Assert.StartsWith(ShortlistBuilder.Ok + " :: ", row, StringComparison.Ordinal);
+        Assert.Contains("1 skipped on a name-night without the readings: 0 stale, 0 gapped, 1 with a reading not available", row, StringComparison.Ordinal);
     }
 
     static System.Text.Json.JsonElement Expected(string stage) =>
