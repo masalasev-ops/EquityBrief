@@ -4,6 +4,7 @@ using EquityBrief.Worker.Moves;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
@@ -615,6 +616,18 @@ public class GapRefusal
             Expected("gap-stop").GetProperty("firedCountForAGappedName").GetInt32().ToString(CultureInfo.InvariantCulture),
             row[0]);
         Assert.Contains($"stopped at a gap (AAPL {cut})", GapDetail(store, ShortlistBuilder.Stage));
+
+        // Its earnings soon keeps the print the calendar holds and names the gap it was not
+        // counted for, rather than saying no date is on file.
+        var soon = JsonDocument.Parse(GapRows(store, "SELECT reasons FROM listing WHERE ticker = 'AAPL';").Single())
+            .RootElement.EnumerateArray()
+            .Single(reason => reason.GetProperty("name").GetString() == ShortlistSeries.EarningsSoon)
+            .GetProperty("values");
+
+        Assert.Equal("2026-09-17", soon.GetProperty(ShortlistSeries.NextDatedEventValue).GetString());
+        Assert.Equal(
+            Expected("gap-stop").GetProperty("earningsSoonCountForAGappedName").GetString() + cut,
+            soon.GetProperty("sessions to the next dated event").GetString());
     }
 
     [Fact]

@@ -4782,6 +4782,19 @@ public partial class FixtureExpectations
         Assert.DoesNotContain("beyond the exchange calendar", detail, StringComparison.Ordinal);
     }
 
+    // The volume a breakout case trades against the fifty-day average.
+    enum BreakoutVolume
+    {
+        Heavy,
+        Light,
+        AtTheAverage,
+    }
+
+    // The one band every breakout case writes for AAPL, which the listings
+    // expectation's edge cases are stated over.
+    const decimal BreakoutBandLow = 100m;
+    const decimal BreakoutBandHigh = 105m;
+
     // The 5.4 correction's cases for breakout on volume, through the shipped
     // builder over the replayed store with AAPL's bands, closes and volume written
     // here. The band's stored role is written the way the level builder writes
@@ -4792,7 +4805,7 @@ public partial class FixtureExpectations
     static async Task<(bool Fired, IReadOnlyDictionary<string, string> Values)> BreakoutFor(
         decimal previousClose,
         decimal close,
-        bool heavy,
+        BreakoutVolume volume,
         string runId)
     {
         using var store = await WithListings();
@@ -4800,29 +4813,40 @@ public partial class FixtureExpectations
         var tonight = Query(store, "SELECT MAX(session_date) FROM bar WHERE ticker = 'AAPL';").Single();
         var before = Query(store, $"SELECT MAX(session_date) FROM bar WHERE ticker = 'AAPL' AND session_date < '{tonight}';").Single();
         var asOf = Query(store, "SELECT MAX(as_of) FROM level WHERE ticker = 'AAPL';").Single();
-        var average = double.Parse(
-            Query(store, $"SELECT value FROM indicator WHERE ticker = 'AAPL' AND name = 'vol_avg50' ORDER BY session_date DESC LIMIT 1;").Single(),
-            CultureInfo.InvariantCulture);
+        var averageOn = Query(store, "SELECT MAX(session_date) FROM indicator WHERE ticker = 'AAPL' AND name = 'vol_avg50';").Single();
 
-        // One band, 100 to 105, and nothing else AAPL's reasons can read.
-        const decimal low = 100m;
-        const decimal high = 105m;
+        // The average written back whole, so a volume can sit exactly on it.
+        var average = Math.Round(double.Parse(
+            Query(store, $"SELECT value FROM indicator WHERE ticker = 'AAPL' AND name = 'vol_avg50' AND session_date = '{averageOn}';").Single(),
+            CultureInfo.InvariantCulture));
+
+        var traded = (long)(volume switch
+        {
+            BreakoutVolume.Heavy => average * 1.5,
+            BreakoutVolume.Light => average * 0.5,
+            _ => average,
+        });
+
+        // One band, and nothing else AAPL's reasons can read.
+        var low = BreakoutBandLow.ToString(CultureInfo.InvariantCulture);
+        var high = BreakoutBandHigh.ToString(CultureInfo.InvariantCulture);
 
         Insert(store, $"DELETE FROM level WHERE ticker = 'AAPL' AND as_of = '{asOf}';");
         Insert(
             store,
             "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
-            $"VALUES ('AAPL', '{asOf}', '100', '105', '{(low < close ? "support" : "resistance")}', 1, 1, 1, '[]');");
+            $"VALUES ('AAPL', '{asOf}', '{low}', '{high}', '{(BreakoutBandLow < close ? "support" : "resistance")}', 1, 1, 1, '[]');");
 
+        Insert(store, $"UPDATE indicator SET value = {average.ToString(CultureInfo.InvariantCulture)} WHERE ticker = 'AAPL' AND name = 'vol_avg50' AND session_date = '{averageOn}';");
         Insert(store, $"UPDATE bar SET close = '{previousClose.ToString(CultureInfo.InvariantCulture)}' WHERE ticker = 'AAPL' AND session_date = '{before}';");
         Insert(store, $"UPDATE bar SET close = '{close.ToString(CultureInfo.InvariantCulture)}', " +
-            $"volume = {Math.Round(average * (heavy ? 1.5 : 0.5)).ToString(CultureInfo.InvariantCulture)} WHERE ticker = 'AAPL' AND session_date = '{tonight}';");
+            $"volume = {traded.ToString(CultureInfo.InvariantCulture)} WHERE ticker = 'AAPL' AND session_date = '{tonight}';");
         Insert(store, "DELETE FROM listing;");
 
         await new ShortlistBuilder(FixedClock.At(Instant, SessionZones.UnitedStates), store.DatabaseFile).RunAsync(Index, runId, Instant);
 
         // The rule, read off what this test wrote.
-        var expected = low >= previousClose && close > high && heavy;
+        var expected = BreakoutBandLow >= previousClose && close > BreakoutBandHigh && traded > average;
         var fired = ReasonFired(store, "AAPL", ShortlistSeries.BreakoutOnVolume);
 
         Assert.Equal(expected, fired);
@@ -4833,7 +4857,7 @@ public partial class FixtureExpectations
     [Fact]
     public async Task BreakoutFiresWhereTheCloseClearsABandThatSatAboveLastNightsCloseOnVolume()
     {
-        var (fired, values) = await BreakoutFor(99m, 106m, heavy: true, "breakout-clears");
+        var (fired, values) = await BreakoutFor(99m, 106m, BreakoutVolume.Heavy, "breakout-clears");
 
         Assert.True(fired);
         Assert.Equal("99", values[ShortlistSeries.PreviousCloseValue]);
@@ -4843,7 +4867,7 @@ public partial class FixtureExpectations
     [Fact]
     public async Task BreakoutDoesNotFireWithoutTheVolume()
     {
-        var (fired, _) = await BreakoutFor(99m, 106m, heavy: false, "breakout-light");
+        var (fired, _) = await BreakoutFor(99m, 106m, BreakoutVolume.Light, "breakout-light");
 
         Assert.False(fired);
     }
@@ -4851,7 +4875,7 @@ public partial class FixtureExpectations
     [Fact]
     public async Task BreakoutDoesNotFireOverABandLastNightsCloseWasAlreadyAbove()
     {
-        var (fired, values) = await BreakoutFor(101m, 106m, heavy: true, "breakout-below");
+        var (fired, values) = await BreakoutFor(101m, 106m, BreakoutVolume.Heavy, "breakout-below");
 
         Assert.False(fired);
         Assert.Equal("0", values["bands above the previous close cleared"]);
@@ -4860,10 +4884,52 @@ public partial class FixtureExpectations
     [Fact]
     public async Task BreakoutDoesNotFireOnACloseInsideTheBand()
     {
-        var (fired, _) = await BreakoutFor(99m, 104m, heavy: true, "breakout-inside");
+        var (fired, _) = await BreakoutFor(99m, 104m, BreakoutVolume.Heavy, "breakout-inside");
 
         Assert.False(fired);
     }
+
+    // Each edge of the rule on the edge itself, as the listings expectation states the
+    // three cases: a band whose low edge was exactly last night's close was at or above
+    // it, a close exactly on the high edge has not cleared it, and volume exactly at the
+    // average is not above it.
+    static async Task<bool> BreakoutOnTheEdge(string edge, string runId)
+    {
+        var cases = Expected("listings").GetProperty("breakoutEdges");
+
+        Assert.Equal(BreakoutBandLow.ToString(CultureInfo.InvariantCulture), cases.GetProperty("bandLow").GetString());
+        Assert.Equal(BreakoutBandHigh.ToString(CultureInfo.InvariantCulture), cases.GetProperty("bandHigh").GetString());
+
+        var stated = cases.GetProperty(edge);
+        var volume = stated.GetProperty("volume").GetString() switch
+        {
+            "above the average" => BreakoutVolume.Heavy,
+            "at the average" => BreakoutVolume.AtTheAverage,
+            var other => throw new InvalidOperationException($"The expectation states a volume of '{other}', which no case writes."),
+        };
+
+        var (fired, _) = await BreakoutFor(
+            decimal.Parse(stated.GetProperty("previousClose").GetString()!, CultureInfo.InvariantCulture),
+            decimal.Parse(stated.GetProperty("close").GetString()!, CultureInfo.InvariantCulture),
+            volume,
+            runId);
+
+        Assert.Equal(stated.GetProperty("fired").GetBoolean(), fired);
+
+        return fired;
+    }
+
+    [Fact]
+    public async Task BreakoutFiresWhereLastNightsCloseSatExactlyOnTheBandsLowEdge() =>
+        Assert.True(await BreakoutOnTheEdge("lastNightOnTheLowEdge", "breakout-low-edge"));
+
+    [Fact]
+    public async Task BreakoutDoesNotFireOnACloseExactlyOnTheBandsHighEdge() =>
+        Assert.False(await BreakoutOnTheEdge("tonightOnTheHighEdge", "breakout-high-edge"));
+
+    [Fact]
+    public async Task BreakoutDoesNotFireOnVolumeExactlyAtTheFiftyDayAverage() =>
+        Assert.False(await BreakoutOnTheEdge("volumeAtTheAverage", "breakout-average"));
 
     [Fact]
     public async Task ThePlanAtListingCarriesTheEntryTheStopAndTheFirstTradedTarget()

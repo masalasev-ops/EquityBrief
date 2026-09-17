@@ -275,7 +275,26 @@ public sealed class ShortlistBuilder : IComponent
             // see: A gap is a session the exchange traded and the store does not hold
             var gapped = stop.Stops(ticker, await SessionsAsync(connection, ticker, cancellation));
 
-            var outcomes = ShortlistSeries.For(stale || gapped ? NoBarTonight : inputs);
+            // The session the row is about, which is the night's. A member with
+            // no bars is dated by the clock's session and a member with none for
+            // the night by the night, rather than by a session it has, so each
+            // still gets a row and the count per night still equals the index
+            // size.
+            var session = stale ? newest!.Value : sessionDate ?? asOf;
+
+            // A member evaluated over nothing still carries the date the calendar
+            // holds on or after its row's session, with no count made and the
+            // reason why.
+            // see: A member the night evaluates over nothing keeps the dated event the calendar holds and says no count was made
+            var notEvaluated = stale
+                ? NoBarThisSession(sessionDate!.Value)
+                : gapped
+                    ? GapAt(stop.Gaps[^1].SessionDate)
+                    : sessionDate is null ? NoBarStored : null;
+
+            var outcomes = ShortlistSeries.For(notEvaluated is { } why
+                ? NoBarTonight with { NextEvent = await NextEventAsync(connection, ticker, session, cancellation), NotCountedBecause = why }
+                : inputs);
             var count = outcomes.Count(outcome => outcome.Fired);
 
             // A dated event the exchange calendar cannot count to, named on the
@@ -292,25 +311,14 @@ public sealed class ShortlistBuilder : IComponent
             command.CommandText = Upsert;
             command.Parameters.AddWithValue("$ticker", ticker);
 
-            // The session the row is about, which is the night's. A member with
-            // no bars is dated by the clock's session and a member with none for
-            // the night by the night, rather than by a session it has, so each
-            // still gets a row and the count per night still equals the index
-            // size.
-            command.Parameters.AddWithValue(
-                "$session_date",
-                (stale ? newest!.Value : sessionDate ?? asOf).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$session_date", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
             command.Parameters.AddWithValue("$reasons", Serialised(outcomes));
             command.Parameters.AddWithValue("$fired_count", count);
             command.Parameters.AddWithValue(
                 "$plan_at_listing",
                 stale
-                    ? JsonSerializer.Serialize(new
-                    {
-                        note = "no bar for this session; the last session stored for the name is " +
-                            sessionDate!.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    })
+                    ? JsonSerializer.Serialize(new { note = NoBarThisSession(sessionDate!.Value) })
                     : PlanAtListing(plan));
 
             // Registered candidates, evaluated the same way and shown nowhere.
@@ -324,18 +332,16 @@ public sealed class ShortlistBuilder : IComponent
             // reasons refused to compute across.
             // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
             var withheld = stale
-                ? new NameWithheld(ShadowSkipCause.Stale, "no bar for this session; the last session stored for the name is " +
-                    sessionDate!.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                ? new NameWithheld(ShadowSkipCause.Stale, NoBarThisSession(sessionDate!.Value))
                 : gapped
-                    ? new NameWithheld(ShadowSkipCause.Gapped, "the stored series has a gap at " +
-                        stop.Gaps[^1].SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", so nothing is computed across it")
+                    ? new NameWithheld(ShadowSkipCause.Gapped, GapAt(stop.Gaps[^1].SessionDate) + ", so nothing is computed across it")
                     : null;
 
             var shadow = ShadowColumn.Evaluate(
                 standing,
                 new CandidateNight(
                     ticker,
-                    (stale ? newest!.Value : sessionDate ?? asOf),
+                    session,
                     withheld is null
                         ? await IndicatorsAsync(connection, ticker, cancellation)
                         : new Dictionary<string, double>(StringComparer.Ordinal)),
@@ -541,6 +547,29 @@ public sealed class ShortlistBuilder : IComponent
     // the same inputs a member the store holds no bar for at all has.
     static readonly ReasonInputs NoBarTonight = new(null, null, null, null, [], [], [], null, null, null, null);
 
+    // Why a member is evaluated over nothing, as its row states it.
+    static string NoBarThisSession(DateOnly last) =>
+        "no bar for this session; the last session stored for the name is " + last.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    static string GapAt(DateOnly gap) =>
+        "the stored series has a gap at " + gap.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    const string NoBarStored = "no bar is stored for the name";
+
+    // The calendar's next dated event on or after a session, where it holds one.
+    static async Task<DateOnly?> NextEventAsync(SqliteConnection connection, string ticker, DateOnly session, CancellationToken cancellation)
+    {
+        await using var next = connection.CreateCommand();
+
+        next.CommandText = NextEventFor;
+        next.Parameters.AddWithValue("$ticker", ticker);
+        next.Parameters.AddWithValue("$on_or_after", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await next.ExecuteScalarAsync(cancellation) is string eventDate
+            ? DateOnly.ParseExact(eventDate, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
+    }
+
     // The plan as it stood tonight: the entry zone, the stop and the first
     // traded target. Bars can be replayed and this cannot, because by the time a
     // verdict is possible the rules may have changed and recomputing would score
@@ -716,25 +745,14 @@ public sealed class ShortlistBuilder : IComponent
 
         if (sessionDate is { } dated)
         {
-            await using var next = connection.CreateCommand();
+            nextEvent = await NextEventAsync(connection, ticker, dated, cancellation);
 
-            next.CommandText = NextEventFor;
-            next.Parameters.AddWithValue("$ticker", ticker);
-            next.Parameters.AddWithValue("$on_or_after", dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-
-            if (await next.ExecuteScalarAsync(cancellation) is string eventDate)
-            {
-                nextEvent = DateOnly.ParseExact(eventDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-
-                // The sessions the exchange trades between tonight and the event,
-                // off its own calendar. Never the stored bars after tonight: the
-                // store holds no bar for a session that has not happened, so that
-                // count was 0 for every future print and the reason fired on all
-                // of them. A date past the closure table's end has no count, and
-                // the reason says so rather than guessing.
-                // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
-                sessionsToEvent = ExchangeClosures.SessionsUntil(dated, nextEvent.Value);
-            }
+            // The sessions the exchange trades between tonight and the event, off
+            // its own calendar and never the stored bars after tonight, which a
+            // live store never holds. A date past the closure table's end has no
+            // count, and the reason says so rather than guessing.
+            // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+            sessionsToEvent = nextEvent is { } dateOnFile ? ExchangeClosures.SessionsUntil(dated, dateOnFile) : null;
         }
 
         // The facts row is read so the listing and the facts file agree about

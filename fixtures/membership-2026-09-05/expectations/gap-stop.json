@@ -26,6 +26,7 @@
  "controlName": "MSFT",
  "trendStateForAGappedName": "not_classified",
  "firedCountForAGappedName": 0,
+ "earningsSoonCountForAGappedName": "not counted: the stored series has a gap at ",
  "reasonNamesTheGapsDate": true,
  "notAGap": [
   "a hole at either edge of the series, which is a shorter history",

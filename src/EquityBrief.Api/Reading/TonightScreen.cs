@@ -204,9 +204,9 @@ public static class TonightScreen
 
     // The sessions among these rows that were written before the 5.4 correction,
     // oldest first, read off whether earnings soon's values carry the event date
-    // the corrected rule writes. The rows are kept as written, and the tonight,
-    // run and universe routes say so beside them rather than presenting what the
-    // defect wrote as that night's reading.
+    // the corrected rule writes. The rows are kept as written, and every route
+    // that draws them says so beside them rather than presenting what the defect
+    // wrote as that night's reading.
     // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
     public static IReadOnlyList<DateOnly> WrittenBeforeTheCorrection(IEnumerable<ListingRow> listings) =>
     [

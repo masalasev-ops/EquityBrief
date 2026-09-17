@@ -63,9 +63,18 @@ public static class RunScreen
 
         var listedOn = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
+        // The sessions each reason's record stands on, which for the two reasons
+        // whose rule was corrected leaves out the sessions written under the old one.
+        var nights = ShortlistSeries.Reasons.ToDictionary(reason => reason, _ => new HashSet<DateOnly>(), StringComparer.Ordinal);
+
         foreach (var listing in listings)
         {
-            var fired = Fired(listing.Reasons);
+            var (counting, fired) = Counting(listing.Reasons);
+
+            foreach (var reason in counting)
+            {
+                nights.GetValueOrDefault(reason)?.Add(listing.SessionDate);
+            }
 
             listedOn[Key(listing.Ticker, listing.SessionDate)] = [.. fired];
 
@@ -161,7 +170,8 @@ public static class RunScreen
                     Sessions: tested.Sessions,
                     SessionMinimum: ReasonVerdict.MinimumSessions,
                     Threshold: tested.Threshold,
-                    Divisor: tested.Divisor);
+                    Divisor: tested.Divisor,
+                    Nights: nights[reason].Count);
 
                 // The two figures 8.2 adds, withheld here rather than at the page.
                 // A reason below the minimum has no share and no mean break-even
@@ -489,7 +499,7 @@ public static class RunScreen
     static string Key(string ticker, DateOnly sessionDate) =>
         $"{ticker}|{sessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
 
-    // The reasons that fired on a row and count toward their own records.
+    // The reasons on a row that count toward their own records, and which of those fired.
     //
     // A reason the 5.4 correction changed counts only where the row was written
     // under the corrected rule, read off the value that rule writes and the old
@@ -497,19 +507,19 @@ public static class RunScreen
     // so the setups those rows seeded are not earnings soon's; breakout on volume
     // written before it could not fire, so its rows remove nothing.
     // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
-    static IReadOnlyList<string> Fired(string reasons)
+    static (IReadOnlyList<string> Counted, IReadOnlyList<string> Fired) Counting(string reasons)
     {
         using var document = JsonDocument.Parse(reasons);
 
-        return
-        [
-            .. document.RootElement.EnumerateArray()
-                .Where(reason => reason.GetProperty("fired").GetBoolean())
-                .Where(reason => !ShortlistSeries.WrittenBeforeTheCorrection(
-                    reason.GetProperty("name").GetString()!,
-                    value => reason.GetProperty("values").TryGetProperty(value, out _)))
-                .Select(reason => reason.GetProperty("name").GetString()!),
-        ];
+        var counted = document.RootElement.EnumerateArray()
+            .Where(reason => !ShortlistSeries.WrittenBeforeTheCorrection(
+                reason.GetProperty("name").GetString()!,
+                value => reason.GetProperty("values").TryGetProperty(value, out _)))
+            .ToArray();
+
+        return (
+            [.. counted.Select(reason => reason.GetProperty("name").GetString()!)],
+            [.. counted.Where(reason => reason.GetProperty("fired").GetBoolean()).Select(reason => reason.GetProperty("name").GetString()!)]);
     }
 
     // The paid calls the log carries a recorded cost for, counted, their passes counted

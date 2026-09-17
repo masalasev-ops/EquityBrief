@@ -25,6 +25,66 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - DECISIONS.md - the dated event count and breakout on volume corrected in place at their figures, their surfaces and the lower edge
+
+Corrects: the count's decision named the tonight, run and universe routes as the surfaces that say a session was written before the correction, while the name page and the report exported from it draw the same rows; it gave its removal from earnings soon's record over six sessions after the record had moved to seven; and it said a count of 0 fires without a reason. Breakout on volume's decision gave the 2,018 rows of those six sessions. Found by the phase 8 sign-off review.
+Was:
+> so 0 is tonight's print, already reported by the time the night runs after the close, and it still fires.
+>
+> The run page's record counts each of those two reasons only off rows carrying its marker, which removed 99 wins and 23 losses from earnings soon's record and nothing from breakout on volume's, since it never fired, and the tonight, run and universe routes say so beside a session whose rows lack earnings soon's marker.
+>
+> from 5.4 until its correction it fired on none of the 2,018 rows the operator's store holds, and the suite's recompute read the same role and agreed.
+Now:
+> the count's entry gives the reason a count of 0 fires, says the calibration of the six reasons sets the lower edge, says a member evaluated over nothing is not counted, states the nights each record stands on, gives the removal over the seven sessions as the store held them after the night of 2026-09-16, being 2,306 fired with 46 won, 142 lost and 97 never entered among them, and names the five surfaces; breakout on volume's gives 2,522 rows; each ends with what it said until this correction.
+Why: what each rules is unchanged, so each is corrected rather than superseded, as the caps entry was.
+
+### 2026-09-16 - ARCHITECTURE.html - section 18's row for listings written before the 5.4 correction names the name page, its exported report and the nights each record stands on
+
+Corrects: the row named three routes while its own reason, that a page drawing those rows without the line presents what the defect wrote as that night's reading, covers the name page and the report exported from it, which draw the newest night's rows; and the run page's line saying how many nights the record stands on counted sessions the two corrected records leave out. Found by the phase 8 sign-off review.
+Was:
+> the rows are kept as written, and the run page's record counts earnings soon and breakout on volume only off rows carrying the value the corrected rule writes (see: Sessions to a dated event are counted on the exchange calendar and never on stored bars)
+>
+> the tonight, run and universe routes for such a session carry one line saying earnings soon on those rows counted every future print as tonight's, and breakout on volume could not fire
+Now:
+> the second cell adds "and states the nights each of their records stands on counted the same way"; the third reads "the tonight, run, universe and name routes for such a session, and the report exported from a name page, carry one line saying earnings soon on those rows counted every future print as tonight's, and breakout on volume could not fire"
+Why: the scope was narrower than the reason given for it, and a count read as the calibration's trigger was true of four records and not the other two.
+
+### 2026-09-16 - ARCHITECTURE.html - section 17's earnings horizon row says a print dated on the night fires
+
+Corrects: the row justified the horizon as far enough ahead to stage or trim a position before the date, and the reason fires at a count of 0, a print dated on the night, which no reason in the corpus explained. Found by the phase 8 sign-off review's judgement on that edge.
+Was:
+> about a month of trading, which is far enough ahead that a position can still be staged or trimmed before the date and near enough that the date is worth stating; the worked example sits 20 sessions before its print and applies the rule
+Now:
+> the same, with "a print dated on the night itself counts 0 and still fires, for the reason its decision gives, and where the lower edge sits is the calibration's to set" before the worked example
+Why: the row's rationale read as excluding a case the rule includes, and the decision it cites now gives the reason.
+
+### 2026-09-16 - SCHEMA.md - the listing's reasons note says what a member evaluated over nothing stores
+
+Authorised by: A member the night evaluates over nothing keeps the dated event the calendar holds and says no count was made
+Was:
+> | `reasons` | TEXT | JSON: each of the six reasons with fired true or false and the values that made it so. From the 5.4 correction earnings soon's values carry `next dated event` and breakout on volume's carry `previous close`, and a row without them was written before it (see: Sessions to a dated event are counted on the exchange calendar and never on stored bars) |
+Now:
+> the same note, followed by what a member evaluated over nothing stores for earnings soon, with the new decision cited
+Why: the path stored not on file for a date the calendar held, and the column note is where a later reader of the stored values looks for what each value means.
+
+### 2026-09-16 - RUNBOOK.md - the row for the line on listings written before the correction names the name page and its exported report
+
+Corrects: the row named the list, the run page and the universe screen, and the name page and its exported report draw the same rows and now carry the same line. Found by the phase 8 sign-off review.
+Was:
+> | A past night's list, run page or the universe screen carries a line saying its listings were written before a correction | the rows are from before the 5.4 correction, when earnings soon counted stored bars after the night and breakout on volume could not fire | nothing; the rows are kept as written, because a listing records what its night listed, and the run page's record for those two reasons already leaves them out |
+Now:
+> the first cell adds a name page and its exported report; the third adds that the run page's line states how many nights those two records stand on, and that a name page and its report read the newest night, so their line shows only while the newest night's rows were written before the correction
+Why: a symptom the operator can meet on a surface the row did not name is a symptom with no row.
+
+### 2026-09-16 - BUILD_PLAN.md - the calibration row counts each reason's nights over its own record and carries earnings soon's lower edge
+
+Corrects: the trigger counted nights of listings the two corrected records leave out, and earnings soon's firing at a count of 0 was left without a reason or a place to be decided. Found by the phase 8 sign-off review.
+Was:
+> | **The six reason thresholds calibrated from the nights they fired on** | 5.0 | operating | 60 nights of listings, read on the run page, which 5.6 builds. 60 because it is the quarter of trading the level window already uses, long enough that a distribution of fired counts is not one week's weather. No checkpoint accumulates nights, so 5.6 makes the trigger readable rather than producing it |
+Now:
+> the trigger adds that each reason's count is the nights its record stands on, stated above the records where it is fewer; and the cell ends with earnings soon's lower edge, what the calibration reads before setting it, the three choices and what moves with it
+Why: the review's judgement stood the edge and carried the question to the calibration, and a carried question lives in the row that owns it rather than in a sign-off's prose.
+
 ### 2026-09-16 - DECISIONS.md - the rule version caps cited to the operator's third round
 
 Corrects: the entry ruling the rule version caps ended "Ruled at the 8.6 correction", where the caps are the operator's third-round ruling on the phase 8 plan, extended to the fourth rule, and it named neither that ruling nor the two parts the building session added. Found by the phase 8 sign-off review.

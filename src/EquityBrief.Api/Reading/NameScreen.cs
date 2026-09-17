@@ -878,7 +878,8 @@ public static class NameScreen
             PassLine(newest, spend, today),
             Controls(staleness, newest, notWritten, spend, priced, today),
             spend is null || priced is null ? null : Cost(priced, spend),
-            Suspect(suspect));
+            Suspect(suspect),
+            listing is null ? [] : TonightScreen.WrittenBeforeTheCorrection([listing]));
     }
 
     // A suspect row as the page states it, and nothing for a name whose series is trusted.

@@ -23,6 +23,10 @@ public readonly record struct Band(decimal LowEdge, decimal HighEdge);
 // the exchange calendar gives to it, null past the closure table's end. A date
 // with no count is an event nobody can count the sessions to, which is a third
 // state and not the absence of a date.
+//
+// `NotCountedBecause` is why a member the night evaluates over nothing had no
+// count made, so its row states the date it holds rather than an absence.
+// see: A member the night evaluates over nothing keeps the dated event the calendar holds and says no count was made
 public sealed record ReasonInputs(
     decimal? Close,
     decimal? PreviousClose,
@@ -34,7 +38,8 @@ public sealed record ReasonInputs(
     string? TrendState,
     string? PreviousTrendState,
     DateOnly? NextEvent,
-    int? SessionsToNextEvent);
+    int? SessionsToNextEvent,
+    string? NotCountedBecause = null);
 
 // One reason and whether it fired, with the values that made it so.
 //
@@ -115,16 +120,13 @@ public static class ShortlistSeries
                     ("nearest edge", Price(crossed[0].Price)))
                 : Values(("close", Price(inputs.Close)), ("previous close", Price(inputs.PreviousClose)))));
 
-        // Breakout on volume: the close is above a resistance band on volume
-        // above the fifty-day average. The one condition that argues for buying
-        // strength rather than weakness.
+        // Breakout on volume: the close is above a band that sat at or above last
+        // night's close, on volume above the fifty-day average. The one condition
+        // that argues for buying strength rather than weakness.
         //
-        // Resistance is read at last night's close: a band of tonight's whose low
-        // edge was at or above the previous session's close, cleared tonight by a
-        // close above its high edge. Until the 5.4 correction it read the role the
-        // level builder stores, which is set against tonight's close, so every
-        // resistance band sat at or above the close and the reason could not fire:
-        // no row of 2,018 in the operator's store had it fired.
+        // The side is read at last night's close and never off the role the level
+        // builder stores, which is set against tonight's close, so a close is never
+        // above a band it calls resistance.
         // see: Breakout on volume reads resistance at the previous session's close
         var cleared = inputs.Close is { } price && inputs.PreviousClose is { } before
             ? inputs.Bands.Where(band => band.LowEdge >= before && price > band.HighEdge).ToArray()
@@ -184,18 +186,19 @@ public static class ShortlistSeries
         // does not fire either, and says that instead, because it is a date
         // nobody can count the sessions to rather than a date nobody has.
         //
-        // The count is the exchange calendar's, from the night to the date. Until
-        // the 5.4 correction it counted the stored bars after tonight, and a live
-        // store holds none, so every future print read as 0 and fired.
+        // The count is the exchange calendar's, from the night to the date, and
+        // never the stored bars after the night, which a live store never holds.
         // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
         outcomes.Add(new ReasonOutcome(
             EarningsSoon,
             inputs.SessionsToNextEvent is { } sessions && sessions >= 0 && sessions <= EarningsHorizonSessions,
             Values(
                 (NextDatedEventValue, inputs.NextEvent is { } dated ? dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : NotOnFile),
-                ("sessions to the next dated event", inputs.SessionsToNextEvent is { } counted
-                    ? counted.ToString(CultureInfo.InvariantCulture)
-                    : inputs.NextEvent is null ? NotOnFile : BeyondTheExchangeCalendar),
+                ("sessions to the next dated event", inputs.NotCountedBecause is { } why
+                    ? $"{NotCounted}: {why}"
+                    : inputs.SessionsToNextEvent is { } counted
+                        ? counted.ToString(CultureInfo.InvariantCulture)
+                        : inputs.NextEvent is null ? NotOnFile : BeyondTheExchangeCalendar),
                 ("horizon", EarningsHorizonSessions.ToString(CultureInfo.InvariantCulture)))));
 
         return outcomes;
@@ -204,6 +207,8 @@ public static class ShortlistSeries
     public const string NotOnFile = "not on file";
 
     public const string BeyondTheExchangeCalendar = "beyond the exchange calendar";
+
+    public const string NotCounted = "not counted";
 
     // The two values a row written since the 5.4 correction carries and a row
     // written before it does not, one per reason the correction changed. They are

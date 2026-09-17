@@ -9,7 +9,8 @@
  "counts": {
   "reasons": 6,
   "fired": 6,
-  "resolved": 0
+  "resolved": 0,
+  "nights": 1
  },
  "rules": {
   "minimumResolvedSetups": 250,
@@ -24,6 +25,7 @@
   "theSetupHorizonHasNoBaseRate": "target before stop is a question about a plan, and a name with no plan that night has no answer to it, so the page states the absence and its reason rather than leaving a window without a line",
   "nothingHasMatured": "the committed fixture's listings sit on the last stored session, so every horizon over them is not yet matured and every record is below the minimum. That is the state of the fixture rather than a defect, and it is why the resolved count above is zero",
   "firedIsReasonFirings": "reason firings summed over the reasons, not names on the list. A name that fired two reasons is counted in two of the six rows, which is what a record per reason is over",
-  "resolvedIsSetupHorizonOutcomes": "setup-horizon rows that reached an outcome, over every night the store holds"
+  "resolvedIsSetupHorizonOutcomes": "setup-horizon rows that reached an outcome, over every night the store holds",
+  "nightsAreEachReasonsOwn": "the listing sessions whose rows a reason's record counts. The replay runs the shortlist builder once, over bars ending on the fixture's night, so it lists one session, and every row it writes is in the corrected shape, so each of the six records stands on that one night and the listings do too"
  }
 }

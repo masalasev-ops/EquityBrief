@@ -1,9 +1,11 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -64,6 +66,87 @@ public partial class ReadSurface
         // A session the corrected rule wrote carries no line on either of its routes.
         Assert.DoesNotContain("written-before-correction", await client.GetStringAsync($"/screens/tonight/{night}"), StringComparison.Ordinal);
         Assert.DoesNotContain("written-before-correction", await client.GetStringAsync($"/screens/run/{night}"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ASessionWrittenBeforeTheCorrectionIsSaidSoOnTheNamePageAndItsExportedReportAndACorrectedOneIsNot()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = NightIn(store);
+        var name = FiredNamesOn(store, night)[0];
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        // The newest night as the corrected rule wrote it, which is the night the name page reads.
+        Assert.DoesNotContain("written-before-correction", await client.GetStringAsync($"/screens/name/{name}"), StringComparison.Ordinal);
+        Assert.DoesNotContain("written-before-correction", await client.GetStringAsync(ReportExporter.Route + name), StringComparison.Ordinal);
+
+        // The same night's rows in the shape they took before the correction.
+        store.Execute($"UPDATE listing SET reasons = '{ReasonsBeforeTheCorrection}', fired_count = 1 WHERE session_date = '{night}';");
+
+        foreach (var surface in new[] { await client.GetStringAsync($"/screens/name/{name}"), await client.GetStringAsync(ReportExporter.Route + name) })
+        {
+            var line = Assert.Single(Blocks(surface, "<p class=\"written-before-correction\"[^>]*>.*?</p>"));
+
+            Assert.Contains($"data-sessions=\"{night}\"", line, StringComparison.Ordinal);
+            Assert.Contains(SinglePageApp.WrittenBeforeTheCorrectionText, WebUtility.HtmlDecode(line), StringComparison.Ordinal);
+
+            // Inside the name's region, so the file carries it, and above the reasons it is about.
+            var region = surface[surface.IndexOf("<section class=\"name\"", StringComparison.Ordinal)..];
+
+            Assert.InRange(
+                region.IndexOf("written-before-correction", StringComparison.Ordinal),
+                0,
+                region.IndexOf("<section class=\"why-it-is-here\"", StringComparison.Ordinal));
+        }
+    }
+
+    [Fact]
+    public async Task EachReasonsRecordStatesTheNightsItStandsOnLeavingOutTheSessionsWrittenBeforeTheCorrection()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = NightIn(store);
+        var api = Api(store);
+
+        // Every session the pipeline wrote is in the corrected shape, and one more is written
+        // in the old shape, so the four reasons the correction left alone stand on one night
+        // more than the two it changed.
+        var corrected = (await api.ListingsAsync()).Select(listing => listing.SessionDate).Distinct().Count();
+        const string before = "2026-09-03";
+
+        Assert.InRange(corrected, 1, int.MaxValue);
+
+        store.Execute(
+            "INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) " +
+            $"SELECT ticker, '{before}', '{ReasonsBeforeTheCorrection}', 1, plan_at_listing, shadow_reasons FROM listing WHERE session_date = '{night}';");
+
+        var records = RunScreen.Records(await api.ListingsAsync(), RunScreen.Resolved(await api.ForwardReturnsAsync()));
+        string[] changed = [ShortlistSeries.BreakoutOnVolume, ShortlistSeries.EarningsSoon];
+
+        foreach (var record in records)
+        {
+            Assert.Equal(changed.Contains(record.Reason) ? corrected : corrected + 1, record.Nights);
+        }
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{night}"));
+
+        Assert.Contains(
+            $"the record below stands on {corrected + 1} night(s) of listings, and breakout on volume and earnings soon on {corrected} of them, {MarkRenderer.FewerNightsText}</p>",
+            page,
+            StringComparison.Ordinal);
+
+        foreach (var reason in ShortlistSeries.Reasons)
+        {
+            Assert.Matches(
+                $"<tr data-reason=\"{Regex.Escape(reason)}\"[^>]*data-nights=\"{(changed.Contains(reason) ? corrected : corrected + 1)}\"",
+                page);
+        }
     }
 
     [Fact]
