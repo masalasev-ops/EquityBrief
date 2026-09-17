@@ -198,7 +198,12 @@ public sealed class ShortlistBuilder : IComponent
         this.databaseFile = databaseFile;
     }
 
-    public async Task<ShortlistOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default)
+    // The night's start is handed in rather than read here, because this stage starts minutes after the night does.
+    public async Task<ShortlistOutcome> RunAsync(
+        string indexCode,
+        string runId,
+        DateTimeOffset nightStartedAt,
+        CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
 
@@ -229,8 +234,9 @@ public sealed class ShortlistBuilder : IComponent
         // candidate registered mid-night to the names below it in the alphabet
         // and not to the ones above, and nothing afterwards could say which.
         var registered = await RegisterAsync(connection, cancellation);
-        var standing = ShadowColumn.StandingAt(registered, startedAt);
-        var skipped = new Dictionary<string, string>(StringComparer.Ordinal);
+        var standing = ShadowColumn.StandingAt(registered, nightStartedAt);
+        var faults = new Dictionary<string, string>(StringComparer.Ordinal);
+        var withheldBy = new Dictionary<ShadowSkipCause, int>();
         var evaluated = 0;
 
         // The newest session any name holds, which is the night the list is about.
@@ -317,23 +323,37 @@ public sealed class ShortlistBuilder : IComponent
             // are, so a shadow score is never computed across a hole the live
             // reasons refused to compute across.
             // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+            var withheld = stale
+                ? new NameWithheld(ShadowSkipCause.Stale, "no bar for this session; the last session stored for the name is " +
+                    sessionDate!.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                : gapped
+                    ? new NameWithheld(ShadowSkipCause.Gapped, "the stored series has a gap at " +
+                        stop.Gaps[^1].SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", so nothing is computed across it")
+                    : null;
+
             var shadow = ShadowColumn.Evaluate(
                 standing,
                 new CandidateNight(
                     ticker,
                     (stale ? newest!.Value : sessionDate ?? asOf),
-                    stale || gapped
-                        ? new Dictionary<string, double>(StringComparer.Ordinal)
-                        : await IndicatorsAsync(connection, ticker, cancellation)));
+                    withheld is null
+                        ? await IndicatorsAsync(connection, ticker, cancellation)
+                        : new Dictionary<string, double>(StringComparer.Ordinal)),
+                withheld);
 
             evaluated += shadow.Outcomes.Count;
 
             foreach (var skip in shadow.Skipped)
             {
-                // Kept once per candidate rather than once per name. The reason
-                // is the same on every name-night, so a list of five hundred
-                // identical lines would bury the one thing the row has to say.
-                skipped.TryAdd(skip.Candidate, skip.Reason);
+                if (skip.IsFault)
+                {
+                    // Once per candidate: a fault's reason is the same on every name-night.
+                    faults.TryAdd(skip.Candidate, skip.Reason);
+                }
+                else
+                {
+                    withheldBy[skip.Cause] = withheldBy.GetValueOrDefault(skip.Cause) + 1;
+                }
             }
 
             command.Parameters.AddWithValue("$shadow_reasons", Serialised(shadow));
@@ -369,11 +389,16 @@ public sealed class ShortlistBuilder : IComponent
         var shadowSaid =
             standing.Count == 0
                 ? "; no candidate stands registered, so nothing was evaluated in shadow"
-                : FormattableString.Invariant($"; {standing.Count} candidate(s) registered, {evaluated} shadow evaluation(s) written")
-                    + (skipped.Count == 0
+                : FormattableString.Invariant(
+                    $"; {standing.Count} candidate(s) registered, {evaluated} shadow evaluation(s) written, ") +
+                    FormattableString.Invariant(
+                        $"{withheldBy.Values.Sum()} skipped on a name-night without the readings: {withheldBy.GetValueOrDefault(ShadowSkipCause.Stale)} stale, ") +
+                    FormattableString.Invariant(
+                        $"{withheldBy.GetValueOrDefault(ShadowSkipCause.Gapped)} gapped, {withheldBy.GetValueOrDefault(ShadowSkipCause.NotAvailable)} with a reading not available")
+                    + (faults.Count == 0
                         ? string.Empty
-                        : FormattableString.Invariant($"; FAILURE: {skipped.Count} registered candidate(s) were not evaluated on any name-night: ")
-                            + string.Join("; ", skipped.Select(entry => $"'{entry.Key}' {entry.Value}")));
+                        : FormattableString.Invariant($"; FAILURE: {faults.Count} registered candidate(s) skipped on every name, the code carrying no evaluator by its name or a moved one: ")
+                            + string.Join("; ", faults.Select(entry => $"'{entry.Key}' {entry.Value}")));
 
         await RecordAsync(
             connection,
@@ -383,7 +408,7 @@ public sealed class ShortlistBuilder : IComponent
             fired,
             reasonsFired,
             stop.Report() + beyond + shadowSaid,
-            skipped.Count == 0 ? Ok : Failed,
+            faults.Count == 0 ? Ok : Failed,
             cancellation);
 
         return new ShortlistOutcome(members.Count, members.Count, fired, reasonsFired);
@@ -394,7 +419,7 @@ public sealed class ShortlistBuilder : IComponent
     // The stage ran and a registered candidate went unevaluated. Its own value
     // rather than the night's failure word, because the night did not stop and a
     // reader of the run log has to be able to tell the two apart.
-    public const string Failed = "ok, with a shadow candidate unevaluated";
+    public const string Failed = "ok, with a registered candidate's evaluator missing or moved";
 
     static async Task<IReadOnlyList<RegisterRow>> RegisterAsync(
         SqliteConnection connection,

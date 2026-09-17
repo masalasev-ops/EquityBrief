@@ -220,7 +220,9 @@ public static class RunScreen
                 "{}", string.Empty, row.Event, row.Retires, row.RegisteredAt, null))
             .ToArray();
 
+        // The count is the set a night evaluates and the divisor the family's own figure, taken apart so a disagreement shows.
         return new ShadowRegion(
+            ShadowColumn.StandingAt(register, at).Count,
             CandidateFamily.Divisor(register, at),
             CandidateFamily.Maximum);
     }

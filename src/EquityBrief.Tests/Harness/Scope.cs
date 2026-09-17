@@ -482,11 +482,11 @@ internal static class Scope
         // exists to keep true.
         [CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered")] = new Scoped(
             Verdict.Pass,
-            "the count is read off the region's markup against the register, at nothing registered, at two, and at one after a retirement, so it moves with the register rather than being drawn once",
+            "the count is the candidates standing, read off the region's markup against the register, at nothing registered, at two, and at one after a retirement, so it moves with the register rather than being drawn once, and one night's page read before and after a retirement draws the register as it stands when the page is read",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets")] = new Scoped(
             Verdict.Pass,
-            "the divisor is drawn beside the count and equals it, and both move together when a candidate is retired, which is what dividing the threshold by the family that stands means",
+            "the divisor is the family's own figure and the count the candidates standing, computed apart and asserted equal over the register before anything is registered, at one, at two and at one after a retirement, and a region handed a divisor that is not its count draws each from its own field, so a divisor that stops being the count shows on the page",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted")] = new Scoped(
             Verdict.Pass,
@@ -2039,10 +2039,10 @@ internal static class Scope
         // claims, for the reason every other decomposed row is read that way: a
         // row passes for what it says, and a single verdict over three
         // statements passes when one of them is drawn and two are not. The
-        // count and the divisor are separate claims even though the page draws
-        // one number as both, because they are separate statements: one is how
-        // many stand registered and the other is what a threshold is divided by,
-        // and the day those stop being the same number the row has to fail.
+        // count and the divisor are separate claims, computed apart and drawn
+        // from their own fields: one is how many stand registered and the other
+        // is what a threshold is divided by, and the day those stop being the
+        // same number the page shows both.
         [CheckReach.Key("15.10 Run", "Shadow candidates")] =
         [
             "how many candidate conditions are registered",

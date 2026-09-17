@@ -25,6 +25,66 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - SCHEMA.md - which shadow skips fail the listings stage
+Authorised by: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip
+
+Was:
+> **`shadow_reasons` carries two lists and not one, from 8.4.** A candidate that did not fire and a candidate nothing evaluated are opposite statements: the first is a measurement and the second is a hole in one. Folding the second into the first is how a record of having skipped a name-night stops existing, and the correction later divides by a family whose members are assumed to have been scored throughout. So a candidate the night could not evaluate, because its evaluator's version has moved or because the night computed none of the values it reads, is written into `skipped` with its reason and is named as a failure on the listings stage's run log row rather than being absent.
+
+Now: the paragraph names as a failure only a candidate whose evaluator the code does not carry or whose version has moved, once, and counts a name with no bar, a gap or a reading not available as a skip of that name-night alone that fails nothing.
+
+Why: a skip for a name the night holds no readings for is a fact about that name on that night and fails nothing; only a missing or moved evaluator is a fault.
+
+### 2026-09-16 - SCHEMA.md - the column a listing row written before 8.4 carries
+Corrects: the shadow_reasons cell described two lists on every row, and every row written before 8.4 carries an empty candidates list and a note; found by the phase 8 sign-off review's correction reading the operator's store immutable.
+
+Was:
+> | `shadow_reasons` | TEXT | JSON: `candidates`, each registered candidate the night evaluated with whether it fired and the values that made it so, and `skipped`, each registered candidate the night could not evaluate with the reason. Written for every member on every night exactly as `reasons` is, and drawn on no screen (see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown) |
+
+Now: the cell adds that a row written before 8.4 carries an empty `candidates` and a `note` naming the checkpoint the register was then due at, in place of `skipped`.
+
+Why: a reader of the column across the store meets both shapes, and the cell is where it is told.
+
+### 2026-09-16 - ARCHITECTURE.html - the shortlist builder's row names which skipped candidates fail its stage
+Authorised by: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip
+
+Was:
+> and evaluates every candidate standing registered at the instant the night started into the shadow column of the same rows, naming as a failure on its own run log row any registered candidate it could not evaluate</td></tr>
+
+Now: the clause names as a failure only a candidate whose evaluator the code does not carry or has moved, and counts the name-nights skipped for a name with no bar, a gap or a reading not available.
+
+Why: a skip for a name the night holds no readings for is a fact about that name on that night and fails nothing; only a missing or moved evaluator is a fault.
+
+### 2026-09-16 - BUILD_PLAN.md - 8.4's paragraph says what a skipped name-night does
+Authorised by: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip
+
+Was:
+> the 8.4 paragraph, ending: is not a record of having skipped one.
+
+Now: the paragraph adds that a name-night the night holds no readings for is skipped on its own row, counted on the stage's line, and not a failure.
+
+Why: the paragraph named only the failure, and the counted skip is the other half the ruling states.
+
+### 2026-09-16 - .claude/rules/checks.md - listings-coverage asserts the night's start over a whole night, the counted skips and the worked night
+Authorised by: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip
+
+Was:
+> | `listings-coverage` | every CI run | A listings row exists for every index member on every night the store holds, whether or not a reason fired, with the fired and the quiet rows partitioning the whole and a member the night computed nothing for still carrying one. From 8.4 it also asserts what that grain exists for: every candidate standing registered at the instant the night started is evaluated into the shadow column of every one of those rows, including the rows no live reason fired on, a candidate registered after the night started is not evaluated by it, and a candidate whose evaluator's version has moved is skipped with its reason on every row and named as a failure on the stage's own run log row rather than in a note. It was rostered from 5.1 until 5.0 moved it, because 5.4 is the checkpoint that creates `listing` and a roster row naming a checkpoint the record shows as landed fails `coverage-reported` |
+
+Now: the row adds the instant asserted over a whole night whose listings stage starts after a registration, a stale or gapped name skipped with its readings unread, each skip counted and failing nothing, and the column over the replayed fixture matching a night worked by hand.
+
+Why: the roster row claimed the instant over a stage that ran alone under a clock that does not move, and named a moved evaluator as the one failure without saying what the other skips do.
+
+### 2026-09-16 - RUNBOOK.md - a registration while a night runs, the region's instant, and which skips fail
+Authorised by: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip
+
+Was:
+> From the next night every standing candidate is evaluated on every name into the shadow column and shown nowhere; the run page states how many are registered and the divisor that sets. A change to any source an evaluation runs through, which `CandidateEvaluator` lists, moves every evaluator's version, and from the next night each standing candidate is skipped and named as a failure on the listings stage's run log row until it is retired and registered again. Each attempt, refused or not, is a row on the run log under `candidate-register`.
+
+Now: the paragraph adds that a registration made while a night runs is evaluated from the night after, that the region's figures are the register as it stands when the page is read, that a name without readings is a counted skip, and that the listings stage fails only on a missing or moved evaluator, whose remedy is a retirement and a new registration.
+
+Why: the operator reads the listings stage's failures on the run page and needs to know which one asks for a retirement.
+
 ### 2026-09-16 - SCHEMA.md - the register's version pinned to every source an evaluation runs through
 Authorised by: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
 Was:

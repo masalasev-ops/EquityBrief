@@ -61,5 +61,86 @@
   "momentum index at thirty": 2,
   "momentum histogram turning up": 3
  },
+ "overTheReplayedNight": {
+  "derivedFrom": "the shadow column's rules worked by hand over the replayed fixture with six constructed members added, rather than read back from a run, and put to the builder through a store so the register read, the instant, the two sessions an evaluator is handed, the refusal of a stale or gapped name and the two lists are each reached. A candidate stands for the night if it was registered before the night started, so the one registered five minutes after the night's start and ten before the stage's is evaluated nowhere. The index reading at a level of one hundred fires wherever it is evaluated, because the relative strength index lies between 0 and 100; on the four fixture names it is evaluated on every row, since each holds 252 sessions and the reading's warm-up is 14. The histogram turn on a fixture name fires where its own two newest stored histograms say so, recomputed by the test from the indicator rows rather than written here. A name with no bar for the session, or with a hole in its stored series, is skipped by every candidate with the reason its row carries and its readings are never read, whatever they hold; a reading not available is skipped by the candidate that reads it and no other. Evaluations and skips together are the standing candidates times the members, 2 times 10, which is 14 evaluations and 6 skips, and none of the six skips fails the stage. A candidate registered under an evaluator version the code does not carry is the one skip that does: it is skipped on all 10 rows, named once on the stage's line, and leaves the other counts as they were.",
+  "session": "2026-09-04",
+  "nightStartedAt": "2026-09-05T21:10:00Z",
+  "stageStartedAt": "2026-09-05T21:25:00Z",
+  "registrations": [
+   { "candidate": "momentum index at one hundred", "evaluator": "momentum-index-reading", "parameters": { "level": 100 }, "registeredAt": "2026-09-05T21:00:00Z" },
+   { "candidate": "momentum histogram turning up", "evaluator": "momentum-histogram-turn", "parameters": { "margin": 0 }, "registeredAt": "2026-09-05T21:00:00Z" },
+   { "candidate": "registered while the night ran", "evaluator": "momentum-index-reading", "parameters": { "level": 100 }, "registeredAt": "2026-09-05T21:15:00Z" }
+  ],
+  "members": [
+   { "ticker": "TURN", "case": "the histogram crossed up between the session before and the night's session, which only the two sessions in the right order can show", "bars": ["2026-09-03", "2026-09-04"], "readings": { "2026-09-04": { "rsi14": 35, "macd_hist": 0.4 }, "2026-09-03": { "rsi14": 25, "macd_hist": -0.3 } } },
+   { "ticker": "FLAT", "case": "the histogram was above zero the session before, so nothing crossed and the turn is evaluated and does not fire", "bars": ["2026-09-03", "2026-09-04"], "readings": { "2026-09-04": { "rsi14": 60, "macd_hist": 0.5 }, "2026-09-03": { "rsi14": 58, "macd_hist": 0.2 } } },
+   { "ticker": "NEWONE", "case": "readings for the night's session alone, so there is no session before to offer the turn", "bars": ["2026-09-03", "2026-09-04"], "readings": { "2026-09-04": { "rsi14": 50, "macd_hist": 0.1 } } },
+   { "ticker": "NOREAD", "case": "the night's index reading is not available and the session before holds 42, which is never read as the night's", "bars": ["2026-09-03", "2026-09-04"], "readings": { "2026-09-04": { "rsi14": null, "macd_hist": 0.3 }, "2026-09-03": { "rsi14": 42, "macd_hist": -0.2 } } },
+   { "ticker": "STALE", "case": "no bar for the session, with readings on its own last two sessions that would fire both candidates if they were read", "bars": ["2026-09-02", "2026-09-03"], "readings": { "2026-09-03": { "rsi14": 20, "macd_hist": 0.3 }, "2026-09-02": { "rsi14": 22, "macd_hist": -0.4 } } },
+   { "ticker": "GAPPED", "case": "a hole on 2026-09-02 between stored sessions, with readings that would fire both candidates if they were read", "bars": ["2026-09-01", "2026-09-03", "2026-09-04"], "readings": { "2026-09-04": { "rsi14": 20, "macd_hist": 0.3 }, "2026-09-03": { "rsi14": 22, "macd_hist": -0.4 } } }
+  ],
+  "rows": {
+   "TURN": {
+    "candidates": [
+     { "candidate": "momentum histogram turning up", "fired": true, "values": { "macd_hist": "0.4", "macd_hist_previous": "-0.3", "margin": "0" } },
+     { "candidate": "momentum index at one hundred", "fired": true, "values": { "rsi14": "35", "level": "100" } }
+    ],
+    "skipped": []
+   },
+   "FLAT": {
+    "candidates": [
+     { "candidate": "momentum histogram turning up", "fired": false, "values": { "macd_hist": "0.5", "macd_hist_previous": "0.2", "margin": "0" } },
+     { "candidate": "momentum index at one hundred", "fired": true, "values": { "rsi14": "60", "level": "100" } }
+    ],
+    "skipped": []
+   },
+   "NEWONE": {
+    "candidates": [
+     { "candidate": "momentum index at one hundred", "fired": true, "values": { "rsi14": "50", "level": "100" } }
+    ],
+    "skipped": [
+     { "candidate": "momentum histogram turning up", "reason": "the night computed no 'macd_hist_previous' for NEWONE" }
+    ]
+   },
+   "NOREAD": {
+    "candidates": [
+     { "candidate": "momentum histogram turning up", "fired": true, "values": { "macd_hist": "0.3", "macd_hist_previous": "-0.2", "margin": "0" } }
+    ],
+    "skipped": [
+     { "candidate": "momentum index at one hundred", "reason": "the night computed no 'rsi14' for NOREAD" }
+    ]
+   },
+   "STALE": {
+    "candidates": [],
+    "skipped": [
+     { "candidate": "momentum histogram turning up", "reason": "no bar for this session; the last session stored for the name is 2026-09-03" },
+     { "candidate": "momentum index at one hundred", "reason": "no bar for this session; the last session stored for the name is 2026-09-03" }
+    ]
+   },
+   "GAPPED": {
+    "candidates": [],
+    "skipped": [
+     { "candidate": "momentum histogram turning up", "reason": "the stored series has a gap at 2026-09-02, so nothing is computed across it" },
+     { "candidate": "momentum index at one hundred", "reason": "the stored series has a gap at 2026-09-02, so nothing is computed across it" }
+    ]
+   }
+  },
+  "rowsWritten": 10,
+  "evaluations": 14,
+  "skips": { "stale": 2, "gapped": 2, "notAvailable": 2 },
+  "line": "2 candidate(s) registered, 14 shadow evaluation(s) written, 6 skipped on a name-night without the readings: 2 stale, 2 gapped, 2 with a reading not available",
+  "fails": false,
+  "withAMovedEvaluator": {
+   "candidate": "a candidate whose evaluator moved",
+   "evaluator": "momentum-index-reading",
+   "parameters": { "level": 100 },
+   "evaluatorVersion": "000000000000",
+   "registeredAt": "2026-09-05T21:00:00Z",
+   "reason": "registered under momentum-index-reading at 000000000000 and the code carries {version}, so a score would be about a rule the register does not name",
+   "rowsSkipped": 10,
+   "line": "3 candidate(s) registered, 14 shadow evaluation(s) written, 6 skipped on a name-night without the readings: 2 stale, 2 gapped, 2 with a reading not available; FAILURE: 1 registered candidate(s) skipped on every name",
+   "fails": true
+  }
+ },
  "note": "Every name-night is evaluated by both candidates whichever way each went, so the counts above are over five name-nights each and not over the ones that fired. A candidate absent from a row would be a hole in the record the correction later divides by, which is a different thing from a candidate that did not fire."
 }

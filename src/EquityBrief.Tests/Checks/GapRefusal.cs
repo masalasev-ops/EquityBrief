@@ -606,7 +606,7 @@ public class GapRefusal
         await new VolumeProfileBuilder(GapClock(), store.DatabaseFile).RunAsync("gap-profile");
         await new LevelBuilder(GapClock(), store.DatabaseFile).RunAsync("gap-levels");
         await new LadderBuilder(GapClock(), store.DatabaseFile).RunAsync(Index, "gap-ladders");
-        await new ShortlistBuilder(GapClock(), store.DatabaseFile).RunAsync(Index, "gap-listings");
+        await new ShortlistBuilder(GapClock(), store.DatabaseFile).RunAsync(Index, "gap-listings", Instant);
 
         var row = GapRows(store, "SELECT fired_count FROM listing WHERE ticker = 'AAPL';");
 
