@@ -12507,8 +12507,25 @@ Mutated:    the rule, stated before the sweep: break each property the findings 
             2 against 1; and nothing else, since every other instant compared is a whole second.
             M5 a comment line added to `ShortlistBuilder.cs` with neither version raised: red, the
             version pin test, and nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Six runs of the whole suite, never a filter, at this entry's commit, each
+            in its own detached worktree under the session scratchpad, with the tree read after to hold
+            only the mutated file and the worktree removed. The baseline is 991 of 992 with one red, and
+            that red is this entry: `two-platform` reads every checkpoint entry written since the 7.2
+            ruling for its Windows record, and this one carried a placeholder until the run below
+            filled it, so each count that follows is on top of it.
+            M1 turned 4 red: the hand-worked divisor test, the name registered again test, the
+            two-routes test and the fixture test. M2 turned 1 red: the store refusal test. M3 turned 2
+            red: the source half and `bar-append-only`'s delete in a file the schema does not name. M4
+            turned 3 red: the hand-worked divisor test, the two-routes test and the fixture test. M5
+            turned 1 red: the version pin test.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+            with none failed, migrations 0 to 27 with one added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
+            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: three
+            verdict notes are rewritten and no placement changes. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. Noted, because it is the cost the decision buys: every later
             edit to one of the nine sources an evaluation runs through moves both versions, the pin
             test names the value to write, and once candidates are registered each is skipped on the
