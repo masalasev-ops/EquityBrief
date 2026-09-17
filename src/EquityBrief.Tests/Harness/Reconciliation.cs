@@ -85,18 +85,23 @@ internal static class DuePoints
 
         foreach (Match entry in Entries(progress))
         {
-            var id = Regex.Match(entry.Groups["heading"].Value, @"^(\d+\.\d+)");
+            var heading = entry.Groups["heading"].Value;
 
-            if (!id.Success || OpensAsNotACheckpoint(entry))
+            if (LandsACheckpoint(heading, entry.Groups["body"].Value))
             {
-                continue;
+                built.Add(CheckpointHeading.Match(heading).Groups[1].Value);
             }
-
-            built.Add(id.Groups[1].Value);
         }
 
         return built;
     }
+
+    static readonly Regex CheckpointHeading = new(@"^(\d+\.\d+)");
+
+    // Whether an entry lands a checkpoint: a heading opening with one, over a body
+    // that does not open "Not a checkpoint entry". The one statement of it.
+    internal static bool LandsACheckpoint(string heading, string body) =>
+        CheckpointHeading.IsMatch(heading) && !OpensAsNotACheckpoint(body);
 
     // The planning checkpoints PROGRESS records as planned, each by the entry
     // of the pass that plans its phase.
@@ -123,7 +128,7 @@ internal static class DuePoints
         {
             var id = Regex.Match(entry.Groups["heading"].Value, @"^(\d+\.0) planning - ");
 
-            if (id.Success && OpensAsNotACheckpoint(entry))
+            if (id.Success && OpensAsNotACheckpoint(entry.Groups["body"].Value))
             {
                 planned.Add(id.Groups[1].Value);
             }
@@ -136,26 +141,16 @@ internal static class DuePoints
     // one, so the character class is spelled out rather than left to a dot.
     // A dot that matches newlines makes the heading swallow the file and
     // the reader returns nothing, which is a parse failure that reads as a
-    // record with no checkpoints in it.
-    static MatchCollection Entries(string progress) =>
+    // record with no checkpoints in it. `two-platform` reads the record through
+    // this as well, so what an entry is cannot be read two ways.
+    internal static MatchCollection Entries(string progress) =>
         Regex.Matches(
             progress,
             @"^### (?<heading>[^\r\n]*)(?<body>(?:(?!^### )[\s\S])*)",
             RegexOptions.Multiline);
 
-    static bool OpensAsNotACheckpoint(Match entry) =>
-        entry.Groups["body"].Value.TrimStart().StartsWith(NotACheckpoint, StringComparison.Ordinal);
-
-    // Whether an entry lands a checkpoint's code, which is what `Built` reads
-    // above and what `two-platform` reads to know which entries owe the Windows
-    // run. One reader for one population: `two-platform` keyed on a heading of a
-    // checkpoint and a dash until 8.0, where this one requires no dash, so an
-    // entry headed "### 8.1 resolution" landed its checkpoint and owed no
-    // Windows record. The phase 7 sign-off found it with nothing in that
-    // population, which is the time to close it.
-    internal static bool LandsACheckpoint(string heading, string body) =>
-        Regex.IsMatch(heading, @"^\d+\.\d+")
-        && !body.TrimStart().StartsWith(NotACheckpoint, StringComparison.Ordinal);
+    static bool OpensAsNotACheckpoint(string body) =>
+        body.TrimStart().StartsWith(NotACheckpoint, StringComparison.Ordinal);
 
     internal const string NotACheckpoint = "Not a checkpoint entry";
 

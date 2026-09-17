@@ -1,7 +1,7 @@
 {
   "stage": "theme-record",
   "derivation": "derived",
-  "derivedFrom": "section 12's rules for the industry cycle and the decisions that a theme is the industry the index names for a member, that a theme section states no figure, that a theme search is scoped by parameter, that a theme pass searches each site on the industry list alone and hands the model a bounded set of the pages they return, and that a list of publishers is a noise filter; and the fixture's own captures: the twelve searches a theme pass builds for Semiconductors, one for each site of the industry list over the quarter to 2026-09-08, and the two research model answers keyed on the requests the pass builds from what those searches kept. Which results are dropped for their site and which for being short of a document, the order the pages are kept in, every site's first result before any site's second, which pages are stored and admitted, which ten the cycle is handed, and how many searches and calls the pass and a second member's pass take were worked out from those rules and the captures' own bytes before the tests that read this file were run. Section 19.1's theme record.",
+  "derivedFrom": "section 12's rules for the industry cycle and the decisions that a theme is the industry the index names for a member, that a theme section states no figure, that a theme search is scoped by parameter, that a theme pass searches each site on the industry list alone and hands the model a bounded set of the pages they return, and that a list of publishers is a noise filter; and the fixture's own captures: the twelve searches a theme pass builds for Semiconductors, one for each site of the industry list over the quarter to 2026-09-08, and the two research model answers keyed on the requests the pass builds from what those searches kept. Which results are dropped for their site and which for being short of a document, the order the pages are kept in, every site's first result before any site's second, which pages are stored and admitted, which ten the cycle is handed, and how many searches and calls the pass and a second member's pass take were worked out from those rules and the captures' own bytes before the tests that read this file were run. Section 19.1's theme record. What each member's pass records that it did is derived from the decision that a pass for a name with no facts file refreshes its industry's theme and says so, since neither constructed member holds a bar and so neither holds a facts file.",
   "tables": [
     "theme_section",
     "source_document"
@@ -50,5 +50,11 @@
     "searches": 12,
     "paid": 2
   },
-  "spend": "0.011904468"
+  "spend": "0.011904468",
+  "passes": {
+    "note": "the first member's pass finds the theme missing, refreshes it and is left with the accepted version as of the night, so its sentence says the cycle was refreshed; the second member's pass finds that version accepted today, refreshes nothing, and its sentence says nothing of the cycle. Neither writes anything of its own.",
+    "outcome": "no facts file",
+    "first": "no facts file is stored for the name on or before today, so nothing of the name's own was written, and the pass refreshed its industry's cycle, which every name in that industry reads",
+    "second": "no facts file is stored for the name on or before today, so nothing of the name's own was written"
+  }
 }

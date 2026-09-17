@@ -13136,3 +13136,203 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             placement note is rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 8.0 - correction: a year's segment figures asked for as a year and refused under another period's name, the code the planning pass carried held to a checkpoint's done conditions, and the Windows run read off every entry   2026-09-17
+Corrects:   the 8.0 planning entry above records a facts file carrying the latest period of a segment
+            table with its months in each name, and the code said that was why "a sentence quoting a
+            year cannot read as a quarter". Nothing read the name. The segment commentary was still
+            asked what each segment "reported for the quarter", and the claim checker matched a
+            twelve-month figure written as a quarter's against the twelve-month value and passed it,
+            while the sentence naming its 12 months was refused for the 12; section 12.2's segment row
+            still said the latest quarter. The rest of the code the pass carried had gaps no check could
+            see. The sentence a pass for a name with no facts file writes when it refreshed its
+            industry's cycle was reached by one test and asserted by none. The worker's own reading of
+            `--session` against its store was reached by no test, its rule being asserted directly.
+            `two-platform` and `DuePoints.Built` each held a copy of what lands a checkpoint, and
+            `two-platform` read no entry opening "Not a checkpoint entry", which is how the pass wrote
+            the entry over its own code. The started-phase guard let one phase before the newest stop
+            being read with the suite green, which is the survivor the phase 7 sign-off recorded. The
+            note guard left "the two feeds it reads" standing. And the momentum test moved 903 readings
+            and asserted at least 4, beside floors of 8 level rows and 40 swing rows where the fixture
+            holds 29 and 171.
+            What the pass recorded is wrong in six places, quoted here with the right words. The
+            entry's "Four commits and this record" is five commits and this record: a4d6e61 followed
+            it, reading `coverage-reported`'s pending rows through one function with a constructed
+            proof. Its "930 tests, from 925" naming five is 931, from 925, naming six, the sixth being
+            that proof, `APendingRowNamingAPointThePlanLacksOrTheRecordHasPassedIsFound`, which is the
+            931 its Verified line states. Its "Nine went red as predicted", M11 among them, is eight
+            red as predicted before any run and M11 red as written after M1 survived, since M11 is not
+            among the predictions the entry stated before the sweep; the subject of 1889b9a says nine
+            and stands as written. The decision that a verdict note states no count of the row's own
+            parts says "nine stated such a count", and `BUILD_PLAN.md`'s 8.0 section and its carried
+            row said nine as well: in the rule's own words it is ten, the corporate action checker's
+            catalogue note having counted "the two feeds it reads", which the guard's words did not
+            reach and the read, found by those words, did not either. The rule version bound's
+            operating row this pass opened said fourteen versions "add 188 seconds and sit at 688":
+            495 and 188 are 683, and by the row's own stage figures fourteen versions, four replaying
+            the level stage at 143 seconds and ten the ladder stage at 5, add 622 and sit at 1,117
+            against a deadline of 900. The 8.6 correction above rewrote that row and recorded the sum
+            as 8.6's; the row was opened here. And the CHANGELOG entry for this pass's rewrite of phase
+            8's section gave a summary where the format asks for the prior text.
+Found:      by the phase 8 sign-off review on 2026-09-16: the prompt and the checker by a
+            demonstration over the built assemblies at 57f6e7f, in which "Productivity reported
+            revenue of $80 billion for the quarter. [D1]" passed over a twelve-month table and the
+            same sentence "for the 12 months to June 30. [D1]" was refused; the rest by reading the
+            code and the record against each other. The operator ruled on 2026-09-16 that everything
+            the review found is corrected before a sign-off handoff, one correction a checkpoint,
+            labelled for the checkpoint that built the defect. This session commits this code and does
+            not sign phase 8 off.
+Measured:   read immutable from the operator's store on 2026-09-17, after the night of 2026-09-16 and
+            before the next: schema 26, last written 2026-09-16 23:42:35 UTC, 0 fundamentals rows, and
+            0 of 3,033 facts files carrying a segment figure, so no stored facts file names a period and
+            no section written from one could have taken a quarter's wording over a year. Over the
+            record at 44b7f6d, 23 entries follow the last one a hosted Windows leg ran for, and each
+            says `tools/ci.ps1` ran green, 3 of them landing no checkpoint.
+Repaired:   over a table that files no quarter the segment commentary is asked for the months and the
+            end its figures cover and told to name that period by its months and never as a quarter, a
+            half or any other period, and the quarter's ask is kept word for word. In every section a
+            figure whose every matching fact is a segment figure for a period longer than a quarter is
+            refused where its sentence names a period of another length, being a quarter, a half, or
+            three, six, nine or twelve months, and the months of a period the facts file names are read
+            as a period rather than a figure. How a segment fact names its period is stated once, in
+            `SegmentPeriods`, which the assembler writes through and the prompt and the checker read.
+            Section 12.2's segment row says the latest period and what the model is told and refused.
+            `DuePoints.Built` lands a checkpoint through its one predicate, and `two-platform` reads the
+            record through `DuePoints.Entries`, every entry after the last hosted Windows leg whatever
+            it lands. The started-phase guard asserts the exact set: every phase before the newest
+            landed opening started and landed, and that newest one alone may be planned and not
+            started. The corporate action checker's note names its feeds without a count, and the
+            guard refuses a count beside feeds. The momentum test states the readings it moves, and its
+            level and swing rows, as equalities read off the fixture's expectations. `BUILD_PLAN.md`'s
+            8.0 section and its carried row, `two-platform`'s roster row, section 12.2's segment row and
+            `CLAUDE.md`'s planning pass convention say so, with the prior text in `CHANGELOG.md`, where
+            a new entry also quotes the phase 8 section this pass rewrote. Three decisions are written
+            (see: A segment figure held for a period longer than a quarter is asked for by that period
+            and refused where its sentence names a period of another length) (see: Every entry written
+            since the hosted Windows leg was removed records the Windows run, whatever the entry lands)
+            (see: Code a pass that lands no checkpoint carries into shipped source meets the done
+            conditions a checkpoint's code meets).
+Stored:     nothing to keep or rewrite. No stored facts file names a period longer than a quarter, no
+            section was written over one, and no name a stored facts file carries changes: a quarter's
+            segment fact is named by its end as before.
+Missed:     the 8.0 tests asserted what the assembler names a twelve-month figure and never built the
+            prompt or ran the checker over one, and no fixture held a table filing no quarter. M7
+            removed both endings of the no-facts-file sentence at once, so it went red through the one
+            ending a test asserted; M6 removed the rule inside `NightSession` rather than the call that
+            hands it the store. The 8.0 note read found counts by the words its guard reads, so a count
+            those words missed was missed by both. The started-phase set's second direction was named
+            as not mutated. And `two-platform`'s population was chosen at the 7.2 ruling, before a
+            planning pass carried code under a decision of its own.
+Guarded:    over constructed facts after an annual report: a year's figure refused under a quarter's
+            word, its label, its adjective and its three months, under the first half and H1, and under
+            nine months, each naming the figure; the same figure passing for "the 12 months to
+            2026-06-30" and "the twelve months to June 30, 2026", and refused beside "any quarter";
+            "the 6 months" refused for its 6 as well; the fundamentals' own quarter, and a figure a
+            quarter's fact shares, passing; and over the same facts named for a quarter, no period's
+            name read. Over the fixture's KEYS table with its three-month columns taken out, the
+            expectation's period, ask and four verdicts. Over the fixture's theme pass, each
+            constructed member's sentence. Over the worker's own entry point run as a process against a
+            store in a throwaway root: a session older than the store's newest refused naming both
+            dates with no run log row, and the newest passing the argument to stop on a missing capture
+            with its row. Over constructed plans and records, a phase lost from either reader found,
+            and an entry landing no checkpoint read for its Windows run. Over the real record, every
+            entry since the last hosted Windows leg.
+Expected:   derived, two added to the fixture's expectations. `prose.json`'s `withoutAQuarter`: the
+            KEYS segment report the fixture captured files three months and nine months each to
+            2026-07-31 and to 2025-07-31, being a third quarter's report, so with the three-month
+            columns taken out every segment figure is named for the nine months to 2026-07-31, the ask
+            names that period, and the checker's four verdicts follow from the decision, a quarter and
+            six months refused and nine months in words and the period as the file names it passing,
+            each worked out from the report's column headings before the test was run.
+            `theme-record.json`'s `passes`: neither constructed member holds a bar and so neither holds
+            a facts file; the first member's pass refreshes the theme and its sentence says so, and the
+            second finds it accepted today and says nothing of the cycle, from the ruling the 8.0 entry
+            records. The readers, the note guard and the worker's argument handling are reached by no
+            fixture replay, and each is held by a constructed proof or a process run inside its test;
+            the momentum, level and swing populations are read off the expectations that already state
+            them.
+Tests:      1015, from 1011. Four added: `claim-admissibility`'s
+            `AFigureHeldOnlyForAPeriodLongerThanAQuarterIsRefusedUnderAnotherPeriodsNameAndPassesUnderItsOwn`,
+            `fixture-expectations`' `ATableFilingNoQuarterIsAskedForByItsPeriodAndRefusedUnderAnotherPeriodsName`,
+            `nightly-run`'s `TheWorkerRefusesASessionOlderThanItsOwnStoreBeforeItsFirstStepAndPassesTheNewest`,
+            and `architecture-conformance`'s `AnOpeningCheckpointReadWronglyIsFoundWhicheverReaderLosesItsPhase`.
+            Widened: the theme record test reads each member's sentence; the momentum test states the
+            readings it moves and its level and swing rows as equalities; the record's reader test
+            asserts the exact started-phase set; `two-platform`'s proof and real-record test read every
+            entry, renamed `AnEntryWithoutTheWindowsRunIsFoundWhateverItLandsAndOnlyAfterTheLastHostedLeg`
+            and `EveryEntrySinceTheLastHostedWindowsLegRecordsTheWindowsRun`; the note guard refuses a
+            count of feeds; and the lane table test reads the segment row's middle cells. No file this
+            correction edits is a source either evaluator version or the ladder rules' code version
+            pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each finding's own failure where it runs through
+            shipped code or the worker's entry point, being a year's figure passed under a quarter's
+            name, the months of its own period refused as a figure, the ask saying quarter over a
+            longer period, the refreshed sentence swapped for its opposite and the store's newest
+            session withheld from the argument; and of the harness properties, the one a sweep has
+            already shown surviving in its earlier form, the started-phase set, in each of the two ways
+            it finds an opening that is not started read wrongly. None edits a pinned source, so the
+            pin tests are predicted green throughout. Predicted:
+            M1 the refusal under another period's name removed from `ClaimRules.Check`, the checker as
+            8.0 left it: the constructed checker test red, on no finding for "$80 billion for the
+            quarter", and the fixture's no-quarter test red, on no finding for the quarter's sentence;
+            nothing else, since no other facts file the suite builds names a period.
+            M2 the months of a period the file names left to be read as a figure: the same two red,
+            the constructed test on the 12 of "the 12 months to 2026-06-30" refused, and the fixture's
+            on the 9 of "the 9 months to 2026-07-31" refused, since no value KEYS's facts file holds
+            lies within a half of 9; nothing else.
+            M3 the segment commentary asked the quarter's ask whatever period its facts cover: the
+            fixture's no-quarter test red, on the ask, and nothing else, since every recording is keyed
+            on a quarter's prompt, which does not move.
+            M4 the refreshed ending replaced by ", and its industry's cycle could not be refreshed": the
+            theme record test red, on the first member's sentence, and nothing else, the no-facts-file
+            test asserting the ending M4 writes.
+            M5 the worker handing the session rule no stored session: the process test red, on a
+            session older than the store going on to the feeds, and nothing else.
+            M6 the started-phase set allowing a phase before the newest to be planned and not started:
+            the constructed proof red, on a phase lost from both readers that it no longer finds, and
+            nothing else, no phase being lost in the real record.
+            M7 the started-phase set no longer finding an opening left out while the record builds
+            another checkpoint of its phase: the constructed proof red, on the newest phase lost from
+            the started set, and nothing else.
+            Properties added and not mutated: the half and the other counts of months a sentence names,
+            and a period named beside its own, which the constructed test refuses and M1 breaks with
+            the rest; `two-platform` reading every entry, whose proof counts four entries landing no
+            checkpoint; `DuePoints.Built` landing through the one predicate; the note guard's feeds,
+            which its refused control holds; the momentum, level and swing populations, held as
+            equalities; the lane table's segment cells; and the decisions' citations, which
+            `decision-resolves` reads.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, the pin tests green throughout. Eight runs of the whole suite, never a
+            filter, at this entry's commit, each in its own detached worktree under the session
+            scratchpad, with the tree read before the run to hold only the mutated file and the
+            worktree removed after. The baseline is 1014 of 1015 with one red, and that red is this
+            entry: `two-platform` reads every entry written since the 7.2 report for its Windows
+            record, and this one carried a placeholder until the run below filled it, so each count
+            that follows is on top of it.
+            M1 turned 2 red: the constructed checker test and the fixture's no-quarter test. M2 turned
+            the same 2 red. M3 turned 1 red: the fixture's no-quarter test. M4 turned 1 red: the theme
+            record test. M5 turned 1 red: the process test. M6 turned 1 red: the opening proof. M7
+            turned 1 red: the opening proof.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1015 of 1015 tests ran
+            with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: one
+            verdict note is rewritten and no placement changes. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
+Notes:      the first hosted run over this entry, at e80c027, failed on both jobs, macOS and the Linux
+            case-sensitivity job, on the worker process test alone: the worker exited 134 before its
+            first line, unable to load `Microsoft.Extensions.Configuration.Abstractions`. The test
+            started the worker from the suite's own build output. The suite runs on the ASP.NET
+            framework as well as the base one, and the hosted builds left the configuration packages
+            out of that output, the framework carrying those assemblies, where the operator's build
+            copied them in, so the sweep and both gates ran green over it. The worker names the base
+            framework alone and on both hosted images found them nowhere. Nothing shipped is affected:
+            `tools/nightly` runs the worker from its own build output, which carries every package it
+            names. The test now starts the worker from that output and names the worker's standard
+            error when it exits otherwise than refused, and both gates are run again over it below. M5
+            is run again over the moved test, at the commit that moves it, with its prediction
+            unchanged: the process test red and nothing else.
+            Rerun: M5 over the moved test at fe930fa, the whole suite in its own detached worktree,
+            turned 1 red, the process test, and nothing else, 1014 of 1015 passing.
+Carried:    nothing owed by this repair.

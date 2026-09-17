@@ -536,12 +536,13 @@ public class ComponentAccess
     // `one` is left out of the number words on purpose, and the limit is stated:
     // the notes use it as a determiner, as in the one reader or the one cell
     // width the table gives a mark, so a note meaning one cell as a count would
-    // pass. The nine this refused when it was written all counted in twos and
-    // upward.
+    // pass. Every count it has refused counted in twos and upward.
+    //
+    // A feed is a part of the row as a store is: the reads cell names both.
     // see: A verdict note states no count of the row's own parts
     static readonly Regex CountsTheRowsParts = new(
         @"\b(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|(?<![\d.])\d+(?![\d.]))\b" +
-        @"(?:(?:\s+[A-Za-z']+)?\s+(?:cells?|stores?|columns?)\b|\s+(?:reads?|written)\b)",
+        @"(?:(?:\s+[A-Za-z']+)?\s+(?:cells?|stores?|columns?|feeds?)\b|\s+(?:reads?|written)\b)",
         RegexOptions.IgnoreCase);
 
     [Fact]
@@ -568,11 +569,11 @@ public class ComponentAccess
         // this a matcher that matched nothing would pass the assertion above over
         // every note in the map.
         Assert.All(
-            new[] { "eleven cells", "12 read", "all thirteen cells are blank", "the four stores it reads", "the table's nine columns" },
+            new[] { "eleven cells", "12 read", "all thirteen cells are blank", "the four stores it reads", "the table's nine columns", "the class declares the two feeds it reads" },
             counted => Assert.True(CountsTheRowsParts.IsMatch(counted), $"'{counted}' states a count and was not refused."));
 
         Assert.All(
-            new[] { "repaired at 4.0", "section 14", "step 17", "8.3", "the one reader", "one call, stores no row", "twenty at most are drawn" },
+            new[] { "repaired at 4.0", "section 14", "step 17", "8.3", "the one reader", "one call, stores no row", "twenty at most are drawn", "both feeds it reads" },
             allowed => Assert.False(CountsTheRowsParts.IsMatch(allowed), $"'{allowed}' is not a count of a row's parts and was refused."));
     }
 

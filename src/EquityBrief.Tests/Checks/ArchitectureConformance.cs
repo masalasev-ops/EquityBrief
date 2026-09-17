@@ -603,46 +603,20 @@ public partial class ArchitectureConformance
         // leave its checkpoint unlanded and every obligation owed at it unchased,
         // which is the defect 7.1 repaired arriving by another route.
         //
-        // The population is derived rather than floored. It was at least five,
-        // set at the phase 6 sign-off over phases 2 to 6 on the reasoning that the
-        // count only rises, and the phase 7 sign-off's sweep showed what that
-        // costs: counting one phase fewer left the suite green, so one phase could
-        // stop being read with nothing saying so. What the plan and the record
-        // give between them is the exact set, being every opening checkpoint of a
-        // phase something else in it has built, so the two halves are compared as
-        // sets and neither can quietly shrink.
-        var openings = PlanCheckpoints.All()
-            .Select(point => point.Id)
-            .Where(id => id.EndsWith(".0", StringComparison.Ordinal))
-            .ToArray();
-
-        var started = openings
-            .Where(id => built.Any(checkpoint =>
-                DuePoints.PhaseOf(checkpoint) == DuePoints.PhaseOf(id) && checkpoint != id))
-            .ToArray();
-
-        var landed = openings.Where(id => DuePoints.HasLanded(id, progress)).ToArray();
+        // The population is derived from the plan and the record rather than floored:
+        // see `UnreadOpenings` below, whose constructed proof is the test after this one.
+        var checkpoints = PlanCheckpoints.All().Select(point => point.Id).ToArray();
+        var openings = checkpoints.Where(id => id.EndsWith(".0", StringComparison.Ordinal)).ToArray();
+        var started = Started(openings, built);
 
         // The floor is context: how many phases have started is a fact about how
         // much is built, and it is stated so a reader returning nothing is not
-        // read as a corpus with no started phases. The property is the two
-        // directions below.
-        Assert.True(started.Length >= 5, $"Read {started.Length} started phases with an opening checkpoint, expected at least 5.");
+        // read as a corpus with no started phases. The property is the set below.
+        Assert.True(started.Count >= 5, $"Read {started.Count} started phases with an opening checkpoint, expected at least 5.");
 
-        // Every started phase's opening checkpoint has landed.
-        Assert.DoesNotContain(started, id => !DuePoints.HasLanded(id, progress));
+        var unread = UnreadOpenings(openings, checkpoints, started, built, DuePoints.Planned(progress));
 
-        // And the other way round, which is what a floor cannot say: an opening
-        // checkpoint that has landed belongs to a phase something else in it has
-        // built, save for the one phase being planned now, whose planning entry
-        // has landed and whose building has not started. More than one of those
-        // is a phase planned and abandoned, or a reader landing an opening from
-        // an entry that plans nothing.
-        var plannedNotStarted = landed.Except(started, StringComparer.Ordinal).ToArray();
-
-        Assert.True(
-            plannedNotStarted.Length <= 1,
-            "Opening checkpoints landed for phases nothing has built: " + string.Join(", ", plannedNotStarted) + ".");
+        Assert.True(unread.Count == 0, "Opening checkpoints the record reads wrongly: " + string.Join(", ", unread) + ".");
 
         Assert.Contains("1.1", built);
         Assert.Contains("1.2", built);
@@ -691,6 +665,73 @@ public partial class ArchitectureConformance
 
         Assert.Contains("9.1", constructed);
         Assert.DoesNotContain("9.2", constructed);
+    }
+
+    // The opening checkpoints of phases something other than the opening has built.
+    static IReadOnlyList<string> Started(IReadOnlyList<string> openings, IReadOnlyList<string> built) =>
+    [
+        .. openings.Where(id => built.Any(checkpoint =>
+            DuePoints.PhaseOf(checkpoint) == DuePoints.PhaseOf(id) && checkpoint != id)),
+    ];
+
+    // Phases are planned and built in order, so every phase before the newest landed opening
+    // has started and landed, and that newest one alone may be planned and not started. A
+    // reader losing every building entry of the newest phase reads as that state and is not
+    // found here.
+    internal static IReadOnlyList<string> UnreadOpenings(
+        IReadOnlyList<string> openings,
+        IReadOnlyList<string> checkpoints,
+        IReadOnlyList<string> started,
+        IReadOnlyList<string> built,
+        IReadOnlyList<string> planned)
+    {
+        var newest = openings
+            .Where(id => DuePoints.HasLanded(id, built, planned))
+            .OrderBy(DuePoints.Order)
+            .LastOrDefault();
+
+        bool BuildsItsPhase(string opening) =>
+            checkpoints.Any(id => id != opening
+                && DuePoints.PhaseOf(id) == DuePoints.PhaseOf(opening)
+                && built.Contains(id, StringComparer.Ordinal));
+
+        return
+        [
+            .. openings.Where(id => started.Contains(id, StringComparer.Ordinal)
+                ? !DuePoints.HasLanded(id, built, planned)
+                : BuildsItsPhase(id) || (newest is not null && DuePoints.Compare(id, newest) < 0)),
+        ];
+    }
+
+    [Fact]
+    public void AnOpeningCheckpointReadWronglyIsFoundWhicheverReaderLosesItsPhase()
+    {
+        string[] openings = ["2.0", "3.0", "4.0"];
+        string[] checkpoints = ["2.0", "2.1", "3.0", "3.1", "4.0", "4.1"];
+        string[] planned = ["2.0", "3.0", "4.0"];
+
+        IReadOnlyList<string> Unread(string[] started, string[] built, string[] landedAsPlanned) =>
+            UnreadOpenings(openings, checkpoints, started, built, landedAsPlanned);
+
+        // Every phase built and planned, and the newest planned with nothing built yet.
+        Assert.Empty(Unread(["2.0", "3.0", "4.0"], ["2.1", "3.1", "4.1"], planned));
+        Assert.Empty(Unread(["2.0", "3.0"], ["2.1", "3.1"], planned));
+
+        // A phase before the newest that nothing reads as built, with its opening landed and
+        // with it lost as well.
+        Assert.Equal(["3.0"], Unread(["2.0", "4.0"], ["2.1", "4.1"], planned));
+        Assert.Equal(["3.0"], Unread(["2.0", "4.0"], ["2.1", "4.1"], ["2.0", "4.0"]));
+
+        // A started phase whose opening the planning reader does not land.
+        Assert.Equal(["3.0"], Unread(["2.0", "3.0", "4.0"], ["2.1", "3.1", "4.1"], ["2.0", "4.0"]));
+
+        // A started set counting one phase fewer than the record builds, the newest or one
+        // before it.
+        Assert.Equal(["4.0"], Unread(["2.0", "3.0"], ["2.1", "3.1", "4.1"], planned));
+        Assert.Equal(["3.0"], Unread(["2.0", "4.0"], ["2.1", "3.1", "4.1"], planned));
+
+        // An opening the plan has beyond the newest landed one is a phase not reached.
+        Assert.Empty(Unread(["2.0"], ["2.1"], ["2.0"]));
     }
 
     [Fact]

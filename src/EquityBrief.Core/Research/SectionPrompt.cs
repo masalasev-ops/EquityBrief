@@ -94,6 +94,20 @@ public static class SectionPrompt
             "In three or four paragraphs, say what is true, what the market is arguing about, and what the plan therefore is.",
     };
 
+    // The segment commentary over a table that files no quarter. The quarter's ask above
+    // stays word for word, since every recording of it is keyed on it.
+    // see: A segment figure held for a period longer than a quarter is asked for by that period and refused where its sentence names a period of another length
+    public static string SegmentsOverALongerPeriod(int months, string ended) =>
+        "Write one sentence for each business segment whose figures are listed, saying what that segment reported for the "
+        + months.ToString(CultureInfo.InvariantCulture) + " months to " + ended
+        + ". Every segment figure listed covers that period and no other, so name it by its months and never as a quarter, a half or any other period. "
+        + "Use only the segment facts listed.";
+
+    static string AskFor(string section, IReadOnlyList<Fact> facts) =>
+        string.Equals(section, Evidence.Segments, StringComparison.Ordinal) && SegmentPeriods.LongerPeriodIn(facts) is { } longer
+            ? SegmentsOverALongerPeriod(longer.Months, longer.Ended)
+            : Asks[section];
+
     public static string Prompt(
         string ticker,
         string section,
@@ -119,11 +133,13 @@ public static class SectionPrompt
         IReadOnlyList<(string Section, string Prose)>? written,
         DateOnly? night)
     {
-        if (!Asks.TryGetValue(section, out var ask))
+        if (!Asks.ContainsKey(section))
         {
             throw new InvalidOperationException(
                 $"'{section}' is not a section figure 12.2 names, so there is nothing to ask a model to write for it.");
         }
+
+        var ask = AskFor(section, facts);
 
         var prompt = new StringBuilder();
 

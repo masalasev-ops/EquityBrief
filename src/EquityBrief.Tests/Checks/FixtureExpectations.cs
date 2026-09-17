@@ -4617,8 +4617,8 @@ public partial class FixtureExpectations
             Facts = Rows($"SELECT payload FROM facts WHERE ticker = '{name}';"),
         };
 
-        Assert.True(before.Levels.Length >= 8, $"Read {before.Levels.Length} level row(s), expected at least 8.");
-        Assert.True(before.Swings.Length >= 40, $"Read {before.Swings.Length} swing row(s), expected at least 40.");
+        Assert.Equal(Expected("levels").GetProperty("counts").EnumerateObject().Sum(counted => counted.Value.GetProperty("bands").GetInt32()), before.Levels.Length);
+        Assert.Equal(Expected("swings").GetProperty("rowsExpected").GetInt32(), before.Swings.Length);
         Assert.Equal(FixtureExpectation.CurrentMembers.Length, before.Ladders.Length);
         Assert.Equal(FixtureExpectation.CurrentMembers.Length, before.Listings.Length);
         Assert.Single(before.Facts);
@@ -4634,7 +4634,15 @@ public partial class FixtureExpectations
             Query(store, $"SELECT COUNT(*) FROM indicator WHERE ticker = '{name}' AND name IN ({momentum}) AND value IS NOT NULL;").Single(),
             CultureInfo.InvariantCulture);
 
-        Assert.True(moved >= 4, $"Moved {moved} momentum reading(s), expected at least 4.");
+        // Every session the name holds carries each momentum reading once its window has
+        // filled, so the population moved is the indicators expectation's sessions less each
+        // reading's sessions not available.
+        var indicators = Expected("indicators");
+        var sessions = indicators.GetProperty("sessionsPerName").GetInt32();
+        var notAvailable = indicators.GetProperty("notAvailable").GetProperty("perIndicatorPerName");
+
+        Assert.Contains(name, indicators.GetProperty("namesComputed").EnumerateArray().Select(computed => computed.GetString()));
+        Assert.Equal(IndicatorSeries.Momentum.Sum(reading => sessions - notAvailable.GetProperty(reading).GetInt32()), moved);
 
         // Every stage that follows the engine, run again on the same clock, so the only thing
         // that differs between the two runs is the readings. The run ids differ because the

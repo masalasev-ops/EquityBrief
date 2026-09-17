@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Facts;
 using EquityBrief.Core.Providers;
@@ -606,5 +607,83 @@ public partial class FixtureExpectations
 
         Assert.Contains(quarter, fact => fact.Name == "segment total Revenue 2026-06-30" && fact.Value == "70000000000");
         Assert.DoesNotContain(quarter, fact => fact.Name.Contains("months to", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ATableFilingNoQuarterIsAskedForByItsPeriodAndRefusedUnderAnotherPeriodsName()
+    {
+        // KEYS's captured table with its three-month columns taken out, which is the shape a
+        // table takes where the filing files no quarter. The period, the ask and every verdict
+        // are the expectation's; the figure quoted is read back from the stored table.
+        // see: A segment figure held for a period longer than a quarter is asked for by that period and refused where its sentence names a period of another length
+        var expected = Expected("prose").GetProperty("withoutAQuarter");
+        var ticker = expected.GetProperty("ticker").GetString()!;
+        var period = expected.GetProperty("period").GetString()!;
+        var (store, release) = await WithRelease();
+
+        using (store)
+        {
+            var payload = Query(store, $"SELECT payload FROM fundamentals WHERE ticker = '{ticker}' ORDER BY filing_date DESC LIMIT 1;").Single();
+            var stored = FactsFile.Read(Query(store, $"SELECT payload FROM facts WHERE ticker = '{ticker}' AND session_date = '{Iso(ProseClock.SessionDateAt(ProseNight))}';").Single());
+
+            var table = JsonNode.Parse(payload)!;
+            var segments = table["segments"]!;
+
+            bool AQuarter(JsonNode? line) => line!["months"]!.GetValue<int>() == SegmentPeriods.QuarterMonths;
+
+            void TakeQuarters(JsonNode lines)
+            {
+                foreach (var line in lines.AsArray().Where(AQuarter).ToArray())
+                {
+                    lines.AsArray().Remove(line);
+                }
+            }
+
+            TakeQuarters(segments["periods"]!);
+            TakeQuarters(segments["consolidated"]!);
+
+            foreach (var group in segments["groups"]!.AsArray())
+            {
+                TakeQuarters(group!["figures"]!);
+            }
+
+            using var withoutAQuarter = JsonDocument.Parse(table.ToJsonString());
+
+            var carried = FactsAssembler.Segments(withoutAQuarter.RootElement);
+
+            Assert.True(carried.Count >= 2, $"Carried {carried.Count} segment figure(s) for {period}.");
+            Assert.All(carried, fact => Assert.EndsWith(" " + period, fact.Name, StringComparison.Ordinal));
+
+            Fact[] facts = [.. stored.Where(fact => !fact.Name.StartsWith(SegmentPeriods.Prefix, StringComparison.Ordinal)), .. carried];
+
+            // Asked for the period, and the quarter's ask kept word for word over the file as
+            // stored, which every recording of the section is keyed on.
+            var asked = SectionPrompt.Prompt(ticker, Evidence.Segments, facts, []);
+
+            Assert.Contains(expected.GetProperty("asked").GetString()!, asked, StringComparison.Ordinal);
+            Assert.DoesNotContain(SectionPrompt.Asks[Evidence.Segments], asked, StringComparison.Ordinal);
+            Assert.Contains(SectionPrompt.Asks[Evidence.Segments], SectionPrompt.Prompt(ticker, Evidence.Segments, stored, []), StringComparison.Ordinal);
+
+            // The table's largest total for the period, its revenue, rounded to millions, under
+            // each period's name the expectation lists.
+            var total = carried
+                .Where(fact => fact.Name.StartsWith(SegmentPeriods.Prefix + "total ", StringComparison.Ordinal))
+                .MaxBy(fact => decimal.Parse(fact.Value, CultureInfo.InvariantCulture))!;
+            var millions = Math.Round(decimal.Parse(total.Value, CultureInfo.InvariantCulture) / 1_000_000m, 0).ToString(CultureInfo.InvariantCulture);
+
+            var verdicts = expected.GetProperty("verdicts").EnumerateArray().ToArray();
+
+            Assert.True(verdicts.Length >= 4, $"Read {verdicts.Length} verdict(s), expected at least 4.");
+
+            foreach (var verdict in verdicts)
+            {
+                var wording = verdict.GetProperty("wording").GetString()!;
+                string[] reasons = verdict.GetProperty("reason").GetString() is { } reason ? [reason] : [];
+
+                Assert.Equal(
+                    reasons,
+                    ClaimRules.Check(Evidence.Segments, $"The company reported revenue of ${millions} million {wording}. [D1]", facts, [release]).Findings.Select(finding => finding.Reason));
+            }
+        }
     }
 }

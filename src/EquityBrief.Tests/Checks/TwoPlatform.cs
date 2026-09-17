@@ -51,22 +51,18 @@ public class TwoPlatform
         Assert.Equal(["macos-latest", "ubuntu-latest"], Runners(workflow));
     }
 
-    // The last checkpoint entry written while a hosted Windows leg still ran.
-    // Every checkpoint entry after it has to carry the Windows run itself.
+    // The last entry written while a hosted Windows leg still ran. Every entry
+    // after it has to carry the Windows run itself.
     static readonly Regex LastHostedWindowsEntry = new(@"^7\.2 - the phase 7 report\s+\d{4}-\d{2}-\d{2}$");
 
     static readonly Regex LocalWindowsRun = new(@"`tools/ci\.ps1`\s+green");
 
-    // The checkpoint entries written after the last hosted Windows leg, and the
-    // headings of those that do not say tools/ci.ps1 ran green. Which entries
-    // those are is asked of `DuePoints`, the reader that lands a checkpoint from
-    // the record, rather than answered again here: an entry landing a checkpoint
-    // there and skipped here would land its code and owe no Windows record, and
-    // that is what a heading of a checkpoint and a dash did until 8.0. A planning
-    // pass, a ruling and a sign-off land no checkpoint's code and are not read.
+    // Every entry written after the last hosted Windows leg, whatever it lands, and
+    // the headings of those that do not say tools/ci.ps1 ran green.
+    // see: Every entry written since the hosted Windows leg was removed records the Windows run, whatever the entry lands
     internal static (int Read, IReadOnlyList<string> Missing) WindowsUnrecorded(string progress)
     {
-        var entries = Regex.Matches(progress, @"^### (?<heading>[^\r\n]*)(?<body>(?:(?!^### )[\s\S])*)", RegexOptions.Multiline);
+        var entries = DuePoints.Entries(progress);
 
         // The anchor is keyed on a heading's opening, so exactly one heading
         // has to match: none leaves nothing to start after, and two leave the
@@ -79,21 +75,18 @@ public class TwoPlatform
                 $"Found {anchors.Length} entries headed as the last one written while a hosted Windows leg ran, expected 1.");
         }
 
-        var after = entries.Where(entry => entry.Index > anchors[0].Index);
-        var checkpoints = after
-            .Where(entry => DuePoints.LandsACheckpoint(entry.Groups["heading"].Value, entry.Groups["body"].Value))
-            .ToArray();
+        var after = entries.Where(entry => entry.Index > anchors[0].Index).ToArray();
 
-        var missing = checkpoints
+        var missing = after
             .Where(entry => !LocalWindowsRun.IsMatch(entry.Groups["body"].Value))
             .Select(entry => entry.Groups["heading"].Value.TrimEnd())
             .ToArray();
 
-        return (checkpoints.Length, missing);
+        return (after.Length, missing);
     }
 
     [Fact]
-    public void ACheckpointEntryWithoutTheWindowsRunIsFoundAndOnlyAfterTheLastHostedLeg()
+    public void AnEntryWithoutTheWindowsRunIsFoundWhateverItLandsAndOnlyAfterTheLastHostedLeg()
     {
         // The permanent proof, over constructed records.
         const string Before = "### 7.1 - the repair   2026-09-15\nVerified:   `tools/ci.sh` green\n\n";
@@ -105,7 +98,7 @@ public class TwoPlatform
         Assert.Equal(0, read);
         Assert.Empty(missing);
 
-        // A checkpoint entry saying so passes, wrapped across lines as the record wraps.
+        // An entry saying so passes, wrapped across lines as the record wraps.
         (read, missing) = WindowsUnrecorded(Before + Anchor + Entry("8.1 - resolution", "Verified:   `tools/ci.ps1`\n            green end to end"));
         Assert.Equal(1, read);
         Assert.Empty(missing);
@@ -114,26 +107,22 @@ public class TwoPlatform
         Assert.Equal(["8.1 - resolution   2026-09-16"], WindowsUnrecorded(Before + Anchor + Entry("8.1 - resolution", "Verified:   `tools/ci.sh` green")).Missing);
         Assert.Equal(["8.1 - resolution   2026-09-16"], WindowsUnrecorded(Before + Anchor + Entry("8.1 - resolution", "Verified:   `tools/ci.ps1` red at first")).Missing);
 
-        // A planning pass, a ruling and a sign-off land no checkpoint's code and are not read.
+        // Entries landing no checkpoint are read all the same.
         var others = Entry("8.0 planning - the loop", "Not a checkpoint entry. It plans phase 8.")
             + Entry("7.2 ruling - a ruling", "Not a checkpoint entry. It rules.")
-            + Entry("Phase 7 sign-off", "Signed.");
+            + Entry("Phase 7 sign-off", "Signed.")
+            + Entry("8.1 - a note on the checkpoint", "Not a checkpoint entry. It builds nothing.");
         (read, missing) = WindowsUnrecorded(Before + Anchor + others);
-        Assert.Equal(0, read);
+        Assert.Equal(4, read);
+        Assert.Equal(
+            ["8.0 planning - the loop   2026-09-16", "7.2 ruling - a ruling   2026-09-16", "Phase 7 sign-off   2026-09-16", "8.1 - a note on the checkpoint   2026-09-16"],
+            missing);
+
+        (read, missing) = WindowsUnrecorded(Before + Anchor + Entry("8.0 planning - the loop", "Not a checkpoint entry. It plans phase 8.\nVerified:   `tools/ci.ps1` green"));
+        Assert.Equal(1, read);
         Assert.Empty(missing);
 
-        // Nor is an entry headed with a checkpoint and a dash that opens "Not a
-        // checkpoint entry", which the record holds under 3.1 three times. The
-        // three above are left out by their headings alone, so without this case
-        // the opening is read by nothing the proof reaches, which is what the
-        // sweep's mutation dropping it found.
-        (read, missing) = WindowsUnrecorded(Before + Anchor + Entry("8.1 - a note on the checkpoint", "Not a checkpoint entry. It builds nothing."));
-        Assert.Equal(0, read);
-        Assert.Empty(missing);
-
-        // A heading with no dash lands its checkpoint through `DuePoints` and so
-        // owes the Windows run here too. This reader required the dash until 8.0,
-        // which left an entry headed that way landing its code and owing nothing.
+        // A heading with no dash is read as any other.
         Assert.Equal(
             ["8.1 resolution   2026-09-16"],
             WindowsUnrecorded(Before + Anchor + Entry("8.1 resolution", "Verified:   `tools/ci.sh` green")).Missing);
@@ -148,18 +137,17 @@ public class TwoPlatform
     }
 
     [Fact]
-    public void EveryCheckpointEntrySinceTheLastHostedWindowsLegRecordsTheWindowsRun()
+    public void EveryEntrySinceTheLastHostedWindowsLegRecordsTheWindowsRun()
     {
-        // Over the real record. The population is the checkpoint entries
-        // written since the hosted Windows leg was removed, which was 0 when
-        // it was removed and grows by one a checkpoint, so it carries no floor
-        // and is reported as context: the proof above is what shows the
-        // reader can fail.
+        // Over the real record. The population is every entry written since the
+        // hosted Windows leg was removed, which was 0 when it was removed and grows
+        // by one an entry, so it carries no floor and is reported as context: the
+        // proof above is what shows the reader can fail.
         var (read, missing) = WindowsUnrecorded(Corpus.Read("docs/PROGRESS.md"));
 
         Assert.True(
             missing.Count == 0,
-            $"Read {read} checkpoint entries since the last hosted Windows leg, and {missing.Count} do not say " +
+            $"Read {read} entries since the last hosted Windows leg, and {missing.Count} do not say " +
             $"`tools/ci.ps1` ran green, so nothing shows the suite passed on Windows for them: {string.Join("; ", missing)}");
     }
 
