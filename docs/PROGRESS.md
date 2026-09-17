@@ -13477,3 +13477,79 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             verdict note is rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 4.3 - correction: the calendar's weight was counted by the night and read by no test, and section 17's example still counted the night 2.4 wrote it for   2026-09-17
+Corrects:   the 4.3 entry above records the earnings calendar's weight measured at 1 against the
+            account's own request counter, "Recorded in section 17's row and in the runbook's
+            weights paragraph together". The weighted-call budget's verdict note says "every weight
+            and the allowance are read back out of RUNBOOK". The test read the allowance and four
+            weights and never the calendar's, and the weighted total test asked five of the six
+            feed roles the night's record composes and never the calendar, so a calendar weight of
+            100 left the suite green while every night's total counted it. Section 17's reason and
+            the comment on the total gave "four where the provider says two hundred and twelve",
+            written at 2.4 when four endpoints existed, and the test's own comment said five feed
+            roles where it asserted six requests.
+Found:      by the phase 8 sign-off review on 2026-09-16, sweeping section 17's rows for the figures
+            their verdict notes say are read, and reading the test against its note. The operator
+            ruled on 2026-09-16 that everything the review found is corrected before a sign-off
+            handoff, one correction a checkpoint, labelled for the checkpoint that built the defect.
+            This session commits this code and does not sign phase 8 off.
+Repaired:   the runbook test reads every figure the weights class holds, the calendar's among them,
+            each against its sentence in the runbook, and holds the names it reads to the class's
+            own constants, so a weight added to the class is one the test has to read. The
+            allowance is read through its constant where a second literal of it stood. The weighted
+            total test asks the calendar over the window the calendar expectation states, holds
+            every feed role the record composes to having been asked, read off the record rather
+            than listed, and holds the total to the sum of the weights, to 7 requests and 317
+            weighted calls worked by hand, to the cost of a calendar window the calendar
+            expectation records, and to the example section 17's reason gives, which is restated as
+            that count and read off the row. The comments on the total state no figure. The build
+            plan's 2.4 section keeps its example of four, because it describes the checkpoint at
+            which four endpoints existed. Prior text in CHANGELOG.
+Stored:     nothing to keep or rewrite. The weight was 1, which the runbook states and 4.3 measured,
+            so every night counted a calendar window at 1. The one shipped file edited is a comment
+            in `NightFeeds.cs`, and no stage changes.
+Missed:     4.3's mutation was chosen over the parser, the property that checkpoint was for, and the
+            weight it measured and wrote into two documents was added to the night's total with no
+            test reading either. The total test asked the roles it was written over, and nothing
+            held the roles it asks to the roles the record composes, so the calendar joining moved
+            the night and not the test.
+Guarded:    the runbook's sentences against the figures the weights class holds, every feed role
+            the record composes asked over the fixture's captures, the calendar expectation's cost
+            of a window, and section 17's example read off the row.
+Expected:   derived, and no figure the rules produce over the capture changes: the calendar
+            expectation gains the weighted calls one window costs, 1, from 4.3's measurement against
+            the account's own request counter rather than from a run, in a field of its own with a
+            note saying where it was measured, and its derivation sentence says that figure was not
+            read off the capture. The 7 requests and 317 weighted calls were worked by hand from the
+            weights the runbook states: 10 for the constituents, 100 for the bulk file, 100 for each
+            of the two action requests, 1 for the calendar window, 1 for a ticker's history and 5
+            for a news page.
+Tests:      1017, from 1017. None added. Two rewritten in place in `nightly-cost`:
+            `EveryWeightAndTheAllowanceAreTheOnesTheRunbookStates` and
+            `ANightsWeightedTotalIsCountedInTheUnitsTheProviderBillsIn`. No file this correction
+            edits is a source either evaluator version or the ladder rules' code version pins, so no
+            pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being the
+            calendar's weight read back, every figure the weights class holds read, every feed role
+            asked, the calendar counted in the total, the expectation's cost of a window read and
+            the row's example read. Predicted:
+            M1 the calendar's weight set to 100: the runbook test red, on the calendar's sentence
+            not found, and the total test red, on 317 worked by hand against 416, and nothing else.
+            M2 a weight added to the weights class: the runbook test red, on the class's figures
+            against the ones it reads, and nothing else.
+            M3 the calendar's term dropped from the night's weighted total: the total test red, on
+            the weights' sum of 317 against 316, and nothing else.
+            M4 the calendar's request removed from the total test: the total test red, on the
+            calendar feed not asked, and nothing else.
+            M5 section 17's example edited to 6 and 316: the total test red, on the example against
+            7 and 317, and nothing else.
+            M6 the calendar expectation's cost of a window edited to 2: the total test red, on 2
+            against 1, and nothing else.
+            Not mutated: a feed role added to the record, which the role guard reads off the
+            record's constructor and which no edit short of a new feed produces; and the guard's
+            floor, the roles' requests summing to the night's count, which only a reader missing a
+            role reaches.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.

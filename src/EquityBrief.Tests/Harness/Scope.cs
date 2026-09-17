@@ -1643,7 +1643,7 @@ internal static class Scope
             ByNight),
         [CheckReach.Key(LimitsTable, "Weighted-call budget")] = new Scoped(
             Verdict.Pass,
-            "every weight and the allowance are read back out of RUNBOOK rather than repeated in code, the night reports its weighted total beside its request count, and a night already at the allowance stops before its next step",
+            "every weight and the allowance the code holds, the earnings calendar's among them, are read back out of RUNBOOK rather than repeated in code, a request from every feed role the night composes is counted in weighted calls against the example the row's reason gives and against the cost of a calendar window its expectation records, the night reports its weighted total beside its request count, and a night already at the allowance stops before its next step",
             ByCost),
         [CheckReach.Key(LimitsTable, "Bar history kept")] = new Scoped(
             Verdict.Pass,

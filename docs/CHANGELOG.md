@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-17 - ARCHITECTURE.html - the weighted-call budget's example restated as the count its test makes
+
+Corrects: section 17's weighted-call budget gave a night counted in requests as four where the provider says two hundred and twelve, written at 2.4 when four endpoints existed, where the night's record now composes six feed roles, and no test read either figure; found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> a request is not a request, so a night counted in requests alone says four where the provider says two hundred and twelve.
+Now:
+> a request is not a request, so a night counted in requests alone says 7 where the provider says 317, over one request from each feed role and the corporate action feed's second.
+Why: the example is now the count the weighted total test makes over every feed role, read off the row by that test, so it moves when a role joins the night.
+
 ### 2026-09-17 - CLAUDE.md - code a planning pass or a ruling carries meets a checkpoint's done conditions
 
 Authorised by: Code a pass that lands no checkpoint carries into shipped source meets the done conditions a checkpoint's code meets

@@ -1060,67 +1060,98 @@ public class NightlyCost
         Assert.True(outcome.RowsDropped > 0, "Nothing was dropped, so the retention path never ran.");
     }
 
-    // ---- the weighted-call budget, all three clauses of its note ----
+    // ---- the weighted-call budget, every clause of its note ----
     //
-    // The note asserts three things and only one of them had ever been in this
-    // class. The first two were asserted in LiveFeedTests and NewsFeedTests,
-    // which run and pass and back no verdict, because a check's tests are the
-    // ones its carrier declares; the third was asserted nowhere, which the
-    // phase 2 sign-off proved by deleting the stop and watching the suite stay
-    // green at 312 of 312. They are moved here rather than copied, because a
-    // number asserted in two places is two places holding one fact.
+    // Asserted here and not in the feed tests, because a check's tests are the
+    // ones its carrier declares.
 
     [Fact]
     public void EveryWeightAndTheAllowanceAreTheOnesTheRunbookStates()
     {
-        // The figures have been in RUNBOOK since the architecture was written
-        // and no code read either. Read back rather than repeated, because a
-        // number stated in a document and again in code is two places holding
-        // one fact.
+        // Read back rather than repeated, because a number stated in a document
+        // and again in code is two places holding one fact.
         var runbook = Corpus.Read("docs/RUNBOOK.md");
 
-        Assert.Contains("100,000 weighted calls", runbook, StringComparison.Ordinal);
-        Assert.Contains($"entire exchange costs {ProviderWeights.BulkEndOfDay}", runbook, StringComparison.Ordinal);
-        Assert.Contains(
-            $"single-ticker historical request costs {ProviderWeights.HistoricalPerTicker}",
-            runbook,
-            StringComparison.Ordinal);
-        Assert.Contains($"Fundamentals cost {ProviderWeights.Fundamentals} per ticker", runbook, StringComparison.Ordinal);
-        Assert.Contains($"News costs {ProviderWeights.News}", runbook, StringComparison.Ordinal);
+        var stated = new Dictionary<string, string>
+        {
+            [nameof(ProviderWeights.DailyAllowance)] = $"{ProviderWeights.DailyAllowance.ToString("N0", CultureInfo.InvariantCulture)} weighted calls",
+            [nameof(ProviderWeights.BulkEndOfDay)] = $"entire exchange costs {ProviderWeights.BulkEndOfDay}",
+            [nameof(ProviderWeights.HistoricalPerTicker)] = $"single-ticker historical request costs {ProviderWeights.HistoricalPerTicker}",
+            [nameof(ProviderWeights.Fundamentals)] = $"Fundamentals cost {ProviderWeights.Fundamentals} per ticker",
+            [nameof(ProviderWeights.News)] = $"News costs {ProviderWeights.News}",
+            [nameof(ProviderWeights.EarningsCalendar)] = $"The earnings calendar costs {ProviderWeights.EarningsCalendar} for a whole window",
+        };
+
+        // Every figure the class holds, so a weight added to it is one read here.
+        Assert.Equal(
+            typeof(ProviderWeights).GetFields().Select(field => field.Name).Order(StringComparer.Ordinal),
+            stated.Keys.Order(StringComparer.Ordinal));
+
+        Assert.All(stated.Values, sentence => Assert.Contains(sentence, runbook, StringComparison.Ordinal));
         Assert.Contains($"cost {ProviderWeights.Fundamentals}.", runbook, StringComparison.Ordinal);
-        Assert.Equal(100_000, ProviderWeights.DailyAllowance);
     }
 
     [Fact]
     public async Task ANightsWeightedTotalIsCountedInTheUnitsTheProviderBillsIn()
     {
-        // A night counted in requests alone says five where the provider says
-        // three hundred and sixteen, which is the whole reason the allowance
-        // could not be read against anything before this. Every one of the five
-        // feed roles is exercised, news included, so the total is the night's
-        // and not one feed's.
         var feeds = NightFeeds.FromFixture(FixtureFolder());
 
         Assert.Equal(0, feeds.WeightedCalls);
 
+        var calendar = FixtureExpectation.Of("calendar");
+        var window = calendar.GetProperty("window");
+
         await feeds.Membership.ConstituentsAsync(Index);
         await feeds.Bulk.RowsAsync("US", new DateOnly(2026, 9, 8));
         await feeds.Corporate.ActionsAsync("US", new DateOnly(2026, 9, 8));
+        await feeds.Calendar.EventsAsync(
+            DateOnly.ParseExact(window.GetProperty("from").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            DateOnly.ParseExact(window.GetProperty("to").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture));
         await feeds.Historical.BarsAsync("AAPL", new DateOnly(2025, 9, 4), new DateOnly(2026, 9, 4));
         await feeds.News.ArticlesAsync(new DateOnly(2026, 8, 25), new DateOnly(2026, 9, 8));
 
-        // One membership at 10, one bulk at 100, two action requests at 100
-        // each, one ticker's history at 1 and one news request at 5. Six
-        // requests, 316 weighted calls.
-        Assert.Equal(6, feeds.Requests);
+        // Every role the record composes has been asked, read off the record, so a
+        // role added to it is one this total has to ask.
+        var asked = typeof(NightFeeds).GetConstructors().Single().GetParameters().ToDictionary(
+            role => role.Name!,
+            role =>
+            {
+                var feed = typeof(NightFeeds).GetProperty(role.Name!)!.GetValue(feeds)!;
+
+                return (int)feed.GetType().GetProperty(nameof(NightFeeds.Requests))!.GetValue(feed)!;
+            });
+
+        Assert.Empty(asked.Where(role => role.Value == 0).Select(role => role.Key));
+        Assert.Equal(feeds.Requests, asked.Values.Sum());
+
+        // One membership, one bulk and two action requests, one calendar window, one
+        // ticker's history and one news request.
+        Assert.Equal(7, feeds.Requests);
         Assert.Equal(
             ProviderWeights.Fundamentals
             + ProviderWeights.BulkEndOfDay
             + (2 * ProviderWeights.BulkEndOfDay)
+            + ProviderWeights.EarningsCalendar
             + ProviderWeights.HistoricalPerTicker
             + ProviderWeights.News,
             feeds.WeightedCalls);
-        Assert.Equal(316, feeds.WeightedCalls);
+        Assert.Equal(317, feeds.WeightedCalls);
+
+        Assert.Equal(
+            calendar.GetProperty("cost").GetProperty("weightedCalls").GetInt32(),
+            feeds.Calendar.Requests * ProviderWeights.EarningsCalendar);
+
+        var reason = ArchitectureTables
+            .In(File.ReadAllText(Repository.Architecture))
+            .Single(table => table.Heading == Scope.LimitsTable)
+            .Body.Single(cells => cells.Count > 2 && cells[0] == "Weighted-call budget")[2];
+
+        var example = Regex.Match(reason, @"says (\d+) where the provider says (\d+)\b");
+
+        Assert.True(example.Success, $"The Weighted-call budget row gives no request count against a weighted count in digits: '{reason}'.");
+        Assert.Equal(
+            (feeds.Requests, feeds.WeightedCalls),
+            (int.Parse(example.Groups[1].Value, CultureInfo.InvariantCulture), int.Parse(example.Groups[2].Value, CultureInfo.InvariantCulture)));
     }
 
     [Fact]
