@@ -13333,5 +13333,6 @@ Notes:      the first hosted run over this entry, at e80c027, failed on both job
             error when it exits otherwise than refused, and both gates are run again over it below. M5
             is run again over the moved test, at the commit that moves it, with its prediction
             unchanged: the process test red and nothing else.
-            Rerun: FILLED IN BELOW AFTER THE RERUN.
+            Rerun: M5 over the moved test at fe930fa, the whole suite in its own detached worktree,
+            turned 1 red, the process test, and nothing else, 1014 of 1015 passing.
 Carried:    nothing owed by this repair.
