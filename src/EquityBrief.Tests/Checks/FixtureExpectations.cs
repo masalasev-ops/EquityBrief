@@ -6,6 +6,7 @@ using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Moves;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Swings;
@@ -1803,14 +1804,11 @@ public partial class FixtureExpectations
     public async Task TheImmediateBandIsTheNearestOnItsSideAndThereIsOnePerSide()
     {
         var expected = Expected("levels");
-        var mergeDistance = expected.GetProperty("mergeDistance").GetProperty("byName");
 
         using var store = await WithLevels();
 
-        foreach (var entry in mergeDistance.EnumerateObject())
+        foreach (var ticker in expected.GetProperty("namesComputed").EnumerateArray().Select(name => name.GetString()!))
         {
-            var ticker = entry.Name;
-
             Assert.Equal(
                 ["1|1"],
                 Query(store, $"SELECT SUM(immediate AND role = 'support'), SUM(immediate AND role = 'resistance') FROM level WHERE ticker = '{ticker}';"));
@@ -1824,17 +1822,53 @@ public partial class FixtureExpectations
             Assert.Equal(
                 Query(store, $"SELECT MIN(low_edge + 0) FROM level WHERE ticker = '{ticker}' AND role = 'resistance';"),
                 Query(store, $"SELECT low_edge + 0 FROM level WHERE ticker = '{ticker}' AND role = 'resistance' AND immediate = 1;"));
+        }
+    }
 
-            // And no two bands are closer than the merge distance, which is what
-            // the merge step is for: two bands that close would be one band.
+    [Fact]
+    public async Task TheMergeDistanceIsHalfTheStoredTypicalMoveAndNoTwoStoredBandsAreCloserThanIt()
+    {
+        var row = ArchitectureTables
+            .In(File.ReadAllText(Repository.Architecture))
+            .Single(table => table.Heading == Scope.LimitsTable)
+            .Body.Single(cells => cells.Count > 1 && cells[0] == "Band merge distance");
+
+        // The fraction the row states in a word is the multiple the builder merges at.
+        Assert.StartsWith("half a typical day's move", row[1], StringComparison.Ordinal);
+        Assert.Equal(0.5m, LevelSeries.MergeDistanceInTypicalMoves);
+
+        var expected = Expected("levels");
+        var asOf = expected.GetProperty("asOf");
+
+        using var store = await WithLevels();
+
+        var names = new List<string>();
+
+        foreach (var entry in expected.GetProperty("mergeDistance").GetProperty("byName").EnumerateObject())
+        {
+            var ticker = entry.Name;
+            var session = asOf.GetProperty(ticker).GetString()!;
             var merge = decimal.Parse(entry.Value.GetString()!, CultureInfo.InvariantCulture);
 
+            // A typical day's move is the stored average true range at a price's four places.
+            var typicalMove = Statistic.ToPrice(double.Parse(
+                Query(store, $"SELECT value FROM indicator WHERE ticker = '{ticker}' AND session_date = '{session}' AND name = '{IndicatorSeries.Atr14}';").Single(),
+                CultureInfo.InvariantCulture));
+
+            Assert.True(
+                typicalMove * LevelSeries.MergeDistanceInTypicalMoves == merge,
+                $"{ticker}'s stored typical move at {session} is {typicalMove}, and the expectation's merge distance is {merge}.");
+
+            // No two bands are closer than the merge distance, which is what the
+            // merge step is for: two bands that close would be one band.
             var edges = Query(store, $"SELECT low_edge, high_edge FROM level WHERE ticker = '{ticker}' ORDER BY low_edge;")
-                .Select(row => row.Split('|'))
-                .Select(row => (
-                    Low: decimal.Parse(row[0], CultureInfo.InvariantCulture),
-                    High: decimal.Parse(row[1], CultureInfo.InvariantCulture)))
+                .Select(cells => cells.Split('|'))
+                .Select(cells => (
+                    Low: decimal.Parse(cells[0], CultureInfo.InvariantCulture),
+                    High: decimal.Parse(cells[1], CultureInfo.InvariantCulture)))
                 .ToArray();
+
+            Assert.True(edges.Length >= 2, $"{ticker} stores {edges.Length} band(s), so no gap between two is asserted.");
 
             for (var band = 1; band < edges.Length; band++)
             {
@@ -1842,7 +1876,11 @@ public partial class FixtureExpectations
                     edges[band].Low - edges[band - 1].High >= merge,
                     $"{ticker} has bands ending at {edges[band - 1].High} and starting at {edges[band].Low}, which is closer than {merge}.");
             }
+
+            names.Add(ticker);
         }
+
+        Assert.Equal(FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal), names.Order(StringComparer.Ordinal));
     }
 
     [Fact]

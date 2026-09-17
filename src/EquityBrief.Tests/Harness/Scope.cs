@@ -1562,7 +1562,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Band merge distance")] = new Scoped(
             Verdict.Pass,
-            "half a typical day's move is read off the stored average true range per name, and no two stored bands are closer to each other than that",
+            "the fraction the row states is read off it against the multiple the builder merges at, each current member's distance in the expectation is that multiple of the average true range the store holds at its as-of session, at a price's four places, and no two stored bands are closer to each other than that distance",
             ByExpectations),
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands")] = new Scoped(
             Verdict.Pass,

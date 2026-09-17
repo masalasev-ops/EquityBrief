@@ -37,7 +37,7 @@
    "MSFT": "5.91215",
    "NFLX": "1.1979"
   },
-  "note": "half a typical day's move, being the average true range at the as-of session rounded to the store's four places and halved. Stated per name because it is the number the merge turns on and it differs by name, which is what makes it a distance rather than a threshold."
+  "note": "half a typical day's move, being the average true range at the as-of session rounded to the store's four places and halved. Stated per name because it is the number the merge turns on and it differs by name, which is what makes it a distance rather than a threshold. Read against the average true range the store holds at each name's as-of session, at the fraction section 17's row states and the builder merges at."
  },
  "counts": {
   "AAPL": {

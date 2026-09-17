@@ -13402,3 +13402,78 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             verdict note is rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 3.4 - correction: the merge distance's verdict said the typical move was read off the store, and the test read the expectation's own distances   2026-09-17
+Corrects:   the 3.4 entry above records section 17's band merge distance moving to PASS by
+            `fixture-expectations`, on a verdict note saying "half a typical day's move is read off
+            the stored average true range per name, and no two stored bands are closer to each other
+            than that". The test read each name's distance from the levels expectation and held the
+            gaps between the stored bands to it. It never queried the average true range the store
+            holds and never opened the row, so the expectation's distances could part from the
+            store's typical move, and the row could state another fraction, with the suite green and
+            the note still saying both were read.
+Found:      by the phase 8 sign-off review on 2026-09-16, sweeping section 17's rows for the figures
+            their verdict notes say are read, and reading the test against its note. The operator
+            ruled on 2026-09-16 that everything the review found is corrected before a sign-off
+            handoff, one correction a checkpoint, labelled for the checkpoint that built the defect.
+            This session commits this code and does not sign phase 8 off.
+Repaired:   one test reads the row's fraction, half, against the multiple the builder merges at,
+            which is the one constant the level builder and a merge distance version's replay both
+            read. It holds each current member's distance in the levels expectation to that multiple
+            of the average true range the store holds at the name's as-of session, at a price's four
+            places, and asserts no two stored bands closer than that distance, over every current
+            member. The gap check moves into it out of the immediate-band test, which now takes its
+            names from the names the expectation computed, so the gap is asserted once. The
+            expectation's note and the verdict note say what reads the distances.
+Stored:     nothing to keep or rewrite. No shipped code and no stage changes, and each current
+            member's stored typical move is twice the distance the expectation states.
+Missed:     the 3.4 addendum replaced half a typical move with a whole one in the builder and five
+            tests went red, which is the code half. The test held the gaps to the distance the
+            expectation states, and no test read the store's typical move or the row, so neither
+            could be mutated.
+Guarded:    over the replayed fixture: the row's fraction against the builder's multiple, the average
+            true range the store holds for each current member at its as-of session against the
+            expectation's distance, and the bands the builder stored against that distance, with the
+            names read held to the current members' names and a name storing fewer than two bands
+            refused by name.
+Expected:   derived, and no value changes: the levels expectation's distances were written at 3.4
+            from the committed bars outside this repository as the average true range at four
+            places, halved, and are now read against the store. Its note says what reads them.
+Tests:      1017, from 1016. One added to `fixture-expectations`:
+            `TheMergeDistanceIsHalfTheStoredTypicalMoveAndNoTwoStoredBandsAreCloserThanIt`. The
+            immediate-band test is rewritten in place without its gap check. No file this correction
+            edits is a source either evaluator version or the ladder rules' code version pins, so no
+            pin moves.
+Mutated:    the rule, stated before the sweep: break each property the new test adds, being the
+            row's fraction read against the builder's multiple, each distance in the expectation
+            held to the stored typical move, and the distances read over every current member.
+            Predicted:
+            M1 the row edited to a third of a typical day's move: the new test red, on the row, and
+            nothing else, since no other test opens the row.
+            M2 AAPL's distance in the levels expectation edited from 3.81695 to 3.8169: the new test
+            red, on a stored typical move of 7.6339 whose half is not that distance, and nothing
+            else, since no other test reads the distances.
+            M3 NFLX's distance removed from the levels expectation: the new test red, on the names
+            read leaving out a current member, and nothing else.
+            Not mutated: the builder's multiple moved against the row, which the 3.4 addendum
+            mutated and which moves every band and the ladder rules' code version besides; and the
+            guard on a name storing fewer than two bands, which no name the fixture holds reaches,
+            each storing 4 or more.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Four
+            runs of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only the
+            mutated file and the worktree removed after. The baseline is 1016 of 1017 with one red,
+            and that red is this entry: `two-platform` reads every entry written since the 7.2 report
+            for its Windows record, and this one carried a placeholder until the run below filled it,
+            so each count that follows is on top of it.
+            M1 turned 1 red: the new test. M2 turned 1 red: the new test. M3 turned 1 red: the new
+            test.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1017 of 1017 tests ran
+            with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: one
+            verdict note is rewritten and no placement changes. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair.
