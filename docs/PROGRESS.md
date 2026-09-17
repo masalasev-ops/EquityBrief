@@ -12372,11 +12372,11 @@ Mutated:    the rule, stated before the sweep: one mutation per property this co
             open-horizon test on the setup never entered on 2026-03-05. M4 turned 1 red: the no-read
             test on the same `FormatException`, the session after the cap read. M5 turned 1 red: the
             setup cases on a win where unresolved is expected.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 990 of 990 tests ran
             with none failed, migrations 0 to 26 with none added and none pending, exit 0, against
-            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
-            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
-            <K> of <K> roster checks carried and all <K> run. No claim added and none moved. Both gates
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved. Both gates
             ran with this entry in place, and the operator's store under `data/` was not touched by
             either.
 Carried:    nothing owed by this repair. Noted, because the ruling leaves them as written: the 8 rows
