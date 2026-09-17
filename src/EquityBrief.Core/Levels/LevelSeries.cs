@@ -52,6 +52,9 @@ public static class LevelSeries
     // numbers and a reader checking them against the document has to see them.
     public static IReadOnlyList<decimal> Retracements { get; } = [0.236m, 0.382m, 0.500m, 0.618m, 0.786m];
 
+    // Two candidates closer than this many typical days' moves join one band.
+    public const decimal MergeDistanceInTypicalMoves = 0.5m;
+
     // The window for the recency point in the strength score.
     public const int RecentSessions = 20;
 

@@ -408,11 +408,11 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(StoresTable, "Rule versions")] = new Scoped(
             Verdict.Pass,
-            "a window carries its rule, version, parameters, their hash with the code version, and the instant it opened, and a closed one carries when it closed and what replaced it with every other column as it was opened with, read back off a migrated store",
+            "a window carries its rule, version, parameters, their hash with the code version, and the instant it opened, and a closed one carries when it closed and what replaced it with every other column as it was opened with, read back off a migrated store; and a window is refused at a value its replay would not apply as given or at its rule's live values, with nothing written and the refusal on the run log",
             ByRules),
         [CheckReach.Key(StoresTable, "Version scores")] = new Scoped(
             Verdict.Pass,
-            "a score carries the name, the night, the rule, the version, the window it belongs to and the plan that version produced, with a score written for a night before its window opened flagged in sample, read back off a migrated store",
+            "a score carries the name, the night, the rule, the version, the window it belongs to and the plan that version produced, with a score written for a night before its window opened flagged in sample, read back off a migrated store; each version's plan over the fixture matches the plan worked by hand; and a score is dropped one year back from the newest stored session and kept at it, whatever night is scored",
             ByRules),
         [CheckReach.Key(NightlyRunSteps.Heading, "Replay tonight's name-nights under every open version of each ladder rule from the stored bars, and store the plan each version produced, flagging as in sample any score written for a night before its version's window opened so it counts toward no record. This makes no request: the bars are already stored, so a version costs the ladder arithmetic run again and, for a version of the merge distance, the level arithmetic as well. A live rule whose parameters or code have moved while a window measuring it is open stops the night at this step and names the rule (see: Adding a candidate later restarts the clock).")] = new Scoped(
             Verdict.Pass,

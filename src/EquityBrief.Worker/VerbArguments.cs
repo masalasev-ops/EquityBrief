@@ -36,7 +36,16 @@ public static class VerbArguments
                     "evaluator or a rule's version is run with, so one nobody can read back is a row nothing can run.");
             }
 
-            read[pair[..at].Trim()] = value;
+            var name = pair[..at].Trim();
+
+            if (read.ContainsKey(name))
+            {
+                throw new FormatException(
+                    $"'{name}' is given twice. A candidate or a version runs with one value of each parameter, " +
+                    "and keeping either would be choosing for the person who typed both.");
+            }
+
+            read[name] = value;
         }
 
         return read;

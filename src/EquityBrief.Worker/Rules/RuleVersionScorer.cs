@@ -5,13 +5,17 @@ using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Rules;
+using EquityBrief.Core.Swings;
 using EquityBrief.Core.Time;
+using EquityBrief.Core.Volume;
 using EquityBrief.Data;
+using EquityBrief.Data.Swings;
+using EquityBrief.Worker.Bars;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Rules;
 
-public sealed record VersionScoreOutcome(int Versions, int NamesScored, int RowsWritten, int RowsDropped);
+public sealed record VersionScoreOutcome(int Versions, int NamesScored, int RowsWritten, int RowsDropped, int NameNightsSkipped);
 
 // The rule version scorer. Replays tonight's name-nights under every open version
 // of each ladder rule, from stored bars, and stores the plan each produced.
@@ -36,6 +40,7 @@ public sealed class RuleVersionScorer : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Level, Touch.Read),
+            new StoreTouch(Store.Swing, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.RuleVersion, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.VersionScore, Touch.Insert | Touch.Update | Touch.Delete),
@@ -52,29 +57,28 @@ public sealed class RuleVersionScorer : IComponent
     // the log can tell an attempt that was turned away from one that happened.
     public const string Refused = "refused";
 
-    // The build's version of the ladder rules' own code, hashed into every
-    // window's `parameters_hash`: the pin of the sources a replay runs through,
-    // being the level arithmetic, the ladder arithmetic and this file, less the
-    // line below. `rule-versions-scored` recomputes it from those files and fails
-    // where they disagree, so a change to any of them is a new code version, and
-    // a live window opened under the old one stops the first night after it.
-    // A constant somebody raised by hand would have let the code move under an
-    // open window with the night going on scoring it, which is what 8.6 shipped.
+    // The pin of every source the live ladder rules and their replay run through, less
+    // the line below; `rule-versions-scored` derives the list from the compiled code.
+    // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "526e7c8f9175";
+    public const string CodeVersion = "85d30c00446f";
 
-    // The sources the pin is taken over, from the repository root.
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
-        "src/EquityBrief.Core/Levels/LevelSeries.cs",
         "src/EquityBrief.Core/Ladders/LadderSeries.cs",
+        "src/EquityBrief.Core/Ladders/TrendSeries.cs",
+        "src/EquityBrief.Core/Levels/LevelSeries.cs",
+        "src/EquityBrief.Core/Prices/PriceForm.cs",
+        "src/EquityBrief.Core/Prices/Statistic.cs",
+        "src/EquityBrief.Core/Rules/RuleVersions.cs",
+        "src/EquityBrief.Core/Swings/SwingSeries.cs",
+        "src/EquityBrief.Data/Money.cs",
+        "src/EquityBrief.Data/Swings/StoredSwings.cs",
+        "src/EquityBrief.Worker/Ladders/LadderBuilder.cs",
+        "src/EquityBrief.Worker/Levels/LevelBuilder.cs",
         "src/EquityBrief.Worker/Rules/RuleVersionScorer.cs",
     ];
-
-    // One year retained, as every computed table is.
-    // see: Every computed table's writer is its own deleter
-    public const int RetentionDays = 365;
 
     const string ReadVersions = @"
         SELECT rule, version, parameters, parameters_hash, code_version, opened_at, closed_at, replaced_by
@@ -103,9 +107,13 @@ public sealed class RuleVersionScorer : IComponent
             sample = excluded.sample;
     ";
 
+    // Kept while the bars a score was replayed from are, whatever night is scored.
+    // see: Every computed table's writer is its own deleter
     const string DropOlderThan = @"
         DELETE FROM version_score WHERE session_date < $oldest;
     ";
+
+    const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -191,6 +199,7 @@ public sealed class RuleVersionScorer : IComponent
 
         var names = await NamesAsync(connection, session, cancellation);
         var written = 0;
+        var skipped = 0;
 
         await using (var transaction = await connection.BeginTransactionAsync(cancellation))
         {
@@ -206,6 +215,14 @@ public sealed class RuleVersionScorer : IComponent
 
                 foreach (var version in replayed)
                 {
+                    // Which member is an average or a touch cannot be read off a band set stored without sources.
+                    if (!inputs.Value.MemberSources && LadderRules.ReadsMembers(version.Rule))
+                    {
+                        skipped++;
+
+                        continue;
+                    }
+
                     var plan = Replayed(version, inputs.Value);
 
                     // A score for a night before its window opened is the
@@ -233,15 +250,15 @@ public sealed class RuleVersionScorer : IComponent
             await transaction.CommitAsync(cancellation);
         }
 
-        var dropped = await DroppedAsync(connection, session.AddDays(-RetentionDays), cancellation);
+        var dropped = await DroppedAsync(connection, cancellation);
 
         var detail =
             FormattableString.Invariant($"{open.Count} open version(s), {replayed.Length} replayed over {names.Count} name(s), ")
-            + FormattableString.Invariant($"{written} score(s) written, {dropped} dropped");
+            + FormattableString.Invariant($"{written} score(s) written, {skipped} name-night(s) skipped for a band set stored without member sources, {dropped} dropped");
 
         await RecordAsync(connection, runId, startedAt, written, detail, cancellation);
 
-        return new VersionScoreOutcome(open.Count, names.Count, written, dropped);
+        return new VersionScoreOutcome(open.Count, names.Count, written, dropped, skipped);
     }
 
     // Each live ladder rule's parameters as this build applies them. The merge
@@ -259,7 +276,7 @@ public sealed class RuleVersionScorer : IComponent
 
         return rule switch
         {
-            LadderRules.MergeDistance => new Dictionary<string, double>(StringComparer.Ordinal) { ["typicalMoveMultiple"] = 0.5 },
+            LadderRules.MergeDistance => new Dictionary<string, double>(StringComparer.Ordinal) { ["typicalMoveMultiple"] = Statistic.FromRatio(LevelSeries.MergeDistanceInTypicalMoves) },
             LadderRules.StopPlacement => new Dictionary<string, double>(StringComparer.Ordinal) { ["stopTrailsTheLastHigherLow"] = ladder["stopTrailsTheLastHigherLow"] },
             LadderRules.NearExitSkip => new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = ladder["nearExitInTypicalDays"] },
             LadderRules.ZoneEdgesFromNonAverageAnchors => new Dictionary<string, double>(StringComparer.Ordinal) { ["zoneEdgesFromNonAverageAnchorsOnly"] = ladder["zoneEdgesFromNonAverageAnchorsOnly"] },
@@ -282,7 +299,9 @@ public sealed class RuleVersionScorer : IComponent
         string TrendState,
         IReadOnlyList<LevelMember> Candidates,
         IReadOnlyList<LevelBar> Window,
-        DateOnly AsOf);
+        DateOnly AsOf,
+        IReadOnlyList<decimal> SwingLows,
+        bool MemberSources);
 
     // The plan one version produces for one name-night.
     //
@@ -293,22 +312,33 @@ public sealed class RuleVersionScorer : IComponent
     public static string Replayed(RuleVersionRow version, ReplayInputs inputs)
     {
         var parameters = RuleVersions.Read(version.Parameters);
+        var bands = inputs.Bands;
 
-        var bands = LadderRules.ReplaysLevels(version.Rule) && inputs.Candidates.Count > 0
-            ? LevelSeries.For(
-                inputs.Window,
-                inputs.Candidates,
-                inputs.Close,
-                inputs.TypicalMove * Statistic.ToPrice(parameters.GetValueOrDefault("typicalMoveMultiple", 0.5)),
-                inputs.AsOf)
-            : inputs.Bands;
+        if (LadderRules.ReplaysLevels(version.Rule) && inputs.Candidates.Count > 0)
+        {
+            var multiple = parameters.GetValueOrDefault("typicalMoveMultiple", Statistic.FromRatio(LevelSeries.MergeDistanceInTypicalMoves));
+            decimal distance;
+
+            try
+            {
+                distance = inputs.TypicalMove * Statistic.ToPrice(multiple);
+            }
+            catch (OverflowException)
+            {
+                throw new InvalidOperationException(FormattableString.Invariant(
+                    $"'{version.Version}' of '{version.Rule}' replays a merge distance of {multiple} typical moves, which no price can hold; close it."));
+            }
+
+            bands = LevelSeries.For(inputs.Window, inputs.Candidates, inputs.Close, distance, inputs.AsOf);
+        }
 
         var rules = new LadderRuleSet(
             NearExitInTypicalDays: (int)parameters.GetValueOrDefault("nearExitInTypicalDays", LadderSeries.NearExitInTypicalDays),
             StopTrailsTheLastHigherLow: parameters.GetValueOrDefault("stopTrailsTheLastHigherLow", 1) != 0,
             ZoneEdgesFromNonAverageAnchorsOnly: parameters.GetValueOrDefault("zoneEdgesFromNonAverageAnchorsOnly", 0) != 0);
 
-        var plan = LadderSeries.For(bands, inputs.Close, inputs.TypicalMove, inputs.Recent, inputs.TrendState, rules: rules);
+        // The swing lows the live stop trails, and no event, since a version's plan carries no second book.
+        var plan = LadderSeries.For(bands, inputs.Close, inputs.TypicalMove, inputs.Recent, inputs.TrendState, inputs.SwingLows, rules: rules);
 
         return JsonSerializer.Serialize(new
         {
@@ -337,7 +367,11 @@ public sealed class RuleVersionScorer : IComponent
     // the open does. A live window carries exactly the build's parameters,
     // since its hash is compared against the build's every night and a live
     // window opened at any other would stop the first night after it.
-    public static string? ParameterRefusal(string rule, string version, IReadOnlyDictionary<string, double> parameters)
+    // see: A version of a ladder rule is refused at values its replay would not apply as given, or at its rule's live values
+    public static string? ParameterRefusal(
+        string rule,
+        string version,
+        IReadOnlyDictionary<string, double> parameters)
     {
         if (!LadderRules.All.Contains(rule, StringComparer.Ordinal))
         {
@@ -355,16 +389,48 @@ public sealed class RuleVersionScorer : IComponent
                 "with any other names would measure the live rule under a version's name.";
         }
 
-        if (string.Equals(version, RuleVersions.Live, StringComparison.Ordinal)
-            && live.Any(pair => !parameters[pair.Key].Equals(pair.Value)))
+        if (parameters.Select(pair => ValueRefusal(pair.Key, pair.Value)).FirstOrDefault(refusal => refusal is not null) is { } unapplied)
         {
-            return
-                $"a live window of '{rule}' carries the build's own parameters, " +
-                $"{RuleVersions.Write(live)}, and was given {RuleVersions.Write(parameters)}. A version with other " +
-                "values is opened under its own name beside the live one.";
+            return unapplied;
         }
 
-        return null;
+        if (string.Equals(version, RuleVersions.Live, StringComparison.Ordinal))
+        {
+            return live.Any(pair => !parameters[pair.Key].Equals(pair.Value))
+                ? $"a live window of '{rule}' carries the build's own parameters, " +
+                  $"{RuleVersions.Write(live)}, and was given {RuleVersions.Write(parameters)}. A version with other " +
+                  "values is opened under its own name beside the live one."
+                : null;
+        }
+
+        return live.All(pair => parameters[pair.Key].Equals(pair.Value))
+            ? $"'{version}' of '{rule}' carries the live values, {RuleVersions.Write(live)}, so it would store the " +
+              "live rule's plans under a version's name."
+            : null;
+    }
+
+    // Why the replay would not apply this value as given, or null.
+    static string? ValueRefusal(string name, double value) => name switch
+    {
+        "typicalMoveMultiple" when !(value > 0 && AtPricePlaces(value)) => FormattableString.Invariant(
+            $"'{name}' is a number of typical moves above 0 written to at most {PriceForm.Places} places, which is what the replay rounds it to, and was given {value}."),
+        "nearExitInTypicalDays" when !(value >= 0 && value <= int.MaxValue && Math.Floor(value) == value) => FormattableString.Invariant(
+            $"'{name}' is a whole number of typical days from 0, which is how the replay counts them, and was given {value}."),
+        "stopTrailsTheLastHigherLow" or "zoneEdgesFromNonAverageAnchorsOnly" when value is not (0d or 1d) => FormattableString.Invariant(
+            $"'{name}' is a flag of 1 or 0, which is all the replay reads it as, and was given {value}."),
+        _ => null,
+    };
+
+    static bool AtPricePlaces(double value)
+    {
+        try
+        {
+            return double.IsFinite(value) && Statistic.FromRatio(Statistic.ToPrice(value)) == value;
+        }
+        catch (OverflowException)
+        {
+            return false;
+        }
     }
 
     public Task<string?> OpenLiveAsync(string rule, string runId, CancellationToken cancellation = default) =>
@@ -533,13 +599,14 @@ public sealed class RuleVersionScorer : IComponent
         return names;
     }
 
-    static async Task<ReplayInputs?> InputsAsync(
+    public static async Task<ReplayInputs?> InputsAsync(
         SqliteConnection connection,
         string ticker,
         DateOnly session,
         CancellationToken cancellation)
     {
         var bands = new List<Level>();
+        var memberSources = true;
 
         await using (var command = connection.CreateCommand())
         {
@@ -551,6 +618,10 @@ public sealed class RuleVersionScorer : IComponent
 
             while (await reader.ReadAsync(cancellation))
             {
+                var members = Members(reader.GetString(6));
+
+                memberSources &= members is not null;
+
                 bands.Add(new Level(
                     Money.FromStorage(reader.GetString(0)),
                     Money.FromStorage(reader.GetString(1)),
@@ -558,7 +629,7 @@ public sealed class RuleVersionScorer : IComponent
                     reader.GetInt32(3) != 0,
                     reader.GetInt32(4),
                     reader.GetInt32(5) != 0,
-                    Members(reader.GetString(6))));
+                    members ?? []));
             }
         }
 
@@ -574,7 +645,7 @@ public sealed class RuleVersionScorer : IComponent
             command.CommandText = RecentFor;
             command.Parameters.AddWithValue("$ticker", ticker);
             command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-            command.Parameters.AddWithValue("$window", LadderSeries.ConditionLookback);
+            command.Parameters.AddWithValue("$window", VolumeProfileSeries.Window);
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -594,6 +665,11 @@ public sealed class RuleVersionScorer : IComponent
         }
 
         recent.Reverse();
+
+        // The level window a merge distance version replays over, and the shorter one a condition is read over.
+        var window = recent.Select(bar => new LevelBar(bar.SessionDate, bar.High, bar.Low, bar.Close)).ToArray();
+
+        recent = [.. recent.TakeLast(LadderSeries.ConditionLookback)];
 
         double? typicalMove = null;
 
@@ -641,8 +717,10 @@ public sealed class RuleVersionScorer : IComponent
             .OrderBy(member => member.Price)
             .ToArray();
 
-        var window = recent
-            .Select(bar => new LevelBar(bar.SessionDate, bar.High, bar.Low, bar.Close))
+        var lows = StoredSwings.AsOf(connection, ticker, session)
+            .Where(swing => swing.Direction == SwingSeries.Low)
+            .OrderBy(swing => swing.SessionDate)
+            .Select(swing => swing.Price)
             .ToArray();
 
         return new ReplayInputs(
@@ -653,29 +731,54 @@ public sealed class RuleVersionScorer : IComponent
             trendState,
             candidates,
             window,
-            session);
+            session,
+            lows,
+            memberSources);
     }
 
-    static IReadOnlyList<LevelMember> Members(string json)
+    // Null for a band set stored before member sources were written.
+    static IReadOnlyList<LevelMember>? Members(string json)
     {
         using var document = JsonDocument.Parse(json);
 
-        return
-        [
-            .. document.RootElement.EnumerateArray().Select(member => new LevelMember(
-                Enum.Parse<MemberSource>(member.GetProperty("source").GetString()!, ignoreCase: true),
+        var members = new List<LevelMember>();
+
+        foreach (var member in document.RootElement.EnumerateArray())
+        {
+            if (!member.TryGetProperty("source", out var source))
+            {
+                return null;
+            }
+
+            members.Add(new LevelMember(
+                Enum.Parse<MemberSource>(source.GetString()!, ignoreCase: true),
                 member.GetProperty("kind").GetString()!,
                 Money.FromStorage(member.GetProperty("price").GetString()!),
-                DateOnly.ParseExact(member.GetProperty("date").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture))),
-        ];
+                DateOnly.ParseExact(member.GetProperty("date").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+        }
+
+        return members;
     }
 
-    static async Task<int> DroppedAsync(SqliteConnection connection, DateOnly oldest, CancellationToken cancellation)
+    static async Task<int> DroppedAsync(SqliteConnection connection, CancellationToken cancellation)
     {
+        await using var newest = connection.CreateCommand();
+
+        newest.CommandText = NewestSession;
+
+        if (await newest.ExecuteScalarAsync(cancellation) is not string stored)
+        {
+            return 0;
+        }
+
         await using var command = connection.CreateCommand();
 
         command.CommandText = DropOlderThan;
-        command.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue(
+            "$oldest",
+            DateOnly.ParseExact(stored, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                .AddYears(-BarFetcher.RetentionYears)
+                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         return await command.ExecuteNonQueryAsync(cancellation);
     }

@@ -1,0 +1,294 @@
+{
+ "stage": "version-scores",
+ "derivation": "derived",
+ "derivedFrom": "the ladder rules sections 9, 10 and 17 state, each run with one rule at a version's value and the other three at their live values, applied outside this repository and without running the scorer, the level builder or the ladder builder. The inputs are the ones the expectations beside this file already derived: every band, its role and its members from the levels expectation, a member's kind read as its source; the typical day's move as half of the two typical days the ladder expectation states; the trend from the ladder expectation; the swing lows from the swings expectation, those confirmed on or before 2026-09-04 in session order; and the last ten sessions of each committed bar file, adjusted by the provider's adjusted close over its raw close, which is what a condition is read over. The live windows carry the build's own values, half a typical day's move, a stop that trails, two typical days and a zone at the band's own edges, so the four versions are measured beside them. Each version's plan is worked from those inputs by its own rule: the merge distance version merges the non-touch members again at a quarter of the typical move, strictly closer, and places tranches, stops, the invalidation and the exits over the bands that merge produces; the band beneath places every stop at the low edge of the next support band beneath and never at a swing low; three typical days trades an exit only where its low edge is at least three typical moves above the blended entry; and non-average anchors alone narrows each tranche's zone to the range of its members that are neither an average nor a touch, a touch being evidence and never an anchor, and blends the exits from the narrowed midpoints. A stop of none is a tranche with no support band beneath it. Every window opens the evening before the night scored, so every score counts. Nothing here was read back from a run.",
+ "tables": [
+  "rule_version",
+  "version_score"
+ ],
+ "session": "2026-09-04",
+ "windows": [
+  {
+   "rule": "merge distance",
+   "version": "live",
+   "parameters": {
+    "typicalMoveMultiple": 0.5
+   },
+   "openedAt": "2026-09-03T22:00:00Z"
+  },
+  {
+   "rule": "merge distance",
+   "version": "a quarter of a typical move",
+   "parameters": {
+    "typicalMoveMultiple": 0.25
+   },
+   "openedAt": "2026-09-03T22:01:00Z"
+  },
+  {
+   "rule": "where the stop sits",
+   "version": "live",
+   "parameters": {
+    "stopTrailsTheLastHigherLow": 1
+   },
+   "openedAt": "2026-09-03T22:02:00Z"
+  },
+  {
+   "rule": "where the stop sits",
+   "version": "the band beneath",
+   "parameters": {
+    "stopTrailsTheLastHigherLow": 0
+   },
+   "openedAt": "2026-09-03T22:03:00Z"
+  },
+  {
+   "rule": "the near-exit skip",
+   "version": "live",
+   "parameters": {
+    "nearExitInTypicalDays": 2
+   },
+   "openedAt": "2026-09-03T22:04:00Z"
+  },
+  {
+   "rule": "the near-exit skip",
+   "version": "three typical days",
+   "parameters": {
+    "nearExitInTypicalDays": 3
+   },
+   "openedAt": "2026-09-03T22:05:00Z"
+  },
+  {
+   "rule": "zone edges from non-average anchors only",
+   "version": "live",
+   "parameters": {
+    "zoneEdgesFromNonAverageAnchorsOnly": 0
+   },
+   "openedAt": "2026-09-03T22:06:00Z"
+  },
+  {
+   "rule": "zone edges from non-average anchors only",
+   "version": "non-average anchors alone",
+   "parameters": {
+    "zoneEdgesFromNonAverageAnchorsOnly": 1
+   },
+   "openedAt": "2026-09-03T22:07:00Z"
+  }
+ ],
+ "sample": "scored",
+ "plans": {
+  "format": {
+   "tranche": "lowEdge|highEdge|condition|stop",
+   "exit": "lowEdge|traded"
+  },
+  "byVersion": {
+   "a quarter of a typical move": {
+    "AAPL": {
+     "tranches": [
+      "319.0748|320.28|AvailableNow|312.7508",
+      "312.7508|316.0175|FailedBreakdown|310.425",
+      "310.425|310.6626|FailedBreakdown|307.1246"
+     ],
+     "exits": [
+      "334.7013|true",
+      "344.2731|true"
+     ],
+     "invalidation": "307.1246"
+    },
+    "KEYS": {
+     "tranches": [
+      "314.7376|327.495|AvailableNow|311.2696",
+      "311.2696|311.2696|FailedBreakdown|306.852",
+      "305.42|306.852|FirstCloseBackAbove|300.87"
+     ],
+     "exits": [
+      "330.567|false",
+      "366.41|true",
+      "374.963|true"
+     ],
+     "invalidation": "300.87"
+    },
+    "MSFT": {
+     "tranches": [
+      "495.3393|497.0167|FailedBreakdown|492.1166",
+      "492.1166|492.1166|FailedBreakdown|485.1401",
+      "485.1401|485.1401|FirstCloseBackAbove|476.2534"
+     ],
+     "exits": [
+      "501.9168|false",
+      "507.9797|false",
+      "512.7647|false",
+      "517.78|false"
+     ],
+     "invalidation": "476.2534"
+    },
+    "NFLX": {
+     "tranches": [
+      "75.4402|75.8178|ReachesTheZone|73.76",
+      "73.76|73.877|ReachesTheZone|72.951",
+      "72.951|72.951|ReachesTheZone|71.7172"
+     ],
+     "exits": [
+      "78.3545|false",
+      "79.31|false",
+      "81.16|true",
+      "82.455|true",
+      "86.8835|true"
+     ],
+     "invalidation": "71.7172"
+    }
+   },
+   "the band beneath": {
+    "AAPL": {
+     "tranches": [
+      "299.7415|320.28|AvailableNow|283.439",
+      "273.5141|273.5141|ReachesTheZone|none"
+     ],
+     "exits": [
+      "334.7013|true",
+      "344.2731|true"
+     ],
+     "invalidation": "273.5141"
+    },
+    "KEYS": {
+     "tranches": [
+      "300.87|332.78|AvailableNow|288.5134",
+      "288.5134|293.55|ReachesTheZone|none"
+     ],
+     "exits": [
+      "366.41|true",
+      "374.963|true"
+     ],
+     "invalidation": "288.5134"
+    },
+    "MSFT": {
+     "tranches": [
+      "492.1166|501.9168|AvailableNow|485.1401",
+      "485.1401|485.1401|FirstCloseBackAbove|476.2534",
+      "476.2534|476.2534|ReachesTheZone|443.5621"
+     ],
+     "exits": [
+      "507.9797|false"
+     ],
+     "invalidation": "443.5621"
+    },
+    "NFLX": {
+     "tranches": [
+      "75.4402|75.8178|ReachesTheZone|72.951",
+      "72.951|73.877|ReachesTheZone|70.86",
+      "70.86|71.7172|ReachesTheZone|68.7982"
+     ],
+     "exits": [
+      "78.3545|false",
+      "81.16|true",
+      "82.455|true",
+      "86.8835|true"
+     ],
+     "invalidation": "68.7982"
+    }
+   },
+   "three typical days": {
+    "AAPL": {
+     "tranches": [
+      "299.7415|320.28|AvailableNow|283.439",
+      "273.5141|273.5141|ReachesTheZone|264.5978"
+     ],
+     "exits": [
+      "334.7013|true",
+      "344.2731|true"
+     ],
+     "invalidation": "264.5978"
+    },
+    "KEYS": {
+     "tranches": [
+      "300.87|332.78|AvailableNow|293.55",
+      "288.5134|293.55|ReachesTheZone|266.47"
+     ],
+     "exits": [
+      "366.41|true",
+      "374.963|true"
+     ],
+     "invalidation": "266.47"
+    },
+    "MSFT": {
+     "tranches": [
+      "492.1166|501.9168|AvailableNow|485.1401",
+      "485.1401|485.1401|FirstCloseBackAbove|476.2534",
+      "476.2534|476.2534|ReachesTheZone|443.5621"
+     ],
+     "exits": [
+      "507.9797|false"
+     ],
+     "invalidation": "443.5621"
+    },
+    "NFLX": {
+     "tranches": [
+      "75.4402|75.8178|ReachesTheZone|72.951",
+      "72.951|73.877|ReachesTheZone|70.86",
+      "70.86|71.7172|ReachesTheZone|68.7982"
+     ],
+     "exits": [
+      "78.3545|false",
+      "81.16|false",
+      "82.455|true",
+      "86.8835|true"
+     ],
+     "invalidation": "68.7982"
+    }
+   },
+   "non-average anchors alone": {
+    "AAPL": {
+     "tranches": [
+      "299.7415|320.28|AvailableNow|283.439",
+      "273.5141|273.5141|ReachesTheZone|264.5978"
+     ],
+     "exits": [
+      "334.7013|true",
+      "344.2731|true"
+     ],
+     "invalidation": "264.5978"
+    },
+    "KEYS": {
+     "tranches": [
+      "300.87|332.78|AvailableNow|293.55",
+      "293.55|293.55|ReachesTheZone|266.47"
+     ],
+     "exits": [
+      "366.41|true",
+      "374.963|true"
+     ],
+     "invalidation": "266.47"
+    },
+    "MSFT": {
+     "tranches": [
+      "492.1166|501.9168|AvailableNow|485.1401",
+      "485.1401|485.1401|FirstCloseBackAbove|476.2534",
+      "476.2534|476.2534|ReachesTheZone|443.5621"
+     ],
+     "exits": [
+      "507.9797|false"
+     ],
+     "invalidation": "443.5621"
+    },
+    "NFLX": {
+     "tranches": [
+      "75.8178|75.8178|ReachesTheZone|72.951",
+      "72.951|73.877|ReachesTheZone|70.86",
+      "70.86|71.7172|ReachesTheZone|68.7982"
+     ],
+     "exits": [
+      "78.3545|false",
+      "81.16|true",
+      "82.455|true",
+      "86.8835|true"
+     ],
+     "invalidation": "68.7982"
+    }
+   }
+  }
+ },
+ "workedAgainstTheLiveRule": {
+  "a quarter of a typical move": "the wide bands split where two neighbouring candidates sit a quarter of a typical move or more apart. AAPL's 299.7415 to 320.28 band breaks into six, and its three nearest supports carry the tranches, 319.0748 to 320.28 with the close inside it, then 312.7508 to 316.0175 and 310.425 to 310.6626, each with a close in the last ten sessions below its low edge; every stop is the band beneath, because AAPL's last swing low beneath each, 300.57, sits lower. NFLX's 72.951 to 73.877 band splits at the 0.809 gap between 72.951 and 73.76, and its 78.3545 to 79.31 resistance at the 0.9555 gap, which is a fifth exit, listed and not traded at 4.586 above a blended entry of 74.72375 against two typical days of 4.7916.",
+  "the band beneath": "a stop no longer trails. KEYS's first tranche stops at the band beneath at 288.5134 rather than at the swing low at 293.55, and AAPL's and KEYS's second tranches, each the lowest support band its name has, carry no stop, so their invalidations fall to their own low edges, 273.5141 and 288.5134. MSFT's stops were the bands beneath already and NFLX is a range, so neither moves.",
+  "three typical days": "NFLX's exit at 81.16 is 6.6385 above its blended entry of 74.5215, which clears two typical days of 4.7916 and not three of 7.1874, so it is listed and not traded. Every other exit is either past three typical days, as 82.455 is at 7.9335, or was inside two already.",
+  "non-average anchors alone": "KEYS's second tranche narrows from 288.5134 to 293.55 down to 293.55, its 200-day average being the outermost member, and NFLX's first from 75.4402 to 75.8178 down to 75.8178, its 50-day average being outermost with touches at 75.45 to 75.71 between it and the retracement, which are evidence and not anchors. The narrowed midpoints move KEYS's blended entry to 305.1875 and NFLX's to 74.6159, and no exit crosses its bar. AAPL's and MSFT's zones are bounded by swings and retracements already."
+ }
+}

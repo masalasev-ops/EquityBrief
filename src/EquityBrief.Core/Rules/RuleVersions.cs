@@ -58,6 +58,11 @@ public static class LadderRules
     // replay and a ladder replay, and every other version costs a ladder replay.
     public static bool ReplaysLevels(string rule) =>
         string.Equals(rule, MergeDistance, StringComparison.Ordinal);
+
+    // Which rules a version of reads each band member's source: the merge distance
+    // re-merges the anchors, and the zone edges leave out the averages and the touches.
+    public static bool ReadsMembers(string rule) =>
+        ReplaysLevels(rule) || string.Equals(rule, ZoneEdgesFromNonAverageAnchors, StringComparison.Ordinal);
 }
 
 // The bound, the windows and the drift check.
@@ -199,12 +204,8 @@ public static class RuleVersions
         LadderRules.All.Sum(rule =>
             (MostFor(rule) - 1) * (LadderRules.ReplaysLevels(rule) ? levelStageSeconds + ladderStageSeconds : ladderStageSeconds));
 
-    // A rule's parameters as they stand, hashed, so a change is a thing the night
-    // can notice rather than a thing somebody remembers to record.
-    //
-    // The same normalisation the evaluator pin uses and for the same reason: the
-    // hash has to be the same on both machines and on a runner that checked the
-    // tree out with either line ending.
+    // A rule's parameters and the code version, hashed, so a change to either is a
+    // thing the night can notice; the source text is read by the code version's pin.
     public static string Hash(IReadOnlyDictionary<string, double> parameters, string codeVersion)
     {
         var written = string.Join(

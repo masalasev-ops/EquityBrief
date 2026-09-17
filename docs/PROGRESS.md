@@ -12686,3 +12686,134 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             verdict notes are rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 8.6 - correction: a version replayed through the live rule's own inputs and at values it applies as given, the code version pinned over every source either side runs through, and the version plans worked by hand into the fixture   2026-09-16
+Corrects:   the 8.6 entry above records every open version replayed nightly from stored bars through
+            the code the live rule runs through, and its two corrections record the code version
+            pinned to the sources a replay runs through and a night with no version open reading no
+            bands. Five things they built were not what they recorded.
+            The replay was not the live rule's. It handed the ladder arithmetic no swing lows, so every
+            uptrend stop it stored was the band beneath: over the fixture night of 2026-09-04, 3 of 10
+            tranches replayed at the live values carried a stop the live plan does not, and a version
+            with the stop trailing replayed the plans of one without. The zone edges version narrowed a
+            zone to its non-average members, touches included, where the decision registers the range
+            of its non-average anchors alone, so NFLX's first zone replayed as 75.45 to 75.8178 rather
+            than 75.8178. The merge distance version replayed the level arithmetic over the ten sessions
+            a condition reads rather than the sixty the level builder reads.
+            A version's values were never checked. The replay counts a near-exit skip in whole days, reads
+            a flag as zero or not, and rounds a merge multiple to four places, so 2.5 typical days stored
+            the live rule's plans under a row saying 2.5, a flag of 0.5 replayed as set, a name given twice
+            kept the second value silently, and not a number stored a row no night could replay, which
+            stopped every night after it with a decimal overflow naming no rule.
+            The pin did not reach the live merge distance. The level builder applied half a typical move
+            in a file the pin did not cover while the hash compared a literal 0.5, so a change to the
+            multiple would have left every window's hash where it was. The 8.6 correction wrote "The code
+            version is the pin of the level arithmetic, the ladder arithmetic and the scorer's own file"
+            and "Any edit to the code a window measures is a new code version"; the right words are that
+            the code version is the pin of every source the live rules and their replay run through,
+            twelve files read off the compiled code, and only now is the second sentence true.
+            A version open over a band set stored before member sources were written still threw, which
+            the night-read correction wrote as "Not repaired: the same read with a version open", and the
+            scores were dropped 365 days back from whatever night was scored rather than one year back
+            from the newest stored session, as the bars and the computed tables are.
+            And condition 7 was met by none of the three. The 8.6 entry wrote "Expected: derived, and it is
+            the replay itself rather than a file" and "Carried: nothing"; the 8.6 correction wrote "No
+            expectation file changes, because the bound and the verb produce no stage output the fixture
+            replay reads", with its version plans "compared with themselves across a band set the test
+            writes"; and the night-read correction wrote "No expectation file changes, because the fixture
+            replay opens no version." The right words for all three are that the checkpoint's expectations
+            were owed to the fixture and are added by this entry. The 8.6 entry also named "the retention
+            drop" as not mutated while carrying nothing, and the 8.6 correction wrote "The scorer reads the
+            bands and trend as of the session it scores" while guarding the bands alone; both are guarded
+            and the first mutated here. And the decision on the caps ended "Ruled at the 8.6 correction.",
+            where the caps are the operator's third-round ruling on the phase 8 plan: that entry is
+            corrected in place, its ruling unchanged, with its prior text in CHANGELOG.
+Found:      by the phase 8 sign-off review on 2026-09-16, which also carried two calls on the caps and on
+            the pin's reach. The operator ruled that day that everything the review found is corrected
+            before a sign-off handoff, and ruled that the code pin covers every source file a live ladder
+            rule or its replay runs through, listed and held by a test, with the merge distance one constant
+            both sides read. It is labelled for 8.6, which built the replay, the pin and the scorer.
+Measured:   read immutable from the operator's store after the night of 2026-09-16, with no night run
+            since, that night's steps having run on a9b1be3: schema 26; `rule_version` and `version_score` present with 0 rows each; 18418 level
+            rows over 508 names as of 2026-04-16 to 2026-09-16, of which 2986, the night of 2026-09-16's
+            own band sets, carry a source and 15432 do not; the rule versions step recorded "0 open
+            version(s), 0 replayed over 506 name(s), 0 score(s) written, 0 dropped" and the close ran.
+            (At 23:14 UTC, before the night: schema 23, neither table, 15442 rows and 0 with a source.)
+Repaired:   the replay reads the swing lows confirmed by the scored session through the reader the ladder
+            builder uses and hands them to the ladder arithmetic, and reads the level window of sixty
+            sessions for a merge distance version; a zone narrowed by the version is the range of its
+            anchors that are neither an average nor a touch. A version is refused at a multiple not above 0
+            or written past four places, a skip that is not a whole number of days from 0, a flag other than
+            1 or 0, and at its rule's live values; a parameter named twice is refused; and a merge distance
+            no price can hold stops the replay naming the version (see: A version of a ladder rule is
+            refused at values its replay would not apply as given, or at its rule's live values). The merge
+            distance is one constant the level builder applies and the hash carries, and the code version
+            is the pin of the twelve files the compiled code reaches from where each side applies a rule,
+            the list held to that set by a test; `version --list` names a live window the build no longer
+            hashes to (see: The ladder rules' code version pins every source a live ladder rule or its
+            replay runs through). A version that reads member sources is skipped over a band set stored
+            without them and counted on the step's row. Scores are dropped one year back from the newest
+            stored session. A pin leaves out exactly one line, and only one declaring the version alone.
+            The ladder builder declares the swings it reads. SCHEMA, RUNBOOK, section 13, section 17's
+            version bound row, two catalogue rows and the roster say so, with prior text in CHANGELOG.
+Stored:     nothing to keep or rewrite. The operator's store holds no `rule_version` row and no
+            `version_score` row, so no window was ever open and no score was written under any of these
+            defects (confirm against the Measured read at writing time).
+Missed:     each by the population its test was written over. The one test holding a replayed plan to a
+            rule built its bands in a range with no touch, and the two replaying the fixture's uptrend names
+            compared the replay with itself, so neither the trailing stop nor a touch between an average and
+            an anchor was ever held to a worked figure; the pin test counted three sources and the drift test fed a made-up
+            hash, so nothing asked what code the live rules run through; every version the suite opened used
+            a whole value different from the live one; every store the suite builds writes member sources;
+            no test put a score near the retention boundary; and no later ladder row existed when a
+            backfill read the trend.
+Guarded:    over the replayed fixture and constructed stores. At the live values every rule replays the
+            bands and the plan the night stored for all four names, three tranches taking their stop from
+            the trailing rule; each version's plan over the fixture is the one worked by hand; a zone never
+            takes an edge from a touch; thirteen values are refused with their reasons, one per rule admitted,
+            and each refusal is a row, with the runbook's four places held to the price form; a merge distance no price can hold stops the replay naming the version;
+            the pin's twelve files are the set the compiled code reaches, each moves it and its declaring line
+            does not, and a pin refuses a declaration with anything beside it; a version reading member
+            sources is skipped over a set without them and counted while the others are scored as worked; a
+            score is dropped one year back from the newest stored session and kept at it whether an earlier,
+            the same or a later night is scored; a backfill reads that night's bands and trend; and the verb
+            refuses a name given twice and lists a drifted live window.
+Expected:   derived: `version-scores.json` holds each of four versions' plans for the four fixture names,
+            worked from the levels, ladder and swings expectations and the committed bars by each version's
+            rule outside the repository and compared with the build only afterwards, and the fixture replay
+            now opens those windows and runs the step, so both tables are named by an expectation. The
+            retention boundary and the refusals are worked from the rules in the tests themselves.
+Tests:      1004, from 997. Seven added to `rule-versions-scored`: the version plans over the fixture, the
+            live values replaying the night's bands and plan, the refused values, the merge distance no
+            price can hold, the member sources skip, the retention boundary, and a pin leaving out exactly
+            one line. Two rewritten in place and renamed for what they now assert: the pin over every source
+            either side runs through, and the backfill reading that night's bands and trend. Two extended in
+            place: the replay test's zone edges band carries a touch, and the verb test refuses a name given
+            twice and lists a drifted live window. `fixture-replay`'s replay runs the version step. The code
+            version moves from 526e7c8f9175 to 85d30c00446f; no store holds a window, so no night is stopped by it.
+Mutated:    the rule, stated before the sweep: break each property this correction adds that a later edit
+            could undo quietly, one per repair, being the replay's inputs, the anchors a zone narrows to, the
+            refusal at the live values, the pin's reach and the retention boundary. M4 and M5 are re-pinned to
+            their own code version, so a red on the pin's value cannot stand in for the property: M4's red has
+            to be the pinned list against the reached set, and M5's the retention test. M1 to M3 are not
+            re-pinned, and each names the pin test among its reds. Predicted:
+            M1 the swing lows left out of the replay's call to the ladder arithmetic: the version plans test
+            red on AAPL and KEYS under the three versions that trail, the live values test red, the backfill
+            test red on the worked plans, the member sources test red on the three typical days plans, and
+            the pin test red.
+            M2 a touch counted as an anchor again: the replay test red on the narrowed zone of 90 to 93, the
+            version plans test red on NFLX's first zone, and the pin test red.
+            M3 the refusal at the live values removed: the refused values test red on its three live-value
+            cases, and the pin test red.
+            M4 the level builder's file left out of the pinned list, re-pinned over the eleven: the pin test
+            red on the list against the reached set, and nothing else.
+            M5 the retention drop made to remove nothing, re-pinned: the retention test red on the rows
+            dropped, and nothing else.
+            Not mutated, and named so the next sweep has them: the one merge distance constant both sides
+            read, the level window of sixty sessions, the overflow named at the replay, the refusals of
+            unapplied values other than at the live values, the name given twice, the drifted live window on
+            the list, the exactly-one-line pin, the member sources skip, the runbook's four places, and the
+            trend read at the scored session.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this correction.

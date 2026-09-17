@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EquityBrief.Core;
 
@@ -21,14 +22,23 @@ public static class SourcePin
 {
     public static string Of(IEnumerable<string> sources, string declaration)
     {
+        var lines = sources
+            .Select(source => source.Replace("\r\n", "\n", StringComparison.Ordinal).TrimStart('﻿').Split('\n'))
+            .ToArray();
+
+        // The whole line and exactly one of it, so nothing written beside the version goes unpinned.
+        var declares = new Regex("^\\s*" + Regex.Escape(declaration) + " \"[0-9a-f]{12}\";\\s*$");
+        var declared = lines.Sum(source => source.Count(declares.IsMatch));
+
+        if (declared != 1)
+        {
+            throw new InvalidOperationException(FormattableString.Invariant(
+                $"The sources carry {declared} line(s) that declare the version and nothing else, as '{declaration} \"<twelve hex characters>\";', and a pin leaves out exactly one."));
+        }
+
         var pinned = string.Join(
             "\n",
-            sources.Select(source => string.Join(
-                "\n",
-                source.Replace("\r\n", "\n", StringComparison.Ordinal)
-                    .TrimStart('﻿')
-                    .Split('\n')
-                    .Where(line => !line.TrimStart().StartsWith(declaration, StringComparison.Ordinal)))));
+            lines.Select(source => string.Join("\n", source.Where(line => !declares.IsMatch(line)))));
 
         var digest = SHA256.HashData(Encoding.UTF8.GetBytes(pinned));
 

@@ -109,6 +109,9 @@ public class FixtureReplay
             night,
             store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "replay-pulse");
 
+        // The rule versions step, over windows opened the way a person opens them, since a table nothing populates is one no expectation can be read against.
+        await RuleVersionsScored.ReplayVersionsAsync(store, night);
+
         // The one stage here that is not the night's. The fundamentals fetcher runs
         // when a name is opened, so it is replayed after the night rather than
         // inside it, and it is replayed at all because a table nothing populates is

@@ -48,6 +48,7 @@ public sealed class LadderBuilder : IComponent
         [
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
+            new StoreTouch(Store.Swing, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Insert | Touch.Update | Touch.Delete),

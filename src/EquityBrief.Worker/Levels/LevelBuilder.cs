@@ -300,7 +300,7 @@ public sealed class LevelBuilder : IComponent
             Last(swings, SwingSeries.High),
             Last(swings, SwingSeries.Low)));
 
-        return LevelSeries.For(window, candidates, window[^1].Close, move / 2, asOf);
+        return LevelSeries.For(window, candidates, window[^1].Close, move * LevelSeries.MergeDistanceInTypicalMoves, asOf);
     }
 
     // The window's most recent swing of one kind, or nothing.
