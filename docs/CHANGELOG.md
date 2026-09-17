@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-17 - ARCHITECTURE.html - a figure's rows fit the column they are drawn in
+
+Corrects: figure 5.1's outside-the-system row held eight boxes on a line the stylesheet gave no way to wrap, needing 1143px of the 1024px the column holds, and a figure is a scroll box, so the surplus was clipped rather than shown and the language models box lost most of its text where nobody could reach it. The row fit at seven boxes with 25px to spare and crossed the column when 4.0 added the earnings calendar feed; found by the operator reading section 5 on 2026-09-17.
+Was:
+>   .box{background:var(--boxbg);border:1px solid var(--rule);border-left:5px solid var(--faint);padding:8px 10px;min-width:135px;font-size:12.8px;line-height:1.36;flex:1}
+Now:
+> the same declaration at `flex:1 1 210px`, a rule wrapping a row whose boxes carry no arrow between them, and a narrow-width rule that stacks every row and turns its arrows down.
+Why: a row whose boxes carry no arrow is a set of peers and nothing is lost by drawing it on two lines, so it wraps and can hold any number of boxes. A row with arrows reads in one direction and is turned on its side below the width its boxes need rather than wrapped, because wrapping a sequence runs it left to right and then starts again. `figure-fits` reads both rules and every row's width off this stylesheet, so a sequence that outgrows the column fails at the commit that adds the box.
+
 ### 2026-09-17 - ARCHITECTURE.html - the marketing marker's two counts stated in digits
 
 Corrects: section 17's source admissibility row stated the regulatory risk warning that refuses a page and the invitation a leveraged product must sit beside in words, no constant held either, and the claim's verdict note said three of the row's numbers were read where its test read two; found by the phase 8 sign-off review on 2026-09-16.

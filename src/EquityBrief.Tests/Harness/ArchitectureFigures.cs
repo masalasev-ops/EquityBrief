@@ -89,7 +89,7 @@ internal static class ArchitectureFigures
     // The end of the div that starts at `opening`, found by counting rather than
     // by matching the first close: a figure holds rows, bands and boxes, all of
     // them divs.
-    static int Close(string document, int opening)
+    internal static int Close(string document, int opening)
     {
         var depth = 0;
 
