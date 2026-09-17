@@ -1,7 +1,7 @@
 {
   "stage": "admissibility",
   "derivation": "derived",
-  "derivedFrom": "the decision that each denied category is refused by a marker the document carries, taken with the decision that admissibility is judged per document after the fetch and never per publisher, and with section 17's own row. Nothing here is frozen from a run. Every verdict below was written from the rules and from the marker each document states it carries, before the test that produces them was run, and the two numbers the rules turn on are read back against the constants the code uses rather than restated here as figures that happen to agree.",
+  "derivedFrom": "the decision that each denied category is refused by a marker the document carries, taken with the decision that admissibility is judged per document after the fetch and never per publisher, and with section 17's own row. Nothing here is frozen from a run. Every verdict below was written from the rules and from the marker each document states it carries, before the test that produces them was run, and the numbers the rules turn on are read back against the constants the code uses rather than restated here as figures that happen to agree.",
   "tables": [
     "source_document"
   ],
@@ -26,6 +26,19 @@
     "name": "a broker marketing page with no publish date",
     "refusedBy": "broker or platform marketing",
     "why": "the kind is judged before the date, so what is stored is the statement about what the document is. Three of the five refusable pages the measurement read carried no publish date at all, so a build judging the date first would refuse most of what it refuses for the cheapest reason available and would report almost nothing about the kinds."
+  },
+  "marketingMarkers": {
+    "a broker marketing page": {
+      "riskWarnings": 3,
+      "leveragedProduct": true,
+      "invitationKinds": 3
+    },
+    "a broker marketing page with no publish date": {
+      "riskWarnings": 0,
+      "leveragedProduct": true,
+      "invitationKinds": 3
+    },
+    "note": "counted by hand, reading each page's text against the warnings and the kinds of invitation the rule names, each warning and each kind counted once however often it is written, so the first page's sentence carrying two of the warnings counts two. The first page carries warnings and is refused whatever its invitations, and the second carries none and is refused only by its product beside its invitations, so each half of the rule is reached by a page the fixture holds."
   },
   "realDocumentsAdmitted": 6,
   "realDocuments": {

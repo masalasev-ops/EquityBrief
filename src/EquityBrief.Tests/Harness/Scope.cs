@@ -1011,7 +1011,7 @@ internal static class Scope
         // no room for the reason.
         [CheckReach.Key(LimitsTable, "Source admissibility")] = new Scoped(
             Verdict.Pass,
-            "each of the four denied categories, the missing publish date and the unretrievable text is reached by a document the fixture holds, the six real documents it holds are admitted, a document failing two gates is refused by the kind rather than by the date, and the row's own four categories and three numbers are read off it against the constants the test uses",
+            "each of the four denied categories, the missing publish date and the unretrievable text is reached by a document the fixture holds, the six real documents it holds are admitted, a document failing two gates is refused by the kind rather than by the date, the row's categories and the thresholds it states are read off it against the constants the rule reads, a page at each count the row states is refused and one below it admitted, and each marketing page the fixture holds carries the markers its expectation counts",
             ByAdmissibility),
         [CheckReach.Key(FailureTable, "A source is returned but its text cannot be retrieved")] = new Scoped(
             Verdict.Pass,
@@ -1032,7 +1032,7 @@ internal static class Scope
             ByAdmissibility),
         [CheckReach.Key(FixtureTable, "an inadmissible document, a broker marketing page")] = new Scoped(
             Verdict.Pass,
-            "refused on one regulatory risk warning in the two forms the measured page carried it, or on two invitations to open an account, with the cost of the rule stated rather than left to be found",
+            "refused on a regulatory risk warning, or on a leveraged-product term beside an invitation to open an account, with a page the fixture holds refused by each half, invitation language alone asserted to refuse nothing, and the cost of the rule stated rather than left to be found",
             ByAdmissibility),
         [CheckReach.Key(FixtureTable, "an inadmissible document, a summary written by another AI system")] = new Scoped(
             Verdict.Pass,

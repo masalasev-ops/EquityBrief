@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-17 - ARCHITECTURE.html - the marketing marker's two counts stated in digits
+
+Corrects: section 17's source admissibility row stated the regulatory risk warning that refuses a page and the invitation a leveraged product must sit beside in words, no constant held either, and the claim's verdict note said three of the row's numbers were read where its test read two; found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> and a page exists to open an account where it carries one regulatory risk warning, or a leveraged-product term beside an invitation to open one.
+Now:
+> and a page exists to open an account where it carries at least 1 regulatory risk warning, or a leveraged-product term beside at least 1 invitation to open one.
+Why: both counts are now constants the rule reads, and the row's test reads each figure off the row against its constant, so a row edited to another count fails it.
+
 ### 2026-09-17 - ARCHITECTURE.html - the weighted-call budget's example restated as the count its test makes
 
 Corrects: section 17's weighted-call budget gave a night counted in requests as four where the provider says two hundred and twelve, written at 2.4 when four endpoints existed, where the night's record now composes six feed roles, and no test read either figure; found by the phase 8 sign-off review on 2026-09-16.

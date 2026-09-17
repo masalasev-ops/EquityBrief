@@ -684,6 +684,45 @@ public partial class ClaimAdmissibility
     }
 
     [Fact]
+    public void APageAtTheStatedWarningsOrAProductAtTheStatedInvitationsIsRefusedAndOneFewerIsNot()
+    {
+        // Constructed at each count the row states and one below it, so a
+        // constant the rule stopped reading is a verdict that moves.
+        string[] warnings =
+        [
+            " Retail investor accounts lose money when trading.",
+            " Your capital is at risk.",
+            " These are complex instruments and come with a high risk.",
+        ];
+
+        string[] invitations = [" Create account in minutes.", " Sign up today.", " Start trading now."];
+
+        Assert.True(warnings.Length > Admissibility.RiskWarningsThatRefuse);
+        Assert.True(invitations.Length > Admissibility.InvitationsBesideAProduct);
+
+        FetchedDocument Page(IEnumerable<string> lines, string before = "") =>
+            Prose("Apple shares this quarter", "https://a.test/news/apple-shares/", before + string.Concat(lines));
+
+        var atWarnings = Page(warnings.Take(Admissibility.RiskWarningsThatRefuse));
+        var belowWarnings = Page(warnings.Take(Admissibility.RiskWarningsThatRefuse - 1));
+
+        Assert.Equal(Admissibility.RiskWarningsThatRefuse, Admissibility.RiskWarningsIn(atWarnings.Text!));
+        Assert.Equal(Admissibility.MarketingPage, Admissibility.Judge(atWarnings, From, To));
+        Assert.Equal(Admissibility.Accepted, Admissibility.Judge(belowWarnings, From, To));
+
+        const string Product = " Trade Apple as a contract for difference.";
+
+        var atInvitations = Page(invitations.Take(Admissibility.InvitationsBesideAProduct), Product);
+        var belowInvitations = Page(invitations.Take(Admissibility.InvitationsBesideAProduct - 1), Product);
+
+        Assert.True(Admissibility.NamesALeveragedProduct(atInvitations.Text!));
+        Assert.Equal(0, Admissibility.RiskWarningsIn(atInvitations.Text!));
+        Assert.Equal(Admissibility.InvitationsBesideAProduct, Admissibility.Invitations(atInvitations.Text!));
+        Assert.Equal(Admissibility.MarketingPage, Admissibility.Judge(atInvitations, From, To));
+        Assert.Equal(Admissibility.Accepted, Admissibility.Judge(belowInvitations, From, To));
+    }
+
+    [Fact]
     public void ASubjectIsNotADisclosureAndAShortArticleIsNotAQuotePage()
     {
         // Two near misses, each one a rule that would have been keyed on a word.
@@ -792,7 +831,7 @@ public partial class ClaimAdmissibility
     // ---- the document this check is asserted against ----
 
     [Fact]
-    public void TheDocumentsOwnRowStatesTheSameFourCategoriesAndTheSameTwoThresholds()
+    public void TheDocumentsOwnRowStatesTheCategoriesAndTheThresholdsTheRuleApplies()
     {
         // Section 17's row against the code, in both directions. The row is the
         // claim this check reaches a verdict on, so what it says has to be what
@@ -817,17 +856,19 @@ public partial class ClaimAdmissibility
             Assert.Contains(category, Admissibility.DeniedCategories);
         }
 
-        // The three numbers the row states, read off it rather than repeated
-        // here, which is what pins them.
+        // The numbers the row states, read off it rather than repeated here,
+        // which is what pins them.
         Assert.Contains(
             $"at least {Admissibility.SentencesInAParagraph} sentences and at least {Admissibility.WordsInAParagraph} words",
             value,
             StringComparison.Ordinal);
 
-        Assert.Contains(
-            "or a leveraged-product term beside an invitation to open one",
-            value,
-            StringComparison.Ordinal);
+        var marketing =
+            $"where it carries at least {Admissibility.RiskWarningsThatRefuse} regulatory risk warning, or a leveraged-product term beside at least {Admissibility.InvitationsBesideAProduct} invitation to open one";
+
+        Assert.True(
+            value.Contains(marketing, StringComparison.Ordinal),
+            $"Section 17's source admissibility row does not say a page exists to open an account {marketing}.");
 
         Assert.Contains("Invitation language alone is not a marker", value, StringComparison.Ordinal);
 
@@ -851,6 +892,49 @@ public partial class ClaimAdmissibility
     static JsonElement Expected(string stage) =>
         JsonDocument.Parse(File.ReadAllText(Path.Combine(
             Folder(), "expectations", stage + ".json"))).RootElement;
+
+    [Fact]
+    public void EachMarketingPageTheFixtureHoldsCarriesTheMarkersItsExpectationCountsAndIsRefusedByThem()
+    {
+        var expected = Expected("admissibility");
+        var markers = expected.GetProperty("marketingMarkers");
+        var held = Refusable().ToDictionary(one => one.Name, one => one.Document, StringComparer.Ordinal);
+
+        var pages = markers.EnumerateObject().Where(page => page.Name != "note").ToArray();
+
+        // Every page the expectation says is refused as marketing is counted, and
+        // nothing else is.
+        Assert.Equal(
+            expected.GetProperty("refusedBy").EnumerateObject()
+                .Where(stated => stated.Value.GetString() == Admissibility.MarketingPage)
+                .Select(stated => stated.Name)
+                .Order(StringComparer.Ordinal),
+            pages.Select(page => page.Name).Order(StringComparer.Ordinal));
+
+        foreach (var page in pages)
+        {
+            var text = held[page.Name].Text!;
+            var warnings = page.Value.GetProperty("riskWarnings").GetInt32();
+            var product = page.Value.GetProperty("leveragedProduct").GetBoolean();
+            var invitations = page.Value.GetProperty("invitationKinds").GetInt32();
+
+            Assert.Equal(warnings, Admissibility.RiskWarningsIn(text));
+            Assert.Equal(product, Admissibility.NamesALeveragedProduct(text));
+            Assert.Equal(invitations, Admissibility.Invitations(text));
+
+            Assert.True(
+                warnings >= Admissibility.RiskWarningsThatRefuse || (product && invitations >= Admissibility.InvitationsBesideAProduct),
+                $"'{page.Name}' carries {warnings} warning(s) and {invitations} kind(s) of invitation, which the counts section 17 states do not refuse.");
+
+            Assert.Equal(Admissibility.MarketingPage, Admissibility.Judge(held[page.Name], From, To));
+        }
+
+        // One page is refused on its warnings and one only on its product beside
+        // its invitations, so each half of the rule is reached by a page the
+        // fixture holds.
+        Assert.Contains(pages, page => page.Value.GetProperty("riskWarnings").GetInt32() >= Admissibility.RiskWarningsThatRefuse);
+        Assert.Contains(pages, page => page.Value.GetProperty("riskWarnings").GetInt32() < Admissibility.RiskWarningsThatRefuse);
+    }
 
     [Fact]
     public void TheVerdictsAreWhatTheFixturesOwnExpectationSaysTheRulesProduce()

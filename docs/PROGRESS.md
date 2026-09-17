@@ -13569,3 +13569,89 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             verdict note is rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 6.3 - correction: the source admissibility verdict said three of the row's numbers were read and the test read two, and the broker page's note still stated the rule the live run replaced   2026-09-17
+Corrects:   the 6.3 entry above records the admissibility test that section 17's source
+            admissibility claim passed on. The claim's verdict note says "the row's own four
+            categories and three numbers are read off it against the constants the test uses", and
+            the test's comment says "The three numbers the row states". It read two, the sentences
+            and the words a paragraph needs. The third, the one regulatory risk warning that refuses
+            a page, and the invitation a leveraged product must sit beside, had no constant, and the
+            test read the pairing's words as a literal, so a row edited to two warnings left the
+            suite green. The note on section 19.1's broker marketing page says a page is refused "on
+            two invitations to open an account", written before the live run replaced invitation
+            counting with the pairing, and the comment above the rule still said two invitations of
+            different kinds were required.
+Found:      by the phase 8 sign-off review on 2026-09-16, sweeping section 17's rows for the figures
+            their verdict notes say are read. The broker page's note and the rule's comment were
+            found while correcting, by reading every statement of the marketing rule in the
+            repository. The operator ruled on 2026-09-16 that everything the review found is
+            corrected before a sign-off handoff, one correction a checkpoint, labelled for the
+            checkpoint that built the defect. This session commits this code and does not sign
+            phase 8 off.
+Repaired:   the warnings that refuse a page and the invitations a leveraged product must sit beside
+            are constants the rule reads, and the row states both in digits, read off it by the row
+            test against the constants. A page is constructed at each count and one below it, and
+            is refused at the count and admitted below it. The fixture's two marketing pages are
+            counted by hand in the admissibility expectation, being each page's warnings, whether it
+            names a leveraged product and its kinds of invitation, and read against the rule, with
+            the pages counted held to exactly the pages the expectation says are refused as
+            marketing. The source admissibility note states no count of the row's parts (see: A
+            verdict note states no count of the row's own parts), the broker page's note states the
+            pairing, and the comment says what the rule is. The decision's sentence already states
+            one warning and one invitation and is unchanged. Prior text in CHANGELOG.
+Stored:     nothing, and no verdict moves. A count of the warnings a text carries reaching 1 is the
+            same test as any warning at all, and a count of kinds reaching 1 the same as any
+            invitation. No captured document carries a warning or a product beside an invitation,
+            counted with a replica of the phrase lists over every string the fixture's JSON files
+            hold, which finds the two constructed broker pages and nothing else. The rule runs on a
+            research pass's intake and on no night stage, and the operator's store, read through an
+            immutable connection at schema 26, holds 0 source documents.
+Missed:     the note typed a count its test did not read, and the pairing's repair edited the rule,
+            its test and the row and not the note on the fixture row or the comment above the rule.
+            6.3's mutations were chosen over the properties the measurement bought, and the counts
+            the row states were not among them.
+Guarded:    each count the row states against its constant, a constructed page at and below each
+            count, and the two marketing pages the fixture holds read against their hand counts as
+            exactly the pages refused as marketing.
+Expected:   derived: the admissibility expectation gains each marketing page's warnings, whether it
+            names a leveraged product and its kinds of invitation, read off the documents' text by
+            hand against the rule's phrases, and checked against a replica of the phrase lists
+            outside the repository before any test read them: 3, yes and 3 for the broker page,
+            whose first warning sentence carries two of the warnings, and 0, yes and 3 for the
+            undated one, so the first is refused on its warnings and the second only on its product
+            beside its invitations. Its derivation sentence no longer counts the numbers it reads.
+Tests:      1019, from 1017. Two added to `claim-admissibility`:
+            `APageAtTheStatedWarningsOrAProductAtTheStatedInvitationsIsRefusedAndOneFewerIsNot` and
+            `EachMarketingPageTheFixtureHoldsCarriesTheMarkersItsExpectationCountsAndIsRefusedByThem`.
+            One renamed and rewritten in place, from
+            `TheDocumentsOwnRowStatesTheSameFourCategoriesAndTheSameTwoThresholds` to
+            `TheDocumentsOwnRowStatesTheCategoriesAndTheThresholdsTheRuleApplies`. No file this
+            correction edits is a source either evaluator version or the ladder rules' code version
+            pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being each
+            count the row states read against its constant, the rule reading each constant at its
+            boundary, the expectation's hand counts read, and the pages counted held to the pages
+            refused as marketing. Predicted:
+            M1 the warnings that refuse set to 2: the row test red, on the row not stating 2, and
+            nothing else, since the boundary test and the fixture's pages follow the constant.
+            M2 the warning comparison made strict: the boundary test red, on a page carrying one
+            warning admitted, and nothing else, since the broker page carries three.
+            M3 the invitation comparison made strict: the boundary test red, on a product beside
+            one invitation admitted, and the invitation-language test red, on its pairing case
+            admitted, and nothing else, since the undated broker page carries three kinds.
+            M4 the invitations beside a product set to 2: the row test red, on the row not stating
+            2, and the invitation-language test red, on its pairing case of one invitation
+            admitted, and nothing else.
+            M5 section 17's row edited to 2 regulatory risk warnings: the row test red, on the row
+            not stating 1, and nothing else.
+            M6 the undated broker page's kinds of invitation edited to 2 in the expectation: the
+            marketing pages test red, on 2 against 3, and nothing else.
+            M7 the undated broker page's counts removed from the expectation: the marketing pages
+            test red, on the pages counted against the pages refused as marketing, and nothing else.
+            Not mutated: the boundary test's guards that it constructs more warnings and invitations
+            than each count and that its product page carries no warning, which hold the
+            construction rather than the rule.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.
