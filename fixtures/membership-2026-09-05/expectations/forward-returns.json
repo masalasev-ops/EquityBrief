@@ -27,7 +27,8 @@
   "breakEvenIsNotTheLadders": "the ladder's plan arithmetic states its own break-even as a fraction from the entry zone's midpoint and is never stored; this one is a percentage from the entry close and is stored, because it is set against a share written as a percentage",
   "decidedIsFinal": "a horizon's outcome once written, being a win, a loss, never entered or unresolved, is never written again, and a matured five or twenty-one session return with it; only a row not yet matured is filled on a later night, and the base rate beside a decided row is the one figure that moves",
   "restatement": "a setup still in play is scored with its stop, its target and its entry zone's top edge multiplied by the listing session's stored close over its raw close, which is one on the night the listing is written and is the provider's adjustment since",
-  "listingCloseGone": "a listing whose close the store no longer holds has nothing its horizons are measured from, so it is handed no sessions and its open rows stay not yet matured"
+  "listingCloseGone": "a listing whose close the store no longer holds has nothing its horizons are measured from, so it is handed no sessions and its open rows stay not yet matured",
+  "entryFromTheStoredPlan": "the filler hands the entry rule the zone's top edge from the plan the listing stored, and not its bottom edge, and the listing night's own close from the bar store, so each case the rule is worked over is what the filler stores for a listing carrying that plan and those closes"
  },
  "counts": {
   "rowsPerListing": 3

@@ -12995,3 +12995,123 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing new. Earnings soon's lower edge is written into the operating row it belongs to
             (owes: The six reason thresholds calibrated from the nights they fired on).
+
+### 8.1 - correction: the entry rule's inputs unasserted in the filler, section 13 scoring a target reached first as a win, and the record's own slips   2026-09-17
+Corrects:   the 8.1 entry above, in four places, and 8.1's pass over the corpus in two.
+            Its Built says "The filler reads the zone off the plan the listing stored". No test ran
+            the filler over a session after a listing, so `PlanBounds` reading the zone's bottom edge,
+            or the call dropping the listing night's own close, left the suite green where a listing
+            inside its zone would be stored as never entered.
+            Its Rewrote says "The filler upserts every setup row it reads, so the first run after this
+            merges rewrites the outcomes already written, once". The filler as built wrote every row on
+            every night, which the 5.5 correction above ends, so "once" was true of no night, and until
+            a night reached the forward returns stage the run page drew the counts the rule before the
+            entry wrote under the entry rule's columns. The night of 2026-09-16 was the first to reach
+            it (below).
+            Its Mutated predicts "M1 never entered counted as a win: the expectation's cases red, and
+            the run page's column test red with them" and records "Results: every prediction held" and
+            "M1, M2 and M3 each turned the expectation's cases red on top of that, one case each". The
+            column test hands the run page rows it builds itself, so a mutation of the series cannot
+            reach it, and M1's second half did not hold. No expectation case has more than three
+            closes, so none reaches the cap and M2 could turn none red: what it turned red is the
+            late-entry assertion written in the same test, which is the case its own prediction named.
+            The record should read: M1 turned the expectation's cases red and not the column test; M2
+            turned the late-entry assertion red; M3 turned the fill-and-stop case red; M4 turned the
+            column test red.
+            Its Verified says "The pair is the one 8.0 predicted for this checkpoint." 8.0 stated no
+            pair for 8.1: it stated 351 claims and 335 PASS after its own pass and 361 and 361 once the
+            loop is built. Of the two claims this checkpoint turned PASS, section 17's setup resolution
+            row moved from out of scope, and the run page's never-entered count is a part 8.1 added to
+            the reason records row, which is why the total rose from 351 to 352.
+            And 8.1's pass over section 13 left figure 13.1 drawing "Target first / counts as a win"
+            among three outcomes, its description saying a setup "resolves as a win, a loss or
+            unresolved", its key holding a setup open "until the target hits, the stop hits, or the
+            time cap expires", and the glossary's Setup row saying the same with no entry; and
+            `SchemaMigrations`' comment on `forward_return` still says `return_pct` is null for the
+            setup horizon. A code comment and a test comment carried a count read from the operator's
+            store on one date.
+Found:      by the phase 8 sign-off review on 2026-09-16, which ran the suite with `PlanBounds` reading
+            the zone's bottom edge and saw every forward return test pass, and read section 13, the
+            glossary and the migration comment against the rule. The operator ruled that day that
+            everything the review found is corrected before a sign-off handoff, one correction per
+            checkpoint, labelled against the checkpoint that built the defect. It is labelled for 8.1,
+            whose entry and pass built each of these.
+Measured:   read immutable from the operator's store after the night of 2026-09-16, with no night run
+            since: schema 26, last written 2026-09-16 23:42:35 UTC, the night's forward returns ok as
+            `night-20260916T233007Z` over 3026 listings and 9078 rows, 814 matured. It holds 0 setup
+            rows in the shape only the rule before the entry wrote, a win or unresolved with no return,
+            and 8 losses with no return. A copy of the store taken at 19:11 UTC that day, before the
+            night, held 147 in that shape. Over the 2,522 listings on or before 2026-09-15 the setup
+            horizon moved from 147 wins, 51 losses and 2,324 open on the copy to 49 wins, 150 losses,
+            114 never entered and 2,209 open on the store: 105 wins became never entered, 115 open
+            setups were decided on 2026-09-16, being 99 losses, 7 wins and 9 never entered, and no other
+            outcome moved. Earnings soon fired on 2,306 of those listings, and its 127 wins and 44 losses
+            became 46 wins, 142 losses and 97 never entered the same way: 88 of the wins never entered,
+            39 wins and 44 losses unchanged, and 98 losses, 7 wins and 9 never entered decided that
+            night. The 99 losses sit on 43 names whose close fell a median 3.38 per cent from 2026-09-15
+            to 2026-09-16, where the median over 506 names fell 0.63 per cent. The entry rule replayed
+            over the store's bars at each plan's stored prices gives the stored outcome for all 2,522
+            setups. At the plan scaled by its listing session's factor it reads 12 differently, and 3 of
+            the 220 rows that moved are among them: GPN 2026-09-09's never entered, dated 2026-09-14
+            where the scaled plan gives 2026-09-10, and WMB 2026-09-10's and TROW 2026-09-14's losses on
+            2026-09-16, still in play at the scaled plan, which the 5.5 correction above names under
+            Stored as kept. So the move in earnings soon's record is the entry rule and one session's
+            fall, and a restatement accounts for two of its losses and one date.
+Repaired:   the four cases the entry rule is worked over run through the filler from a stored plan
+            carrying both edges of its zone, and are stored as the expectation works them. Figure 13.1
+            draws never entered as its own outcome among four, and its description, its key and the
+            glossary's Setup row state the entry (see: A setup is scored from its entry, and a target
+            reached before the entry is never a win). The migration comment states the four outcomes and
+            the setup's return from its entry. BUILD_PLAN's 8.1 section says an outcome once decided is
+            never written again, which is what makes its rewrite the one rewrite (see: An outcome once
+            decided is never rewritten, and a setup still in play is scored with its plan scaled by its
+            listing session's adjustment factor). The code comment and the test comment state the rule
+            alone. The setup resolution placement's note names the filler storing the cases. Prior text
+            is in CHANGELOG.
+Stored:     nothing rewritten. The filler reads what it read before, so forward returns, the listings
+            and the run page read as they did.
+Notes:      not built from the design for this correction: a rule scoring once, under the entry rule, a
+            setup row in the shape only the rule before the entry wrote, so that a store whose first
+            night on the entry rule stopped before forward returns, or a copy taken before such a night,
+            would not keep those outcomes as decided once the 5.5 correction made a decided outcome
+            final. The operator's store holds 0 such rows, so the rule would read nothing it holds, and it
+            is dropped with its decision, its SCHEMA sentence, its RUNBOOK row, its expectation key, its
+            test and its two mutations. What it would have covered is a copy restored from before the
+            night of 2026-09-16: the copy under the data root named as taken before the repair of
+            2026-09-10, at schema 18, holds 9 rows in that shape, and a store restored from it would keep
+            them.
+Missed:     every filler run in the suite was over the committed fixture, whose listings have no
+            session after them, so every setup row it wrote was null whatever the filler handed the
+            series, and 8.1's mutations were over the series and the page. Figure 13.1 is drawn as an
+            svg figure, which the figure reader does not read, since it reads the figures drawn as boxes,
+            and 8.1's pass over the document edited the two rows its own claims sit on. Recorded, not
+            reopened: each is 8.1's and none broke a check.
+Guarded:    through the shipped filler over a constructed store: the four entry cases stored as the
+            expectation works them, from a plan whose zone runs from 95 to 101, with the plan's two edges
+            asserted apart.
+Expected:   derived. `forward-returns.json` gains the rule that the filler hands the entry rule the
+            zone's top edge from the stored plan and the listing night's own close from the bar store, so
+            each worked case is what the filler stores. The new test reads the plan and the four cases
+            from the file, and no figure is added, since the cases already state what is stored.
+Tests:      1011, from 1010. One added to `fixture-expectations`: the entry cases stored through the
+            filler. No file this correction edits is a source either evaluator version or the ladder
+            rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being each of
+            the two inputs the filler hands the entry rule, the zone's top edge read off the stored plan
+            and the listing night's own close. Added and not mutated: the plan's two edges asserted apart,
+            which is what lets the first mutation be seen, and the words of section 13, the glossary,
+            BUILD_PLAN and the two comments, which no test reads. Neither mutation edits a pinned source,
+            so the pin tests are predicted green throughout. Predicted:
+            M1 `PlanBounds` reading `entryLow` for the zone's top edge:
+            `EveryCaseTheEntryRuleIsWorkedOverIsWhatTheFillerStoresFromThePlanTheListingCarries`,
+            `ASetupStillInPlayIsScoredWithItsPlanScaledByTheListingSessionsAdjustment`,
+            `AnOutcomeOnceDecidedIsNeverRewrittenWhenTheBarsItWasScoredOnLeaveTheStore` and
+            `AListingWithNothingLeftToScoreReadsNoBarAndAnOpenOneReadsNoSessionPastTheCap` red, each on a
+            setup listed inside the zone stored as never entered; nothing else.
+            M2 the listing night's close dropped from the setup call: the same four red, the first on
+            the listing-night case stored as never entered, the second on the dividend case still open
+            where a win is expected, the third on the kept listing's setup entered a session late at
+            101, and the fourth on the setup past the cap stored as never entered; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing.

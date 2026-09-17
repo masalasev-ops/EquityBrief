@@ -25,6 +25,48 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-17 - ARCHITECTURE.html - section 13's figure, its description and key, and the glossary's Setup row state the entry
+
+Corrects: figure 13.1 drew three outcomes with "Target first / counts as a win", its description said a setup resolves as a win, a loss or unresolved, and its key and the glossary's Setup row held a setup open until the target, the stop or the cap with no entry, where 8.1 made a target reached before the entry never entered and never a win. Found by the phase 8 sign-off review; 8.1's pass over the document edited the two rows its own claims sit on.
+Was:
+> <path d="M350 168 L350 186 L130 186 L130 194" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+> <line x1="350" y1="168" x2="350" y2="194" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+> <path d="M350 168 L350 186 L570 186 L570 194" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+>
+> <rect x="30" y="196" width="200" height="64" rx="6" fill="var(--panel)" stroke="var(--compute)" stroke-width="1.2"/><rect x="30" y="196" width="5" height="64" fill="var(--compute)"/>
+> <text x="130" y="220" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Target first</text>
+> <text x="130" y="240" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">counts as a win</text>
+>
+> <rect x="250" y="196" width="200" height="64" rx="6" fill="var(--panel)" stroke="var(--check)" stroke-width="1.2"/><rect x="250" y="196" width="5" height="64" fill="var(--check)"/>
+> <text x="350" y="220" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Stop first</text>
+> <text x="350" y="240" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">counts as a loss</text>
+>
+> <rect x="470" y="196" width="200" height="64" rx="6" fill="var(--panel)" stroke="var(--faint)" stroke-width="1.2"/><rect x="470" y="196" width="5" height="64" fill="var(--faint)"/>
+> <text x="570" y="220" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Neither, 63 sessions</text>
+> <text x="570" y="240" text-anchor="middle" dominant-baseline="central" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">never counts as a win</text>
+>
+> <path d="M130 260 L130 280 L350 280 L350 296" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+> <line x1="350" y1="260" x2="350" y2="296" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+> <path d="M570 260 L570 280 L350 280 L350 296" fill="none" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#ad)"/>
+>
+> <desc>A listing is recorded with its plan, the plan states its own break-even, the setup resolves as a win, a loss or unresolved, and the results are scored against that break-even.</desc>
+>
+> and the grey box at the right of the row is the case that matters most: a setup that has done nothing yet is neither a win nor a loss. Counting it as either would flatter or punish a condition for a trade that has not happened. It is held open until the target hits, the stop hits, or the time cap expires, and a timed-out setup is reported separately and never as a win.
+>
+> A setup is resolved when the target is reached, the stop is closed through, or the time cap expires.
+Now:
+> four outcome boxes, "Target first / after the entry, a win", "Stop first / counts as a loss", "Never entered / target before the entry" and "Neither, 63 sessions / never counts as a win", each joined to the scoring box; the description naming never entered; the key saying a setup starts on the first close at or below its entry zone's top edge and that a target reached before that close is never entered and never a win, with the decision cited; and the glossary's Setup row saying the same.
+Why: the figure, its key and the glossary are what a reader of section 13 takes the rule from, and they described the rule 8.1 replaced.
+
+### 2026-09-17 - BUILD_PLAN.md - 8.1's one rewrite says what keeps it one
+
+Authorised by: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor
+Was:
+> The filler rewrites the setup outcomes it has already written, once, and the checkpoint's entry states the counts before and after over the same population. It is the one rewrite: no verdict has been shown and none can be, since the minimum is 250 and the store holds 93 resolved.
+Now:
+> the same two sentences, the second adding that an outcome once decided is never written again, with the decision cited.
+Why: the filler as 8.1 built it wrote every row on every night, so "the one rewrite" was true of no night; the 5.5 correction made it true, and the section now says what it rests on.
+
 ### 2026-09-16 - DECISIONS.md - the dated event count and breakout on volume corrected in place at their figures, their surfaces and the lower edge
 
 Corrects: the count's decision named the tonight, run and universe routes as the surfaces that say a session was written before the correction, while the name page and the report exported from it draw the same rows; it gave its removal from earnings soon's record over six sessions after the record had moved to seven; and it said a count of 0 fires without a reason. Breakout on volume's decision gave the 2,018 rows of those six sessions. Found by the phase 8 sign-off review.

@@ -1489,7 +1489,7 @@ internal static class Scope
         // 8.1, the setup horizon counted from the entry.
         [CheckReach.Key(LimitsTable, "Setup resolution")] = new Scoped(
             Verdict.Pass,
-            "a setup starts on the first close at or below its entry zone's top edge and resolves as a win, a loss, unresolved at the cap or never entered, each asserted over the cases the forward returns expectation works by hand, with the cap counted from the listing, a target past the cap left unresolved on the cap's own session and the return measured from the entry close; the filler scores a setup still in play with its plan scaled by the listing session's adjustment over cases restated by a dividend and a split, and keeps a decided row when the bars it was scored on leave the store",
+            "a setup starts on the first close at or below its entry zone's top edge and resolves as a win, a loss, unresolved at the cap or never entered, each asserted over the cases the forward returns expectation works by hand, with the cap counted from the listing, a target past the cap left unresolved on the cap's own session and the return measured from the entry close; the filler stores those cases from the plan a listing carries, scores a setup still in play with its plan scaled by the listing session's adjustment over cases restated by a dividend and a split, and keeps a decided row when the bars it was scored on leave the store",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Tranches, exits")] = new Scoped(
             Verdict.Pass,

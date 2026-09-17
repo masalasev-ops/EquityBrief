@@ -97,12 +97,9 @@ public static class ForwardReturnSeries
     // is a value rather than a null so it is counted in its own column: an
     // unresolved setup is never a win.
     //
-    // The entry is what 8.1 added. From 5.5 until then this counted from the
-    // listing, so a name that ran straight to its target from a price above the
-    // entry zone scored a win for a purchase the plan did not offer: 105 of 147
-    // stored wins in the operator's store on 2026-09-16. A setup starts on the
-    // first close at or below the zone's top edge, and a target reached before
-    // that close is `never entered`.
+    // A setup starts on the first close at or below the zone's top edge, and a
+    // target reached before that close is `never entered`: the move happened at a
+    // price the plan did not offer to buy at.
     //
     // Everything here is read on closes, as the stop and the target already were,
     // because a daily bar does not say what order a session's prices came in and a
