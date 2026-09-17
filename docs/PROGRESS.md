@@ -13112,6 +13112,27 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             the listing-night case stored as never entered, the second on the dividend case still open
             where a win is expected, the third on the kept listing's setup entered a session late at
             101, and the fourth on the setup past the cap stored as never entered; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red,
+            each on the outcome named for it, and nothing else, the pin tests green throughout. Three
+            runs of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only the
+            mutated file and the worktree removed after, the baseline's and M1's results read back
+            from their files after the script running the sweep stopped on printing a message, before
+            M2 ran. The baseline is 1010 of 1011 with one red, and that red is this entry:
+            `two-platform` reads every checkpoint entry written since the 7.2 ruling for its Windows
+            record, and this one carried a placeholder until the run below filled it, so each count
+            that follows is on top of it.
+            M1 turned 4 red: the entry cases through the filler on the listing-night case, the
+            restatement test on the dividend case, the kept-outcome test on the kept listing's setup
+            and the no-read test on the setup past the cap, each stored as never entered. M2 turned
+            the same 4 red: the listing-night case never entered, the dividend case still open, the
+            kept listing's setup a win entered at 101 at 8.91 per cent, and the setup past the cap
+            never entered.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+            with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
+            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: one
+            placement note is rewritten and no placement changes. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
