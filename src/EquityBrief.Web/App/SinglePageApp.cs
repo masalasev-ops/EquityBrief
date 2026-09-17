@@ -188,7 +188,8 @@ public sealed class SinglePageApp : IComponent
         ResearchPassLine? pass = null,
         IReadOnlyList<ResearchControl>? controls = null,
         ResearchCost? cost = null,
-        SuspectPrices? suspect = null)
+        SuspectPrices? suspect = null,
+        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -229,7 +230,9 @@ public sealed class SinglePageApp : IComponent
         region.Append(factStrip);
 
         // Why it is here, which section 15.9 puts above the chart and which is
-        // present only when the name is on tonight's list.
+        // present only when the name is on tonight's list, beneath the line
+        // section 18 draws where the listing was written before the correction.
+        region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
         region.Append(marks.WhyItIsHere(ticker, firedReasons));
 
         // Where the research stands, what the newest pass came to, the sections left out

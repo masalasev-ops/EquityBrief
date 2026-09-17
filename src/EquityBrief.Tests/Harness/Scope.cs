@@ -183,7 +183,7 @@ internal static class Scope
         // routes drawing their session say what those rows could not do.
         [CheckReach.Key(FailureTable, "Listings written before the 5.4 correction")] = new Scoped(
             Verdict.Pass,
-            "the tonight, run and universe routes each draw the line once for a session whose rows carry no event date among earnings soon's values, naming that session and no other, and the tonight and run routes draw none for a session the corrected rule wrote, read over a store the pipeline populated beside one session written in the old shape; the run page's record counts earnings soon and breakout on volume only off rows carrying their markers",
+            "the tonight, run and universe routes each draw the line once for a session whose rows carry no event date among earnings soon's values, naming that session and no other, and the tonight and run routes draw none for a session the corrected rule wrote, read over a store the pipeline populated beside one session written in the old shape; the name route and the file it exports draw it once when the newest night's rows are in the old shape and none before; the run page's record counts earnings soon and breakout on volume only off rows carrying their markers, and each record and the line above them state the nights it stands on counted the same way",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Prices may be out of date, one line saying its prices may not reflect a recent dividend or split")] = new Scoped(
             Verdict.Pass,
@@ -673,7 +673,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(FixtureTable, "listings")] = new Scoped(
             Verdict.Pass,
-            "each of the six reasons is recomputed in the suite from the tables it reads and compared against what the builder wrote, rather than diffed against a set frozen from that builder",
+            "each of the six reasons is recomputed in the suite from the tables it reads and compared against what the builder wrote, rather than diffed against a set frozen from that builder, with breakout on volume asserted on each of its three edges as the expectation states them",
             ByExpectations),
         [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate the list reasons for every name.")] = new Scoped(
             Verdict.Pass,
@@ -693,7 +693,7 @@ internal static class Scope
             ByReadSurface),
                                         [CheckReach.Key("15.9 Name", "Why it is here")] = new Scoped(
             Verdict.Pass,
-            "each reason that fired is a full sentence with the values beside it, a reason the mapping has no sentence for fails rather than rendering a default, and a name that fired nothing says it is not on tonight's list",
+            "each reason that fired is a full sentence with the values beside it, a reason the mapping has no sentence for fails rather than rendering a default, and a name that fired nothing says it is not on tonight's list, and breakout on volume's sentence states section 11's condition as that row's cell states it",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Walk")] = new Scoped(
             Verdict.Pass,

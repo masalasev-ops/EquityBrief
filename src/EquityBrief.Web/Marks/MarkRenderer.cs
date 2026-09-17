@@ -215,6 +215,9 @@ public sealed record ReasonTotal(string Reason, int Names);
 // and the break-even over one population.
 // see: An unresolved setup is never a win
 // see: A condition is judged against the break-even its own plan demands
+//
+// `Nights` is the listing sessions whose rows count toward this record, null
+// where a caller built the record by hand.
 public sealed record ReasonRecord(
     string Reason,
     int Fired,
@@ -231,7 +234,8 @@ public sealed record ReasonRecord(
     bool? Cleared = null,
     double? PValue = null,
     double Threshold = 0,
-    int Divisor = 0)
+    int Divisor = 0,
+    int? Nights = null)
 {
     // A setup that has done nothing is neither right nor wrong, so it is in
     // neither half of this, and one whose price never reached the entry the plan
@@ -1132,7 +1136,7 @@ public sealed class MarkRenderer : IComponent
     {
         "at entry zone" => "tonight's close is inside a tranche zone, so the plan's first step is available at tonight's price.",
         "crossed a level" => "the close moved through a band edge it was on the other side of yesterday, so the level either held or failed today.",
-        "breakout on volume" => "the close is above a resistance band on volume above the fifty-day average.",
+        "breakout on volume" => "the close is above a band that sat at or above last night's close, on volume above the fifty-day average.",
         "trend state changed" => "tonight's trend label differs from last night's, so the ladder changes shape and the whole plan is different from yesterday's.",
         "unusual volume" => "volume is above twice the fifty-day average, so something happened the price may not have shown yet.",
         "earnings soon" => "the next dated event is inside the twenty-session horizon, which is a calendar fact rather than a setup.",
@@ -1447,6 +1451,19 @@ public sealed class MarkRenderer : IComponent
                 ? Formatted($"{row.ResolvedUnsplit} resolved and {row.Unresolved} unresolved, of {row.Total}")
                 : Formatted($"{row.Won} won, {row.Lost} lost and {row.Unresolved} unresolved, of {row.Total}");
 
+    // The reasons whose records stand on fewer of the nights than the listings do, each
+    // group with its own count, so the line above the table is true of every row beneath it.
+    static string FewerNights(IReadOnlyList<ReasonRecord> records, int nights) =>
+        string.Concat(records
+            .Where(record => record.Nights is { } own && own < nights)
+            .GroupBy(record => record.Nights!.Value)
+            .OrderByDescending(group => group.Key)
+            .Select(group => Formatted(
+                $", and {Escaped(string.Join(" and ", group.Select(record => record.Reason)))} on {group.Key} of them, {FewerNightsText}")));
+
+    public const string FewerNightsText =
+        "the rows written before a correction to a reason's rule not counting toward its record";
+
     // The reason records, section 15.10's second region, in the state this build
     // is in for its first year.
     //
@@ -1512,7 +1529,7 @@ public sealed class MarkRenderer : IComponent
         table.Append("and a name with no plan that night has no answer to it. A setup is judged against the ");
         table.Append("break-even its own plan demanded</p>");
 
-        table.Append(Invariant, $"<p class=\"nights\" data-nights=\"{nights}\">the record below stands on {nights} night(s) of listings</p>");
+        table.Append(Invariant, $"<p class=\"nights\" data-nights=\"{nights}\">the record below stands on {nights} night(s) of listings{FewerNights(records, nights)}</p>");
 
         table.Append("<table class=\"records-table\">");
         table.Append("<tr><th>Reason</th><th>Track</th><th>Fired</th><th>Resolved</th><th>Never entered</th><th>Record</th></tr>");
@@ -1522,7 +1539,7 @@ public sealed class MarkRenderer : IComponent
         foreach (var record in records)
         {
             table.Append(Invariant, $"<tr data-reason=\"{Escaped(record.Reason)}\" data-fired=\"{record.Fired}\" ");
-            table.Append(Invariant, $"data-resolved=\"{record.Resolved}\" data-minimum=\"{record.Minimum}\">");
+            table.Append(Invariant, $"data-resolved=\"{record.Resolved}\" data-minimum=\"{record.Minimum}\" data-nights=\"{record.Nights ?? nights}\">");
             table.Append(Invariant, $"<td>{Escaped(record.Reason)}</td>");
             table.Append(Invariant, $"<td>{(byReason.TryGetValue(record.Reason, out var track) ? ReasonTrack([track]) : string.Empty)}</td>");
             table.Append(Invariant, $"<td>{record.Fired}</td>");

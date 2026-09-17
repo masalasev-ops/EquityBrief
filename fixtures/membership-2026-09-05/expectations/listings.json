@@ -29,6 +29,14 @@
   "breakoutReadsResistanceAtThePreviousClose": "a band of tonight's whose low edge was at or above the previous session's close, cleared by tonight's close above its high edge, on volume above the fifty-day average",
   "planAtListingIsWrittenTonight": "bars can be replayed and the plan cannot, because by the time a verdict is possible the rules may have changed"
  },
+ "breakoutEdges": {
+  "note": "breakout on volume on each of its three edges, over one band written for AAPL with last night's close, tonight's close and tonight's volume set by the case. Each outcome is read off the rule in section 11 and not off a run: the low edge is compared at or above last night's close, the high edge must be cleared by tonight's close, and the volume must be above the fifty-day average, so the first fires and the other two do not",
+  "bandLow": "100",
+  "bandHigh": "105",
+  "lastNightOnTheLowEdge": { "previousClose": "100", "close": "106", "volume": "above the average", "fired": true },
+  "tonightOnTheHighEdge": { "previousClose": "99", "close": "105", "volume": "above the average", "fired": false },
+  "volumeAtTheAverage": { "previousClose": "99", "close": "106", "volume": "at the average", "fired": false }
+ },
  "earningsSoon": {
   "night": "2026-09-04",
   "note": "the fixture's night is the last session the replayed backfill holds, and the calendar rows are the capture's. Each count is walked by hand over the weekdays after the night up to and including the event, less 2026-09-07, the one closure in reach. Neither dated event is inside the twenty-session horizon, so neither fires, where the bar count the correction replaced gave both a count of 0 and fired both",

@@ -25,7 +25,7 @@ public sealed class MomentumHistogramTurn : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "cacff9914aac";
+    public override string Version => "989f805b9471";
 
     public override IReadOnlyList<string> Reads => [Histogram, Previous];
 

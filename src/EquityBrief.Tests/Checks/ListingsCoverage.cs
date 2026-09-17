@@ -118,6 +118,12 @@ public class ListingsCoverage
             "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) " +
             "VALUES ('GSPC', 'ZZZZ', '2026-01-02', NULL, '2026-09-08T00:00:00Z', 'Utilities');");
 
+        // A print inside the horizon, which a member with no bar is not counted to.
+        Insert(
+            store,
+            "INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) " +
+            "VALUES ('ZZZZ', '2026-09-15', 'earnings', 'after', '{}', '2026-09-08T00:00:00Z');");
+
         await new ShortlistBuilder(
             FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
             store.DatabaseFile).RunAsync("GSPC", "coverage-check", new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero));
@@ -138,7 +144,19 @@ public class ListingsCoverage
             "no ladder row",
             Query(store, "SELECT plan_at_listing FROM listing WHERE ticker = 'ZZZZ';").Single(),
             StringComparison.Ordinal);
+
+        // Its earnings soon states the date the calendar holds and that no count was made.
+        var soon = EarningsSoonValues(reasons);
+
+        Assert.Equal("2026-09-15", soon[ShortlistSeries.NextDatedEventValue]);
+        Assert.Equal($"{ShortlistSeries.NotCounted}: no bar is stored for the name", soon["sessions to the next dated event"]);
     }
+
+    static IReadOnlyDictionary<string, string> EarningsSoonValues(string reasons) =>
+        System.Text.Json.JsonDocument.Parse(reasons).RootElement.EnumerateArray()
+            .Single(reason => reason.GetProperty("name").GetString() == ShortlistSeries.EarningsSoon)
+            .GetProperty("values").EnumerateObject()
+            .ToDictionary(value => value.Name, value => value.Value.GetString()!, StringComparer.Ordinal);
 
     [Fact]
     public async Task AMemberTheDaysFileCarriedNothingForIsListedTonightWithNothingFired()
@@ -181,6 +199,18 @@ public class ListingsCoverage
             $"no bar for this session; the last session stored for the name is {before}",
             Query(store, $"SELECT plan_at_listing FROM listing WHERE ticker = '{name}';").Single(),
             StringComparison.Ordinal);
+
+        // Its earnings soon states the date the calendar holds on or after the night, as the
+        // listings expectation walks it, and that no count was made, with the plan's reason.
+        var soon = EarningsSoonValues(Query(store, $"SELECT reasons FROM listing WHERE ticker = '{name}';").Single());
+        var walked = Expected("listings").GetProperty("earningsSoon");
+
+        Assert.Equal(tonight, walked.GetProperty("night").GetString());
+        Assert.Equal(walked.GetProperty(name).GetProperty("nextDatedEvent").GetString(), soon[ShortlistSeries.NextDatedEventValue]);
+        Assert.NotEqual(ShortlistSeries.NotOnFile, soon[ShortlistSeries.NextDatedEventValue]);
+        Assert.Equal(
+            $"{ShortlistSeries.NotCounted}: no bar for this session; the last session stored for the name is {before}",
+            soon["sessions to the next dated event"]);
     }
 
     // ---- 8.4, the shadow column ----

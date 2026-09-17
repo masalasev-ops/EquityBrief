@@ -12835,3 +12835,163 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             verdict notes are rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this correction.
+
+### 5.4 - correction: each reason's record stating the nights it stands on, a member evaluated over nothing keeping its dated event, every page that draws a listing written before the correction saying so, and breakout on volume held on its three edges   2026-09-16
+Corrects:   the 5.4 correction above records the run page's record counting earnings soon and
+            breakout on volume only off rows carrying their markers, and the tonight, run and
+            universe routes drawing a line for a session whose rows were written before it. The line
+            above the records, "the record below stands on N night(s) of listings", still counted
+            every listing session while those two records leave the old sessions out, so from the
+            first corrected night it states a count true of four records and not of the two. A stale,
+            gapped or barless member's earnings soon stored not on file for a date the calendar held:
+            the path the 6.0 ruling covers evaluates such a member over nothing, and that ruling's
+            reason, that every reason reads a bar, has not held for earnings soon since the
+            correction made it read the calendar. The name route and the report exported from it
+            draw the newest night's rows too, and drew them with no line: until the night of
+            2026-09-16 wrote its listings, the newest night on the operator's store was in the old
+            shape, so a name page said earnings soon at a count of 0 with nothing beside it, and a
+            file exported then keeps that. Its Stored field reads "Surfaces that keep showing those
+            rows otherwise unchanged: each past night's run page, whose night header counts the names
+            that fired as the rows hold them, each past night's tonight list, and the universe
+            screen's listing strip", and should have ended "and, with no line, the name page and the
+            report exported from it while the newest night is one of those sessions". Breakout on
+            volume's three edges were each untested, and its list of properties added and not mutated
+            named neither them nor the universe screen's count as uncovered: it reads "and the
+            universe screen's delegation, which its existing count test covers", where that test
+            compared each cell with markup drawn from the same cell and could not tell a wrong count,
+            and should have read "and the universe screen's delegation, which no test compared with a
+            count worked independently, and breakout on volume's three edges, which no case sat on".
+            Its Results read "M1 turned 13 more red: the replay's six-reason recompute, the five
+            builder cases the count reaches, the four overnight queue tests that read which names
+            fired, the queue's limit test and the run page's fired count", and should have read "the
+            five overnight queue tests", which is what sums to the 13 stated. The name page's
+            breakout sentence still said "a resistance band", DECISIONS kept the six-session figures,
+            2,018 rows and 99 wins and 23 losses, after the entry moved to seven, and earnings soon
+            fires at a count of 0, which the decision stated without a reason.
+Found:      by the phase 8 sign-off review on 2026-09-16, its findings on PR 96 and its judgement on
+            earnings soon's lower edge. The operator ruled that day that everything the review found
+            is corrected before a sign-off handoff, one correction per checkpoint, labelled against
+            the checkpoint that built the defect. It is labelled for 5.4, whose correction built each
+            of these.
+Measured:   read immutable from the operator's store after the night of 2026-09-16, with no night run
+            since: schema 26, last written 2026-09-16 23:42:35 UTC. 3,026 listing rows over 8
+            sessions, 2026-04-16 to 2026-09-16. The 7 sessions to 2026-09-15 hold 2,522 rows, none
+            carrying either marker; 2,306 of them fired earnings soon, and the setup horizon holds 46
+            wins, 142 losses and 97 never entered among those, and none fired breakout on volume. The
+            night of 2026-09-16, the first written under the corrected rule, wrote 504 rows all
+            carrying both markers, 38 firing earnings soon and 5 breakout on volume, so the run page's
+            line reads 8 nights where those two records stand on 1. EQR, whose last stored bar is
+            2026-08-17, stored earnings soon's count as not on file on each of the five nights from
+            2026-09-10 to 2026-09-16; on the last, its calendar row for 2026-10-21 was observed at
+            23:30:20 UTC and the listings stage began at 23:37:57. The register holds no candidate.
+            The 5.4 correction's M1, the stored-bar count put back at 5871020, was run again in a
+            detached worktree on 2026-09-16 while this correction was designed, and that run's results
+            file, read here, holds 925 results with 14 failed: `two-platform` on that entry's
+            placeholder and the 13, five of them overnight queue tests:
+            TheQueueWritesTheListedNamesDraftsInOrderOfReasonsFiredAndSpendsNothing,
+            TheQueueTakesTheNamesThatFiredInOrderOfReasonsFiredAndNotOfTheirTickers,
+            APassWritesAgainOnlyWhatTheCheckerRefusedOfItsOwnName,
+            ANameWhoseLaneStandsTodayIsNotQueuedAgain and
+            ALocalModelThatDoesNotAnswerStopsTheQueueAndItsRowSaysItCouldNotRun.
+Repaired:   each reason's record carries the sessions whose rows count toward it, each record's row
+            states them, and the nights line adds the reasons that stand on fewer and how many, with
+            each listing parsed once for both. A member evaluated over nothing, having no bar for the
+            session, a gap in its stored series or no bar stored, keeps the date the calendar holds on
+            or after its row's session, and its count reads not counted with the reason; it still
+            fires nothing (see: A member the night evaluates over nothing keeps the dated event the calendar holds and says no count was made).
+            The stale and gapped reasons are the words the stale plan note and the shadow column's
+            skips already wrote, now read from one place. The name page's region draws the line above
+            why it is here where the name's listing lacks earnings soon's marker, read off the row the
+            region draws its reasons from, so the page and the exported file carry it. The name
+            page's breakout sentence states section 11's condition. Two decisions are corrected in
+            place, their rule unchanged: the count's, with its removal figures as the store now holds
+            them, the five surfaces that draw the line, and the reason a count of 0 fires with the
+            calibration setting that edge, and breakout's, with its row count
+            (see: Sessions to a dated event are counted on the exchange calendar and never on stored bars)
+            (see: Breakout on volume reads resistance at the previous session's close). Section 18's
+            row, section 17's horizon row, SCHEMA's reasons note, the RUNBOOK row and the calibration
+            row say so, with prior text in CHANGELOG. The code comments carrying the six-session
+            figure and the story of the defect state the mechanism alone.
+Stored:     nothing rewritten. The 2,522 rows in the old shape stay as written, and EQR's rows keep not
+            on file. From the first night on this code a member evaluated over nothing carries its
+            date and not counted; fired counts, the shadow column and forward returns are unchanged.
+            The name page on the operator's store has read a corrected night since 2026-09-16's, so
+            its line does not show there; it shows on any store whose newest night is in the old
+            shape.
+Missed:     the route test requested the three routes section 18 named, and the row's scope was
+            narrower than its reason. The stale and gapped tests asserted fired counts and the plan's
+            note and read no value. The four breakout cases sat off every edge, and the entry's M5
+            mutated the side read rather than an edge. The nights line was asserted over a count
+            handed to the renderer. The universe count test compared a cell with itself. The name
+            page's sentence test read at entry zone's sentence alone, and no fixture name fires
+            breakout. DECISIONS and the comments were written before the seventh session and only
+            PROGRESS was moved. The M1 list was counted in prose. Recorded, not reopened: each is
+            5.4's and none broke a check.
+Guarded:    the name route and its export over the replayed store: no line on the night the builder
+            wrote, and one line naming that night once its rows are rewritten in the old shape, inside
+            the name's region and above why it is here. Each record's nights over the replayed store
+            with one old-shape session added: the two corrected reasons on the replay's own sessions,
+            the other four on one more, on the records and on the run route's line and rows. A member
+            with no bar stored and a print five sessions out, a stale member, and a gapped member
+            with a print eight sessions out: each fires nothing, carries its date, and states not
+            counted with its own reason. Breakout on volume with last night's close exactly on the
+            low edge fires; a close exactly on the high edge and volume exactly at the average do not.
+            The breakout sentence against section 11's cell. The universe screen's count against the
+            listings expectation's hand-walked sessions.
+Expected:   derived. `listings.json` gains the three breakout edge cases, each outcome worked from
+            section 11's rule; `gap-stop.json` the count value a gapped member states; `run-page.json`
+            the nights, 1, because the replay runs the builder once over bars ending on the fixture's
+            night and writes every row in the corrected shape. The walked earnings soon sessions gain
+            two readers, the stale member and the universe count. The line on the name page and the
+            nights over an old session have no expectation key: every row the replay writes is in the
+            corrected shape, so the old shape is written in the test.
+Tests:      1010, from 1004: in `read-surface`, the name page and export line, each record's nights,
+            and the breakout sentence; in `fixture-expectations`, the three breakout edges. Assertions
+            added to five existing tests: the barless and stale members in `listings-coverage`, the
+            gapped member in `gap-refusal`, and the run page's nights and the universe count in
+            `read-surface`. The shortlist builder is among the sources both evaluator versions pin,
+            so momentum-index-reading moves from c638db3145b4 to 44efa160289a and
+            momentum-histogram-turn from cacff9914aac to 989f805b9471; the register holds no
+            candidate, so no night is stopped by it.
+Mutated:    the rule, stated before the sweep: break each property this correction adds that puts a
+            line, a value or a count a person reads on a surface or in a stored row, one mutation
+            each, and for the two findings that were a mutation surviving, that mutation. None is
+            re-pinned, so a mutation to a file the evaluator versions pin names the pin test among its
+            reds. Properties the correction guards and does not add, and so not mutated: breakout's
+            high edge and volume edge, each held by a case built as the low edge's is; that a member
+            evaluated over nothing never fires, held by the fired counts its three tests already
+            assert; and the run page's nights expectation over the replay, which no mutation below
+            can move since every replayed row is corrected. Predicted:
+            M1 the line dropped from the name region: the name page and export test red, and nothing
+            else.
+            M2 a member evaluated over nothing handed no date and no reason, which is the path as the
+            5.4 correction built it: the barless, stale and gapped member tests red, each on the next
+            dated event reading not on file, and the evaluator pin test red.
+            M3 breakout's low edge made exclusive, the review's surviving mutation: the low edge case
+            red, and nothing else.
+            M4 each record's nights counted over every session whatever the row's shape: the nights
+            test red, and nothing else.
+            M5 the universe screen's count taken as calendar days, the review's surviving mutation:
+            the universe count test red, and nothing else.
+            M6 the name page's breakout sentence put back to a resistance band: the breakout sentence
+            test red, and nothing else.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Seven runs of the whole suite, never a filter, at this entry's commit,
+            each in its own detached worktree under the session scratchpad, with the tree read before
+            the run to hold only the mutated file and the worktree removed after, none re-pinned. The
+            baseline is 1009 of 1010 with one red, and that red is this entry: `two-platform`
+            reads every checkpoint entry written since the 7.2 ruling for its Windows record, and this
+            one carried a placeholder until the run below filled it, so each count that follows is on
+            top of it. M1 turned 1 red: the name page and export test. M2 turned 4 red: the barless,
+            stale and gapped member tests and the evaluator pin test. M3 turned 1 red: the low edge
+            case. M4 turned 1 red: the nights test. M5 turned 1 red: the universe count test. M6
+            turned 1 red: the breakout sentence test.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1010 of 1010 tests ran
+            with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: three
+            placement notes are rewritten and no placement changes. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
+Carried:    nothing new. Earnings soon's lower edge is written into the operating row it belongs to
+            (owes: The six reason thresholds calibrated from the nights they fired on).

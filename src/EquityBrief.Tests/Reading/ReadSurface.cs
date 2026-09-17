@@ -1394,6 +1394,26 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public void TheNamePagesBreakoutSentenceStatesSectionElevensCondition()
+    {
+        // The sentence the name page acts from, held to the row it paraphrases rather than to
+        // a copy of its words written here.
+        var row = ArchitectureTables.In(Checks.Corpus.Read("docs/ARCHITECTURE.html"))
+            .Single(table => table.Heading == "11. The shortlist and its six reasons")
+            .Body.Single(cells => cells.Count > 1 && cells[0].Equals(ShortlistSeries.BreakoutOnVolume, StringComparison.OrdinalIgnoreCase));
+
+        // The condition as the cell states it, less the citation that follows it.
+        var condition = row[1].Split(" (", 2)[0];
+        var drawn = System.Net.WebUtility.HtmlDecode(new MarkRenderer().WhyItIsHere(
+            "ZZZZ",
+            [new FiredReason(ShortlistSeries.BreakoutOnVolume, new Dictionary<string, string>())]));
+
+        Assert.Contains("last night's close", condition, StringComparison.Ordinal);
+        Assert.Contains(condition, drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("resistance", drawn, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheWalkLinksBothNeighboursAndSaysSoAtEitherEnd()
     {
         // Section 15.9's last region, so an evening's reading is one pass
@@ -2470,6 +2490,13 @@ public partial class ReadSurface
         Assert.Equal(RunScreen.MinimumResolvedSetups, expected.GetProperty("rules").GetProperty("minimumResolvedSetups").GetInt32());
         Assert.Equal(expected.GetProperty("counts").GetProperty("resolved").GetInt32(), records.Sum(record => record.Resolved));
         Assert.Equal(expected.GetProperty("counts").GetProperty("fired").GetInt32(), records.Sum(record => record.Fired));
+
+        // The nights, for the listings and for each record, which over rows all in the
+        // corrected shape are the same count.
+        var nights = expected.GetProperty("counts").GetProperty("nights").GetInt32();
+
+        Assert.Equal(nights, RunScreen.Nights(listings));
+        Assert.All(records, record => Assert.Equal(nights, record.Nights));
 
         var fired = new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -3878,6 +3905,21 @@ public partial class ReadSurface
                 $"data-next-event=\"{(cell.NextEvent is { } dated ? dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none")}\"",
                 table,
                 StringComparison.Ordinal);
+        }
+
+        // Each count against the one the listings expectation walks by hand over weekdays
+        // less the closures, for the night that file names, so a count that is not the
+        // exchange's disagrees with it.
+        var walked = Expected("listings").GetProperty("earningsSoon");
+
+        Assert.Equal(walked.GetProperty("night").GetString(), night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        foreach (var cell in cells)
+        {
+            var expected = walked.GetProperty(cell.Ticker);
+
+            Assert.Equal(expected.GetProperty("nextDatedEvent").GetString(), cell.NextEvent?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? ShortlistSeries.NotOnFile);
+            Assert.Equal(expected.GetProperty("sessions").GetString(), cell.SessionsUntilEarnings?.ToString(CultureInfo.InvariantCulture) ?? ShortlistSeries.NotOnFile);
         }
 
         Assert.Contains(cells, cell => cell.SessionsUntilEarnings is > 0);
