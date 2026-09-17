@@ -514,14 +514,8 @@ public sealed class FactsAssembler : IComponent
     }
 
     // The segment table on the newest filing, where the archive supplied one, for
-    // the latest quarter it covers.
-    //
-    // Added at 6.6, because the segment commentary is one sentence per business
-    // unit from this table and a figure in prose has to exist in this file: with the
-    // table outside it, every sentence that commentary could write failed the number
-    // rule and the section fell back on every name. The latest three-month period
-    // only, because the commentary is about the quarter and the table's other
-    // columns are the same quarter a year before and the year to date.
+    // the newest period it covers: a quarter where it files one, and otherwise its
+    // newest longer period, which after an annual report is twelve months.
     //
     // Named by group, line item and period end. Two groups can share a label, which
     // the archive does for one filer the fixture holds, and a facts file names each
@@ -534,20 +528,12 @@ public sealed class FactsAssembler : IComponent
             return [];
         }
 
-        // The newest quarter where the table files one, and otherwise the newest
-        // period it does file, which after an annual report is twelve months.
-        // Until 8.0 this took quarters alone, so a name whose newest filing is its
-        // 10-K carried no segment figure at all and both sections that quote one
-        // fell back for a quarter: 6.11's run found it on MSFT, whose report for
-        // the year to 2026-06-30 files twelve-month columns and nothing shorter.
-        // The months are part of the fact's name, so a sentence quoting a year
-        // cannot read as a quarter.
         // see: A facts file carries the latest period of the segment table, and says which period it is
         var periods = segments.GetProperty("periods").EnumerateArray()
             .Select(period => (Months: period.GetProperty("months").GetInt32(), Ended: period.GetProperty("ended").GetString()!))
             .ToArray();
 
-        var quarters = periods.Where(period => period.Months == 3).ToArray();
+        var quarters = periods.Where(period => period.Months == SegmentPeriods.QuarterMonths).ToArray();
         var latest = (quarters.Length > 0 ? quarters : periods)
             .OrderBy(period => period.Ended, StringComparer.Ordinal)
             .ThenBy(period => period.Months)
@@ -562,9 +548,9 @@ public sealed class FactsAssembler : IComponent
         var facts = new List<Fact>();
         var taken = new HashSet<string>(StringComparer.Ordinal);
 
-        // A quarter keeps the name it had, since every stored facts file and every
-        // section written from one carries it; a longer period says how long it is.
-        var period = months == 3 ? ended : $"{months.ToString(CultureInfo.InvariantCulture)} months to {ended}";
+        // A quarter keeps the name every stored facts file carries; a longer period
+        // names its months, which the prompt and the claim checker read back.
+        var period = SegmentPeriods.Name(months, ended);
 
         void Take(string group, JsonElement lines, int position)
         {
@@ -577,11 +563,11 @@ public sealed class FactsAssembler : IComponent
                     continue;
                 }
 
-                var name = $"segment {group} {line.GetProperty("lineItem").GetString()} {period}";
+                var name = $"{SegmentPeriods.Prefix}{group} {line.GetProperty("lineItem").GetString()} {period}";
 
                 if (!taken.Add(name))
                 {
-                    name = $"segment {group} {position.ToString(CultureInfo.InvariantCulture)} {line.GetProperty("lineItem").GetString()} {period}";
+                    name = $"{SegmentPeriods.Prefix}{group} {position.ToString(CultureInfo.InvariantCulture)} {line.GetProperty("lineItem").GetString()} {period}";
                     taken.Add(name);
                 }
 

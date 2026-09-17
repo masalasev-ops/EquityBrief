@@ -1796,6 +1796,58 @@ public class NightlyRun
 
         Assert.Equal(new DateOnly(2026, 9, 15), NightSession.NewestStored(store.DatabaseFile));
     }
+
+    [Fact]
+    public void TheWorkerRefusesASessionOlderThanItsOwnStoreBeforeItsFirstStepAndPassesTheNewest()
+    {
+        // The worker's own entry point over a store in a throwaway root. The capture named does
+        // not exist, so a session that passes the refusal stops on the feeds before any provider.
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at) VALUES " +
+            "('AAPL', '2020-01-02', '1', '1', '1', '1', 1, 'test', '2020-01-02T21:10:00Z'), " +
+            "('AAPL', '2020-01-03', '1', '1', '1', '1', 1, 'test', '2020-01-03T21:10:00Z');");
+
+        var dotnet = Shell.Locate("dotnet");
+        var worker = Path.Combine(AppContext.BaseDirectory, "EquityBrief.Worker.dll");
+
+        Assert.NotNull(dotnet);
+        Assert.True(File.Exists(worker), $"No worker assembly at {worker}.");
+
+        var environment = new Dictionary<string, string> { ["EquityBrief__DataRoot"] = store.Root };
+        var missing = Path.Combine(store.Root, "no-such-capture");
+
+        ShellResult Night(string session) =>
+            Shell.Run(dotnet!, [worker, "nightly", "--session", session, "--fixture", missing], store.Root, environment);
+
+        long RunLogRows()
+        {
+            using var connection = store.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM run_log;";
+
+            return (long)command.ExecuteScalar()!;
+        }
+
+        // Older than the newest session the store holds: refused on stderr, naming both dates,
+        // with nothing written, since a refusal at the argument comes before the night's store.
+        var older = Night("2020-01-02");
+
+        Assert.Equal(1, older.ExitCode);
+        Assert.Contains("'--session 2020-01-02' is older than 2020-01-03", older.StandardError, StringComparison.Ordinal);
+        Assert.Equal(0, RunLogRows());
+
+        // The newest session the store holds, which is the re-run RUNBOOK asks for, is not
+        // refused at the argument and goes on to the feeds, where the missing capture stops it
+        // with a row of its own.
+        var newest = Night("2020-01-03");
+
+        Assert.Equal(1, newest.ExitCode);
+        Assert.DoesNotContain("is older than", newest.StandardError, StringComparison.Ordinal);
+        Assert.Contains("no-such-capture", newest.StandardError, StringComparison.Ordinal);
+        Assert.Equal(1, RunLogRows());
+    }
 }
 
 // A feed that fails the way the provider does. Named for what it stands in for,

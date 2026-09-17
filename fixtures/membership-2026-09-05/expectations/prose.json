@@ -110,5 +110,29 @@
     ],
     "outcome": "unavailable",
     "why": "the first call finds nothing answering, and every section after it is left unwritten without being asked, because a runtime that is not answering does not answer the next call either and waiting out a timeout per section would spend the evening on it"
+  },
+  "withoutAQuarter": {
+    "ticker": "KEYS",
+    "derivedFrom": "the segment report the fixture captured for KEYS, whose columns are three months and nine months each to 2026-07-31 and to 2025-07-31, because the filing is a third quarter's report and files the year to date beside the quarter; and the decision that a segment figure held for a period longer than a quarter is asked for by that period and refused where its sentence names a period of another length. With the three-month columns taken out the newest period the table files is the nine months to 2026-07-31, so every segment figure is named for it and the segment commentary is asked for that period by its months. A sentence quoting one of its figures is refused for that and for nothing else where it names a quarter or six months, and passes where it names nine months in words or the period as the facts file names it, the date in each being the quarter end the facts file holds. Each was worked out from the table's own column headings and the decision before the test that reads this was run. The figure quoted is read back from the stored table at test time, rounded to millions.",
+    "period": "9 months to 2026-07-31",
+    "asked": "reported for the 9 months to 2026-07-31. Every segment figure listed covers that period and no other, so name it by its months and never as a quarter, a half or any other period.",
+    "verdicts": [
+      {
+        "wording": "for the quarter",
+        "reason": "a figure the facts file holds for a period longer than a quarter, in a sentence naming a period of another length"
+      },
+      {
+        "wording": "in the six months to July 31, 2026",
+        "reason": "a figure the facts file holds for a period longer than a quarter, in a sentence naming a period of another length"
+      },
+      {
+        "wording": "in the nine months to July 31, 2026",
+        "reason": null
+      },
+      {
+        "wording": "for the 9 months to 2026-07-31",
+        "reason": null
+      }
+    ]
   }
 }

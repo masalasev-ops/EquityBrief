@@ -896,7 +896,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(CatalogueTable, "Corporate action checker")] = new Scoped(
             Verdict.Pass,
-            "the class declares the two feeds it reads and the stores it touches, including the refetch delete and the series state SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the feeds it reads and the stores it touches, including the refetch delete and the series state SCHEMA now declares, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Corporate action checker")] = new Scoped(
             Verdict.Pass,

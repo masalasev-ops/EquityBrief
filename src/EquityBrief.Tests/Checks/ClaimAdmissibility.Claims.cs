@@ -621,6 +621,13 @@ public partial class ClaimAdmissibility
         // Every section a row says a model writes has a prompt to ask it in.
         Assert.All(named, section => Assert.True(SectionPrompt.Asks.ContainsKey(section), section));
 
+        // The segment row's code and model cells name the period the facts file carries,
+        // which is a quarter only where the filing files one.
+        var segments = rows.Single(row => row[0] == Evidence.Segments);
+
+        Assert.Contains("latest period of the segment table", segments[2], StringComparison.Ordinal);
+        Assert.DoesNotContain("for the quarter", segments[3], StringComparison.Ordinal);
+
         // The rules column, against the checker. The one section held to no citation
         // is the one row saying it cites no document, and the one section held to its
         // move's span is the one row naming a document published inside that move.
@@ -826,6 +833,65 @@ public partial class ClaimAdmissibility
         // figure the file does not hold.
         Assert.True(ClaimRules.Check(ClaimRules.ComputedSection, "It is an ordinary sentence.", [], []).Passes);
         Assert.False(ClaimRules.Check(ClaimRules.ComputedSection, "It closed at 12.34.", [], []).Passes);
+    }
+
+    [Fact]
+    public void AFigureHeldOnlyForAPeriodLongerThanAQuarterIsRefusedUnderAnotherPeriodsNameAndPassesUnderItsOwn()
+    {
+        // A facts file after an annual report: twelve-month segment figures beside the
+        // fundamentals' own quarter, whose net income the segment operating income shares.
+        // see: A segment figure held for a period longer than a quarter is asked for by that period and refused where its sentence names a period of another length
+        Fact[] facts =
+        [
+            new("latest quarter end", "2026-06-30", "fundamental"),
+            new("latest quarter revenue", "76400000000", "fundamental"),
+            new("latest quarter net income", "37000000000", "fundamental"),
+            new("segment total Revenue 12 months to 2026-06-30", "270000000000", "fundamental"),
+            new("segment Productivity Revenue 12 months to 2026-06-30", "80000000000", "fundamental"),
+            new("segment Productivity Operating income 12 months to 2026-06-30", "37000000000", "fundamental"),
+        ];
+
+        StoredDocument?[] sources = [new StoredDocument("a", "https://a.test/a", "a", new DateOnly(2026, 7, 30), FetchedAt, "text", Admissibility.Accepted)];
+
+        (string Offending, string Reason)[] Findings(IReadOnlyList<Fact> file, string prose) =>
+            [.. ClaimRules.Check("The segment commentary", prose, file, sources).Findings.Select(finding => (finding.Offending, finding.Reason))];
+
+        (string, string)[] Named(string figure) => [(figure, ClaimRules.FigureNamedForAnotherPeriod)];
+
+        // A year's figure under a shorter period's name is refused and names the figure: a
+        // quarter by its word, its label, its adjective and its three months, a half as the
+        // first half and by its label, and nine months.
+        Assert.Equal(Named("$80 billion"), Findings(facts, "Productivity reported revenue of $80 billion for the quarter. [D1]"));
+        Assert.Equal(Named("$270 billion"), Findings(facts, "Revenue was $270 billion in Q4. [D1]"));
+        Assert.Equal(Named("$80 billion"), Findings(facts, "Productivity's quarterly revenue was $80 billion. [D1]"));
+        Assert.Equal(Named("$80 billion"), Findings(facts, "In the three months to June 30, 2026, Productivity reported revenue of $80 billion. [D1]"));
+        Assert.Equal(Named("$80 billion"), Findings(facts, "Productivity reported revenue of $80 billion for the first half. [D1]"));
+        Assert.Equal(Named("$80 billion"), Findings(facts, "Productivity reported revenue of $80 billion in H1. [D1]"));
+        Assert.Equal(Named("$80 billion"), Findings(facts, "Productivity reported revenue of $80 billion for the nine months to June 30, 2026. [D1]"));
+
+        // Under its own period it passes, the months in digits as the prompt asks and in words
+        // as a filing writes them, since the length of a period the file names is not a figure.
+        // Its own period beside another is refused, which is the cost the decision states.
+        Assert.Empty(Findings(facts, "Productivity reported revenue of $80 billion for the 12 months to 2026-06-30. [D1]"));
+        Assert.Empty(Findings(facts, "Productivity reported revenue of $80 billion for the twelve months to June 30, 2026. [D1]"));
+        Assert.Equal(Named("$80 billion"), Findings(facts, "Productivity reported revenue of $80 billion for the twelve months to June 30, 2026, more than in any quarter. [D1]"));
+
+        // A period in digits the file does not name is also a figure it does not hold.
+        Assert.Equal(
+            [("$80 billion", ClaimRules.FigureNamedForAnotherPeriod), ("6", ClaimRules.UnmatchedFigure)],
+            Findings(facts, "Productivity reported revenue of $80 billion for the 6 months to 2026-06-30. [D1]"));
+
+        // The fundamentals' own quarter under a quarter's name passes, and so does a figure a
+        // quarter's fact also holds.
+        Assert.Empty(Findings(facts, "Revenue was $76.4 billion for the quarter. [D1]"));
+        Assert.Empty(Findings(facts, "Productivity operating income was $37 billion for the quarter. [D1]"));
+
+        // And over a segment table of a quarter no period's name is read, which is where the
+        // rule ends: a quarter's figure under a year's name passes as it always did.
+        Fact[] quarterly = [.. facts.Select(fact => fact with { Name = fact.Name.Replace("12 months to 2026-06-30", "2026-06-30", StringComparison.Ordinal) })];
+
+        Assert.Empty(Findings(quarterly, "Productivity reported revenue of $80 billion for the quarter. [D1]"));
+        Assert.Empty(Findings(quarterly, "Productivity reported revenue of $80 billion for the twelve months to June 30, 2026. [D1]"));
     }
 
     static (string Section, string First, string Second) Attempts(string name)

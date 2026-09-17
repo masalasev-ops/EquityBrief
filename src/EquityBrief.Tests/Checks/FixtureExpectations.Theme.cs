@@ -79,6 +79,17 @@ public partial class FixtureExpectations
         Assert.DoesNotContain(ClaimRules.CycleSection, second.Warranted);
         Assert.DoesNotContain(first.NotWritten.Concat(second.NotWritten), line => line.Section == ClaimRules.CycleSection);
 
+        // Neither member holds a facts file, so each pass writes nothing of its own and its
+        // row says whether it refreshed the industry's cycle, which is the sentence the name
+        // page reads.
+        // see: A pass for a name with no facts file refreshes its industry's theme and says so
+        var passes = expected.GetProperty("passes");
+
+        Assert.Equal(passes.GetProperty("outcome").GetString(), first.Outcome);
+        Assert.Equal(passes.GetProperty("outcome").GetString(), second.Outcome);
+        Assert.Equal(passes.GetProperty("first").GetString(), first.Reason);
+        Assert.Equal(passes.GetProperty("second").GetString(), second.Reason);
+
         // One theme pass row, under the first member's run, and none under the second's.
         Assert.Equal([$"theme-first|{ThemeResearchRunner.Written}"], Query(store, "SELECT run_id, outcome FROM run_log WHERE stage = 'theme research' ORDER BY rowid;"));
 

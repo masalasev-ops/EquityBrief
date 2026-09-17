@@ -140,6 +140,7 @@ public static class ClaimRules
     public const string CauseOutsideItsMove = "a citation to a document published outside the move it gives the cause of";
     public const string DateNoCitedDocumentCarries = "a date no document the sentence cites carries";
     public const string DateNotAfterTheNight = "a date on or before the night the facts file was computed for";
+    public const string FigureNamedForAnotherPeriod = "a figure the facts file holds for a period longer than a quarter, in a sentence naming a period of another length";
 
     // ---- the check ----
 
@@ -171,6 +172,8 @@ public static class ClaimRules
 
         foreach (var sentence in Sentences(prose))
         {
+            var named = PeriodsNamed(sentence.Text);
+
             if (cause)
             {
                 findings.AddRange(CauseFindings(sentence, moves, sources));
@@ -197,11 +200,12 @@ public static class ClaimRules
                 }
             }
 
-            foreach (var figure in Figures(sentence.Text))
+            foreach (var figure in Figures(WithoutHeldPeriods(sentence.Text, facts)))
             {
                 var reason = figure.Kind switch
                 {
                     FigureKind.Figure when !Matches(figure, facts) => UnmatchedFigure,
+                    FigureKind.Figure when NamedForAnotherPeriod(figure, facts, named) => FigureNamedForAnotherPeriod,
                     FigureKind.Window when !IsAWindow(figure, facts) => UnknownWindow,
                     FigureKind.Date when calendar => CalendarDate(figure, sentence, sources, night),
                     FigureKind.Date when !IsADate(figure, facts) => UnknownDate,
@@ -440,7 +444,8 @@ public static class ClaimRules
 
     // A quarter or half label, or a fiscal year. What these carry is which period
     // a sentence is about, and a wrong period is caught by the figure beside it
-    // failing to match the period's value rather than by the label.
+    // failing to match the period's value rather than by the label, save where the
+    // file holds that figure for a longer period alone, which `PeriodName` reads.
     //
     // A time of day is a label too. Both filed releases announce their call at an
     // hour, and "2:00 p.m." read as two figures was the "00" the measurement found.
@@ -592,6 +597,76 @@ public static class ClaimRules
 
             return new string(' ', match.Length);
         });
+
+    // ---- a period longer than a quarter ----
+
+    // The periods a sentence names, by their length in months: a quarter by its word or its
+    // label, a half by its label or as a first or second half, and three, six, nine or twelve
+    // months by their count in words or in digits. A year named by no count of months, the
+    // year to date and a half written alone are not read, the last being as often a share.
+    static readonly Regex PeriodName = new(
+        @"\b(?<quarter>quarter(?:ly|s)?|Q[1-4])\b"
+        + @"|\b(?<half>(?:first|second)[-\s]half|H[12])\b"
+        + @"|(?:\b(?<words>three|six|nine|twelve)|(?<![\d.,])(?<digits>3|6|9|12))[-\s]months?\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    static readonly Dictionary<string, int> MonthsInWords = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["three"] = 3,
+        ["six"] = 6,
+        ["nine"] = 9,
+        ["twelve"] = 12,
+    };
+
+    static HashSet<int> PeriodsNamed(string sentence) =>
+    [
+        .. PeriodName.Matches(sentence).Select(name =>
+            name.Groups["quarter"].Success ? SegmentPeriods.QuarterMonths
+            : name.Groups["half"].Success ? 6
+            : name.Groups["words"].Success ? MonthsInWords[name.Groups["words"].Value]
+            : int.Parse(name.Groups["digits"].Value, CultureInfo.InvariantCulture)),
+    ];
+
+    // A figure every fact it matches is a segment figure for a period longer than a quarter,
+    // in a sentence naming a period of any other length. A figure that also matches any other
+    // fact passes, since the match is on existence rather than attribution.
+    // see: A segment figure held for a period longer than a quarter is asked for by that period and refused where its sentence names a period of another length
+    static bool NamedForAnotherPeriod(ProseFigure figure, IReadOnlyList<Fact> facts, HashSet<int> named)
+    {
+        if (named.Count == 0)
+        {
+            return false;
+        }
+
+        var held = new HashSet<int>();
+
+        foreach (var fact in facts.Where(fact => Matches(figure, [fact])))
+        {
+            if (SegmentPeriods.LongerThanAQuarter(fact) is not { } period)
+            {
+                return false;
+            }
+
+            held.Add(period.Months);
+        }
+
+        return held.Count > 0 && !named.IsSubsetOf(held);
+    }
+
+    // The months of a period the file names, as "12 months", blanked as the periods in
+    // words are, so the length of the period a figure is held for is not read as a figure.
+    static string WithoutHeldPeriods(string sentence, IReadOnlyList<Fact> facts)
+    {
+        foreach (var months in facts.Select(SegmentPeriods.LongerThanAQuarter).OfType<(int Months, string Ended)>().Select(period => period.Months).Distinct())
+        {
+            sentence = Regex.Replace(
+                sentence,
+                @"(?<![\d.,])" + months.ToString(CultureInfo.InvariantCulture) + @"(?:-|\s)months?\b",
+                match => new string(' ', match.Length));
+        }
+
+        return sentence;
+    }
 
     // ---- matching ----
 
