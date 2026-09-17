@@ -13746,6 +13746,39 @@ Mutated:    the rule, stated before the sweep: one mutation per property this co
             Not mutated: the arrow bound, that an arrow is no wider than the size it is set at.
             Every arrow the document draws measures below it, so no case in the corpus tells the
             bound from the measurement, which is an unreachable boundary rather than a property left
-            unnamed. Results: filled in below.
-Verified:   filled in below.
+            unnamed.
+            Results: three of the four predictions held exactly and one was wrong about how many
+            tests a mutation reaches. Five runs of the whole suite, never a filter, at this entry's
+            commit, each in its own detached worktree under the session scratchpad, with the tree
+            read before the run to hold only the mutated file and the worktree removed after. The
+            baseline is 1022 of 1023 with one red, and that red is this entry: `two-platform` reads
+            every entry written since the 7.2 report for its Windows record, and this one carried a
+            placeholder until the run below filled it, so each count that follows is on top of it.
+            M1 turned 2 red beyond the baseline, both predicted: the fits test, naming the
+            arithmetic band's row at 6 boxes and 5 arrows needing 925px of the 864px its column
+            gives it, and `architecture-conformance`. The check was predicted and its reason was
+            not: the test that fires is
+            `EveryBoxInTheSystemDiagramNamesAComponentOrAStoreTheTablesCarry`, so a box added to a
+            figure is caught for naming no component the catalogue carries, before any question of
+            a verdict arises.
+            M2 turned 1 red, as predicted: the stylesheet-rules test, on the rule that wraps a set
+            of peers, and the fits test held, the outside-the-system row being a set of peers that
+            this check does not measure.
+            M3 turned 2 red, as predicted: the fits test and the boundary test, the five-box case
+            no longer fitting a column computed at 600px.
+            M4 turned 3 red where 4 were predicted. The prediction was wrong and the test is
+            right: `TheDocumentWrapsASetOfPeersAndStacksEveryRowWhenNarrow` reads the stylesheet's
+            two rules directly and never asks for a length, so a length the document stops stating
+            is not something it can see. The three that read a number all refused, which is the
+            property M4 was chosen for.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1023 of 1023 tests
+            ran with none failed, migrations 0 to 27 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 373 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run, the roster having
+            gained `figure-fits`. No claim added and none moved: the new check reaches no claim in
+            section 17 and declares no reach, as the other checks over the corpus itself do not.
+            The run before this one stopped at the suite on `two-platform` alone, over this entry's
+            own placeholder, which is the order done condition 8 asks for. Both gates ran with this
+            entry in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
