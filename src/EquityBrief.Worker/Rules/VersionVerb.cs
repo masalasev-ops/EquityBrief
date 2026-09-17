@@ -28,6 +28,7 @@ public static class VersionVerb
         if (VerbArguments.Has(args, "--list"))
         {
             var open = RuleVersions.OpenAt(await scorer.VersionsAsync(), clock.UtcNow);
+            var now = RuleVersionScorer.HashesNow();
 
             await output.WriteLineAsync(FormattableString.Invariant(
                 $"version: {open.Count} open window(s) of the {RuleVersions.MostAtOnce} the bound allows at once"));
@@ -37,6 +38,12 @@ public static class VersionVerb
                 await output.WriteLineAsync(
                     $"  '{row.Rule}' '{row.Version}' {row.Parameters}, opened " +
                     row.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+
+                // What the next night would stop on, read by the reader the night reads it with.
+                foreach (var moved in RuleVersions.Drifted([row], now))
+                {
+                    await output.WriteLineAsync("    the next night stops here: " + moved);
+                }
             }
 
             return 0;

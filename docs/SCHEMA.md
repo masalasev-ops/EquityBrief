@@ -214,11 +214,13 @@ Grain: one row per ticker, as-of date and band.
 | `immediate` | INTEGER | 1 for the nearest band on its side |
 | `strength` | INTEGER | |
 | `has_non_average_anchor` | INTEGER | 1 when a member is something other than a moving average |
-| `members` | TEXT | JSON: each member's kind, price and date |
+| `members` | TEXT | JSON: each member's source, kind, price and date |
 
 Primary key: `ticker`, `as_of`, `low_edge`.
 
 `has_non_average_anchor` is a stored column rather than a derived one because the ladder builder reads it on every band and a short moving average follows the price, so a band anchored only on one sits at the price about half the time.
+
+A band set stored before member sources were written carries none, and it is kept as written. The rule version scorer does not read a source off a kind, since two sources can write the same word, so a version that reads members is skipped over such a set and counted on the step's run log row.
 
 ### ladder
 Grain: one row per ticker per as-of date, **for every index member and not only the names carrying a plan**.
@@ -458,7 +460,7 @@ Grain: one row per rule per version. Append only but for the close.
 |---|---|---|
 | `rule` | TEXT | one of the four ladder rules the build carries, refused at the write where it carries none |
 | `version` | TEXT | the version's name, `live` for the rule the night itself applies |
-| `parameters` | TEXT | JSON, the values this version is replayed with |
+| `parameters` | TEXT | JSON, the values this version is replayed with, each one the replay applies as given |
 | `parameters_hash` | TEXT | a hash of those parameters with the code version, which is what the night compares the live rule against |
 | `code_version` | TEXT | the build's version of the rule's own code, hashed into `parameters_hash` |
 | `opened_at` | TEXT | UTC instant the window opened |
@@ -469,7 +471,7 @@ Primary key: `rule`, `version`, `opened_at`.
 
 **The instant is in the key, so a version closed and opened again is two windows and not one.** Scores belong to a window rather than to a version name, and a key without the instant would merge two measurements of the same name taken either side of a change, which is the thing frozen windows exist to prevent.
 
-**A version row stands beside an open `live` row of its rule, and every open row counts against the bound.** The scorer writes every row when a person runs the worker's `version` verb and never during a night: a `live` row carries the build's own parameters and nothing else, a version row is refused where its rule has no open `live` row or where its `parameters` name anything other than what the rule is replayed from, and a `live` row is not closed while a version of its rule is open. At most two rows of the merge distance and four of each other rule are open at once, `live` rows included (see: A ladder rule's version is measured beside that rule's live window, and both count against the bound).
+**A version row stands beside an open `live` row of its rule, and every open row counts against the bound.** The scorer writes every row when a person runs the worker's `version` verb and never during a night: a `live` row carries the build's own parameters and nothing else, a version row is refused where its rule has no open `live` row or where its `parameters` name anything other than what the rule is replayed from, and a `live` row is not closed while a version of its rule is open. At most two rows of the merge distance and four of each other rule are open at once, `live` rows included (see: A ladder rule's version is measured beside that rule's live window, and both count against the bound). A version row is refused where a value is one the replay would not apply as given or where every value is its rule's live one (see: A version of a ladder rule is refused at values its replay would not apply as given, or at its rule's live values).
 
 ### version_score
 Grain: one row per name per night per rule per version.
@@ -488,7 +490,7 @@ Primary key: `ticker`, `session_date`, `rule`, `version`, `opened_at`.
 
 **`sample` is the column that keeps a backfill from becoming evidence.** A version added later may be scored over the nights before it, because seeing what it would have done is the point of scoring counterfactually at all. What it may not do is count: a rule written after those nights were seen and then scored on them is measured in sample, and a record holding such a score is a record of having fitted the rule to what already happened. The scorer writes the flag from the window's own `opened_at` against the night being scored, so the classification is arithmetic rather than a caller's claim about itself.
 
-One year retained, dropped by the scorer on the night the rows fall out of the window, at the order of the index times the versions open.
+One year retained, counted back from the newest stored session as the bars are, whatever night the scorer is scoring, and dropped by the scorer on the night the rows fall out of the window, at the order of the index times the versions open.
 
 ### series_state
 Grain: one row per ticker.

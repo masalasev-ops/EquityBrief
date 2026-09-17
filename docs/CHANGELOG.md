@@ -25,6 +25,65 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - DECISIONS.md - the rule version caps cited to the operator's third round
+
+Corrects: the entry ruling the rule version caps ended "Ruled at the 8.6 correction", where the caps are the operator's third-round ruling on the phase 8 plan, extended to the fourth rule, and it named neither that ruling nor the two parts the building session added. Found by the phase 8 sign-off review.
+Was:
+> a count of windows can be read off the verb's own list. Ruled at the 8.6 correction.
+Now:
+> the entry ends by naming the operator's third-round caps of 2026-09-15 (two of the merge distance, four of where the stop sits and four of the near-exit skip, live windows counted, ten at once and 673 seconds, four of every rule rejected at 969), the zone edges rule taking the ladder-only cap after that round, why three merge distance windows are left to the operating row, and the live window requirement as written at the 8.6 correction.
+Why: the decision's own ruling is unchanged, so the entry is corrected rather than superseded, as the posting hour's was, and a supersession would move seven citations for nothing.
+
+### 2026-09-16 - .claude/rules/checks.md - rule-versions-scored states the pin's reach, the refusals, the worked plans and the retention boundary
+
+Corrects: the row said the code version is the pin of the sources a replay runs through while three files were pinned and the live merge distance sat outside them, and it stated nothing about a version's values, the plans a replay stores against a worked figure, member sources, or retention. Found by the phase 8 sign-off review.
+Was:
+> | `rule-versions-scored` | every CI run | A version change closes the window measuring the old rule and opens a new one, with the closed row keeping every column it was opened with so the scores under it stay scores of the rule as it stood; a version is opened only beside its rule's live window and under the parameter names the rule is replayed from, a live window carries the build's own parameters, and a live window is not closed while a version of its rule is open; the window past each rule's cap is refused and one below admitted, live windows counted, with a closed window counting against nothing; the fullest register the caps admit is projected from the night's own stage durations read off section 17's row and held inside the deadline the night is bounded by; the ladder rules' code version is the pin of the sources a replay runs through, so a live rule whose code moves is found as one whose parameters did; a live rule whose parameters or code have moved inside an open window is found and one that has not is not, in both directions; a version replays a plan the live rule does not produce; a backfill replays a past night against that night's own bands; a score written for a night before its window opened is flagged in sample beside one written for a night after it; and the `version` verb opens, lists, closes and backfills through the scorer with every refusal a non-zero exit and a row on the run log under its own outcome |
+Now:
+> the row states the pin over every source the live rules and their replay run through, held to the set the compiled code reaches, with exactly one declaring line left out; the replay at the live values reproducing the night's bands and plan; the refusal at unapplied and live values and the named overflow; the fixture's worked plans; the member sources skip; a zone never narrowed to a touch; the backfill's trend; the retention boundary; and the verb listing a drifted live window.
+Why: a roster row is what `coverage-reported` holds a check to, and the check now asserts each of these.
+
+### 2026-09-16 - RUNBOOK.md - a version's values, the skip over a band set without sources, and closing windows before a pinned source changes
+
+Authorised by: The ladder rules' code version pins every source a live ladder rule or its replay runs through
+Was:
+> `zone edges from non-average anchors only` from `zoneEdgesFromNonAverageAnchorsOnly`, where a flag is 1 or 0.
+>
+> from that night's own bars and bands, and every score it writes for a night before its window opened is flagged in sample and counts toward no record.
+>
+> Close the rule's versions, then its live window, and open them again: the closed rows are kept with what they were opened with.
+Now:
+> the values each parameter takes and the refusals at the live values and at a name given twice; the skip of a merge distance or zone edges version over a band set stored before member sources, counted on the step's row; closing a version whose merge distance no price can hold; and a paragraph saying to close every window before merging an edit to a pinned source, with `version --list` naming a drifted live window.
+Why: a pinned edit stops the next night with a window open, and the runbook is where the person merging reads what to do first.
+
+### 2026-09-16 - SCHEMA.md - a member's source, a version's values, and where a score's year is counted from
+
+Corrects: `level.members` said each member's kind, price and date while every row since 8.6 carries a source and the rows before carry none; `rule_version.parameters` said nothing about which values are refused; and `version_score`'s year was counted by the scorer from whatever night it scored. Found by the phase 8 sign-off review.
+Was:
+> | `members` | TEXT | JSON: each member's kind, price and date |
+>
+> | `parameters` | TEXT | JSON, the values this version is replayed with |
+>
+> One year retained, dropped by the scorer on the night the rows fall out of the window, at the order of the index times the versions open.
+Now:
+> the member row names the source, a paragraph says rows stored before carry none and a version that reads members is skipped over them; the parameters row says each value is one the replay applies as given, and the rule_version paragraph gains the refusal at unapplied and live values (see: A version of a ladder rule is refused at values its replay would not apply as given, or at its rule's live values); and the year is counted back from the newest stored session as the bars are, whatever night is scored.
+Why: the scorer reads what the member row describes, refuses what the parameters row admits, and drops by the boundary the bars use.
+
+### 2026-09-16 - ARCHITECTURE.html - two catalogue rows read swings, section 13 names the fourth rule and phase 8's stores, and the version bound is held against the deadline
+
+Corrects: the Ladder builder and Rule version scorer rows read swings and did not say so; section 13.2 listed three ladder rules where four carry versions and 13.4 said phase 8 adds no nightly component and no store; and section 17's version bound rested on a 495 second night beside a wall clock row proposing 5 minutes without saying which bounds it. Found by the phase 8 sign-off review.
+Was:
+> <td>levels, indicators, calendar, bar store</td> and <td>bar store, indicators, levels, ladders, rule versions</td>
+>
+> the merge distance, where the stop sits, the near-exit skip. Each is a named rule version
+>
+> Phase 8 adds the scoring, the register, the shadow column and the run page's condition verdicts. Nothing else changes: no new nightly component, no new store, and no part of the reader's experience.
+>
+> 14 is the sum of the caps. It grows with versions times names and never with a request
+Now:
+> both reads cells name swings; 13.2's row names the zone edges rule; 13.4 names the rule version scorer and the three stores and says nothing a reader sees changes but the run page; and section 17's row says the night it is projected from already passes the proposed 5 minutes, which that row's own obligation settles, so the bound is held against the deadline.
+Why: a declaration, a count of rules and a count of stores the document states are claims a reader acts on, and each was narrower than what phase 8 built.
+
 ### 2026-09-16 - SCHEMA.md - which shadow skips fail the listings stage
 Authorised by: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip
 

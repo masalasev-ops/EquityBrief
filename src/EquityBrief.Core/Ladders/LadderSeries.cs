@@ -250,12 +250,8 @@ public static class LadderSeries
                 .OrderByDescending(other => other.LowEdge)
                 .FirstOrDefault();
 
-            // The zone's edges. Live, they are the band's own and it keeps its
-            // full width, which is what section 17's eligibility row says and
-            // what 8.0 reconciled with the rule that an average may widen a band
-            // and never anchor one. The version narrows them to the range of the
-            // band's non-average members, which is the alternative 8.0 measured
-            // at 35 of 223 zones widened and three no longer holding the close.
+            // The zone's edges: the band's own live, and under the version the range
+            // of its non-average anchors, a touch being evidence and never an anchor.
             // see: A moving average may widen a band that a tranche sits on, and may never anchor one
             var (low, high) = rules.ZoneEdgesFromNonAverageAnchorsOnly
                 ? NonAverageEdgesOf(band)
@@ -287,6 +283,20 @@ public static class LadderSeries
             EventsFor(bands, close, typicalMove, nextEvent, recent));
     }
 
+    // The range of a band's non-average anchors, or the band's own edges where a
+    // band carrying no such anchor, which carries no tranche, is ever asked.
+    static (decimal Low, decimal High) NonAverageEdgesOf(Level band)
+    {
+        var anchors = band.Members
+            .Where(member => member.Source is not (MemberSource.Average or MemberSource.Touch))
+            .Select(member => member.Price)
+            .ToArray();
+
+        return anchors.Length == 0
+            ? (band.LowEdge, band.HighEdge)
+            : (anchors.Min(), anchors.Max());
+    }
+
     // Where the stop sits, which the trend decides.
     //
     // In a range it is the low edge of the next band beneath, which is the range
@@ -301,25 +311,6 @@ public static class LadderSeries
     // that has run a long way is far below the band beneath and is looser
     // protection than the range rule gives. A trailing stop that can sit below
     // the range floor is not trailing anything.
-    // The range of a band's non-average members, or the band's own edges where it
-    // carries none that are not an average.
-    //
-    // The fallback is not a detail: a band with no non-average member carries no
-    // tranche at all, so this is only ever asked of a band that has one, and
-    // returning the band's edges where it somehow does not is a narrowing that
-    // narrows to nothing rather than a silent widening.
-    static (decimal Low, decimal High) NonAverageEdgesOf(Level band)
-    {
-        var anchors = band.Members
-            .Where(member => member.Source != MemberSource.Average)
-            .Select(member => member.Price)
-            .ToArray();
-
-        return anchors.Length == 0
-            ? (band.LowEdge, band.HighEdge)
-            : (anchors.Min(), anchors.Max());
-    }
-
     public static decimal? StopFor(
         Level band,
         decimal? beneath,
