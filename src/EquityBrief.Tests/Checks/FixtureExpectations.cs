@@ -3669,8 +3669,7 @@ public partial class FixtureExpectations
 
         // The rule the cases are of, stated here as the expectation states it: the
         // entry is the first close at or below the zone's top edge, and a target
-        // reached before it is never a win. That is what made 105 of 147 stored
-        // wins in the operator's store on 2026-09-16 not wins.
+        // reached before it is never a win.
         Assert.Equal(ForwardReturnSeries.NeverEntered, Score(120m, 125m, 130m).Outcome);
 
         // A setup that entered and reached neither by the cap is unresolved; one

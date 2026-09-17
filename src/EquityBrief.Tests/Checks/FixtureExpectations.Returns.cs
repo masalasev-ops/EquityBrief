@@ -285,4 +285,36 @@ public partial class FixtureExpectations
             Shape(Text(past, "outcome"), Text(past, "resolvedOn"), Number(past, "returnPct"), Number(past, "breakEven")),
             Stored(store, "OPEN", ForwardReturnSeries.Setup));
     }
+
+    [Fact]
+    public async Task EveryCaseTheEntryRuleIsWorkedOverIsWhatTheFillerStoresFromThePlanTheListingCarries()
+    {
+        // The filler reads the zone's top edge off the stored plan, which carries its
+        // bottom edge beside it, and the listing night's own close off the bar store.
+        // see: A setup is scored from its entry, and a target reached before the entry is never a win
+        var constructed = Expected("forward-returns").GetProperty("constructed");
+        var plan = constructed.GetProperty("plan");
+        var cases = constructed.GetProperty("cases").EnumerateArray().ToArray();
+
+        Assert.Equal(4, cases.Length);
+        Assert.NotEqual(plan.GetProperty("entryLow").GetString(), plan.GetProperty("entryHigh").GetString());
+
+        using var store = new TemporaryStore().Migrated();
+
+        foreach (var (one, at) in cases.Select((one, at) => (one, at)))
+        {
+            var closes = one.GetProperty("closes").EnumerateArray().Select(close => close.GetString()!).ToArray();
+
+            Listed(store, $"ENTRY{at}", Plan(plan), one.GetProperty("listedAt").GetString(), one.GetProperty("listedAt").GetString(), closes);
+        }
+
+        await new ForwardReturnFiller(FixedClock.At(FilledAt, SessionZones.UnitedStates), store.DatabaseFile).RunAsync("entry");
+
+        foreach (var (one, at) in cases.Select((one, at) => (one, at)))
+        {
+            Assert.Equal(
+                (one.GetProperty("case").GetString(), Shape(Text(one, "outcome"), Text(one, "resolvedOn"), Number(one, "returnPct"), Number(one, "breakEven"))),
+                (one.GetProperty("case").GetString(), Stored(store, $"ENTRY{at}", ForwardReturnSeries.Setup)));
+        }
+    }
 }

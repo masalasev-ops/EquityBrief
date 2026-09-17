@@ -115,14 +115,14 @@ public static class SchemaMigrations
 
     // The forward returns, one row per listing per horizon.
     //
-    // `outcome` is `win`, `loss`, `unresolved` or null while immature, and
-    // `unresolved` is a value rather than a null so it is counted in its own
-    // column and never in a rate. An immature row reads as not yet matured
-    // rather than as a blank or a zero, which is what the null is for.
+    // `outcome` is `win`, `loss`, `unresolved`, `never entered` or null while
+    // immature. `unresolved` and `never entered` are values rather than nulls, so
+    // each is counted in its own column and never in a rate, and an immature row
+    // reads as not yet matured rather than as a blank or a zero.
     //
     // `return_pct` and `base_rate` are REAL because both are statistics rather
-    // than prices, and both are null for the `setup` horizon: target before stop
-    // is a question about a plan, and a name with no plan has no answer to it.
+    // than prices. `base_rate` is null for the `setup` horizon, whose `return_pct`
+    // runs from the close the setup was entered at.
     //
     // No deleter, and a decided row is never written again: this is the
     // operator's own record and it is kept forever.
