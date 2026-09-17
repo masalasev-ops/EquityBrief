@@ -13672,3 +13672,80 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             verdict notes are rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 4.0 - correction: figure 5.1's longest row ran past the column and the figure clipped what it could not hold   2026-09-17
+
+Corrects:   figure 5.1's outside-the-system row draws one box per feed on a line the stylesheet gave
+            no way to wrap, and holds each box to a minimum width. Eight boxes need 1143px and the
+            column the figure is drawn in holds 1024px. A figure carries `overflow-x:auto`, so a row
+            wider than the column is clipped rather than shown: the eighth box kept its text and no
+            reader could reach it, and the language models box is the one the document lost. The row
+            held six boxes as delivered and seven before phase 4, which fit with 25px to spare, and
+            crossed the column at 4.0, which added the earnings calendar feed. Narrower than the
+            column's own 1196px the figure lost more, and below about 960px the arithmetic band's
+            five-box row went the same way.
+Found:      by the operator reading section 5 on 2026-09-17 and reporting the row cut off. The
+            checkpoint is the one whose edit crossed the column, read from the history rather than
+            from the stylesheet's age: the rules the row is drawn by are 0.0's and hold seven boxes.
+Repaired:   a row whose boxes carry no arrow between them is a set of peers, and wraps to as many
+            lines as the column gives it, so it holds any number of boxes and the outside-the-system
+            row draws as two lines of four. A row with arrows reads in one direction and still holds
+            one line, and below 980px, which is under the width the longest of them needs, every row
+            stacks and its arrows turn down. Boxes are laid from a 210px basis rather than from
+            zero, which is what puts four on a line and not five; within a row every box still takes
+            the same width, because every basis in a row is equal.
+Stored:     nothing, and no verdict moves. The edit is the document's stylesheet and a check over
+            it. No migration, no store write, no claim in section 17 and no placement.
+Missed:     nothing read what the document is drawn at. `architecture-conformance` reads every
+            figure's boxes and what each says, and a box whose text no reader can reach reads
+            exactly as one whose text they can. The population that check states is the boxes the
+            document holds, which was right and was never a width.
+Guarded:    `figure-fits`, rostered from this entry. Every row of every box figure is measured
+            against the column it is drawn in at the narrowest width it still holds one line, from
+            the stylesheet's own numbers: the column, the side padding, the figure's border and
+            padding, the band's, the gap, a box's minimum, an arrow's font size and padding, and the
+            width below which rows stack. A number the stylesheet stops declaring refuses rather
+            than reading as zero, because a column of zero passes nothing and a width of zero passes
+            everything. A set of peers is exempt and the two rules that exemption rests on, the one
+            that wraps it and the one that stacks every row when narrow, are read rather than
+            assumed. An arrow is bounded by the size it is set at, which is above the 18px of its
+            21px that it measures, so the bound errs into refusing.
+Expected:   derived: the arithmetic the check computes was checked against the document laid out in
+            a browser at nine window widths, 2560, 1600, 1260, 1100, 1000, 979, 820, 500 and 390,
+            with each row's last box measured against the figure's own inner edge. Before the
+            repair the outside-the-system row stood 108px past it at every width at or above 1196,
+            257px at 1024 and 461px at 820, where the five-box row stood 146px past it as well.
+            After it no row at any of the nine stands past the edge, the outside-the-system row
+            draws as two lines of four from 1100 up, three from 1000, and eight below the
+            breakpoint. The two instruments are independent: the check computes from the stylesheet
+            and never renders, and the browser renders and reads no constant. The fixture holds no
+            figure and gains nothing.
+Tests:      1023, from 1019. Four added, all in `figure-fits`:
+            `EverySequenceFitsTheColumnItIsDrawnIn`, `ARowWiderThanItsColumnIsReported`,
+            `ABoxAloneFitsTheColumn` and
+            `TheDocumentWrapsASetOfPeersAndStacksEveryRowWhenNarrow`. `ArchitectureFigures.Close` is
+            made internal so the row reader counts a div's depth by the same code the figure reader
+            does rather than by a second copy of it. No file this correction edits is a source
+            either evaluator version or the ladder rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: one mutation per property this correction adds, made
+            where the property is stated, plus one on an input the check reads a number from, since
+            reading the numbers off the stylesheet is itself the property that keeps the check
+            measuring the document rather than the stylesheet it was written against. Predicted:
+            M1 a sixth box added to the arithmetic band's five-box row, which is the defect class
+            itself: `EverySequenceFitsTheColumnItIsDrawnIn` red, naming that row, and
+            `architecture-conformance` red, a box with no placement having no verdict, and nothing
+            else.
+            M2 the rule that wraps a set of peers removed:
+            `TheDocumentWrapsASetOfPeersAndStacksEveryRowWhenNarrow` red on that rule, and nothing
+            else, the fits test measuring sequences only.
+            M3 the width below which rows stack lowered from 980px to 600px:
+            `EverySequenceFitsTheColumnItIsDrawnIn` red and `ARowWiderThanItsColumnIsReported` red
+            on its five-box case, and nothing else.
+            M4 a box's minimum width removed from the stylesheet: all four red, each on the reader
+            refusing a declaration the document no longer makes, and nothing else.
+            Not mutated: the arrow bound, that an arrow is no wider than the size it is set at.
+            Every arrow the document draws measures below it, so no case in the corpus tells the
+            bound from the measurement, which is an unreachable boundary rather than a property left
+            unnamed. Results: filled in below.
+Verified:   filled in below.
+Carried:    nothing owed by this repair.

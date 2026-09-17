@@ -37,6 +37,7 @@ public class CoverageReported
         ["pinned-constants"] = "PinnedConstants",
         ["stated-counts"] = "StatedCounts",
         ["banned-prose"] = "BannedProse",
+        ["figure-fits"] = "FigureFits",
         ["coverage-reported"] = "CoverageReported",
         ["clock-usage"] = "ClockUsage",
         ["path-casing"] = "PathCasing",

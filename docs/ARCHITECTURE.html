@@ -55,7 +55,12 @@
   .svgfig{margin:14px 0 10px;padding:16px 10px 6px}
   .svgfig figcaption{font-size:13px;color:var(--muted);padding-top:10px;text-align:center}
   .row{display:flex;align-items:stretch;gap:9px;flex-wrap:nowrap;margin-bottom:9px}
-  .box{background:var(--boxbg);border:1px solid var(--rule);border-left:5px solid var(--faint);padding:8px 10px;min-width:135px;font-size:12.8px;line-height:1.36;flex:1}
+  .box{background:var(--boxbg);border:1px solid var(--rule);border-left:5px solid var(--faint);padding:8px 10px;min-width:135px;font-size:12.8px;line-height:1.36;flex:1 1 210px}
+  /* A row whose boxes carry no arrows between them is a set of peers rather than a
+     sequence, so it wraps onto as many lines as the column gives it. A row with arrows
+     reads in one direction and is turned on its side by the narrow rule below instead,
+     because wrapping it would run the sequence left to right and then start again. */
+  .row:not(:has(.arrow)){flex-wrap:wrap}
   .box b{display:block;font-size:13.2px;margin-bottom:2px}
   .box.src{border-left-color:var(--src)} .box.compute{border-left-color:var(--compute)} .box.research{border-left-color:var(--research)} .box.serve{border-left-color:var(--serve)} .box.check{border-left-color:var(--check)}
   .box.store{border-left-color:var(--store);border-top:3px solid var(--store)}
@@ -63,6 +68,14 @@
   .down{text-align:center;font-size:21px;color:var(--muted);line-height:1;margin:-2px 0 6px}
   .band{border:1px dashed var(--rule);padding:10px;margin-bottom:10px}
   .band .lbl{font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:none}
+  /* Below the width the longest sequence needs, every row stacks and the arrows
+     between the boxes point down instead of across. */
+  @media (max-width:980px){
+    .row{flex-wrap:wrap}
+    .box{flex:1 1 100%}
+    .arrow{flex:0 0 100%;align-self:auto;text-align:center;font-size:0;padding:2px 0}
+    .arrow::after{content:"↓";font-size:21px}
+  }
   .key{font-size:13.5px;color:var(--muted);background:var(--panel);border-left:3px solid var(--rule);padding:11px 15px;margin:6px 0 18px;max-width:none}
   .key p{max-width:none;margin-bottom:7px}
   .key p:last-child{margin-bottom:0}
