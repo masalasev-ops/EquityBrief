@@ -299,8 +299,8 @@ public static class Nightly
                 var outcome = await new ForwardReturnFiller(clock, store.DatabaseFile)
                     .RunAsync(runId, night.Token);
 
-                return $"{outcome.RowsWritten} row(s) over {outcome.ListingsExamined} listing(s), " +
-                    $"{outcome.Matured} matured, {outcome.Immature} not yet matured";
+                return $"{outcome.RowsWritten} row(s) written over {outcome.ListingsExamined} listing(s), {outcome.Kept} kept as decided, " +
+                    $"{outcome.Matured} newly matured, {outcome.Immature} not yet matured";
             }),
             // Section 14's step 15. One dated query, paged until the day is
             // covered, fanned out to names in code.

@@ -122,11 +122,12 @@ public static class ForwardReturnSeries
         decimal? stop,
         decimal? target,
         decimal? entryHigh = null,
-        decimal? closeAtListing = null)
+        decimal? closeAtListing = null,
+        decimal? rawCloseAtListing = null)
     {
         // A listing with no plan has no setup to resolve. That is an absence
         // rather than an unresolved setup, and the two are counted differently.
-        if (stop is not { } floor || target is not { } ceiling)
+        if (stop is not { } storedStop || target is not { } storedTarget)
         {
             return new ForwardReturn(Setup, null, null, null);
         }
@@ -143,13 +144,22 @@ public static class ForwardReturnSeries
         // A plan whose stop sits at or above its target is not a plan, and a
         // setup scored against one would be scored against whichever branch ran
         // first. It refuses rather than resolving.
-        if (floor >= ceiling)
+        if (storedStop >= storedTarget)
         {
             throw new InvalidOperationException(
-                $"The stored plan has its stop at {floor} and its target at {ceiling}. A stop at or " +
+                $"The stored plan has its stop at {storedStop} and its target at {storedTarget}. A stop at or " +
                 "above the target is not a plan, and which of the two a session reached would be " +
                 "decided by the order the rules are written in rather than by the series.");
         }
+
+        // The plan keeps the scale the series had on the listing night, and a split
+        // or dividend since restates the stored closes and not the plan.
+        // see: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor
+        var restated = closeAtListing is { } adjusted && rawCloseAtListing is { } raw ? adjusted / raw : 1m;
+
+        var floor = storedStop * restated;
+        var ceiling = storedTarget * restated;
+        var zoneTop = entryHigh * restated;
 
         // A plan with no entry zone is scored from the listing, as every setup was
         // until 8.1. Nothing the shortlist builder writes is such a plan, and the
@@ -159,7 +169,7 @@ public static class ForwardReturnSeries
 
         if (closeAtListing is { } listed)
         {
-            entry = entryHigh is { } top
+            entry = zoneTop is { } top
                 ? listed <= top && listed >= floor ? listed : null
                 : listed;
         }
@@ -197,7 +207,7 @@ public static class ForwardReturnSeries
                     return new ForwardReturn(Setup, NeverEntered, bar.SessionDate, null);
                 }
 
-                if (entryHigh is { } zoneTop && bar.Close <= zoneTop)
+                if (zoneTop is { } edge && bar.Close <= edge)
                 {
                     entry = bar.Close;
                 }

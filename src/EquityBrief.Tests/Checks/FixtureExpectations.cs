@@ -3689,6 +3689,21 @@ public partial class FixtureExpectations
 
         Assert.Equal(ForwardReturnSeries.Unresolved, Score(120m, late).Outcome);
 
+        // Nothing past the cap is read: a target reached after it leaves the setup
+        // unresolved on the cap's own session and close.
+        var past = constructed.GetProperty("pastTheCap");
+        var capped = Score(
+            decimal.Parse(past.GetProperty("listedAt").GetString()!, CultureInfo.InvariantCulture),
+            [.. past.GetProperty("runs").EnumerateArray().SelectMany(run => Enumerable.Repeat(
+                decimal.Parse(run.GetProperty("close").GetString()!, CultureInfo.InvariantCulture),
+                run.GetProperty("sessions").GetInt32()))]);
+
+        Assert.Equal(ForwardReturnSeries.SetupSessionCap, past.GetProperty("resolvedOnSession").GetInt32());
+        Assert.Equal(past.GetProperty("outcome").GetString(), capped.Outcome);
+        Assert.Equal(DateOnly.ParseExact(past.GetProperty("resolvedOn").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture), capped.ResolvedOn);
+        Assert.Equal(past.GetProperty("returnPct").GetDouble(), capped.ReturnPct!.Value, 6);
+        Assert.Equal(past.GetProperty("breakEven").GetDouble(), capped.BreakEven!.Value, 6);
+
         // Short of the cap and still open is not yet matured, which is neither.
         Assert.Null(Score(100m, 100m, 100m).Outcome);
         Assert.Null(Score(120m, 105m, 105m).Outcome);

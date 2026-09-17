@@ -25,6 +25,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - SCHEMA.md - `resolved_on` names the session a row resolved on
+Corrects: the note said null while unresolved, where the filler has written the cap's own session on a setup unresolved at the cap since 5.5; found while designing the 5.5 correction.
+
+Was:
+> | `resolved_on` | TEXT | date, null while unresolved |
+
+Now: the note names the session a horizon matured or a setup resolved on, the cap's own session for a setup timed out, and null while not yet matured.
+
+Why: unresolved at the cap is an outcome with a session, and a note reading null for it describes a row the filler never writes.
+
+### 2026-09-16 - SCHEMA.md - a forward return written until it is decided, a plan read at its listing session's adjustment, and the raw close's one reader
+Authorised by: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor
+
+Was:
+> It is written by whichever component writes the bar and is never read by the arithmetic that draws or computes: those read the adjusted set.
+
+Now: the bar note names the forward return filler as the one reader of `raw_close`, for the factor a stored plan is scaled by, and a paragraph after the forward return notes says a row is written until its outcome is decided and never after, `base_rate` being the one column written over a decided row and a setup in play being scored at the listing session's close over its raw close.
+
+Why: the ruling makes a decided row final and reads the raw close for the first time, so the table that says what each column is for has to say both.
+
+### 2026-09-16 - ARCHITECTURE.html - the filler reads the rows it has written, and section 17's setup resolution states the plan's scale and a decided outcome's finality
+Authorised by: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor
+
+Was:
+> <td>listings, bar store</td><td>forward returns</td>, in the Forward return filler's catalogue row, and <td><span class="w">W</span></td> under Forward returns in its matrix row
+>
+> <td>a listed setup starts on the first close at or below its entry zone's top edge and resolves when its target is reached, its stop is closed through, or 63 sessions pass from the listing; a timed-out setup and one whose price never reached that entry are each counted in their own column and never as a win (see: An unresolved setup is never a win) (see: A setup is scored from its entry, and a target reached before the entry is never a win)</td>, and <td>resolution unit tests, one per outcome</td>, in section 17's Setup resolution row
+
+Now: the catalogue row reads listings, bar store and forward returns, and the matrix cell reads R W; the setup resolution row adds that the plan is read at the listing session's adjustment and a decided outcome is never written again, and its assertion cell adds the filler's stored rows over constructed stores restated and cut back after the listing.
+
+Why: the filler now reads the rows it wrote to decide which it leaves alone, which its declaration, catalogue row and matrix cell have to agree on, and section 17 is where a setup's resolution is stated.
+
 ### 2026-09-16 - .claude/rules/checks.md - the guardrails held clause by clause, the loop's silence asserted over a night, and a live reason refused at the register
 
 Corrects: `architecture-conformance` held each 13.3 guardrail to one test by name alone, and three of the eight named tests about something else; the loop's changed-nothing assertion was made over two empty lists; and nothing refused a live reason's name at the register, where section 17 says a live condition is retired only at a higher floor. Found by the building session while writing phase 8's sign-off handoff.

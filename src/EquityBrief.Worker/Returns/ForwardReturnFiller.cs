@@ -8,7 +8,7 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Returns;
 
-public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten, int Matured, int Immature);
+public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten, int Matured, int Immature, int Kept);
 
 // The forward return filler. Fills the five and twenty-one session outcomes of
 // past listings as those sessions mature, and computes the universe base rate
@@ -18,6 +18,7 @@ public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten,
 // over the whole population and a per-name pass would compute it once per name
 // from the same rows.
 // see: Every forward-return figure is shown against the universe base rate
+// see: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor
 public sealed class ForwardReturnFiller : IComponent
 {
     public static ComponentAccess Access => new(
@@ -25,19 +26,19 @@ public sealed class ForwardReturnFiller : IComponent
         [
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
-            new StoreTouch(Store.ForwardReturn, Touch.Insert | Touch.Update),
+            new StoreTouch(Store.ForwardReturn, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
 
     public const string Stage = "forward-returns";
 
-    // Every listing, oldest first, because a horizon matures as sessions are
-    // added and the oldest are the ones that have.
+    // Every listing with the rows already written for it, oldest first.
     const string EveryListing = @"
-        SELECT ticker, session_date, plan_at_listing
-        FROM listing
-        ORDER BY session_date, ticker;
+        SELECT l.ticker, l.session_date, l.plan_at_listing, f.horizon, f.outcome
+        FROM listing l
+        LEFT JOIN forward_return f ON f.ticker = l.ticker AND f.session_date = l.session_date
+        ORDER BY l.session_date, l.ticker;
     ";
 
     // The sessions after a listing's own, in order, which is what a horizon is
@@ -48,11 +49,12 @@ public sealed class ForwardReturnFiller : IComponent
         SELECT session_date, close
         FROM bar
         WHERE ticker = $ticker AND session_date > $session_date
-        ORDER BY session_date;
+        ORDER BY session_date
+        LIMIT $sessions;
     ";
 
     const string CloseOn = @"
-        SELECT close
+        SELECT close, raw_close
         FROM bar
         WHERE ticker = $ticker AND session_date <= $session_date
         ORDER BY session_date DESC
@@ -98,6 +100,8 @@ public sealed class ForwardReturnFiller : IComponent
         this.databaseFile = databaseFile;
     }
 
+    sealed record Listing(string Ticker, string SessionDate, string Plan, Dictionary<string, string?> Outcomes);
+
     public async Task<ForwardReturnOutcome> RunAsync(string runId, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
@@ -105,7 +109,7 @@ public sealed class ForwardReturnFiller : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
-        var listings = new List<(string Ticker, string SessionDate, string Plan)>();
+        var listings = new List<Listing>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -115,12 +119,21 @@ public sealed class ForwardReturnFiller : IComponent
 
             while (await reader.ReadAsync(cancellation))
             {
-                listings.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+                var (ticker, session) = (reader.GetString(0), reader.GetString(1));
+
+                if (listings.Count == 0 || listings[^1].Ticker != ticker || listings[^1].SessionDate != session)
+                {
+                    listings.Add(new Listing(ticker, session, reader.GetString(2), new Dictionary<string, string?>(StringComparer.Ordinal)));
+                }
+
+                if (!reader.IsDBNull(3))
+                {
+                    listings[^1].Outcomes[reader.GetString(3)] = reader.IsDBNull(4) ? null : reader.GetString(4);
+                }
             }
         }
 
-        var written = 0;
-        var matured = 0;
+        var (written, matured, immature, kept) = (0, 0, 0, 0);
         var byHorizon = ForwardReturnSeries.Horizons.ToDictionary(
             horizon => horizon,
             _ => new List<string?>(),
@@ -140,34 +153,65 @@ public sealed class ForwardReturnFiller : IComponent
 
         foreach (var listing in listings)
         {
-            var after = await SessionsAfterAsync(connection, listing.Ticker, listing.SessionDate, cancellation);
-            var listedAt = await CloseOnAsync(connection, listing.Ticker, listing.SessionDate, cancellation);
+            var open = new List<string>();
+
+            foreach (var horizon in ForwardReturnSeries.Horizons)
+            {
+                if (listing.Outcomes.TryGetValue(horizon, out var stored) && Decided(stored))
+                {
+                    byHorizon[horizon].Add(stored);
+                    kept++;
+                }
+                else
+                {
+                    open.Add(horizon);
+                }
+            }
+
+            if (open.Count == 0)
+            {
+                continue;
+            }
+
             var (stop, target, entryHigh) = PlanBounds(listing.Plan);
 
-            var filled = new List<ForwardReturn>
+            // A setup with no plan never resolves, so it alone reads no bars. A
+            // listing whose close the store no longer holds has nothing to measure
+            // from, so it is handed no sessions and stays open.
+            var scorable = open.Any(horizon => horizon != ForwardReturnSeries.Setup || stop is not null && target is not null);
+            var origin = scorable
+                ? await CloseOnAsync(connection, listing.Ticker, listing.SessionDate, cancellation)
+                : null;
+            var after = origin is null
+                ? []
+                : await SessionsAfterAsync(connection, listing.Ticker, listing.SessionDate, cancellation);
+
+            foreach (var horizon in open)
             {
-                ForwardReturnSeries.Over(5, after, listedAt ?? 0m),
-                ForwardReturnSeries.Over(21, after, listedAt ?? 0m),
+                var outcome = horizon switch
+                {
+                    ForwardReturnSeries.Setup => ForwardReturnSeries.OverSetup(
+                        after, stop, target, entryHigh, origin?.Close, RawClose(listing, origin, stop, target)),
+                    _ => ForwardReturnSeries.Over(
+                        int.Parse(horizon, CultureInfo.InvariantCulture), after, origin?.Close ?? 0m),
+                };
 
-                // The entry zone and the listing night's own close, so a setup is
-                // scored from the session the price first reached the entry the
-                // plan named rather than from the listing.
-                // see: A setup is scored from its entry, and a target reached before the entry is never a win
-                ForwardReturnSeries.OverSetup(after, stop, target, entryHigh, listedAt),
-            };
+                if (!listing.Outcomes.ContainsKey(horizon) || outcome.Outcome is not null)
+                {
+                    await WriteAsync(connection, transaction, listing.Ticker, listing.SessionDate, outcome, cancellation);
+                    written++;
+                }
 
-            foreach (var outcome in filled)
-            {
-                await WriteAsync(connection, transaction, listing.Ticker, listing.SessionDate, outcome, cancellation);
-
-                byHorizon[outcome.Horizon].Add(outcome.Outcome);
-
-                written++;
-
-                if (outcome.Outcome is not null)
+                if (outcome.Outcome is null)
+                {
+                    immature++;
+                }
+                else
                 {
                     matured++;
                 }
+
+                byHorizon[horizon].Add(outcome.Outcome);
             }
         }
 
@@ -196,10 +240,23 @@ public sealed class ForwardReturnFiller : IComponent
 
         await transaction.CommitAsync(cancellation);
 
-        await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, cancellation);
+        await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, immature, kept, cancellation);
 
-        return new ForwardReturnOutcome(listings.Count, written, matured, written - matured);
+        return new ForwardReturnOutcome(listings.Count, written, matured, immature, kept);
     }
+
+    static bool Decided(string? outcome) => outcome is not null;
+
+    // Every writer stores a raw close beside the adjusted one, so a listing bar
+    // without one is a fault in the store rather than a setup to score.
+    static decimal? RawClose(Listing listing, (decimal Close, decimal? RawClose)? origin, decimal? stop, decimal? target) =>
+        origin is not { } bar || stop is null || target is null
+            ? null
+            : bar.RawClose is { } raw && raw > 0
+                ? raw
+                : throw new InvalidOperationException(
+                    $"{listing.Ticker}'s bar for the listing of {listing.SessionDate} carries no raw close above " +
+                    "zero, so the adjustment its plan is scored at cannot be read.");
 
     // The stop, the first traded target and the entry zone's top edge as they
     // stood the night of the listing. Bars can be replayed and the plan cannot,
@@ -265,6 +322,7 @@ public sealed class ForwardReturnFiller : IComponent
         command.CommandText = SessionsAfter;
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$session_date", sessionDate);
+        command.Parameters.AddWithValue("$sessions", ForwardReturnSeries.SetupSessionCap);
 
         var bars = new List<ReturnBar>();
 
@@ -280,7 +338,7 @@ public sealed class ForwardReturnFiller : IComponent
         return bars;
     }
 
-    static async Task<decimal?> CloseOnAsync(
+    static async Task<(decimal Close, decimal? RawClose)?> CloseOnAsync(
         SqliteConnection connection,
         string ticker,
         string sessionDate,
@@ -292,8 +350,10 @@ public sealed class ForwardReturnFiller : IComponent
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$session_date", sessionDate);
 
-        return await command.ExecuteScalarAsync(cancellation) is string close
-            ? Money.FromStorage(close)
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation)
+            ? (Money.FromStorage(reader.GetString(0)), reader.IsDBNull(1) ? null : Money.FromStorage(reader.GetString(1)))
             : null;
     }
 
@@ -304,6 +364,8 @@ public sealed class ForwardReturnFiller : IComponent
         int listings,
         int written,
         int matured,
+        int immature,
+        int kept,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -316,12 +378,13 @@ public sealed class ForwardReturnFiller : IComponent
         command.Parameters.AddWithValue("$outcome", "ok");
         command.Parameters.AddWithValue("$rows_written", written);
 
-        // The immature count beside the matured one, because a night that
-        // matured nothing and a night that wrote nothing are different nights
-        // and a single total hides which.
+        // The kept and immature counts beside the matured one, because a night that
+        // matured nothing and a night that wrote nothing are different nights and a
+        // single total hides which.
         command.Parameters.AddWithValue(
             "$detail",
-            $"{listings} listing(s), {written} row(s), {matured} matured, {written - matured} not yet matured");
+            $"{listings} listing(s), {written} row(s) written, {kept} kept as decided, " +
+            $"{matured} newly matured, {immature} not yet matured");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

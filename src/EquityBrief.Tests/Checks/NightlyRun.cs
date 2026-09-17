@@ -1060,6 +1060,15 @@ public class NightlyRun
         Assert.Contains($"fetch: {current} rows written for {current} member(s)", first, StringComparison.Ordinal);
         Assert.Contains("1 request(s)", first, StringComparison.Ordinal);
 
+        // Every listing is new and none has a session after it, so each of its three
+        // horizons is written and none has matured.
+        var listings = Scalar(store, "SELECT COUNT(*) FROM listing;");
+
+        Assert.Contains(
+            $"forward-returns: {3 * listings} row(s) written over {listings} listing(s), 0 kept as decided, 0 newly matured, {3 * listings} not yet matured",
+            first,
+            StringComparison.Ordinal);
+
         // Stated, because the two derivations above would agree at zero.
         Assert.Equal(FixtureExpectation.Constituents, populations.Constituents);
         Assert.Equal(FixtureExpectation.CurrentMembers.Length, current);
@@ -1072,6 +1081,13 @@ public class NightlyRun
         Assert.Equal(0, code);
         Assert.Contains("backfill: 0 rows written over 0 request(s)", second, StringComparison.Ordinal);
         Assert.Contains("fetch: 0 rows written", second, StringComparison.Ordinal);
+
+        // The same session again: nothing has matured, so a row still not yet matured
+        // is not written a second time.
+        Assert.Contains(
+            $"forward-returns: 0 row(s) written over {listings} listing(s), 0 kept as decided, 0 newly matured, {3 * listings} not yet matured",
+            second,
+            StringComparison.Ordinal);
     }
 
     [Fact]
