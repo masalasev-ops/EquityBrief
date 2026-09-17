@@ -29,17 +29,9 @@ public sealed record NightFeeds(
         Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests
         + Calendar.Requests + News.Requests;
 
-    // The same night in the units the provider bills in.
-    //
-    // A request is not a request: the bulk file weighs a hundred, a ticker's
-    // history weighs one and the constituents come through the fundamentals
-    // endpoint at ten. A night counted in requests alone says four where the
-    // provider says two hundred and twelve, and `RUNBOOK.md` states an allowance
-    // in the second unit that no code read.
-    //
-    // Composed from the roles rather than declared on each feed, because the
-    // role is what decides the endpoint and this record is the one place that
-    // knows all four.
+    // The same night in the units the provider bills in, which is the unit
+    // `RUNBOOK.md` states the allowance in. Composed from the roles rather than
+    // declared on each feed, because the role decides the endpoint.
     // see: The night's cost is counted in weighted calls against the stated daily allowance
     public int WeightedCalls =>
         (Membership.Requests * ProviderWeights.Fundamentals)
