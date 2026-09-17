@@ -154,14 +154,11 @@ public static class Admissibility
         "model projects the price",
     ];
 
-    // A page that exists to open an account.
+    // A page that exists to open an account: one carrying a regulatory risk
+    // warning, or a leveraged product beside an invitation to open one.
     //
-    // The regulatory risk warning is the reliable half and one occurrence is
-    // enough: no article in the captured set warns its own reader about losing
-    // money, and the two forms below are verbatim from the broker page the
-    // measurement read. The invitations are the other half and two of different
-    // kinds are required, because a single "sign up" is in the navigation of half
-    // the web.
+    // The warning is the reliable half, because no article in the captured set
+    // warns its own reader about losing money.
     //
     // An invitation on its own is not the other half, and the live run at 6.3 is
     // why. Over 411 real articles from one dated request, the rule as first
@@ -188,7 +185,12 @@ public static class Admissibility
     // and the preference for primary sources below is what a pass reaches for
     // instead.
     static bool IsMarketing(string text) =>
-        Names(text, RiskWarnings) || (Names(text, LeveragedProducts) && Invitations(text) >= 1);
+        RiskWarningsIn(text) >= RiskWarningsThatRefuse
+        || (NamesALeveragedProduct(text) && Invitations(text) >= InvitationsBesideAProduct);
+
+    public const int RiskWarningsThatRefuse = 1;
+
+    public const int InvitationsBesideAProduct = 1;
 
     // The products a page of this kind sells, which is the half an article about
     // saving does not carry. Both spellings of the first, because the plural is
@@ -212,6 +214,13 @@ public static class Admissibility
         "your capital is at risk",
         "spread bets and cfds",
     ];
+
+    public static bool NamesALeveragedProduct(string text) => Names(text, LeveragedProducts);
+
+    // Each warning above counted once however often a text writes it, so one
+    // sentence carrying two of them counts two.
+    public static int RiskWarningsIn(string text) =>
+        RiskWarnings.Count(warning => text.Contains(warning, StringComparison.OrdinalIgnoreCase));
 
     // One row per kind of invitation, each row the ways that kind is written. A
     // page asking twice in one way asked once.
