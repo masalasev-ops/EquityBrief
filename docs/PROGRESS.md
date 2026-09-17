@@ -12382,3 +12382,151 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    nothing owed by this repair. Noted, because the ruling leaves them as written: the 8 rows
             under Stored. A name whose refetch failed keeps its bars unrestated and its plan at a factor
             of one, so its setups are scored over its stored series as its levels are.
+
+### 8.3 - correction: a name retired and registered again stands once, a replace refused by the table, a value that is not a finite number refused, and the version pinned to every source an evaluation runs through   2026-09-16
+Corrects:   the 8.3 entry above, in five places. Its Built line says the two triggers make "the
+            refusal holds against anything that opens the file and not only against the one
+            component SCHEMA gives an insert to"; the refusal held against an update and a delete,
+            and not against a replace, which removed a registered row and wrote another in its place
+            past both triggers. Its Rules line says "A candidate stands registered by the last row
+            naming it rather than the first"; that held for what the shadow column evaluates and not
+            for the divisor, the run page's count or the maximum of eight, which took every name
+            ever retired away from every name ever registered, so a name retired and registered
+            again was evaluated every night, counted nowhere, and left room for a ninth candidate.
+            Its Rules line also says "both halves read before rather than at or after"; that held to
+            the second the register stores and not inside it, where a registration a fraction of a
+            second after a night started read as before it. Its Expected line says of the fourth
+            worked divisor "The last is the case the rule is about and the one a divisor counting
+            what stands now rather than what stood then would get wrong"; the last is the case a
+            divisor that does not subtract a retirement gets wrong, at 2 rather than 1, and a divisor
+            counting what stands now reads the same there and is caught by the first and the third,
+            at 1 rather than 0 and at 1 rather than 2. Its Tested line says "Twelve added, all under
+            the new roster row but one", "the divisor over hand-worked rows at four instants and
+            what stands at three" and "The one outside the row is in `architecture-conformance`,
+            below"; twelve were added, all under the new roster row and all in `RegisterAppendOnly`,
+            the `architecture-conformance` change described under Amended rewrote an existing test
+            and added none, and the hand-worked test reads the divisor at three instants and what
+            stands at two. And the pin it describes, a hash of the evaluator's own source, is
+            superseded: a registered rule is decided by more than that file.
+Found:      by the phase 8 sign-off review on 2026-09-16, reproducing each through the registrar,
+            the read API and the run page, and probing SQLite's replace against migration 25's own
+            SQL. The operator ruled on 2026-09-16 that every finding, gap and wording slip is
+            corrected before a sign-off handoff. Labelled for the checkpoint that built the register.
+Measured:   read immutable from the operator's store after the night of 2026-09-16:
+            `user_version` 26 and 0 rows in `candidate_register`. No candidate has
+            been registered, so no night has evaluated one, counted one or stored one under a version
+            this correction moves.
+Repaired:   a candidate stands by the last row naming it, and the divisor, the maximum, the shadow
+            column and the run page read that one rule from `CandidateFamily`, so a name retired and
+            registered again stands once (see: A candidate stands by the last row naming it, and a
+            name retired and registered again stands once). A question about what stood before an
+            instant takes the instant to the second the register holds, and a row in that second is
+            read as after it (see: A register row in the same second as the instant it is compared
+            with is read as after it). Migration 27 adds a third trigger refusing an insert whose id
+            the register already holds, which is what a replace is, whatever its conflict clause and
+            with recursive triggers off or on; the source reader the checks share reads a replace as
+            the removal it is, and reads an update with a conflict clause or an alias and a table
+            behind its schema, so `bar-append-only` and `writer-ownership` see the same forms. The
+            registrar refuses a parameter value that is not a finite number, with the attempt on the
+            run log. An evaluator's version is the pin of its own source and the eight sources that
+            decide a value it reads or the verdict it returns, from a stored bar's text to the
+            verdict, listed in `CandidateEvaluator` (see: A registration names an evaluator the code
+            carries, and its version is the pin of every source its evaluation runs through), so both
+            versions move: `momentum-index-reading` from 1b8c888756cb to ee3854c439ec, and
+            `momentum-histogram-turn` from 65bf66406075 to c8dc4dd4300b. Section 18's row for an edit to a
+            register row says the run log records an attempt made through the registrar and that one
+            made against the file writes nothing, the run log included, because the refusal rolls
+            back the statement. The registrar's comment that the table has no row id alias is
+            corrected: the id is the row id.
+Stored:     nothing to keep or rewrite. The register holds no row in the operator's store, and
+            migration 27 creates a trigger over an empty table on the next night's migrate step.
+Missed:     by the populations the checks read. No test and no fixture row registered a retired
+            name again; the two-routes test's store held no retirement and its query restated the
+            reader's name-set rule; the store test tried a plain update and a plain delete and the
+            source reader read `INSERT OR REPLACE` as an insert and `REPLACE INTO` as nothing; no
+            test handed the registrar a value that is not a number; the pin test read one file; and
+            every instant a test compared was a whole second.
+Guarded:    through the registrar, seven candidates and a name retired and registered again: the
+            second registration accepted as a family of 8 of 8, a ninth refused, the divisor at 8,
+            the shadow column standing the second registration, and the run page drawing 8. Over
+            hand-worked rows, the name registered again once and a registration in the second the
+            window opened read as after it, with the shadow column agreeing with the divisor at five
+            instants. Over a store holding a retirement, a name registered again and rows after the
+            window, the divisor by the reader and by a query stating the rule as registrations no
+            later row names, at six instants, with a set of names less retired names shown to answer
+            differently. Five forms of replace and upsert against a migrated store with recursive
+            triggers off and on, each refused with the register unchanged, nothing on the run log and
+            a new id still appended. The same forms read as removals from source, and a replace into
+            `bar` read as a delete. NaN, infinity and negative infinity each refused with a run log
+            row and no register row, and the largest finite values and zero admitted. Every
+            evaluator's version against the pin of its nine sources, every source moving it, exactly
+            one line left out, every shipped file that computes a reading or runs an evaluation among
+            them, and each listed file the file of a type the evaluation calls. `Drifted` asked of
+            the registration a name stands by, over a name registered again each way round and over
+            the fixture's register.
+Expected:   derived. `candidate-register.json` registers the index reading again at 22:20:00 after its
+            22:10:00 retirement and works two more divisors by hand: 2 at 22:25:00, the index reading
+            standing once beside the histogram turn, where a set of names registered less names
+            retired gives 1; and 1 at 22:20:00.400, the registration in that second read as after the
+            window. The four divisors 8.3 worked are unchanged, and 22:25:00 adds the index reading
+            standing again.
+Amended:    this correction amends its own done condition: 8.3's now reads an update, a delete and a
+            replace each refused at the store, the divisor matching the candidates standing before
+            the window opened with a name retired and registered again counted once, and an
+            evaluator whose evaluation's sources moved without its version failing. The old
+            condition was met by a store that let a replace through, a divisor that dropped a name
+            registered again and a pin over one file, which is a condition narrower than its clause.
+Tests:      992, from 990. Two added to `register-append-only`: a value that is not a finite number
+            refused at the write, and a name retired and registered again standing once in the
+            divisor, the maximum and the run page. Five rewritten there: the store refusal reaching a
+            replace, the hand-worked divisor, the two routes, the drift reader, and the version pin,
+            renamed `EveryEvaluatorsVersionIsThePinOfTheSourcesItsEvaluationRunsThrough`; and the
+            source half and the fixture test widened. One widened in `bar-append-only`: a replace
+            into `bar` read as a delete.
+Mutated:    the rule, stated before the sweep: break each property the findings were about, in the
+            code or the reader that carries it, being the last-row rule in the divisor, the store's
+            refusal of a replace, the reading of a replace in source, the second the register holds,
+            and the pin's reach over the sources an evaluation runs through. The finite-value
+            refusal, the maximum counting a name once, the run log staying empty on a refused
+            statement and the scan over the evaluation path are named and not mutated. Predicted:
+            M1 `CandidateFamily.Divisor` counting the names registered before the instant less the
+            names retired before it, the instant still taken to the second: red, the hand-worked
+            divisor test at 2 rather than 3, the name registered again test on the divisor at 7
+            rather than 8, the two-routes test at the window, 1 against 2, and the fixture test at
+            22:25:00, 1 against 2; and nothing else, since the maximum reads `Standing` and no other
+            test registers a name twice.
+            M2 migration 27's trigger never firing, its condition made false: red, the store
+            refusal test on the first replace being accepted, and nothing else.
+            M3 a replace read by `SourceStatements.In` as an insert rather than a removal: red, the
+            source half on `INSERT OR REPLACE` read as an insert alone, and `bar-append-only`'s
+            `ADeleteInAFileTheSchemaDoesNotNameStillFails` on the replace into `bar` finding no
+            offence; and nothing else, since no shipped statement is a replace.
+            M4 `CandidateFamily.StandingBefore` comparing the instant as given rather than taken to
+            the second: red, the hand-worked divisor test at 4 rather than 3 at 400 milliseconds, the
+            two-routes test at 500 milliseconds, 2 against 1, and the fixture test at 22:20:00.400,
+            2 against 1; and nothing else, since every other instant compared is a whole second.
+            M5 a comment line added to `ShortlistBuilder.cs` with neither version raised: red, the
+            version pin test, and nothing else.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Six runs of the whole suite, never a filter, at this entry's commit, each
+            in its own detached worktree under the session scratchpad, with the tree read after to hold
+            only the mutated file and the worktree removed. The baseline is 991 of 992 with one red, and
+            that red is this entry: `two-platform` reads every checkpoint entry written since the 7.2
+            ruling for its Windows record, and this one carried a placeholder until the run below
+            filled it, so each count that follows is on top of it.
+            M1 turned 4 red: the hand-worked divisor test, the name registered again test, the
+            two-routes test and the fixture test. M2 turned 1 red: the store refusal test. M3 turned 2
+            red: the source half and `bar-append-only`'s delete in a file the schema does not name. M4
+            turned 3 red: the hand-worked divisor test, the two-routes test and the fixture test. M5
+            turned 1 red: the version pin test.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 992 of 992 tests ran
+            with none failed, migrations 0 to 27 with one added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: three
+            verdict notes are rewritten and no placement changes. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair. Noted, because it is the cost the decision buys: every later
+            edit to one of the nine sources an evaluation runs through moves both versions, the pin
+            test names the value to write, and once candidates are registered each is skipped on the
+            listings row until retired and registered again.

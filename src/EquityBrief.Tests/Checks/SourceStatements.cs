@@ -24,10 +24,11 @@ internal sealed record SourceWrite(string Operation, string Table, string Statem
 // and every operation at once.
 //
 // So the match is on the shape of SQL rather than on words that appear in it.
-// INSERT INTO a table, UPDATE a table SET, DELETE FROM a table, DROP TABLE a
-// table. None of those shapes occurs in prose or in an identifier list, and each
-// names its own table, so a statement touching two tables is read as touching
-// both rather than as touching whichever the regex reached first.
+// INSERT or REPLACE INTO a table, UPDATE a table SET, DELETE FROM a table, DROP
+// TABLE a table, with the conflict clause and schema SQLite accepts on each. None
+// of those shapes occurs in prose or in an identifier list, and each names its own
+// table, so a statement touching two tables is read as touching both rather than
+// as touching whichever the regex reached first.
 internal static class SourceStatements
 {
     // The operations SCHEMA declares ownership for, plus drop, which only
@@ -37,16 +38,20 @@ internal static class SourceStatements
     internal const string Delete = "Delete";
     internal const string Drop = "Drop";
 
-    // A table name, optionally quoted, as SQLite accepts it.
-    const string Name = @"[""`\[]?([A-Za-z_][A-Za-z0-9_]*)[""`\]]?";
+    // A table name, optionally quoted and optionally behind its schema, as SQLite accepts it.
+    const string Name = @"(?:[""`\[]?[A-Za-z_][A-Za-z0-9_]*[""`\]]?\.)?[""`\[]?([A-Za-z_][A-Za-z0-9_]*)[""`\]]?";
 
     static readonly (string Operation, Regex Pattern)[] Shapes =
     [
-        (Insert, new Regex(@"\binsert\s+(?:or\s+\w+\s+)?into\s+" + Name, Options)),
-        (Update, new Regex(@"\bupdate\s+" + Name + @"\s+set\b", Options)),
+        (Insert, new Regex(@"\b(?:insert\s+(?:or\s+\w+\s+)?|replace\s+)into\s+" + Name, Options)),
+        (Update, new Regex(@"\bupdate\s+(?:or\s+\w+\s+)?" + Name + @"(?:\s+as\s+\w+|\s+indexed\s+by\s+\w+|\s+not\s+indexed)?\s+set\b", Options)),
         (Delete, new Regex(@"\bdelete\s+from\s+" + Name, Options)),
         (Drop, new Regex(@"\bdrop\s+table\s+(?:if\s+exists\s+)?" + Name, Options)),
     ];
+
+    // A replace removes the row it conflicts with before writing its own, so the table it
+    // names is deleted from as well, whichever statement carries the clause.
+    static readonly Regex Replaces = new(@"\b(?:insert\s+or\s+replace\s+into|replace\s+into|update\s+or\s+replace)\s+" + Name, Options);
 
     // An upsert names its table once, at the top, and the update it performs has
     // no table beside it. Without this the declared Update behind an upsert
@@ -75,6 +80,10 @@ internal static class SourceStatements
                     .Matches(statement)
                     .Select(match => new SourceWrite(operation, match.Groups[1].Value, trimmed)));
             }
+
+            writes.AddRange(Replaces
+                .Matches(statement)
+                .Select(match => new SourceWrite(Delete, match.Groups[1].Value, trimmed)));
 
             if (!UpsertUpdate.IsMatch(statement))
             {

@@ -764,11 +764,11 @@ The figure crosses from prices in decimal to a statistic in double, so it goes t
 ### 8.3 The candidate register
 Migration creating `candidate_register`, append only. Registration before scoring, with the rule, the test and the date.
 
-A registered candidate names an evaluator the code carries and the parameters it is evaluated with, so the register says what will run rather than describing it. The evaluator carries its own version, a test pins that version to a hash of the evaluator's source with line endings normalised and any leading byte order mark removed, and a candidate whose evaluator has moved on is a new registration rather than an edited row. A row registered after a night's start is not evaluated by that night.
+A registered candidate names an evaluator the code carries and the parameters it is evaluated with, so the register says what will run rather than describing it. The evaluator carries its own version, a test pins that version to the pin of the evaluator's source and every source its evaluation runs through with line endings normalised and any leading byte order mark removed, and a candidate whose evaluation has moved on is a new registration rather than an edited row (see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through). A row registered after a night's start is not evaluated by that night.
 
-The family is at most eight and the correction divides the threshold by the rows registered before the window opened (see: The candidate family is at most eight and the threshold is divided by it).
+The family is at most eight and the correction divides the threshold by the candidates standing before the window opened, a name retired and registered again once (see: The candidate family is at most eight and the threshold is divided by it) (see: A candidate stands by the last row naming it, and a name retired and registered again stands once).
 
-**Done when** an update and a delete are both refused at the store, a retirement is a new row naming what it retires, the correction divisor matches the rows registered before the window opened, an evaluator whose source moved without its version fails, and `register-append-only` runs on every CI run from here.
+**Done when** an update, a delete and a replace are each refused at the store, a retirement is a new row naming what it retires, the correction divisor matches the candidates standing before the window opened with a name retired and registered again counted once, an evaluator whose evaluation's sources moved without its version fails, and `register-append-only` runs on every CI run from here.
 
 ### 8.4 The shadow column
 Registered candidates evaluated nightly on every name-night exactly as live reasons are, written to the shadow column.

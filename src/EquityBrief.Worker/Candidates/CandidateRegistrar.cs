@@ -21,8 +21,8 @@ public sealed record RegistrationOutcome(string Outcome, long? Id, string Detail
 // here with the attempt on the run log, so the refusal is a thing a person can
 // read the morning it happens rather than an absence they have to notice.
 //
-// The store refuses the same write one layer down, through the two triggers the
-// migration creates. Both layers rather than either: the triggers hold for
+// The store refuses the same write one layer down, through the triggers the
+// migrations create. Both layers rather than either: the triggers hold for
 // anything that reaches the file without coming through here, and this holds for
 // the caller that came through the front door and gets told why.
 // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
@@ -120,7 +120,7 @@ public sealed class CandidateRegistrar : IComponent
 
         var detail =
             $"registered '{candidate}' as {id} on {evaluator} at {carried.Version}, " +
-            FormattableString.Invariant($"family of {CandidateFamily.Divisor(rows, startedAt) + 1} of {CandidateFamily.Maximum}");
+            FormattableString.Invariant($"family of {CandidateFamily.Standing(rows, startedAt).Count + 1} of {CandidateFamily.Maximum}");
 
         await RecordAsync(connection, runId, startedAt, Registered, 1, detail, cancellation);
 
@@ -249,7 +249,22 @@ public sealed class CandidateRegistrar : IComponent
                 "read is a row that does not say what will run.";
         }
 
-        var standing = CandidateFamily.Divisor(rows, at);
+        // A value no comparison can be made against fires on every name-night or on none.
+        var notFinite = parameters
+            .Where(pair => !double.IsFinite(pair.Value))
+            .Select(pair => pair.Key)
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+
+        if (notFinite.Length > 0)
+        {
+            return
+                $"'{evaluator}' is registered with [{string.Join(", ", notFinite)}] at a value that is not a finite " +
+                "number. A condition compared against one fires on every name-night or on none, which is a row " +
+                "that does not say what will run.";
+        }
+
+        var standing = CandidateFamily.Standing(rows, at).Count;
 
         return standing >= CandidateFamily.Maximum
             ? FormattableString.Invariant(
@@ -312,11 +327,7 @@ public sealed class CandidateRegistrar : IComponent
         string? evidence,
         CancellationToken cancellation)
     {
-        // The id is taken from what the table already holds rather than from the
-        // row id, because the table is STRICT with its own primary key and gets
-        // no alias for one. Read inside the same connection immediately before
-        // the write, which is what the one-writer rule makes safe: SCHEMA gives
-        // this table one inserter and no other component may reach it.
+        // One past the highest id the register holds, read in the connection that writes it, which the one-writer rule makes safe.
         var id = rows.Count == 0 ? 1 : rows.Max(row => row.Id) + 1;
 
         await using var command = connection.CreateCommand();

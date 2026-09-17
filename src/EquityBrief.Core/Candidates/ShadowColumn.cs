@@ -34,15 +34,7 @@ public static class ShadowColumn
     // top of the stage, is what makes the answer the same for every name in the
     // index rather than a function of how far down the loop the night had got.
     public static IReadOnlyList<RegisterRow> StandingAt(IReadOnlyList<RegisterRow> rows, DateTimeOffset nightStartedAt) =>
-    [
-        .. rows
-            .Where(row => row.Event == CandidateFamily.Registered)
-            .Where(row => row.RegisteredAt < nightStartedAt)
-            .Where(row => CandidateFamily.StandsAt(rows, row.Candidate, nightStartedAt))
-            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
-            .Select(group => group.OrderBy(row => row.Id).Last())
-            .OrderBy(row => row.Candidate, StringComparer.Ordinal),
-    ];
+        CandidateFamily.StandingBefore(rows, nightStartedAt);
 
     // Every standing candidate evaluated over one name-night, or skipped with a
     // reason. Nothing is filtered by whether a live reason fired: a listings row
@@ -74,7 +66,7 @@ public static class ShadowColumn
             // register does not name is worse than no score: it reads as evidence
             // about the registered condition and is evidence about a different
             // one.
-            // see: A registration names an evaluator the code carries, and its version is a hash of that evaluator's own source
+            // see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
             if (evaluator.Version != row.EvaluatorVersion)
             {
                 skipped.Add(new ShadowSkip(

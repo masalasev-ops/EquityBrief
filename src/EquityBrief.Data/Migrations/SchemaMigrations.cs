@@ -566,6 +566,18 @@ public static class SchemaMigrations
         END;
     ";
 
+    // A replace removes the row it conflicts with without firing a delete trigger, so an insert naming
+    // an id the register holds is refused whatever its conflict clause.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    const string RefuseARegisterReplace = @"
+        CREATE TRIGGER candidate_register_is_append_only_on_replace
+        BEFORE INSERT ON candidate_register
+        WHEN EXISTS (SELECT 1 FROM candidate_register WHERE id = NEW.id)
+        BEGIN
+            SELECT RAISE(ABORT, 'candidate_register is append only: a row it holds is never written over, and a correction is a new row naming what it retires.');
+        END;
+    ";
+
     // The rule versions and the scores written under them.
     //
     // A version's window is opened by an insert and closed by writing its
@@ -634,6 +646,7 @@ public static class SchemaMigrations
         new Migration(24, "add forward_return.break_even", AddForwardReturnBreakEven),
         new Migration(25, "create candidate_register", CreateCandidateRegister),
         new Migration(26, "create rule_version and version_score", CreateRuleVersions),
+        new Migration(27, "candidate_register refuses a replace", RefuseARegisterReplace),
     ];
 
     // The bar each plan set for itself, beside the setup it belongs to.

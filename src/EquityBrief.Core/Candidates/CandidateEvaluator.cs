@@ -24,22 +24,16 @@ public sealed record CandidateVerdict(bool Fired, IReadOnlyDictionary<string, st
 // A registered candidate's evaluator: code the register names, rather than a
 // rule written in prose that a later session re-implements from words.
 //
-// The version is a hash of the evaluator's own source rather than a number
-// somebody remembers to raise. A number is a second statement of the same fact
-// and drifts the first time a parameter is tuned in a hurry; a hash cannot, so
-// "this row was registered under this code" is a thing the store can hold and a
-// check can put a question to. `register-append-only` computes the hash from the
-// file and fails where it and the constant disagree, which is what makes a
-// changed evaluator a new registration rather than a quiet re-definition of an
-// old one.
+// The version is the pin of the evaluator's own source and every source its evaluation runs through,
+// and `register-append-only` fails where the pin and the constant disagree.
+// see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
 // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
 public abstract class CandidateEvaluator
 {
     // The evaluator's name, as the register's `evaluator` column holds it.
     public abstract string Name { get; }
 
-    // The hash of this evaluator's own source, as the register's
-    // `evaluator_version` column holds it.
+    // The pin of this evaluator's own source and the evaluation sources, as the register's `evaluator_version` column holds it.
     public abstract string Version { get; }
 
     // The value keys this evaluator reads. Declared rather than discovered,
@@ -65,9 +59,21 @@ public abstract class CandidateEvaluator
     // lets the recorded version be corrected to the value the check demands.
     public const string VersionDeclaration = "public override string Version =>";
 
-    // The pin, in one place for every evaluator and for the check that reads it,
-    // taken the way every source pin in this repository is taken.
-    public static string Pin(string source) => SourcePin.Of([source], VersionDeclaration);
+    // The sources besides an evaluator's own that decide a value it reads or the verdict it returns, from the repository root.
+    public static IReadOnlyList<string> EvaluationSources { get; } =
+    [
+        "src/EquityBrief.Data/Money.cs",
+        "src/EquityBrief.Core/Prices/Statistic.cs",
+        "src/EquityBrief.Core/Indicators/IndicatorSeries.cs",
+        "src/EquityBrief.Worker/Indicators/IndicatorEngine.cs",
+        "src/EquityBrief.Worker/Shortlist/ShortlistBuilder.cs",
+        "src/EquityBrief.Core/Candidates/ShadowColumn.cs",
+        "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs",
+        "src/EquityBrief.Core/Candidates/CandidateEvaluator.cs",
+    ];
+
+    // The pin, over an evaluator's own source first and then the evaluation sources in the order listed.
+    public static string Pin(IEnumerable<string> sources) => SourcePin.Of(sources, VersionDeclaration);
 
     // A registration's parameters, as the register stores them and as an
     // evaluator is handed them. JSON of one flat object of numbers: a candidate

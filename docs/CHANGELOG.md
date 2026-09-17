@@ -25,6 +25,90 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-16 - SCHEMA.md - the register's version pinned to every source an evaluation runs through
+Authorised by: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
+Was:
+> | `evaluator_version` | TEXT | that evaluator's version as the code carried it when the row was written, which is a hash of the evaluator's own source |
+>
+> and `evaluator_version` is a hash of that evaluator's source with line endings normalised to LF and any leading byte order mark removed, so the same evaluator hashes the same on both platforms and on a runner that checked the tree out with either ending. A changed evaluator is a new registration retiring the old one, never an edited row, and `register-append-only` fails a registered, unretired candidate whose evaluator's source has moved away from the version its row names.
+Now:
+> the column note and the paragraph say the version is the pin of the evaluator's source and every source its evaluation runs through, a changed evaluation is a new registration, and the check fails a standing candidate whose evaluation's sources have moved.
+Why: a pin over one file left the parameter parse, the reading of the session before and the indicator arithmetic free to change a registered rule with the row still matching.
+
+### 2026-09-16 - SCHEMA.md - a name registered again, and a row in the same second as a night's start
+Authorised by: A candidate stands by the last row naming it, and a name retired and registered again stands once
+Was:
+> A retirement is a new dated row naming what it retires. `register-append-only` asserts the absence in both the source and a live attempt.
+>
+> | `registered_at` | TEXT | UTC instant |
+Now:
+> a name retired may be registered again, standing once by its last row, and the check's live attempt includes a replace; `registered_at` is held to the second and a row in the same second as a night's start or a window's opening is read as after it (see: A register row in the same second as the instant it is compared with is read as after it).
+Why: the divisor subtracted a name registered again while the night evaluated it, and a registration a fraction of a second after a night started read as before it.
+
+### 2026-09-16 - SCHEMA.md - no replace, refused by the table
+Corrects: the register's note said no update and no delete while a replace removed a row and wrote another past both triggers. Found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> No update, no delete. A correction is a new row.
+Now:
+> No update, no delete and no replace, each refused by the table. A correction is a new row.
+Why: migration 27 is what refuses the replace, and the note is what a reader of the table checks first.
+
+### 2026-09-16 - ARCHITECTURE.html - section 18's register edit row says which half records the attempt
+Corrects: the row said the run log records every attempt to edit or delete a register row, while a statement against the file is refused by a trigger that rolls the statement back and can write nothing. Found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> <td>the write is refused and the run log records the attempt</td>
+Now:
+> the row says an attempt through the registrar is refused with the attempt on the run log, and one against the file, a replace included, is refused by the table, which writes nothing, the run log included.
+Why: a refusal at the table is a rollback, and a row promising a record from it promises something no store can hold.
+
+### 2026-09-16 - ARCHITECTURE.html - the divisor counts candidates standing, a name registered again once, and the register refuses a replace
+Authorised by: A candidate stands by the last row naming it, and a name retired and registered again stands once
+Was:
+> section 17's family row: the harness asserts the register accepts no update or delete, and that the divisor used matches the number of rows registered before the window opened
+>
+> section 19.2's register row: the register refuses updates and deletes, and the correction divisor matches the rows registered before the window opened
+Now:
+> both say the register refuses an update, a delete and a replace, and the divisor matches the candidates standing before the window opened, section 17's naming a name retired and registered again once.
+Why: rows registered is not candidates standing once a name is registered again, and the replace is refused from migration 27.
+
+### 2026-09-16 - BUILD_PLAN.md - 8.3's version, divisor and done condition at what the correction adds
+Authorised by: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
+Was:
+> The evaluator carries its own version, a test pins that version to a hash of the evaluator's source with line endings normalised and any leading byte order mark removed, and a candidate whose evaluator has moved on is a new registration rather than an edited row.
+>
+> The family is at most eight and the correction divides the threshold by the rows registered before the window opened (see: The candidate family is at most eight and the threshold is divided by it).
+>
+> **Done when** an update and a delete are both refused at the store, a retirement is a new row naming what it retires, the correction divisor matches the rows registered before the window opened, an evaluator whose source moved without its version fails, and `register-append-only` runs on every CI run from here.
+Now:
+> the version is pinned over the evaluator's source and every source its evaluation runs through; the divisor is the candidates standing before the window opened, a name retired and registered again once; and the done condition adds a replace refused at the store, counts a name registered again once, and fails an evaluator whose evaluation's sources moved.
+Why: 8.3's done condition was met by a store that let a replace rewrite a row, a divisor that dropped a name registered again, and a pin over one file (see: A candidate stands by the last row naming it, and a name retired and registered again stands once).
+
+### 2026-09-16 - .claude/rules/checks.md - register-append-only reaches a replace, a name registered again, a value that is not a number and the second a window opened in
+Corrects: the row said the register refuses updates and deletes at the table itself while a replace rewrote a row past both triggers, its source half read a replace as an insert or as nothing, its divisor counted a name retired and registered again as retired, its two routes stated one rule twice over a store holding no retirement, and a value that is not a finite number registered. Found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> | `register-append-only` | every CI run | The candidate register refuses updates and deletes, at the table itself rather than only in what writes to it, and the register still reads as it did after each is refused; a retirement is a new row naming what it retires and the row it retires still stands; the correction divisor counts the candidates registered before the window opened and not retired before it opened, over hand-worked rows and over a store by two routes; and a registered candidate whose evaluator's source has moved without its version fails rather than being evaluated under a rule the register does not name, the version being a hash of the evaluator's own source taken over line endings normalised and a leading byte order mark removed; and a live reason's name is refused both as a registration and as a retirement, the refusal naming the floor section 17 sets before a live condition may be retired |
+Now:
+> the row adds a replace refused at the table with recursive triggers off or on and nothing on the run log, the source half read in every form SQLite accepts, a name retired and registered again standing once in the divisor, against the maximum and on the run page, the same-second rule, two routes that state the rule differently and the fixture, and a value that is not a finite number refused.
+Why: the check claimed refusal at the table and a divisor over the register, and both had a population it could not see.
+
+### 2026-09-16 - .claude/rules/checks.md - register-append-only pins the version to every source an evaluation runs through
+Authorised by: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
+Was:
+> a registered candidate whose evaluator's source has moved without its version fails rather than being evaluated under a rule the register does not name, the version being a hash of the evaluator's own source taken over line endings normalised and a leading byte order mark removed
+Now:
+> a registered candidate whose evaluation's sources have moved without its version fails, the version being the pin of the evaluator's own source and every source its evaluation runs through, listed and held to the shipped files that compute a reading or run an evaluation.
+Why: the rule a registration names is decided by more than the evaluator's file, and the ladder rules' pin already reaches every source a replay runs through.
+
+### 2026-09-16 - RUNBOOK.md - the register section names the finite value refusal, a name registered again and what a moved evaluation costs
+Corrects: the registrar accepted a value that is not a finite number, which the 8.3 correction refuses; the section did not say a name may be registered again, which the divisor dropped until that correction; and it did not say a change to the code an evaluation runs through stops every standing candidate being evaluated. Found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> The registrar refuses an evaluator the code does not carry, a parameter the evaluator does not read, a ninth candidate, a live reason's name, and any change to a candidate that stands registered. A live reason is retired only by changing section 11 and the code together, once its record holds 400 resolved setups. A change is a retirement and a new registration:
+>
+> From the next night every standing candidate is evaluated on every name into the shadow column and shown nowhere; the run page states how many are registered and the divisor that sets.
+Now:
+> the refusals include a value that is not a finite number; a change is a retirement and a new registration under the same name or another, and a name registered again stands once; and a change to any source `CandidateEvaluator` lists moves every evaluator's version, after which each standing candidate is skipped and named as a failure on the listings row until retired and registered again.
+Why: the operator reads what a registration is refused for and what a code change costs here, before meeting either as a failed command or a failed night.
+
 ### 2026-09-16 - SCHEMA.md - `resolved_on` names the session a row resolved on
 Corrects: the note said null while unresolved, where the filler has written the cap's own session on a setup unresolved at the cap since 5.5; found while designing the 5.5 correction.
 

@@ -1,7 +1,7 @@
 {
  "stage": "candidate-register",
  "derivation": "derived",
- "derivedFrom": "the rule that the correction divides the threshold by the candidates registered before the window opened, worked by hand over the rows below rather than read back from a run. Registration is a verb a person invokes and never a step a night arrives at, so the replay runs the registrar after the night as it runs the fundamentals fetch, and the rows here are the ones it writes. The divisor at each instant is counted by hand in the cell beside it: a candidate registered before the instant counts, one registered after it does not, one retired before it does not, and one retired after it does, because it was among the things being tried for the whole of the window the instant opens. The two instants are chosen to straddle each event rather than to fall on a convenient number, and the whole set is smaller than the maximum family of 8 so that the bound is not what produces the answer.",
+ "derivedFrom": "the rule that the correction divides the threshold by the candidates registered before the window opened, worked by hand over the rows below rather than read back from a run. Registration is a verb a person invokes and never a step a night arrives at, so the replay runs the registrar after the night as it runs the fundamentals fetch, and the rows here are the ones it writes. The divisor at each instant is counted by hand in the cell beside it: a candidate registered before the instant counts, one registered after it does not, one retired before it does not, and one retired after it does, because it was among the things being tried for the whole of the window the instant opens. The two instants are chosen to straddle each event rather than to fall on a convenient number, and the whole set is smaller than the maximum family of 8 so that the bound is not what produces the answer. A name retired and registered again stands once, by the last row naming it, so the index reading's second registration counts once in the window after it; and the register holds an instant to the second, so a row in the same second as a window's opening is read as after it, which is why one window below opens 400 milliseconds into the second of a registration.",
  "tables": [
   "candidate_register"
  ],
@@ -31,7 +31,17 @@
    "registeredAt": "2026-09-08T22:10:00Z"
   }
  ],
- "rowsWritten": 3,
+ "registeredAgain": [
+  {
+   "candidate": "momentum index at thirty",
+   "rule": "the relative strength index at or below thirty",
+   "test": "the share of its setups that beat their own break-even, against the reason records",
+   "evaluator": "momentum-index-reading",
+   "parameters": { "level": 30 },
+   "registeredAt": "2026-09-08T22:20:00Z"
+  }
+ ],
+ "rowsWritten": 4,
  "divisors": [
   {
    "windowOpenedAt": "2026-09-08T21:55:00Z",
@@ -52,12 +62,23 @@
    "windowOpenedAt": "2026-09-08T22:15:00Z",
    "divisor": 1,
    "worked": "the index reading was retired before this window opened, so it was not among the things tried over the evidence this window holds, and the histogram turn alone is"
+  },
+  {
+   "windowOpenedAt": "2026-09-08T22:20:00.400Z",
+   "divisor": 1,
+   "worked": "the index reading is registered again at 22:20:00, in the second this window opened. The register holds an instant to the second and cannot say which of the two came first, so the registration is read as after the window, and the histogram turn alone was being tried"
+  },
+  {
+   "windowOpenedAt": "2026-09-08T22:25:00Z",
+   "divisor": 2,
+   "worked": "the index reading was retired and registered again before this window opened, so it stands once beside the histogram turn. A count of every name registered less every name retired reads 1 here, because the index reading is in both"
   }
  ],
  "standing": [
   { "at": "2026-09-08T22:02:00Z", "candidate": "momentum index at thirty", "stands": true },
   { "at": "2026-09-08T22:02:00Z", "candidate": "momentum histogram turning up", "stands": false },
   { "at": "2026-09-08T22:15:00Z", "candidate": "momentum index at thirty", "stands": false },
-  { "at": "2026-09-08T22:15:00Z", "candidate": "momentum histogram turning up", "stands": true }
+  { "at": "2026-09-08T22:15:00Z", "candidate": "momentum histogram turning up", "stands": true },
+  { "at": "2026-09-08T22:25:00Z", "candidate": "momentum index at thirty", "stands": true }
  ]
 }

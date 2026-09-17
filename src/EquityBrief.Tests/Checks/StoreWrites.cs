@@ -121,6 +121,10 @@ public class StoreWrites
         // sessions that fell out of the window; nobody may edit a stored bar.
         Assert.Single(Offences(WritesIn("UPDATE bar SET close = '1';"), "BarFetcher"));
         Assert.Single(Offences(WritesIn("DROP TABLE bar;"), "CorporateActionChecker"));
+
+        // A replace removes the bar it conflicts with, so it is a delete wherever it is written and an update is still one.
+        Assert.Single(Offences(WritesIn("INSERT OR REPLACE INTO bar (ticker) VALUES ('A');"), "ReadApi"));
+        Assert.Single(Offences(WritesIn("UPDATE OR REPLACE bar SET close = '1';"), "BarFetcher"));
     }
 
     [Fact]
