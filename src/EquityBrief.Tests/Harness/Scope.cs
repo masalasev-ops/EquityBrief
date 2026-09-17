@@ -1526,7 +1526,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Swing lookback")] = new Scoped(
             Verdict.Pass,
-            "the number the row states is read against the constant the finder uses, and the diff is run over a fixture holding a session the two lookbacks disagree about",
+            "the number the row states is read off the row against the constant the finder uses and against the lookback the expectation was derived at, and the diff is run over a fixture holding a session the two lookbacks disagree about",
             ByExpectations),
         [CheckReach.Key(CatalogueTable, "Swing finder")] = new Scoped(
             Verdict.Pass,

@@ -13336,3 +13336,55 @@ Notes:      the first hosted run over this entry, at e80c027, failed on both job
             Rerun: M5 over the moved test at fe930fa, the whole suite in its own detached worktree,
             turned 1 red, the process test, and nothing else, 1014 of 1015 passing.
 Carried:    nothing owed by this repair.
+
+### 3.2 - correction: the swing lookback's verdict said the row's number was read, and no test opened the row   2026-09-17
+Corrects:   the 3.2 entry above records section 17's swing lookback moving to PASS by
+            `fixture-expectations`, on a verdict note saying "the number the row states is read
+            against the constant the finder uses". No test opened the row. The one comparison read
+            the finder's constant against the lookback the swings expectation was derived at, and its
+            comment and the expectation's own note both said section 17's row was read there, so the
+            row could state another lookback with the suite green and the note still saying the
+            row's number was read.
+Found:      by the phase 8 sign-off review on 2026-09-16, sweeping section 17's rows for the figures
+            their verdict notes say are read, and shown there by the whole suite running green at
+            57f6e7f with the row edited to 4 bars each side. The operator ruled on 2026-09-16 that
+            everything the review found is corrected before a sign-off handoff, one correction a
+            checkpoint, labelled for the checkpoint that built the defect. This session commits this
+            code and does not sign phase 8 off.
+Repaired:   the row's value cell is read for its bars each side in digits and held to the finder's
+            constant and to the lookback the swings expectation was derived at, in one test, so a
+            lookback written in three places is read in all three. The comparison of the constant
+            with the expectation moves into that test out of the swings replay test, whose comment
+            said the row was read there. The expectation's note and the verdict note say what reads
+            the row.
+Stored:     nothing to keep or rewrite. No shipped code and no stage changes, and the row, the
+            finder's constant and the expectation each say 3.
+Missed:     the 3.2 addendum set the finder's constant to 2 and five swing tests went red, which is
+            the code half. The document half was never mutated, and a comparison of the constant
+            with a figure derived at the same value agreed whatever the row said.
+Guarded:    over the committed document and fixture: the row's figure, the finder's constant and the
+            expectation's lookback read against each other, and a row whose figure is not in digits
+            refused by name.
+Expected:   derived, and no value changes: the swings expectation's lookback of 3 was written from
+            section 5's definition over the committed bars outside this repository at 3.2, and the
+            row's figure is now read against it. Its note says what reads it.
+Tests:      1016, from 1015. One added to `fixture-expectations`:
+            `TheSwingLookbackSectionSeventeenStatesIsTheFindersAndTheOneTheExpectationWasDerivedAt`.
+            The swings replay test is rewritten in place without its lookback comparison. No file
+            this correction edits is a source either evaluator version or the ladder rules' code
+            version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each statement of the lookback the new test
+            reads against the finder's constant, the row's in both ways it can be lost, being a
+            different number and a number no longer in digits, and the expectation's, whose
+            comparison moved into the test. Predicted:
+            M1 the row edited to 4 bars each side: the new test red, on 3 against 4, and nothing
+            else, since no other test opens the row.
+            M2 the row edited to three bars each side: the new test red, on the row stating no
+            number in digits, and nothing else.
+            M3 the swings expectation's lookback edited to 4: the new test red, on 3 against 4, and
+            nothing else, since no other test reads that figure.
+            Not mutated: the finder's constant moved against the row and the expectation, which the
+            3.2 addendum mutated and which turns every swing test red besides.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.
