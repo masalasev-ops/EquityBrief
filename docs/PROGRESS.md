@@ -12814,6 +12814,24 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             unapplied values other than at the live values, the name given twice, the drifted live window on
             the list, the exactly-one-line pin, the member sources skip, the runbook's four places, and the
             trend read at the scored session.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else. Six runs of the whole suite, never a filter, at this entry's commit, each
+            in its own detached worktree under the session scratchpad, with the tree read after to hold
+            only the mutated file and the worktree removed, M4 and M5 re-pinned over the mutant tree
+            before the run. The baseline is 1003 of 1004 with one red, and that red is this entry:
+            `two-platform` reads every checkpoint entry written since the 7.2 ruling for its Windows
+            record, and this one carried a placeholder until the run below filled it, so each count
+            that follows is on top of it.
+            M1 turned 5 red: the version plans over the fixture, the replay at the live values, the
+            backfill, the skip over a band set without sources, and the pin test. M2 turned 3 red: the
+            replay producing a different plan, the version plans over the fixture, and the pin test.
+            M3 turned 2 red: the refused values test and the pin test. M4 turned 1 red: the pin test,
+            on the list against the reached set. M5 turned 1 red: the retention test.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+            with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
+            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: two
+            verdict notes are rewritten and no placement changes. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this correction.
