@@ -13128,11 +13128,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             the same 4 red: the listing-night case never entered, the dividend case still open, the
             kept listing's setup a win entered at 101 at 8.91 per cent, and the setup past the cap
             never entered.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1011 of 1011 tests ran
             with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
-            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
-            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
-            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: one
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            36 of 36 roster checks carried and all 36 run. No claim added and none moved: one
             placement note is rewritten and no placement changes. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
