@@ -194,6 +194,11 @@ public sealed record ListingCell(
 // them.
 public sealed record SuspectPrices(string LastAskedAt, string Reason);
 
+// A member the backfill asked for a year for and got none: the nights it was asked for, the
+// session it was last asked for on, and the session it is next asked for on, null where
+// that is the next night.
+public sealed record NoYear(int Nights, DateOnly? Last, DateOnly? Next);
+
 // One reason that fired for a name, with the values that made it true.
 public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string> Values);
 
@@ -1103,6 +1108,38 @@ public sealed class MarkRenderer : IComponent
               $"{Escaped(ticker)}'s prices may not reflect a recent dividend or split: downloading its year of prices again failed. " +
               $"Last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}. " +
               "The figures on this page are computed from the prices as stored.</p>";
+
+    // The line a name's page opens with where the backfill asked for its year and none came
+    // back: the nights it was asked for, and when it is asked next.
+    // see: A name the backfill stored nothing for is asked for again on the five nights after and weekly after that, and its page and the run page say so until one stores its year
+    public string NoYearServed(string ticker, NoYear? noYear)
+    {
+        if (noYear is null)
+        {
+            return string.Empty;
+        }
+
+        var line = new StringBuilder();
+
+        line.Append(Invariant, $"<p class=\"no-year\" data-ticker=\"{Escaped(ticker)}\" data-nights=\"{noYear.Nights}\">");
+        line.Append(Invariant, $"No year of prices came back for {Escaped(ticker)}: the provider was asked for one on {noYear.Nights} night(s)");
+
+        if (noYear.Last is { } last)
+        {
+            line.Append(Invariant, $", the last for the session of {last:yyyy-MM-dd}");
+        }
+
+        if (noYear.Next is { } next)
+        {
+            line.Append(Invariant, $", and it is asked again on the first night on or after {next:yyyy-MM-dd}.</p>");
+        }
+        else
+        {
+            line.Append(", and it is asked again on the next night.</p>");
+        }
+
+        return line.ToString();
+    }
 
     // What a mark returns instead of a drawing. It states the count rather than
     // apologising, because the reader's next question is how many there were.

@@ -239,7 +239,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // Whether the name's stored series is suspect, which the page opens with and the
         // file carries, since it is a statement about the figures rather than a question
         // the application asks.
-        (await read.SuspectSeriesAsync()).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)));
+        (await read.SuspectSeriesAsync()).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
+        // Where the name holds no bar, whether the backfill asked for its year and none came back.
+        bars.Count == 0 ? await read.NoYearAsync(ticker) : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

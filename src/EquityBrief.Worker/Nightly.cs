@@ -154,7 +154,8 @@ public static class Nightly
                 var outcome = await new Backfill(historical, clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId, night.Token);
 
-                return $"{outcome.RowsWritten} rows written over {outcome.Requests} request(s)";
+                return $"{outcome.RowsWritten} rows written over {outcome.Requests} request(s), " +
+                    $"{(outcome.Unserved ?? []).Count} member(s) holding no year after it";
             }),
             new("fetch", async () =>
             {

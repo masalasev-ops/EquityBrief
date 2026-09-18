@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
@@ -30,12 +31,25 @@ public sealed class Backfill(
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read | Touch.Insert),
-            new StoreTouch(Store.RunLog, Touch.Insert),
+            new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: [Feed.HistoricalPrice]);
 
     public const string Stage = "backfill";
     public const string Source = "historical";
+
+    // The outcome of a night that leaves a member holding no year, which puts the
+    // stage on the run page's failed region on every night one is left.
+    public const string Partial = "partial";
+
+    // A name the backfill stored nothing for is asked for again on the refetch's
+    // schedule: on each of these nights after the first, then on the first night
+    // whose session is this many days after the session it was last asked for,
+    // until one stores its year or the name leaves the index.
+    // see: A name the backfill stored nothing for is asked for again on the five nights after and weekly after that, and its page and the run page say so until one stores its year
+    public const int RetryNights = CorporateActionChecker.RetryNights;
+
+    public const int WeeklyRetryDays = CorporateActionChecker.WeeklyRetryDays;
 
     // The names a backfill is owed for, being every name that has not left by
     // tonight's session: the fetch's population, for the fetch's reason. A name
@@ -56,6 +70,12 @@ public sealed class Backfill(
     // short series is a gap question rather than a backfill question
     // (see: A gap is a session the exchange traded and the store does not hold).
     const string TickersHoldingBars = "SELECT DISTINCT ticker FROM bar;";
+
+    // The earlier rows of this stage that name what they asked for, which is the
+    // record the schedule reads.
+    const string EarlierRows = @"
+        SELECT detail FROM run_log WHERE stage = $stage AND detail LIKE '{%';
+    ";
 
     // Insert only. Bars are append-only, so a name already holding a session
     // keeps what it has rather than having it rewritten.
@@ -100,6 +120,14 @@ public sealed class Backfill(
         var holding = await Read(connection, TickersHoldingBars, null, cancellationToken);
 
         var owed = members.Except(holding, StringComparer.OrdinalIgnoreCase).ToArray();
+        var asked = await AskedAsync(connection, cancellationToken);
+
+        bool Due(string ticker) =>
+            !asked.TryGetValue(ticker, out var nights)
+            || nights.Count <= RetryNights
+            || to >= nights.Max().AddDays(WeeklyRetryDays);
+
+        var due = owed.Where(Due).ToArray();
         var before = feed.Requests;
         var barsBefore = await Count(connection, cancellationToken);
 
@@ -111,7 +139,7 @@ public sealed class Backfill(
         // already inserted would find fewer gaps the earlier it was checked.
         var fetched = new Dictionary<string, IReadOnlyList<ProviderBar>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var ticker in owed)
+        foreach (var ticker in due)
         {
             fetched[ticker] = await feed.BarsAsync(ticker, from, to, cancellationToken);
         }
@@ -133,7 +161,7 @@ public sealed class Backfill(
             .GroupBy(gap => gap.Ticker, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.Select(gap => gap.SessionDate).ToArray(), StringComparer.OrdinalIgnoreCase);
 
-        foreach (var ticker in owed.Where(name => !refused.ContainsKey(name)))
+        foreach (var ticker in due.Where(name => !refused.ContainsKey(name)))
         {
             foreach (var bar in fetched[ticker])
             {
@@ -165,31 +193,101 @@ public sealed class Backfill(
         var requests = feed.Requests - before;
         var written = await Count(connection, cancellationToken) - barsBefore;
 
+        // Every member still holding no year after tonight, with the nights it has
+        // been asked for and the session it is next asked for on, null where that
+        // is the next night.
+        var unserved = owed
+            .Where(ticker => !fetched.TryGetValue(ticker, out var year) || year.Count == 0 || refused.ContainsKey(ticker))
+            .Order(StringComparer.Ordinal)
+            .Select(ticker =>
+            {
+                var earlier = asked.TryGetValue(ticker, out var sessions) ? sessions : [];
+                var nights = earlier.Concat(fetched.ContainsKey(ticker) ? new[] { to } : Array.Empty<DateOnly>()).ToArray();
+                DateOnly? last = nights.Length == 0 ? null : nights.Max();
+                DateOnly? next = nights.Length <= RetryNights || last is null ? null : last.Value.AddDays(WeeklyRetryDays);
+
+                return new UnservedName(ticker, nights.Length, last, next);
+            })
+            .ToArray();
+
         await using var log = connection.CreateCommand();
         log.CommandText = AppendRun;
         log.Parameters.AddWithValue("$run_id", runId);
         log.Parameters.AddWithValue("$stage", Stage);
         log.Parameters.AddWithValue("$started_at", observedAt);
         log.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("O"));
-        log.Parameters.AddWithValue("$outcome", "ok");
+        log.Parameters.AddWithValue("$outcome", unserved.Length == 0 ? "ok" : Partial);
         log.Parameters.AddWithValue("$rows_written", written);
 
         // Measured off the feed, not stated. The done condition is that this
-        // equals the number of names lacking history, and a literal could not
-        // fail that.
+        // equals the number of names lacking history that are due, and a literal
+        // could not fail that.
         log.Parameters.AddWithValue("$network_requests", requests);
-        // The gap's date named, on the surface a person reads. A refusal that
-        // left no trace would be a name quietly holding no history.
+
+        // What was asked for and what is still owed, on the surface a person
+        // reads and the record the schedule reads back. A refusal that left no
+        // trace would be a name quietly holding no history.
         log.Parameters.AddWithValue(
             "$detail",
-            gaps.Count == 0
-                ? (object)DBNull.Value
-                : "refused: " + string.Join(", ", gaps.Select(gap => FormattableString.Invariant($"{gap.Ticker} has no session on {gap.SessionDate:yyyy-MM-dd}"))));
+            due.Length == 0 && unserved.Length == 0
+                ? DBNull.Value
+                : JsonSerializer.Serialize(new
+                {
+                    session = Text(to),
+                    asked = due.Order(StringComparer.Ordinal).ToArray(),
+                    refused = gaps.Select(gap => FormattableString.Invariant($"{gap.Ticker} has no session on {gap.SessionDate:yyyy-MM-dd}")).ToArray(),
+                    unserved = unserved.Select(name => new
+                    {
+                        ticker = name.Ticker,
+                        nights = name.Nights,
+                        last = name.Last is { } lastOn ? Text(lastOn) : null,
+                        next = name.Next is { } nextOn ? Text(nextOn) : null,
+                    }).ToArray(),
+                }));
 
         await log.ExecuteNonQueryAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
-        return new BackfillOutcome(members.Count, owed.Length, requests, written, gaps);
+        return new BackfillOutcome(members.Count, owed.Length, requests, written, gaps, due.Length, unserved);
+    }
+
+    // The sessions each name was asked for on, read off this stage's earlier rows.
+    static async Task<IReadOnlyDictionary<string, List<DateOnly>>> AskedAsync(
+        SqliteConnection connection,
+        CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = EarlierRows;
+        command.Parameters.AddWithValue("$stage", Stage);
+
+        var asked = new Dictionary<string, List<DateOnly>>(StringComparer.OrdinalIgnoreCase);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            using var detail = JsonDocument.Parse(reader.GetString(0));
+
+            if (!detail.RootElement.TryGetProperty("session", out var session)
+                || !DateOnly.TryParseExact(session.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var on)
+                || !detail.RootElement.TryGetProperty("asked", out var names))
+            {
+                continue;
+            }
+
+            foreach (var name in names.EnumerateArray())
+            {
+                var ticker = name.GetString()!;
+
+                if (!asked.TryGetValue(ticker, out var nights))
+                {
+                    asked[ticker] = nights = [];
+                }
+
+                nights.Add(on);
+            }
+        }
+
+        return asked;
     }
 
     static async Task<int> Count(SqliteConnection connection, CancellationToken cancellationToken)
@@ -217,7 +315,7 @@ public sealed class Backfill(
 
         if (session is { } on)
         {
-            command.Parameters.AddWithValue("$session", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$session", Text(on));
         }
 
         var values = new List<string>();
@@ -231,15 +329,24 @@ public sealed class Backfill(
         return values;
     }
 
+    static string Text(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
     string ConnectionString => new SqliteConnectionStringBuilder { DataSource = databaseFile }.ToString();
 }
 
+// A member still holding no year after a night: how many nights it has been asked
+// for, the session it was last asked for on, and the session it is next asked for
+// on, null where that is the next night.
+public sealed record UnservedName(string Ticker, int Nights, DateOnly? Last, DateOnly? Next);
+
 // What one backfill did. Members and Owed are separate because the done
 // condition is about the second: the request count matches the number of names
-// lacking history, not the number of names.
+// lacking history that are due, not the number of names.
 public sealed record BackfillOutcome(
     int Members,
     int Owed,
     int Requests,
     int RowsWritten,
-    IReadOnlyList<Gap> Refused);
+    IReadOnlyList<Gap> Refused,
+    int Due = 0,
+    IReadOnlyList<UnservedName>? Unserved = null);
