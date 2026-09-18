@@ -15469,3 +15469,80 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 1.3 - correction: the read surface starts from the repository root against the store the worker writes, as the runbook now says   2026-09-18
+Corrects:   the 1.3 entry records the read surface serving the store under the configured data
+            root. Its own settings named none and the runbook said nowhere how to start it, so the
+            screens could not be opened from anything the corpus said: started the way the worker
+            is, it stopped before serving anything. And started through its launch settings it runs
+            in its project directory, where a relative root and the phase report the run page reads
+            were both looked for.
+Found:      on 2026-09-18, when the operator went to open the screens for the first time; the
+            session had started the surface with a data root in its own environment.
+Measured:   on the checkout at the merge of the 6.2 correction, `dotnet run --project
+            src/EquityBrief.Api` from the repository root with nothing in the environment stopped
+            with StoreLocation's "No data root is configured". With a scratch store named in the
+            environment the same command came up through its launch settings at
+            http://localhost:5152 with its content root at src/EquityBrief.Api, so a relative
+            `data` would have opened src/EquityBrief.Api/data rather than the store the night
+            writes, and the phase report, read from the content root, was looked for under
+            src/EquityBrief.Api/artifacts, where nothing writes one, while the harness writes it to
+            the repository's own artifacts folder.
+Repaired:   the surface's settings name the data root the worker's do, `data`; it reads the
+            settings file beside its build under every other source, as the worker reads its own,
+            so the environment and the command line still win; and a relative root and the phase
+            report are read against the checkout its build sits in, found as the name page's
+            control already finds it. RUNBOOK gains "Opening the screens", with CHANGELOG naming
+            the section it did not have.
+Stored:     nothing. The surface writes one run log row when it starts, as it did.
+Missed:     every test hosted the surface in process and handed it a store, so nothing started it
+            the way a person does, and nothing read the runbook for a way to.
+Guarded:    the surface's own build, copied into a throwaway checkout with a store and a phase
+            report of its own and started from a directory outside it with nothing in the
+            environment, writes its start row into that checkout's store and states that
+            checkout's report on the run page; its settings name the worker's data root and the
+            runbook states the command and the address its launch settings give; a relative root
+            sits under the checkout and an absolute one stands as configured; and the suite's own
+            host still reads the store it is handed, not the one the shipped settings name.
+Expected:   derived: the address is read off the launch settings and the data root off both
+            projects' settings; no expectation file changes.
+Tests:      1079, from 1075. Four added to the read surface's tests. No file this correction edits
+            is a source either evaluator version or the ladder rules' code version pins, so no pin
+            moves.
+Mutated:    the rule, stated before the sweep: break each of the four properties this correction
+            adds, the settings beside the build read, a relative root read against the checkout,
+            the surface's settings naming the worker's data root, and the phase report read
+            against the checkout. The host reading the store it is handed is not mutated: broken,
+            every test hosting the surface is sent to a store under the run's own directory, a red
+            too wide to name test by test.
+            Predicted:
+            M1 the settings beside the build not read: the start test red on the checkout's store;
+            nothing else.
+            M2 a relative root read against the working directory: the start test red on the
+            checkout's store; nothing else.
+            M3 the surface's settings naming no data root: the start test red on the checkout's
+            store and the settings test red on the surface's data root; nothing else.
+            M4 the phase report read against the content root: the start test red on the run
+            page's report; nothing else.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Five runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1078 of 1079 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the start test, no start row landing in the checkout's store.
+            M2 turned 1 red, the start test the same way.
+            M3 turned 2 red, the start test the same way, and the settings test on the surface's
+            data root.
+            M4 turned 1 red, the start test on the run page, which stated no phase report.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1079 of 1079 tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html`, and no roster row
+            changed. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.
+Carried:    nothing owed by this repair.

@@ -92,6 +92,22 @@ Load with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.nightly.plist`,
 
 ---
 
+## Opening the screens
+
+The screens are one page the read surface serves from the store the night writes. From the repository root, in a terminal left open:
+
+```
+dotnet run --project src/EquityBrief.Api
+```
+
+then open `http://localhost:5152/` in a browser, the address `src/EquityBrief.Api/Properties/launchSettings.json` gives it. The page's own links reach every screen: tonight's list at `#/`, the index at `#/universe`, one name's page and report at `#/name/<TICKER>`, and one night's run page at `#/run/<YYYY-MM-DD>`. Ctrl+C in the terminal stops it.
+
+**It reads the store the worker writes.** Its settings name the data root the worker's do, `data`, and it reads them from the settings file beside its own build, as the worker does. A relative root is read against the checkout the build sits in rather than the directory it was started from, because started this way it runs in its project directory, so the store it opens is the checkout's `data/equitybrief.db` however it is started, and so is the phase report the run page reads. `EquityBrief__DataRoot` in the environment overrides the setting, as it does for the worker, so a store kept elsewhere is named the same way for both.
+
+**It can stay open while the night runs.** It writes one run log row when it starts and a research pass only when the name page's control is pressed, and otherwise reads. A page loaded while a night is running shows that night as far as it has got, and a reload once the run page shows the night closed shows all of it. After updating the checkout, run `tools/migrate` before starting it, as "Store maintenance" below says; until then every screen names the store's schema and the checkout's rather than drawing.
+
+---
+
 ## Providers, and what each is for
 
 | Provider | Used for | Notes |
