@@ -14619,3 +14619,76 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             the one roster row it edits, `register-append-only`, keeps its key. Both gates ran with
             this entry in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 0.1 - correction: pinned-constants' row claimed the constants the docs state, and its test read two versions   2026-09-18
+Corrects:   the 0.1 entry above records `pinned-constants` "covering the framework version and the
+            SDK feature band", which is what it asserted. Its roster row said "Numeric constants
+            stated in docs match the code constant they describe", and no other figure was read by
+            it; 0.7 made section 17 a claim source and left the row's words standing. Phase 8's
+            figures show what that let through. The rule version bound's row states 148 and 193
+            seconds, 504 names and 1 merge distance version and 9 others beside the figures its
+            check reads; the caps are restated in SCHEMA, the runbook, the build plan and the
+            decisions; the family's maximum in section 17's significance row, the build plan, the
+            decisions and the runbook's ninth candidate; the 63-session cap in the architecture's
+            figure and row, the build plan and the decision; and no test read any of them. Seven
+            section 17 rows' figures were opened by no test when the review read them: bar history
+            kept, the level window, the swing lookback, tranches and exits, the earnings horizon,
+            the list display and setup resolution. The 3.2 correction above has since opened the
+            swing lookback's.
+Found:      by the phase 8 sign-off review on 2026-09-16, sweeping the constants the documents
+            restate for the test that reads each.
+Measured:   read off the documents at this entry's commit: section 17's Value column states 53
+            figures in digits over 22 rows, and 87 restatements of 22 figures the code holds sit in
+            the specs, the rules files and the decisions that stand.
+Repaired:   `pinned-constants` reads three things. The framework and the band, as before. Every
+            figure section 17's Value column states in digits, in the order the table states them,
+            each held by the constant or the arithmetic over constants its entry names, or named as
+            a measurement the record carries, a checkpoint the record shows, a limit of zero, the
+            index's nominal size the row says is not read, or a count no constant holds with the
+            check that reaches its row. And every restatement of a figure in the list it keeps, in
+            a spec, a rules file or a decision that stands, found by a pattern per sentence form
+            and counted per document against a count stated in advance, the bound's arithmetic
+            derived from the figures its own row states. The roster row says which, and says what
+            is not read. Prior text in CHANGELOG.
+Stored:     nothing. No shipped code and no stage changes.
+Missed:     each phase 8 checkpoint pinned the constant it added once, in its own check, which is
+            done condition 4 as written, and a restatement in another document or a figure in a
+            sentence beside the ones read sat under a roster row that said it was read. 0.7 chose
+            a claim source over widening this check because most rows' components did not exist,
+            and every one exists now.
+Guarded:    the census over section 17 as the document states it, 53 figures in order; the
+            restatements over the specs, the rules files and the decisions that stand, 87 counted
+            in advance; and constructed tables and documents on which a figure no entry holds, an
+            entry the table does not state, a value that disagrees, a named kind that does not
+            stand and a restatement reworded out of its pattern are each reported, and a superseded
+            decision's figure is left unread. A sentence in a standing decision that reasons about
+            three windows of the merge distance, which is not a statement of the cap, is left out
+            by its pattern rather than counted.
+Expected:   derived: every census entry and every restatement count and value is read off the
+            documents by hand and off the code's constants, stated before the run. No expectation
+            file changes, because `pinned-constants` reads documents and no stage output, which is
+            this entry's checkpoint's own record of what it produces.
+Tests:      1058, from 1055. Three added to `pinned-constants`: every figure section 17 states in
+            digits held by the code or named for what it is, every restatement of a figure the code
+            holds agreeing with it in every document that states it, and a census or a restatement
+            that no longer matches its document reported. No file this correction edits is a source
+            either evaluator version or the ladder rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being a
+            restatement's value read, a section 17 figure held by its constant, a named kind's
+            check standing, and a superseded decision left unread. Not mutated, and named so the
+            next sweep has them: the census's order check and the nominal size's stated check.
+            Predicted:
+            M1 SCHEMA's rule_version paragraph edited to at most three rows of the merge distance:
+            the restatement test red on SCHEMA restating the cap at a value the code does not hold,
+            and nothing else.
+            M2 the earnings horizon row edited to 21 sessions: the census red on the row stating 21
+            where the census holds 20, and nothing else, which is a row no other test opens.
+            M3 the overnight queue row's slowest pass edited to 5.31 seconds: the census red on 43
+            minutes no longer being 503 passes at that rate and on the row stating 5.31 where the
+            census holds 5.13, and nothing else.
+            M4 the reader's cut at "Previously decided" pointed at a document it never reads: the
+            constructed proof red on the superseded decision's figure, counted and read, and nothing
+            else, since no superseded decision states a figure the patterns match.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing.
