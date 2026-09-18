@@ -15834,3 +15834,54 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 6.2 - correction: each group of the filing's own tables carries its growth on the same months a year before, where a section quoting a segment's growth was refused for want of it   2026-09-18
+Corrects:   the 6.2 entry records the segment table stored as the archive renders it, and its
+            correction of 2026-09-18 keeps the filing's other tables of revenue beside it. Each
+            table states the year-earlier column beside the quarter's, and the change between them
+            is what a section quotes and a reader of the table asks next; no row carried it, and
+            the screen and the assembler compute nothing.
+Found:      on 2026-09-18, in the first live research pass, NVDA's: the two cases were refused for
+            data center revenue up 117%, and nothing the store held carried a segment's or a
+            platform's change.
+Measured:   NVDA's table by market platform, captured the same day, states data center revenue of
+            89,023 for the quarter to 2026-07-26 and 41,096 for the quarter to 2025-07-27, in
+            millions, a change of 116.6%, which the prose rounded to 117%; its segment table states
+            Compute & Networking at 88,299 against 41,331, and Graphics at 7,922 against 5,412.
+Repaired:   the fundamentals fetcher computes, for the segment table and each other revenue table,
+            each group's change on the same months a year before from the two columns the table
+            states: the newest quarter it files, or its newest period where it files none, against
+            the period of the same months ending within a week of a year before. A group is named
+            by its position and its label, the company's own rows being position zero, and a
+            figure whose year-earlier value is zero or below grows by nothing, which leaves every
+            cost the tables parenthesise without one. It sits on the newest filing's row as
+            `tableGrowth`, the source column naming it computed from the filing's own tables.
+            DECISIONS records it as A group's growth in a filing's own tables is computed from the
+            columns the table states; SCHEMA's note on the payload says so, with its prior text in
+            CHANGELOG. The facts file reads it with the evidence correction that records the
+            fixture's model calls again.
+Stored:     nothing rewritten: rows are never updated, and a name's next fetch stores the part.
+Missed:     the tables were stored as rendered and nothing asked what a reader compares them with.
+Guarded:    over the fixture with the archive read, AAPL's net sales grow by 0.163565 for the
+            company and 0.111243 for the Americas, the quarter to 2026-06-27 against the one to
+            2025-06-28, as worked by hand from the captured table; NVDA's data center revenue grows
+            by 1.166221 in the table by market platform put on the read; every figure is a
+            quarter's and none is a cost; and only the newest row carries the part.
+Expected:   derived: the figures are worked by hand from the captured tables; no expectation file
+            changes.
+Tests:      1086, from 1085. One added to the fetcher's tests. No file this correction edits is a
+            source either evaluator version or the ladder rules' code version pins, so no pin
+            moves.
+Mutated:    the rule, stated before the sweep: break each of the three properties this correction
+            adds, the year-earlier column being a year before, the company's own rows among the
+            groups, and no growth on a base of zero or below.
+            Predicted:
+            M1 the year-earlier column taken as the same period: the table growth test red on the
+            company's net sales; nothing else.
+            M2 the company's own rows left out: the table growth test red on the company's net
+            sales; nothing else.
+            M3 a cost grown on its negative base: the table growth test red on a cost; nothing
+            else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.
