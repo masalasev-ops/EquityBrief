@@ -531,6 +531,54 @@ public class FundamentalsFetcherTests
         Assert.Contains("absent: segments, revenueTables, guidance, facts", Detail(store), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task EachRowCarriesItsGrowthOnTheSameQuarterAYearBeforeAndOnTheQuarterBeforeIt()
+    {
+        // AAPL's quarter to June 2026 against the same quarter of 2025 and against the one to
+        // March 2026, worked by hand from the captured payload: revenue 109,417 against 94,036
+        // and 111,184 millions, net income 29,789 against 23,434 millions, and earnings per
+        // share 2.02 against 1.57, each change a fraction of the earlier figure.
+        using var store = new TemporaryStore().Migrated();
+
+        await Fetcher(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        var rows = Rows(store, "AAPL");
+
+        using var newest = JsonDocument.Parse(rows[0].Payload);
+
+        var growth = newest.RootElement.GetProperty("growth");
+
+        Assert.Equal("2025-06-30", growth.GetProperty("yearEarlier").GetString());
+        Assert.Equal("0.163565", growth.GetProperty("revenue").GetString());
+        Assert.Equal("0.271187", growth.GetProperty("netIncome").GetString());
+        Assert.Equal("0.286624", growth.GetProperty("epsActual").GetString());
+        Assert.Equal("2026-03-31", growth.GetProperty("quarterBefore").GetString());
+        Assert.Equal("-0.015893", growth.GetProperty("revenueOnTheQuarterBefore").GetString());
+
+        using var source = JsonDocument.Parse(rows[0].Source);
+
+        Assert.Equal(FundamentalsFetcher.ComputedAcrossFilings, source.RootElement.GetProperty(FundamentalsFetcher.GrowthPart).GetString());
+
+        // The two oldest rows stored, whose quarters a year before the capture does not hold,
+        // carry the quarter before and no year's growth rather than a guessed one.
+        Assert.All(rows.TakeLast(2), row =>
+        {
+            using var older = JsonDocument.Parse(row.Payload);
+
+            var grown = older.RootElement.GetProperty("growth");
+
+            Assert.Equal(JsonValueKind.Null, grown.GetProperty("yearEarlier").ValueKind);
+            Assert.Equal(JsonValueKind.Null, grown.GetProperty("revenue").ValueKind);
+            Assert.Equal(JsonValueKind.String, grown.GetProperty("quarterBefore").ValueKind);
+        });
+
+        // An earlier figure of zero or less, or none, gives no growth.
+        Assert.Equal(1.5m, FundamentalsFetcher.Grown(5m, 2m));
+        Assert.Null(FundamentalsFetcher.Grown(5m, 0m));
+        Assert.Null(FundamentalsFetcher.Grown(5m, -2m));
+        Assert.Null(FundamentalsFetcher.Grown(null, 2m));
+    }
+
     // An archive answering as the recorded one does, with other tables of revenue by a
     // grouping put on the read, which neither filer the recording holds files.
     sealed class WithRevenueTables(IFilingsArchiveFeed inner, IReadOnlyList<SegmentBreakdown> tables) : IFilingsArchiveFeed

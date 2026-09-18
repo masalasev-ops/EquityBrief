@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - SCHEMA.md - the fundamentals row carries the quarter's growth
+
+Authorised by: A quarter's growth is computed on its own row from the filings the provider returned
+Was:
+> `payload` holds the quarter's figures, the balance sheet, and the margin computed from that filing's own revenue and gross profit,
+Now:
+> `payload` holds the quarter's figures, the balance sheet, the margin computed from that filing's own revenue and gross profit, and the quarter's growth on the same quarter a year before and on the quarter before it, computed from the earlier filings returned with it (see: A quarter's growth is computed on its own row from the filings the provider returned),
+Why: a section quoting a quarter's growth was refused because nothing the store held carried the change, and the screen computes nothing.
+
 ### 2026-09-18 - SCHEMA.md - the fundamentals row carries the filing's other tables of revenue by a grouping
 
 Authorised by: The filing's other tables of revenue by a grouping are kept beside its segment table
