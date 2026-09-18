@@ -14508,11 +14508,11 @@ Mutated:    the rule, stated before the sweep: one mutation per kind of defect t
             tests, four reading 3 where 4 is expected, one 6 where 8 is, one 12 where 16 is, and one
             3 names left out and 1 score written where 2 and 2 are; and the pin test on
             d808e5546d5b.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1052 of 1052 tests
             ran with none failed, migrations 0 to 28 with migration 28 the one added and none
             pending, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at
-            <C> claims, <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts
-            reconciled against a floor of 34, <K> of <K> roster checks carried and all <K> run. No
+            366 claims, 366 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 373 placements and verdicts
+            reconciled against a floor of 34, 37 of 37 roster checks carried and all 37 run. No
             claim added and none moved: section 14's version step keeps its place and its claim
             under its new words, the rows this correction edits keep their keys, and `nightly-cost`
             now declares reach over the version bound's row beside `rule-versions-scored`, whose
