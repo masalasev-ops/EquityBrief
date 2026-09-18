@@ -22,37 +22,36 @@ internal static class Corpus
     // It refuses rather than returning what it found, because a directory read
     // is the one population shape that fails silently: an empty result leaves
     // every assertion over it of the "none of them disagreed" form, and the run
-    // is green having read nothing. The floor is the four files the corpus has,
-    // stated rather than derived, so adding a fifth is a change here as well.
+    // is green having read nothing. The floor guards a read that has emptied and
+    // is not a count of the files, which `stated-counts` holds against CLAUDE.md.
     //
     // Repo-relative with forward slashes, which is the spelling `git show
     // --numstat` hands `changelog-reconciles` and the spelling `Read` turns into
     // a platform path. A `Path.Combine` here would be a backslash on Windows and
     // would match nothing in the history, green on one machine and right on the
     // other.
-    internal static IReadOnlyList<string> Rules
+    internal const int RulesFloor = 4;
+
+    internal static IReadOnlyList<string> Rules => RulesIn(Path.Combine(Repository.Root, ".claude", "rules"));
+
+    internal static IReadOnlyList<string> RulesIn(string directory)
     {
-        get
+        var found = Directory.Exists(directory)
+            ? Directory.GetFiles(directory, "*.md")
+                .Select(path => ".claude/rules/" + Path.GetFileName(path))
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray()
+            : [];
+
+        if (found.Length < RulesFloor)
         {
-            var directory = Path.Combine(Repository.Root, ".claude", "rules");
-
-            var found = Directory.Exists(directory)
-                ? Directory.GetFiles(directory, "*.md")
-                    .Select(path => ".claude/rules/" + Path.GetFileName(path))
-                    .OrderBy(path => path, StringComparer.Ordinal)
-                    .ToArray()
-                : [];
-
-            if (found.Length < 4)
-            {
-                throw new InvalidOperationException(
-                    $"Read {found.Length} rules files from .claude/rules, expected at least 4. " +
-                    "A directory read that returned nothing would assert every property over an " +
-                    "empty set and report green having widened nothing, so this refuses instead.");
-            }
-
-            return found;
+            throw new InvalidOperationException(
+                $"Read {found.Length} rules files from .claude/rules, expected at least {RulesFloor}. " +
+                "A directory read that returned nothing would assert every property over an " +
+                "empty set and report green having widened nothing, so this refuses instead.");
         }
+
+        return found;
     }
 
     // The specs, with the rules files among them. One member rather than two,

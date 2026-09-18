@@ -97,9 +97,9 @@ public static class ForwardReturnSeries
     // is a value rather than a null so it is counted in its own column: an
     // unresolved setup is never a win.
     //
-    // A setup starts on the first close at or below the zone's top edge, and a
-    // target reached before that close is `never entered`: the move happened at a
-    // price the plan did not offer to buy at.
+    // A setup starts on the first close at or below the zone's top edge and inside
+    // the plan's own range, and a target reached before that close is `never
+    // entered`: the move happened at a price the plan did not offer to buy at.
     //
     // Everything here is read on closes, as the stop and the target already were,
     // because a daily bar does not say what order a session's prices came in and a
@@ -158,18 +158,14 @@ public static class ForwardReturnSeries
         var ceiling = storedTarget * restated;
         var zoneTop = entryHigh * restated;
 
-        // A plan with no entry zone is scored from the listing, as every setup was
-        // until 8.1. Nothing the shortlist builder writes is such a plan, and the
-        // arithmetic says what it does with one rather than refusing a row the
-        // store could hold from before.
-        decimal? entry = null;
+        // An entry is admitted only inside the plan's own range, so the return and
+        // the break-even measured from it are present together or absent together.
+        // see: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone
+        var highestEntry = zoneTop is { } top && top < ceiling ? top : ceiling;
 
-        if (closeAtListing is { } listed)
-        {
-            entry = zoneTop is { } top
-                ? listed <= top && listed >= floor ? listed : null
-                : listed;
-        }
+        decimal? entry = closeAtListing is { } listed && listed >= floor && listed <= highestEntry
+            ? listed
+            : null;
 
         foreach (var bar in after.Take(SetupSessionCap))
         {
@@ -187,9 +183,8 @@ public static class ForwardReturnSeries
                 // rather than a figure of zero, which would read as a trade that
                 // went nowhere. The break-even goes with it, for the same reason
                 // and not a second one: it is the bar the entry close set, and an
-                // entry close nobody knows sets none. Five of the 93 setups the
-                // operator's store had resolved on 2026-09-16 are this shape, so
-                // it is a population to state rather than a case to wave at.
+                // entry close nobody knows sets none. Stored setups take this shape,
+                // so it is a population to state rather than a case to wave at.
                 return entry is { } at
                     ? new ForwardReturn(Setup, Loss, bar.SessionDate, ChangeFromEntry(at, bar.Close), BreakEven(at, floor, ceiling))
                     : new ForwardReturn(Setup, Loss, bar.SessionDate, null, null);
@@ -204,7 +199,7 @@ public static class ForwardReturnSeries
                     return new ForwardReturn(Setup, NeverEntered, bar.SessionDate, null);
                 }
 
-                if (zoneTop is { } edge && bar.Close <= edge)
+                if (bar.Close <= highestEntry)
                 {
                     entry = bar.Close;
                 }
@@ -268,11 +263,9 @@ public static class ForwardReturnSeries
     // landed on, so the denominator is `target - stop` and the figure is a share
     // of it. That is why it exists only where the entry sits inside the range: a
     // plan entered above its own target or below its own stop yields no share, and
-    // it refuses rather than returning a number outside nought and one. Neither is
-    // a shape the builder writes, since a close through the stop resolves before
-    // the entry is read and a close at the target resolves before the zone is, and
-    // the refusal is here for the same reason the stop-at-or-above-target refusal
-    // in the caller is.
+    // it refuses rather than returning a number outside nought and one hundred. The
+    // caller admits an entry only inside the range, so no call from it reaches the
+    // refusal.
     //
     // A percentage rather than a fraction, which is the form the two figures on
     // the same row carry and the form the share it is tested against carries. The
@@ -308,9 +301,9 @@ public static class ForwardReturnSeries
     // The population is the resolved setups carrying a break-even and no others,
     // because the share and the bar are a pair. A share tested against a bar has
     // to be the share of the rows that bar was averaged over, and a setup that
-    // entered and stopped on one session is resolved and set no bar. Five of the
-    // 93 the operator's store had resolved on 2026-09-16 are that shape, so the
-    // two counts are stated apart rather than assumed equal.
+    // entered and stopped on one session is resolved and set no bar. Stored
+    // setups take that shape, so the two counts are stated apart rather than
+    // assumed equal.
     //
     // The arithmetic is here rather than in the projection that calls it, for the
     // reason the base rate's is: a rendering layer that computes is a second

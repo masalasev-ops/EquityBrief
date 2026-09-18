@@ -205,7 +205,7 @@ internal sealed class SuiteOutcomes
         // [Fact(Skip = "...")] leaves the suite's own exit code at zero as well,
         // so two attributes were the whole distance between this repair working
         // and not working. A check that narrows its own scope keeps passing is
-        // the shape CLAUDE.md names as the one that survives, and this was it.
+        // the shape .claude/rules/checks.md names as the one that survives, and this was it.
         var notPassing = mine
             .Where(result => !string.Equals(result.Outcome, "Passed", StringComparison.OrdinalIgnoreCase))
             .ToArray();

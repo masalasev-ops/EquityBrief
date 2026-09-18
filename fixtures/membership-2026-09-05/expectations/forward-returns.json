@@ -1,7 +1,7 @@
 {
  "stage": "forward returns",
  "derivation": "derived",
- "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero. The setup outcomes 8.1 added cannot be reached over a fixture whose listings have no session after them, so the cases below are worked by hand from one plan and read by the suite from this file rather than written into the test. The break-even cases below are worked the same way, from the plan's own three prices rather than from a run, and they include section 13's own tranche so the figure the document states is the figure the code produces. A setup scored after a split or dividend has restated its closes, an outcome kept once it is decided, and a setup that reaches its target only after the cap are worked by hand the same way, each from the rule rather than from a run, because no fixture night has a session after its listings, let alone a restatement after one.",
+ "derivedFrom": "the rules in section 7 and section 17, not from a run. Each horizon is recomputed in the suite from the bars after the listing and the plan the listing stored, and the base rate is recomputed over every name-night rather than over the rows where a reason fired. The committed fixture holds one night per name and its listings sit on the last stored session, so nothing has matured: that is the state the expectation is about, and it is asserted as not yet matured rather than as a blank or a zero. The setup outcomes 8.1 added cannot be reached over the fixture's own listings, which have no session after them, so the cases below are worked by hand from one plan and read by the suite from this file rather than written into the test. The first of them is also stored through the filler, on a constructed listing dated on the fixture's last session: filled once with nothing after it, and again once its closes are stored on the exchange sessions that follow, which is the row a setup maturing on a later night is written to. The break-even cases below are worked the same way, from the plan's own three prices rather than from a run, and they include section 13's own tranche so the figure the document states is the figure the code produces. A setup scored after a split or dividend has restated its closes, an outcome kept once it is decided, and a setup that reaches its target only after the cap are worked by hand the same way, each from the rule rather than from a run, because no fixture night has a session after its listings, let alone a restatement after one.",
  "tables": [
   "forward_return"
  ],
@@ -17,7 +17,7 @@
   "stopBeforeTarget": "a session that closed through both was stopped out before it could reach anything",
   "baseRatePopulation": "every name-night in the window, not the rows where a reason fired",
   "baseRateForSetup": "null, because target before stop is a question about a plan and a name with no plan has no answer to it",
-  "entry": "a setup starts on the first close at or below its entry zone's top edge, the listing night's own close included",
+  "entry": "a setup starts on the first close at or below its entry zone's top edge, the listing night's own close included, and only inside the plan's own range: at or above its stop and at or below its target, a plan with no entry zone taking its whole range as the zone",
   "neverEntered": "a target reached before that close, and a setup still unentered at the cap: its own value and its own column, never a win and never in a rate",
   "stopBeforeEntry": "a close at or below the zone's top edge that is also through the stop is entered and stopped on that session, because a fall through the whole plan is a trade that happened",
   "capFromTheListing": "the 63 sessions are counted from the listing night and not from the entry, since the plan being scored is the one stored that night",
@@ -109,6 +109,16 @@
    "resolvedOn": "2026-03-05",
    "returnPct": 5.0,
    "breakEven": 50.0
+  },
+  "maturedOnALaterNight": {
+   "note": "the first case above, stored through the filler: filled on the night it was listed, with no session after it, its setup row carries nothing; filled again once its closes are stored on the exchange sessions after the listing, the same row carries the case's outcome, the session its resolving close is stored on, its return and its bar",
+   "case": "entered on the listing night and reached",
+   "firstNight": {
+    "outcome": null,
+    "resolvedOn": null,
+    "returnPct": null,
+    "breakEven": null
+   }
   }
  },
  "breakEven": {
@@ -169,15 +179,49 @@
     "breakEven": 100.0
    }
   ],
-  "refused": [
+  "outsideTheRange": [
    {
-    "case": "an entry above the plan's own target, which is not a share of anything",
-    "entryClose": "120",
+    "case": "an entry zone whose top edge sits above the plan's own target, listed between the two, which the target has already passed",
+    "entryHigh": "120",
     "stop": "90",
-    "firstTradedTarget": "110"
+    "firstTradedTarget": "110",
+    "listedAt": "115",
+    "closes": [
+     "116"
+    ],
+    "outcome": "never entered",
+    "returnPct": null,
+    "breakEven": null
+   },
+   {
+    "case": "a plan with no entry zone, listed below its own stop and entered when a close comes back inside its range",
+    "entryHigh": null,
+    "stop": "90",
+    "firstTradedTarget": "110",
+    "listedAt": "85",
+    "closes": [
+     "100",
+     "112"
+    ],
+    "outcome": "win",
+    "returnPct": 12.0,
+    "breakEven": 50.0
+   },
+   {
+    "case": "a plan with no entry zone, listed above its own target",
+    "entryHigh": null,
+    "stop": "90",
+    "firstTradedTarget": "110",
+    "listedAt": "120",
+    "closes": [
+     "125"
+    ],
+    "outcome": "never entered",
+    "returnPct": null,
+    "breakEven": null
    }
   ],
-  "refusedNote": "an entry above the plan's own target is a shape a stored plan can take, being an entry zone whose top edge sits at or above the target, and the arithmetic refuses it rather than returning a number outside nought and one hundred. The other half of the refusal, an entry below the stop, is a shape the series cannot produce: a close through the stop resolves as a loss before the entry is read, and the listing night's own close is admitted as an entry only at or above the stop. That half is stated here as the invariant it is rather than asserted over a case the world does not hold."
+  "outsideTheRangeNote": "an entry is admitted only inside the plan's own range, from its stop to the lower of its entry zone's top edge and its target, and a plan with no entry zone takes its whole range as the zone. So no entry sits where the share is undefined, and the return and the bar measured from it are present together and absent together on every plan, including the shapes no stored plan takes."
  },
  "restated": {
   "note": "the same plan, listed on 2026-01-01 at a raw close of 100 and scored after the provider restated the store's closes. `listedAt` and `closes` are the adjusted closes as the store now holds them, `rawListedAt` and `rawCloses` what traded, and the restatement is the listing session's close over its raw close. `withoutTheRestatement` is what the plan at its stored prices gives over the same closes, stated so each case is shown to separate the two.",

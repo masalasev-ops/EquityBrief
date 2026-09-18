@@ -25,6 +25,109 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - CLAUDE.md - a ruling's commit subject and entry opening stated beside the planning pass's
+
+Corrects: the conventions said an entry opening "Not a checkpoint entry" under a ruling's heading lands nothing, and never said that a ruling's entry opens that way or how its commit subject reads, so the 8.2 ruling's entry opened "Built:", its subjects put the word ruling in the checkpoint slot, and the record reads it as building 8.2 a second time. Found by the phase 8 sign-off review.
+Was:
+> nothing: the conventions stated a planning pass's heading and opening and no ruling's.
+Now:
+> **A ruling lands nothing, and its commit and its entry say so.** Its commit subject keeps the checkpoint slot for the checkpoint alone, as `Phase 7 / 7.2 - ruling: ...`, and its PROGRESS entry is headed with that checkpoint and the word ruling, as `### 7.2 ruling - ...`, and opens with **"Not a checkpoint entry"**, as a planning pass's does. An entry opening any other way is read as building its checkpoint, so a ruling filed under a checkpoint that has not landed would land it and make every claim owed there due.
+Why: the three rulings before the 8.2 ruling took this form by precedent alone, and the opening is what the due-point reader reads to decide whether an entry lands its checkpoint.
+
+### 2026-09-18 - .claude/rules/corpus-edits.md - the conventions CLAUDE.md holds include a ruling's subject and opening
+
+Corrects: the paragraph listed the conventions that stayed in `CLAUDE.md` when the editing conventions moved here, so it named no convention written into `CLAUDE.md` after the move, and a session reading this file for where a convention lives would not find a ruling's. Found while correcting the 8.2 ruling's entry.
+Was:
+> The conventions that bind a session working anywhere stayed in CLAUDE.md: the prose
+> convention, the commit subject, which checkpoint a commit belongs to, the planning pass, and
+> anything issued in conversation landing in the repo when it is issued.
+Now:
+> The conventions that bind a session working anywhere are in CLAUDE.md: the prose
+> convention, the commit subject, which checkpoint a commit belongs to, the planning pass, a
+> ruling's subject and opening, and anything issued in conversation landing in the repo when it
+> is issued.
+Why: the paragraph is where a session in `docs/` learns which conventions it will not find in this file, so it names what `CLAUDE.md` holds rather than what stayed there on one day.
+
+### 2026-09-18 - CLAUDE.md - the rules table loads corpus-edits.md for the code and writing-tests.md for the record
+
+Corrects: `corpus-edits.md` loaded only for `docs/**` while it carries the citation forms code writes and the rule that a new component's catalogue row lands in the commit that adds it, and `writing-tests.md` loaded only for the test project while its mutation, survivor and population rules govern a `PROGRESS.md` entry's Mutated and Measured fields. Found by the phase 8 sign-off review.
+Was:
+> | `.claude/rules/writing-tests.md` | `src/EquityBrief.Tests/**` | how an assertion is written: populations, floors, surfaces, mutation classes, and the two rules specific to this tool |
+> | `.claude/rules/corpus-edits.md` | `docs/**` | how the corpus is edited: named decisions, named obligations, deferrals, calendar time, and clean edits |
+Now:
+> | `.claude/rules/writing-tests.md` | `src/EquityBrief.Tests/**`, `docs/PROGRESS.md` | how an assertion is written: populations, floors, surfaces, mutation classes, and the two rules specific to this tool |
+> | `.claude/rules/corpus-edits.md` | `docs/**`, `src/**` | how the corpus is edited: named decisions, named obligations, deferrals, calendar time, and clean edits |
+Why: the table is where a session learns which file loads for what, so it states each file's paths as the file's own front matter does, and `stated-counts` holds the two to one another.
+
+### 2026-09-18 - .claude/rules/writing-tests.md - loads for the record's entries as well as the test project
+
+Corrects: the file's front matter scoped it to the test project alone, while its mutation, survivor and population rules govern the Mutated and Measured fields a `PROGRESS.md` entry records. Found by the phase 8 sign-off review.
+Was:
+> paths: src/EquityBrief.Tests/**
+Now:
+> paths: src/EquityBrief.Tests/**, docs/PROGRESS.md
+Why: a session writing an entry's Mutated and Measured fields is a session these rules bind, and a file scoped to the test project loaded for it only when it happened to open a test first.
+
+### 2026-09-18 - .claude/rules/corpus-edits.md - loads for the code as well as the documents
+
+Corrects: the file's front matter scoped it to `docs/**` alone, while the decision and obligation citation forms it gives are written in code and a new component's catalogue row is owed by the commit that adds the component in `src/`. Found by the phase 8 sign-off review.
+Was:
+> paths: docs/**
+Now:
+> paths: docs/**, src/**
+Why: a session writing a `// see:` or `// owes:` line or adding a component is working in `src/`, and a file scoped to `docs/**` never loaded for it.
+
+### 2026-09-18 - .claude/rules/checks.md - stated-counts holds CLAUDE.md's rules table to the directory
+
+Corrects: `CLAUDE.md` names four rules files in a table, with the paths each loads for, and states the count twice, and nothing compared any of it with the directory, so a fifth file or a renamed one left every check green and the table stale. Found by the phase 8 sign-off review.
+Was:
+> | `stated-counts` | every CI run | Every count a spec states about itself matches the derived count. Record entries are dated measurements and are exempt |
+Now:
+> | `stated-counts` | every CI run | Every count a spec states about itself matches the derived count, and the rules files `CLAUDE.md`'s read order names, with the paths each loads for, are the files the rules directory holds and the paths each one's front matter states. Record entries are dated measurements and are exempt |
+Why: a session learns a rules file exists from that table, and a file the table does not name loads only for a session that already reads under its paths.
+
+### 2026-09-18 - BUILD_PLAN.md - two pointers name the rules file that now holds the rule
+
+Corrects: two passages still sent a reader to `CLAUDE.md` for rules the 8.2 ruling moved into `.claude/rules/`, where a search of `CLAUDE.md` finds nothing. Found by the phase 8 sign-off review.
+Was, in the holes table's base rate row:
+> on `CLAUDE.md`'s own rule that a figure over listed names only is a figure over the wrong population.
+Was, in 5.7:
+> `CLAUDE.md`'s deferral convention already names that failure: a deferral fails **never**, where the named point is a report or a page rather than the thing that measures.
+Now:
+> on the rule in `.claude/rules/writing-tests.md` that a figure over listed names only is a figure over the wrong population.
+>
+> The deferral convention in `.claude/rules/corpus-edits.md` already names that failure: a deferral fails **never**, where the named point is a report or a page rather than the thing that measures.
+Why: a pointer to the file a rule left reads as the rule having been dropped.
+
+### 2026-09-18 - CLAUDE.md - the layout block's rules row and .gitignore clause, recorded after the edit
+
+Corrects: the prior text was changed with no entry recording it. The 8.2 ruling's commit e8bc531 added the `.claude/rules` row and a clause on the `.gitignore` line, and none of that commit's entries names the layout block. Found by the phase 8 sign-off review.
+Was:
+> CLAUDE.md         these rules, read first every session
+> source-lists.json the two open-web lists a research search may return, with their review date
+>
+> .gitignore        the store, the prompts archive, the harness output, the secrets
+>                   files and the local harness settings
+Now:
+> CLAUDE.md         these rules, read first every session
+> .claude/rules     four path-scoped rules files, tracked, holding this file's own
+>                   reference material where it loads for the session that needs it
+> source-lists.json the two open-web lists a research search may return, with their review date
+>
+> .gitignore        the store, the prompts archive, the harness output, the secrets
+>                   files and the local harness settings, less `.claude/rules`,
+>                   which is tracked
+Why: the layout block is where a reader learns what each root path is, and the rules directory is tracked under a carve-out from the harness settings the `.gitignore` line names.
+
+### 2026-09-18 - SCHEMA.md - break_even and return_pct state the range an entry is admitted in
+
+Authorised by: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone
+Was:
+> Five of the 93 setups the operator's store had resolved on 2026-09-16 were that shape, which is why the figures computed over these rows state the population they were computed over rather than counting every resolved row.
+Now:
+> Five of the 93 setups the operator's store had resolved on 2026-09-16 were that shape, which is why the figures computed over these rows state the population they were computed over rather than counting every resolved row. An entry is admitted only inside the plan's own range, from its stop to the lower of its entry zone's top edge and its target, so no entry sits where the share is undefined (see: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone).
+Why: the paragraph states a property of every row, and it holds on every path the arithmetic takes only because the decision narrows where an entry is admitted.
+
 ### 2026-09-18 - ARCHITECTURE.html - section 17's minimum and record display rows and 15.11's below row name the set a reason is counted over
 
 Authorised by: A reason's share, verdict and both floors are counted over the resolved setups that set a bar

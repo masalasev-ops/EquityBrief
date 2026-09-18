@@ -1,5 +1,5 @@
 ---
-paths: docs/**
+paths: docs/**, src/**
 ---
 
 # Editing the corpus
@@ -10,9 +10,10 @@ not already state. Where the text below says "this file", it was written in CLAU
 means CLAUDE.md; where it points above or below, it points inside this file unless it names
 something else.
 
-The conventions that bind a session working anywhere stayed in CLAUDE.md: the prose
-convention, the commit subject, which checkpoint a commit belongs to, the planning pass, and
-anything issued in conversation landing in the repo when it is issued.
+The conventions that bind a session working anywhere are in CLAUDE.md: the prose
+convention, the commit subject, which checkpoint a commit belongs to, the planning pass, a
+ruling's subject and opening, and anything issued in conversation landing in the repo when it
+is issued.
 
 ## Corpus editing conventions
 

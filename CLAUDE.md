@@ -37,8 +37,8 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
 | Rules file | Loads for | What it covers |
 |---|---|---|
 | `.claude/rules/checks.md` | `tools/**`, `src/EquityBrief.Tests/**` | the checks roster, every check that runs and what each asserts, and what a roster row, a floor and a declared reach mean |
-| `.claude/rules/writing-tests.md` | `src/EquityBrief.Tests/**` | how an assertion is written: populations, floors, surfaces, mutation classes, and the two rules specific to this tool |
-| `.claude/rules/corpus-edits.md` | `docs/**` | how the corpus is edited: named decisions, named obligations, deferrals, calendar time, and clean edits |
+| `.claude/rules/writing-tests.md` | `src/EquityBrief.Tests/**`, `docs/PROGRESS.md` | how an assertion is written: populations, floors, surfaces, mutation classes, and the two rules specific to this tool |
+| `.claude/rules/corpus-edits.md` | `docs/**`, `src/**` | how the corpus is edited: named decisions, named obligations, deferrals, calendar time, and clean edits |
 | `.claude/rules/scripts.md` | `tools/**` | what the scripts do and what a green report says: the wrapper contract, `tools/ci.*`, `tools/verify-phase` and the store it drops |
 
 ## Repository layout
@@ -150,6 +150,8 @@ Named, and cited by name. A violation is a defect regardless of what else is tru
 **A commit belongs to the checkpoint that authorises the work, never to the phase whose subject matter the edited text happens to describe.** A wording repair to the screens section during phase 1 is phase 1 work. The clause above is about an obligation: a checkpoint owes something and the work discharging it arrives early. It is not about what the text is about, and reading it that way puts a later phase's number on a commit that phase did not authorise and does not advance. That is worse than an untidy log, because a checkpoint from an unbuilt phase reaching `PROGRESS.md` makes the reconciliation refuse every claim still owed at it: out of scope means a point that has not been reached, and `HasLanded` reads this record to decide.
 
 **The pass that plans a phase belongs to the phase it plans, at that phase's opening checkpoint.** `Phase 2 / 2.0` for the pass that writes phase 2's section, not `Phase 1 / 1.8`. A PROGRESS entry for such a pass is headed with that checkpoint and the word planning, as `### 2.0 planning - ...`, and opens with **"Not a checkpoint entry"**, because it lands that checkpoint and never its phase: planning a phase builds none of it. An entry opening that way under any other heading, a ruling among them, lands nothing. Code such a pass or a ruling carries into shipped source meets the done conditions a checkpoint's code meets, and a correction to it is labelled for the checkpoint the pass belongs to (see: Code a pass that lands no checkpoint carries into shipped source meets the done conditions a checkpoint's code meets).
+
+**A ruling lands nothing, and its commit and its entry say so.** Its commit subject keeps the checkpoint slot for the checkpoint alone, as `Phase 7 / 7.2 - ruling: ...`, and its PROGRESS entry is headed with that checkpoint and the word ruling, as `### 7.2 ruling - ...`, and opens with **"Not a checkpoint entry"**, as a planning pass's does. An entry opening any other way is read as building its checkpoint, so a ruling filed under a checkpoint that has not landed would land it and make every claim owed there due.
 
 **Anything issued in conversation that will later be cited must land in the repo when it is issued,** not afterwards. A citation to something that lives only in a chat transcript is a hole in the record.
 

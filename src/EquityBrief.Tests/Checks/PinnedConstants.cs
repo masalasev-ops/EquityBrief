@@ -20,7 +20,7 @@ public class PinnedConstants
     // stated in a spec: they carry CLAUDE.md's own text, and a version that moved
     // in the file that loads for a session working in `tools/` is exactly the one
     // that would go unread.
-    static IReadOnlyDictionary<string, string> Specs() =>
+    internal static IReadOnlyDictionary<string, string> Specs() =>
         Corpus.SpecsAndRules.ToDictionary(spec => spec, Corpus.Read, StringComparer.Ordinal);
 
     [Fact]

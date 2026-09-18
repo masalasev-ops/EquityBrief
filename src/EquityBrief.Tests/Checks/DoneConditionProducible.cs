@@ -5,7 +5,7 @@ namespace EquityBrief.Tests.Checks;
 // done-condition-producible. No done condition in a spec waits on evidence that
 // only the calendar produces.
 //
-// The rule exists in CLAUDE.md and arrived at 5.7 with nothing asserting it.
+// The rule exists in .claude/rules/corpus-edits.md and arrived at 5.7 with nothing asserting it.
 // 5.7 found its own done condition reading as a week of unattended nights,
 // amended it, and swept one of the four places the corpus stated it, so section
 // 20 went on saying the phase was done when a week of nights had run. The phase
@@ -53,7 +53,7 @@ public class DoneConditionProducible
 
     // The two places a done condition is written. Nowhere else states one, and
     // scanning wider would read the rule that forbids this as a use of it:
-    // CLAUDE.md's own convention has to contain the words "a week of unattended
+    // the convention in .claude/rules/corpus-edits.md has to contain the words "a week of unattended
     // nights" in order to name what it refuses, exactly as banned-prose has to
     // exempt the sentence naming its string.
     internal static IReadOnlyList<CorpusFinding> Findings()
