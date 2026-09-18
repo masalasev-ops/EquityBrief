@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - SCHEMA.md - the fundamentals row carries each table group's growth
+
+Authorised by: A group's growth in a filing's own tables is computed from the columns the table states
+Was:
+> `revenueTables` holds the filing's other tables of revenue by a grouping, by market, product or region, each in that shape (see: The filing's other tables of revenue by a grouping are kept beside its segment table); `guidance`
+Now:
+> `revenueTables` holds the filing's other tables of revenue by a grouping, by market, product or region, each in that shape (see: The filing's other tables of revenue by a grouping are kept beside its segment table); `tableGrowth` holds each of those tables' groups' change on the same months a year before, computed from the columns the table states (see: A group's growth in a filing's own tables is computed from the columns the table states); `guidance`
+Why: a segment's growth is what a section and a reader of the segment table ask next, and nothing the store held carried it.
+
 ### 2026-09-18 - SCHEMA.md - the membership row carries the company's name
 
 Authorised by: The membership row carries the company's name the index feed states

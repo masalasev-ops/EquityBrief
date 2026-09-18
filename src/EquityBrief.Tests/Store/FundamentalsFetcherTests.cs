@@ -649,6 +649,56 @@ public class FundamentalsFetcherTests
     }
 
     [Fact]
+    public async Task EachGroupOfTheFilingsOwnTablesCarriesItsGrowthOnTheSameMonthsAYearBefore()
+    {
+        // Worked by hand from the captured tables: AAPL's net sales 109,417 against 94,036 millions
+        // for the company and 45,781 against 41,198 for the Americas, the quarter to 2026-06-27
+        // against the one to 2025-06-28; and NVDA's data center revenue 89,023 against 41,096 in
+        // its table by market platform. A cost, parenthesised, is a base below zero and grows by
+        // nothing.
+        using var store = new TemporaryStore().Migrated();
+
+        var page = File.ReadAllText(Path.Combine(Folder(), "segment-report-NVDA-R67.htm"));
+
+        await WithArchive(store, Feed(), new WithRevenueTables(new RecordedFilingsArchiveFeed(Folder()), [SecEdgarArchive.Breakdown(page, "R67.htm")!]))
+            .RunAsync("AAPL", null, "open-1");
+
+        var rows = Rows(store, "AAPL");
+
+        using var newest = JsonDocument.Parse(rows[0].Payload);
+        using var source = JsonDocument.Parse(rows[0].Source);
+
+        var grown = newest.RootElement.GetProperty("tableGrowth").EnumerateArray().ToArray();
+
+        string Of(string report, Func<string, bool> label, string lineItem) => grown
+            .Single(figure => figure.GetProperty("report").GetString() == report
+                && label(figure.GetProperty("label").GetString()!)
+                && figure.GetProperty("lineItem").GetString() == lineItem)
+            .GetProperty("value").GetString()!;
+
+        Assert.Equal("0.163565", Of("R46.htm", label => label == FundamentalsFetcher.CompanyRows, "Net sales"));
+        Assert.Equal("0.111243", Of("R46.htm", label => label.StartsWith("Americas", StringComparison.Ordinal), "Net sales"));
+        Assert.Equal("1.166221", Of("R67.htm", label => label == "Data Center", "Revenue"));
+
+        Assert.All(grown, figure =>
+        {
+            Assert.Equal(3, figure.GetProperty("months").GetInt32());
+            Assert.NotEqual("Cost of sales", figure.GetProperty("lineItem").GetString());
+        });
+
+        Assert.Equal("2025-06-28", grown.First(figure => figure.GetProperty("report").GetString() == "R46.htm").GetProperty("yearEarlier").GetString());
+        Assert.Equal(FundamentalsFetcher.ComputedFromTables, source.RootElement.GetProperty(FundamentalsFetcher.TableGrowthPart).GetString());
+
+        // Only the newest row carries it, beside the tables it is computed from.
+        Assert.All(rows.Skip(1), row =>
+        {
+            using var older = JsonDocument.Parse(row.Payload);
+
+            Assert.Equal(JsonValueKind.Null, older.RootElement.GetProperty("tableGrowth").ValueKind);
+        });
+    }
+
+    [Fact]
     public async Task TheRunLogSaysWhatTheArchiveCostAndWhichReportItRead()
     {
         using var store = new TemporaryStore().Migrated();

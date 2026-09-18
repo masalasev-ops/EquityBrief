@@ -467,6 +467,23 @@ public sealed class FundamentalsFetcher : IComponent
             // on the same row for the same reason and in the segment table's own shape.
             // see: The filing's other tables of revenue by a grouping are kept beside its segment table
             revenueTables = newest && filings?.RevenueTables is { Count: > 0 } tables ? tables.Select(Table) : null,
+            // Each group's change on the same months a year before, in the segment table and the
+            // other revenue tables, computed from the columns each table itself states, beside the
+            // tables it is computed from and so on the newest row alone.
+            // see: A group's growth in a filing's own tables is computed from the columns the table states
+            tableGrowth = newest && filings is not null && TableGrowth(filings) is { Count: > 0 } grown
+                ? grown.Select(figure => new
+                {
+                    report = figure.Report,
+                    group = figure.Group,
+                    label = figure.Label,
+                    lineItem = figure.LineItem,
+                    months = figure.Months,
+                    ended = figure.Ended,
+                    yearEarlier = figure.YearEarlier,
+                    value = figure.Value,
+                })
+                : null,
             // Management's own words, with the exhibit and the date they were filed
             // on, and never a figure taken out of them. A heading locates the
             // passage for five of twelve filers measured, so a passage nobody
@@ -547,6 +564,7 @@ public sealed class FundamentalsFetcher : IComponent
         {
             sources[part] = part == Margin ? Computed
                 : part == GrowthPart ? ComputedAcrossFilings
+                : part == TableGrowthPart ? filings is null ? NotRead : ComputedFromTables
                 : part == PeriodEndPart ? quarter is { } covered && PeriodEnd(covered, filings) is not null ? Archive : Provider
                 : ArchiveParts.Contains(part, StringComparer.Ordinal)
                     ? fromArchive.Contains(part, StringComparer.Ordinal)
@@ -565,12 +583,18 @@ public sealed class FundamentalsFetcher : IComponent
     public static readonly string[] Parts =
     [
         "periodEnd", "quarter", "margin", "growth", "balanceSheet", "earnings", "epsBases", "valuation",
-        "marketCapitalisation", "estimated", "segments", "revenueTables", "guidance", "facts",
+        "marketCapitalisation", "estimated", "segments", "revenueTables", "tableGrowth", "guidance", "facts",
     ];
 
     public const string Margin = "margin";
 
     public const string GrowthPart = "growth";
+
+    public const string TableGrowthPart = "tableGrowth";
+
+    // What the table growth part's source says: computed from the columns of the archive's own
+    // tables, which the archive was read for.
+    public const string ComputedFromTables = "computed from the filing's own tables";
 
     public const string PeriodEndPart = "periodEnd";
 
@@ -604,6 +628,70 @@ public sealed class FundamentalsFetcher : IComponent
     // A revenue of zero gives no margin rather than a division, and a revenue the
     // provider did not file gives none either. Zero would be a figure a reader
     // acts on and this system does not write one it cannot derive.
+    // One figure's change on the same figure a year before, as a table states both. The group is
+    // named by its position as well as its label, because two groups of one table can share a
+    // label; the rows above the first grouping, the company's own, are position zero.
+    internal sealed record GrownFigure(string Report, int Group, string Label, string LineItem, int Months, string Ended, string YearEarlier, string Value);
+
+    // Every figure in the newest period of the segment table and the other revenue tables that
+    // the same table states for the same months ending within a week of a year before, and its
+    // change: the newest period being the newest quarter the table files, or its newest period
+    // where it files no quarter.
+    internal static IReadOnlyList<GrownFigure> TableGrowth(ArchiveFilings filings)
+    {
+        var grown = new List<GrownFigure>();
+
+        foreach (var table in new[] { filings.Segments }.Concat(filings.RevenueTables ?? []).OfType<SegmentBreakdown>())
+        {
+            var quarters = table.Periods.Where(period => period.Months == QuarterMonths).ToArray();
+            var latest = (quarters.Length > 0 ? quarters : table.Periods)
+                .OrderBy(period => period.Ended)
+                .ThenBy(period => period.Months)
+                .LastOrDefault();
+
+            var yearBefore = latest is null ? null : table.Periods
+                .Where(period => period.Months == latest.Months
+                    && Math.Abs(period.Ended.DayNumber - latest.Ended.AddYears(-1).DayNumber) <= PeriodEndDays)
+                .OrderBy(period => Math.Abs(period.Ended.DayNumber - latest.Ended.AddYears(-1).DayNumber))
+                .FirstOrDefault();
+
+            if (latest is null || yearBefore is null)
+            {
+                continue;
+            }
+
+            var groups = new List<(int Position, string Label, IReadOnlyList<SegmentFigure> Figures)> { (0, CompanyRows, table.Consolidated) };
+
+            groups.AddRange(table.Groups.Select((group, at) => (at + 1, group.Label, group.Figures)));
+
+            foreach (var (position, label, figures) in groups)
+            {
+                foreach (var now in figures.Where(figure => figure.Period == latest && figure.Value is not null))
+                {
+                    var then = figures.FirstOrDefault(figure =>
+                        figure.Period == yearBefore
+                        && string.Equals(figure.Concept, now.Concept, StringComparison.Ordinal)
+                        && string.Equals(figure.LineItem, now.LineItem, StringComparison.Ordinal));
+
+                    if (Grown(now.Value, then?.Value) is { } change)
+                    {
+                        grown.Add(new GrownFigure(
+                            table.Report, position, label, now.LineItem, latest.Months,
+                            Stored(latest.Ended), Stored(yearBefore.Ended), Money(change)!));
+                    }
+                }
+            }
+        }
+
+        return grown;
+    }
+
+    // How a table's rows above its first grouping are named, being the company's own.
+    public const string CompanyRows = "total";
+
+    // The months a quarter's column covers, which a table's newest quarter is read by.
+    const int QuarterMonths = 3;
+
     // The quarters a year and three months before one, among the filings the provider
     // returned, each the one ending nearest that date within a week, or none.
     internal static (FiledQuarter? YearEarlier, FiledQuarter? QuarterBefore) Growth(IReadOnlyList<FiledQuarter> filed, FiledQuarter quarter)
