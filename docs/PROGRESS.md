@@ -15629,3 +15629,71 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 6.1 - correction: each quarter's growth on the year and the quarter before is computed on its own row, where a section quoting it was refused for want of it   2026-09-18
+Corrects:   the 6.1 entry records the fundamentals fetcher storing each filing's figures and a
+            margin computed from them. A quarter's change on the same quarter a year before is what
+            a results release and a section lead with, and no row carried it, so the facts file
+            could not, and the screen, which computes nothing, could not state it either.
+Found:      on 2026-09-18, in the first live research pass, NVDA's: the two cases were refused for,
+            among others, revenue up 106% on a year earlier; the facts file held the quarter's
+            revenue and neither the year-earlier figure nor the change.
+Measured:   read immutable from a copy of the operator's store taken after that pass: NVDA's newest
+            row, filed 2026-08-26, holds revenue of 96221000000.00 and the row filed 2025-08-27
+            holds 46743000000.00, a change of 105.9%, which the prose rounded to 106%; no row holds
+            any change. The provider returned 110 filings for the name in the one request the fetch
+            made, so every stored quarter's year-earlier quarter was in hand.
+Repaired:   every row carries a growth part computed by the fetcher from the filings the provider
+            returned: revenue, net income and earnings per share against the quarter ending within
+            a week of a year before, revenue against the one ending within a week of three months
+            before, each as a fraction of the earlier figure and rounded as a margin is, with the
+            two earlier quarters' ends beside them; none where no such filing was returned or the
+            earlier figure is zero or less. The source column names it computed from this filing
+            and the earlier ones returned with it. DECISIONS records it as A quarter's growth is
+            computed on its own row from the filings the provider returned; SCHEMA's note on the
+            payload says so, with its prior text in CHANGELOG. The facts file reads it with the
+            evidence correction that records the fixture's model calls again.
+Stored:     nothing rewritten: rows are never updated, and a name's next fetch stores the part.
+Missed:     the margin was the one computed figure on a row, and nothing asked what a quarter is
+            compared with.
+Guarded:    AAPL's quarter to June 2026 carries, worked by hand from the captured payload, revenue
+            up 0.163565 on 94,036 millions a year before, net income up 0.271187, earnings per share
+            up 0.286624 on 1.57, and revenue down 0.015893 on the quarter before; the two oldest
+            stored rows, whose year-earlier quarters the capture does not hold, carry the quarter
+            before and no year's growth; an earlier figure of zero or less or none gives none; and
+            the source column names the part computed.
+Expected:   derived: the figures are worked by hand from the captured payload; no expectation file
+            changes.
+Tests:      1082, from 1081. One added to the fetcher's tests. No file this correction edits is a
+            source either evaluator version or the ladder rules' code version pins, so no pin
+            moves.
+Mutated:    the rule, stated before the sweep: break each of the three properties this correction
+            adds, the earlier quarter being the one a year before, no growth on a base of zero or
+            less, and the source naming the part computed.
+            Predicted:
+            M1 the year-earlier quarter taken two years back: the growth test red on the year
+            earlier's end; nothing else.
+            M2 growth computed on a negative base: the growth test red on the negative base;
+            nothing else.
+            M3 the part's source not named: the growth test red on the source; nothing else.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1081 of 1082 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the growth test on the year earlier's end, June 2024 where June 2025
+            was expected.
+            M2 turned 1 red, the growth test on the negative base, a growth where none was expected.
+            M3 turned 1 red, the growth test on the source, naming the provider.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1082 of 1082 tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html`, and no roster row
+            changed. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.
+Carried:    nothing owed by this repair.

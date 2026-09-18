@@ -76,6 +76,10 @@ public sealed class FundamentalsFetcher : IComponent
     // the source column so a later reader knows which is which.
     public const string Computed = "computed from this filing";
 
+    // What the growth part's source says: computed on this row from this filing and the
+    // earlier ones the provider returned with it.
+    public const string ComputedAcrossFilings = "computed from this filing and the earlier ones returned with it";
+
     // How many reported quarters the numbers section states, which is a display
     // decision and not this component's window.
     public const int ReportedQuarters = 5;
@@ -384,6 +388,23 @@ public sealed class FundamentalsFetcher : IComponent
                 grossMargin = Money(Margined(quarter.Figures.GrossProfit, quarter.Figures.Revenue)),
                 netMargin = Money(Margined(quarter.Figures.NetIncome, quarter.Figures.Revenue)),
             },
+            // How this quarter compares with the same quarter a year before and with the one
+            // before it, computed here from the filings the provider returned, as the margin is
+            // from this filing, and never on the screen or in the assembler. The quarters are
+            // the ones ending within a week of a year and of three months before this one's
+            // end, so a fiscal calendar ending its quarters on a weekday finds its own; with no
+            // such filing returned, or an earlier figure of zero or less, there is no growth
+            // rather than a guessed one.
+            // see: A quarter's growth is computed on its own row from the filings the provider returned
+            growth = Growth(fetched.Filed, quarter) is var (yearEarlier, quarterBefore) && (yearEarlier ?? quarterBefore) is not null ? new
+            {
+                yearEarlier = yearEarlier is { } year ? Stored(PeriodEnd(year, filings) ?? year.PeriodEnd) : null,
+                revenue = Money(Grown(quarter.Figures.Revenue, yearEarlier?.Figures.Revenue)),
+                netIncome = Money(Grown(quarter.Figures.NetIncome, yearEarlier?.Figures.NetIncome)),
+                epsActual = Money(Grown(quarter.Earnings?.EpsActual, yearEarlier?.Earnings?.EpsActual)),
+                quarterBefore = quarterBefore is { } before ? Stored(PeriodEnd(before, filings) ?? before.PeriodEnd) : null,
+                revenueOnTheQuarterBefore = Money(Grown(quarter.Figures.Revenue, quarterBefore?.Figures.Revenue)),
+            } : null,
             balanceSheet = new
             {
                 totalAssets = Money(quarter.Sheet.TotalAssets),
@@ -525,6 +546,7 @@ public sealed class FundamentalsFetcher : IComponent
         foreach (var part in Parts)
         {
             sources[part] = part == Margin ? Computed
+                : part == GrowthPart ? ComputedAcrossFilings
                 : part == PeriodEndPart ? quarter is { } covered && PeriodEnd(covered, filings) is not null ? Archive : Provider
                 : ArchiveParts.Contains(part, StringComparer.Ordinal)
                     ? fromArchive.Contains(part, StringComparer.Ordinal)
@@ -542,11 +564,13 @@ public sealed class FundamentalsFetcher : IComponent
     // whose source nobody stated is one a later reader cannot attribute.
     public static readonly string[] Parts =
     [
-        "periodEnd", "quarter", "margin", "balanceSheet", "earnings", "epsBases", "valuation",
+        "periodEnd", "quarter", "margin", "growth", "balanceSheet", "earnings", "epsBases", "valuation",
         "marketCapitalisation", "estimated", "segments", "revenueTables", "guidance", "facts",
     ];
 
     public const string Margin = "margin";
+
+    public const string GrowthPart = "growth";
 
     public const string PeriodEndPart = "periodEnd";
 
@@ -580,6 +604,26 @@ public sealed class FundamentalsFetcher : IComponent
     // A revenue of zero gives no margin rather than a division, and a revenue the
     // provider did not file gives none either. Zero would be a figure a reader
     // acts on and this system does not write one it cannot derive.
+    // The quarters a year and three months before one, among the filings the provider
+    // returned, each the one ending nearest that date within a week, or none.
+    internal static (FiledQuarter? YearEarlier, FiledQuarter? QuarterBefore) Growth(IReadOnlyList<FiledQuarter> filed, FiledQuarter quarter)
+    {
+        FiledQuarter? Near(DateOnly end) => filed
+            .Where(one => Math.Abs(one.PeriodEnd.DayNumber - end.DayNumber) <= PeriodEndDays)
+            .OrderBy(one => Math.Abs(one.PeriodEnd.DayNumber - end.DayNumber))
+            .FirstOrDefault();
+
+        return (Near(quarter.PeriodEnd.AddYears(-1)), Near(quarter.PeriodEnd.AddMonths(-3)));
+    }
+
+    // A figure's change on an earlier one as a fraction of the earlier, rounded as a margin
+    // is, and none where either is missing or the earlier is not above zero. Money on both
+    // sides and decimal out, as a margin is.
+    public static decimal? Grown(decimal? now, decimal? then) =>
+        now is { } current && then is { } earlier && earlier > 0m
+            ? decimal.Round((current - earlier) / earlier, 6, MidpointRounding.ToEven)
+            : null;
+
     public static decimal? Margined(decimal? part, decimal? whole) =>
         part is { } numerator && whole is { } denominator && denominator != 0m
             ? decimal.Round(numerator / denominator, 6, MidpointRounding.ToEven)
