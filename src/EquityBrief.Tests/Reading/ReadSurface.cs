@@ -4467,6 +4467,45 @@ public partial class ReadSurface
         Assert.NotEqual(all, filtered);
     }
 
+    // A ticker the provider has listed under two join dates holds two open spans, and every
+    // screen draws it once, from the span the provider listed most recently.
+    [Fact]
+    public async Task ATickerListedUnderTwoJoinDatesIsDrawnOnceFromTheSpanListedMostRecently()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var sector = Rows(store, "SELECT sector FROM membership WHERE ticker = 'AAPL' AND \"left\" IS NULL;").Single()[0];
+
+        // The span the provider listed before it re-dated a member, and a name with no bars
+        // listed under two join dates, which is stale on every night.
+        store.Execute(
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) VALUES " +
+            "('GSPC', 'AAPL', '2026-08-18', NULL, '2000-01-01T00:00:00Z', 'an earlier span'), " +
+            "('GSPC', 'ZZZZ', '2001-12-03', NULL, '2000-01-01T00:00:00Z', NULL), " +
+            "('GSPC', 'ZZZZ', '2026-08-18', NULL, '2000-01-02T00:00:00Z', NULL);");
+
+        var universe = await Api(store).UniverseAsync(Index);
+
+        Assert.Equal([.. FixtureExpectation.CurrentMembers, "ZZZZ"], universe.Select(row => row.Ticker));
+        Assert.Equal(sector, universe.Single(row => row.Ticker == "AAPL").Sector);
+        Assert.Equal(["ZZZZ"], await Api(store).StaleNamesAsync(Index));
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var route in new[] { "/screens/tonight", "/screens/universe", "/screens/name/AAPL", "/screens/run" })
+        {
+            var response = await client.GetAsync(route);
+
+            Assert.Equal((route, System.Net.HttpStatusCode.OK), (route, response.StatusCode));
+        }
+
+        Assert.Contains(
+            $"data-names=\"{FixtureExpectation.CurrentMembers.Length + 1}\"",
+            await client.GetStringAsync("/screens/universe"),
+            StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TheMarkRouteHandsBackSvgForTheNameItWasAskedFor()
     {

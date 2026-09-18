@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - SCHEMA.md - a ticker holding two open spans is drawn once, from the span observed most recently
+
+Corrects: the membership section stated one row per span and nothing about one ticker holding two open spans, which the provider produced on 2026-09-17 by re-dating VMRK's span; the universe read drew the ticker twice, and tonight's list, every name page and the report export stopped on it. Found on 2026-09-18 by serving the screens over a copy of the operator's store.
+Was:
+> (no paragraph on one ticker holding two open spans)
+Now:
+> **A provider that re-dates a member's span leaves two open rows for one ticker, and a screen draws the one observed most recently.** The upsert is keyed on the join date, so a span whose start the provider corrects is written as a second row, and the first stays open, dated by the `observed_at` it was last seen with. The read surface draws each ticker once, from its open span with the newest `observed_at`, and the nightly stages read every open span and write one row a ticker. A span the provider stops listing without a leave date still reads as a member, which is a question about what the provider sends rather than about this table.
+Why: a reader that assumes one open span a ticker fails on the first ticker the provider re-dates, and the table has admitted two since it was keyed on the join date.
+
 ### 2026-09-18 - ARCHITECTURE.html - a live reason's retirement and a candidate's promotion cited where the architecture places them
 
 Authorised by: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone
