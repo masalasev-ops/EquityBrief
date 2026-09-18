@@ -532,6 +532,11 @@ public sealed class SinglePageApp : IComponent
         return banner.ToString();
     }
 
+    // Every screen over a store behind this checkout, which names both schema numbers
+    // rather than failing on the first column the store lacks.
+    public string StoreBehind(int store, int checkout) =>
+        Invariant($"<p class=\"degraded\" data-schema=\"{store}\" data-needs=\"{checkout}\">the store is at schema {store} and this checkout reads schema {checkout}, so nothing is drawn from it until tools/migrate applies the rest</p>");
+
     static string Invariant(FormattableString text) =>
         text.ToString(CultureInfo.InvariantCulture);
 

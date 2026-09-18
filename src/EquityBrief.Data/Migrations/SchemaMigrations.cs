@@ -581,7 +581,8 @@ public static class SchemaMigrations
     // The rule versions and the scores written under them.
     //
     // A version's window is opened by an insert and closed by writing its
-    // `closed_at` and `replaced_by`, and nothing else on the row ever changes:
+    // `closed_at` and `replaced_by`, and from migration 28 its `evidence`, and
+    // nothing else on the row ever changes:
     // the scores written under it are of the rule as it stood when it opened, and
     // a row edited afterwards would make them scores of something else. The
     // instant is in the key, so a version closed and opened again is two windows
@@ -590,8 +591,8 @@ public static class SchemaMigrations
     // `sample` is what keeps a backfill from becoming evidence. A version added
     // later may be scored over the nights before it, because seeing what it would
     // have done is the point of scoring counterfactually. What it may not do is
-    // count, so a score written for a night before its window opened is
-    // `in_sample` and reaches no record and no verdict.
+    // count, so a score for a session on or before the New York date its window
+    // opened on is `in_sample` and reaches no record and no verdict.
     // see: Adding a candidate later restarts the clock
     const string CreateRuleVersions = @"
         CREATE TABLE rule_version (
@@ -647,7 +648,14 @@ public static class SchemaMigrations
         new Migration(25, "create candidate_register", CreateCandidateRegister),
         new Migration(26, "create rule_version and version_score", CreateRuleVersions),
         new Migration(27, "candidate_register refuses a replace", RefuseARegisterReplace),
+        new Migration(28, "add rule_version.evidence", AddRuleVersionEvidence),
     ];
+
+    // The evidence a window was closed on, written by the close that ends or replaces it.
+    // see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
+    const string AddRuleVersionEvidence = @"
+        ALTER TABLE rule_version ADD COLUMN evidence TEXT;
+    ";
 
     // The bar each plan set for itself, beside the setup it belongs to.
     //

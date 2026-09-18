@@ -44,7 +44,9 @@ static int NoVerb()
         "registers a candidate condition before anything scores it, with '--retire <name> --evidence <figures>' " +
         "writing the new row that withdraws one, and " +
         "'version --rule <rule> --live-window' opens a ladder rule's live window, '--version <name> --parameters <name=value,...>' " +
-        "opens a version beside it, '--close <name> --replaced-by <name>' closes one, '--backfill <yyyy-MM-dd>' scores a past night under the open windows in sample, and '--list' names the open windows. '--live' " +
+        "opens a version beside it, '--replace <name> --with <name> --parameters <name=value,...> --evidence <text>' closes one and " +
+        "opens the version replacing it, '--close <name> --evidence <text>' closes one, '--backfill <yyyy-MM-dd>' scores a past " +
+        "night the store computed under the windows open now, and '--list' names the open windows. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -468,8 +470,8 @@ static async Task<int> NightlyRun(string[] args)
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName]);
 
-        // Step 17's local model, from the night's own source, with the lane, the limit
-        // and the hold. Resolved here with the feeds rather than at step 17, so a lane
+        // The overnight queue's local model, from the night's own source, with the lane, the limit
+        // and the hold. Resolved here with the feeds rather than at the queue's own step, so a lane
         // naming a section nobody can write or a limit that is not a number refuses the
         // night before its first step rather than after its arithmetic.
         queue = NightQueue.From(configuration, source, fixture, new MachineAwake());

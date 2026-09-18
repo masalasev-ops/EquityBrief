@@ -12,6 +12,7 @@ using EquityBrief.Core.Returns;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Data.Migrations;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
@@ -25,6 +26,7 @@ using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Rules;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
 using Microsoft.AspNetCore.Hosting;
@@ -2266,6 +2268,93 @@ public partial class ReadSurface
         "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, " +
         $"model_calls, network_requests, spend, detail) VALUES ('{runId}', '{stage}', '{started}', " +
         $"'{ended}', '{outcome}', 3, 0, 1, '0', 'constructed');";
+
+    // A command a person runs by hand writes to the run log between nights. The page draws
+    // it as its own: never a stage of the night that failed, never in the night's stage
+    // time, and never the night the page opens on.
+    [Fact]
+    public async Task ACommandRunByHandIsDrawnAsItsOwnAndIsNeitherAFailedStageNorInTheNightsTimeNorTheNightThePageOpensOn()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var refused = VersionVerb.RunIdAt(new DateTimeOffset(2026, 9, 10, 23, 45, 0, TimeSpan.Zero));
+        var backfill = VersionVerb.RunIdAt(new DateTimeOffset(2026, 9, 10, 23, 50, 0, TimeSpan.Zero));
+        var later = VersionVerb.RunIdAt(new DateTimeOffset(2026, 9, 11, 14, 0, 0, TimeSpan.Zero));
+
+        store.Execute(RunRow("night-20260910T233000Z", "rule-versions", "2026-09-10T23:29:00Z", "2026-09-10T23:30:00Z"));
+        store.Execute(RunRow("night-20260910T233000Z", "close", "2026-09-10T23:30:00Z", "2026-09-10T23:31:00Z"));
+        store.Execute(RunRow(refused, "rule-versions", "2026-09-10T23:45:00Z", "2026-09-10T23:45:00Z", "refused"));
+        store.Execute(RunRow(backfill, "rule-versions", "2026-09-10T23:50:00Z", "2026-09-10T23:51:35Z"));
+        store.Execute(RunRow(later, "rule-versions", "2026-09-11T14:00:00Z", "2026-09-11T14:00:00Z", "refused"));
+
+        var api = Api(store);
+        var night = new DateOnly(2026, 9, 10);
+
+        // The newest row is a command, so the page opens on the night before it.
+        Assert.Equal(night, await api.RunNightAsync());
+
+        var stages = RunScreen.Stages(await api.RunLogAsync(night));
+        var header = new MarkRenderer().OperationalHeader(night, stages);
+
+        Assert.Equal(4, stages.Count);
+        Assert.Equal(2, stages.Count(stage => stage.ByHand));
+        Assert.Empty(RunScreen.Failed(stages));
+        Assert.Equal(2, Regex.Matches(header, "data-by-hand=\"1\"").Count);
+        Assert.Contains("<td>rule-versions (run by hand)</td>", header, StringComparison.Ordinal);
+
+        // Sixty seconds and sixty seconds of the night, and the backfill's ninety-five left out.
+        Assert.Contains(
+            "<p class=\"total\" data-seconds=\"120\" data-by-hand=\"2\">2 stage(s) of the night, 120 second(s) of stage time, and 2 command(s) run by hand</p>",
+            header,
+            StringComparison.Ordinal);
+
+        // The run ids the page reads as by hand are the verb's, and no night's, pass's or surface's.
+        Assert.Contains(VersionVerb.RunPrefix, RunScreen.RunsByHand);
+        Assert.True(RunScreen.IsByHand(later));
+        Assert.All(
+            ["night-20260910T233000Z", "night-20260910T233000Z-for-2026-09-10", "research-20260910T010000Z-KEYS", "fundamentals-20260910T010000Z-KEYS", "read-api-20260910T010000Z", "fixture-night"],
+            id => Assert.False(RunScreen.IsByHand(id), id));
+    }
+
+    // A store behind the checkout is one migration short of a column some screen reads.
+    // Every screen names both schema numbers rather than failing on the first column it
+    // lacks, and the run page still draws the run log, which is where a refused night is.
+    [Fact]
+    public async Task EveryScreenOverAStoreBehindTheCheckoutNamesTheSchemaAndTheRunPageStillDrawsItsRunLog()
+    {
+        using var store = new TemporaryStore();
+
+        new MigrationRunner([.. SchemaMigrations.All.Where(migration => migration.Version <= 23)]).Apply(store.DatabaseFile);
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+            "('night-refused', 'migrate', '2026-09-10T23:30:00Z', '2026-09-10T23:30:00Z', 'refused', 0, 0, 0, '0', 'refused before the first step: a key is missing');");
+
+        using (var host = new Host(store.Root))
+        using (var client = host.CreateClient())
+        {
+            foreach (var route in new[] { "/screens/run", "/screens/tonight", "/screens/universe", "/screens/name/AAPL" })
+            {
+                var response = await client.GetAsync(route);
+                var body = await response.Content.ReadAsStringAsync();
+
+                Assert.Equal((route, System.Net.HttpStatusCode.OK), (route, response.StatusCode));
+                Assert.Contains("data-schema=\"23\"", body, StringComparison.Ordinal);
+                Assert.Contains($"data-needs=\"{SchemaMigrations.LatestVersion}\"", body, StringComparison.Ordinal);
+            }
+
+            var run = await client.GetStringAsync("/screens/run");
+
+            Assert.Contains("data-failed=\"1\"", run, StringComparison.Ordinal);
+            Assert.Contains("refused before the first step: a key is missing", run, StringComparison.Ordinal);
+        }
+
+        // A store the checkout reads draws no such line.
+        using var current = await FixtureExpectations.WithListings();
+        using var currentHost = new Host(current.Root);
+        using var currentClient = currentHost.CreateClient();
+
+        Assert.DoesNotContain("data-schema=", await currentClient.GetStringAsync("/screens/run"), StringComparison.Ordinal);
+    }
 
     [Fact]
     public async Task TheOperationalHeaderDrawsEveryStageOfTheNightWithItsOwnElapsedTime()

@@ -100,8 +100,8 @@ public class FixtureReplay
         await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings", Night);
 
         // The detector again, in the order the night takes: the shortlist is
-        // step 12 and the facts file is step 13, and the detector's retention
-        // reads the listings there were none of the first time it ran.
+        // written before the facts file, and the detector's retention reads the
+        // listings there were none of the first time it ran.
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes-again");
         await new ForwardReturnFiller(night, store.DatabaseFile).RunAsync("replay-returns");
         await new NewsPulseCounter(
@@ -168,10 +168,14 @@ public class FixtureReplay
         // the rows it writes are the ones `candidate-register.json` works by hand.
         await RegisterAppendOnly.ReplayRegistrationsAsync(store);
 
+        // The version verb's commands, after the night for the reason the registrations are,
+        // and the rows they write are the ones `version-verb.json` works by hand.
+        await RuleVersionsScored.ReplayVersionCommandsAsync(store);
+
         return store;
     }
 
-    // A whole night over the fixture, as the scheduler runs one, step 17 included, over the
+    // A whole night over the fixture, as the scheduler runs one, the overnight queue included, over the
     // recorded local model unless a test hands the night another queue.
     //
     // Apart from the replay above, which calls each stage itself so every table a stage

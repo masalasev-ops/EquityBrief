@@ -14220,3 +14220,304 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             ran with this entry in place, and the operator's store under `data/` was not touched by
             either.
 Carried:    nothing.
+
+### 8.6 - correction: a version change written with its evidence, a score counted only after its window's day, backfills held to the nights the store computed at their own scale, every verb attempt on the run log apart from the night's stages, and four checks that could not fail over what they claimed   2026-09-18
+Corrects:   the 8.6 entry and the three 8.6 corrections above, which record rule versions scored
+            beside their live windows through a `version` verb, a backfilled score flagged in
+            sample, a night stopped where a live rule moved, and checks holding each. What they
+            built differs from what they recorded in the places named here.
+            The flag compared the session with the window's date in UTC, so a window opened on a
+            night's own evening after that night ran counted the night just read.
+            A backfill read the newest bands and trend on or before its session, so a session a
+            backfill or a later night fetched without computing it was replayed against another
+            night's bands and counted; it read bars, swing lows and the typical move at the scale a
+            later refetch left them and the bands at the scale their night computed, and it
+            replaced the score the night had written. It took any date, a future one included, and
+            logged a day the exchange did not trade as scored.
+            A night replayed with `--session` read the windows open at the replayed instant, so a
+            window closed and opened again after a drift stop was still read as the old one.
+            A close took an optional name of what replaced it and no evidence, where section 13 says
+            a rule version change is written with both, and the runbook's example named a version it
+            had not opened.
+            The verb's own refusals, the backfill's date refusal and its drift stop wrote no run log
+            row, where the roster row and the runbook say every attempt does; a second form given
+            beside the first was dropped without a word, a flag was read as a version's name, a run
+            id taken to the second collided with a second command in the same second after its
+            window was written, the cap was read and then written with no transaction, and the verb
+            and every screen threw on a store behind the checkout.
+            The run page drew the verb's rows as stages of the night: a refusal as a failed stage, a
+            backfill's time inside the night's, and a later command as the night the page opens on.
+            `nightly-run` passed the frozen windows row and the version step's stop on no test that
+            drifted a window through a night. `nightly-cost` compared requests the steps reported of
+            themselves, the version step's a literal zero. `architecture-conformance` read a check a
+            row names only in backticks, dropped an unrostered one, and let a mention in the note
+            stand for the named check holding the row. `component-access` read a verb only as
+            `<code>x</code> verb` in one document. Section 17, the build plan, the runbook, the
+            roster, the harness and the night's own comments kept step numbers from before the
+            version step was inserted, and the rule version bound's operating row fired on nights
+            that replayed no version.
+            The first 8.6 correction's Tests field read "Two rewritten in place and renamed for what
+            they now assert: the bound at each rule's cap, and the worst case inside the deadline in
+            place of the forced projection." It should have read: "Two rewritten in place and
+            renamed for what they now assert: the bound at each rule's cap, and the worst case inside
+            the deadline in place of the forced projection. Two more changed in place under their
+            names, each now opening its rule's live window first: the version change keeping the
+            previous window, whose close now returns a refusal and takes no opening instant, and the
+            backfilled score flagged in sample." Its Guarded field read "Two whole recorded nights,
+            one version and the fullest register, make the same requests, none on the version step,
+            and ten times the scores." It should have read: "Two whole recorded nights, one version
+            and the fullest register, report the same requests on their run log rows and ten times
+            the scores; the version step's row is written as zero whatever the step asks for, so a
+            request made there was not counted." Its Missed field read "It now holds every check a
+            row names in its own words to the verdict's check or to the verdict's note". It should
+            have read: "It now holds every check a row names in backticks to the verdict's check or
+            to a mention in the verdict's note, which a note naming the check without the check
+            holding the row also passes." The review confirmed that correction's own account of 8.6
+            as merged, being the 1,137 second bound, the forced literal, the hand-set code version
+            and the missing verb, and nothing further is owed on it.
+            The 8.6 entry's Amended field says "three guards" moved and that "the readers behind them
+            are put to constructed plans and records". Two moved at 8.6, the third, the split by
+            origin's own floor, having moved at 8.3, and the constructed half of
+            `NothingIsUnexamined` put no reader to anything: it asserted that two strings written in
+            the test contain "until".
+            8.6's backfilled flag test held its backfill to more than no score where the count is
+            known. The replay correction's Stored field keeps a drafting note, "(confirm against the
+            Measured read at writing time)"; the read below holds no `rule_version` and no
+            `version_score` row, which is what that field stated. Commits 03a1d9f and 48386bb, that
+            correction's sweep and figures in PR 113, are subjected "Phase 8 / 8.3" and belong to
+            8.6, and 9aaeb6c and 369d6bc, the same two commits of the 8.4 correction in PR 112,
+            belong to 8.4. Merged subjects stay as they are, and the 8.4 pair is recorded here
+            because no later 8.4 entry is written.
+Found:      by the phase 8 sign-off review on 2026-09-16. The operator ruled on 2026-09-16 that every
+            finding the review made is corrected before a sign-off handoff. The work corrects what 8.6
+            and its corrections built, so it is labelled for 8.6; the read surface's line for a store
+            behind the checkout covers routes that first threw on 8.2's column and 8.4's read, and is
+            written once for every screen and the loop's verbs. The 8.6 entry's Amended field was
+            found by the review of the phase 8 report's own checks, whose design carried it here.
+Measured:   read immutable from the operator's store on 2026-09-18, at schema 27 and last written
+            2026-09-17 23:41:00 UTC, after that night's run. It holds 0 `rule_version` rows, 0
+            `version_score` rows, 0 `candidate_register` rows and 0 run log rows under a run id
+            beginning `version-` or `register-`. Over 252 sessions holding bars, 9 carry a ladder
+            row, so 243 are sessions a backfill is now refused for. On the computed nights, the names
+            whose bar close differs from its raw close, which are the names a backfill now replays at
+            a factor other than one, are 408 on 2026-04-16, 200 on 2026-08-17, 55 on 2026-09-09, 38
+            on 2026-09-10, 22 on 2026-09-11, 16 on 2026-09-14, 3 on 2026-09-15, 1 on 2026-09-16 and 0
+            on 2026-09-17, and no bar on any of them lacks its raw close.
+Repaired:   a score counts only for a session after the New York date its window opened on (see: A
+            version's score counts only for a session after the New York date its window opened on). A
+            backfill is refused for a day that is not a session, a session the store holds no bar for
+            and a session no night computed; it reads bands and trend as of its session exactly,
+            divides bars, swing lows and the typical move by the session's close over its raw close,
+            leaves out and counts a name its night computed nothing for, and keeps every score already
+            stored, while a night's own step still writes its set again (see: A backfill scores only a
+            night the store computed, at that night's own price scale, and never rewrites a score
+            already stored). A night reads the windows the store holds open when its step runs. A
+            change of version is one write that closes the old window with its evidence and the
+            version replacing it and opens that version, the cap counted after the close, and a close
+            with nothing replacing it is refused without evidence; migration 28 adds
+            `rule_version.evidence` (see: A rule version change closes the window with the evidence
+            that produced it and opens its replacement in the same write). The verb takes one form and
+            refuses a second, a flag its form does not take, a flag given twice, a flag where a value
+            goes and a stray word; every open, close, replacement and backfill, refused or not, is one
+            row under `rule-versions`, a listing none; its run id carries the instant to the
+            ten-millionth of a second, its window write and row are one transaction, and so are a
+            night's scores, drop and row; and it refuses a missing store or one behind the checkout,
+            writing nothing. The step's line and row say how many versions it replayed of each kind.
+            The run page draws a verb's rows as run by hand, apart from the night's stage time, never
+            among the failed stages and never as the night it opens on. Every screen over a store
+            behind the checkout names both schema numbers, and the run page still draws its run log.
+            `nightly-run` runs a night over a moved live rule and the night after its windows are
+            closed and opened again; `nightly-cost` counts requests off the feeds, by what each call
+            moved the feed's own count, and puts each on the step it was made on, and holds the
+            version step to a score per replayed version per listed name on both recorded nights,
+            where the one-version night was held above zero;
+            `architecture-conformance` reads a check a row names in any form, refuses a check-shaped
+            name the roster lacks, holds a second check a row names by its declared reach, a test of
+            its own and its outcome, and puts the out-of-scope note's writer and both its readers to
+            a deferred subject; `component-access` reads a verb named in any markup or phrasing across
+            the architecture, the schema and the build plan, and any dispatch arm. Step numbers stay
+            only in section 14's note and the night's own step comments, and a guard holds both to
+            section 14. Section 14's version step, section 15.10's route, section 17's three limits
+            rows, the catalogue and store rows, SCHEMA's two version tables and the run log, 8.6's
+            bound, its operating row and four other passages of the build plan, the runbook's
+            version section, its queue, restore and morning passages, and five roster rows say so,
+            with their prior text in CHANGELOG.
+Stored:     nothing to rewrite. The operator's store holds no `rule_version` or `version_score` row,
+            so no score was flagged, backfilled or closed under the defects. Migration 28 adds a
+            nullable column and the first night on this code applies it at its first step.
+Missed:     each by a population no test reached. Every window a test opened was opened on a date
+            before or after the session it scored, never on its evening. Every backfill a test ran
+            scored a session holding its own bands, over bars no refetch had rescaled, into a table
+            holding no score for it. No test closed a window and replayed a night at an earlier
+            instant. No test ran a night over a drifted window, read a verb's refusal off the run log,
+            gave the verb two forms, or drew a verb's row on the run page. The request test read the
+            figure each step wrote about itself. The row-names-a-check reader and the verb reader
+            were each proved over input in the one form each read, and the out-of-scope note's proof
+            read two strings the test wrote. The recorded nights' floor was set to prove the
+            comparison was not empty, so a step that dropped a name on both nights passed it; the
+            phase 8 sign-off's floor probe measured its population at 4 and 40.
+Guarded:    over eight constructed instants either side of midnight in New York, a score counts only
+            for a session after the New York date its window opened on, and both answers are
+            reached. Over the replayed fixture, the ten commands `version-verb.json` works by hand
+            exit and write their run log rows as worked, the three windows they leave carry their
+            evidence and replacement while the eight `version-scores.json` opens stay open, and each
+            version's scores of the night carry the count and the flag worked from its New York
+            date. Over the fixture's store, a backfill is refused for a session holding bars and no
+            plan, a Saturday, the next session, which no night fetched, and a date past the closure
+            table, and scores only the names whose bands and plan its own session holds. Over the
+            same store after a constructed two-for-one refetch of one name, a backfill replays that
+            name's plan to the night's own, writes one score and keeps three, leaves a marked score
+            as stored, leaves the name out where its raw close is not stored, and the night's own
+            step still writes every score again. A night whose live window moved stops, the backfill
+            verb records the stop on the run log, and once the window is closed and opened again
+            later than the replay's own instant the replay scores under the new window alone, in
+            sample. Over a migrated store, a version replaced in one write closes with its evidence
+            and replacement and opens the replacement, at the rule's cap as well, five refusals each
+            write a row and change nothing, and a close takes its evidence and is refused without
+            it. Thirteen command lines are each refused with one row whose detail is the refusal and
+            nothing changed, a listing writes no row, the help names every form, and a store behind
+            the checkout or absent is refused with nothing written. Two commands at one instant
+            write one window and one row, and run ids a tenth of a microsecond apart differ. Ten
+            rounds of two opens racing for a rule's last window admit exactly one. Over whole
+            recorded nights, the version step runs after the arithmetic and before the close and the
+            queue, a moved live rule stops the night there with nothing scored, no close and the
+            windows as they were, and after the windows are closed with their evidence and opened
+            again through the verb the next night keeps the closed rows and scores under the new
+            ones. Over every document, every fixture file this repository writes, every script and
+            every source, no step is named by number but in section 14's note, held to the close and
+            the queue, and in the night's step comments, each held to the step it sits on, with the
+            records' exclusion shown to remove something and each reader put to constructed text.
+            Over constructed rows and a recorded feed, a request is counted on the step whose row
+            follows it. The document's tables name no check the roster lacks, and a constructed pair
+            of misspelled checks is reported. The row naming a second check fails where that check
+            fails and is unexamined where it did not run. Over constructed rows, two commands run by
+            hand that evening are drawn as such, out of the night's time and its failures, and a
+            later command is not the night the page opens on. Over a store at schema 23, four
+            screens name both schema numbers and the run page draws the refused night from its run
+            log, and a current store draws no such line. The tests rewritten in place hold the
+            replacement's evidence, the evidence on every close, each verb command one row and a
+            backfill of a session with no bar refused, the same-evening window in sample with exact
+            counts, a past night through the backfill's own path, requests counted off the feeds
+            and a score per replayed version per listed name on both recorded nights, the
+            out-of-scope note's writer and readers, a verb in any phrasing across three specs
+            and any dispatch arm, and a check named in any form with the second check held by reach,
+            test, note and outcome.
+Expected:   derived: `version-verb.json` works by hand, over the replayed fixture's one computed night,
+            the verb's commands with each exit and run log outcome, the three windows they leave
+            with their evidence and replacement beside the eight `version-scores.json` opens, the
+            flag each version's scores carry from the New York date it opened on, the four backfills
+            refused and why, and what the two accepted backfills write and keep. It counts three
+            names on the night where the design counted four: the replay runs the corporate action
+            check after the fetch, and the check refetches AAPL's year from a capture ending
+            2026-09-04, so AAPL holds no bar on the night. The price scale is held over a constructed
+            store, because no action lands after the fixture's night.
+Tests:      1052, from 1036. Sixteen added: in `rule-versions-scored`, the score counted after its
+            window's New York date; the fixture's version commands against `version-verb.json`; a
+            backfill leaving out names its session computed nothing for and refusing a session no
+            night computed; a backfill at its session's price scale keeping what is stored; a night
+            reading the windows the store holds open; a version replaced in one write with its
+            evidence; every verb attempt one run log row and every refusal nothing changed; two
+            commands at one instant; two opens racing for a rule's last window. In `nightly-run`, a
+            night over a moved live rule and the night after its windows are opened again, and no
+            step named by number outside section 14 and the night's list. In `nightly-cost`, a
+            request counted on the step whose row follows it. In `architecture-conformance`, no
+            table naming an unrostered check, and a claim failing where a second check its row names
+            fails. In `read-surface`, a command run by hand drawn as its own, and every screen over a
+            store behind the checkout. Rewritten in place: the verb test, the version change test,
+            the live window close test, the backfilled score flag test, the backfill bands test, the
+            recorded nights test, `NothingIsUnexamined`, the worker verbs test, and the row-names-a-check
+            test, renamed
+            `EveryCheckARowNamesInAnyFormIsTheVerdictsCheckOrOneThatHoldsTheRowWithATestOfItsOwn`.
+            Renamed for the queue rather than its old number:
+            `StepSeventeenRunsTheOvernightQueueAfterTheArithmeticHasClosed` to
+            `TheOvernightQueueRunsLastAfterTheArithmeticHasClosed`, and in `nightly-cost`
+            `TheArithmeticCallsNoModelAndTheNightsCallsComeFromStepSeventeenAlone` to
+            `TheArithmeticCallsNoModelAndTheNightsCallsComeFromTheOvernightQueueAlone` and
+            `TheCarveAllowsAModelCallOnStepSeventeensRowsAndNowhereElse` to
+            `TheCarveAllowsAModelCallOnTheQueuesOwnRowsAndNowhereElse`. The ladder rules' code
+            version moves from 85d30c00446f to 31de414eaa47, because the scorer's file and the
+            rules' file are pinned, and the evaluator versions move, momentum-index-reading from
+            44efa160289a to 2624ba637c94 and momentum-histogram-turn from 989f805b9471 to
+            70371e9ceefb, because the shortlist builder's comments name its step; no store holds a
+            window or a candidate.
+Mutated:    the rule, stated before the sweep: one mutation per kind of defect this correction
+            repairs, each breaking the property its repair adds: a stored flag (the New York date
+            boundary), a stored plan (the backfill's price scale), a check that could not see a
+            request (a request on the version step), a check that could not read a name (a check
+            named in code markup in a limits row), a stop a night could swallow (the version step's
+            failure), and a proof that put no reader to its text (the out-of-scope note's wording);
+            and for the floor this correction raises, the population it names shrunk by one name.
+            Not mutated, being further properties of kinds already mutated, and named so the next
+            sweep has them: the unrostered name refusal, the verb reader's other phrasings and the
+            dispatch arm reader, the step number guard, the run page's newest-night exclusion, the
+            store-behind line, the evidence write, the replacement's single transaction, the racing
+            opens, which turn on timing no mutation reaches reliably, the refusal of a session no
+            night computed, and the second check's outcome in the report. Predicted:
+            M1 the scorer's flag written back as 8.6 wrote it, in sample only for a session before
+            the window's date in UTC: the fixture commands test red on the windows opened on the
+            session's own New York date, `anchors only` first, flagged scored; the backfilled score
+            flag test red on a score flagged scored on its window's New York date; and the pin test
+            red, since the edit is in a pinned source; nothing else.
+            M2 the backfill's factor set to one, reading the night at the scale a later refetch left:
+            the price scale test red on the refetched name's replayed plan, and the pin test red;
+            nothing else.
+            M3 one historical bar request added inside the night's rule versions step in
+            `Nightly.cs`: the recorded nights test red on one request on the version step on each of
+            its two nights, and nothing else, since `Nightly.cs` is not a pinned source.
+            M4 the probe that survived the review, the `Bar history kept` row's asserted-by cell
+            written as "bar store row counts, and <code>bar-bounds</code> over every bar the year
+            keeps": the any-form test red on the row naming `bar-bounds`, which declares no reach
+            over it, and nothing else.
+            M5 the scorer's call in the night's rule versions step wrapped to return "0 open
+            version(s)" on the stop's exception: the moved live rule night test red on the stopped
+            night, which carries no row for the version step once the scorer's own row rolls back
+            with its scores and the step returns, and nothing else.
+            M6 the out-of-scope note written with "by" where it says "until": `NothingIsUnexamined`
+            red on the constructed deferred subject's note read as saying nowhere it ends, and
+            nothing else, since no claim of the report is out of scope.
+            M7 the scorer leaving out the name that sorts last among those it would score, its test
+            for a name with no inputs widened to that name: the recorded nights test red on the
+            one-version night's scores one listed name short; each of the 76 tests that replay the
+            fixture red in the replay itself, on its first backfill writing 4 scores and keeping 8
+            where 6 and 12 are worked, since the replay holds the verb's counts; seven more
+            `rule-versions-scored` tests red on a count one name short; and the pin test red;
+            nothing else, since the loop night's floors are 8.7's and still read above zero.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Eight
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1051 of 1052
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 3 red: the fixture commands test on `anchors only`, opened at midnight in New
+            York on the session's own date, its 3 scores flagged scored where the worked flag is in
+            sample; the backfilled score flag test reading a score flagged scored beside in sample
+            on its window's New York date; and the pin test on the code version reading
+            c622631cbcae. M2 turned 2 red: the price scale test on the refetched name's replayed
+            plan reading `ReachesTheZone` where the night's own reads `AvailableNow`, and the pin
+            test on 55cf83c2e560. M3 turned 1 red, the recorded nights test counting 1 request on
+            the version step on each night where it counts none. M4 turned 1 red, the any-form test
+            reporting that `Bar history kept` names `bar-bounds`, which does not declare reach over
+            the row. M5 turned 1 red, the moved live rule night test finding no row for the version
+            step on the stopped night's run log. M6 turned 1 red, `NothingIsUnexamined` reading the
+            constructed deferred subject's note, "nothing asserts this by 1.4", as saying nowhere it
+            ends. M7 turned 85 red: the recorded nights test on the one-version night's 3 scores
+            where 1 version over 4 listed names is 4; the 76 tests that replay the fixture, each in
+            the replay on its first backfill writing 4 and keeping 8; seven `rule-versions-scored`
+            tests, four reading 3 where 4 is expected, one 6 where 8 is, one 12 where 16 is, and one
+            3 names left out and 1 score written where 2 and 2 are; and the pin test on
+            d808e5546d5b.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1052 of 1052 tests
+            ran with none failed, migrations 0 to 28 with migration 28 the one added and none
+            pending, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at
+            366 claims, 366 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 373 placements and verdicts
+            reconciled against a floor of 34, 37 of 37 roster checks carried and all 37 run. No
+            claim added and none moved: section 14's version step keeps its place and its claim
+            under its new words, the rows this correction edits keep their keys, and `nightly-cost`
+            now declares reach over the version bound's row beside `rule-versions-scored`, whose
+            verdict it is. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by either.
+Carried:    nothing owed by this repair. Noted rather than owed: a research pass started by hand writes
+            stages the run page draws beside the night's, which the spend cap's operating row reads
+            there, and this correction leaves that as it is.

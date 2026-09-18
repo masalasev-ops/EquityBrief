@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
@@ -15,7 +16,16 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Rules;
 
-public sealed record VersionScoreOutcome(int Versions, int NamesScored, int RowsWritten, int RowsDropped, int NameNightsSkipped);
+public sealed record VersionScoreOutcome(
+    int Versions,
+    int NamesScored,
+    int RowsWritten,
+    int RowsDropped,
+    int NameNightsSkipped,
+    int RowsKept = 0,
+    int NamesNotComputed = 0,
+    int Replayed = 0,
+    int ReplayedMergeDistance = 0);
 
 // The rule version scorer. Replays tonight's name-nights under every open version
 // of each ladder rule, from stored bars, and stores the plan each produced.
@@ -62,7 +72,7 @@ public sealed class RuleVersionScorer : IComponent
     // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "85d30c00446f";
+    public const string CodeVersion = "31de414eaa47";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -81,7 +91,7 @@ public sealed class RuleVersionScorer : IComponent
     ];
 
     const string ReadVersions = @"
-        SELECT rule, version, parameters, parameters_hash, code_version, opened_at, closed_at, replaced_by
+        SELECT rule, version, parameters, parameters_hash, code_version, opened_at, closed_at, replaced_by, evidence
         FROM rule_version
         ORDER BY rule, opened_at, version;
     ";
@@ -92,19 +102,29 @@ public sealed class RuleVersionScorer : IComponent
         VALUES ($rule, $version, $parameters, $parameters_hash, $code_version, $opened_at, NULL, NULL);
     ";
 
-    // The one field a version row ever changes, and it is the close.
+    // The one change a version row ever takes, and it is the close: its instant,
+    // the evidence it was closed on, and the version a replacement opened.
     const string CloseWindow = @"
         UPDATE rule_version
-        SET closed_at = $closed_at, replaced_by = $replaced_by
+        SET closed_at = $closed_at, replaced_by = $replaced_by, evidence = $evidence
         WHERE rule = $rule AND version = $version AND opened_at = $opened_at AND closed_at IS NULL;
     ";
 
+    // A night writes its set again, since it recomputes the bands it replays against.
     const string WriteScore = @"
         INSERT INTO version_score (ticker, session_date, rule, version, opened_at, plan, sample)
         VALUES ($ticker, $session_date, $rule, $version, $opened_at, $plan, $sample)
         ON CONFLICT (ticker, session_date, rule, version, opened_at) DO UPDATE SET
             plan = excluded.plan,
             sample = excluded.sample;
+    ";
+
+    // A backfill writes only the scores not stored yet and keeps the rest.
+    // see: A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored
+    const string KeepScore = @"
+        INSERT INTO version_score (ticker, session_date, rule, version, opened_at, plan, sample)
+        VALUES ($ticker, $session_date, $rule, $version, $opened_at, $plan, $sample)
+        ON CONFLICT (ticker, session_date, rule, version, opened_at) DO NOTHING;
     ";
 
     // Kept while the bars a score was replayed from are, whatever night is scored.
@@ -114,6 +134,10 @@ public sealed class RuleVersionScorer : IComponent
     ";
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
+
+    const string BarsOn = "SELECT COUNT(*) FROM bar WHERE session_date = $session;";
+
+    const string PlansOn = "SELECT COUNT(*) FROM ladder WHERE as_of = $session;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -128,21 +152,22 @@ public sealed class RuleVersionScorer : IComponent
         SELECT DISTINCT ticker FROM bar WHERE session_date = $session ORDER BY ticker;
     ";
 
-    // The bands and the trend as they stood on the night being scored. On the
-    // night itself that is the newest set; on a backfill it is that night's, and
-    // reading the newest would replay a past close against tonight's bands.
+    // The bands and the trend the night being scored computed, and no other
+    // night's: a session no night computed has none, so a name there is left out
+    // rather than replayed against an earlier night's set.
     const string BandsFor = @"
         SELECT low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members
         FROM level
-        WHERE ticker = $ticker AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker AND as_of <= $session)
+        WHERE ticker = $ticker AND as_of = $session
         ORDER BY low_edge;
     ";
 
     const string TrendFor = @"
-        SELECT trend_state FROM ladder
-        WHERE ticker = $ticker AND as_of <= $session
-        ORDER BY as_of DESC
-        LIMIT 1;
+        SELECT trend_state FROM ladder WHERE ticker = $ticker AND as_of = $session;
+    ";
+
+    const string ScaleOn = @"
+        SELECT close, raw_close FROM bar WHERE ticker = $ticker AND session_date = $session;
     ";
 
     const string RecentFor = @"
@@ -168,18 +193,38 @@ public sealed class RuleVersionScorer : IComponent
         this.databaseFile = databaseFile;
     }
 
-    public async Task<VersionScoreOutcome> RunAsync(
+    // The night's own step, which writes the night's set again where it is re-run.
+    public Task<VersionScoreOutcome> RunAsync(
         DateOnly session,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default) =>
+        ScoreAsync(session, runId, keepStored: false, cancellation);
+
+    // A past night scored under the windows open now, keeping every score already stored.
+    // see: A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored
+    public Task<VersionScoreOutcome> BackfillAsync(
+        DateOnly session,
+        string runId,
+        CancellationToken cancellation = default) =>
+        ScoreAsync(session, runId, keepStored: true, cancellation);
+
+    async Task<VersionScoreOutcome> ScoreAsync(
+        DateOnly session,
+        string runId,
+        bool keepStored,
+        CancellationToken cancellation)
     {
         var startedAt = clock.UtcNow;
 
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
-        var versions = await VersionsAsync(connection, cancellation);
-        var open = RuleVersions.OpenAt(versions, startedAt);
+        // The windows the store holds open when the step runs, so a night replayed after a close and a reopen reads the new ones.
+        var open = (await VersionsAsync(connection, cancellation))
+            .Where(row => row.ClosedAt is null)
+            .OrderBy(row => row.Rule, StringComparer.Ordinal)
+            .ThenBy(row => row.OpenedAt)
+            .ToArray();
 
         // The night stops here where a live rule has moved inside an open window.
         // Before anything is scored, because a score written under a window whose
@@ -197,68 +242,120 @@ public sealed class RuleVersionScorer : IComponent
             .Where(row => !string.Equals(row.Version, RuleVersions.Live, StringComparison.Ordinal))
             .ToArray();
 
+        var mergeDistance = replayed.Count(row => LadderRules.ReplaysLevels(row.Rule));
         var names = await NamesAsync(connection, session, cancellation);
         var written = 0;
+        var kept = 0;
         var skipped = 0;
+        var notComputed = 0;
 
-        await using (var transaction = await connection.BeginTransactionAsync(cancellation))
+        // The scores, the drop and the row are one write, so a row that cannot be
+        // written leaves nothing of the step behind it.
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        // No version to replay, no bands read: level rows written before member sources were stored cannot be read.
+        foreach (var ticker in replayed.Length == 0 ? Array.Empty<string>() : names)
         {
-            // No version to replay, no bands read: level rows written before member sources were stored cannot be read.
-            foreach (var ticker in replayed.Length == 0 ? Array.Empty<string>() : names)
-            {
-                var inputs = await InputsAsync(connection, ticker, session, cancellation);
+            var inputs = await InputsAsync(connection, ticker, session, cancellation);
 
-                if (inputs is null)
+            if (inputs is null)
+            {
+                notComputed++;
+
+                continue;
+            }
+
+            foreach (var version in replayed)
+            {
+                // Which member is an average or a touch cannot be read off a band set stored without sources.
+                if (!inputs.Value.MemberSources && LadderRules.ReadsMembers(version.Rule))
                 {
+                    skipped++;
+
                     continue;
                 }
 
-                foreach (var version in replayed)
-                {
-                    // Which member is an average or a touch cannot be read off a band set stored without sources.
-                    if (!inputs.Value.MemberSources && LadderRules.ReadsMembers(version.Rule))
-                    {
-                        skipped++;
+                var plan = Replayed(version, inputs.Value);
 
-                        continue;
-                    }
+                await using var command = connection.CreateCommand();
 
-                    var plan = Replayed(version, inputs.Value);
+                command.Transaction = transaction;
+                command.CommandText = keepStored ? KeepScore : WriteScore;
+                command.Parameters.AddWithValue("$ticker", ticker);
+                command.Parameters.AddWithValue("$session_date", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$rule", version.Rule);
+                command.Parameters.AddWithValue("$version", version.Version);
+                command.Parameters.AddWithValue("$opened_at", version.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$plan", plan);
+                command.Parameters.AddWithValue("$sample", RuleVersions.SampleOf(session, clock.SessionDateAt(version.OpenedAt)));
 
-                    // A score for a night before its window opened is the
-                    // backfill's, and it counts toward nothing. Read off the
-                    // window's own instant against the night rather than from a
-                    // caller's claim about itself.
-                    var inSample = session < DateOnly.FromDateTime(version.OpenedAt.UtcDateTime);
+                var wrote = await command.ExecuteNonQueryAsync(cancellation);
 
-                    await using var command = connection.CreateCommand();
-
-                    command.Transaction = (SqliteTransaction)transaction;
-                    command.CommandText = WriteScore;
-                    command.Parameters.AddWithValue("$ticker", ticker);
-                    command.Parameters.AddWithValue("$session_date", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                    command.Parameters.AddWithValue("$rule", version.Rule);
-                    command.Parameters.AddWithValue("$version", version.Version);
-                    command.Parameters.AddWithValue("$opened_at", version.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-                    command.Parameters.AddWithValue("$plan", plan);
-                    command.Parameters.AddWithValue("$sample", inSample ? RuleVersions.InSample : RuleVersions.Scored);
-
-                    written += await command.ExecuteNonQueryAsync(cancellation);
-                }
+                written += wrote;
+                kept += 1 - wrote;
             }
-
-            await transaction.CommitAsync(cancellation);
         }
 
-        var dropped = await DroppedAsync(connection, cancellation);
+        var dropped = await DroppedAsync(connection, transaction, cancellation);
 
         var detail =
-            FormattableString.Invariant($"{open.Count} open version(s), {replayed.Length} replayed over {names.Count} name(s), ")
-            + FormattableString.Invariant($"{written} score(s) written, {skipped} name-night(s) skipped for a band set stored without member sources, {dropped} dropped");
+            FormattableString.Invariant($"{open.Length} open version(s), {replayed.Length} replayed with {mergeDistance} of the merge distance, over {names.Count} name(s), ")
+            + FormattableString.Invariant($"{written} score(s) written, {kept} already stored and kept, {notComputed} name(s) with no bands or plan of that session, ")
+            + FormattableString.Invariant($"{skipped} name-night(s) skipped for a band set stored without member sources, {dropped} dropped");
 
-        await RecordAsync(connection, runId, startedAt, written, detail, cancellation);
+        await RecordAsync(connection, runId, startedAt, written, detail, cancellation, transaction: transaction);
+        await transaction.CommitAsync(cancellation);
 
-        return new VersionScoreOutcome(open.Count, names.Count, written, dropped, skipped);
+        return new VersionScoreOutcome(open.Length, names.Count, written, dropped, skipped, kept, notComputed, replayed.Length, mergeDistance);
+    }
+
+    // Why a past session may not be backfilled, or null: a day the exchange did
+    // not trade, a session the store holds no bar for, and a session no night
+    // computed, each of which has no night's plan to replay a version beside.
+    // see: A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored
+    public async Task<string?> BackfillRefusalAsync(DateOnly session, CancellationToken cancellation = default)
+    {
+        var named = session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        if (session > ExchangeClosures.CoveredThrough || session < ExchangeClosures.CoveredFrom)
+        {
+            return FormattableString.Invariant(
+                $"'{named}' is {(session > ExchangeClosures.CoveredThrough ? "past" : "before")} the exchange closure table, which covers ") +
+                FormattableString.Invariant($"{ExchangeClosures.CoveredFrom:yyyy-MM-dd} through {ExchangeClosures.CoveredThrough:yyyy-MM-dd}, so whether it was a session is not known here");
+        }
+
+        if (!ExchangeClosures.IsSession(session))
+        {
+            return $"'{named}' is not a session: the exchange did not trade on it, so there is no night to score";
+        }
+
+        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await connection.OpenAsync(cancellation);
+
+        if (await CountOnAsync(connection, BarsOn, named, cancellation) == 0)
+        {
+            await using var newest = connection.CreateCommand();
+
+            newest.CommandText = NewestSession;
+
+            var stored = await newest.ExecuteScalarAsync(cancellation) as string;
+
+            return $"the store holds no bar for {named}, so no night has fetched it; the newest session it holds is {stored ?? "none"}";
+        }
+
+        return await CountOnAsync(connection, PlansOn, named, cancellation) == 0
+            ? $"the store holds bars for {named} and no night's plan for it: it was fetched by a backfill or as a missed session and never computed as a night of its own, so a version replayed there would read another night's bands"
+            : null;
+    }
+
+    static async Task<long> CountOnAsync(SqliteConnection connection, string sql, string session, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = sql;
+        command.Parameters.AddWithValue("$session", session);
+
+        return (long)(await command.ExecuteScalarAsync(cancellation))!;
     }
 
     // Each live ladder rule's parameters as this build applies them. The merge
@@ -359,7 +456,7 @@ public sealed class RuleVersionScorer : IComponent
         });
     }
 
-    // ---- opening and closing a window ----
+    // ---- opening, replacing and closing a window ----
 
     // Why these parameters may not be a window of this rule, or null.
     //
@@ -436,6 +533,10 @@ public sealed class RuleVersionScorer : IComponent
     public Task<string?> OpenLiveAsync(string rule, string runId, CancellationToken cancellation = default) =>
         OpenAsync(rule, RuleVersions.Live, LiveParameters(rule), runId, cancellation);
 
+    // Each write below reads the windows, refuses or writes, and records the attempt
+    // inside one transaction, so two commands racing for a rule's last window
+    // admit one and a row that cannot be recorded takes its window write with it.
+    // A refusal is recorded after the transaction is rolled back.
     public async Task<string?> OpenAsync(
         string rule,
         string version,
@@ -448,17 +549,170 @@ public sealed class RuleVersionScorer : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
-        var rows = await VersionsAsync(connection, cancellation);
+        string? refusal;
 
-        if ((RuleVersions.Refusal(rows, rule, version, at) ?? ParameterRefusal(rule, version, parameters)) is { } refusal)
+        await using (var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation))
         {
-            await RecordAsync(connection, runId, at, 0, refusal, cancellation, Refused);
+            var rows = await VersionsAsync(connection, cancellation, transaction);
 
-            return refusal;
+            refusal = RuleVersions.Refusal(rows, rule, version, at) ?? ParameterRefusal(rule, version, parameters);
+
+            if (refusal is null)
+            {
+                await OpenWindowAsync(connection, transaction, rule, version, parameters, at, cancellation);
+                await RecordAsync(connection, runId, at, 1, $"opened '{version}' of '{rule}'", cancellation, transaction: transaction);
+                await transaction.CommitAsync(cancellation);
+
+                return null;
+            }
         }
 
+        await RecordAsync(connection, runId, at, 0, refusal, cancellation, Refused);
+
+        return refusal;
+    }
+
+    // A change of version: the old window closed with the evidence that produced
+    // the change and the name of the version replacing it, and that version opened,
+    // in one write. The rule's cap is counted once the old window is closed, so a
+    // rule at its cap can still be changed.
+    // see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
+    public async Task<string?> ReplaceAsync(
+        string rule,
+        string version,
+        string with,
+        IReadOnlyDictionary<string, double> parameters,
+        string evidence,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        var at = clock.UtcNow;
+
+        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await connection.OpenAsync(cancellation);
+
+        string? refusal;
+
+        await using (var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation))
+        {
+            var rows = await VersionsAsync(connection, cancellation, transaction);
+            var window = OpenWindowOf(rows, rule, version, at);
+
+            refusal = string.IsNullOrWhiteSpace(evidence) ? NoEvidence
+                : string.Equals(with, version, StringComparison.Ordinal) ? $"'{version}' cannot replace itself."
+                : string.Equals(version, RuleVersions.Live, StringComparison.Ordinal) || string.Equals(with, RuleVersions.Live, StringComparison.Ordinal)
+                    ? "a live window is replaced by closing it and opening the live window again, since it carries only the build's own values."
+                : window is null ? $"'{version}' of '{rule}' has no open window to replace."
+                : RuleVersions.Refusal([.. rows.Select(row => row == window ? row with { ClosedAt = at } : row)], rule, with, at)
+                    ?? ParameterRefusal(rule, with, parameters);
+
+            if (refusal is null)
+            {
+                await CloseWindowAsync(connection, transaction, window!, with, evidence, at, cancellation);
+                await OpenWindowAsync(connection, transaction, rule, with, parameters, at, cancellation);
+                await RecordAsync(
+                    connection,
+                    runId,
+                    at,
+                    2,
+                    $"replaced '{version}' of '{rule}' with '{with}' {RuleVersions.Write(parameters)}, on: {evidence}",
+                    cancellation,
+                    transaction: transaction);
+                await transaction.CommitAsync(cancellation);
+
+                return null;
+            }
+        }
+
+        await RecordAsync(connection, runId, at, 0, refusal, cancellation, Refused);
+
+        return refusal;
+    }
+
+    // Closing keeps the row and every column it was opened with but the ones the
+    // close writes, so the scores under it stay scores of the rule as it stood.
+    //
+    // The window closed is the one open now under that name, which there is at
+    // most one of because a version is refused a second open window. A live
+    // window is not closed while a version of its rule is open beside it, since
+    // that would leave the version measured with nothing watching the code it
+    // runs through; the versions are closed first. A close with nothing
+    // replacing it takes its evidence as a replacement does, because ending a
+    // measurement changes what is measured. Returns why nothing was closed, or null.
+    // see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
+    public async Task<string?> CloseAsync(
+        string rule,
+        string version,
+        string evidence,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        var at = clock.UtcNow;
+
+        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await connection.OpenAsync(cancellation);
+
+        string? refusal;
+
+        await using (var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation))
+        {
+            var rows = await VersionsAsync(connection, cancellation, transaction);
+            var open = RuleVersions.OpenAt(rows, at);
+            var window = OpenWindowOf(rows, rule, version, at);
+
+            refusal = string.IsNullOrWhiteSpace(evidence) ? NoEvidence
+                : window is null ? $"'{version}' of '{rule}' has no open window to close."
+                : string.Equals(version, RuleVersions.Live, StringComparison.Ordinal)
+                    && open.Where(row => string.Equals(row.Rule, rule, StringComparison.Ordinal)
+                        && !string.Equals(row.Version, RuleVersions.Live, StringComparison.Ordinal)).ToArray() is { Length: > 0 } beside
+                    ? $"the live window of '{rule}' is not closed while {string.Join(", ", beside.Select(row => $"'{row.Version}'"))} " +
+                      "is open beside it: a version with no live window beside it is measured with nothing watching the code " +
+                      "it runs through. Close the versions first."
+                    : null;
+
+            if (refusal is null)
+            {
+                await CloseWindowAsync(connection, transaction, window!, null, evidence, at, cancellation);
+                await RecordAsync(connection, runId, at, 1, $"closed '{version}' of '{rule}' with nothing replacing it, on: {evidence}", cancellation, transaction: transaction);
+                await transaction.CommitAsync(cancellation);
+
+                return null;
+            }
+        }
+
+        await RecordAsync(connection, runId, at, 0, refusal, cancellation, Refused);
+
+        return refusal;
+    }
+
+    const string NoEvidence = "a window is closed with the evidence that closed it, and the evidence given was blank.";
+
+    // A refusal the verb reaches before the scorer does, recorded as the scorer's own are.
+    public async Task RecordRefusalAsync(string runId, string refusal, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await connection.OpenAsync(cancellation);
+
+        await RecordAsync(connection, runId, clock.UtcNow, 0, refusal, cancellation, Refused);
+    }
+
+    static RuleVersionRow? OpenWindowOf(IReadOnlyList<RuleVersionRow> rows, string rule, string version, DateTimeOffset at) =>
+        RuleVersions.OpenAt(rows, at).FirstOrDefault(row =>
+            string.Equals(row.Rule, rule, StringComparison.Ordinal)
+            && string.Equals(row.Version, version, StringComparison.Ordinal));
+
+    static async Task OpenWindowAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string rule,
+        string version,
+        IReadOnlyDictionary<string, double> parameters,
+        DateTimeOffset at,
+        CancellationToken cancellation)
+    {
         await using var command = connection.CreateCommand();
 
+        command.Transaction = transaction;
         command.CommandText = OpenWindow;
         command.Parameters.AddWithValue("$rule", rule);
         command.Parameters.AddWithValue("$version", version);
@@ -468,75 +722,29 @@ public sealed class RuleVersionScorer : IComponent
         command.Parameters.AddWithValue("$opened_at", at.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
 
         await command.ExecuteNonQueryAsync(cancellation);
-        await RecordAsync(connection, runId, at, 1, $"opened '{version}' of '{rule}'", cancellation);
-
-        return null;
     }
 
-    // Closing keeps the row and every column it was opened with but the two the
-    // close writes, so the scores under it stay scores of the rule as it stood.
-    //
-    // The window closed is the one open now under that name, which there is at
-    // most one of because a version is refused a second open window. A live
-    // window is not closed while a version of its rule is open beside it, since
-    // that would leave the version measured with nothing watching the code it
-    // runs through; the versions are closed first. Returns why nothing was
-    // closed, or null.
-    public async Task<string?> CloseAsync(
-        string rule,
-        string version,
+    static async Task CloseWindowAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        RuleVersionRow window,
         string? replacedBy,
-        string runId,
-        CancellationToken cancellation = default)
+        string evidence,
+        DateTimeOffset at,
+        CancellationToken cancellation)
     {
-        var at = clock.UtcNow;
-
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
-        await connection.OpenAsync(cancellation);
-
-        var open = RuleVersions.OpenAt(await VersionsAsync(connection, cancellation), at);
-
-        var window = open.FirstOrDefault(row =>
-            string.Equals(row.Rule, rule, StringComparison.Ordinal)
-            && string.Equals(row.Version, version, StringComparison.Ordinal));
-
-        var refusal = window is null
-            ? $"'{version}' of '{rule}' has no open window to close."
-            : string.Equals(version, RuleVersions.Live, StringComparison.Ordinal)
-                && open.Where(row => string.Equals(row.Rule, rule, StringComparison.Ordinal)
-                    && !string.Equals(row.Version, RuleVersions.Live, StringComparison.Ordinal)).ToArray() is { Length: > 0 } beside
-                ? $"the live window of '{rule}' is not closed while {string.Join(", ", beside.Select(row => $"'{row.Version}'"))} " +
-                  "is open beside it: a version with no live window beside it is measured with nothing watching the code " +
-                  "it runs through. Close the versions first."
-                : null;
-
-        if (refusal is not null)
-        {
-            await RecordAsync(connection, runId, at, 0, refusal, cancellation, Refused);
-
-            return refusal;
-        }
-
         await using var command = connection.CreateCommand();
 
+        command.Transaction = transaction;
         command.CommandText = CloseWindow;
         command.Parameters.AddWithValue("$closed_at", at.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$replaced_by", (object?)replacedBy ?? DBNull.Value);
-        command.Parameters.AddWithValue("$rule", rule);
-        command.Parameters.AddWithValue("$version", version);
-        command.Parameters.AddWithValue("$opened_at", window!.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$evidence", evidence);
+        command.Parameters.AddWithValue("$rule", window.Rule);
+        command.Parameters.AddWithValue("$version", window.Version);
+        command.Parameters.AddWithValue("$opened_at", window.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
 
         await command.ExecuteNonQueryAsync(cancellation);
-
-        await RecordAsync(
-            connection,
-            runId,
-            at,
-            1,
-            $"closed '{version}' of '{rule}'" + (replacedBy is null ? string.Empty : $", replaced by '{replacedBy}'"),
-            cancellation);
-
-        return null;
     }
 
     public async Task<IReadOnlyList<RuleVersionRow>> VersionsAsync(CancellationToken cancellation = default)
@@ -547,10 +755,14 @@ public sealed class RuleVersionScorer : IComponent
         return await VersionsAsync(connection, cancellation);
     }
 
-    static async Task<IReadOnlyList<RuleVersionRow>> VersionsAsync(SqliteConnection connection, CancellationToken cancellation)
+    static async Task<IReadOnlyList<RuleVersionRow>> VersionsAsync(
+        SqliteConnection connection,
+        CancellationToken cancellation,
+        SqliteTransaction? transaction = null)
     {
         await using var command = connection.CreateCommand();
 
+        command.Transaction = transaction;
         command.CommandText = ReadVersions;
 
         var rows = new List<RuleVersionRow>();
@@ -567,7 +779,8 @@ public sealed class RuleVersionScorer : IComponent
                 reader.GetString(4),
                 Instant(reader.GetString(5)),
                 reader.IsDBNull(6) ? null : Instant(reader.GetString(6)),
-                reader.IsDBNull(7) ? null : reader.GetString(7)));
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8)));
         }
 
         return rows;
@@ -605,6 +818,39 @@ public sealed class RuleVersionScorer : IComponent
         DateOnly session,
         CancellationToken cancellation)
     {
+        var on = session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        // Bars, the swing lows and the typical move at the session's own scale, which its
+        // stored bands were computed at: a refetch after a split or a dividend rescales them
+        // and never the bands, and on the night itself the factor is one.
+        // see: A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored
+        decimal factor;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = ScaleOn;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$session", on);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            if (!await reader.ReadAsync(cancellation) || reader.IsDBNull(0) || reader.IsDBNull(1))
+            {
+                return null;
+            }
+
+            var raw = Money.FromStorage(reader.GetString(1));
+
+            if (raw <= 0)
+            {
+                return null;
+            }
+
+            factor = Money.FromStorage(reader.GetString(0)) / raw;
+        }
+
+        decimal Scaled(decimal price) => factor == 1m ? price : PriceForm.Round(price / factor);
+
         var bands = new List<Level>();
         var memberSources = true;
 
@@ -612,7 +858,7 @@ public sealed class RuleVersionScorer : IComponent
         {
             command.CommandText = BandsFor;
             command.Parameters.AddWithValue("$ticker", ticker);
-            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$session", on);
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -644,7 +890,7 @@ public sealed class RuleVersionScorer : IComponent
         {
             command.CommandText = RecentFor;
             command.Parameters.AddWithValue("$ticker", ticker);
-            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$session", on);
             command.Parameters.AddWithValue("$window", VolumeProfileSeries.Window);
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
@@ -653,9 +899,9 @@ public sealed class RuleVersionScorer : IComponent
             {
                 recent.Add(new LadderBar(
                     DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    Money.FromStorage(reader.GetString(1)),
-                    Money.FromStorage(reader.GetString(2)),
-                    Money.FromStorage(reader.GetString(3))));
+                    Scaled(Money.FromStorage(reader.GetString(1))),
+                    Scaled(Money.FromStorage(reader.GetString(2))),
+                    Scaled(Money.FromStorage(reader.GetString(3)))));
             }
         }
 
@@ -678,7 +924,7 @@ public sealed class RuleVersionScorer : IComponent
             command.CommandText = TypicalMoveFor;
             command.Parameters.AddWithValue("$ticker", ticker);
             command.Parameters.AddWithValue("$name", Core.Indicators.IndicatorSeries.Atr14);
-            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$session", on);
 
             var value = await command.ExecuteScalarAsync(cancellation);
 
@@ -696,7 +942,7 @@ public sealed class RuleVersionScorer : IComponent
         {
             command.CommandText = TrendFor;
             command.Parameters.AddWithValue("$ticker", ticker);
-            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$session", on);
 
             trendState = await command.ExecuteScalarAsync(cancellation) as string;
         }
@@ -720,13 +966,13 @@ public sealed class RuleVersionScorer : IComponent
         var lows = StoredSwings.AsOf(connection, ticker, session)
             .Where(swing => swing.Direction == SwingSeries.Low)
             .OrderBy(swing => swing.SessionDate)
-            .Select(swing => swing.Price)
+            .Select(swing => Scaled(swing.Price))
             .ToArray();
 
         return new ReplayInputs(
             bands,
             recent[^1].Close,
-            Statistic.ToPrice(move),
+            Scaled(Statistic.ToPrice(move)),
             recent,
             trendState,
             candidates,
@@ -760,10 +1006,11 @@ public sealed class RuleVersionScorer : IComponent
         return members;
     }
 
-    static async Task<int> DroppedAsync(SqliteConnection connection, CancellationToken cancellation)
+    static async Task<int> DroppedAsync(SqliteConnection connection, SqliteTransaction transaction, CancellationToken cancellation)
     {
         await using var newest = connection.CreateCommand();
 
+        newest.Transaction = transaction;
         newest.CommandText = NewestSession;
 
         if (await newest.ExecuteScalarAsync(cancellation) is not string stored)
@@ -773,6 +1020,7 @@ public sealed class RuleVersionScorer : IComponent
 
         await using var command = connection.CreateCommand();
 
+        command.Transaction = transaction;
         command.CommandText = DropOlderThan;
         command.Parameters.AddWithValue(
             "$oldest",
@@ -790,10 +1038,12 @@ public sealed class RuleVersionScorer : IComponent
         int written,
         string detail,
         CancellationToken cancellation,
-        string outcome = Ok)
+        string outcome = Ok,
+        SqliteTransaction? transaction = null)
     {
         await using var command = connection.CreateCommand();
 
+        command.Transaction = transaction;
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);

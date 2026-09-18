@@ -12,8 +12,8 @@ $ErrorActionPreference = 'Stop'
 # Set-Location both outlive the script and stay in the session that ran it.
 # tools/ci.sh cannot do this, since its export dies with its process, so the two
 # scripts were not the same in effect on the one platform the operator runs them
-# on. RUNBOOK's restore procedure is where it bites: step 7 runs this script and
-# step 9 runs a night by hand, and that night would have gone to data-ci.
+# on. RUNBOOK's restore procedure is where it bites: it runs this script and then
+# a night by hand, and that night would have gone to data-ci.
 #
 # finally runs when a script exits, including through the exit in Step below,
 # and the exit code survives it.

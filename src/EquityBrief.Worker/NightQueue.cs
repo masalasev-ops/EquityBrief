@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace EquityBrief.Worker;
 
-// What the night hands step 17: the local model, its settings and its lane, how long the
+// What the night hands the overnight queue: the local model, its settings and its lane, how long the
 // queue works, and what holds the machine awake while it does.
 //
 // A record of its own beside the night's feeds rather than a member of them, because
@@ -30,7 +30,7 @@ public sealed record NightQueue(
             TimeSpan.FromHours(OvernightQueue.DefaultHours),
             awake ?? new MachineAwake());
 
-    // What the night's verb hands step 17, read from configuration: the local model's
+    // What the night's verb hands the overnight queue, read from configuration: the local model's
     // settings and lane, the queue's hours, and the local model from the night's own source.
     // Here rather than in the verb, so what a night reads from its settings is asserted where
     // it is read.

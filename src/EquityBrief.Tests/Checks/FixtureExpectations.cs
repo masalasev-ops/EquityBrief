@@ -2476,7 +2476,7 @@ public partial class FixtureExpectations
 
         // The detector again, because its retention reads the listings and there
         // were none the first time it ran. This is the order the night takes as
-        // well: the shortlist is step 12 and the facts file is step 13.
+        // well: the night writes the shortlist before the facts file.
         await new ChangeDetector(clock, store.DatabaseFile).RunAsync("replay-changes-again");
 
         return store;
@@ -4218,7 +4218,7 @@ public partial class FixtureExpectations
         var earlier = session.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         // Facts from a session before the bars end, which is last night's file
-        // at step 12 of a second evening. The builder runs and writes its rows.
+        // at the listings step of a second evening. The builder runs and writes its rows.
         Insert(store, $"DELETE FROM facts WHERE ticker = 'AAPL';");
         Insert(store, $"INSERT INTO facts (ticker, session_date, payload, payload_hash) VALUES ('AAPL', '{earlier}', '{{}}', 'h');");
 

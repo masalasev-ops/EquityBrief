@@ -672,12 +672,13 @@ public sealed class ReadApi : IComponent
     // instant and this query would name it the newest run. The page would then
     // open on a night whose list the store does not hold. The write order is the
     // rowid, which is the one thing here that cannot be stamped.
-    const string NewestRun = @"
-        SELECT started_at FROM run_log
-        WHERE stage != $read_api AND outcome != $no_session
-        ORDER BY rowid DESC
-        LIMIT 1;
-    ";
+    //
+    // A command a person runs by hand is not a night, so its run ids are left out, one
+    // clause per prefix the run screen reads as by hand. GLOB, because it is case sensitive.
+    static string NewestRun =>
+        "SELECT started_at FROM run_log WHERE stage != $read_api AND outcome != $no_session"
+        + string.Concat(RunScreen.RunsByHand.Select((_, at) => FormattableString.Invariant($" AND run_id NOT GLOB $by_hand_{at}")))
+        + " ORDER BY rowid DESC LIMIT 1;";
 
     // Every listing for one night, fired and quiet alike, because the page's own
     // header states the true fired count over the whole index and the twenty
@@ -844,6 +845,17 @@ public sealed class ReadApi : IComponent
             $run_id, $stage, $started_at, $started_at, 'started',
             0, 0, 0, '0', $detail);
     ";
+
+    // The store's schema and this checkout's, where the store is behind, and null where it is not.
+    public Task<(int Store, int Checkout)?> SchemaBehindAsync()
+    {
+        using var connection = Open();
+
+        var at = EquityBrief.Data.Migrations.MigrationRunner.AppliedVersion(connection);
+
+        return Task.FromResult<(int Store, int Checkout)?>(
+            at < EquityBrief.Data.Migrations.SchemaMigrations.LatestVersion ? (at, EquityBrief.Data.Migrations.SchemaMigrations.LatestVersion) : null);
+    }
 
     SqliteConnection Open()
     {
@@ -1184,7 +1196,7 @@ public sealed class ReadApi : IComponent
     //
     // Until the phase 5 sign-off the page opened on the newest night the
     // listings hold, and then kept only that night's rows, so a night that
-    // stopped before its list, at the fetch or anywhere before step 12, was
+    // stopped before its list, at the fetch or anywhere before the listings step, was
     // absent from the page a person opens: the reviewer stopped a night at the
     // fetch on 2026-09-09 and the default page showed 2026-09-08 saying no stage
     // of this night failed. The night is decided by the clock over the run's
@@ -1199,6 +1211,11 @@ public sealed class ReadApi : IComponent
         command.CommandText = NewestRun;
         command.Parameters.AddWithValue("$read_api", Stage);
         command.Parameters.AddWithValue("$no_session", RunScreen.NoSession);
+
+        for (var at = 0; at < RunScreen.RunsByHand.Count; at++)
+        {
+            command.Parameters.AddWithValue(FormattableString.Invariant($"$by_hand_{at}"), RunScreen.RunsByHand[at] + "*");
+        }
 
         return await command.ExecuteScalarAsync() is string started
             ? clock.SessionDateAt(DateTimeOffset.Parse(started, CultureInfo.InvariantCulture))

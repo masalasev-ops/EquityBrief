@@ -300,7 +300,8 @@ public sealed record StageRow(
     int NetworkRequests,
     string Spend,
     string Outcome,
-    string Detail);
+    string Detail,
+    bool ByHand = false);
 
 // The overnight queue as the run page draws it for one night.
 //
@@ -1649,12 +1650,12 @@ public sealed class MarkRenderer : IComponent
             // The cell carries the clock time and the attribute the whole
             // instant, because a night that starts after the close in New York
             // carries tomorrow's UTC date and a bare time would hide it.
-            header.Append(Invariant, $"<tr data-stage=\"{Escaped(stage.Stage)}\" ");
+            header.Append(Invariant, $"<tr data-stage=\"{Escaped(stage.Stage)}\" {(stage.ByHand ? "data-by-hand=\"1\" " : string.Empty)}");
             header.Append(Invariant, $"data-started=\"{stage.StartedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\" data-seconds=\"{Number(stage.Seconds)}\" ");
             header.Append(Invariant, $"data-rows=\"{stage.RowsWritten}\" data-model-calls=\"{stage.ModelCalls}\" ");
             header.Append(Invariant, $"data-requests=\"{stage.NetworkRequests}\" data-spend=\"{Escaped(stage.Spend)}\" ");
             header.Append(Invariant, $"data-outcome=\"{Escaped(stage.Outcome)}\">");
-            header.Append(Invariant, $"<td>{Escaped(stage.Stage)}</td>");
+            header.Append(Invariant, $"<td>{Escaped(stage.Stage)}{(stage.ByHand ? " (run by hand)" : string.Empty)}</td>");
             header.Append(Invariant, $"<td>{stage.StartedAt.UtcDateTime:HH:mm:ss}</td>");
             header.Append(Invariant, $"<td>{Number(stage.Seconds)}s</td><td>{stage.RowsWritten}</td>");
             header.Append(Invariant, $"<td>{stage.ModelCalls}</td><td>{stage.NetworkRequests}</td>");
@@ -1672,9 +1673,14 @@ public sealed class MarkRenderer : IComponent
         header.Append("</table>");
 
         // The night's own total beneath the steps rather than above them, so the
-        // steps are what is read first.
-        header.Append(Invariant, $"<p class=\"total\" data-seconds=\"{Number(stages.Sum(stage => stage.Seconds))}\">");
-        header.Append(Invariant, $"{stages.Count} stage(s), {Number(stages.Sum(stage => stage.Seconds))} second(s) of stage time</p>");
+        // steps are what is read first. A command run by hand that day is counted
+        // apart and never in the night's stage time.
+        var ofTheNight = stages.Where(stage => !stage.ByHand).ToArray();
+        var byHand = stages.Count - ofTheNight.Length;
+
+        header.Append(Invariant, $"<p class=\"total\" data-seconds=\"{Number(ofTheNight.Sum(stage => stage.Seconds))}\" data-by-hand=\"{byHand}\">");
+        header.Append(Invariant, $"{ofTheNight.Length} stage(s) of the night, {Number(ofTheNight.Sum(stage => stage.Seconds))} second(s) of stage time");
+        header.Append(byHand > 0 ? Formatted($", and {byHand} command(s) run by hand</p>") : "</p>");
 
         // Every paid call the run log carries a recorded cost for, over every night
         // rather than this one, the research passes they were made in, and what they
@@ -1715,6 +1721,21 @@ public sealed class MarkRenderer : IComponent
             ? "<p data-stale=\"none\">no name is carrying yesterday's bars</p>"
             : Formatted($"<p data-stale=\"{stale.Count}\">{stale.Count} name(s) carrying yesterday's bars: {Escaped(string.Join(", ", stale))}</p>"));
 
+        region.Append(FailedStages(failed));
+        region.Append(Refused(refused));
+        region.Append(FellBack(fellBack));
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // What failed, in which component: the count and each stage that failed. Apart from
+    // the rest of its region so a page over a store it cannot read further draws this
+    // half alone.
+    public string FailedStages(IReadOnlyList<StageRow> failed)
+    {
+        var region = new StringBuilder();
+
         region.Append(failed.Count == 0
             ? "<p data-failed=\"none\">no stage of this night failed</p>"
             : Formatted($"<p data-failed=\"{failed.Count}\">{failed.Count} stage(s) failed</p>"));
@@ -1724,10 +1745,6 @@ public sealed class MarkRenderer : IComponent
             region.Append(Invariant, $"<p class=\"failed\" data-stage=\"{Escaped(stage.Stage)}\" data-outcome=\"{Escaped(stage.Outcome)}\">");
             region.Append(Invariant, $"{Escaped(stage.Stage)}: {Escaped(stage.Outcome)}. {Escaped(stage.Detail)}</p>");
         }
-
-        region.Append(Refused(refused));
-        region.Append(FellBack(fellBack));
-        region.Append("</section>");
 
         return region.ToString();
     }

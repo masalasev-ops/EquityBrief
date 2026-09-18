@@ -152,8 +152,8 @@ public sealed class ShortlistBuilder : IComponent
     // file that already exists is a row two later readers disagree over.
     //
     // The newest row and not tonight's, and the comparison below is one way for
-    // that reason. Section 14 writes the listings at step 12 and the facts at
-    // step 13, so on every evening after a store's first the newest facts row is
+    // that reason. Section 14 writes the listings before the facts, so on every
+    // evening after a store's first the newest facts row is
     // last night's when this runs, and the facts step that follows makes it
     // tonight's. This read said "tonight's" and compared for equality until the
     // phase 5 sign-off, which refused every second evening: the first scheduled
@@ -761,7 +761,7 @@ public sealed class ShortlistBuilder : IComponent
         // beside it is a row two later readers disagree over.
         //
         // Refused only where the facts are newer than the bars. Older facts are
-        // last night's file, which is what a second evening holds at step 12,
+        // last night's file, which is what a second evening holds at the listings step,
         // and equal facts are a re-run of the same session. ISO dates sort
         // lexically in the order they sort chronologically, which SCHEMA states
         // and which is why this is an ordinal comparison.

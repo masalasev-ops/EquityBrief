@@ -42,6 +42,41 @@ builder.Services.AddSingleton<IPassStarter>(services => new WorkerPassStarter(
 
 var app = builder.Build();
 
+// A store behind this checkout is named on every screen rather than failing on the first column
+// it lacks, and the run page still draws its run log, which is where a refused night is.
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value ?? string.Empty;
+
+    if (path.StartsWith("/screens/", StringComparison.Ordinal) || path.StartsWith(ReportExporter.Route, StringComparison.Ordinal))
+    {
+        var read = context.RequestServices.GetRequiredService<ReadApi>();
+
+        if (await read.SchemaBehindAsync() is { } behind)
+        {
+            var body = context.RequestServices.GetRequiredService<SinglePageApp>().StoreBehind(behind.Store, behind.Checkout);
+            var asked = path.StartsWith("/screens/run/", StringComparison.Ordinal)
+                && DateOnly.TryParseExact(path["/screens/run/".Length..], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var named)
+                    ? named
+                    : (DateOnly?)null;
+
+            if (path.StartsWith("/screens/run", StringComparison.Ordinal) && (asked ?? await read.RunNightAsync()) is { } night)
+            {
+                var marks = context.RequestServices.GetRequiredService<MarkRenderer>();
+                var stages = RunScreen.Stages(await read.RunLogAsync(night));
+
+                body += marks.OperationalHeader(night, stages) + marks.FailedStages(RunScreen.Failed(stages));
+            }
+
+            await Results.Content(body, "text/html; charset=utf-8").ExecuteAsync(context);
+
+            return;
+        }
+    }
+
+    await next();
+});
+
 app.MapGet("/", (SinglePageApp page) =>
     Results.Content(page.Shell("EquityBrief"), "text/html; charset=utf-8"));
 

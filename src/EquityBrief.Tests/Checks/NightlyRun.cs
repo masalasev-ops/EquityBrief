@@ -33,7 +33,7 @@ public class NightlyRun
             // 8.6, the rule version scorer's step, and the limits row its
             // stopping behaviour is the whole of: a window measuring a rule
             // that moved is closed by stopping the night rather than by a note.
-            CheckReach.Key(NightlyRunSteps.Heading, "Replay tonight's name-nights under every open version of each ladder rule from the stored bars, and store the plan each version produced, flagging as in sample any score written for a night before its version's window opened so it counts toward no record. This makes no request: the bars are already stored, so a version costs the ladder arithmetic run again and, for a version of the merge distance, the level arithmetic as well. A live rule whose parameters or code have moved while a window measuring it is open stops the night at this step and names the rule (see: Adding a candidate later restarts the clock)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Replay tonight's name-nights under every open version of each ladder rule from the stored bars, and store the plan each version produced, flagging as in sample any score for a session on or before the New York date its version's window opened on so it counts toward no record (see: A version's score counts only for a session after the New York date its window opened on). This makes no request: the bars are already stored, so a version costs the ladder arithmetic run again and, for a version of the merge distance, the level arithmetic as well. A live rule whose parameters or code have moved while a window measuring it is open stops the night at this step and names the rule (see: Adding a candidate later restarts the clock)."),
             CheckReach.Key(Scope.LimitsTable, "Frozen measurement windows"),
 
             // 5.5, the forward returns and the news pulse.
@@ -61,7 +61,7 @@ public class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Classify the trend state and build the ladder for every name, writing a row whether or not it carries a tranche (see: A ladder row is written for every index member every night) (see: The trend classifier returns its label to the ladder builder)."),
             CheckReach.Key(Scope.LimitsTable, "Per-request timeout and the night's deadline"),
 
-            // 6.10, step 17, run last and after the close.
+            // 6.10, the overnight queue, run last and after the close.
             CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for listed names whose research is missing or stale, in priority order, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about)."),
 
             // 5.7. The row states a figure the night is bounded by and the
@@ -995,7 +995,7 @@ public class NightlyRun
     }
 
     [Fact]
-    public async Task StepSeventeenRunsTheOvernightQueueAfterTheArithmeticHasClosed()
+    public async Task TheOvernightQueueRunsLastAfterTheArithmeticHasClosed()
     {
         // Section 14's last step, read off the document, and the night running it last: after
         // the close has recorded the arithmetic's counts, on the night's own output and on the
@@ -1033,6 +1033,238 @@ public class NightlyRun
         Assert.Equal(OvernightQueue.Stage, EquityBrief.Api.Reading.RunScreen.QueueStage);
         Assert.Equal(OvernightQueue.StoppedAtItsLimit, EquityBrief.Api.Reading.RunScreen.QueueAtItsLimit);
         Assert.Equal(OvernightQueue.Stage, NightlyCost.QueueStage);
+    }
+
+    // The frozen windows guardrail over whole recorded nights rather than over the reader
+    // alone: a live rule that moved inside an open window stops the night at the version step
+    // with nothing scored, and once the windows are closed with their evidence and opened
+    // again, the next night scores under the new ones and keeps the closed rows as they were.
+    [Fact]
+    public async Task AMovedLiveRuleStopsTheNightAtTheVersionStepAndTheNightAfterItsWindowsAreClosedAndOpenedAgainRunsUnderTheNewOnes()
+    {
+        var before = FixedClock.At(Night.AddHours(-1), SessionZones.UnitedStates);
+        var threeDays = new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 };
+
+        async Task OpenAsync(TemporaryStore store, string prefix)
+        {
+            var opener = new EquityBrief.Worker.Rules.RuleVersionScorer(before, store.DatabaseFile);
+
+            Assert.Null(await opener.OpenLiveAsync(EquityBrief.Core.Rules.LadderRules.NearExitSkip, prefix + "-live"));
+            Assert.Null(await opener.OpenAsync(EquityBrief.Core.Rules.LadderRules.NearExitSkip, "three typical days", threeDays, prefix + "-version"));
+        }
+
+        // The order: after every stage of the arithmetic the step replays, and before the close and the queue.
+        using (var clean = new TemporaryStore().Migrated())
+        {
+            await OpenAsync(clean, "clean");
+
+            var (code, _, error) = await NightAsync(clean, runId: "versions-clean");
+
+            Assert.True(code == 0, error);
+
+            var stages = RunLog(clean, "versions-clean").Select(row => row.Stage).ToList();
+            var at = stages.IndexOf(EquityBrief.Worker.Rules.RuleVersionScorer.Stage);
+
+            Assert.All(["levels", "ladders", "listings", "facts", "forward-returns", "news-pulse"], stage => Assert.InRange(stages.IndexOf(stage), 0, at - 1));
+            Assert.All([NightClose.Stage, OvernightQueue.Stage], stage => Assert.True(stages.IndexOf(stage) > at, $"{stage} ran before the version step."));
+            Assert.True(Scalar(clean, "SELECT COUNT(*) FROM version_score;") > 0, "The night scored no version, so the order above is of a step that did nothing.");
+        }
+
+        // The stop: a live window opened under a build whose code differed.
+        using var store = new TemporaryStore().Migrated();
+
+        await OpenAsync(store, "moved");
+        store.Execute($"UPDATE rule_version SET parameters_hash = 'ffffffffffff' WHERE version = '{EquityBrief.Core.Rules.RuleVersions.Live}';");
+
+        var windows = await new EquityBrief.Worker.Rules.RuleVersionScorer(before, store.DatabaseFile).VersionsAsync();
+        var stopped = await NightAsync(store, runId: "versions-moved");
+        var log = RunLog(store, "versions-moved");
+        var failed = Assert.Single(log, row => row.Stage == EquityBrief.Worker.Rules.RuleVersionScorer.Stage);
+
+        Assert.Equal(1, stopped.Code);
+        Assert.Contains($"step '{EquityBrief.Worker.Rules.RuleVersionScorer.Stage}' failed", stopped.Error, StringComparison.Ordinal);
+        Assert.Contains($"'{EquityBrief.Core.Rules.LadderRules.NearExitSkip}'", stopped.Error, StringComparison.Ordinal);
+        Assert.Equal(NightClose.Failed, failed.Outcome);
+        Assert.Contains($"'{EquityBrief.Core.Rules.LadderRules.NearExitSkip}'", failed.Detail, StringComparison.Ordinal);
+        Assert.DoesNotContain(log, row => row.Stage == NightClose.Stage || row.Stage == OvernightQueue.Stage);
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM version_score;"));
+        Assert.Equal(windows, await new EquityBrief.Worker.Rules.RuleVersionScorer(before, store.DatabaseFile).VersionsAsync());
+
+        // A change starts new windows: each command through the verb a person runs.
+        var changed = new DateTimeOffset(2026, 9, 9, 12, 0, 0, TimeSpan.Zero);
+        string[][] commands =
+        [
+            ["--rule", EquityBrief.Core.Rules.LadderRules.NearExitSkip, "--close", "three typical days", "--evidence", "the rule moved"],
+            ["--rule", EquityBrief.Core.Rules.LadderRules.NearExitSkip, "--close", EquityBrief.Core.Rules.RuleVersions.Live, "--evidence", "the code moved to " + EquityBrief.Worker.Rules.RuleVersionScorer.HashesNow()[EquityBrief.Core.Rules.LadderRules.NearExitSkip]],
+            ["--rule", EquityBrief.Core.Rules.LadderRules.NearExitSkip, "--live-window"],
+            ["--rule", EquityBrief.Core.Rules.LadderRules.NearExitSkip, "--version", "three typical days", "--parameters", "nearExitInTypicalDays=3"],
+        ];
+
+        for (var at = 0; at < commands.Length; at++)
+        {
+            var said = new StringWriter();
+
+            Assert.True(
+                await EquityBrief.Worker.Rules.VersionVerb.RunAsync([EquityBrief.Worker.Rules.VersionVerb.Name, .. commands[at]], FixedClock.At(changed.AddMinutes(at), SessionZones.UnitedStates), store.DatabaseFile, new StringWriter(), said) == 0,
+                said.ToString());
+        }
+
+        var reopened = await NightAsync(store, runId: "versions-reopened");
+
+        Assert.True(reopened.Code == 0, reopened.Error);
+
+        var after = await new EquityBrief.Worker.Rules.RuleVersionScorer(before, store.DatabaseFile).VersionsAsync();
+
+        // The closed rows keep what they were opened with, and the new windows are the open ones.
+        Assert.All(windows, window =>
+        {
+            var kept = Assert.Single(after, row => row.Version == window.Version && row.OpenedAt == window.OpenedAt);
+
+            Assert.Equal((window.Parameters, window.ParametersHash), (kept.Parameters, kept.ParametersHash));
+            Assert.NotNull(kept.ClosedAt);
+        });
+        Assert.Equal(2, after.Count(row => row.ClosedAt is null && row.OpenedAt >= changed));
+        Assert.Equal(["2026-09-09T12:03:00Z|in_sample"], [.. Strings(store, "SELECT DISTINCT opened_at || '|' || sample FROM version_score;")]);
+    }
+
+    static IReadOnlyList<string> Strings(TemporaryStore store, string sql)
+    {
+        using var connection = store.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = sql;
+
+        var read = new List<string>();
+
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            read.Add(reader.GetString(0));
+        }
+
+        return read;
+    }
+
+    // A night's step is named by what it does everywhere but section 14's own note and the
+    // night's own list, and both of those are held to section 14's order: a number goes stale
+    // the night a step is inserted before it, and a name does not.
+    [Fact]
+    public void NoDocumentFixtureScriptOrSourceNamesANightStepByItsNumberOutsideSectionFourteenAndTheNightsOwnList()
+    {
+        var architecture = File.ReadAllText(Repository.Architecture);
+        var steps = NightlyRunSteps.In(architecture);
+        var close = steps.ToList().FindIndex(step => step.StartsWith("Close the arithmetic", StringComparison.Ordinal)) + 1;
+        var queue = steps.ToList().FindIndex(step => step.StartsWith("Run the overnight queue", StringComparison.Ordinal)) + 1;
+
+        Assert.Equal(steps.Count, queue);
+
+        // Section 14's note, the section with its list removed.
+        var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);
+        var section = architecture[from..architecture.IndexOf("<h2>15.", from, StringComparison.Ordinal)];
+
+        Assert.Empty(NoteFaults(section, close, queue));
+
+        // The night's own list: its steps in section 14's number, each comment naming a step
+        // by its number sitting on that step.
+        var night = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Nightly.cs"));
+        var held = HeldStepComments(night, steps.Count);
+
+        Assert.True(held.Count >= 8, $"Read {held.Count} step comment(s) in the night's list, expected at least 8.");
+        Assert.DoesNotContain(held, comment => comment.Fault is not null);
+
+        // Everywhere else, none.
+        var root = Repository.Root;
+        var separator = Path.DirectorySeparatorChar;
+        var read = new List<(string File, string Text)>
+        {
+            ("docs/ARCHITECTURE.html", architecture.Replace(section, string.Empty, StringComparison.Ordinal)),
+            ("docs/BUILD_PLAN.md", Corpus.Read("docs/BUILD_PLAN.md")),
+            ("docs/SCHEMA.md", Corpus.Read("docs/SCHEMA.md")),
+            ("docs/RUNBOOK.md", Corpus.Read("docs/RUNBOOK.md")),
+            ("CLAUDE.md", Corpus.Read("CLAUDE.md")),
+        };
+
+        read.AddRange(Directory.EnumerateFiles(Path.Combine(root, ".claude", "rules"), "*.md").Select(path => (Path.GetRelativePath(root, path), File.ReadAllText(path))));
+        // The fixture files this repository writes, and not the provider's captured responses.
+        read.AddRange(Directory.EnumerateFiles(Path.Combine(root, "fixtures"), "*.json", SearchOption.AllDirectories)
+            .Where(path => path.Contains($"{separator}expectations{separator}", StringComparison.Ordinal) || Path.GetFileName(path).StartsWith("manifest", StringComparison.Ordinal))
+            .Select(path => (Path.GetRelativePath(root, path), File.ReadAllText(path))));
+        read.AddRange(Directory.EnumerateFiles(Path.Combine(root, "tools"), "*", SearchOption.AllDirectories).Select(path => (Path.GetRelativePath(root, path), File.ReadAllText(path))));
+        read.AddRange(Directory.EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{separator}bin{separator}", StringComparison.Ordinal) && !path.Contains($"{separator}obj{separator}", StringComparison.Ordinal))
+            .Select(path => (Path.GetRelativePath(root, path), Path.GetFileName(path) == "Nightly.cs" ? Regex.Replace(File.ReadAllText(path), HeldComment, string.Empty) : File.ReadAllText(path))));
+
+        Assert.True(read.Count >= 100, $"Read {read.Count} file(s) for a step named by number, expected at least 100.");
+        Assert.Empty(read.SelectMany(file => StepsByNumber(file.Text).Select(found => $"{file.File}: {found}")));
+
+        // The records are left out by name, and leaving them out removes something.
+        Assert.NotEmpty(StepsByNumber(Corpus.Read("docs/DECISIONS.md")));
+
+        // The readers, over constructed text written without the pattern in this source.
+        Assert.Equal([$"the queue at step {17}"], StepsByNumber($"the queue at step {17}.\nno step here."));
+        Assert.Empty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}, and step {18} carved out.</p>", 17, 18));
+        Assert.NotEmpty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}, and step {18} carved out.</p>", 16, 18));
+        Assert.NotEmpty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}.</p>", 17, 18));
+
+        var list = $"Step[] steps =\n[\n new(FirstStep, () => 0),\n // Section 14's step {2}, the second.\n new(\"membership\", () => 0),\n new(\"backfill\", () => 0),\n];";
+
+        Assert.Single(HeldStepComments(list, 2), comment => comment.Fault is not null);
+        Assert.DoesNotContain(HeldStepComments(list.Replace($"step {2}", $"step {1}", StringComparison.Ordinal), 2), comment => comment.Fault is not null);
+    }
+
+    const string HeldComment = @"// Section 14's step \d+";
+
+    static IReadOnlyList<string> StepsByNumber(string text) =>
+        [.. Regex.Matches(text, @"(?i)[^\n]{0,40}\bsteps? \d+\b").Select(match => match.Value.Trim())];
+
+    // What section 14's note says of its steps against the list: the arithmetic ends at the
+    // close and the one step carved out of it is the queue.
+    static IReadOnlyList<string> NoteFaults(string section, int close, int queue)
+    {
+        var note = Regex.Replace(section, "<ol>.*?</ol>", string.Empty, RegexOptions.Singleline);
+        var ranges = Regex.Matches(note, @"steps [1] to (\d+)").ToArray();
+        var single = Regex.Matches(note, @"\bstep (\d+)").ToArray();
+        var faults = new List<string>();
+
+        if (ranges.Length != 1 || ranges[0].Groups[1].Value != close.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        {
+            faults.Add($"the note names the arithmetic as {string.Join(", ", ranges.Select(one => one.Value))} where the close is step {close}");
+        }
+
+        if (single.Length != 1 || single[0].Groups[1].Value != queue.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        {
+            faults.Add($"the note names {string.Join(", ", single.Select(one => one.Value))} where the queue is step {queue}");
+        }
+
+        return faults;
+    }
+
+    // Each comment in the night's list naming a step by its number, with a fault where the
+    // number is not the ordinal of the step it sits on, or where the list does not hold as
+    // many steps as section 14.
+    static IReadOnlyList<(string Comment, string? Fault)> HeldStepComments(string night, int count)
+    {
+        var from = night.IndexOf("Step[] steps =", StringComparison.Ordinal);
+        var list = night[from..(from + Regex.Match(night[from..], @"\n\s*\];").Index)];
+        var names = Regex.Matches(list, "new\\(\"([a-z-]+)\"").ToArray();
+        var held = new List<(string, string?)>();
+
+        foreach (Match comment in Regex.Matches(list, HeldComment))
+        {
+            var next = names.FirstOrDefault(name => name.Index > comment.Index);
+            var ordinal = next is null ? 0 : Array.IndexOf(names, next) + 1;
+            var said = int.Parse(comment.Value[(comment.Value.LastIndexOf(' ') + 1)..], System.Globalization.CultureInfo.InvariantCulture);
+
+            held.Add((comment.Value, said == ordinal ? null : $"'{comment.Value}' sits on step {ordinal}, {next?.Groups[1].Value ?? "none"}"));
+        }
+
+        if (names.Length != count)
+        {
+            held.Add(("the list", $"the night's list holds {names.Length} step(s) and section 14 {count}"));
+        }
+
+        return held;
     }
 
     [Fact]
@@ -1101,7 +1333,7 @@ public class NightlyRun
         // evening has: last night's facts file sitting beside tonight's bars.
         // The shortlist builder compared the two and refused, because section
         // 14 writes the listings before the facts, so on 2026-09-10 the live
-        // night stopped at step 12 having written eleven clean stages and
+        // night stopped at the listings step having written eleven clean stages and
         // nothing at all about the twelfth.
         using var store = new TemporaryStore();
 
@@ -1131,7 +1363,7 @@ public class NightlyRun
         Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-09';"));
 
         // And the stages after the listings ran for the new session rather than
-        // being skipped, which is what a night that stopped at step 12 leaves
+        // being skipped, which is what a night that stopped at the listings step leaves
         // missing.
         Assert.Equal(current, Scalar(store, "SELECT COUNT(*) FROM facts WHERE session_date = '2026-09-09';"));
         Assert.Equal(1, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE run_id = 'night-two' AND stage = 'close';"));
@@ -1335,7 +1567,7 @@ public class NightlyRun
             Bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8)),
         };
 
-        // Step 17 over a local model that does not answer. This night's facts are built
+        // The overnight queue over a local model that does not answer. This night's facts are built
         // from a constructed session, so its queue would ask for drafts nobody recorded,
         // and what this asserts is the arithmetic before it: a queue that could not run
         // leaves every figure above it as it is.

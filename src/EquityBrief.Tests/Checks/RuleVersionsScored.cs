@@ -2,11 +2,13 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using EquityBrief.Core;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Time;
 using EquityBrief.Core.Volume;
+using EquityBrief.Data.Migrations;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Levels;
@@ -64,20 +66,17 @@ public class RuleVersionsScored
         Assert.Null(first.ClosedAt);
         Assert.Equal(RuleVersionScorer.CodeVersion, first.CodeVersion);
 
-        // The close writes two fields and no others, and the row stands.
+        // The change is one write: the old window closed with its evidence and the
+        // version replacing it, and that version opened. The old row stands.
         var later = new RuleVersionScorer(Clock(Opened.AddDays(1)), store.DatabaseFile);
 
-        Assert.Null(await later.CloseAsync(
+        Assert.Null(await later.ReplaceAsync(
             LadderRules.NearExitSkip,
             "three typical days",
             "four typical days",
-            "versions-test-2"));
-
-        Assert.Null(await later.OpenAsync(
-            LadderRules.NearExitSkip,
-            "four typical days",
             new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 4 },
-            "versions-test-3"));
+            "the figures that produced it",
+            "versions-test-2"));
 
         var rows = (await scorer.VersionsAsync()).Where(row => row.Version != RuleVersions.Live).ToArray();
 
@@ -90,8 +89,10 @@ public class RuleVersionsScored
         Assert.Equal(first.Parameters, closed.Parameters);
         Assert.Equal(first.ParametersHash, closed.ParametersHash);
         Assert.Equal(first.OpenedAt, closed.OpenedAt);
-        Assert.NotNull(closed.ClosedAt);
+        Assert.Equal(Opened.AddDays(1), closed.ClosedAt);
         Assert.Equal("four typical days", closed.ReplacedBy);
+        Assert.Equal("the figures that produced it", closed.Evidence);
+        Assert.Equal(Opened.AddDays(1), rows.Single(row => row.Version == "four typical days").OpenedAt);
 
         // And only the new one is open afterwards, at an instant after the close.
         var open = RuleVersions.OpenAt(rows, Opened.AddDays(2));
@@ -103,6 +104,18 @@ public class RuleVersionsScored
         Assert.Equal(
             ["three typical days"],
             [.. RuleVersions.OpenAt(rows, Opened.AddHours(1)).Select(row => row.Version)]);
+
+        // A window closed with nothing replacing it keeps its row too, names no
+        // replacement and carries the evidence it was closed on.
+        var end = new RuleVersionScorer(Clock(Opened.AddDays(3)), store.DatabaseFile);
+
+        Assert.Null(await end.CloseAsync(LadderRules.NearExitSkip, "four typical days", "ended", "versions-test-3"));
+
+        var ended = Assert.Single(await end.VersionsAsync(), row => row.Version == "four typical days");
+
+        Assert.Equal(Opened.AddDays(3), ended.ClosedAt);
+        Assert.Null(ended.ReplacedBy);
+        Assert.Equal("ended", ended.Evidence);
     }
 
     [Fact]
@@ -300,18 +313,18 @@ public class RuleVersionsScored
 
         Assert.Contains(
             "is not closed while 'stop under the zone' is open beside it",
-            await later.CloseAsync(LadderRules.StopPlacement, RuleVersions.Live, null, "close-3"),
+            await later.CloseAsync(LadderRules.StopPlacement, RuleVersions.Live, "the live rule's own figures", "close-3"),
             StringComparison.Ordinal);
 
         // A window that is not open is not closed, and says so.
         Assert.Contains(
             "has no open window to close",
-            await later.CloseAsync(LadderRules.StopPlacement, "a version nobody opened", null, "close-4"),
+            await later.CloseAsync(LadderRules.StopPlacement, "a version nobody opened", "figures about nothing", "close-4"),
             StringComparison.Ordinal);
 
         // The versions first, then the live window.
-        Assert.Null(await later.CloseAsync(LadderRules.StopPlacement, "stop under the zone", null, "close-5"));
-        Assert.Null(await later.CloseAsync(LadderRules.StopPlacement, RuleVersions.Live, null, "close-6"));
+        Assert.Null(await later.CloseAsync(LadderRules.StopPlacement, "stop under the zone", "the version's figures", "close-5"));
+        Assert.Null(await later.CloseAsync(LadderRules.StopPlacement, RuleVersions.Live, "the live rule's own figures", "close-6"));
 
         Assert.Empty(RuleVersions.OpenAt(await later.VersionsAsync(), Opened.AddDays(2)));
     }
@@ -320,15 +333,23 @@ public class RuleVersionsScored
     public async Task TheVersionVerbOpensAWindowBesideItsLiveOneListsThemAndClosesOneNamingWhatReplacedIt()
     {
         // The verb a person runs, over a store, rather than the scorer's methods
-        // under it: what reaches the store is what the command line says.
+        // under it: what reaches the store is what the command line says, and
+        // every attempt but a listing is one row on the run log.
         using var store = new TemporaryStore().Migrated();
+
+        int Rows() => int.Parse(
+            Query(store, $"SELECT COUNT(*) FROM run_log WHERE stage = '{RuleVersionScorer.Stage}';").Single(),
+            CultureInfo.InvariantCulture);
 
         async Task<(int Code, string Said, string Refused)> Run(DateTimeOffset at, params string[] args)
         {
             var output = new StringWriter();
             var error = new StringWriter();
+            var before = Rows();
 
             var code = await VersionVerb.RunAsync([VersionVerb.Name, .. args], Clock(at), store.DatabaseFile, output, error);
+
+            Assert.Equal((string.Join(" ", args), args.Contains("--list") ? 0 : 1), (string.Join(" ", args), Rows() - before));
 
             return (code, output.ToString(), error.ToString());
         }
@@ -345,10 +366,11 @@ public class RuleVersionsScored
         var listed = await Run(Opened.AddMinutes(2), "--list");
 
         Assert.Contains("2 open window(s) of the 14", listed.Said, StringComparison.Ordinal);
+        Assert.Contains("'the near-exit skip' 2 of 4", listed.Said, StringComparison.Ordinal);
         Assert.Contains("'the near-exit skip' 'three typical days' {\"nearExitInTypicalDays\": 3}", listed.Said, StringComparison.Ordinal);
 
         // A refusal is a non-zero exit with the scorer's reason on the error
-        // stream, and nothing written.
+        // stream, and nothing written but its row.
         var refused = await Run(Opened.AddMinutes(3), "--rule", LadderRules.MergeDistance, "--version", "wider", "--parameters", "typicalMoveMultiple=0.75");
 
         Assert.Equal(1, refused.Code);
@@ -364,28 +386,36 @@ public class RuleVersionsScored
         Assert.Equal(1, twice.Code);
         Assert.Contains("'nearExitInTypicalDays' is given twice", twice.Refused, StringComparison.Ordinal);
 
-        var closed = await Run(Opened.AddDays(1), "--rule", LadderRules.NearExitSkip, "--close", "three typical days", "--replaced-by", "four typical days");
+        var replaced = await Run(
+            Opened.AddDays(1),
+            "--rule", LadderRules.NearExitSkip,
+            "--replace", "three typical days",
+            "--with", "four typical days",
+            "--parameters", "nearExitInTypicalDays=4",
+            "--evidence", "the figures that produced it");
 
-        Assert.Equal(0, closed.Code);
+        Assert.Equal(0, replaced.Code);
 
         var rows = new RuleVersionScorer(Clock(Opened.AddDays(1)), store.DatabaseFile);
         var kept = Assert.Single(await rows.VersionsAsync(), row => row.Version == "three typical days");
 
         Assert.NotNull(kept.ClosedAt);
         Assert.Equal("four typical days", kept.ReplacedBy);
+        Assert.Equal("the figures that produced it", kept.Evidence);
         Assert.Equal("{\"nearExitInTypicalDays\": 3}", kept.Parameters);
 
         // The backfill form reaches the scorer for the session it names, and a
-        // session it cannot read is refused before anything is scored.
+        // session the store holds no bar for is refused before anything is scored,
+        // as is a session it cannot read.
         var backfilled = await Run(Opened.AddDays(2), "--backfill", "2026-09-14");
 
-        Assert.Equal(0, backfilled.Code);
-        Assert.Contains("version: scored 2026-09-14 under 1 open window(s)", backfilled.Said, StringComparison.Ordinal);
-        Assert.Equal(1, (await Run(Opened.AddDays(2), "--backfill", "14/09/2026")).Code);
+        Assert.Equal(1, backfilled.Code);
+        Assert.Contains("the store holds no bar for 2026-09-14", backfilled.Refused, StringComparison.Ordinal);
+        Assert.Equal(1, (await Run(Opened.AddDays(2).AddMinutes(1), "--backfill", "14/09/2026")).Code);
 
-        // And a form the verb does not have says which forms it does.
-        Assert.Equal(1, (await Run(Opened, "--rule", LadderRules.NearExitSkip)).Code);
-        Assert.Equal(1, (await Run(Opened, "--live-window")).Code);
+        // And a command naming no form, or a form without what it needs, says so.
+        Assert.Contains("no form was given", (await Run(Opened.AddDays(2).AddMinutes(2), "--rule", LadderRules.NearExitSkip)).Refused, StringComparison.Ordinal);
+        Assert.Contains("needs '--rule'", (await Run(Opened.AddDays(2).AddMinutes(3), "--live-window")).Refused, StringComparison.Ordinal);
 
         // A live window the build no longer hashes to is named on the list before a night stops on it.
         store.Execute(
@@ -516,6 +546,17 @@ public class RuleVersionsScored
         var night = Query(store, "SELECT MAX(session_date) FROM bar;").Single();
         var session = DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+        // A window opened on the evening of the night being scored, after that
+        // night ran, which is a New York date of its own and so counts nothing on it.
+        var evening = new RuleVersionScorer(Clock(new DateTimeOffset(session.ToDateTime(new TimeOnly(23, 50)), TimeSpan.Zero)), store.DatabaseFile);
+
+        Assert.Null(await evening.OpenLiveAsync(LadderRules.StopPlacement, "versions-evening-live"));
+        Assert.Null(await evening.OpenAsync(
+            LadderRules.StopPlacement,
+            "under the zone",
+            new Dictionary<string, double>(StringComparer.Ordinal) { ["stopTrailsTheLastHigherLow"] = 0 },
+            "versions-evening-open"));
+
         // A window opened the day after the night being scored, which is what a
         // backfill is: the version did not exist when that night happened.
         var after = new DateTimeOffset(session.AddDays(1).ToDateTime(new TimeOnly(21, 0)), TimeSpan.Zero);
@@ -529,33 +570,43 @@ public class RuleVersionsScored
             new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 },
             "versions-backfill-open"));
 
-        var outcome = await scorer.RunAsync(session, "versions-backfill");
+        var outcome = await scorer.BackfillAsync(session, "versions-backfill");
 
-        Assert.True(outcome.RowsWritten > 0, "the scorer wrote no score, so the flag below is asserted over nothing.");
+        // Two versions over every name the night computed.
+        Assert.Equal(2 * FixtureExpectation.Names.Length, outcome.RowsWritten);
 
-        var flags = Query(store, "SELECT DISTINCT sample FROM version_score;");
+        Assert.Equal(
+            [RuleVersions.InSample],
+            Query(store, "SELECT DISTINCT sample FROM version_score;"));
 
-        Assert.Equal([RuleVersions.InSample], flags);
-
-        // The same version scoring a night after its window opened counts.
-        var later = session.AddDays(2);
+        // The same versions scoring a night after both windows opened count. That
+        // night's bands, plan and inputs are the scored night's, copied, because a
+        // score reads the set its own night computed.
+        var later = session.AddDays(2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         store.Execute(
             "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
-            "SELECT ticker, '" + later.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
-            "', open, high, low, close, volume, source, observed_at, raw_close FROM bar WHERE session_date = '" + night + "';");
+            $"SELECT ticker, '{later}', open, high, low, close, volume, source, observed_at, raw_close FROM bar WHERE session_date = '{night}';");
 
         store.Execute(
             "INSERT INTO indicator (ticker, session_date, name, value, bar_count) " +
-            "SELECT ticker, '" + later.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
-            "', name, value, bar_count FROM indicator WHERE session_date = '" + night + "';");
+            $"SELECT ticker, '{later}', name, value, bar_count FROM indicator WHERE session_date = '{night}';");
 
-        await new RuleVersionScorer(Clock(after.AddDays(3)), store.DatabaseFile).RunAsync(later, "versions-scored");
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"SELECT ticker, '{later}', low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members FROM level WHERE as_of = '{night}';");
 
+        store.Execute(
+            "INSERT INTO ladder (ticker, as_of, trend_state, plan) " +
+            $"SELECT ticker, '{later}', trend_state, plan FROM ladder WHERE as_of = '{night}';");
+
+        var counted = await new RuleVersionScorer(Clock(after.AddDays(3)), store.DatabaseFile)
+            .RunAsync(DateOnly.ParseExact(later, "yyyy-MM-dd", CultureInfo.InvariantCulture), "versions-scored");
+
+        Assert.Equal(2 * FixtureExpectation.Names.Length, counted.RowsWritten);
         Assert.Equal(
             [RuleVersions.Scored],
-            Query(store, "SELECT DISTINCT sample FROM version_score WHERE session_date = '"
-                + later.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "';"));
+            Query(store, $"SELECT DISTINCT sample FROM version_score WHERE session_date = '{later}';"));
 
         // Both are in the table, which is what makes the flag the thing that
         // separates them rather than the row's presence.
@@ -668,7 +719,7 @@ public class RuleVersionsScored
             new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 },
             "as-of-open"));
 
-        await scorer.RunAsync(session, "as-of-1");
+        await scorer.BackfillAsync(session, "as-of-1");
 
         var worked = Expected("version-scores").GetProperty("plans").GetProperty("byVersion").GetProperty("three typical days");
         var first = Query(store, $"SELECT ticker || ' ' || plan FROM version_score WHERE session_date = '{night}' ORDER BY ticker;");
@@ -698,7 +749,7 @@ public class RuleVersionsScored
 
         store.Execute("DELETE FROM version_score;");
 
-        await new RuleVersionScorer(Clock(at.AddMinutes(1)), store.DatabaseFile).RunAsync(session, "as-of-2");
+        await new RuleVersionScorer(Clock(at.AddMinutes(1)), store.DatabaseFile).BackfillAsync(session, "as-of-2");
 
         // The past night scored again still gives the plans worked by hand.
         Assert.Equal(first, Query(store, $"SELECT ticker || ' ' || plan FROM version_score WHERE session_date = '{night}' ORDER BY ticker;"));
@@ -740,6 +791,453 @@ public class RuleVersionsScored
         Assert.Equal(
             [RuleVersionScorer.Ok],
             Query(store, $"SELECT outcome FROM run_log WHERE run_id = 'no-version-open' AND stage = '{RuleVersionScorer.Stage}';"));
+    }
+
+    [Fact]
+    public void AScoreCountsOnlyForASessionAfterTheNewYorkDateItsWindowOpenedOn()
+    {
+        // New York is four hours behind UTC in September, so a window's New York date
+        // turns at 04:00 UTC, and a night runs at half past eleven UTC on its own
+        // session's date. Each case is worked from those two facts and the rule.
+        IClock clock = Clock(Opened);
+        var monday = new DateOnly(2026, 9, 21);
+
+        (string Opened, DateOnly Session, string Sample)[] cases =
+        [
+            ("2026-09-20T23:00:00Z", monday, RuleVersions.Scored),
+            ("2026-09-21T03:59:59Z", monday, RuleVersions.Scored),
+            ("2026-09-21T04:00:00Z", monday, RuleVersions.InSample),
+            ("2026-09-21T13:00:00Z", monday, RuleVersions.InSample),
+            ("2026-09-21T23:50:00Z", monday, RuleVersions.InSample),
+            ("2026-09-22T03:59:59Z", monday, RuleVersions.InSample),
+            ("2026-09-22T04:00:00Z", monday, RuleVersions.InSample),
+            ("2026-09-22T04:00:00Z", new DateOnly(2026, 9, 23), RuleVersions.Scored),
+        ];
+
+        foreach (var (opened, session, sample) in cases)
+        {
+            var at = DateTimeOffset.ParseExact(opened, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+            Assert.Equal((opened, session, sample), (opened, session, RuleVersions.SampleOf(session, clock.SessionDateAt(at))));
+        }
+
+        // Both answers are reached, so a rule that gave one answer fails above.
+        Assert.Equal(2, cases.Select(one => one.Sample).Distinct().Count());
+    }
+
+    [Fact]
+    public async Task ABackfillScoresOnlyTheNamesItsSessionComputedAndRefusesASessionNoNightComputed()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = Query(store, "SELECT MAX(as_of) FROM ladder;").Single();
+        var session = DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var before = Query(store, $"SELECT MAX(session_date) FROM bar WHERE session_date < '{night}';").Single();
+        var at = new DateTimeOffset(session.AddDays(1).ToDateTime(new TimeOnly(21, 0)), TimeSpan.Zero);
+        var scorer = new RuleVersionScorer(Clock(at), store.DatabaseFile);
+
+        // The refusals first, before any row is copied: a session holding bars from the
+        // year's backfill and no plan of its own, a day the exchange did not trade, the
+        // next session, which no night has fetched, and a date past the closure table.
+        var weekend = session.AddDays(1);
+        var next = ExchangeClosures.SessionsBetween(session, session.AddDays(8)).First();
+        var nextNamed = next.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        Assert.False(ExchangeClosures.IsSession(weekend));
+        Assert.Equal(
+            ["0", "0"],
+            [
+                Query(store, $"SELECT COUNT(*) FROM ladder WHERE as_of = '{before}';").Single(),
+                Query(store, $"SELECT COUNT(*) FROM bar WHERE session_date = '{nextNamed}';").Single(),
+            ]);
+        Assert.Contains("no night's plan", await scorer.BackfillRefusalAsync(DateOnly.ParseExact(before, "yyyy-MM-dd", CultureInfo.InvariantCulture)), StringComparison.Ordinal);
+        Assert.Contains("is not a session", await scorer.BackfillRefusalAsync(weekend), StringComparison.Ordinal);
+        Assert.Contains("holds no bar", await scorer.BackfillRefusalAsync(next), StringComparison.Ordinal);
+        Assert.Contains("past the exchange closure table", await scorer.BackfillRefusalAsync(new DateOnly(2028, 1, 3)), StringComparison.Ordinal);
+        Assert.Null(await scorer.BackfillRefusalAsync(session));
+
+        // One name whose bands are only an earlier session's, and one whose plan is. An
+        // earlier set read in their place would score both.
+        var names = Query(store, $"SELECT DISTINCT ticker FROM level WHERE as_of = '{night}' ORDER BY ticker;");
+        var (banded, planned) = (names[0], names[1]);
+
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"SELECT ticker, '{before}', low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members FROM level WHERE ticker = '{banded}' AND as_of = '{night}';");
+        store.Execute($"DELETE FROM level WHERE ticker = '{banded}' AND as_of = '{night}';");
+        store.Execute($"INSERT INTO ladder (ticker, as_of, trend_state, plan) SELECT ticker, '{before}', trend_state, plan FROM ladder WHERE ticker = '{planned}' AND as_of = '{night}';");
+        store.Execute($"DELETE FROM ladder WHERE ticker = '{planned}' AND as_of = '{night}';");
+
+        Assert.Null(await scorer.OpenLiveAsync(LadderRules.NearExitSkip, "computed-live"));
+        Assert.Null(await scorer.OpenAsync(
+            LadderRules.NearExitSkip,
+            "three typical days",
+            new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 },
+            "computed-open"));
+
+        var outcome = await scorer.BackfillAsync(session, "computed-backfill");
+
+        Assert.Equal(FixtureExpectation.Names.Length, outcome.NamesScored);
+        Assert.Equal((2, outcome.NamesScored - 2), (outcome.NamesNotComputed, outcome.RowsWritten));
+        Assert.Equal(["0"], Query(store, $"SELECT COUNT(*) FROM version_score WHERE ticker IN ('{banded}', '{planned}');"));
+    }
+
+    [Fact]
+    public async Task ABackfillReplaysAPastNightAtThatNightsPriceScaleAndKeepsEveryScoreAlreadyStored()
+    {
+        // A refetch after a split rescales a name's stored year, its typical move and
+        // its swings, and never the bands a night computed, so a backfill after one
+        // replays at the scale that night computed at.
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = Query(store, "SELECT MAX(as_of) FROM ladder;").Single();
+        var session = DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var names = Query(store, $"SELECT DISTINCT ticker FROM level WHERE as_of = '{night}' ORDER BY ticker;");
+        var (moved, marked) = (names[0], names[^1]);
+
+        Assert.Equal(FixtureExpectation.Names.Length, names.Count);
+
+        // A typical move exact at the store's four places, so halving it once doubled is exact.
+        store.Execute($"UPDATE indicator SET value = 4.25 WHERE ticker = '{moved}' AND session_date = '{night}' AND name = 'atr14';");
+
+        var at = new DateTimeOffset(session.AddDays(1).ToDateTime(new TimeOnly(21, 0)), TimeSpan.Zero);
+        var scorer = new RuleVersionScorer(Clock(at), store.DatabaseFile);
+
+        Assert.Null(await scorer.OpenLiveAsync(LadderRules.NearExitSkip, "scale-live"));
+        Assert.Null(await scorer.OpenAsync(
+            LadderRules.NearExitSkip,
+            "three typical days",
+            new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 },
+            "scale-open"));
+
+        Assert.Equal(names.Count, (await scorer.RunAsync(session, "scale-night")).RowsWritten);
+
+        var plans = PlansOn(store, night);
+        var raw = Query(store, $"SELECT raw_close FROM bar WHERE ticker = '{moved}' AND session_date = '{night}';").Single();
+
+        // Two for one: every price a refetch rewrites doubled, and the raw close as traded.
+        store.Execute(
+            "UPDATE bar SET open = printf('%.4f', CAST(open AS REAL) * 2), high = printf('%.4f', CAST(high AS REAL) * 2), " +
+            $"low = printf('%.4f', CAST(low AS REAL) * 2), close = printf('%.4f', CAST(close AS REAL) * 2) WHERE ticker = '{moved}';");
+        store.Execute($"UPDATE indicator SET value = value * 2 WHERE ticker = '{moved}' AND name = 'atr14';");
+        store.Execute($"UPDATE swing SET price = printf('%.4f', CAST(price AS REAL) * 2) WHERE ticker = '{moved}';");
+
+        // The rescaled name's score gone, and another's marked, so a rewrite of it would show.
+        store.Execute($"DELETE FROM version_score WHERE ticker = '{moved}';");
+        store.Execute($"UPDATE version_score SET plan = 'kept as stored' WHERE ticker = '{marked}';");
+
+        var backfill = await new RuleVersionScorer(Clock(at.AddMinutes(1)), store.DatabaseFile).BackfillAsync(session, "scale-backfill");
+        var after = PlansOn(store, night);
+
+        Assert.Equal((1, names.Count - 1), (backfill.RowsWritten, backfill.RowsKept));
+        Assert.Equal(Priced(plans[moved]), Priced(after[moved]));
+        Assert.Equal("kept as stored", after[marked]);
+        Assert.All(names.Where(name => name != moved && name != marked), name => Assert.Equal(plans[name], after[name]));
+
+        // A session whose raw close is not stored has no scale to read, and its name is left out.
+        store.Execute($"UPDATE bar SET raw_close = NULL WHERE ticker = '{moved}' AND session_date = '{night}';");
+        store.Execute($"DELETE FROM version_score WHERE ticker = '{moved}';");
+
+        var unscaled = await new RuleVersionScorer(Clock(at.AddMinutes(2)), store.DatabaseFile).BackfillAsync(session, "scale-unread");
+
+        Assert.Equal((0, 1), (unscaled.RowsWritten, unscaled.NamesNotComputed));
+        Assert.DoesNotContain(moved, PlansOn(store, night).Keys);
+
+        // The night's own step still writes its set again, the marked row included.
+        store.Execute($"UPDATE bar SET raw_close = '{raw}' WHERE ticker = '{moved}' AND session_date = '{night}';");
+
+        var again = await new RuleVersionScorer(Clock(at.AddMinutes(3)), store.DatabaseFile).RunAsync(session, "scale-night-again");
+
+        Assert.Equal((names.Count, 0), (again.RowsWritten, again.RowsKept));
+        Assert.Equal(plans[marked], PlansOn(store, night)[marked]);
+    }
+
+    [Fact]
+    public async Task ANightReadsTheWindowsTheStoreHoldsOpenSoAReplayAfterAWindowWasClosedAndOpenedAgainScoresUnderTheNewOne()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = Query(store, "SELECT MAX(as_of) FROM ladder;").Single();
+        var session = DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var opened = new DateTimeOffset(session.ToDateTime(new TimeOnly(20, 0)), TimeSpan.Zero);
+        var replayed = new DateTimeOffset(session.AddDays(1).ToDateTime(new TimeOnly(1, 10)), TimeSpan.Zero);
+        var changed = new DateTimeOffset(session.AddDays(2).ToDateTime(new TimeOnly(9, 0)), TimeSpan.Zero);
+
+        // A live window opened under a build whose code differed from this one's.
+        Assert.Null(await new RuleVersionScorer(Clock(opened), store.DatabaseFile).OpenLiveAsync(LadderRules.NearExitSkip, "reopen-live"));
+        store.Execute($"UPDATE rule_version SET parameters_hash = 'ffffffffffff' WHERE version = '{RuleVersions.Live}';");
+
+        var replay = new RuleVersionScorer(Clock(replayed), store.DatabaseFile);
+
+        Assert.Contains(
+            $"'{LadderRules.NearExitSkip}'",
+            (await Assert.ThrowsAsync<InvalidOperationException>(() => replay.RunAsync(session, "reopen-stopped"))).Message,
+            StringComparison.Ordinal);
+
+        // The verb's backfill stops on it too, and says so on the run log.
+        Assert.Equal(1, await VersionVerb.RunAsync([VersionVerb.Name, "--backfill", night], Clock(replayed), store.DatabaseFile, new StringWriter(), new StringWriter()));
+        Assert.Equal(
+            [RuleVersionScorer.Refused],
+            Query(store, $"SELECT outcome FROM run_log WHERE run_id = '{VersionVerb.RunIdAt(replayed)}';"));
+        Assert.Contains(
+            $"'{LadderRules.NearExitSkip}'",
+            Query(store, $"SELECT detail FROM run_log WHERE run_id = '{VersionVerb.RunIdAt(replayed)}';").Single(),
+            StringComparison.Ordinal);
+
+        // Closed with its evidence and opened again, at instants after the replay's own.
+        var change = new RuleVersionScorer(Clock(changed), store.DatabaseFile);
+
+        Assert.Null(await change.CloseAsync(LadderRules.NearExitSkip, RuleVersions.Live, "the code moved", "reopen-close"));
+        Assert.Null(await change.OpenLiveAsync(LadderRules.NearExitSkip, "reopen-live-again"));
+        Assert.Null(await new RuleVersionScorer(Clock(changed.AddMinutes(1)), store.DatabaseFile).OpenAsync(
+            LadderRules.NearExitSkip,
+            "three typical days",
+            new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 },
+            "reopen-version"));
+
+        // The replay runs, under the new windows alone, and a session on or before the
+        // New York date they opened on counts nothing.
+        var scored = await replay.RunAsync(session, "reopen-scored");
+
+        Assert.Equal(FixtureExpectation.Names.Length, scored.RowsWritten);
+        Assert.Equal(
+            [changed.AddMinutes(1).ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)],
+            Query(store, "SELECT DISTINCT opened_at FROM version_score;"));
+        Assert.Equal([RuleVersions.InSample], Query(store, "SELECT DISTINCT sample FROM version_score;"));
+    }
+
+    [Fact]
+    public async Task AVersionIsReplacedInOneWriteThatClosesItWithItsEvidenceAndOpensTheVersionReplacingIt()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        const string Rule = LadderRules.NearExitSkip;
+        var day = TimeSpan.FromDays(1);
+
+        RuleVersionScorer At(TimeSpan after) => new(Clock(Opened + after), store.DatabaseFile);
+
+        static IReadOnlyDictionary<string, double> Days(int days) =>
+            new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = days };
+
+        Assert.Null(await At(TimeSpan.Zero).OpenLiveAsync(Rule, "replace-live"));
+        Assert.Null(await At(TimeSpan.FromMinutes(1)).OpenAsync(Rule, "v3", Days(3), "replace-open-3"));
+        Assert.Null(await At(day).ReplaceAsync(Rule, "v3", "v4", Days(4), "the figures that produced it", "replace-1"));
+
+        var rows = await At(day).VersionsAsync();
+        var replaced = Assert.Single(rows, row => row.Version == "v3");
+        var replacing = Assert.Single(rows, row => row.Version == "v4");
+
+        Assert.Equal((Opened + day, "v4", "the figures that produced it"), (replaced.ClosedAt, replaced.ReplacedBy, replaced.Evidence));
+        Assert.Equal(
+            (Opened.AddMinutes(1), "{\"nearExitInTypicalDays\": 3}", RuleVersions.Hash(Days(3), RuleVersionScorer.CodeVersion)),
+            (replaced.OpenedAt, replaced.Parameters, replaced.ParametersHash));
+        Assert.Equal((Opened + day, (DateTimeOffset?)null), (replacing.OpenedAt, replacing.ClosedAt));
+        Assert.Equal([RuleVersions.Live, "v4"], RuleVersions.OpenAt(rows, Opened + day).Select(row => row.Version).Order(StringComparer.Ordinal));
+        Assert.Equal([RuleVersionScorer.Ok], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'replace-1';"));
+
+        // At the rule's cap a version is refused a window of its own and can still be
+        // changed, since the cap is counted once the old window is closed.
+        Assert.Null(await At(day + TimeSpan.FromMinutes(1)).OpenAsync(Rule, "v5", Days(5), "replace-open-5"));
+        Assert.Null(await At(day + TimeSpan.FromMinutes(2)).OpenAsync(Rule, "v6", Days(6), "replace-open-6"));
+        Assert.Contains("the most for this rule of 4", await At(day + TimeSpan.FromMinutes(3)).OpenAsync(Rule, "v7", Days(7), "replace-open-7"), StringComparison.Ordinal);
+        Assert.Null(await At(day + TimeSpan.FromMinutes(4)).ReplaceAsync(Rule, "v6", "v7", Days(7), "the figures that produced it", "replace-2"));
+
+        // Each refusal writes its own row and changes nothing.
+        var standing = await At(day * 2).VersionsAsync();
+
+        (string Version, string With, IReadOnlyDictionary<string, double> Parameters, string Evidence, string Refused)[] refusals =
+        [
+            ("v7", "v8", Days(8), " ", "the evidence given was blank"),
+            ("v7", "v7", Days(7), "figures", "'v7' cannot replace itself"),
+            (RuleVersions.Live, "v8", Days(8), "figures", "a live window is replaced by closing it"),
+            ("a version never opened", "v8", Days(8), "figures", "has no open window to replace"),
+            ("v7", "v8", new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitDays"] = 5 }, "figures", "was given 'nearExitDays'"),
+        ];
+
+        for (var at = 0; at < refusals.Length; at++)
+        {
+            var (version, with, parameters, evidence, refused) = refusals[at];
+
+            Assert.Contains(
+                refused,
+                await At(day * 2 + TimeSpan.FromMinutes(at)).ReplaceAsync(Rule, version, with, parameters, evidence, FormattableString.Invariant($"replace-refused-{at}")),
+                StringComparison.Ordinal);
+        }
+
+        Assert.Equal(standing, await At(day * 3).VersionsAsync());
+        Assert.Equal(
+            Enumerable.Repeat(RuleVersionScorer.Refused, refusals.Length),
+            Query(store, "SELECT outcome FROM run_log WHERE run_id LIKE 'replace-refused-%' ORDER BY run_id;"));
+
+        // A close with nothing replacing it takes its evidence as well, and is refused without it.
+        Assert.Null(await At(day * 3).CloseAsync(Rule, "v7", "ended to make room", "close-1"));
+
+        var ended = Assert.Single(await At(day * 3).VersionsAsync(), row => row.Version == "v7");
+
+        Assert.Equal((Opened + day * 3, (string?)null, "ended to make room"), (ended.ClosedAt, ended.ReplacedBy, ended.Evidence));
+        Assert.Contains("the evidence given was blank", await At(day * 3 + TimeSpan.FromMinutes(1)).CloseAsync(Rule, "v5", " ", "close-2"), StringComparison.Ordinal);
+        Assert.Null(Assert.Single(await At(day * 4).VersionsAsync(), row => row.Version == "v5").ClosedAt);
+    }
+
+    [Fact]
+    public async Task EveryAttemptTheVersionVerbMakesIsOneRowOnTheRunLogAndARefusalIsANonZeroExitWithNothingChanged()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        const string Rule = LadderRules.NearExitSkip;
+
+        Assert.Null(await new RuleVersionScorer(Clock(Opened), store.DatabaseFile).OpenLiveAsync(Rule, "attempts-live"));
+        Assert.Null(await new RuleVersionScorer(Clock(Opened.AddMinutes(1)), store.DatabaseFile).OpenAsync(
+            Rule,
+            "v3",
+            new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = 3 },
+            "attempts-v3"));
+
+        var windows = await new RuleVersionScorer(Clock(Opened), store.DatabaseFile).VersionsAsync();
+
+        int Rows() => int.Parse(
+            Query(store, $"SELECT COUNT(*) FROM run_log WHERE stage = '{RuleVersionScorer.Stage}';").Single(),
+            CultureInfo.InvariantCulture);
+
+        (string[] Args, string[] Refused)[] cases =
+        [
+            ([], ["no form was given", .. VersionVerb.Forms.Select(form => $"'{form.Flag}'")]),
+            (["--list", "--backfill", "2026-09-08"], ["are 2 forms given together"]),
+            (["--rule", Rule, "--live-window", "--version", "v9", "--parameters", "nearExitInTypicalDays=9"], ["are 2 forms given together"]),
+            (["--rule", Rule, "--version", "--parameters", "nearExitInTypicalDays=3"], ["'--version' is followed by '--parameters'"]),
+            (["--rule", Rule, "--close", "v3"], ["the '--close' form needs '--evidence'"]),
+            (["--rule", Rule, "--close", "v3", "--replaced-by", "v4", "--evidence", "e"], ["'--replaced-by' is not a flag this verb takes"]),
+            (["--rule", Rule, "--close", "v3", "--evidence", " "], ["blank value"]),
+            (["--rule", Rule, "stray", "--live-window"], ["'stray' is neither a flag nor the value of one"]),
+            (["--version", "v9", "--parameters", "nearExitInTypicalDays=9"], ["needs '--rule'"]),
+            (["--rule", Rule, "--version", "v9", "--parameters", "nearExitInTypicalDays=0,75"], ["is not a name and a number"]),
+            (["--backfill", "14/09/2026"], ["is not a session in the form yyyy-MM-dd"]),
+            (["--backfill", "2026-09-13"], ["is not a session: the exchange did not trade"]),
+            (["--rule", Rule, "--rule", Rule, "--live-window"], ["is given twice"]),
+        ];
+
+        for (var at = 0; at < cases.Length; at++)
+        {
+            var (args, refused) = cases[at];
+            var when = Opened.AddDays(1).AddMinutes(at);
+            var error = new StringWriter();
+            var rows = Rows();
+
+            var code = await VersionVerb.RunAsync([VersionVerb.Name, .. args], Clock(when), store.DatabaseFile, new StringWriter(), error);
+            var row = Query(store, $"SELECT outcome || '|' || rows_written || '|' || detail FROM run_log WHERE run_id = '{VersionVerb.RunIdAt(when)}' AND stage = '{RuleVersionScorer.Stage}';");
+            var said = error.ToString().TrimEnd();
+            var asked = string.Join(" ", args);
+
+            Assert.StartsWith("version: ", said, StringComparison.Ordinal);
+            Assert.Equal((asked, 1, rows + 1), (asked, code, Rows()));
+            Assert.Equal((asked, $"{RuleVersionScorer.Refused}|0|{said["version: ".Length..]}"), (asked, Assert.Single(row)));
+            Assert.All(refused, part => Assert.Contains(part, said, StringComparison.Ordinal));
+            Assert.Equal(windows, await new RuleVersionScorer(Clock(when), store.DatabaseFile).VersionsAsync());
+        }
+
+        // A listing writes no row.
+        var listed = new StringWriter();
+        var before = Rows();
+
+        Assert.Equal(0, await VersionVerb.RunAsync([VersionVerb.Name, "--list"], Clock(Opened.AddDays(2)), store.DatabaseFile, listed, new StringWriter()));
+        Assert.Equal(before, Rows());
+        Assert.Contains($"'{Rule}' 2 of 4", listed.ToString(), StringComparison.Ordinal);
+
+        // The help names every form and what a replacement and a close take, and no longer
+        // says a backfill scores in sample.
+        var program = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Program.cs"));
+        var from = program.IndexOf("static int NoVerb()", StringComparison.Ordinal);
+        var help = program[from..program.IndexOf("return 1;", from, StringComparison.Ordinal)];
+
+        Assert.All([.. VersionVerb.Forms.Select(form => form.Flag), "--evidence", "--with"], flag => Assert.Matches(System.Text.RegularExpressions.Regex.Escape(flag) + @"\b", help));
+        Assert.DoesNotContain("under the open windows in sample", help, StringComparison.Ordinal);
+
+        // A store behind this checkout is refused and nothing is written to it.
+        using var behind = new TemporaryStore();
+
+        new MigrationRunner([.. SchemaMigrations.All.Take(SchemaMigrations.All.Count - 1)]).Apply(behind.DatabaseFile);
+
+        var refusal = new StringWriter();
+
+        Assert.Equal(1, await VersionVerb.RunAsync([VersionVerb.Name, "--list"], Clock(Opened), behind.DatabaseFile, new StringWriter(), refusal));
+        Assert.Contains(FormattableString.Invariant($"schema {SchemaMigrations.LatestVersion - 1} "), refusal.ToString(), StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"schema {SchemaMigrations.LatestVersion}."), refusal.ToString(), StringComparison.Ordinal);
+        Assert.Contains("tools/migrate", refusal.ToString(), StringComparison.Ordinal);
+        Assert.Equal(["0"], Query(behind, "SELECT COUNT(*) FROM run_log;"));
+
+        // And a data root holding no store is refused without one being created.
+        using var none = new TemporaryStore();
+
+        Assert.Equal(1, await VersionVerb.RunAsync([VersionVerb.Name, "--rule", Rule, "--live-window"], Clock(Opened), none.DatabaseFile, new StringWriter(), new StringWriter()));
+        Assert.False(File.Exists(none.DatabaseFile));
+    }
+
+    [Fact]
+    public async Task TwoVersionCommandsAtOneInstantWriteOneWindowAndTheSecondChangesNothing()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var error = new StringWriter();
+
+        Assert.Equal(0, await VersionVerb.RunAsync([VersionVerb.Name, "--rule", LadderRules.NearExitSkip, "--live-window"], Clock(Opened), store.DatabaseFile, new StringWriter(), new StringWriter()));
+        Assert.Equal(1, await VersionVerb.RunAsync([VersionVerb.Name, "--rule", LadderRules.StopPlacement, "--live-window"], Clock(Opened), store.DatabaseFile, new StringWriter(), error));
+        Assert.Contains("another command wrote under the same run id", error.ToString(), StringComparison.Ordinal);
+        Assert.Equal([LadderRules.NearExitSkip], Query(store, "SELECT rule FROM rule_version;"));
+        Assert.Equal(["1"], Query(store, "SELECT COUNT(*) FROM run_log;"));
+
+        // A tenth of a microsecond apart is two run ids.
+        Assert.NotEqual(VersionVerb.RunIdAt(Opened), VersionVerb.RunIdAt(Opened.AddTicks(1)));
+        Assert.All([VersionVerb.RunIdAt(Opened), VersionVerb.RunIdAt(Opened.AddTicks(1))], id => Assert.StartsWith(VersionVerb.RunPrefix, id, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task TwoOpensRacingForARulesLastWindowAdmitOne()
+    {
+        // Timing decides which of the two is admitted, and the cap decides that one is.
+        for (var round = 0; round < 10; round++)
+        {
+            using var store = new TemporaryStore().Migrated();
+
+            Assert.Null(await new RuleVersionScorer(Clock(Opened), store.DatabaseFile).OpenLiveAsync(LadderRules.MergeDistance, "race-live"));
+
+            var at = Clock(Opened.AddMinutes(1));
+
+            var both = await Task.WhenAll(
+                Task.Run(() => new RuleVersionScorer(at, store.DatabaseFile).OpenAsync(
+                    LadderRules.MergeDistance, "wider-a", new Dictionary<string, double>(StringComparer.Ordinal) { ["typicalMoveMultiple"] = 0.75 }, "race-a")),
+                Task.Run(() => new RuleVersionScorer(at, store.DatabaseFile).OpenAsync(
+                    LadderRules.MergeDistance, "wider-b", new Dictionary<string, double>(StringComparer.Ordinal) { ["typicalMoveMultiple"] = 1 }, "race-b")));
+
+            Assert.Single(both, refusal => refusal is null);
+            Assert.Single(both, refusal => refusal is not null && refusal.Contains("the most for this rule of 2", StringComparison.Ordinal));
+            Assert.Equal(
+                2,
+                RuleVersions.OpenAt(await new RuleVersionScorer(at, store.DatabaseFile).VersionsAsync(), Opened.AddMinutes(1))
+                    .Count(row => row.Rule == LadderRules.MergeDistance));
+        }
+    }
+
+    // The plan each name holds for the near-exit version on one night.
+    static Dictionary<string, string> PlansOn(TemporaryStore store, string night) =>
+        Query(store, $"SELECT ticker || ' ' || plan FROM version_score WHERE session_date = '{night}' AND version = 'three typical days' ORDER BY ticker;")
+            .ToDictionary(row => row[..row.IndexOf(' ', StringComparison.Ordinal)], row => row[(row.IndexOf(' ', StringComparison.Ordinal) + 1)..], StringComparer.Ordinal);
+
+    // A stored plan with every price read as a decimal, so a trailing zero decides nothing.
+    static string Priced(string plan)
+    {
+        using var read = JsonDocument.Parse(plan);
+
+        return Walked(read.RootElement);
+
+        static string Walked(JsonElement element) => element.ValueKind switch
+        {
+            JsonValueKind.Object => "{" + string.Join(",", element.EnumerateObject().Select(one => one.Name + ":" + Walked(one.Value))) + "}",
+            JsonValueKind.Array => "[" + string.Join(",", element.EnumerateArray().Select(Walked)) + "]",
+            JsonValueKind.String => decimal.TryParse(element.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var price)
+                ? price.ToString("G29", CultureInfo.InvariantCulture)
+                : element.GetString()!,
+            _ => element.GetRawText(),
+        };
     }
 
     // ---- the fixture's version scores ----
@@ -863,6 +1361,98 @@ public class RuleVersionsScored
 
             Assert.False(string.IsNullOrWhiteSpace(expected.GetProperty("workedAgainstTheLiveRule").GetProperty(version).GetString()));
         }
+    }
+
+    // The expectation's version commands, each run through the verb a person runs at the
+    // instant it names, after the windows version-scores.json opens and the night scored
+    // under them. Each exit, and each count a backfill states, is the one worked by hand.
+    internal static async Task ReplayVersionCommandsAsync(TemporaryStore store)
+    {
+        foreach (var command in Expected("version-verb").GetProperty("commands").EnumerateArray())
+        {
+            var args = command.GetProperty("args").EnumerateArray().Select(one => one.GetString()!).ToArray();
+            var asked = string.Join(" ", args);
+            var output = new StringWriter();
+            var error = new StringWriter();
+
+            var code = await VersionVerb.RunAsync([VersionVerb.Name, .. args], Clock(At(command, "at")), store.DatabaseFile, output, error);
+
+            Assert.True(code == command.GetProperty("exit").GetInt32(), $"'{asked}' exited {code}: {output}{error}");
+
+            // Whole, so a count that differs is read against everything the verb said.
+            if (command.TryGetProperty("written", out var written))
+            {
+                var counts = FormattableString.Invariant($"{written.GetInt32()} score(s) written, {command.GetProperty("kept").GetInt32()} already stored and kept");
+
+                Assert.True(output.ToString().Contains(counts, StringComparison.Ordinal), $"'{asked}' said: {output}{error}");
+            }
+
+            if (command.TryGetProperty("refusal", out var refusal))
+            {
+                Assert.True(error.ToString().Contains(refusal.GetString()!, StringComparison.Ordinal), $"'{asked}' said: {output}{error}");
+            }
+        }
+    }
+
+    static string? Text(JsonElement one, string name) =>
+        one.GetProperty(name).ValueKind == JsonValueKind.Null ? null : one.GetProperty(name).GetString();
+
+    [Fact]
+    public async Task TheFixtureNightsVersionCommandsWriteTheWindowsAndFlagsWorkedByHand()
+    {
+        var expected = Expected("version-verb");
+        var night = expected.GetProperty("night").GetString()!;
+
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        // The one night the replay computed, the names it planned, and the ones holding a bar on it that a version scores.
+        Assert.Equal(night, Query(store, "SELECT MAX(as_of) FROM ladder;").Single());
+        Assert.Equal(
+            expected.GetProperty("namesPlanned").EnumerateArray().Select(one => one.GetString()!),
+            Query(store, $"SELECT ticker FROM ladder WHERE as_of = '{night}' ORDER BY ticker;"));
+        Assert.Equal(
+            expected.GetProperty("namesScored").EnumerateArray().Select(one => one.GetString()!),
+            Query(store, $"SELECT DISTINCT ticker FROM bar WHERE session_date = '{night}' ORDER BY ticker;"));
+
+        // Each command is one row on the run log under its own run id, with the outcome worked for it.
+        foreach (var command in expected.GetProperty("commands").EnumerateArray())
+        {
+            Assert.Equal(
+                [command.GetProperty("outcome").GetString()!],
+                Query(store, $"SELECT outcome FROM run_log WHERE run_id = '{VersionVerb.RunIdAt(At(command, "at"))}' AND stage = '{RuleVersionScorer.Stage}';"));
+        }
+
+        // The windows the commands leave, field by field, beside the ones version-scores.json
+        // opens, of which none is closed.
+        var rows = await new RuleVersionScorer(Clock(FixtureNight), store.DatabaseFile).VersionsAsync();
+        var windows = expected.GetProperty("windows").EnumerateArray().ToArray();
+
+        foreach (var window in windows)
+        {
+            var row = Assert.Single(rows, one => one.Rule == Text(window, "rule") && one.Version == Text(window, "version"));
+
+            Assert.Equal(
+                (Text(window, "version"), Text(window, "openedAt"), Text(window, "closedAt"), Text(window, "replacedBy"), Text(window, "evidence")),
+                (row.Version, row.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture), row.ClosedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture), row.ReplacedBy, row.Evidence));
+        }
+
+        Assert.Equal(Expected("version-scores").GetProperty("windows").GetArrayLength() + windows.Length, rows.Count);
+        Assert.Equal(windows.Count(window => Text(window, "closedAt") is not null), rows.Count(row => row.ClosedAt is not null));
+
+        // Each version's scores of the night, and the flag worked from the New York date it opened on.
+        var samples = expected.GetProperty("samples").EnumerateArray().ToArray();
+
+        foreach (var sample in samples)
+        {
+            var where = $"WHERE session_date = '{night}' AND rule = '{Text(sample, "rule")}' AND version = '{Text(sample, "version")}'";
+
+            Assert.Equal(
+                (Text(sample, "version"), sample.GetProperty("rows").GetInt32().ToString(CultureInfo.InvariantCulture), Text(sample, "sample")),
+                (Text(sample, "version"), Query(store, $"SELECT COUNT(*) FROM version_score {where};").Single(), string.Join(",", Query(store, $"SELECT DISTINCT sample FROM version_score {where};"))));
+        }
+
+        Assert.Equal(expected.GetProperty("rowsWritten").GetInt32(), samples.Sum(sample => sample.GetProperty("rows").GetInt32()));
+        Assert.Equal(expected.GetProperty("rowsWritten").GetInt32().ToString(CultureInfo.InvariantCulture), Query(store, "SELECT COUNT(*) FROM version_score;").Single());
     }
 
     [Fact]
