@@ -14610,11 +14610,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             turned 1 red, the register attempts test on the store one migration behind, whose
             command was refused by the registrar, "'x' does not stand registered", rather than by
             the store check naming `tools/migrate`.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1055 of 1055 tests
             ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims,
+            366 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 373 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
             and none moved: the route row of section 15.10 this correction edits keeps its key, and
             the one roster row it edits, `register-append-only`, keeps its key. Both gates ran with
             this entry in place, and the operator's store under `data/` was not touched by either.
