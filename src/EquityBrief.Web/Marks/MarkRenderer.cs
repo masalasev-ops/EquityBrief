@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Spending;
 using System.Text;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Returns;
 
 namespace EquityBrief.Web.Marks;
 
@@ -199,22 +200,11 @@ public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string
 // One reason and how many of tonight's names it fired on.
 public sealed record ReasonTotal(string Reason, int Names);
 
-// One reason's record, as the run page draws it.
-//
-// `Share` and `BreakEven` are the two figures 15.10's row pairs: how often this
-// reason's setups reached their target before their stop, and the bar those
-// setups' own plans set. Both are null below the minimum and the read surface is
-// what withholds them, so a reason that has not earned a verdict carries no rate
-// for any surface to draw. They are drawn at 8.5, with the verdict that reads
-// them; what this carries until then is how much has been scored and how far that
-// is from the minimum a verdict needs.
-//
-// `Scored` is their population, and it is not `Resolved`: a setup that entered
-// and stopped on one session is resolved and has no entry close, so it set no bar
-// and is in neither figure. Stating the two counts apart is what keeps the share
-// and the break-even over one population.
+// One reason's record as a page draws it. `Resolved` counts every win and loss, and `Scored` the ones
+// that set a bar, which is the set the share, the bar, both floors and the verdict are taken over.
 // see: An unresolved setup is never a win
 // see: A condition is judged against the break-even its own plan demands
+// see: A reason's share, verdict and both floors are counted over the resolved setups that set a bar
 //
 // `Nights` is the listing sessions whose rows count toward this record, null
 // where a caller built the record by hand.
@@ -235,7 +225,9 @@ public sealed record ReasonRecord(
     double? PValue = null,
     double Threshold = 0,
     int Divisor = 0,
-    int? Nights = null)
+    int? Nights = null,
+    string Withheld = ReasonVerdict.BelowTheResolvedMinimum,
+    double Significance = 0)
 {
     // A setup that has done nothing is neither right nor wrong, so it is in
     // neither half of this, and one whose price never reached the entry the plan
@@ -243,13 +235,10 @@ public sealed record ReasonRecord(
     // see: A setup is scored from its entry, and a target reached before the entry is never a win
     public int Resolved => Won + Lost;
 
-    // Both floors, from 8.5. A count of rows alone can be filled by a handful of
-    // nights of one market move, and the test assumes the setups are
-    // independent, which they are not: listings cluster by sector and by date.
-    // So a record has earned a verdict only once the rows arrived across enough
-    // distinct listing sessions too.
+    // The verdict's own answer, naming no floor of its own, so a page draws a
+    // verdict on exactly the populations the test was run over and on no others.
     // see: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold
-    public bool HasEarnedAVerdict => Resolved >= Minimum && Sessions >= SessionMinimum;
+    public bool HasEarnedAVerdict => Withheld == ReasonVerdict.Shown;
 }
 
 // One row of the reason track: section 15.5's three states out of one
@@ -449,6 +438,27 @@ public sealed class MarkRenderer : IComponent
     static double PlotValue(decimal price) => (double)price;
 
     static string Number(double value) => value.ToString("0.##", Invariant);
+
+    // Five places, and below them the bound a tail lies under, since no tail over setups that can
+    // lose is zero.
+    const double SmallestDrawnProbability = 0.00001;
+
+    static string Probability(double value) =>
+        value < SmallestDrawnProbability
+            ? Formatted($"below {SmallestDrawnProbability.ToString("0.#####", Invariant)}")
+            : Formatted($"of {value.ToString("0.#####", Invariant)}");
+
+    static string VerdictWord(ReasonRecord record) => record.Cleared is true ? "cleared" : "not cleared";
+
+    // 15.11's three figures together, over the one set each of them was computed over.
+    static string ShareOfTheScored(ReasonRecord record) =>
+        Formatted($"{Number(record.Share ?? 0)} per cent of {record.Scored} resolved setups that set a bar reached target before stop, against the {Number(record.BreakEven ?? 0)} per cent those setups demanded");
+
+    // The count a withheld verdict waits on, against the floor the verdict named as short.
+    static string CountAgainstTheFloors(ReasonRecord record) =>
+        record.Withheld == ReasonVerdict.BelowTheSessionMinimum
+            ? Formatted($"{record.Scored} of {record.Minimum} resolved setups that set a bar, over {record.Sessions} of {record.SessionMinimum} listing session(s)")
+            : Formatted($"{record.Scored} of {record.Minimum} resolved setups that set a bar");
 
     // The price scale the chart draws, computed here so the profile beside it
     // can be given the same one.
@@ -1336,9 +1346,11 @@ public sealed class MarkRenderer : IComponent
 
             if (byReason is not null && byReason.TryGetValue(reason.Name, out var record))
             {
+                // 15.11's two states on this surface as on the run page: the share, the
+                // count and the bar in one span, or the count against the floor that is short.
                 cell.Append(record.HasEarnedAVerdict
-                    ? Formatted($"<span class=\"record\" data-verdict=\"due\" data-resolved=\"{record.Resolved}\">{record.Resolved} resolved</span>")
-                    : Formatted($"<span class=\"record not-measured\" data-outline=\"dashed\" data-verdict=\"none\" data-resolved=\"{record.Resolved}\" data-minimum=\"{record.Minimum}\">{record.Resolved} of {record.Minimum} resolved</span>"));
+                    ? Formatted($"<span class=\"record\" data-verdict=\"{VerdictWord(record)}\" data-share=\"{Number(record.Share ?? 0)}\" data-scored=\"{record.Scored}\" data-break-even=\"{Number(record.BreakEven ?? 0)}\">{ShareOfTheScored(record)}</span>")
+                    : Formatted($"<span class=\"record not-measured\" data-outline=\"dashed\" data-verdict=\"none\" data-short=\"{record.Withheld}\" data-scored=\"{record.Scored}\" data-minimum=\"{record.Minimum}\">{CountAgainstTheFloors(record)}</span>"));
             }
 
             cell.Append("</span>");
@@ -1550,7 +1562,7 @@ public sealed class MarkRenderer : IComponent
             // see: A setup is scored from its entry, and a target reached before the entry is never a win
             table.Append(Invariant, $"<td class=\"never-entered\" data-never-entered=\"{record.NeverEntered}\">{record.NeverEntered}</td>");
 
-            // Section 15.11's three states, from 8.5.
+            // Section 15.11's three states.
             //
             // Below either floor: a dashed outline carrying the count against
             // the floor that is short, and no rate. The count is what makes the
@@ -1570,34 +1582,30 @@ public sealed class MarkRenderer : IComponent
             if (!record.HasEarnedAVerdict)
             {
                 table.Append(Invariant, $"<td class=\"not-measured\" data-outline=\"dashed\" data-verdict=\"none\" ");
-                table.Append(Invariant, $"data-short=\"{(record.Resolved < record.Minimum ? "resolved" : "sessions")}\" ");
+                table.Append(Invariant, $"data-short=\"{record.Withheld}\" data-scored=\"{record.Scored}\" ");
                 table.Append(Invariant, $"data-sessions=\"{record.Sessions}\" data-session-minimum=\"{record.SessionMinimum}\">");
 
-                table.Append(record.Resolved < record.Minimum
-                    ? Formatted($"{record.Resolved} of {record.Minimum} resolved")
-                    : Formatted($"{record.Resolved} of {record.Minimum} resolved over {record.Sessions} of {record.SessionMinimum} listing session(s)"));
+                table.Append(CountAgainstTheFloors(record));
 
                 table.Append("</td>");
             }
             else
             {
-                table.Append(Invariant, $"<td data-verdict=\"{(record.Cleared is true ? "cleared" : "not cleared")}\" ");
+                table.Append(Invariant, $"<td data-verdict=\"{VerdictWord(record)}\" ");
                 table.Append(Invariant, $"data-share=\"{(record.Share is { } share ? Number(share) : "none")}\" ");
                 table.Append(Invariant, $"data-break-even=\"{(record.BreakEven is { } bar ? Number(bar) : "none")}\" ");
-                table.Append(Invariant, $"data-p-value=\"{(record.PValue is { } p ? p.ToString("0.#####", Invariant) : "none")}\" ");
+                table.Append(Invariant, $"data-p-value=\"{(record.PValue is { } p ? p.ToString("R", Invariant) : "none")}\" ");
                 table.Append(Invariant, $"data-divisor=\"{record.Divisor}\" data-threshold=\"{record.Threshold.ToString("0.#####", Invariant)}\" ");
                 table.Append(Invariant, $"data-sessions=\"{record.Sessions}\">");
 
-                table.Append(Formatted(
-                    $"{Number(record.Share ?? 0)} per cent of {record.Resolved} resolved reached target before stop, "));
-                table.Append(Formatted(
-                    $"against the {Number(record.BreakEven ?? 0)} per cent those setups demanded, over {record.Sessions} listing session(s). "));
+                table.Append(ShareOfTheScored(record));
+                table.Append(Formatted($", over {record.Sessions} listing session(s). "));
                 table.Append(Formatted(
                     $"{(record.Cleared is true ? "Clears" : "Does not clear")} at {record.Threshold.ToString("0.#####", Invariant)}, "));
                 table.Append(Formatted(
-                    $"which is 0.05 divided by a family of {record.Divisor}"));
+                    $"which is {record.Significance.ToString("0.#####", Invariant)} divided by a family of {record.Divisor}"));
                 table.Append(record.PValue is { } shownP
-                    ? Formatted($", on an exact one-sided p of {shownP.ToString("0.#####", Invariant)}</td>")
+                    ? Formatted($", on an exact one-sided p {Probability(shownP)}</td>")
                     : "</td>");
             }
 

@@ -322,7 +322,7 @@ public static class ForwardReturnSeries
         IReadOnlyList<(string? Outcome, double? BreakEven)> setups)
     {
         var scored = setups
-            .Where(setup => setup.Outcome is Win or Loss && setup.BreakEven is not null)
+            .Where(setup => IsScored(setup.Outcome, setup.BreakEven))
             .ToArray();
 
         return scored.Length == 0
@@ -331,6 +331,12 @@ public static class ForwardReturnSeries
                 WinShare([.. scored.Select(setup => setup.Outcome)]),
                 scored.Average(setup => setup.BreakEven!.Value));
     }
+
+    // A setup a reason is scored on: resolved as a win or a loss, with the bar its entry close set.
+    // The share, the mean bar, both floors and the verdict are all taken over this one set.
+    // see: A reason's share, verdict and both floors are counted over the resolved setups that set a bar
+    public static bool IsScored(string? outcome, double? breakEven) =>
+        outcome is Win or Loss && breakEven is not null;
 
     // The share of a set of outcomes that won, as a percentage, and none where
     // nothing among them has matured.

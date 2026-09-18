@@ -1,7 +1,7 @@
 {
  "stage": "reason-verdicts",
  "derivation": "derived",
- "derivedFrom": "the null that each resolved setup wins with the probability its own plan demanded, worked by hand rather than read back from a run. The wins are then a sum of independent draws with different probabilities, so the tail is a Poisson binomial's and not a binomial's, and each case below is small enough to be worked out longhand: the three-setup cases are written as the sums of their own terms in the arithmetic column. The display cases are constructed counts rather than fixture rows, because the minimum is 250 resolved setups over 60 distinct listing sessions and the committed fixture holds one listing night, so no reason in it can resolve anything at all.",
+ "derivedFrom": "the null that each resolved setup wins with the probability its own plan demanded, worked by hand rather than read back from a run. The wins are then a sum of independent draws with different probabilities, so the tail is a Poisson binomial's and not a binomial's, and each case below is small enough to be worked out longhand: the three-setup cases are written as the sums of their own terms in the arithmetic column. The population cases follow from the rule that a reason is scored over the setups that resolved as a win or a loss and set a bar and over no others, so each expected count is read off the construction rather than off a run. The display cases are constructed counts rather than fixture rows, because the minimum is 250 resolved setups that set a bar over 60 distinct listing sessions and the committed fixture holds one listing night, so no reason in it can resolve anything at all.",
  "tables": [
   "forward_return"
  ],
@@ -103,5 +103,105 @@
    "verdict": false
   }
  ],
+ "population": {
+  "rule": "a reason is scored over the setups that resolved as a win or a loss and set a bar, and over no others: an unresolved setup is neither right nor wrong, and a loss that entered and stopped on one session set no bar to be tested against. Both floors, the share, the mean bar and the tail are over that one set, a page draws a verdict exactly where the verdict was not withheld, and the count drawn beside the share or inside the dashed outline is that set's count. Wins, losses and losses that set no bar are spread round robin over the stated sessions; unresolved setups sit on those sessions, or one each on sessions of their own",
+  "cases": [
+   {
+    "case": "the clearing case with thirty unresolved setups on its own sessions, which read as losing draws would be 125 wins in 280 at a bar of 40 per cent, a tail of about 0.064, and would not clear",
+    "wins": 125,
+    "losses": 125,
+    "withoutABar": 0,
+    "unresolved": 30,
+    "unresolvedOnOtherSessions": false,
+    "breakEven": 40,
+    "sessions": 60,
+    "resolved": 250,
+    "scored": 250,
+    "scoredSessions": 60,
+    "short": "none",
+    "verdict": true,
+    "share": 50,
+    "sameTailAs": "at or above both floors, and the wins beat the bar the plans demanded",
+    "drawn": "50 per cent of 250 resolved setups that set a bar"
+   },
+   {
+    "case": "150 wins and 100 losses on thirty sessions and thirty unresolved setups on thirty sessions of their own, which counted would make sixty",
+    "wins": 150,
+    "losses": 100,
+    "withoutABar": 0,
+    "unresolved": 30,
+    "unresolvedOnOtherSessions": true,
+    "breakEven": 40,
+    "sessions": 30,
+    "resolved": 250,
+    "scored": 250,
+    "scoredSessions": 30,
+    "short": "sessions",
+    "verdict": null,
+    "share": null,
+    "drawn": "250 of 250 resolved setups that set a bar, over 30 of 60 listing session(s)"
+   },
+   {
+    "case": "249 that set a bar and six losses that set none, which is 255 wins and losses and one short of the floor, so the verdict is withheld rather than failed",
+    "wins": 125,
+    "losses": 124,
+    "withoutABar": 6,
+    "unresolved": 0,
+    "unresolvedOnOtherSessions": false,
+    "breakEven": 40,
+    "sessions": 60,
+    "resolved": 255,
+    "scored": 249,
+    "scoredSessions": 60,
+    "short": "resolved",
+    "verdict": null,
+    "share": null,
+    "drawn": "249 of 250 resolved setups that set a bar"
+   },
+   {
+    "case": "250 that set a bar and six losses that set none, so the share is 150 of 250, which is 60 per cent, and not 150 of 256",
+    "wins": 150,
+    "losses": 100,
+    "withoutABar": 6,
+    "unresolved": 0,
+    "unresolvedOnOtherSessions": false,
+    "breakEven": 40,
+    "sessions": 60,
+    "resolved": 256,
+    "scored": 250,
+    "scoredSessions": 60,
+    "short": "none",
+    "verdict": true,
+    "share": 60,
+    "drawn": "60 per cent of 250 resolved setups that set a bar"
+   }
+  ]
+ },
+ "drawnProbability": {
+  "rule": "a probability is drawn to five places, and one below 0.00001 as the bound it lies under rather than as a zero, since no tail over setups that can lose is zero",
+  "resolution": 1e-05,
+  "cases": [
+   {
+    "case": "250 setups each demanding a half, every one winning",
+    "wins": 250,
+    "losses": 0,
+    "breakEven": 50,
+    "sessions": 60,
+    "powerOfTwo": -250,
+    "arithmetic": "each wins with probability a half and independently, so all 250 winning is a half to the 250th power, which is 2 to the power of -250",
+    "drawn": "below 0.00001"
+   },
+   {
+    "case": "the clearing case, 125 wins in 250 against a bar of 40 per cent",
+    "wins": 125,
+    "losses": 125,
+    "breakEven": 40,
+    "sessions": 60,
+    "tail": 0.0008611238,
+    "arithmetic": "every setup demands the same bar, so the tail is the binomial sum over k from 125 to 250 of C(250, k) x 0.4^k x 0.6^(250 - k), summed in exact rational arithmetic outside the suite: 0.000861123777, which is 0.00086 to five places",
+    "drawn": "of 0.00086"
+   }
+  ]
+ },
  "note": "The threshold every display case is judged at is 0.05 divided by the live family of 6, which is 0.00833 to five places. The last two cases share a bar and differ only in their wins, so what separates them is the count and not the plans."
 }

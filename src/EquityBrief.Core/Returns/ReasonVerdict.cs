@@ -11,7 +11,7 @@ public sealed record Verdict(
     double? PValue,
     double Threshold,
     int Divisor,
-    int Resolved,
+    int Scored,
     int Sessions,
     string Withheld);
 
@@ -65,9 +65,9 @@ public static class ReasonVerdict
 
     public const string Shown = "none";
 
-    // One resolved setup, as the verdict reads it: whether it won, the bar its
-    // own plan demanded as a percentage, and the session it was listed on.
-    public readonly record struct ScoredSetup(bool Won, double? BreakEven, DateOnly Session);
+    // One setup as the verdict reads it: its outcome as stored, the bar its own
+    // plan demanded as a percentage, and the session it was listed on.
+    public readonly record struct ScoredSetup(string Outcome, double? BreakEven, DateOnly Session);
 
     public static Verdict For(IReadOnlyList<ScoredSetup> setups, int divisor)
     {
@@ -82,11 +82,10 @@ public static class ReasonVerdict
 
         var threshold = Significance / divisor;
 
-        // Only the setups that set a bar. A share tested against a bar has to be
-        // the share of the rows that bar was averaged over, and a setup that
-        // entered and stopped on one session set none.
-        // see: A condition is judged against the break-even its own plan demands
-        var scored = setups.Where(setup => setup.BreakEven is not null).ToArray();
+        // The setups the reason is scored on and no others: an unresolved setup is
+        // neither right nor wrong, and one that set no bar has nothing to test.
+        // see: A reason's share, verdict and both floors are counted over the resolved setups that set a bar
+        var scored = setups.Where(setup => ForwardReturnSeries.IsScored(setup.Outcome, setup.BreakEven)).ToArray();
         var sessions = scored.Select(setup => setup.Session).Distinct().Count();
 
         // Both minimums, and the one that is short is named rather than the
@@ -102,7 +101,7 @@ public static class ReasonVerdict
             return new Verdict(null, null, threshold, divisor, scored.Length, sessions, BelowTheSessionMinimum);
         }
 
-        var wins = scored.Count(setup => setup.Won);
+        var wins = scored.Count(setup => setup.Outcome == ForwardReturnSeries.Win);
         var probabilities = scored.Select(setup => setup.BreakEven!.Value / 100).ToArray();
         var p = PoissonBinomial.UpperTail(probabilities, wins);
 

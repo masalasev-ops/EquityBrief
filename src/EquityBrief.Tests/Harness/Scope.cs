@@ -426,35 +426,35 @@ internal static class Scope
         // section 17's significance threshold row.
         [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = new Scoped(
             Verdict.Pass,
-            "the share is drawn with its denominator and its break-even, never one without the others, and only for a reason that cleared both floors, read off the region's markup",
+            "the share is drawn with its denominator and its break-even, never one without the others, and only where the verdict was not withheld, over the resolved setups that set a bar with that set's own count as the denominator, read off the region's markup over populations holding unresolved setups and losses that set no bar",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Reason records, the break-even those setups demanded")] = new Scoped(
             Verdict.Pass,
-            "the mean bar those setups set is drawn beside the share it is compared with, over the setups that set one rather than over every resolved row",
+            "the mean bar those setups set is drawn beside the share it is compared with, over the wins and losses that set one rather than over every resolved row or any unresolved setup",
             ByReadSurface),
         [CheckReach.Key("15.11 How a reason's record is displayed", "Below the minimum")] = new Scoped(
             Verdict.Pass,
-            "a dashed outline carrying the count against the floor that is short and no rate, asserted at 249 of 250 resolved and at 300 resolved over 59 of 60 sessions, with which floor is short named on the cell",
+            "a dashed outline carrying the count of resolved setups that set a bar against the floor the verdict named as short, and no rate, on the run page and on tonight's list, asserted at 249 of 250 and at 300 over 59 of 60 sessions, and over losses that set no bar and unresolved setups on sessions of their own, which fill neither floor",
             ByReadSurface),
         [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the share that reached the target before the stop")] = new Scoped(
             Verdict.Pass,
-            "the share is drawn on the cell of a reason that cleared both floors, read off the markup at 50 per cent of 300 resolved",
+            "the share is drawn on the run page's cell and in tonight's reason span for a reason whose verdict was not withheld, read off the markup at 50 per cent of 300 and at 60 per cent of 250 with six losses that set no bar beside them",
             ByReadSurface),
         [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the number resolved")] = new Scoped(
             Verdict.Pass,
-            "the denominator is drawn with the share rather than left to the row's own resolved column, because a share without its denominator hides how much was checked",
+            "the denominator drawn with the share is the count the share was computed over, the resolved setups that set a bar, rather than the row's own resolved column, and a population where the two differ draws the first and never the second",
             ByReadSurface),
         [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, the break-even those setups demanded")] = new Scoped(
             Verdict.Pass,
-            "the mean bar is drawn beside the share it is compared with, read off the markup at 33.5 per cent",
+            "the mean bar is drawn beside the share it is compared with, read off the run page's markup at 33.5 per cent and tonight's reason span at 40 per cent",
             ByReadSurface),
         [CheckReach.Key("15.11 How a reason's record is displayed", "At or above the minimum, always the three together")] = new Scoped(
             Verdict.Pass,
-            "the three arrive on one cell or none of them does: over three records, one clearing both floors and two short of one each, exactly one cell carries a rate and the other two carry the count against the floor that is short",
+            "the three arrive on one cell or none of them does: over three records, one clearing both floors and two short of one each, exactly one cell carries a rate and the other two carry the count against the floor that is short; and on tonight's list a reason whose verdict was not withheld carries the share, the count and the bar in its one span while one short of a floor carries the count alone",
             ByReadSurface),
         [CheckReach.Key("15.11 How a reason's record is displayed", "Unresolved setups")] = new Scoped(
             Verdict.Pass,
-            "the unresolved segment is its own and never folded into the rate, and the win and loss split is withheld from the mark under the same two floors as the column rather than under the row count alone",
+            "the unresolved segment is its own and never folded into the rate, the tail or either floor: thirty unresolved setups that would turn a clearing verdict if read as losing draws leave the share, the tail and the sessions as they were, and the win and loss split is withheld from the mark under the verdict's own answer",
             ByReadSurface),
         [CheckReach.Key("15.11 How a reason's record is displayed", "Never shown")] = new Scoped(
             Verdict.Pass,
@@ -466,15 +466,15 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "Reason record display")] = new Scoped(
             Verdict.Pass,
-            "the three states of section 15.11 are each drawn over constructed counts, and the record is beside the reason on the run page and beside no ticker on any other route",
+            "the three states of section 15.11 are each drawn over constructed counts, on the run page and on tonight's list, and the record is beside the reason there and beside no ticker on any route",
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "Minimum resolved setups")] = new Scoped(
             Verdict.Pass,
-            "no verdict of any kind appears below 250 resolved setups or below 60 distinct listing sessions, asserted at each boundary and one either side, with the count drawn beside every withheld verdict; and the higher floor a live condition's retirement waits on is the constant the register names when it refuses a live reason",
+            "no verdict of any kind appears below 250 resolved setups that set a bar or below 60 distinct listing sessions they arrived on, asserted at each boundary and one either side and over every population either side of each floor holding losses that set no bar and unresolved setups that would fill a floor if counted, with a withheld verdict never drawn as one that failed and the count drawn beside every withheld verdict; and the higher floor a live condition's retirement waits on is the constant the register names when it refuses a live reason",
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "Significance threshold")] = new Scoped(
             Verdict.Pass,
-            "the exact one-sided tail matches four cases worked by hand, including one where no two break-evens agree so a binomial at any single value differs, the binomial at the mean is asserted to bound it at counts at or above the mean plus one and to be strictly larger over a spread, and the threshold and its divisor are read off the run page beside every verdict",
+            "the exact one-sided tail matches four cases worked by hand, including one where no two break-evens agree so a binomial at any single value differs, the binomial at the mean is asserted to bound it at counts at or above the mean plus one and to be strictly larger over a spread, and the threshold, the level it was divided from as the record carries it, and the divisor are read off the run page beside every verdict, with the exact p drawn to five places and below them as the bound it lies under",
             ByReadSurface),
         // 8.4, the shadow candidates region, read as the three claims its row
         // states. The half none of them says out loud is asserted with them: no
@@ -722,7 +722,7 @@ internal static class Scope
             ByReadSurface),
                 [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = new Scoped(
             Verdict.Pass,
-            "each reason on a drawn row is named with the values the store holds for it and the reason's own record beside it, in the dashed not-yet-measured state carrying its count against the minimum",
+            "each reason on a drawn row is named with the values the store holds for it and the reason's own record beside it, in the dashed not-yet-measured state carrying its count against the minimum over the fixture, and over constructed records as the share, the count and the bar together where the verdict was not withheld and as the count against the named floor where it was",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Reason totals")] = new Scoped(
             Verdict.Pass,
