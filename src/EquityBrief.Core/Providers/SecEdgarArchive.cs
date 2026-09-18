@@ -35,7 +35,11 @@ namespace EquityBrief.Core.Providers;
 // segments. Taking the first whose name matches takes a narrative note. Which one
 // holds figures is a property of the table rather than of its name: the first
 // candidate in the Details category is the right one for one captured filer and
-// carries a single boolean for the other.
+// carries a single boolean for the other. A table can also carry figures by
+// segment that are not what the segments earned, as depreciation and a customer
+// concentration share under a narrative table listed ahead of the revenue table,
+// so the table taken is the first stating revenue by segment.
+// see: The segment table is the first of the filing's segment reports to state revenue by segment
 //
 // The segment table's scale is stated once, in its own title cell, and its figures
 // are in millions for both captured filers and in thousands for a third. Negatives
@@ -85,12 +89,27 @@ public static class SecEdgarArchive
 
     // How many report pages one read will fetch looking for figures by segment.
     //
-    // Four, because the two captured filings need one and two and the wider of the
-    // two carries four candidates in the Details category. A cap rather than the
+    // Four, because the captured filings need one and two and the wider of them
+    // carries four candidates in the Details category. A cap rather than the
     // whole list, so a filing with thirty segment-named reports cannot turn one
     // open into thirty requests, and the count actually read is carried on the
-    // result rather than assumed.
+    // result rather than assumed. A filing whose candidates state no revenue by
+    // segment reads all four before taking the first that carried figures.
     public const int SegmentReportsAtMost = 4;
+
+    // The concepts a segment table states revenue under, in the spellings the
+    // captured tables file it with. A table carrying one of them in a group is
+    // preferred to a table carrying only other figures by segment.
+    public static readonly string[] SegmentRevenue =
+    [
+        "Revenues",
+        "RevenueFromContractWithCustomerExcludingAssessedTax",
+        "RevenueFromContractWithCustomerIncludingAssessedTax",
+    ];
+
+    // The unit a row written in percentages is given, which keeps the table's
+    // money scale off a share.
+    public const string Percent = "%";
 
     // What the numbers section asks the archive for, named so a part not served is
     // a value rather than a missing key. `FundamentalsFetcher.Parts` holds the same
@@ -557,14 +576,6 @@ public static class SecEdgarArchive
 
         var unit = Unit(ref label);
         var concept = Concept(row);
-
-        // The scale is a statement about the money in the table, so a row stating
-        // a unit of its own is left exactly as filed. A row stating the table's own
-        // currency is that money: a narrative details table marks each of its money
-        // rows so, NFLX's reading "Revenues | $" under "$ in Thousands" beside a count
-        // marked "segment", and a reader leaving it as filed stored the quarter's
-        // revenue a thousand times short, which 6.11's production run found.
-        var applies = unit is null || string.Equals(unit, currency, StringComparison.Ordinal) ? scale : 1;
         var cells = Regex
             .Matches(row, "<td[^>]*class=\"(num|nump|text)\"[^>]*>(.*?)</td>", RegexOptions.IgnoreCase | RegexOptions.Singleline)
             .Select(cell => Plain(cell.Groups[2].Value))
@@ -575,6 +586,21 @@ public static class SecEdgarArchive
         {
             return [];
         }
+
+        // A row whose every figure is written as a percentage is a share, stated in
+        // its cells rather than after its label.
+        if (unit is null && cells.Any(cell => cell.Length > 0) && cells.All(cell => cell.Length == 0 || cell.EndsWith('%')))
+        {
+            unit = Percent;
+        }
+
+        // The scale is a statement about the money in the table, so a row stating
+        // a unit of its own is left exactly as filed. A row stating the table's own
+        // currency is that money: a narrative details table marks each of its money
+        // rows so, NFLX's reading "Revenues | $" under "$ in Thousands" beside a count
+        // marked "segment", and a reader leaving it as filed stored the quarter's
+        // revenue a thousand times short, which 6.11's production run found.
+        var applies = unit is null || string.Equals(unit, currency, StringComparison.Ordinal) ? scale : 1;
 
         var figures = new List<SegmentFigure>();
 
@@ -940,6 +966,7 @@ public static class SecEdgarArchive
         }
 
         var read = 0;
+        SegmentBreakdown? other = null;
 
         foreach (var candidate in SegmentCandidates(list).Take(SegmentReportsAtMost))
         {
@@ -949,16 +976,35 @@ public static class SecEdgarArchive
 
             read++;
 
-            if (page is not null && Breakdown(page, candidate) is { } breakdown)
+            if (page is null || Breakdown(page, candidate) is not { } breakdown)
+            {
+                continue;
+            }
+
+            if (StatesRevenue(breakdown))
             {
                 return (breakdown, read);
             }
+
+            other ??= breakdown;
+        }
+
+        if (other is not null)
+        {
+            return (other, read);
         }
 
         notCarried.Add(Segments);
 
         return (null, read);
     }
+
+    // Whether a table states revenue under one of its groups, read off the concept
+    // a row is filed against rather than its label.
+    public static bool StatesRevenue(SegmentBreakdown table) =>
+        table.Groups.Any(group => group.Figures.Any(figure =>
+            figure.Value is not null
+            && SegmentRevenue.Any(revenue => figure.Concept.EndsWith("_" + revenue, StringComparison.Ordinal))));
 
     static async Task<IReadOnlyList<ArchiveFact>> FactsAsync(
         ArchiveFetch fetch,

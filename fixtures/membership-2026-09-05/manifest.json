@@ -183,6 +183,27 @@
       "trimmedTo": "nothing. A third filer's segment table, whole, captured at 6.11 because the production run found its figures stored a thousand times short. It is a narrative details table in thousands rather than millions, and it marks every row after its label: the counts of operating and reportable segments with 'segment', and each money row with the table's own currency, reading 'Revenues | $' with cells such as '$ 12,559,938', where the two captured filers leave their money rows unmarked. A reader that took every marked row for a row outside the table's currency left the revenue rows as filed. It reports one segment, and its one group is a geography rather than a business, the United States, so the figure a release calls a region is the only breakdown it carries."
     },
     {
+      "file": "report-list-NVDA-10q.xml",
+      "endpoint": "Archives/edgar/data/1045810/000104581026000075/FilingSummary.xml",
+      "query": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000075/FilingSummary.xml",
+      "fetchedAt": "2026-09-18T17:11:00Z",
+      "trimmedTo": "13 of the filing's 71 reports, being the eight whose names mention segments and five others so the choice is made against a population. Six of the eight sit in the Details category, and the first of those is a narrative table whose figures by segment are not what the segments earned. The revenue table is second, so a route taking the first candidate carrying any figure by segment reads the narrative one. Every element, attribute and nesting is the archive's."
+    },
+    {
+      "file": "segment-report-NVDA-R62.htm",
+      "endpoint": "Archives/edgar/data/1045810/000104581026000075/R62.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000075/R62.htm",
+      "fetchedAt": "2026-09-18T17:11:01Z",
+      "trimmedTo": "nothing. The candidate the route passes over, whole. It carries figures under groups, so a route taking the first table with any figure by segment takes it, and none of them is revenue: depreciation and amortization by segment, the counts of segments, and a customer concentration share written as percentages, reading '38.00%', under a title stating '$ in Millions'. A reader applying the title's scale to every row that states no unit after its label stores 38 percent as 38 million."
+    },
+    {
+      "file": "segment-report-NVDA-R63.htm",
+      "endpoint": "Archives/edgar/data/1045810/000104581026000075/R63.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000075/R63.htm",
+      "fetchedAt": "2026-09-18T17:11:01Z",
+      "trimmedTo": "nothing. A fourth filer's segment table, whole: revenue, other segment items and operating income for two segments under 'Operating Segments', in millions, with the company's totals above the first grouping. It is the second segment candidate in its filing's Details category, which is why the route takes the first table stating revenue by segment rather than the first carrying any figure."
+    },
+    {
       "file": "filing-types-KEYS-8k.htm",
       "endpoint": "Archives/edgar/data/1601046/000160104626000029/0001601046-26-000029-index.htm",
       "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000029/0001601046-26-000029-index.htm",
