@@ -29,6 +29,15 @@ public sealed class StoreLocation
         DataRoot = Path.GetFullPath(dataRoot);
     }
 
+    // A configured root read against a directory rather than the working directory. An
+    // absolute root stands as configured, a relative one sits under the directory, and none
+    // is refused as the constructor refuses it. The read surface reads its own against the
+    // checkout its build sits in, because how it is started decides its working directory.
+    public static StoreLocation Within(string? directory, string? configured) =>
+        new(directory is null || string.IsNullOrWhiteSpace(configured)
+            ? configured ?? string.Empty
+            : Path.Combine(directory, configured));
+
     public string DataRoot { get; }
 
     public string DatabaseFile => Path.Combine(DataRoot, DatabaseFileName);

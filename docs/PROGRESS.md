@@ -15469,3 +15469,61 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 1.3 - correction: the read surface starts from the repository root against the store the worker writes, as the runbook now says   2026-09-18
+Corrects:   the 1.3 entry records the read surface serving the store under the configured data
+            root. Its own settings named none and the runbook said nowhere how to start it, so the
+            screens could not be opened from anything the corpus said: started the way the worker
+            is, it stopped before serving anything. And started through its launch settings it runs
+            in its project directory, where a relative root and the phase report the run page reads
+            were both looked for.
+Found:      on 2026-09-18, when the operator went to open the screens for the first time; the
+            session had started the surface with a data root in its own environment.
+Measured:   on the checkout at the merge of the 6.2 correction, `dotnet run --project
+            src/EquityBrief.Api` from the repository root with nothing in the environment stopped
+            with StoreLocation's "No data root is configured". With a scratch store named in the
+            environment the same command came up through its launch settings at
+            http://localhost:5152 with its content root at src/EquityBrief.Api, so a relative
+            `data` would have opened src/EquityBrief.Api/data rather than the store the night
+            writes, and the phase report, read from the content root, was looked for under
+            src/EquityBrief.Api/artifacts, where nothing writes one, while the harness writes it to
+            the repository's own artifacts folder.
+Repaired:   the surface's settings name the data root the worker's do, `data`; it reads the
+            settings file beside its build under every other source, as the worker reads its own,
+            so the environment and the command line still win; and a relative root and the phase
+            report are read against the checkout its build sits in, found as the name page's
+            control already finds it. RUNBOOK gains "Opening the screens", with CHANGELOG naming
+            the section it did not have.
+Stored:     nothing. The surface writes one run log row when it starts, as it did.
+Missed:     every test hosted the surface in process and handed it a store, so nothing started it
+            the way a person does, and nothing read the runbook for a way to.
+Guarded:    the surface's own build, copied into a throwaway checkout with a store and a phase
+            report of its own and started from a directory outside it with nothing in the
+            environment, writes its start row into that checkout's store and states that
+            checkout's report on the run page; its settings name the worker's data root and the
+            runbook states the command and the address its launch settings give; a relative root
+            sits under the checkout and an absolute one stands as configured; and the suite's own
+            host still reads the store it is handed, not the one the shipped settings name.
+Expected:   derived: the address is read off the launch settings and the data root off both
+            projects' settings; no expectation file changes.
+Tests:      1079, from 1075. Four added to the read surface's tests. No file this correction edits
+            is a source either evaluator version or the ladder rules' code version pins, so no pin
+            moves.
+Mutated:    the rule, stated before the sweep: break each of the four properties this correction
+            adds, the settings beside the build read, a relative root read against the checkout,
+            the surface's settings naming the worker's data root, and the phase report read
+            against the checkout. The host reading the store it is handed is not mutated: broken,
+            every test hosting the surface is sent to a store under the run's own directory, a red
+            too wide to name test by test.
+            Predicted:
+            M1 the settings beside the build not read: the start test red on the checkout's store;
+            nothing else.
+            M2 a relative root read against the working directory: the start test red on the
+            checkout's store; nothing else.
+            M3 the surface's settings naming no data root: the start test red on the checkout's
+            store and the settings test red on the surface's data root; nothing else.
+            M4 the phase report read against the content root: the start test red on the run
+            page's report; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.

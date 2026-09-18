@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - RUNBOOK.md - how the screens are opened
+
+Corrects: the runbook said nowhere how to start the read surface, and started the way the worker is it stopped for want of a data root; found when the operator went to open the screens for the first time.
+Was:
+> nothing: no section said how to start the read surface or where it reads its store from
+Now:
+> "Opening the screens", after "What runs, and when": the command from the repository root, the address the launch settings give, the four routes, that its settings name the worker's data root read against the checkout, that the environment overrides it, and that it can stay open while the night runs
+Why: the screens could not be opened from anything the corpus said, and the operator had never seen one.
+
 ### 2026-09-18 - SCHEMA.md - a quarter's end is the period the company's own report states
 
 Authorised by: A quarter ends on the date the company's own filing states

@@ -8,6 +8,8 @@ using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.FileProviders;
 
 // The read surface and the one page it hosts.
 //
@@ -18,9 +20,24 @@ using EquityBrief.Web.Marks;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// The settings file beside this build, read under every other source as the worker reads
+// its own. Started through its launch settings the surface runs in its project directory and
+// otherwise wherever it was started, and only the first holds a settings file; the
+// environment and the command line still win.
+builder.Configuration.Sources.Insert(0, new JsonConfigurationSource
+{
+    FileProvider = new PhysicalFileProvider(AppContext.BaseDirectory),
+    Path = "appsettings.json",
+    Optional = true,
+});
+
+// The checkout this build sits in, which a relative data root and the phase report are read
+// against, so the store and the report are the checkout's wherever the surface was started.
+var checkout = WorkerPassStarter.Checkout(AppContext.BaseDirectory);
+
 builder.Services.AddSingleton<IClock>(SystemClock.ForUnitedStatesSessions());
 builder.Services.AddSingleton(_ =>
-    new StoreLocation(builder.Configuration[StoreLocation.DataRootKey] ?? string.Empty));
+    StoreLocation.Within(checkout, builder.Configuration[StoreLocation.DataRootKey]));
 builder.Services.AddSingleton(services => new ReadApi(
     services.GetRequiredService<StoreLocation>().DatabaseFile,
     services.GetRequiredService<IClock>()));
@@ -37,7 +54,7 @@ builder.Services.AddSingleton<ReportExporter>();
 // What the name page's control starts: the worker's research verb, from the checkout this
 // surface's build sits in, told to write the store this surface reads.
 builder.Services.AddSingleton<IPassStarter>(services => new WorkerPassStarter(
-    WorkerPassStarter.Checkout(AppContext.BaseDirectory),
+    checkout,
     services.GetRequiredService<StoreLocation>().DataRoot));
 
 var app = builder.Build();
@@ -314,10 +331,10 @@ static async Task<IReadOnlyList<SpentRow>> SpentOn(ReadApi read, DateOnly night)
 // own on the run page, and section 15.7 states the verdict in tonight's header.
 // One function rather than one per route, so the two cannot come to disagree
 // about which file is the report.
-static string? PhaseReport(WebApplicationBuilder builder)
+static string? PhaseReport(WebApplicationBuilder builder, string? checkout)
 {
     var path = builder.Configuration["EquityBrief:PhaseReport"]
-        ?? Path.Combine(builder.Environment.ContentRootPath, "artifacts", "phase-report.json");
+        ?? Path.Combine(checkout ?? builder.Environment.ContentRootPath, "artifacts", "phase-report.json");
 
     return File.Exists(path) ? File.ReadAllText(path) : null;
 }
@@ -443,7 +460,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             rows,
             [],
             selected,
-            RunScreen.Harness(PhaseReport(builder)),
+            RunScreen.Harness(PhaseReport(builder, checkout)),
             selection?.Ticker,
             records,
             RunScreen.Tracks(TonightScreen.Totals(listings)),
@@ -568,7 +585,7 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
             RunScreen.FellBack(await read.FellBackAsync(dated)),
             RunScreen.Queue(await read.QueueRowsAsync(), dated, Traded),
-            RunScreen.Harness(PhaseReport(builder)),
+            RunScreen.Harness(PhaseReport(builder, checkout)),
             RunScreen.Shadow(await read.RegisteredCandidatesAsync(), clock.UtcNow),
             RunScreen.Priced(await read.PaidCallSpendsAsync()),
             TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated))),
