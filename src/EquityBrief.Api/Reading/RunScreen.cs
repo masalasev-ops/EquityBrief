@@ -290,7 +290,7 @@ public static class RunScreen
     // The run ids a person's command writes, stated here because the read surface holds no
     // reference to the worker; `read-surface` asserts they are the verbs' own. Their rows are
     // drawn as run by hand, apart from the night's stages.
-    public static IReadOnlyList<string> RunsByHand { get; } = ["version-"];
+    public static IReadOnlyList<string> RunsByHand { get; } = ["version-", "register-"];
 
     public static bool IsByHand(string runId) => RunsByHand.Any(prefix => runId.StartsWith(prefix, StringComparison.Ordinal));
 

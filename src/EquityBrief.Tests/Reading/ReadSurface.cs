@@ -19,6 +19,7 @@ using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Calendar;
+using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
@@ -2354,6 +2355,27 @@ public partial class ReadSurface
         using var currentClient = currentHost.CreateClient();
 
         Assert.DoesNotContain("data-schema=", await currentClient.GetStringAsync("/screens/run"), StringComparison.Ordinal);
+    }
+
+    // A registration's outcome is `registered` rather than ok, so read as a stage of the night
+    // it was a stage that failed. It is a command a person ran, drawn as one.
+    [Fact]
+    public async Task ARegisterCommandIsDrawnAsRunByHandAndARegistrationIsNotAFailedStage()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var registered = RegisterVerb.RunIdAt(new DateTimeOffset(2026, 9, 10, 23, 45, 0, TimeSpan.Zero));
+
+        store.Execute(RunRow("night-20260910T233000Z", "close", "2026-09-10T23:30:00Z", "2026-09-10T23:31:00Z"));
+        store.Execute(RunRow(registered, CandidateRegistrar.Stage, "2026-09-10T23:45:00Z", "2026-09-10T23:45:00Z", CandidateRegistrar.Registered));
+
+        var stages = RunScreen.Stages(await Api(store).RunLogAsync(new DateOnly(2026, 9, 10)));
+
+        Assert.Equal(2, stages.Count);
+        Assert.Single(stages, stage => stage.ByHand && stage.Stage == CandidateRegistrar.Stage);
+        Assert.Empty(RunScreen.Failed(stages));
+        Assert.Contains(RegisterVerb.RunPrefix, RunScreen.RunsByHand);
+        Assert.True(RunScreen.IsByHand(registered));
     }
 
     [Fact]

@@ -92,10 +92,15 @@ public sealed class CandidateRegistrar : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
+        // The row and its run log row are one write, so a row that cannot be recorded
+        // leaves no register row behind it; a refusal is recorded once the write is let go.
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
         var rows = await RowsAsync(connection, cancellation);
 
         if (Refusal(rows, candidate, evaluator, parameters, startedAt) is { } refusal)
         {
+            await transaction.RollbackAsync(cancellation);
             await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation);
 
             return new RegistrationOutcome(Refused, null, refusal);
@@ -123,6 +128,7 @@ public sealed class CandidateRegistrar : IComponent
             FormattableString.Invariant($"family of {CandidateFamily.Standing(rows, startedAt).Count + 1} of {CandidateFamily.Maximum}");
 
         await RecordAsync(connection, runId, startedAt, Registered, 1, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Registered, id, detail);
     }
@@ -138,10 +144,13 @@ public sealed class CandidateRegistrar : IComponent
         await using var connection = new SqliteConnection($"Data Source={databaseFile}");
         await connection.OpenAsync(cancellation);
 
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
         var rows = await RowsAsync(connection, cancellation);
 
         if (LiveReasonRefusal(candidate) is { } live)
         {
+            await transaction.RollbackAsync(cancellation);
             await RecordAsync(connection, runId, startedAt, Refused, 0, live, cancellation);
 
             return new RegistrationOutcome(Refused, null, live);
@@ -154,6 +163,7 @@ public sealed class CandidateRegistrar : IComponent
                 "names a candidate the register holds, and one naming nothing would leave the divisor " +
                 "reading as though something had been withdrawn.";
 
+            await transaction.RollbackAsync(cancellation);
             await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation);
 
             return new RegistrationOutcome(Refused, null, refusal);
@@ -184,6 +194,7 @@ public sealed class CandidateRegistrar : IComponent
         var detail = $"retired '{candidate}' as {id}, on the evidence: {evidence}";
 
         await RecordAsync(connection, runId, startedAt, Retired, 1, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Retired, id, detail);
     }
@@ -348,6 +359,15 @@ public sealed class CandidateRegistrar : IComponent
         await command.ExecuteNonQueryAsync(cancellation);
 
         return id;
+    }
+
+    // A refusal the verb reaches before the registrar does, recorded as the registrar's own are.
+    public async Task RecordRefusalAsync(string runId, string refusal, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await connection.OpenAsync(cancellation);
+
+        await RecordAsync(connection, runId, clock.UtcNow, Refused, 0, refusal, cancellation);
     }
 
     async Task RecordAsync(

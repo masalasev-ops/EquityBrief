@@ -14521,3 +14521,79 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    nothing owed by this repair. Noted rather than owed: a research pass started by hand writes
             stages the run page draws beside the night's, which the spend cap's operating row reads
             there, and this correction leaves that as it is.
+
+### 8.3 - correction: the register verb's own refusals written to the run log, its forms refused when mixed, and its rows kept off the night's stages   2026-09-18
+Corrects:   the 8.3 entry records the register verb registering and retiring candidates, and the
+            runbook says each attempt, refused or not, is a row on the run log under
+            `candidate-register`. The verb's own refusals, being a retirement without evidence, a
+            registration missing a column and parameters it could not read, wrote no row. A retirement
+            given beside a registration took the retirement and dropped the rest without a word, a flag
+            was read as a value, and a run id taken to the second collided with a second command in the
+            same second. The run page drew the register's rows as stages of the night, a registration
+            that succeeded as a failed stage among them, because its outcome is `registered` and not ok.
+            8.3 also turned `ThePhaseReportCarriesACoverageRecordForEveryRosterRow`'s assertion that a
+            row reads "not due yet" into one that no row does, and the entry did not say so; that form
+            refuses the first row rostered from a checkpoint that has not landed, which the roster
+            allows. And a comment in `EveryOutOfScopeClaimHasExactlyOneOrigin` said the split by origin
+            cannot be satisfied by an empty set, which it is once nothing is out of scope.
+Found:      by the phase 8 sign-off review on 2026-09-16, beside the same faults in the `version` verb,
+            which the 8.6 correction above repairs, and by the review of the phase 8 report's own
+            checks, whose design carried the assertion and the comment here. The operator ruled that
+            every finding is corrected before a sign-off handoff, and the register verb, the assertion
+            and the comment are 8.3's.
+Measured:   read immutable from the operator's store on 2026-09-18, at schema 27 and last written
+            2026-09-17 23:41:00 UTC: 0 `candidate_register` rows and 0 run log rows under a run id
+            beginning `register-`.
+Repaired:   the verb's work moves into `RegisterVerb`, so the suite runs the verb a person runs; it takes
+            one form, `--candidate` or `--retire`, through the forms reader the version verb uses; every
+            attempt, refused or not, is one row under `candidate-register`; its run id carries the
+            instant to the ten-millionth of a second and a collision changes nothing; the registrar
+            writes the register row and its run log row in one transaction; the store check both verbs
+            make is one class, `VerbStore`, so the register verb refuses a store behind the checkout and
+            writes nothing; and the run page draws its rows as run by hand. The coverage assertion reads
+            that a row running on every CI run has its carrier, and the comment says an empty set
+            satisfies the split as 0 of 0. Section 15.10's route, SCHEMA's run log note, the runbook's
+            register paragraph and the register roster row say so, with prior text in CHANGELOG.
+Stored:     nothing to rewrite. The operator's store holds no `candidate_register` row and no register
+            run.
+Missed:     no test ran the verb: every register test called the registrar beneath it. The coverage
+            assertion was read over a roster with no row rostered from a checkpoint.
+Guarded:    over a migrated store, five command lines are each refused with exit 1, one row under
+            `candidate-register` whose detail is the refusal the verb printed, and the register
+            unchanged: no form, both forms, a retirement without evidence, a flag where a value
+            goes, and parameters that are not a name and a number; a registration through the verb
+            writes one registered row and one register row; and a store one migration behind is
+            refused naming `tools/migrate`, with no row written. Two registrations at one instant
+            write one register row and one run log row, the second refused naming the collision, and
+            run ids a tenth of a microsecond apart differ. Over constructed run log rows, a
+            registration run by hand that evening is drawn as run by hand, and no stage is listed as
+            failed. The coverage record holds every row that runs on every CI run to its carrier.
+Expected:   derived: every refusal is the sentence the verb writes and the one row the run log gains,
+            worked from the forms; no expectation file changes, because `candidate-register.json`
+            replays the registrar and every refusal leaves the register as it was.
+Tests:      1055, from 1052. Three added: in `register-append-only`, every register attempt one row
+            on the run log with every refusal changing nothing, and two register commands at one
+            instant; in `read-surface`, a register command drawn as run by hand and a registration
+            not a failed stage. Rewritten in place:
+            `ThePhaseReportCarriesACoverageRecordForEveryRosterRow`'s assertion on the not-due-yet
+            marker. No file this correction edits is a source either evaluator version or the ladder
+            rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds that decides
+            what the run log or the run page holds, being a refusal's row, a row's run id, a row's
+            place on the page, and the store a row may be written to. Not mutated, and named so the
+            next sweep has them: the register row and its run log row written in one transaction,
+            which no fault the suite can raise separates; and the not-due-yet assertion narrowed to
+            rows that run on every CI run, since dropping an every-run row's carrier is refused
+            first by `EveryRosterRowIsAccountedFor` and then by every test reading the phase report,
+            so a mutation of it would show those rather than this line. Predicted:
+            M1 the verb's own refusal recording no row: the register attempts test red on its first
+            case, no form given, where the run log gains no row, and nothing else.
+            M2 `register-` left out of the runs the run page reads as by hand: the run page test red
+            on no stage drawn as run by hand, and nothing else.
+            M3 the run id taken to the second: the one-instant test red on run ids a tenth of a
+            microsecond apart being equal, and nothing else.
+            M4 the verb's store check removed: the register attempts test red on the store one
+            migration behind, whose refusal no longer names `tools/migrate`, and nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing.

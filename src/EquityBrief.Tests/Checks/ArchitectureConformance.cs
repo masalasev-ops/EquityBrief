@@ -1260,45 +1260,8 @@ public partial class ArchitectureConformance
         Assert.Equal(0, Count(DueOrigin.Nothing));
         Assert.Equal(outOfScope.Length, plan + screens + written + excepted);
 
-        // Three scopes, and only one of them is floored.
-        //
-        // The claims out of scope is a fact about how much of the system is
-        // unbuilt. So is the count answered by the plan: every checkpoint that
-        // lands moves claims out of this population, and at phase 8 it is zero
-        // by construction. Neither size is a fact about the property, so the
-        // floor sits far enough below the value that ordinary building never
-        // reaches it, and catches the one thing worth catching: a derivation
-        // that has stopped resolving anything at all.
-        //
-        // The floor that stood here was 40 against a count of 45, and it was
-        // anchored against a population this check no longer has. Fifteen of
-        // those 45 were section 15 rows answered by their table heading, which
-        // the old count read as derived from the plan because the plan's prose
-        // contains their words. Measured by origin the same tree gives 30, so
-        // the old floor did not survive the correction and could not be carried.
-        // Lowered from 20 to 12 at 5.5, and converted to a non-vacuity guard by
-        // the phase 5 sign-off for the reason the two counts above were: the
-        // number falls as the build advances and is zero at phase 8 by
-        // construction, so a floor under it is a maintenance edit every phase
-        // rather than a property. The comment already said as much and the
-        // number was lowered anyway. What carries the property is the split by
-        // origin above, which cannot be satisfied by an empty set, and the one
-        // thing a number here can catch is a derivation that has stopped
-        // resolving anything at all, which is what one caught.
-        //
-        // It reached zero at 8.3, which is the case that comment predicted. The
-        // last claim the plan half answered was section 16's candidate register
-        // row, and the migration that creates the table is what let it be put to
-        // something. So a guard of one is now a guard that fails for the opposite
-        // of its reason: not because the derivation stopped, but because the
-        // build reached the point the comment said it would.
-        //
-        // The guard is kept and moved off the corpus. What it was protecting is
-        // that `Scope.Resolve` still falls through to the plan and that the plan
-        // reader still answers, and both are put to constructed input below,
-        // where the population cannot empty as the build advances. The counts
-        // stay as context in the message, because a check states its own scope in
-        // numbers whether or not a number is being asserted.
+        // The split by origin is the property, and an empty set satisfies it as 0 of 0,
+        // so the derivation and Resolve are put to constructed input below.
         Assert.Equal(
             outOfScope.Length,
             plan + screens + written + excepted);
