@@ -14191,6 +14191,32 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             since every ruling the record holds is headed in the heading's form.
             None of the seven edits a source the ladder rules' code version or either evaluator
             version pins, so the pin tests stay green under each.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Eight
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1035 of 1036
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 1 red, the matured setup test, its row reading "win|2026-09-09|12.000000|null"
+            after the second fill where the bar is 50. M2 turned 2 red: the plan-shape test at its
+            first plan with no zone listed below its stop, at 80 under a stop of 90 with closes of
+            105 and 112, carrying a return and no bar; and the break-even cases at the zone above
+            the target, scoring a win where the setup is never entered. M2b turned 1 red, the
+            break-even cases at the plan with no zone listed below its stop, scoring never entered
+            where it wins. M3 turned 1 red, the widened-populations test naming the four rules files
+            `pinned-constants` does not read. M4 turned 1 red, the refusal test, on no exception
+            thrown. M5 turned 1 red, the ruling test listing the 7.2 ruling beside the 8.2 ruling as
+            landing its checkpoint. M6 turned 1 red, the ruling test reading no ruling headed in the
+            commit subject's form, where the constructed "9.1 - ruling: a ruling" is one.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 27 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html` and no row in
+            `Scope.cs`, and the one roster row it edits, `stated-counts`, keeps its key. Both gates
+            ran with this entry in place, and the operator's store under `data/` was not touched by
+            either.
 Carried:    nothing.
