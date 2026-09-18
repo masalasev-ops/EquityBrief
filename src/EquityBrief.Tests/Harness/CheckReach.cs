@@ -24,6 +24,9 @@ internal sealed record CheckReach(
 
     internal static string Key(string table, string subject) => table + Joiner + subject;
 
+    // The rows another check's verdict passes that this check also holds, each with the test of its own that holds it.
+    internal IReadOnlyDictionary<string, string> Held { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
     internal bool Covers(string table, string subject) =>
         Subjects.Contains(table, StringComparer.Ordinal)
         || Subjects.Contains(Key(table, subject), StringComparer.Ordinal);

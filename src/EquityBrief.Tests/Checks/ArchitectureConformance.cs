@@ -69,74 +69,231 @@ public partial class ArchitectureConformance
     }
 
     // A row that names a check in its own words is a row saying that check
-    // asserts part of it. Where the verdict names another check and its note is
-    // silent about the one the row names, the report passes the row on what the
-    // verdict's check reached while the named half has nothing behind it, which
-    // is how section 17's version bound passed at 8.6 naming a recorded night
+    // asserts part of it. Where the verdict names another check, the named one
+    // declares reach over the row, holds it with a test of its own that runs, is
+    // named in the verdict's note, and fails the row where it fails, which is how
+    // section 17's version bound passed at 8.6 naming a recorded night
     // `nightly-cost` did not run.
     [Fact]
-    public void EveryCheckARowNamesIsTheCheckItsVerdictNamesOrIsNamedInItsNote()
+    public void EveryCheckARowNamesInAnyFormIsTheVerdictsCheckOrOneThatHoldsTheRowWithATestOfItsOwn()
     {
-        var roster = CoverageReported.Coverage().Select(check => check.Check).ToHashSet(StringComparer.Ordinal);
+        var coverage = CoverageReported.Coverage();
+        var roster = coverage.Select(check => check.Check).ToHashSet(StringComparer.Ordinal);
         var tables = ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
         var claims = Report().Claims;
+        var reaches = CheckReaches.All();
 
-        var named = RowsNamingACheck(tables, roster);
+        var named = ArchitectureTables.ChecksNamed(tables, roster);
 
-        // The population, stated in advance: one row names a check today.
-        Assert.True(named.Count >= 1, $"Read {named.Count} row(s) naming a check, expected at least 1.");
+        // The population, stated in advance: one row names a check beside its verdict's today.
+        Assert.True(
+            named.Count(row => claims.FirstOrDefault(claim => claim.Table == row.Heading && claim.Subject == row.Subject)?.By != row.Check) >= 1,
+            $"Read {named.Count} row(s) naming a check, none of them beside a verdict by another check.");
 
-        Assert.Empty(ChecksTheVerdictLeavesUnsaid(named, claims));
+        Assert.Empty(ChecksTheVerdictLeavesUnsaid(named, claims, reaches, coverage));
 
-        // The reader, over constructed rows and claims, in both directions.
-        IReadOnlyList<(string Heading, string Subject, string Check)> constructed =
-        [
-            ("17. Limits", "A bound", "nightly-cost"),
-            ("17. Limits", "A figure", "read-surface"),
-            ("17. Limits", "A rate", "bar-bounds"),
-        ];
+        // The reader finds a check named in code markup, bare, and in backticks, and
+        // not a longer word that begins with one.
+        Assert.Equal(
+            [("17. Limits", "A component", "bar-bounds"), ("17. Limits", "A figure", "bar-bounds"), ("17. Limits", "A bound", "nightly-cost")],
+            ArchitectureTables.ChecksNamed(
+                ArchitectureTables.In(
+                    "<h2>17. Limits</h2><table><tr><th>Name</th><th>What</th></tr>" +
+                    "<tr><td>A component</td><td>held by <code>bar-bounds</code></td></tr>" +
+                    "<tr><td>A figure</td><td>held by bar-bounds and nothing else</td></tr>" +
+                    "<tr><td>A bound</td><td>held by `nightly-cost`</td></tr>" +
+                    "<tr><td>A word</td><td>held by the bar-boundsless reader and nightly-costs</td></tr></table>"),
+                roster));
+
+        // Each fault, over constructed reaches, claims and coverage, by its exact message.
+        const string Heading = "17. Limits";
+
+        CheckReach Declared(IReadOnlyDictionary<string, string> held, params string[] subjects) =>
+            new("nightly-cost", [], [.. subjects.Select(subject => CheckReach.Key(Heading, subject))]) { Held = held };
+
+        var holding = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [CheckReach.Key(Heading, "A bound")] = nameof(NightlyCost.ARecordedNightAtOneRuleVersionAndAtTheFullestRegisterMakesTheSameRequestsAndNoModelCall),
+            [CheckReach.Key(Heading, "A stray")] = "NoSuchTest",
+        };
 
         Claim[] verdicts =
         [
-            new("17. Limits", "A bound", Verdict.Pass, "the caps refused, and `nightly-cost` over a recorded night", "rule-versions-scored"),
-            new("17. Limits", "A figure", Verdict.Pass, "drawn on the page", "read-surface"),
-            new("17. Limits", "A rate", Verdict.Pass, "the rate withheld", "read-surface"),
+            new(Heading, "A bound", Verdict.Pass, "the caps refused, and `nightly-cost` over a recorded night", "rule-versions-scored"),
+            new(Heading, "A silent bound", Verdict.Pass, "the caps refused", "rule-versions-scored"),
+            new(Heading, "A stray", Verdict.Pass, "the caps refused, and `nightly-cost` too", "rule-versions-scored"),
+            new(Heading, "An undeclared bound", Verdict.Pass, "the caps refused, and `nightly-cost` too", "rule-versions-scored"),
+            new(Heading, "An unheld bound", Verdict.Pass, "the caps refused, and `nightly-cost` too", "rule-versions-scored"),
+            new(Heading, "Its own", Verdict.Pass, "whatever the note says", "nightly-cost"),
         ];
 
-        Assert.Equal(["A rate names bar-bounds, and its verdict by read-surface does not say what it asserts"], ChecksTheVerdictLeavesUnsaid(constructed, verdicts));
+        var reach = Declared(
+            new Dictionary<string, string>(holding, StringComparer.Ordinal) { [CheckReach.Key(Heading, "A silent bound")] = holding[CheckReach.Key(Heading, "A bound")] },
+            "A bound",
+            "A silent bound",
+            "A stray",
+            "An unheld bound");
+
+        IReadOnlyList<(string Heading, string Subject, string Check)> rows =
+        [
+            (Heading, "A bound", "nightly-cost"),
+            (Heading, "Its own", "nightly-cost"),
+            (Heading, "A missing row", "nightly-cost"),
+            (Heading, "An undeclared bound", "nightly-cost"),
+            (Heading, "An unheld bound", "nightly-cost"),
+            (Heading, "A stray", "nightly-cost"),
+            (Heading, "A silent bound", "nightly-cost"),
+        ];
+
         Assert.Equal(
-            ["A missing row names nightly-cost and carries no verdict"],
-            ChecksTheVerdictLeavesUnsaid([("17. Limits", "A missing row", "nightly-cost")], verdicts));
-        Assert.Equal(
-            [("7. Catalogue", "A component", "bar-bounds")],
-            RowsNamingACheck(
-                [new ArchitectureTable("7. Catalogue", [["Name", "What"], ["A component", "held by `bar-bounds` and by `a-check-nobody-rosters`"]])],
-                new HashSet<string>(["bar-bounds"], StringComparer.Ordinal)));
+            [
+                "A missing row names nightly-cost and carries no verdict",
+                "An undeclared bound names nightly-cost, which does not declare reach over the row, and its verdict by rule-versions-scored passes it on what rule-versions-scored reached",
+                "An unheld bound names nightly-cost, which names no test of its own holding the row",
+                "A stray names nightly-cost, and NoSuchTest is not a test of nightly-cost that runs",
+                "A silent bound names nightly-cost, and its verdict's note does not say what nightly-cost asserts",
+            ],
+            ChecksTheVerdictLeavesUnsaid(rows, verdicts, [reach], coverage));
     }
 
-    static IReadOnlyList<(string Heading, string Subject, string Check)> RowsNamingACheck(
-        IReadOnlyList<ArchitectureTable> tables,
-        IReadOnlySet<string> roster) =>
+    // A name written as a check in a table is a claim that the check exists. One the
+    // roster does not carry is a misspelling or a check never built, and either is a
+    // row asserting more than anything holds.
+    [Fact]
+    public void NoTableRowNamesACheckTheRosterDoesNotCarry()
+    {
+        var roster = CoverageReported.Coverage().Select(check => check.Check).ToHashSet(StringComparer.Ordinal);
+        var document = File.ReadAllText(Repository.Architecture);
+
+        Assert.True(
+            CheckShapedNamesIn(document).Count >= 1,
+            $"Read {CheckShapedNamesIn(document).Count} check-shaped name(s) in the document's tables, expected at least 1.");
+        Assert.Empty(CheckShapedNamesNobodyRosters(document, roster));
+
+        Assert.Equal(
+            [
+                "nightly-costs is written as a check in a table and the roster carries no such check",
+                "rule-version-scored is written as a check in a table and the roster carries no such check",
+            ],
+            CheckShapedNamesNobodyRosters(
+                "<table><tr><td>A</td><td>`nightly-costs` and `nightly-cost`</td></tr></table>" +
+                "<table><tr><td>B</td><td><code>rule-version-scored</code></td></tr></table>" +
+                "<p>`outside-a-table`</p>",
+                roster));
+    }
+
+    static IReadOnlyList<string> CheckShapedNamesIn(string document) =>
     [
-        .. tables.SelectMany(table => table.Body
-            .Where(row => row.Count > 1 && row[0].Length > 0)
-            .SelectMany(row => Regex.Matches(string.Join(" ", row.Skip(1)), "`([a-z-]+)`")
-                .Select(match => match.Groups[1].Value)
-                .Where(roster.Contains)
-                .Distinct(StringComparer.Ordinal)
-                .Select(check => (table.Heading, row[0], check)))),
+        .. Regex.Matches(document, @"<table[^>]*>.*?</table>", RegexOptions.Singleline)
+            .SelectMany(table => Regex.Matches(table.Value, @"(?:<code>|`)([a-z]+(?:-[a-z]+)+)(?:</code>|`)"))
+            .Select(match => match.Groups[1].Value)
+            .Distinct(StringComparer.Ordinal),
     ];
+
+    static IReadOnlyList<string> CheckShapedNamesNobodyRosters(string document, IReadOnlySet<string> roster) =>
+    [
+        .. CheckShapedNamesIn(document)
+            .Where(name => !roster.Contains(name))
+            .Select(name => $"{name} is written as a check in a table and the roster carries no such check"),
+    ];
+
+    // A second check a row names is read by the verdict as its own check is, over
+    // the row that names one today and a run in which every other check held.
+    [Fact]
+    public void AClaimFailsWhereASecondCheckItsRowNamesFails()
+    {
+        var document = File.ReadAllText(Repository.Architecture);
+        var coverage = CoverageReported.Coverage();
+
+        Claim Built(CheckRun nightlyCost) =>
+            PhaseReport.Build(
+                    ArchitectureTables.In(document),
+                    ArchitectureFigures.In(document),
+                    NightlyRunSteps.In(document),
+                    Fixtures.Of(Repository.Root),
+                    coverage,
+                    SuiteOutcomes.Of(coverage
+                        .Where(check => check.Carrier != CoverageReported.NotDueYet)
+                        .ToDictionary(
+                            check => check.Check,
+                            check => check.Check == "nightly-cost"
+                                ? new CheckResult(nightlyCost, "NightlyCost.ARecordedNight", "one request on the version step")
+                                : new CheckResult(CheckRun.Passed),
+                            StringComparer.Ordinal)))
+                .Claims.Single(claim => claim.Table == Scope.LimitsTable && claim.Subject == "Rule versions scored at once");
+
+        var failed = Built(CheckRun.Failed);
+        var unrun = Built(CheckRun.DidNotRun);
+        var held = Built(CheckRun.Passed);
+
+        Assert.Equal(("rule-versions-scored", "nightly-cost"), (failed.By, string.Join(", ", failed.Also ?? [])));
+        Assert.Equal(
+            (Verdict.Fail, "`nightly-cost`, which the row names, ran and did not hold, at NightlyCost.ARecordedNight: one request on the version step"),
+            (failed.Verdict, failed.Note));
+        Assert.Equal(
+            (Verdict.Unexamined, "`nightly-cost`, which the row names, did not run in the run this report reads"),
+            (unrun.Verdict, unrun.Note));
+        Assert.Equal(Verdict.Pass, held.Verdict);
+    }
 
     static IReadOnlyList<string> ChecksTheVerdictLeavesUnsaid(
         IReadOnlyList<(string Heading, string Subject, string Check)> named,
-        IReadOnlyList<Claim> claims) =>
-    [
-        .. named.Select(row => (row, claim: claims.FirstOrDefault(claim => claim.Table == row.Heading && claim.Subject == row.Subject)))
-            .Where(pair => pair.claim is null || (pair.claim.By != pair.row.Check && !pair.claim.Note.Contains(pair.row.Check, StringComparison.Ordinal)))
-            .Select(pair => pair.claim is null
-                ? $"{pair.row.Subject} names {pair.row.Check} and carries no verdict"
-                : $"{pair.row.Subject} names {pair.row.Check}, and its verdict by {pair.claim.By} does not say what it asserts"),
-    ];
+        IReadOnlyList<Claim> claims,
+        IReadOnlyList<CheckReach> reaches,
+        IReadOnlyList<CheckCoverage> coverage)
+    {
+        var faults = new List<string>();
+
+        foreach (var (heading, subject, check) in named)
+        {
+            var claim = claims.FirstOrDefault(one => one.Table == heading && one.Subject == subject);
+
+            if (claim is null)
+            {
+                faults.Add($"{subject} names {check} and carries no verdict");
+
+                continue;
+            }
+
+            if (claim.By == check)
+            {
+                continue;
+            }
+
+            if (reaches.FirstOrDefault(one => one.Check == check) is not { } reach || !reach.Covers(heading, subject))
+            {
+                faults.Add($"{subject} names {check}, which does not declare reach over the row, and its verdict by {claim.By} passes it on what {claim.By} reached");
+
+                continue;
+            }
+
+            if (!reach.Held.TryGetValue(CheckReach.Key(heading, subject), out var test))
+            {
+                faults.Add($"{subject} names {check}, which names no test of its own holding the row");
+
+                continue;
+            }
+
+            var carrier = coverage.FirstOrDefault(one => one.Check == check)?.Carrier;
+            var fact = carrier is null || carrier == CoverageReported.NotDueYet
+                ? null
+                : SuiteOutcomes.CarrierType(carrier).GetMethod(test, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)?.GetCustomAttribute<FactAttribute>();
+
+            if (fact is null || fact.Skip is not null)
+            {
+                faults.Add($"{subject} names {check}, and {test} is not a test of {check} that runs");
+
+                continue;
+            }
+
+            if (!claim.Note.Contains($"`{check}`", StringComparison.Ordinal))
+            {
+                faults.Add($"{subject} names {check}, and its verdict's note does not say what {check} asserts");
+            }
+        }
+
+        return faults;
+    }
 
     [Fact]
     public void EveryTableInTheDocumentIsPlaced()
@@ -437,7 +594,7 @@ public partial class ArchitectureConformance
         // the map behind it.
         var due = report.Claims
             .Where(claim => claim.Verdict == Verdict.OutOfScope)
-            .Select(claim => claim.Note[(claim.Note.LastIndexOf("until ", StringComparison.Ordinal) + 6)..].Trim())
+            .Select(claim => DueNamedBy(claim.Note))
             .ToArray();
 
         // Context with a non-vacuity guard, and deliberately not a floor that
@@ -791,38 +948,32 @@ public partial class ArchitectureConformance
 
         Assert.Equal(0, report.Count(Verdict.Unexamined));
         Assert.Equal(0, report.Count(Verdict.Fail));
-        // The guard that stood here reached zero at 8.6, which is the point the
-        // whole build was aimed at: every claim the document makes is now
-        // examined and none is deferred. It said the count falls to zero by
-        // construction, and the day it did the guard failed for the build having
-        // succeeded rather than for anything being wrong.
-        //
-        // So the shape of an out-of-scope note is put to constructed claims
-        // instead, where the population cannot empty. What that half asserts is
-        // that a deferred claim says where it ends, and a report holding none is
-        // a report with nothing to say it of.
-        var silent = outOfScope
-            .Where(claim => !claim.Note.Contains("until", StringComparison.Ordinal))
-            .ToArray();
+        // A deferred claim says where it ends, which the writer and the readers are shown to agree on below.
+        var silent = SilentOutOfScope(report.Claims);
 
-        // The count is stated here rather than asserted on its own, because a
-        // number that cannot fail is the under-reporting this harness refuses.
         Assert.True(
-            silent.Length == 0,
-            $"{silent.Length} of {outOfScope.Length} out-of-scope claim(s) do not say where they end: " +
+            silent.Count == 0,
+            $"{silent.Count} of {outOfScope.Length} out-of-scope claim(s) do not say where they end: " +
             string.Join("; ", silent.Select(claim => claim.Subject)));
 
-        var shapes = new[]
-        {
-            new { Note = "out of scope until 9.1 builds it", Deferred = true },
-            new { Note = "reached by nothing and said so", Deferred = false },
-        };
+        // The note's writer and both its readers, over a step the step map answers and no verdict reaches.
+        const string Deferred = "Load index membership for a night no step of the document describes";
 
-        Assert.Equal(
-            [true, false],
-            [.. shapes.Select(shape => shape.Note.Contains("until", StringComparison.Ordinal))]);
+        var written = Scope.For(NightlyRunSteps.Heading, Deferred);
 
+        Assert.Equal(Verdict.OutOfScope, written.Verdict);
+        Assert.Empty(SilentOutOfScope([new Claim(NightlyRunSteps.Heading, Deferred, written.Verdict, written.Note, written.By)]));
+        Assert.Equal(Scope.Resolve(NightlyRunSteps.Heading, Deferred).Due, DueNamedBy(written.Note));
+        Assert.Single(SilentOutOfScope([new Claim(NightlyRunSteps.Heading, Deferred, Verdict.OutOfScope, "reached by nothing and said so", string.Empty)]));
     }
+
+    // The out-of-scope claims whose note does not say where they end.
+    internal static IReadOnlyList<Claim> SilentOutOfScope(IEnumerable<Claim> claims) =>
+        [.. claims.Where(claim => claim.Verdict == Verdict.OutOfScope && !claim.Note.Contains("until ", StringComparison.Ordinal))];
+
+    // The due point an out-of-scope note names, read the way a person reads it.
+    internal static string DueNamedBy(string note) =>
+        note.LastIndexOf("until ", StringComparison.Ordinal) is var at and >= 0 ? note[(at + "until ".Length)..].Trim() : string.Empty;
 
     [Fact]
     public void SectionFourteenIsReadAsClaimsRatherThanSkipped()

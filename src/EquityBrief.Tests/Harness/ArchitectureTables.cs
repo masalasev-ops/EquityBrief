@@ -47,6 +47,29 @@ internal static class ArchitectureTables
         return tables;
     }
 
+    // Every rostered check a row names in a cell other than its subject, each once, read over
+    // the text the cells reduce to, so backticks, code markup and a bare name are one form.
+    internal static IReadOnlyList<(string Heading, string Subject, string Check)> ChecksNamed(
+        IReadOnlyList<ArchitectureTable> tables,
+        IReadOnlySet<string> roster) =>
+    [
+        .. tables.SelectMany(table => table.Body
+            .Where(row => row.Count > 1 && row[0].Length > 0)
+            .SelectMany(row => ChecksNamedIn(row, roster).Select(check => (table.Heading, row[0], check)))),
+    ];
+
+    internal static IReadOnlyList<string> ChecksNamedIn(IReadOnlyList<string> row, IReadOnlySet<string> roster)
+    {
+        var said = string.Join(" ", row.Skip(1));
+
+        return
+        [
+            .. roster
+                .Order(StringComparer.Ordinal)
+                .Where(check => Regex.IsMatch(said, "(?<![a-z-])" + Regex.Escape(check) + "(?![a-z-])")),
+        ];
+    }
+
     static IReadOnlyList<IReadOnlyList<string>> RowsIn(string table) =>
         Regex.Matches(table, @"<tr[^>]*>(.*?)</tr>", RegexOptions.Singleline)
             .Select(row => (IReadOnlyList<string>)Regex

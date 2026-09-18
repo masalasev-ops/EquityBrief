@@ -124,7 +124,7 @@ public static class Nightly
 
         var (membership, historical, bulkFeed, corporate, calendar, _) = feeds;
 
-        // The local model calls step 17 made, which the night's last line states apart
+        // The local model calls the overnight queue made, which the night's last line states apart
         // from the arithmetic's, whose model calls are none.
         var queueCalls = 0;
 
@@ -331,10 +331,10 @@ public static class Nightly
                 var outcome = await new RuleVersionScorer(clock, store.DatabaseFile)
                     .RunAsync(clock.SessionDateAt(clock.UtcNow), runId, night.Token);
 
-                return $"{outcome.Versions} open version(s), {outcome.RowsWritten} score(s) over " +
-                    $"{outcome.NamesScored} name(s), {outcome.RowsDropped} dropped";
+                return $"{outcome.Versions} open version(s), {outcome.Replayed} replayed with {outcome.ReplayedMergeDistance} of the merge distance, " +
+                    $"{outcome.RowsWritten} score(s) over {outcome.NamesScored} name(s), {outcome.NamesNotComputed} left out, {outcome.RowsDropped} dropped";
             }),
-            // Section 14's step 16, which closes the arithmetic and records its
+            // Section 14's step 17, which closes the arithmetic and records its
             // counts. It computes nothing: every figure is counted off the
             // store the night has just written, which is what makes it a record
             // of what happened rather than of what each stage intended.
@@ -347,7 +347,7 @@ public static class Nightly
                     $"{outcome.ReasonsFired} reason(s) fired, {outcome.NamesStale} stale, " +
                     $"{outcome.Duration}";
             }),
-            // Section 14's step 17, after the arithmetic has closed and recorded its
+            // Section 14's step 18, after the arithmetic has closed and recorded its
             // counts. It calls the local model and nothing else, and no figure above it
             // moves whether it ran. It is handed no token from the night's deadline: that
             // deadline bounds the arithmetic, and the queue is bounded by its own limit,

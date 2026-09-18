@@ -573,7 +573,7 @@ public class ComponentAccess
             counted => Assert.True(CountsTheRowsParts.IsMatch(counted), $"'{counted}' states a count and was not refused."));
 
         Assert.All(
-            new[] { "repaired at 4.0", "section 14", "step 17", "8.3", "the one reader", "one call, stores no row", "twenty at most are drawn", "both feeds it reads" },
+            new[] { "repaired at 4.0", "section 14", FormattableString.Invariant($"step {17}"), "8.3", "the one reader", "one call, stores no row", "twenty at most are drawn", "both feeds it reads" },
             allowed => Assert.False(CountsTheRowsParts.IsMatch(allowed), $"'{allowed}' is not a count of a row's parts and was refused."));
     }
 
@@ -581,7 +581,9 @@ public class ComponentAccess
     // behaviour promised to a person with nothing behind it. The 8.6 correction
     // found one: the catalogue said a rule version's window opens through its
     // own verb, the component's methods existed, and no command line reached them,
-    // while every check that read the row was reading its stores.
+    // while every check that read the row was reading its stores. A verb is read
+    // however the specs write it, in code markup, backticks or bare, as a verb or
+    // as a command, and a dispatch arm however it matches.
     [Fact]
     public void EveryWorkerVerbTheDocumentsNameIsDispatchedAndShownAndEveryDispatchedVerbIsInTheHelp()
     {
@@ -591,9 +593,13 @@ public class ComponentAccess
         // The population, stated: the six the worker carries from 8.6.
         Assert.True(dispatched.Count >= 6, $"Read {dispatched.Count} dispatched verb(s), expected at least 6.");
 
-        var named = VerbsNamedIn(Corpus.Read("docs/ARCHITECTURE.html"));
+        var mentions = new[] { "docs/ARCHITECTURE.html", "docs/SCHEMA.md", "docs/BUILD_PLAN.md" }
+            .SelectMany(spec => VerbsNamedIn(Corpus.Read(spec)))
+            .ToArray();
+        var named = mentions.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
 
-        Assert.True(named.Count >= 3, $"Read {named.Count} verb(s) the architecture names, expected at least 3.");
+        Assert.True(mentions.Length >= 6, $"Read {mentions.Length} mention(s) of a worker verb in the specs, expected at least 6.");
+        Assert.True(named.Length >= 3, $"Read {named.Length} verb(s) the specs name, expected at least 3.");
 
         // Every verb a component's row says a person or a page runs is one the
         // worker dispatches, and the runbook shows its command line.
@@ -628,7 +634,23 @@ public class ComponentAccess
 
         Assert.Equal(["alpha", "beta"], DispatchedVerbs(Constructed));
         Assert.Contains("'beta' another", HelpText(Constructed), StringComparison.Ordinal);
-        Assert.Equal(["gamma", "research"], VerbsNamedIn("<td>through the worker's <code>gamma</code> verb, and the <code>research</code> verb</td>"));
+        Assert.Equal(
+            ["delta", "epsilon", "eta", "gamma", "iota", "research", "theta", "zeta"],
+            VerbsNamedIn("<td>through the worker's <code>gamma</code> verb, the <code>research</code> verb, the worker's <code>delta</code> command, `epsilon` verb, the worker's zeta verb, <code>eta</code> and <code>theta</code> verbs, the command `iota`</td>")
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal));
+
+        const string Arms = """
+            return (args.Length > 0 ? args[0] : string.Empty) switch
+            {
+                "alpha" => A(),
+                "beta" or "bet" => B(),
+                "gamma" when x => C(),
+                _ => NoVerb(),
+            };
+            """;
+
+        Assert.Equal(["alpha", "beta", "bet", "gamma"], DispatchedVerbs(Arms));
         Assert.True(ShownIn("dotnet run --project src/EquityBrief.Worker -- gamma --rule x", "gamma"));
         Assert.False(ShownIn("the gamma verb, described and never shown", "gamma"));
     }
@@ -638,12 +660,34 @@ public class ComponentAccess
         var table = Regex.Match(program, @"args\[0\] : string\.Empty\) switch\s*\{(.*?)_ => NoVerb\(\)", RegexOptions.Singleline);
 
         return table.Success
-            ? [.. Regex.Matches(table.Groups[1].Value, "\"([a-z-]+)\" =>").Select(match => match.Groups[1].Value)]
+            ? [.. Regex.Matches(table.Groups[1].Value, "\"([a-z-]+)\"\\s*(?==>|or\\b|when\\b)").Select(match => match.Groups[1].Value)]
             : [];
     }
 
-    static IReadOnlyList<string> VerbsNamedIn(string document) =>
-        [.. Regex.Matches(document, @"<code>([a-z-]+)</code> verb").Select(match => match.Groups[1].Value).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+    // Every mention of a worker verb, by the position of its name, so a phrasing two
+    // patterns both read is one mention.
+    static IReadOnlyList<string> VerbsNamedIn(string document)
+    {
+        const string Named = @"(?:<code>|`)([a-z][a-z-]*)(?:</code>|`)";
+
+        string[] phrasings =
+        [
+            @"worker's\s+(?:<code>|`)?([a-z][a-z-]*)(?:</code>|`)?\s+(?:verb|command)s?\b",
+            Named + @"\s+(?:and|or)\s+" + Named + @"\s+(?:verb|command)s?\b",
+            Named + @"\s+(?:verb|command)\b",
+            @"\b(?:verb|command)\s+" + Named,
+        ];
+
+        return
+        [
+            .. phrasings
+                .SelectMany(phrasing => Regex.Matches(document, phrasing))
+                .SelectMany(match => match.Groups.Cast<Group>().Skip(1).Where(group => group.Success))
+                .DistinctBy(group => group.Index)
+                .OrderBy(group => group.Index)
+                .Select(group => group.Value),
+        ];
+    }
 
     static bool ShownIn(string runbook, string verb) =>
         Regex.IsMatch(runbook, @"src/EquityBrief\.Worker -- " + Regex.Escape(verb) + @"\b")

@@ -35,7 +35,14 @@ public class NightlyCost
             CheckReach.Key(Scope.LimitsTable, "Bar history kept"),
             CheckReach.Key(Scope.LimitsTable, "Backfill"),
             CheckReach.Key(Scope.LimitsTable, "Weighted-call budget"),
-        ]);
+            CheckReach.Key(Scope.LimitsTable, "Rule versions scored at once"),
+        ])
+    {
+        Held = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [CheckReach.Key(Scope.LimitsTable, "Rule versions scored at once")] = nameof(ARecordedNightAtOneRuleVersionAndAtTheFullestRegisterMakesTheSameRequestsAndNoModelCall),
+        },
+    };
 
     const string Fixture = "membership-2026-09-05";
     const string Index = "GSPC";
@@ -490,10 +497,10 @@ public class NightlyCost
     // it guards has no run in which it stood alone. The first half, at 6.6, names the
     // files a model may be reached from and says nothing about the night. This half says
     // the two things the decision says of the night: which lane it may call, and that its
-    // calls come from step 17 alone.
+    // calls come from the overnight queue alone.
     // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
 
-    // Step 17's own stage on the night's run. Stated here before the queue exists, since the
+    // The overnight queue's own stage on the night's run. Stated here before the queue exists, since the
     // guard lands first, and read against the queue's own constant from the commit that
     // builds it.
     internal const string QueueStage = "overnight queue";
@@ -541,7 +548,7 @@ public class NightlyCost
     internal sealed record CostRow(string RunId, string Stage, int ModelCalls, string Spend, string Detail);
 
     // What a store's rows carry that the carve does not allow: any spend, whose only source
-    // is a paid call, and a model call anywhere but on step 17's own row and the runs that
+    // is a paid call, and a model call anywhere but on the overnight queue's own row and the runs that
     // row names as its passes. The passes are read off the queue's row rather than off how a
     // run id reads, because a matcher keyed on the opening of an id answers for every id that
     // happens to open the same way.
@@ -560,14 +567,14 @@ public class NightlyCost
 
             if (row.ModelCalls > 0 && !step.Contains(row) && !passes.Contains(row.RunId))
             {
-                offences.Add($"{row.RunId} {row.Stage} made {row.ModelCalls} model call(s) outside step 17");
+                offences.Add($"{row.RunId} {row.Stage} made {row.ModelCalls} model call(s) outside the overnight queue's own row");
             }
         }
 
         return offences;
     }
 
-    // The runs step 17's row names as the passes it ran.
+    // The runs the queue's row names as the passes it ran.
     static IReadOnlyList<string> PassesNamedIn(string detail)
     {
         if (detail.Length == 0)
@@ -595,7 +602,7 @@ public class NightlyCost
     }
 
     [Fact]
-    public async Task TheArithmeticCallsNoModelAndTheNightsCallsComeFromStepSeventeenAlone()
+    public async Task TheArithmeticCallsNoModelAndTheNightsCallsComeFromTheOvernightQueueAlone()
     {
         // Over a whole recorded night rather than one stage of one, because the claim is
         // about the night and a stage run alone cannot say which steps a night runs.
@@ -622,7 +629,7 @@ public class NightlyCost
         // No arithmetic stage called a model, read off the rows the night wrote.
         Assert.Equal(0, night.Where(row => row.Stage != QueueStage).Sum(row => row.ModelCalls));
 
-        // And whatever model calls the night made are on step 17's rows, and nothing spent.
+        // And whatever model calls the night made are on the queue's rows, and nothing spent.
         Assert.Empty(CallsTheCarveDoesNotAllow(rows, "run-carve"));
 
         // Which lane: the night's composition reaches nothing an open reaches.
@@ -633,10 +640,10 @@ public class NightlyCost
     }
 
     [Fact]
-    public void TheCarveAllowsAModelCallOnStepSeventeensRowsAndNowhereElse()
+    public void TheCarveAllowsAModelCallOnTheQueuesOwnRowsAndNowhereElse()
     {
         // The permanent proof, over constructed rows, since the night this lands in has no
-        // step 17 and its rows would prove only the empty case.
+        // overnight queue and its rows would prove only the empty case.
         const string NightRun = "night-x";
         const string Named = """{"completed":[{"ticker":"MSFT","runId":"a-pass"}]}""";
 
@@ -651,7 +658,7 @@ public class NightlyCost
         Assert.Empty(CallsTheCarveDoesNotAllow(clean, NightRun));
 
         // A model call on an arithmetic stage.
-        Assert.Contains("night-x facts made 1 model call(s) outside step 17", CallsTheCarveDoesNotAllow([.. clean, new(NightRun, "facts", 1, "0", "")], NightRun));
+        Assert.Contains("night-x facts made 1 model call(s) outside the overnight queue's own row", CallsTheCarveDoesNotAllow([.. clean, new(NightRun, "facts", 1, "0", "")], NightRun));
 
         // A model call under a run the queue's row does not name, however the id reads.
         Assert.Single(CallsTheCarveDoesNotAllow([.. clean, new("night-x-queue-NFLX", "prose", 1, "0", "")], NightRun));
@@ -659,7 +666,7 @@ public class NightlyCost
         // Any spend at all, on any row.
         Assert.Single(CallsTheCarveDoesNotAllow([.. clean, new("a-pass", "research call: The two cases", 0, "0.0021", "")], NightRun));
 
-        // And step 17's row under another night licenses nothing on this one: both its own
+        // And the queue's row under another night licenses nothing on this one: both its own
         // call and its pass's are outside this night's step.
         Assert.Equal(
             2,
@@ -732,25 +739,35 @@ public class NightlyCost
 
         // The windows each night had open, and the versions among them the scorer
         // replays: one beside its live window, and the fullest register's ten
-        // beside four.
+        // beside four, one of them the merge distance's, as the step's row says.
         Assert.Equal((2, 1), (one.Open, one.Replayed));
         Assert.Equal((Core.Rules.RuleVersions.MostAtOnce, 10), (full.Open, full.Replayed));
+        Assert.Contains("1 replayed with 0 of the merge distance", one.Detail, StringComparison.Ordinal);
+        Assert.Contains("10 replayed with 1 of the merge distance", full.Detail, StringComparison.Ordinal);
 
         // The arithmetic grew with the versions: the step wrote a score per
-        // version per name, over the same names both nights.
-        Assert.True(one.Scores > 0, "The one-version night wrote no score, so the counts below compare nothing.");
-        Assert.Equal(one.Scores * 10, full.Scores);
+        // version per name the night listed, over the same names both nights.
+        Assert.Equal((FixtureExpectation.CurrentMembers.Length, FixtureExpectation.CurrentMembers.Length), (one.Listed, full.Listed));
+        Assert.Equal(one.Replayed * one.Listed, one.Scores);
+        Assert.Equal(full.Replayed * full.Listed, full.Scores);
 
-        // And the requests did not: the same count on every step both nights, none
-        // on the step itself, and no model call anywhere on the arithmetic.
-        Assert.Equal(one.Requests, full.Requests);
-        Assert.Equal((0L, 0L), (one.StepRequests, full.StepRequests));
+        // And the requests did not, counted off the feeds rather than off what each
+        // step says of itself: every request is put on a step, the same count on
+        // every step both nights, none on the version step, and one bulk file on
+        // the fetch, since no session is missing between the backfill's last, a
+        // Friday, and the night, the Tuesday after Labor Day.
+        Assert.Equal(one.FeedRequests, one.ByStep.Values.Sum());
+        Assert.Equal(full.FeedRequests, full.ByStep.Values.Sum());
+        Assert.Equal(Steps(one.ByStep), Steps(full.ByStep));
+        Assert.Equal((0, 0), (one.ByStep.GetValueOrDefault(Worker.Rules.RuleVersionScorer.Stage), full.ByStep.GetValueOrDefault(Worker.Rules.RuleVersionScorer.Stage)));
+        Assert.Equal(1, one.ByStep[BarFetcher.Stage]);
         Assert.Equal((0L, 0L), (one.ModelCalls, full.ModelCalls));
     }
 
     // A whole recorded night over a store whose windows were opened through the
-    // scorer an hour before it, as the verb opens them.
-    static async Task<(int Code, int Open, int Replayed, long Scores, long Requests, long StepRequests, long ModelCalls)> NightWithVersionsAsync(bool fullest)
+    // scorer an hour before it, as the verb opens them, over feeds that put each
+    // request on the step it was made on.
+    static async Task<(int Code, int Open, int Replayed, long Listed, long Scores, IReadOnlyDictionary<string, int> ByStep, int FeedRequests, string Detail, long ModelCalls)> NightWithVersionsAsync(bool fullest)
     {
         using var store = new TemporaryStore().Migrated();
 
@@ -774,9 +791,12 @@ public class NightlyCost
 
         const string RunId = "run-versions";
 
+        var attributed = new StepAttributedFeeds(NightFeeds.FromFixture(FixtureFolder()), store.DatabaseFile, RunId);
+
         var code = await Nightly.RunAsync(
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
-            FixtureFolder(),
+            attributed.Feeds,
+            NightQueue.FromFixture(FixtureFolder()),
             Index,
             FixedClock.At(Night, SessionZones.UnitedStates),
             new StringWriter(),
@@ -793,16 +813,187 @@ public class NightlyCost
             return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture);
         }
 
+        string Detail()
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT detail FROM run_log WHERE run_id = '{RunId}' AND stage = '{Worker.Rules.RuleVersionScorer.Stage}';";
+            return (string)command.ExecuteScalar()!;
+        }
+
         var open = Core.Rules.RuleVersions.OpenAt(await scorer.VersionsAsync(), Night);
 
         return (
             code,
             open.Count,
             open.Count(row => row.Version != Core.Rules.RuleVersions.Live),
+            Scalar("SELECT COUNT(*) FROM listing;"),
             Scalar("SELECT COUNT(*) FROM version_score;"),
-            Scalar($"SELECT IFNULL(SUM(network_requests), 0) FROM run_log WHERE run_id = '{RunId}';"),
-            Scalar($"SELECT IFNULL(SUM(network_requests), 0) FROM run_log WHERE run_id = '{RunId}' AND stage = '{Worker.Rules.RuleVersionScorer.Stage}';"),
+            attributed.ByStep(),
+            attributed.Inner.Requests,
+            Detail(),
             Scalar($"SELECT IFNULL(SUM(model_calls), 0) FROM run_log WHERE run_id = '{RunId}' AND stage <> '{QueueStage}';"));
+    }
+
+    // The reader the night's figure rests on, over rows written here: a request is put on
+    // the step whose row the run writes next, and one made before any row after it on none.
+    [Fact]
+    public async Task AFeedRequestIsCountedOnTheStepWhoseRunLogRowFollowsIt()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var attributed = new StepAttributedFeeds(NightFeeds.FromFixture(FixtureFolder()), store.DatabaseFile, "r");
+
+        void Row(string stage) =>
+            store.Execute(
+                "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+                $"VALUES ('r', '{stage}', '2026-09-08T21:10:00Z', '2026-09-08T21:10:00Z', 'ok', 0, 0, 0, '0', '');");
+
+        Row(BarFetcher.Stage);
+        Row("news-pulse");
+
+        await attributed.Feeds.Historical.BarsAsync("AAPL", new DateOnly(2025, 9, 4), new DateOnly(2026, 9, 4));
+
+        Row(Worker.Rules.RuleVersionScorer.Stage);
+
+        await attributed.Feeds.Historical.BarsAsync("AAPL", new DateOnly(2025, 9, 4), new DateOnly(2026, 9, 4));
+
+        Row("close");
+
+        Assert.Equal($"close=1; {Worker.Rules.RuleVersionScorer.Stage}=1", Steps(attributed.ByStep()));
+        Assert.Equal(2, attributed.Inner.Requests);
+    }
+
+    static string Steps(IReadOnlyDictionary<string, int> byStep) =>
+        string.Join("; ", byStep.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => FormattableString.Invariant($"{pair.Key}={pair.Value}")));
+
+    // The six feeds a night runs on, each wrapped so the requests a call makes are put on the
+    // step it was made on. A step writes its run log row after its requests, so a call is
+    // read against how many rows the run holds when it starts: with k rows written, the
+    // requests belong to the step whose row is the next one, row k plus one.
+    sealed class StepAttributedFeeds
+    {
+        readonly string databaseFile;
+        readonly string runId;
+        readonly List<(long Written, int Made)> calls = [];
+
+        internal StepAttributedFeeds(NightFeeds inner, string databaseFile, string runId)
+        {
+            this.databaseFile = databaseFile;
+            this.runId = runId;
+            Inner = inner;
+            Feeds = new NightFeeds(
+                new Membership(inner.Membership, this),
+                new Historical(inner.Historical, this),
+                new Bulk(inner.Bulk, this),
+                new Corporate(inner.Corporate, this),
+                new Calendar(inner.Calendar, this),
+                new News(inner.News, this));
+        }
+
+        internal NightFeeds Inner { get; }
+
+        internal NightFeeds Feeds { get; }
+
+        // The requests on each step, read off the run's rows in the order they were written.
+        internal IReadOnlyDictionary<string, int> ByStep()
+        {
+            var stages = new List<string>();
+
+            using (var connection = new SqliteConnection($"Data Source={databaseFile}"))
+            {
+                connection.Open();
+
+                using var command = connection.CreateCommand();
+                command.CommandText = "SELECT stage FROM run_log WHERE run_id = $run ORDER BY rowid;";
+                command.Parameters.AddWithValue("$run", runId);
+
+                using var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    stages.Add(reader.GetString(0));
+                }
+            }
+
+            return calls
+                .Where(call => call.Made > 0)
+                .GroupBy(call => call.Written < stages.Count ? stages[(int)call.Written] : "no row after it", StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.Sum(call => call.Made), StringComparer.Ordinal);
+        }
+
+        async Task<T> Counted<T>(Func<int> requests, Func<Task<T>> call)
+        {
+            long written;
+
+            using (var connection = new SqliteConnection($"Data Source={databaseFile}"))
+            {
+                connection.Open();
+
+                using var command = connection.CreateCommand();
+                command.CommandText = "SELECT COUNT(*) FROM run_log WHERE run_id = $run;";
+                command.Parameters.AddWithValue("$run", runId);
+                written = (long)command.ExecuteScalar()!;
+            }
+
+            var before = requests();
+            var result = await call();
+
+            calls.Add((written, requests() - before));
+
+            return result;
+        }
+
+        sealed class Membership(IIndexMembershipFeed inner, StepAttributedFeeds counted) : IIndexMembershipFeed
+        {
+            public int Requests => inner.Requests;
+
+            public Task<IReadOnlyList<IndexConstituent>> ConstituentsAsync(string indexCode, CancellationToken cancellationToken = default) =>
+                counted.Counted(() => inner.Requests, () => inner.ConstituentsAsync(indexCode, cancellationToken));
+        }
+
+        sealed class Historical(IHistoricalBarFeed inner, StepAttributedFeeds counted) : IHistoricalBarFeed
+        {
+            public int Requests => inner.Requests;
+
+            public Task<IReadOnlyList<ProviderBar>> BarsAsync(string ticker, DateOnly from, DateOnly to, CancellationToken cancellationToken = default) =>
+                counted.Counted(() => inner.Requests, () => inner.BarsAsync(ticker, from, to, cancellationToken));
+        }
+
+        sealed class Bulk(IBulkPriceFeed inner, StepAttributedFeeds counted) : IBulkPriceFeed
+        {
+            public int Requests => inner.Requests;
+
+            public IReadOnlyList<string> NotSessions => inner.NotSessions;
+
+            public IReadOnlyList<UnreadableRow> Unreadable => inner.Unreadable;
+
+            public Task<IReadOnlyList<BulkBar>> RowsAsync(string exchange, DateOnly session, CancellationToken cancellation = default) =>
+                counted.Counted(() => inner.Requests, () => inner.RowsAsync(exchange, session, cancellation));
+        }
+
+        sealed class Corporate(ICorporateActionFeed inner, StepAttributedFeeds counted) : ICorporateActionFeed
+        {
+            public int Requests => inner.Requests;
+
+            public Task<IReadOnlyList<CorporateAction>> ActionsAsync(string exchange, DateOnly session, CancellationToken cancellation = default) =>
+                counted.Counted(() => inner.Requests, () => inner.ActionsAsync(exchange, session, cancellation));
+        }
+
+        sealed class Calendar(IEarningsCalendarFeed inner, StepAttributedFeeds counted) : IEarningsCalendarFeed
+        {
+            public int Requests => inner.Requests;
+
+            public Task<IReadOnlyList<CalendarEvent>> EventsAsync(DateOnly from, DateOnly to, CancellationToken cancellation = default) =>
+                counted.Counted(() => inner.Requests, () => inner.EventsAsync(from, to, cancellation));
+        }
+
+        sealed class News(INewsFeed inner, StepAttributedFeeds counted) : INewsFeed
+        {
+            public int Requests => inner.Requests;
+
+            public Task<IReadOnlyList<NewsArticle>> ArticlesAsync(DateOnly from, DateOnly to, CancellationToken cancellation = default) =>
+                counted.Counted(() => inner.Requests, () => inner.ArticlesAsync(from, to, cancellation));
+        }
     }
 
     [Fact]

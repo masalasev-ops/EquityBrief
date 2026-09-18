@@ -448,7 +448,7 @@ public partial class FixtureExpectations
 
         using var store = night.Store;
 
-        // The night itself is not failed by it: the arithmetic closed before step 17, and a
+        // The night itself is not failed by it: the arithmetic closed before the queue ran, and a
         // queue that could not run says so on its row rather than stopping the night.
         Assert.True(night.Code == 0, night.Error);
 
@@ -475,7 +475,7 @@ public partial class FixtureExpectations
     {
         // One night whose queue wrote four names' keys, and one whose local model did not
         // answer, over the same fixture. Every table the arithmetic writes, and every row it
-        // logged before step 17, are the same in both.
+        // logged before the queue ran, are the same in both.
         var ran = await FixtureReplay.NightAsync();
         var stopped = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = new NothingAnsweringLocal() });
 
@@ -500,7 +500,7 @@ public partial class FixtureExpectations
         Assert.Equal(Query(withQueue, Logged), Query(withoutQueue, Logged));
 
         // And the two queues did differ, so the comparison is between nights that were not
-        // the same at step 17.
+        // the same at the queue's own step.
         Assert.NotEqual(Query(withQueue, "SELECT COUNT(*) FROM research_section;"), Query(withoutQueue, "SELECT COUNT(*) FROM research_section;"));
     }
 

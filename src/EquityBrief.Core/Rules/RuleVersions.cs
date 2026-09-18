@@ -19,7 +19,8 @@ public sealed record RuleVersionRow(
     string CodeVersion,
     DateTimeOffset OpenedAt,
     DateTimeOffset? ClosedAt,
-    string? ReplacedBy);
+    string? ReplacedBy,
+    string? Evidence = null);
 
 // The four ladder rules that carry named versions.
 //
@@ -68,7 +69,7 @@ public static class LadderRules
 // The bound, the windows and the drift check.
 //
 // The bound is proposed and its arithmetic is stated rather than assumed: the
-// night of 2026-09-14 took 495 seconds over steps 1 to 16, its level stage 143
+// night of 2026-09-14 took 495 seconds over the steps before the close, its level stage 143
 // seconds and its ladder stage 5 at 504 names. A merge distance version therefore
 // costs 148 seconds and every other version 5. The caps are two windows of the
 // merge distance and four of each other rule, each rule's live window among them,
@@ -110,6 +111,11 @@ public static class RuleVersions
     public const string InSample = "in_sample";
 
     public const string Scored = "scored";
+
+    // A score counts only for a session after the New York date its window opened on.
+    // see: A version's score counts only for a session after the New York date its window opened on
+    public static string SampleOf(DateOnly session, DateOnly windowOpenedOn) =>
+        session > windowOpenedOn ? Scored : InSample;
 
     // The versions open at an instant, being those whose window opened at or
     // before it and has not closed by it.

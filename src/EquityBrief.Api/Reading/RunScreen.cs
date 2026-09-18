@@ -283,8 +283,16 @@ public static class RunScreen
                 row.NetworkRequests,
                 row.Spend,
                 row.Outcome,
-                row.Detail)),
+                row.Detail,
+                IsByHand(row.RunId))),
     ];
+
+    // The run ids a person's command writes, stated here because the read surface holds no
+    // reference to the worker; `read-surface` asserts they are the verbs' own. Their rows are
+    // drawn as run by hand, apart from the night's stages.
+    public static IReadOnlyList<string> RunsByHand { get; } = ["version-"];
+
+    public static bool IsByHand(string runId) => RunsByHand.Any(prefix => runId.StartsWith(prefix, StringComparison.Ordinal));
 
     // What failed, in which component, which is the second half of 15.10's stale
     // and failed region. A stage that did not end with the word its own writer
@@ -301,7 +309,8 @@ public static class RunScreen
 
     public static IReadOnlyList<StageRow> Failed(IReadOnlyList<StageRow> stages) =>
     [
-        .. stages.Where(stage => !string.Equals(stage.Outcome, Ok, StringComparison.Ordinal)
+        .. stages.Where(stage => !stage.ByHand
+            && !string.Equals(stage.Outcome, Ok, StringComparison.Ordinal)
             && !string.Equals(stage.Outcome, "started", StringComparison.Ordinal)
             && !string.Equals(stage.Outcome, NoSession, StringComparison.Ordinal)
             && !(string.Equals(stage.Stage, QueueStage, StringComparison.Ordinal) && string.Equals(stage.Outcome, QueueAtItsLimit, StringComparison.Ordinal))),

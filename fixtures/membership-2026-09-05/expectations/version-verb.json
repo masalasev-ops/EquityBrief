@@ -1,0 +1,177 @@
+{
+ "stage": "version-verb",
+ "derivation": "derived",
+ "derivedFrom": "the version verb's forms, the rule that a score counts only for a session after the New York date its window opened on, and the rule that a backfill scores only a night the store computed and keeps every score already stored, worked by hand over the replayed fixture rather than read back from a run. The replay computes one night, 2026-09-08, planning the four names bars.json backfills and fetch.json stores, and three of them keep their bar on it: the replay runs the corporate action check after the fetch, and the check refetches AAPL's year, the one name series-state.json refetches, from a capture that ends on 2026-09-04, so a version scores KEYS, MSFT and NFLX on the night and not AAPL. That session is the one a backfill may score: 2026-09-04 holds bars from the backfill and no night of its own, 2026-09-05 is a Saturday, 2026-09-07 is Labor Day and 2026-09-09 holds no bar. Before these commands run, the replay has opened the eight windows version-scores.json names, a live window and one version of each of the four rules, all on the evening of 2026-09-03 in New York, and its night has scored those four versions over the three names, twelve scores, each counted. So the commands open no live window of their own: each version they open is measured beside a live window already open. New York is four hours behind UTC in September, so 03:59:59 UTC on 2026-09-08 is 2026-09-07 there and 04:00:00 UTC is 2026-09-08. The two versions are opened at those two instants and the replacement on the night's own evening, to straddle the boundary rather than to fall on a convenient side of it. Each accepted backfill writes a score for every open version and name the store holds none for yet and keeps the rest: the first finds six versions open over three names, two versions new, so six written and twelve kept, and the second finds the replacement new and the version it replaced no longer open, so three written and fifteen kept.",
+ "tables": [
+  "rule_version",
+  "version_score"
+ ],
+ "night": "2026-09-08",
+ "namesPlanned": [
+  "AAPL",
+  "KEYS",
+  "MSFT",
+  "NFLX"
+ ],
+ "namesScored": [
+  "KEYS",
+  "MSFT",
+  "NFLX"
+ ],
+ "commands": [
+  {
+   "at": "2026-09-08T03:59:59Z",
+   "args": ["--rule", "where the stop sits", "--version", "under the zone", "--parameters", "stopTrailsTheLastHigherLow=0"],
+   "exit": 0,
+   "outcome": "ok"
+  },
+  {
+   "at": "2026-09-08T04:00:00Z",
+   "args": ["--rule", "zone edges from non-average anchors only", "--version", "anchors only", "--parameters", "zoneEdgesFromNonAverageAnchorsOnly=1"],
+   "exit": 0,
+   "outcome": "ok"
+  },
+  {
+   "at": "2026-09-08T23:50:00Z",
+   "args": ["--backfill", "2026-09-08"],
+   "exit": 0,
+   "outcome": "ok",
+   "written": 6,
+   "kept": 12,
+   "worked": "six versions open over three names: the two opened above hold no score yet, and the four the night scored hold theirs"
+  },
+  {
+   "at": "2026-09-08T23:51:00Z",
+   "args": ["--backfill", "2026-09-05"],
+   "exit": 1,
+   "outcome": "refused",
+   "refusal": "is not a session",
+   "worked": "a Saturday"
+  },
+  {
+   "at": "2026-09-08T23:52:00Z",
+   "args": ["--backfill", "2026-09-07"],
+   "exit": 1,
+   "outcome": "refused",
+   "refusal": "is not a session",
+   "worked": "Labor Day, the first Monday of September"
+  },
+  {
+   "at": "2026-09-08T23:53:00Z",
+   "args": ["--backfill", "2026-09-04"],
+   "exit": 1,
+   "outcome": "refused",
+   "refusal": "no night's plan",
+   "worked": "the backfill's last session, which no night computed"
+  },
+  {
+   "at": "2026-09-08T23:54:00Z",
+   "args": ["--backfill", "2026-09-09"],
+   "exit": 1,
+   "outcome": "refused",
+   "refusal": "holds no bar",
+   "worked": "the session after the only one fetched"
+  },
+  {
+   "at": "2026-09-08T23:55:00Z",
+   "args": ["--rule", "where the stop sits", "--close", "under the zone"],
+   "exit": 1,
+   "outcome": "refused",
+   "refusal": "needs '--evidence'",
+   "worked": "a close without its evidence changes nothing"
+  },
+  {
+   "at": "2026-09-08T23:56:00Z",
+   "args": ["--rule", "where the stop sits", "--replace", "under the zone", "--with", "under the zone again", "--parameters", "stopTrailsTheLastHigherLow=0", "--evidence", "the fixture's one night, which is not evidence about the rule"],
+   "exit": 0,
+   "outcome": "ok"
+  },
+  {
+   "at": "2026-09-09T00:10:00Z",
+   "args": ["--backfill", "2026-09-08"],
+   "exit": 0,
+   "outcome": "ok",
+   "written": 3,
+   "kept": 15,
+   "worked": "the replacement holds no score yet; the four versions the night scored and anchors only hold theirs; the version it replaced is closed and not scored"
+  }
+ ],
+ "windows": [
+  {
+   "rule": "where the stop sits",
+   "version": "under the zone",
+   "openedAt": "2026-09-08T03:59:59Z",
+   "closedAt": "2026-09-08T23:56:00Z",
+   "replacedBy": "under the zone again",
+   "evidence": "the fixture's one night, which is not evidence about the rule"
+  },
+  {
+   "rule": "where the stop sits",
+   "version": "under the zone again",
+   "openedAt": "2026-09-08T23:56:00Z",
+   "closedAt": null,
+   "replacedBy": null,
+   "evidence": null
+  },
+  {
+   "rule": "zone edges from non-average anchors only",
+   "version": "anchors only",
+   "openedAt": "2026-09-08T04:00:00Z",
+   "closedAt": null,
+   "replacedBy": null,
+   "evidence": null
+  }
+ ],
+ "samples": [
+  {
+   "rule": "merge distance",
+   "version": "a quarter of a typical move",
+   "sample": "scored",
+   "rows": 3,
+   "worked": "opened on the evening of 2026-09-03 in New York, before the night"
+  },
+  {
+   "rule": "where the stop sits",
+   "version": "the band beneath",
+   "sample": "scored",
+   "rows": 3,
+   "worked": "opened on the evening of 2026-09-03 in New York, before the night"
+  },
+  {
+   "rule": "the near-exit skip",
+   "version": "three typical days",
+   "sample": "scored",
+   "rows": 3,
+   "worked": "opened on the evening of 2026-09-03 in New York, before the night"
+  },
+  {
+   "rule": "zone edges from non-average anchors only",
+   "version": "non-average anchors alone",
+   "sample": "scored",
+   "rows": 3,
+   "worked": "opened on the evening of 2026-09-03 in New York, before the night"
+  },
+  {
+   "rule": "where the stop sits",
+   "version": "under the zone",
+   "sample": "scored",
+   "rows": 3,
+   "worked": "opened at 23:59:59 on 2026-09-07 in New York, so 2026-09-08 is the first session after it"
+  },
+  {
+   "rule": "zone edges from non-average anchors only",
+   "version": "anchors only",
+   "sample": "in_sample",
+   "rows": 3,
+   "worked": "opened at midnight on 2026-09-08 in New York, the session's own date"
+  },
+  {
+   "rule": "where the stop sits",
+   "version": "under the zone again",
+   "sample": "in_sample",
+   "rows": 3,
+   "worked": "opened at 19:56 on 2026-09-08 in New York, after that night was read"
+  }
+ ],
+ "rowsWritten": 21
+}

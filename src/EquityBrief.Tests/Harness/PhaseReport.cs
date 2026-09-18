@@ -13,7 +13,7 @@ internal enum Verdict
 // By names the check that reached the verdict. A PASS that names none, or one
 // naming a check whose declared reach does not include it, is a PASS by fiat,
 // which the reconciliation refuses.
-internal sealed record Claim(string Table, string Subject, Verdict Verdict, string Note, string By = "");
+internal sealed record Claim(string Table, string Subject, Verdict Verdict, string Note, string By = "", IReadOnlyList<string>? Also = null);
 
 // A table and what covers it. Check names an instrument that runs now and has
 // declared it reaches this table; Due names the point at which one will.
@@ -253,6 +253,9 @@ internal static class PhaseReport
     // declared reach over the subject and never that the check had run, so
     // Verdict.Fail was reachable from nowhere and the "fail 0" line was
     // structural rather than measured.
+    //
+    // A check the row names beside the verdict's is read the same way once the
+    // verdict's own check has held, since the row says that check asserts part of it.
     static Claim WithOutcome(Claim claim, SuiteOutcomes outcomes)
     {
         if (claim.Verdict != Verdict.Pass)
@@ -262,9 +265,36 @@ internal static class PhaseReport
 
         var result = outcomes.For(claim.By);
 
+        if (result.Run == CheckRun.Passed)
+        {
+            foreach (var also in claim.Also ?? [])
+            {
+                var held = outcomes.For(also);
+
+                if (held.Run == CheckRun.Failed)
+                {
+                    return claim with
+                    {
+                        Verdict = Verdict.Fail,
+                        Note = $"`{also}`, which the row names, ran and did not hold, at {held.Test}: {held.Message}",
+                    };
+                }
+
+                if (held.Run == CheckRun.DidNotRun)
+                {
+                    return claim with
+                    {
+                        Verdict = Verdict.Unexamined,
+                        Note = $"`{also}`, which the row names, did not run in the run this report reads",
+                    };
+                }
+            }
+
+            return claim;
+        }
+
         return result.Run switch
         {
-            CheckRun.Passed => claim,
             CheckRun.Failed => claim with
             {
                 Verdict = Verdict.Fail,
@@ -291,6 +321,8 @@ internal static class PhaseReport
         // reached unexamined and the report not green. The default is the safe
         // direction rather than a convenience.
         outcomes ??= SuiteOutcomes.NothingRan;
+
+        var roster = (coverage ?? []).Select(check => check.Check).ToHashSet(StringComparer.Ordinal);
 
         var unplaced = tables
             .Where(table => !ClaimSources.Contains(table.Heading, StringComparer.Ordinal)
@@ -355,10 +387,15 @@ internal static class PhaseReport
                 skipped.Add($"{table.Heading}: {headings}");
             }
 
+            // Each claim carries the other checks its row names, a decomposed row's
+            // subjects each carrying the row's, so its verdict reads them as well.
             var rows = table.Body
                 .Where(row => row.Count > 1 && row[0].Length > 0)
-                .SelectMany(row => Scope.SubjectsOf(table.Heading, row[0]))
-                .Select(subject => Scoped(table.Heading, subject))
+                .SelectMany(row => Scope.SubjectsOf(table.Heading, row[0])
+                    .Select(subject => Scoped(table.Heading, subject))
+                    .Select(claim => ArchitectureTables.ChecksNamedIn(row, roster).Where(check => check != claim.By).ToArray() is { Length: > 0 } also
+                        ? claim with { Also = also }
+                        : claim))
                 .ToArray();
 
             claims.AddRange(rows);

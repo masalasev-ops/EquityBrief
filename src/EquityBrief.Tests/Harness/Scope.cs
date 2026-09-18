@@ -343,7 +343,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Operational header, what ran")] = new Scoped(
             Verdict.Pass,
-            "every stage the night's run log carries is drawn, in the order they ran",
+            "every stage the night's run log carries is drawn, in the order they ran, with a command run by hand that day drawn as run by hand, left out of the night's stage time and never listed among the stages that failed, and a day holding only such a command never the night the page opens on",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Operational header, the instant each stage started and how long it took")] = new Scoped(
             Verdict.Pass,
@@ -396,7 +396,7 @@ internal static class Scope
         // step and the bound.
         [CheckReach.Key(LimitsTable, "Frozen measurement windows")] = new Scoped(
             Verdict.Pass,
-            "a version change closes the window measuring the old rule and opens a new one, with the closed row keeping every column it was opened with so the scores under it stay scores of the rule as it stood, and a live rule that moved inside an open window stops the night at its own step naming the rule",
+            "a whole recorded night over a live window whose rule moved inside it stops at the version step naming the rule, with nothing scored and no close, and once the windows are closed with their evidence and opened again the next night keeps the closed rows as they were opened and scores under the new windows alone",
             ByNight),
         [CheckReach.Key(CatalogueTable, "Rule version scorer")] = new Scoped(
             Verdict.Pass,
@@ -408,19 +408,19 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(StoresTable, "Rule versions")] = new Scoped(
             Verdict.Pass,
-            "a window carries its rule, version, parameters, their hash with the code version, and the instant it opened, and a closed one carries when it closed and what replaced it with every other column as it was opened with, read back off a migrated store; and a window is refused at a value its replay would not apply as given or at its rule's live values, with nothing written and the refusal on the run log",
+            "a window carries its rule, version, parameters, their hash with the code version, and the instant it opened, and a closed one carries when it closed, the evidence it was closed on and, for a replacement, the version the same write opened, with every other column as it was opened with, read back off a migrated store and off the fixture's version commands; a close without evidence is refused; and a window is refused at a value its replay would not apply as given or at its rule's live values, with nothing written and the refusal on the run log",
             ByRules),
         [CheckReach.Key(StoresTable, "Version scores")] = new Scoped(
             Verdict.Pass,
-            "a score carries the name, the night, the rule, the version, the window it belongs to and the plan that version produced, with a score written for a night before its window opened flagged in sample, read back off a migrated store; each version's plan over the fixture matches the plan worked by hand; and a score is dropped one year back from the newest stored session and kept at it, whatever night is scored",
+            "a score carries the name, the night, the rule, the version, the window it belongs to and the plan that version produced, flagged in sample for a session on or before the New York date its window opened on, read back off a migrated store and off the fixture's version commands; each version's plan over the fixture matches the plan worked by hand; a backfill replays only a night the store computed, at that night's own price scale, and keeps every score already stored; and a score is dropped one year back from the newest stored session and kept at it, whatever night is scored",
             ByRules),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Replay tonight's name-nights under every open version of each ladder rule from the stored bars, and store the plan each version produced, flagging as in sample any score written for a night before its version's window opened so it counts toward no record. This makes no request: the bars are already stored, so a version costs the ladder arithmetic run again and, for a version of the merge distance, the level arithmetic as well. A live rule whose parameters or code have moved while a window measuring it is open stops the night at this step and names the rule (see: Adding a candidate later restarts the clock).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Replay tonight's name-nights under every open version of each ladder rule from the stored bars, and store the plan each version produced, flagging as in sample any score for a session on or before the New York date its version's window opened on so it counts toward no record (see: A version's score counts only for a session after the New York date its window opened on). This makes no request: the bars are already stored, so a version costs the ladder arithmetic run again and, for a version of the merge distance, the level arithmetic as well. A live rule whose parameters or code have moved while a window measuring it is open stops the night at this step and names the rule (see: Adding a candidate later restarts the clock).")] = new Scoped(
             Verdict.Pass,
-            "the step runs after the arithmetic it replays and before the close, writes a score per name per open version from stored bars, makes no request and no model call, and stops the night naming the rule where a live rule moved inside an open window",
+            "the step runs after every stage of the arithmetic it replays and before the close, writes a score per name per open version from stored bars flagged in sample for a session on or before the New York date its window opened on, and stops the night naming the rule where a live rule moved inside an open window",
             ByNight),
         [CheckReach.Key(LimitsTable, "Rule versions scored at once")] = new Scoped(
             Verdict.Pass,
-            "the window past each rule's cap is refused and one below is admitted, live windows counted, with a version refused beside no live window; the fullest register the caps admit is projected from the night's own stage durations, read off the row, and held inside the deadline the night is bounded by; and `nightly-cost` runs a recorded night at one version and at the fullest register and finds the same requests on both and a score per version per name",
+            "the window past each rule's cap is refused and one below is admitted, live windows counted, with a version refused beside no live window; the fullest register the caps admit is projected from the night's own stage durations, read off the row, and held inside the deadline the night is bounded by; and `nightly-cost` runs a recorded night at one version and at the fullest register and finds the same requests on every step of both, counted off the feeds, none on the version step, and a score per version per name",
             ByRules),
         // 8.5, the reason verdicts. Nine claims end here and one arrives, being
         // section 17's significance threshold row.
@@ -1088,7 +1088,7 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is blank, read against the catalogue row's words for what the harness reads and writes, which name no store the matrix carries, and every store the suite opens is a temporary one outside the data root",
             ByAccess),
-        // 6.10, the overnight queue. The component, section 14's step 17, section 17's row and the
+        // 6.10, the overnight queue. The component, section 14's last step, section 17's row and the
         // model calls row the carve changes, section 18's row for a night the machine slept and the
         // half of its local model row the queue records, and the run page's region.
         [CheckReach.Key(CatalogueTable, "Overnight queue")] = new Scoped(
@@ -1598,11 +1598,11 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(LimitsTable, "Model calls in the nightly run")] = new Scoped(
             Verdict.Pass,
-            "zero on every stage of the arithmetic a whole recorded night wrote, read off the run log, with every model call that night made sitting on step 17's own row or a pass that row names, nothing spent on any row, and the night's composition reaching no lane an open reaches, read off what the components it constructs declare",
+            "zero on every stage of the arithmetic a whole recorded night wrote, read off the run log, with every model call that night made sitting on the overnight queue's own row or a pass that row names, nothing spent on any row, and the night's composition reaching no lane an open reaches, read off what the components it constructs declare",
             ByCost),
         [CheckReach.Key(LimitsTable, "Per-name network calls in the nightly run")] = new Scoped(
             Verdict.Pass,
-            "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once; a recorded night at one rule version and at the fullest register the bound admits makes the same requests on every step and none on the version step; and a suspect name whose refetch keeps failing is measured night by night against a sequence derived from the decision, one request on its action's night and on each retry night and none once its retries are spent, with the figure the row states held to the constant",
+            "the night is run twice over universes of three members and two, and the request count is one in both, so it is shown not to grow with the population rather than measured once; a recorded night at one rule version and at the fullest register the bound admits makes the same requests on every step and none on the version step, counted off the feeds and put on the step each was made on; and a suspect name whose refetch keeps failing is measured night by night against a sequence derived from the decision, one request on its action's night and on each retry night and none once its retries are spent, with the figure the row states held to the constant",
             ByCost),
         [CheckReach.Key(FailureTable, "Bulk price feed unavailable, run log")] = new Scoped(
             Verdict.Pass,

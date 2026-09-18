@@ -1,19 +1,37 @@
 using System.Globalization;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Time;
+using EquityBrief.Data.Migrations;
+using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Rules;
 
-// The `version` verb: a ladder rule's live window opened, a version opened beside
-// it, one closed naming what replaced it, and the open windows listed.
+// The `version` verb: a ladder rule's live window opened, a version opened, replaced
+// or closed with its evidence, a past night backfilled, and the open windows listed.
+// Every attempt but a listing is one row on the run log, written by the scorer, a
+// refusal of the command line included.
 //
 // Its own class rather than a local function in the program, so the suite runs
-// the verb a person runs. Every refusal is the scorer's, which records it on the
-// run log; what this adds is reading the command line and saying what happened.
+// the verb a person runs.
 // see: A ladder rule's version is measured beside that rule's live window, and both count against the bound
 public static class VersionVerb
 {
     public const string Name = "version";
+
+    public const string RunPrefix = "version-";
+
+    public static IReadOnlyList<VerbForm> Forms { get; } =
+    [
+        new("--list", [], [], ["--list"]),
+        new("--backfill", ["--backfill"], [], []),
+        new("--live-window", ["--rule"], [], ["--live-window"]),
+        new("--version", ["--rule", "--version", "--parameters"], [], []),
+        new("--close", ["--rule", "--close", "--evidence"], [], []),
+        new("--replace", ["--rule", "--replace", "--with", "--parameters", "--evidence"], [], []),
+    ];
+
+    // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
+    public static string RunIdAt(DateTimeOffset at) => FormattableString.Invariant($"{RunPrefix}{at:yyyyMMddTHHmmss.fffffffZ}");
 
     public static async Task<int> RunAsync(
         string[] args,
@@ -22,117 +40,192 @@ public static class VersionVerb
         TextWriter output,
         TextWriter error)
     {
+        if (StoreRefusal(databaseFile) is { } refused)
+        {
+            await error.WriteLineAsync("version: " + refused);
+
+            return 1;
+        }
+
         var scorer = new RuleVersionScorer(clock, databaseFile);
-        var runId = FormattableString.Invariant($"version-{clock.UtcNow:yyyyMMddTHHmmssZ}");
-
-        if (VerbArguments.Has(args, "--list"))
-        {
-            var open = RuleVersions.OpenAt(await scorer.VersionsAsync(), clock.UtcNow);
-            var now = RuleVersionScorer.HashesNow();
-
-            await output.WriteLineAsync(FormattableString.Invariant(
-                $"version: {open.Count} open window(s) of the {RuleVersions.MostAtOnce} the bound allows at once"));
-
-            foreach (var row in open)
-            {
-                await output.WriteLineAsync(
-                    $"  '{row.Rule}' '{row.Version}' {row.Parameters}, opened " +
-                    row.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-
-                // What the next night would stop on, read by the reader the night reads it with.
-                foreach (var moved in RuleVersions.Drifted([row], now))
-                {
-                    await output.WriteLineAsync("    the next night stops here: " + moved);
-                }
-            }
-
-            return 0;
-        }
-
-        // A past night scored under the windows open now, outside any night's
-        // deadline. Each score a window gets for a night before it opened is
-        // flagged in sample by the scorer and counts toward nothing, which is what
-        // lets a version added later be seen against nights it could not have
-        // been fitted to without those nights becoming its evidence.
-        if (VerbArguments.Value(args, "--backfill") is { } named)
-        {
-            if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
-            {
-                await error.WriteLineAsync($"version: '--backfill {named}' is not a session in the form yyyy-MM-dd.");
-
-                return 1;
-            }
-
-            try
-            {
-                var scored = await scorer.RunAsync(session, runId);
-
-                await output.WriteLineAsync(
-                    "version: scored " + session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
-                    FormattableString.Invariant($" under {scored.Versions} open window(s), {scored.RowsWritten} score(s) over {scored.NamesScored} name(s)"));
-
-                return 0;
-            }
-            catch (InvalidOperationException stopped)
-            {
-                await error.WriteLineAsync("version: " + stopped.Message);
-
-                return 1;
-            }
-        }
-
-        var rule = VerbArguments.Value(args, "--rule");
-
-        if (string.IsNullOrWhiteSpace(rule))
-        {
-            await error.WriteLineAsync(
-                "version: '--rule' names the ladder rule a window measures, and every form but '--list' needs one. " +
-                $"Rules carried: {string.Join(", ", LadderRules.All.Select(one => $"'{one}'"))}.");
-
-            return 1;
-        }
-
-        if (VerbArguments.Value(args, "--close") is { } closing)
-        {
-            var refused = await scorer.CloseAsync(rule, closing, VerbArguments.Value(args, "--replaced-by"), runId);
-
-            return await Said(refused, $"closed '{closing}' of '{rule}'", output, error);
-        }
-
-        if (VerbArguments.Has(args, "--live-window"))
-        {
-            return await Said(await scorer.OpenLiveAsync(rule, runId), $"opened the live window of '{rule}'", output, error);
-        }
-
-        var version = VerbArguments.Value(args, "--version");
-
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            await error.WriteLineAsync(
-                "version: give '--live-window' to open a rule's live window, '--version <name> --parameters <name=value,...>' " +
-                "to open a version beside it, '--close <name>' to close one, or '--list'.");
-
-            return 1;
-        }
-
-        IReadOnlyDictionary<string, double> parameters;
+        var runId = RunIdAt(clock.UtcNow);
 
         try
         {
-            parameters = VerbArguments.Parameters(VerbArguments.Value(args, "--parameters"));
+            return await FormAsync(args, scorer, clock, runId, output, error);
         }
-        catch (FormatException refusal)
+        catch (SqliteException collided) when (collided.SqliteErrorCode == 19 && collided.Message.Contains("run_log", StringComparison.Ordinal))
         {
-            await error.WriteLineAsync("version: " + refusal.Message);
+            await error.WriteLineAsync(
+                "version: another command wrote under the same run id at this instant, and nothing this one asked for was written. Run it again.");
 
             return 1;
         }
+    }
 
-        return await Said(
-            await scorer.OpenAsync(rule, version, parameters, runId),
-            $"opened '{version}' of '{rule}' with {RuleVersions.Write(parameters)}",
-            output,
-            error);
+    // A store that is missing, or behind this checkout, is refused before anything is read
+    // from it or written to it: a verb does not migrate a store.
+    static string? StoreRefusal(string databaseFile)
+    {
+        if (!File.Exists(databaseFile))
+        {
+            return $"no store at {databaseFile}. Run tools/migrate, which creates it.";
+        }
+
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = databaseFile,
+            Mode = SqliteOpenMode.ReadOnly,
+            Pooling = false,
+        }.ConnectionString);
+
+        connection.Open();
+
+        var at = MigrationRunner.AppliedVersion(connection);
+
+        return at < SchemaMigrations.LatestVersion
+            ? FormattableString.Invariant(
+                $"the store is at schema {at} and this checkout reads schema {SchemaMigrations.LatestVersion}. ") +
+              "Run tools/migrate first; a verb does not migrate a store and writes nothing to one this checkout has not migrated."
+            : null;
+    }
+
+    static async Task<int> FormAsync(
+        string[] args,
+        RuleVersionScorer scorer,
+        IClock clock,
+        string runId,
+        TextWriter output,
+        TextWriter error)
+    {
+        var (form, refusal) = VerbArguments.FormOf(args, Forms);
+
+        if (form is null)
+        {
+            return await RefusedAsync(scorer, runId, refusal!, error);
+        }
+
+        string Given(string flag) => VerbArguments.Value(args, flag)!;
+
+        IReadOnlyDictionary<string, double> parameters = new Dictionary<string, double>(StringComparer.Ordinal);
+
+        if (form.Needs.Contains("--parameters", StringComparer.Ordinal))
+        {
+            try
+            {
+                parameters = VerbArguments.Parameters(Given("--parameters"));
+            }
+            catch (FormatException unreadable)
+            {
+                return await RefusedAsync(scorer, runId, unreadable.Message, error);
+            }
+        }
+
+        return form.Flag switch
+        {
+            "--list" => await ListAsync(scorer, clock, output),
+            "--backfill" => await BackfillAsync(Given("--backfill"), scorer, runId, output, error),
+            "--live-window" => await Said(
+                await scorer.OpenLiveAsync(Given("--rule"), runId),
+                $"opened the live window of '{Given("--rule")}'",
+                output,
+                error),
+            "--version" => await Said(
+                await scorer.OpenAsync(Given("--rule"), Given("--version"), parameters, runId),
+                $"opened '{Given("--version")}' of '{Given("--rule")}' with {RuleVersions.Write(parameters)}",
+                output,
+                error),
+            "--close" => await Said(
+                await scorer.CloseAsync(Given("--rule"), Given("--close"), Given("--evidence"), runId),
+                $"closed '{Given("--close")}' of '{Given("--rule")}' with nothing replacing it",
+                output,
+                error),
+            _ => await Said(
+                await scorer.ReplaceAsync(Given("--rule"), Given("--replace"), Given("--with"), parameters, Given("--evidence"), runId),
+                $"replaced '{Given("--replace")}' of '{Given("--rule")}' with '{Given("--with")}' {RuleVersions.Write(parameters)}",
+                output,
+                error),
+        };
+    }
+
+    static async Task<int> ListAsync(RuleVersionScorer scorer, IClock clock, TextWriter output)
+    {
+        var open = RuleVersions.OpenAt(await scorer.VersionsAsync(), clock.UtcNow);
+        var now = RuleVersionScorer.HashesNow();
+
+        await output.WriteLineAsync(FormattableString.Invariant(
+            $"version: {open.Count} open window(s) of the {RuleVersions.MostAtOnce} the bound allows at once"));
+
+        foreach (var rule in LadderRules.All)
+        {
+            await output.WriteLineAsync(FormattableString.Invariant(
+                $"  '{rule}' {open.Count(row => string.Equals(row.Rule, rule, StringComparison.Ordinal))} of {RuleVersions.MostFor(rule)}"));
+        }
+
+        foreach (var row in open)
+        {
+            await output.WriteLineAsync(
+                $"  '{row.Rule}' '{row.Version}' {row.Parameters}, opened " +
+                row.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+
+            // What the next night would stop on, read by the reader the night reads it with.
+            foreach (var moved in RuleVersions.Drifted([row], now))
+            {
+                await output.WriteLineAsync("    the next night stops here: " + moved);
+            }
+        }
+
+        return 0;
+    }
+
+    // A past night scored under the windows open now, outside any night's deadline,
+    // keeping every score already stored. A score counts only for a session after the
+    // New York date its window opened on, so a version opened later is seen against
+    // nights it could not have been fitted to without those nights becoming its evidence.
+    // see: A version's score counts only for a session after the New York date its window opened on
+    static async Task<int> BackfillAsync(
+        string named,
+        RuleVersionScorer scorer,
+        string runId,
+        TextWriter output,
+        TextWriter error)
+    {
+        if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
+        {
+            return await RefusedAsync(scorer, runId, $"'--backfill {named}' is not a session in the form yyyy-MM-dd.", error);
+        }
+
+        if (await scorer.BackfillRefusalAsync(session) is { } refused)
+        {
+            return await RefusedAsync(scorer, runId, refused, error);
+        }
+
+        try
+        {
+            var scored = await scorer.BackfillAsync(session, runId);
+
+            await output.WriteLineAsync(
+                "version: scored " + session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + FormattableString.Invariant(
+                    $" under {scored.Versions} open window(s): {scored.RowsWritten} score(s) written, {scored.RowsKept} already stored and kept, ") +
+                FormattableString.Invariant(
+                    $"over {scored.NamesScored} name(s), {scored.NamesNotComputed} left out with no bands or plan of that session, ") +
+                FormattableString.Invariant(
+                    $"{scored.NameNightsSkipped} name-night(s) skipped for a band set stored without member sources, {scored.RowsDropped} dropped"));
+
+            return 0;
+        }
+        catch (InvalidOperationException stopped)
+        {
+            return await RefusedAsync(scorer, runId, stopped.Message, error);
+        }
+    }
+
+    static async Task<int> RefusedAsync(RuleVersionScorer scorer, string runId, string refusal, TextWriter error)
+    {
+        await scorer.RecordRefusalAsync(runId, refusal);
+        await error.WriteLineAsync("version: " + refusal);
+
+        return 1;
     }
 
     static async Task<int> Said(string? refusal, string done, TextWriter output, TextWriter error)

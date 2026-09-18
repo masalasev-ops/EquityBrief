@@ -25,6 +25,232 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - ARCHITECTURE.html - the rule version scorer's catalogue row names the replacement, the evidence, the New York date and the backfill's night
+
+Authorised by: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
+Was:
+> opening and closing a version's window through the worker's <code>version</code> verb and never as a side effect of a night, a version only beside its rule's live window and under the parameter names that rule is replayed from; it stops the night at its own step, naming the rule, where a live rule's parameters or code have moved while a window measuring it is open, and it flags a score a backfill wrote for a night before its version opened as in sample so it counts toward no record
+Now:
+> opening, replacing and closing a version's window through the worker's <code>version</code> verb and never as a side effect of a night, a version only beside its rule's live window and under the parameter names that rule is replayed from, and a change or a close only with the evidence that produced it (see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write); it stops the night at its own step, naming the rule, where a live rule's parameters or code have moved while a window measuring it is open; it flags as in sample a score for a session on or before the New York date its version's window opened on, so it counts toward no record (see: A version's score counts only for a session after the New York date its window opened on); and a backfill scores only a night the store computed, at that night's own price scale, keeping every score already stored (see: A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored)
+Why: the row said a close named what replaced it and a backfill flagged a night before its window opened, which the 8.6 correction replaces with a change written with its evidence, a flag read off the New York date and a backfill held to the nights the store computed; each clause cites the decision it rests on, the other two being 'A version's score counts only for a session after the New York date its window opened on' and 'A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored'.
+
+### 2026-09-18 - ARCHITECTURE.html - section 14's version step flags a score by the New York date its window opened on
+
+Authorised by: A version's score counts only for a session after the New York date its window opened on
+Was:
+> flagging as in sample any score written for a night before its version's window opened so it counts toward no record.
+Now:
+> flagging as in sample any score for a session on or before the New York date its version's window opened on so it counts toward no record (see: A version's score counts only for a session after the New York date its window opened on).
+Why: the flag compared the session with the window's UTC date, so a window opened on a night's evening after it ran counted the night just read.
+
+### 2026-09-18 - ARCHITECTURE.html - the run page's route opens on no day holding only a command run by hand
+
+Corrects: the run page drew the version verb's rows as the night's stages, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> A night on a day with no session is not one it opens on.</p>
+Now:
+> A night on a day with no session is not one it opens on, and neither is a day whose only rows are the <code>version</code> verb run by hand, whose rows the operational header draws marked as run by hand, apart from the night's own stage time and never among the stages that failed.</p>
+Why: the page read the verb's rows as stages of the night: a refusal as a failed stage, a backfill's time inside the night's, and a later command as the night the page opens on.
+
+### 2026-09-18 - ARCHITECTURE.html - the rule versions store row carries a closed window's evidence
+
+Authorised by: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
+Was:
+> when its window opened and, once closed, when and what replaced it</td>
+Now:
+> when its window opened and, once closed, when, the evidence it was closed on and what replaced it where a version did</td>
+Why: migration 28 adds the column a close writes its evidence to, and a close with nothing replacing it names no replacement.
+
+### 2026-09-18 - ARCHITECTURE.html - three limits rows name the arithmetic and the queue rather than numbering them
+
+Corrects: the rows numbered the arithmetic as steps 1 to 16 and the queue as step 17 after 8.6 inserted the version step, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> 0 in the arithmetic, being steps 1 to 16, with the overnight queue at step 17 carved out by name
+> a night's arithmetic, steps 1 to 16, bounded by 5 minutes
+> the arithmetic as a whole, steps 1 to 16, bounded by 15 minutes, and the overnight queue at step 17 bounded by its own limit instead
+Now:
+> 0 in the arithmetic, being every step before the overnight queue, with the queue, the night's last step, carved out by name
+> a night's arithmetic, every step before the overnight queue, bounded by 5 minutes
+> the arithmetic as a whole, every step before the overnight queue, bounded by 15 minutes, and the queue bounded by its own limit instead
+Why: the rows kept the numbering from before the version step was inserted, and a guard now holds every step named by number outside section 14 to none.
+
+### 2026-09-18 - SCHEMA.md - a version row's close writes its evidence, and a change is one write
+
+Authorised by: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
+Was:
+> A window is opened by an insert and closed by writing its `closed_at` and `replaced_by`, which is the one field a version row ever changes:
+> | `replaced_by` | TEXT | for a closed window, the version that replaced it |
+> A version row is refused where a value is one the replay would not apply as given or where every value is its rule's live one (see: A version of a ladder rule is refused at values its replay would not apply as given, or at its rule's live values).
+Now:
+> A window is opened by an insert and closed by writing its `closed_at`, `evidence` and, for a replacement, `replaced_by`, which is the one change a version row ever takes:
+> | `replaced_by` | TEXT | for a window closed by a replacement, the version the same write opened |
+> | `evidence` | TEXT | for a closed window, the figures or the reason that closed it, written by the close and required by it; last because SQLite appends |
+> A version row is refused where a value is one the replay would not apply as given or where every value is its rule's live one (see: A version of a ladder rule is refused at values its replay would not apply as given, or at its rule's live values). A window is closed only with its evidence, and a version is changed by one write that closes the old window naming the version replacing it and opens that version, the rule's cap counted once the old one is closed (see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write).
+Why: a close took an optional name of what replaced it and no evidence, where section 13 says a rule version change is written with both.
+
+### 2026-09-18 - SCHEMA.md - a version score's flag is read off the New York date, and a backfill keeps what is stored
+
+Authorised by: A version's score counts only for a session after the New York date its window opened on
+Was:
+> a re-run of a night writes that night's set again, inside the transaction that writes it, which is the update this table declares.
+> a score a backfill wrote for a night before its version opened is `in_sample`
+> The scorer writes the flag from the window's own `opened_at` against the night being scored, so the classification is arithmetic rather than a caller's claim about itself.
+Now:
+> a re-run of a night writes that night's set again, inside the transaction that writes it, which is the update this table declares. A backfill writes only the scores not stored yet and keeps the rest (see: A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored).
+> a score for a session on or before the New York date its window opened on is `in_sample`
+> The scorer writes the flag from the date in New York the window's own `opened_at` falls on, read through the clock, against the session being scored, so the classification is arithmetic rather than a caller's claim about itself, and a window opened on a session's own evening, after that night was read, counts from the session after it (see: A version's score counts only for a session after the New York date its window opened on).
+Why: the flag compared the session with the window's UTC date, and a backfill replaced the score the night had written.
+
+### 2026-09-18 - SCHEMA.md - a command run through the version verb writes under a run id of its own and is drawn as run by hand
+
+Corrects: the version verb's attempts were not all rows on the run log and their run ids could collide, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> nothing: the run log's notes named no run a person starts by hand.
+Now:
+> **A command a person runs through the `version` verb writes under a run id of the verb's name and its instant to the ten-millionth of a second.** Every open, replacement, close and backfill, refused or not, is one row under `rule-versions`, a listing writes none, and the run page draws the rows as run by hand rather than as stages of the night.
+> 
+> **The overnight queue writes one row under the night's run, and each name it gives a pass is a run of its own.**
+Why: the verb's own refusals wrote no row, and its run id, taken to the second, collided with a second command in the same second.
+
+### 2026-09-18 - SCHEMA.md - the facts file's ordering note names the steps rather than numbering them
+
+Corrects: section 14's numbering is held only by section 14 and the night's own list, found by the phase 8 sign-off review on 2026-09-16 among the passages that kept stale numbers.
+Was:
+> the ordering is already right, since the shortlist is step 12 of the night and the facts file is step 13.
+Now:
+> the ordering is already right, since the night writes the shortlist before the facts file.
+Why: a step's number goes stale the night a step is inserted before it, and a guard now holds every step named by number outside section 14 to none.
+
+### 2026-09-18 - BUILD_PLAN.md - five passages name a night's step rather than numbering it
+
+Corrects: four passages kept section 14's numbering from before the version step was inserted, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> so the first scheduled night stopped at step 12
+> `docs/RUNBOOK.md` step 8 said
+> That row does not reach step 17's free local pass
+> and that its calls come from step 17 alone.
+> the night of 2026-09-14 took 495 seconds over steps 1 to 16, its level stage
+Now:
+> so the first scheduled night stopped at the listings step
+> `docs/RUNBOOK.md`'s installation steps said
+> That row does not reach the overnight queue's free local pass
+> and that its calls come from the overnight queue alone.
+> the night of 2026-09-14 took 495 seconds over the steps before the close, its level stage
+Why: a step's number goes stale the night a step is inserted before it, and a guard now holds every step named by number outside section 14 to none.
+
+### 2026-09-18 - BUILD_PLAN.md - the version bound's operating row fires on nights that replayed a version of each kind
+
+Corrects: the trigger fired on nights that replayed nothing, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> 5 scheduled nights at index size carrying the version scorer's step, read on the run page's operational header, which 8.6 fills with that step's own duration.
+> its arithmetic is the night of 2026-09-14: 495 seconds over steps 1 to 16,
+Now:
+> 5 scheduled nights at index size on which the version scorer's step replayed at least one merge distance version and one version of another rule, read on the run page's operational header, which 8.6 fills with that step's own duration and the versions it replayed of each kind, apart from any row a person ran by hand.
+> its arithmetic is the night of 2026-09-14: 495 seconds over the steps before the close,
+Why: every night carries the step, and one that replayed no version times none, so the trigger counted nights that could not answer its question; the phase 5 sign-off retired a row for the same reason.
+
+### 2026-09-18 - RUNBOOK.md - three passages name the queue and the migration rather than numbering them
+
+Corrects: two passages numbered the queue as step 17 after 8.6 inserted the version step, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> The queue runs at step 17 of the same invocation as the night,
+> Without one the run fails at step 6 with a restore error that names neither.
+> the machine slept, or the night stopped before step 17 |
+Now:
+> The queue runs as the night's last step, in the same invocation,
+> Without one, `tools/migrate` below fails with a restore error that names neither.
+> the machine slept, or the night stopped before the overnight queue |
+Why: a step's number goes stale the night a step is inserted before it, and a guard now holds every step named by number outside section 14 to none.
+
+### 2026-09-18 - RUNBOOK.md - the version section shows the replacement, the close with its evidence and the backfill's refusals
+
+Authorised by: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
+Was:
+> dotnet run --project src/EquityBrief.Worker -- version --rule "the near-exit skip" --close "three typical days" --replaced-by "four typical days"
+> 
+> A live window is closed only after the versions beside it. `version --backfill 2026-09-14` scores a past night under the windows open now, from that night's own bars and bands, and every score it writes for a night before its window opened is flagged in sample and counts toward no record. A version of the merge distance or of the zone edges is skipped over a band set stored before member sources were written, and the step's run log row counts the name-nights it skipped. Each attempt is a row on the run log under `rule-versions`, with a refusal under the outcome `refused`.
+> Close the rule's versions, then its live window, and open them again: the closed rows are kept with what they were opened with.
+> close every open window and open them again after the merge.
+Now:
+> dotnet run --project src/EquityBrief.Worker -- version --rule "the near-exit skip" --replace "three typical days" --with "four typical days" --parameters nearExitInTypicalDays=4 --evidence "the figures that produced the change"
+> dotnet run --project src/EquityBrief.Worker -- version --rule "the near-exit skip" --close "four typical days" --evidence "the figures that produced the close"
+> dotnet run --project src/EquityBrief.Worker -- version --backfill 2026-09-14
+> 
+> A live window is closed only after the versions beside it. `--list` names the open windows with each rule's count against its cap. A change of version is one command, `--replace`, which closes the old window with the evidence that produced the change and the name of the version replacing it and opens that version in the same write, so a rule at its cap can still be changed; `--close` ends a window with nothing replacing it and takes its evidence too (see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write). A command takes one form: a second form, a flag its form does not take, or a flag where a value goes is refused rather than read as what was probably meant.
+> 
+> `version --backfill 2026-09-14` scores a past night under the windows open now, from that night's own bars, bands and trend at that night's own price scale, and keeps every score already stored (see: A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored). It is refused for a day the exchange did not trade, for a session the store holds no bar for, which is every date after the newest session it holds, and for a session no night computed, which is one fetched by a backfill or as a missed session; a name that night computed no bands or plan for is left out and counted. A score counts only for a session after the date in New York its window opened on, and every other score is flagged in sample and counts toward no record (see: A version's score counts only for a session after the New York date its window opened on). A version of the merge distance or of the zone edges is skipped over a band set stored before member sources were written. Its line says what it wrote, kept, left out, skipped and dropped.
+> 
+> Every open, replacement, close and backfill, refused or not, is one row on the run log under `rule-versions`, a refusal under the outcome `refused`, and `--list` writes none. The rows are under a run id beginning `version-`, and the run page draws them as run by hand, apart from the night's own stages. A command against a store behind this checkout is refused and writes nothing, the run log included: run `tools/migrate` first.
+> Close the rule's versions and then its live window, each with `--close` and evidence naming the hash the night's row gives, open them again, and re-run the night, with `--session` once it is past midnight in New York: a night, a replayed one included, scores under the windows the store holds open when its step runs. The closed rows are kept with what they were opened with.
+> close every open window with its evidence and open them again after the merge.
+Why: a close took an optional name of what replaced it and no evidence, a backfill took any date and replaced the scores the night had written, and a replayed night read the windows open at the replayed instant.
+
+### 2026-09-18 - RUNBOOK.md - the morning table names a store behind the checkout, and a migration comes before the screens and the verbs
+
+Corrects: the screens and the version verb threw on a store behind the checkout, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> nothing: the table had no row for a store behind the checkout, and the maintenance note said a migration is never applied at start-up without saying when to run one.
+Now:
+> | A screen says the store is at one schema and the checkout reads another | the checkout was updated with a migration that neither `tools/migrate` nor a night has applied | run `tools/migrate`. The night applies it at its first step as well; until one has, the screens name both schema numbers and the run page draws only its run log, and the `version` verb refuses and writes nothing |
+> | The run page says the queue did not run |
+> and a stage failing on a missing column is how that is discovered. After updating the checkout, run `tools/migrate` before starting the read surface or running a verb; the screens and the loop's verbs name a store behind the checkout rather than migrate it.
+Why: every screen and the version verb threw on a store behind the checkout, where they now name both schema numbers and refuse.
+
+### 2026-09-18 - .claude/rules/checks.md - component-access reads a verb however the specs write it
+
+Corrects: the verb reader read only `<code>x</code> verb` in the architecture, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> and every worker verb a catalogue row names is one the worker dispatches and the runbook shows, with every verb the worker dispatches named in the help it prints
+Now:
+> and every worker verb the architecture, the schema or the build plan names, in backticks, code markup or bare and as a verb or a command, is one the worker dispatches and the runbook shows, with every verb the worker dispatches, an arm matching several included, named in the help it prints
+Why: the reader matched one markup in one document and one arm shape, so a verb written any other way went unread.
+
+### 2026-09-18 - .claude/rules/checks.md - architecture-conformance holds a second check a row names to the row
+
+Corrects: a check named in a row was held only to a mention in the verdict's note, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> and a check a row names in its own words is the check its verdict names or is named in that verdict's note.
+Now:
+> and a check a row names in its own words, in backticks, code markup or bare, is the check its verdict names or one that declares reach over the row, holds it with a test of its own that runs, is named in the verdict's note and fails the row where it fails, while a check-shaped name in a table that the roster does not carry fails.
+Why: a mention in the note stood for the named check holding the row, and a name in code markup or one the roster lacks went unread.
+
+### 2026-09-18 - .claude/rules/checks.md - nightly-run runs a night over a moved live rule and holds step numbers to section 14
+
+Corrects: nightly-run passed two claims it never asserted, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> is refused before anything is stored |
+Now:
+> is refused before anything is stored. The rule version step runs after the arithmetic it replays and before the close, a live rule that moved inside an open window stops the night there naming the rule with nothing scored and no close, and the night after its windows are closed and opened again scores under the new ones; and no document, fixture, script or source names a night's step by its number except section 14's own note and the night's own step list, both held to section 14's order |
+Why: the frozen windows row and the version step's stop passed by this check on no test that drifted a window through a night, and stale step numbers had no guard.
+
+### 2026-09-18 - .claude/rules/checks.md - nightly-cost counts a night's requests off the feeds and puts each on its step
+
+Corrects: nightly-cost compared self-reported sums, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> sits on step 17's own row or on a pass that row names
+> makes the same requests on every step and none on the version step, with a score per version per name,
+Now:
+> sits on the overnight queue's own row or on a pass that row names
+> makes the same requests on every step and none on the version step, counted off the feeds and put on the step each was made on, with a score per version per name and the step saying how many versions of each kind it replayed,
+Why: the requests compared were the ones each step reported of itself, the version step's a literal zero.
+
+### 2026-09-18 - .claude/rules/checks.md - rule-versions-scored holds the evidence, the New York date, the backfill's night and the verb's forms
+
+Authorised by: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
+Was:
+> A version change closes the window measuring the old rule and opens a new one, with the closed row keeping every column it was opened with so the scores under it stay scores of the rule as it stood;
+> with a closed window counting against nothing;
+> a live rule whose parameters or code have moved inside an open window is found and one that has not is not, in both directions;
+> a backfill replays a past night against that night's own bands and trend; a score written for a night before its window opened is flagged in sample beside one written for a night after it;
+> and the `version` verb opens, lists, closes and backfills through the scorer with every refusal a non-zero exit and a row on the run log under its own outcome,
+Now:
+> A version change is one write that closes the window measuring the old rule with the evidence that produced it and the version that replaced it and opens the replacement, with the closed row keeping every column it was opened with so the scores under it stay scores of the rule as it stood, and a close with no evidence is refused;
+> with a closed window counting against nothing and two opens racing for a rule's last window admitting one;
+> a live rule whose parameters or code have moved inside an open window is found and one that has not is not, in both directions, over the windows the store holds open;
+> a backfill is refused for a day that is not a session, a session the store holds no bar for and a session no night computed, and replays a past night against that night's own bands and trend at that night's own price scale, leaving out a name that night computed nothing for and keeping every score already stored; a score counts only for a session after the New York date its window opened on and is flagged in sample for every other, over constructed instants and the fixture's own night;
+> and the `version` verb takes one form at a time, refusing a second form, a flag its form does not take and a flag where a value goes, and opens, replaces, closes and backfills through the scorer, every such attempt, refused or not, one row on the run log under a run id no second command shares, every refusal a non-zero exit with nothing changed, a listing writing no row, and a store behind the checkout refused with nothing written,
+Why: the row described the version store and verb as 8.6 built them, which the 8.6 correction replaces.
+
 ### 2026-09-18 - CLAUDE.md - a ruling's commit subject and entry opening stated beside the planning pass's
 
 Corrects: the conventions said an entry opening "Not a checkpoint entry" under a ruling's heading lands nothing, and never said that a ruling's entry opens that way or how its commit subject reads, so the 8.2 ruling's entry opened "Built:", its subjects put the word ruling in the checkpoint slot, and the record reads it as building 8.2 a second time. Found by the phase 8 sign-off review.
