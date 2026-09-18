@@ -15762,3 +15762,56 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 6.8 - correction: an answer that comes back empty or cut short is asked for once more, where a pass left a section out on one empty answer and put the provider's words on the page   2026-09-18
+Corrects:   the 6.8 entry records the research runner making each paid call once, through the
+            spend cap, and leaving a section out where the call brought no answer, with the call's
+            failure as the reason; the prose writer, from 6.6, does the same for the local lane.
+            An answer that arrives with nothing in it, or stopped at its budget, is not a refusal:
+            the same request answers on another ask. And the reason a section was left out is
+            what the name page states, so the provider's own sentence about finish reasons and
+            token counts was what a person read.
+Found:      on 2026-09-18, in the first live research pass, NVDA's: the research model returned
+            nothing for the cause of each large move, and the name page stated that the finish
+            reason was stop after 3157 completion tokens, 3156 of them reasoning.
+Measured:   read immutable from a copy of the operator's store taken after that pass: the call's
+            row, `research call: The cause of each large move`, is refused with a spend of
+            0.0042279 for 15558 prompt tokens and 3157 completion tokens, 3156 of them reasoning;
+            the pass's row names the section not written with that sentence as its reason, and
+            no second call for it was made.
+Repaired:   the research runner asks a paid section once more when the spend cap reports its
+            answer unusable, under a stage of its own, the round's name with `asked again` after
+            it, and the prose writer does the same for the local lane when the local model's
+            answer arrives empty or cut short, which the local feed now marks; a section whose
+            second answer is unusable too is left out with the reason that the model's answer came
+            back empty or cut short twice, and what the model sent stays on the calls' rows and
+            the prose stage's row. A refusal and a model that does not answer are not asked again.
+            DECISIONS records it as An answer that comes back empty or cut short is asked for once
+            more. No spec changes: none states how often a section is asked for.
+Stored:     nothing rewritten: NVDA's rows stand as that pass wrote them, and the next pass asks
+            again under this rule.
+Missed:     the feeds' tests asserted the empty answer refused and priced, and no test asked what
+            the pass does next.
+Guarded:    a local answer unusable once is asked for again and the section is written from the
+            second, and unusable twice leaves the section out with the plain reason while the
+            model's words are on the prose stage's row; a paid answer unusable once is asked for
+            again under the `asked again` stage, both rows standing with the first one's spend, and
+            unusable twice leaves the section out with the plain reason while the provider's words
+            are on the calls' rows.
+Expected:   derived: the calls, stages and reasons follow from the rule over constructed answers;
+            no expectation file changes.
+Tests:      1085, from 1083. One added to the prose tests and one to the research tests. No file
+            this correction edits is a source either evaluator version or the ladder rules' code
+            version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each of the three properties this correction
+            adds, the local lane's second ask, the paid lane's second ask, and the plain reason.
+            Predicted:
+            M1 the local lane never asking again: the prose retry test red on the second ask;
+            nothing else.
+            M2 the paid lane never asking again: the research retry test red on the stage asked
+            again; nothing else.
+            M3 the provider's sentence kept as the paid reason: the research retry test red on the
+            reason; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.

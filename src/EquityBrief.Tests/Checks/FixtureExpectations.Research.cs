@@ -564,6 +564,64 @@ public partial class FixtureExpectations
         Assert.Single(Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-window-refused' AND stage = 'research';"));
     }
 
+    // A research model whose first answers come back empty, billed as the provider bills them, and
+    // which otherwise answers as the model it stands in front of.
+    sealed class UnusableFirstPaid(IResearchModelFeed inner, int unusable) : IResearchModelFeed
+    {
+        int asked;
+
+        public int Requests => asked;
+
+        public int Probes => inner.Probes;
+
+        public string Identity => inner.Identity;
+
+        public Task<string?> UnreachableAsync(CancellationToken cancellation = default) => inner.UnreachableAsync(cancellation);
+
+        public Task<ResearchAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default) =>
+            ++asked <= unusable
+                ? throw new UnusableResearchAnswer(
+                    $"The research model returned no answer for {request.Section}: the finish reason was stop after 3157 completion token(s), 3156 of them reasoning.",
+                    new ResearchAnswer(inner.Identity, string.Empty, 15558, 0, 15558, 3157, 3156, "stop", DateTimeOffset.Parse("2026-09-08T21:10:30Z", CultureInfo.InvariantCulture)))
+                : inner.CompleteAsync(request, cancellation);
+
+        public decimal Price(ResearchAnswer answer) => inner.Price(answer);
+
+        public decimal Ceiling(ModelRequest request) => inner.Ceiling(request);
+    }
+
+    [Fact]
+    public async Task APaidAnswerThatComesBackUnusableIsAskedForOnceMoreUnderAStageOfItsOwn()
+    {
+        // The first paid call of the pass comes back empty and billed: the section is asked for
+        // again, both calls stand on the run log with what each cost, and the second is written.
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var paid = new UnusableFirstPaid(new ScriptedModel([.. Enumerable.Repeat("The section, in words and citing its document [D1].", 20)]), 1);
+
+        await FixtureReplay.Researcher(store, ResearchClock, paid: paid, search: new NoResults()).RunAsync("KEYS", "research-asked-again");
+
+        var again = Assert.Single(Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-asked-again' AND stage LIKE '%, " + ResearchRunner.AskedAgainSuffix + "';"));
+        var first = again[..^(", " + ResearchRunner.AskedAgainSuffix).Length];
+
+        Assert.Equal([SpendCap.Refused], Query(store, $"SELECT outcome FROM run_log WHERE run_id = 'research-asked-again' AND stage = '{first}';"));
+        Assert.Equal([SpendCap.Paid], Query(store, $"SELECT outcome FROM run_log WHERE run_id = 'research-asked-again' AND stage = '{again}';"));
+        Assert.NotEqual(["0"], Query(store, $"SELECT spend FROM run_log WHERE run_id = 'research-asked-again' AND stage = '{first}';"));
+
+        // Unusable twice: left out with the plain reason, the provider's words on the calls' rows.
+        using var twice = await FixtureReplay.ReplayedForResearchAsync();
+
+        var outcome = await FixtureReplay.Researcher(
+                twice,
+                ResearchClock,
+                paid: new UnusableFirstPaid(new ScriptedModel([.. Enumerable.Repeat("The section, in words and citing its document [D1].", 20)]), 2),
+                search: new NoResults())
+            .RunAsync("KEYS", "research-unusable-twice");
+
+        Assert.Contains(outcome.NotWritten, line => line.Reason == ProseWriter.NoUsableAnswer);
+        Assert.Contains("finish reason was stop", string.Join(" ", Query(twice, "SELECT detail FROM run_log WHERE run_id = 'research-unusable-twice' AND stage LIKE 'research call:%';")), StringComparison.Ordinal);
+    }
+
     [Fact]
     public void TheWindowsAreEachMovesSpanAndTheDaysSinceTheFilingReadOnceWhereTheyOverlap()
     {

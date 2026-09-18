@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Worker.Research;
 
 // What one paid call came to: the answer and its price, or the refusal and why.
-public sealed record PaidCall(ResearchAnswer? Answer, decimal Price, SpendVerdict Verdict, string? Failure)
+public sealed record PaidCall(ResearchAnswer? Answer, decimal Price, SpendVerdict Verdict, string? Failure, bool Unusable = false)
 {
     public bool Answered => Answer is not null;
 
@@ -131,7 +131,7 @@ public sealed class SpendCap(
                 price = Money(billed),
             }, cancellation);
 
-            return new PaidCall(null, billed, verdict, unusable.Message);
+            return new PaidCall(null, billed, verdict, unusable.Message, Unusable: true);
         }
         catch (Exception failure) when (failure is ResearchModelUnavailable or ProviderRefusal)
         {

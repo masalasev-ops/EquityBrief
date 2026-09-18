@@ -202,7 +202,8 @@ public sealed class OpenAiCompatibleModelFeed(
                 $"The local model returned no answer for {section}: the finish reason was {finish} after " +
                 $"{Tokens("completion_tokens")} completion token(s), and {reasoning} character(s) of reasoning " +
                 "arrived with nothing in the answer. A section stored from this would be empty.",
-                transient: false);
+                transient: false,
+                unusable: true);
         }
 
         // An answer that stopped on its budget rather than on its own end was cut,
@@ -214,7 +215,8 @@ public sealed class OpenAiCompatibleModelFeed(
             throw new ProviderRefusal(
                 $"The local model's answer for {section} stopped at its budget of {AnswerTokens} tokens rather than " +
                 "ending, so what arrived is a section cut short and it is not stored.",
-                transient: false);
+                transient: false,
+                unusable: true);
         }
 
         return new ModelAnswer(
