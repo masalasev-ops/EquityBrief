@@ -15059,11 +15059,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             `nightly-run`'s stated set of membership reads missing the third ReadApi site. M2 turned
             1 red, the new test on the stale list naming ZZZZ twice. M3 turned 1 red, the new test
             on AAPL's sector read as "an earlier span" where its newest span says Technology.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1066 of 1066 tests
             ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 367 claims,
+            367 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 374 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
             and none moved: this correction edits no claim in `ARCHITECTURE.html` and no roster row.
             Both gates ran with this entry in place, and the operator's store under `data/` was not
             touched by either.
