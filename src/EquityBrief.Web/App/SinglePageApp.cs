@@ -189,7 +189,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<ResearchControl>? controls = null,
         ResearchCost? cost = null,
         SuspectPrices? suspect = null,
-        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null)
+        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
+        NoYear? noYear = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -212,6 +213,7 @@ public sealed class SinglePageApp : IComponent
         // Where the name's stored series is suspect, first, since every figure after it is
         // computed over those prices. Inside the region, so the exported report carries it.
         region.Append(marks.PricesSuspect(ticker, suspect));
+        region.Append(marks.NoYearServed(ticker, noYear));
 
         // The trend state, in a word. Read off the ladder row rather than worked
         // out here, and a name with no row says so rather than showing nothing:

@@ -4358,7 +4358,7 @@ public partial class ReadSurface
     // has a `Program` of its own for the phase report command, and both are in
     // the global namespace, so naming that one is ambiguous and the compiler
     // says so.
-    sealed class Host(string root) : WebApplicationFactory<ReadApi>
+    internal sealed class Host(string root) : WebApplicationFactory<ReadApi>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder) =>
             builder.UseSetting(StoreLocation.DataRootKey, root);

@@ -78,6 +78,7 @@ public class NightlyRun
             CheckReach.Key(Scope.FailureTable, "A night on a day the exchange did not trade"),
             CheckReach.Key(Scope.FailureTable, "An index change announced before it takes effect"),
             CheckReach.Key(Scope.FailureTable, "A ticker the index feed stops listing"),
+            CheckReach.Key(Scope.FailureTable, "The provider serves no year for a name the backfill asks for"),
 
             // The stale-and-failed region's stopped stage, which only a night
             // can put there, decomposed from the region at the phase 5 sign-off.
@@ -1672,6 +1673,73 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task AMemberTheProviderServesNoYearIsAskedOnTheRefetchScheduleAndItsPageAndTheRunPageSaySo()
+    {
+        // A member the membership feed lists and no price file serves, as a joiner listed under
+        // a ticker the price file does not use. The night that first asks for it and each
+        // backfill after name it until a year arrives, and it is asked for on each of the
+        // nights after the first and then weekly.
+        using var store = new TemporaryStore();
+
+        var feeds = NightFeeds.FromFixture(FixtureFolder());
+        var history = new NoYearHistoricalFeed(feeds.Historical, "ZZZZ");
+        var joined = feeds with
+        {
+            Membership = new AddedMembershipFeed(feeds.Membership, "ZZZZ", new DateOnly(2020, 1, 2)),
+            Historical = history,
+        };
+
+        var (first, _, firstError) = await NightAsync(store, joined, "night-one", FixedClock.At(Night, SessionZones.UnitedStates));
+
+        Assert.True(first == 0, firstError);
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM bar WHERE ticker = 'ZZZZ';"));
+
+        var requests = new List<int>();
+
+        for (var day = 1; day <= 14; day++)
+        {
+            var clock = FixedClock.At(Night.AddDays(day), SessionZones.UnitedStates);
+            var outcome = await new Backfill(history, clock, store.DatabaseFile).RunAsync("GSPC", $"night-{day:D2}");
+
+            requests.Add(outcome.Requests);
+        }
+
+        // The five nights after the first, none until the seventh day after the session last
+        // asked for, and that one.
+        Assert.Equal([1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0], requests);
+        Assert.Equal(15, Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE stage = '{Backfill.Stage}' AND outcome = '{Backfill.Partial}';"));
+
+        Assert.Contains(
+            "{\"ticker\":\"ZZZZ\",\"nights\":5,\"last\":\"2026-09-12\",\"next\":null}",
+            Texts(store, $"SELECT detail FROM run_log WHERE run_id = 'night-04' AND stage = '{Backfill.Stage}';").Single(),
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "{\"ticker\":\"ZZZZ\",\"nights\":6,\"last\":\"2026-09-13\",\"next\":\"2026-09-20\"}",
+            Texts(store, $"SELECT detail FROM run_log WHERE run_id = 'night-05' AND stage = '{Backfill.Stage}';").Single(),
+            StringComparison.Ordinal);
+
+        var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, FixedClock.At(Night.AddDays(14), SessionZones.UnitedStates));
+        var failed = EquityBrief.Api.Reading.RunScreen.Failed(
+            EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync(new DateOnly(2026, 9, 22))));
+        var stage = Assert.Single(failed);
+
+        Assert.Equal((Backfill.Stage, Backfill.Partial), (stage.Stage, stage.Outcome));
+        Assert.Contains("{\"ticker\":\"ZZZZ\",\"nights\":7,\"last\":\"2026-09-20\",\"next\":\"2026-09-27\"}", stage.Detail, StringComparison.Ordinal);
+        Assert.Contains("data-stage=\"backfill\"", new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, [], []), StringComparison.Ordinal);
+
+        Assert.Equal(Backfill.Stage, EquityBrief.Api.Reading.ReadApi.BackfillStage);
+
+        using var host = new Reading.ReadSurface.Host(store.Root);
+        using var client = host.CreateClient();
+
+        Assert.Contains(
+            "No year of prices came back for ZZZZ: the provider was asked for one on 7 night(s), the last for the session of " +
+            "2026-09-20, and it is asked again on the first night on or after 2026-09-27.",
+            await client.GetStringAsync("/screens/name/ZZZZ"),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task AJoinerBackfilledThroughTonightDoesNotHideAMissedSession()
     {
         // The store ends on 2026-09-08 and the night is 2026-09-10, so
@@ -2439,5 +2507,44 @@ sealed class FailingBulkFeed : EquityBrief.Core.Providers.IBulkPriceFeed
         Requests++;
 
         throw new HttpRequestFailure("the bulk price feed did not answer");
+    }
+}
+
+// A membership feed listing one constituent the recorded one does not.
+sealed class AddedMembershipFeed(IIndexMembershipFeed inner, string ticker, DateOnly joined) : IIndexMembershipFeed
+{
+    public int Requests => inner.Requests;
+
+    public async Task<IReadOnlyList<IndexConstituent>> ConstituentsAsync(
+        string indexCode,
+        CancellationToken cancellationToken = default) =>
+        [.. await inner.ConstituentsAsync(indexCode, cancellationToken), new IndexConstituent(ticker, joined, null)];
+}
+
+// A historical feed serving no year for one name, as the provider does for a ticker its price
+// file does not use, and the recorded one for every other.
+sealed class NoYearHistoricalFeed(IHistoricalBarFeed inner, string ticker) : IHistoricalBarFeed
+{
+    public int Requests { get; private set; }
+
+    public async Task<IReadOnlyList<ProviderBar>> BarsAsync(
+        string name,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.Equals(name, ticker, StringComparison.OrdinalIgnoreCase))
+        {
+            Requests++;
+
+            return [];
+        }
+
+        var before = inner.Requests;
+        var bars = await inner.BarsAsync(name, from, to, cancellationToken);
+
+        Requests += inner.Requests - before;
+
+        return bars;
     }
 }

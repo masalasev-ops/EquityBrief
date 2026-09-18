@@ -770,7 +770,8 @@ public static class NameScreen
         IReadOnlyList<CalendarRow>? events = null,
         IReadOnlyList<(string RunId, decimal Spend)>? priced = null,
         DateOnly? today = null,
-        SuspectSeriesRow? suspect = null)
+        SuspectSeriesRow? suspect = null,
+        NoYearRow? noYear = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -879,7 +880,8 @@ public static class NameScreen
             Controls(staleness, newest, notWritten, spend, priced, today),
             spend is null || priced is null ? null : Cost(priced, spend),
             Suspect(suspect),
-            listing is null ? [] : TonightScreen.WrittenBeforeTheCorrection([listing]));
+            listing is null ? [] : TonightScreen.WrittenBeforeTheCorrection([listing]),
+            noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next));
     }
 
     // A suspect row as the page states it, and nothing for a name whose series is trusted.

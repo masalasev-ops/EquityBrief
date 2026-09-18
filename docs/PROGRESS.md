@@ -15173,3 +15173,82 @@ Carried:    nothing owed by this repair. Noted rather than owed, for the operato
             the joiner is P_old, which holds no bar, since the price file carries it as P; the
             backfill asks for a member holding no bar on every night, which is corrected at 1.2
             apart from this.
+
+### 1.2 - correction: a name the backfill stored nothing for is asked for on the refetch's schedule, and its page and the run page say so   2026-09-18
+Corrects:   the 1.2 entry records the backfill as fetching one year for any member holding no
+            history and never again for a name that already holds its year. A name the provider
+            served no year held no history on the next night either, so it was asked for on every
+            night it stayed a member, one per-name request a night on a path whose carve-out allows
+            a new member's backfill once. Its stage wrote ok and named nothing, so the run page
+            said nothing, and the name's page said only that it held no stored session.
+Found:      on 2026-09-18, sorting the review of that morning into defects and the rest after the
+            operator asked how a sign-off could stand over what it listed; the operator then ruled
+            the schedule (see: A name the backfill stored nothing for is asked for again on the
+            five nights after and weekly after that, and its page and the run page say so until
+            one stores its year).
+Measured:   read immutable from the operator's store on 2026-09-18, at schema 27 and last written
+            2026-09-17 23:41:00 UTC: P_old, which the membership feed lists as joining on
+            2026-09-21, holds no bar; the backfill of the 2026-09-17 night made 1 request and wrote
+            0 rows, ok with no detail. A night rehearsed over a copy that morning asked for P_old
+            again, 0 rows written over 1 request.
+Repaired:   the backfill reads which names its earlier rows asked for, on which sessions, and asks
+            for a member holding no bar on the first night, on each of the 5 nights after, and
+            then on the first night whose session is 7 or more days after the session it was last
+            asked for, until one stores its year or the name leaves the index; both figures are the
+            refetch's own constants. Its row names every name asked for, each refused year's
+            missing session, and every member still holding no year with its nights, the session
+            it was last asked for on and the session it is next asked for on, null where that is
+            the next night; the stage ends partial on every night one is left, which puts it on the
+            run page's stale-and-failed region. The name's page opens with a line saying no year
+            came back, on how many nights it was asked for and when it is asked next. CLAUDE.md's
+            carve-out, the catalogue row, the matrix's run log cell, section 17's two rows and a
+            new section 18 row say so, DECISIONS records the ruling and SCHEMA the row, with the
+            prior text of every spec in CHANGELOG.
+Stored:     nothing rewritten. Rows the backfill wrote before this carry no record of what they
+            asked for, so P_old's schedule starts from the first night that runs this.
+Missed:     every backfill test served every name the fixture holds, and no test asked for a name
+            the provider serves nothing for.
+Guarded:    over the fixture's night and the backfill's own nights after it, a member the feed
+            lists and no price file serves holds no bar, is asked for on each of the five nights
+            after the first, not again until the seventh day after the session it was last asked
+            for and then on it, each row naming it with its nights and its next ask, the next night
+            while nightly asks remain and the date after them; every night ends partial and the run
+            page's stale-and-failed region names the stage; and its page opens with the line
+            stating its nights and the first night it is asked again on. Section 17's figures are
+            read off the rows and held to the constants, and the read surface's word for the stage
+            to the worker's.
+Expected:   derived: the schedule is stated in section 17 and DECISIONS and asserted night by
+            night over a constructed member; no expectation file changes, because the fixture
+            serves every name it holds.
+Tests:      1071, from 1069. One added to `nightly-run`: a member the provider serves no year,
+            asked for on the schedule, with the run page and its page saying so. One added to
+            `nightly-cost`: the schedule's requests night by night, and the runbook's figures held
+            to the constants. Rewritten in place: `pinned-constants`' census holds section 17's two
+            new figures, `nightly-cost`'s carve test the new sentence, `architecture-conformance`'s
+            pair the row added after 8.0's prediction, and `read-surface`'s page host is shared with
+            `nightly-run`. No file this correction edits is a source either evaluator version or the
+            ladder rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being
+            the schedule itself, its nightly asks, the week counted from the session last asked
+            for, the stage ending partial, the next ask a row names, the page's line, and the
+            newest row the page reads. Predicted:
+            M1 every owed name asked for on every night: the night test and the cost test each red
+            on the requests night by night; nothing else.
+            M2 one nightly ask fewer: the night test and the cost test each red on the requests
+            night by night; nothing else.
+            M3 the week counted from the first ask: the night test and the cost test each red on
+            the requests night by night; nothing else.
+            M4 the stage ending ok with a member holding no year: the night test red on the rows
+            ending partial; nothing else.
+            M5 the week's date named one ask early: the night test red on the row of the fifth ask;
+            nothing else.
+            M6 the page's line not drawn: the night test red on the page; nothing else.
+            M7 the page reading the oldest row naming the name: the night test red on the page;
+            nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair. Noted rather than owed: a year that arrives with a
+            session missing is refused only where the night asks for more than one name, since
+            the refusal reads the calendar off the names in hand, so a refused name asked for
+            alone on a later night is stored and its gap stops its computation downstream; that
+            is corrected at 1.5 apart from this.

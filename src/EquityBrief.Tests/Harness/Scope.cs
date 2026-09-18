@@ -1645,6 +1645,10 @@ internal static class Scope
             Verdict.Pass,
             "over the fixture's second night, a member the feed drops, a second span of a member it lists under another join date and an announced joiner it stopped listing are each closed on the night's session, the dropped member keeps the night before's listing and has none that night, is out of the universe and is named on the run page's membership line, and a second run whose feed lists it again reopens it and lists it; a feed dropping one ticker more than the figure the row states closes none and ends partial on the stale-and-failed region with the tickers named, and one dropping that many closes every one",
             ByNight),
+        [CheckReach.Key(FailureTable, "The provider serves no year for a name the backfill asks for")] = new Scoped(
+            Verdict.Pass,
+            "over the fixture's night and the backfill's own nights after it, a member the feed lists and neither price file serves holds no bar, is asked for on each of the five nights after the first, not again until the seventh day after the session last asked for and then on it, each row naming it with its nights and its next ask, and the stage ends partial on every night so the run page's stale-and-failed region names it; its page opens with the line stating the nights it was asked for and the first night it is asked again",
+            ByNight),
         [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
             Verdict.Pass,
             "the three attempts, the doubling wait and both bounds are read off the row and asserted against the policy the code uses, and a night given a deadline it cannot meet stops on the step it was on and says so",

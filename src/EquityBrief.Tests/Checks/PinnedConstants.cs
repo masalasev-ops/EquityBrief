@@ -93,6 +93,8 @@ public class PinnedConstants
             new(Budget, "5", ProviderWeights.News, "ProviderWeights.News"),
             new(Budget, "1", ProviderWeights.EarningsCalendar, "ProviderWeights.EarningsCalendar"),
             new("Bar history kept", "1", BarFetcher.RetentionYears, "BarFetcher.RetentionYears"),
+            new("Backfill", "5", Backfill.RetryNights, "Backfill.RetryNights"),
+            new("Backfill", "7", Backfill.WeeklyRetryDays, "Backfill.WeeklyRetryDays"),
             new("Level window", "60", VolumeProfileSeries.Window, "VolumeProfileSeries.Window"),
             new("Swing lookback", "3", SwingSeries.Lookback, "SwingSeries.Lookback"),
             new("Tranches, exits", "3", LadderSeries.MostTranches, "LadderSeries.MostTranches"),

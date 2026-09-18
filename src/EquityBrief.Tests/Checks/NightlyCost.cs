@@ -1067,6 +1067,7 @@ public class NightlyCost
         // every name would satisfy a loosened rule.
         Assert.Contains("the backfill and the corporate action refetch carved out of it", limits, StringComparison.Ordinal);
         Assert.Contains($"bounded by the actions of the day and of the {CorporateActionChecker.RetryNights} nights before it, and by one request every {CorporateActionChecker.WeeklyRetryDays} days for each name whose retries are spent, rather than by the universe", limits, StringComparison.Ordinal);
+        Assert.Contains($"A name it stored nothing for is asked for again on each of the {Backfill.RetryNights} nights after the first and then every {Backfill.WeeklyRetryDays} days until one stores its year or the name leaves the index", limits, StringComparison.Ordinal);
     }
 
     static System.Text.Json.JsonElement Expected(string stage) =>
@@ -1198,6 +1199,48 @@ public class NightlyCost
         Assert.Contains($"asks for the name's year again on each of the next {CorporateActionChecker.RetryNights} nights", runbook, StringComparison.Ordinal);
         Assert.Contains($"the refetch has failed on {CorporateActionChecker.RetryNights + 1} nights running", runbook, StringComparison.Ordinal);
         Assert.Contains($"asks for it again {CorporateActionChecker.WeeklyRetryDays} days after the session it was last asked for", runbook, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ANameTheBackfillStoresNothingForCostsOneRequestOnEachNightOfItsRetriesAndOneAWeekAfter()
+    {
+        // The backfill's carve-out for a name the provider serves nothing: one request on the
+        // night it is first asked for and on each of the nights after it the schedule allows,
+        // then one on the first night whose session is the week after the session it was last
+        // asked for, counted night by night over a constructed member.
+        // see: A name the backfill stored nothing for is asked for again on the five nights after and weekly after that, and its page and the run page say so until one stores its year
+        using var store = await StoredAsync(null);
+
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'ZZZZ', '2020-01-02', NULL, '2026-09-01T23:30:00Z');");
+
+        var history = new NoYearHistoricalFeed(RecordedHistoricalBarFeed.FromFolder(FixtureFolder()), "ZZZZ");
+        var requests = new List<int>();
+
+        for (var night = 1; night <= 15; night++)
+        {
+            var outcome = await new Backfill(history, FixedClock.At(Backfilled.AddDays(night), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync(Index, $"night-{night:D2}");
+
+            requests.Add(outcome.Requests);
+        }
+
+        Assert.Equal(
+            [.. Enumerable.Repeat(1, Backfill.RetryNights + 1), .. Enumerable.Repeat(0, Backfill.WeeklyRetryDays - 1), 1, 0, 0],
+            requests);
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var logged = connection.CreateCommand();
+        logged.CommandText = "SELECT SUM(network_requests) FROM run_log WHERE stage = $s AND run_id LIKE 'night-%';";
+        logged.Parameters.AddWithValue("$s", Backfill.Stage);
+
+        Assert.Equal((long)requests.Sum(), (long)logged.ExecuteScalar()!);
+
+        Assert.Contains(
+            $"the backfill asks again on each of the next {Backfill.RetryNights} nights and then on the first night {Backfill.WeeklyRetryDays} or more days after the session it was last asked for",
+            Corpus.Read("docs/RUNBOOK.md"),
+            StringComparison.Ordinal);
     }
 
     [Fact]

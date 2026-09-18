@@ -927,6 +927,7 @@ public partial class ArchitectureConformance
     static readonly string[] AddedAfterThePrediction =
     [
         CheckReach.Key(Scope.FailureTable, "A ticker the index feed stops listing"),
+        CheckReach.Key(Scope.FailureTable, "The provider serves no year for a name the backfill asks for"),
     ];
 
     [Fact]

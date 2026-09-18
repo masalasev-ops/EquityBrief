@@ -1,5 +1,6 @@
 using EquityBrief.Core.Indicators;
 using System.Globalization;
+using System.Text.Json;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Research;
@@ -76,6 +77,11 @@ public sealed record LadderRow(string Ticker, DateOnly AsOf, string TrendState, 
 // many nights after the one that marked it it has been asked for again. Every field is
 // the stored column, and the instant stays the text the check wrote.
 public sealed record SuspectSeriesRow(string Ticker, string? Reason, string CheckedAt, int Retries);
+
+// A member the backfill asked for a year for and got none, as the newest of its rows naming
+// the member says: the nights it was asked for, the session it was last asked for on, and
+// the session it is next asked for on, null where that is the next night.
+public sealed record NoYearRow(string Ticker, int Nights, DateOnly? Last, DateOnly? Next);
 
 // One stored filing, as the store holds it. The payload and the source are handed
 // over as written rather than unpacked here, because the read surface hands back
@@ -1747,6 +1753,61 @@ public sealed class ReadApi : IComponent
         FROM series_state
         WHERE state = $suspect
         ORDER BY ticker;
+    ";
+
+    // The backfill's stage, stated here because the read surface holds no reference to the
+    // worker; `nightly-run` asserts the two agree.
+    public const string BackfillStage = "backfill";
+
+    // Where the backfill asked for a name's year and none came back, as the newest of its rows
+    // naming the name says, and nothing where the newest that asked for it served it.
+    // see: A name the backfill stored nothing for is asked for again on the five nights after and weekly after that, and its page and the run page say so until one stores its year
+    public async Task<NoYearRow?> NoYearAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = BackfillRows;
+        command.Parameters.AddWithValue("$stage", BackfillStage);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            using var detail = JsonDocument.Parse(reader.GetString(0));
+            var root = detail.RootElement;
+
+            if (root.TryGetProperty("unserved", out var unserved) && unserved.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var name in unserved.EnumerateArray())
+                {
+                    if (string.Equals(name.GetProperty("ticker").GetString(), ticker, StringComparison.Ordinal))
+                    {
+                        return new NoYearRow(ticker, name.GetProperty("nights").GetInt32(), NamedDate(name, "last"), NamedDate(name, "next"));
+                    }
+                }
+            }
+
+            if (root.TryGetProperty("asked", out var asked)
+                && asked.ValueKind == JsonValueKind.Array
+                && asked.EnumerateArray().Any(entry => string.Equals(entry.GetString(), ticker, StringComparison.Ordinal)))
+            {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    static DateOnly? NamedDate(JsonElement element, string name) =>
+        element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+            ? DateOnly.ParseExact(value.GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
+
+    const string BackfillRows = @"
+        SELECT detail FROM run_log
+        WHERE stage = $stage AND detail LIKE '{%'
+        ORDER BY started_at DESC;
     ";
 
     // Whether the index holds a name today, which is what the name page's control is
