@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - .claude/rules/checks.md - pinned-constants states the figures it reads and the ones it does not
+
+Corrects: the roster row said numeric constants stated in docs match the code constant they describe, and the check read the framework version and the SDK feature band; phase 8's restated figures and seven section 17 rows' figures were read by no test. Found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> | `pinned-constants` | every CI run | Numeric constants stated in docs match the code constant they describe |
+Now:
+> | `pinned-constants` | every CI run | The framework version and the SDK feature band the specs state match the build files that set them. Every figure section 17 states in digits in its Value column is held by the code constant or the arithmetic over constants its entry names, read in the order the table states them and in both directions, or is named as a kind no constant holds with the check that kind allows: a measurement the record carries, a checkpoint the record shows, a limit of zero, the index's nominal size the row says the night does not read, or a count a check reaching the row asserts. Every restatement of a figure the check lists, in a spec, a rules file or a decision that stands, agrees with the code, counted per document against a count stated in advance so a sentence reworded out of its pattern fails rather than going unread. A figure section 17 writes in words, and a figure outside section 17 the list does not name, are not read |
+Why: a roster row is what `coverage-reported` holds a check to, and this one claimed every constant while its check read two.
+
 ### 2026-09-18 - ARCHITECTURE.html - the run page's route reads the register verb's rows as run by hand as well
 
 Corrects: the run page drew the register verb's rows as the night's stages, a registration among its failed stages, found by the phase 8 sign-off review on 2026-09-16.
