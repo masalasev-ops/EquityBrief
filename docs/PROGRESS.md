@@ -15272,3 +15272,39 @@ Carried:    nothing owed by this repair. Noted rather than owed: a year that arr
             the refusal reads the calendar off the names in hand, so a refused name asked for
             alone on a later night is stored and its gap stops its computation downstream; that
             is corrected at 1.5 apart from this.
+
+### 1.5 - correction: a year the backfill asks for alone is read against the exchange calendar, so a gap is refused on a retry as on the first night   2026-09-18
+Corrects:   the 1.5 entry records the backfill refusing a year that arrives with an interior
+            session missing, the calendar read off the names the night asked for. A night that
+            asks for one name has no series beside it, so the refusal read nothing and stored the
+            year with its hole; and a name the refusal turned away is asked for again alone on the
+            nights after, from the 1.2 correction on the refetch's schedule, so its second answer
+            was stored whatever it held, where section 18's row says a series with a gap is
+            refused.
+Found:      on 2026-09-18, writing the 1.2 correction's schedule, which asks for a refused name
+            again on its own.
+Measured:   read immutable from the operator's store on 2026-09-18: every backfill that stored a
+            year asked for more than one name, 503, 3 and 2, and the one lone request, P_old's on
+            2026-09-17, stored nothing, so no year in the store was stored this way.
+Repaired:   a year asked for alone is read against the exchange's closure table, as every computed
+            stage reads a stored series, so a year missing an interior session is refused whether
+            it came alone or beside others, with the gap's date named on the run log row as
+            before. The gap-refusal roster row says so, with its prior text in CHANGELOG.
+Stored:     nothing to rewrite, per the measurement above.
+Missed:     the gap tests asked for the fixture's four members together, and no test asked for a
+            refused name again.
+Guarded:    over the fixture, KEYS's holed year is refused on the night the four members are asked
+            for together and again on the next night, when it is asked for alone, with the same
+            session named both times and no bar of KEYS stored.
+Expected:   derived: the refusal is stated in section 18 and asserted over the captured holed
+            series; no expectation file changes.
+Tests:      1072, from 1071. One added to `gap-refusal`: a year asked for alone is read against the
+            exchange calendar. No file this correction edits is a source either evaluator version or
+            the ladder rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break the one property this correction adds, a year
+            asked for alone read against the exchange calendar. Predicted:
+            M1 a lone year read against nothing: the new test red on the second answer's refusal
+            missing; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.
