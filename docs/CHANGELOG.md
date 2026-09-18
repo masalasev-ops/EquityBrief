@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - .claude/rules/checks.md - `gap-refusal` reads a year asked for alone against the exchange calendar
+
+Corrects: the backfill read the calendar for its refusal off the names a night asked for, so a year asked for alone was stored with its gap, which a refused name asked for again always is; found writing the 1.2 correction's schedule.
+Was:
+> | `gap-refusal` | every CI run | A series arriving with an interior session missing is refused, that name's stored series is left as it was, and the gap's date is named on the run log; a hole at either edge is a shorter history rather than a gap, and one series alone reports that it cannot be checked rather than that it is clean. Every computation over a name whose stored series already holds a hole stops, so the five computed tables withhold every row for it while the ladder and the listing still carry theirs with the gap's date as the reason, asserted per table over a constructed store rather than in one loop over the seven, because the two failures are opposite: a figure computed across the hole, and a member left without the row every member gets |
+Now:
+> | `gap-refusal` | every CI run | A series arriving with an interior session missing is refused, that name's stored series is left as it was, and the gap's date is named on the run log; a hole at either edge is a shorter history rather than a gap, and one series alone reports that it cannot be checked rather than that it is clean, so a year the backfill asks for alone is read against the exchange's closure table and refused there, which is how a refused name asked for again on its own is refused again. Every computation over a name whose stored series already holds a hole stops, so the five computed tables withhold every row for it while the ladder and the listing still carry theirs with the gap's date as the reason, asserted per table over a constructed store rather than in one loop over the seven, because the two failures are opposite: a figure computed across the hole, and a member left without the row every member gets |
+Why: the row states what the check asserts, and the check now asserts a lone year refused against the closure table as well as a year refused beside others.
+
 ### 2026-09-18 - RUNBOOK.md - the morning's line for a name the backfill served no year
 
 Authorised by: A name the backfill stored nothing for is asked for again on the five nights after and weekly after that, and its page and the run page say so until one stores its year

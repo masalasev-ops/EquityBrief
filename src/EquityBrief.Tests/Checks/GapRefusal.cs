@@ -256,6 +256,33 @@ public class GapRefusal
     }
 
     [Fact]
+    public async Task AYearAskedForAloneIsReadAgainstTheExchangeCalendar()
+    {
+        // The refusal reads the calendar off the names a night asks for, and a name asked for
+        // again alone, as a refused name is on the nights after, has none beside it.
+        using var store = await WithMembership();
+
+        var first = await BackfillAsync(store, FeedWithTheGap());
+        var (removed, _, _) = TheHole();
+
+        Assert.Equal(new Gap("KEYS", removed), Assert.Single(first.Refused));
+
+        var alone = await new Backfill(FeedWithTheGap(), FixedClock.At(Instant.AddDays(1), SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, "run-2");
+
+        Assert.Equal(1, alone.Requests);
+        Assert.Equal(new Gap("KEYS", removed), Assert.Single(alone.Refused));
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var count = connection.CreateCommand();
+        count.CommandText = "SELECT COUNT(*) FROM bar WHERE ticker = 'KEYS';";
+
+        Assert.Equal(0L, (long)count.ExecuteScalar()!);
+    }
+
+    [Fact]
     public async Task TheGapIsNamedOnTheSurfaceAPersonReads()
     {
         // A claim that something is reported is a claim about a surface. The

@@ -153,9 +153,11 @@ public sealed class Backfill(
             entry => (IReadOnlyCollection<DateOnly>)[.. entry.Value.Select(bar => bar.SessionDate)],
             StringComparer.OrdinalIgnoreCase);
 
+        // A name asked for alone has no series beside it to read the calendar off, so its
+        // year is read against the exchange's own.
         var gaps = TradingCalendar.CanDetect(series)
             ? TradingCalendar.GapsIn(series)
-            : [];
+            : [.. series.SelectMany(entry => TradingCalendar.Check(entry.Value).Missing.Select(session => new Gap(entry.Key, session)))];
 
         var refused = gaps
             .GroupBy(gap => gap.Ticker, StringComparer.OrdinalIgnoreCase)
