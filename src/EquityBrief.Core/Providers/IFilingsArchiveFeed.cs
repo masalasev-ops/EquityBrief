@@ -181,9 +181,12 @@ public sealed record ArchiveFact(
 // same reason: a part the archive does not serve is named, so the numbers section
 // marks it absent rather than drawing a blank, and a blank cell reads as a zero.
 //
-// `SegmentReportsRead` is how many report pages the route fetched before one held
-// figures by segment. Two captured filings need two and one, so the figure is
-// carried rather than assumed.
+// `SegmentReportsRead` is how many report pages the route fetched, for the segment
+// table and the filing's other tables of revenue by a grouping. Captured filings need
+// two, one and four, so the figure is carried rather than assumed.
+//
+// `RevenueTables` is those other tables, in the order the filing states them, and
+// empty where the filing names none for revenue among its segment reports.
 public sealed record ArchiveFilings(
     string Ticker,
     string Cik,
@@ -195,7 +198,8 @@ public sealed record ArchiveFilings(
     FiledDocument? Transcript,
     IReadOnlyList<string> PartsNotCarried,
     int SegmentReportsRead,
-    FiledRelease? Release = null);
+    FiledRelease? Release = null,
+    IReadOnlyList<SegmentBreakdown>? RevenueTables = null);
 
 // One name's filings, from the archive, on demand.
 //

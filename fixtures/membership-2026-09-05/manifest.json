@@ -204,6 +204,20 @@
       "trimmedTo": "nothing. A fourth filer's segment table, whole: revenue, other segment items and operating income for two segments under 'Operating Segments', in millions, with the company's totals above the first grouping. It is the second segment candidate in its filing's Details category, which is why the route takes the first table stating revenue by segment rather than the first carrying any figure."
     },
     {
+      "file": "segment-report-NVDA-R65.htm",
+      "endpoint": "Archives/edgar/data/1045810/000104581026000075/R65.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000075/R65.htm",
+      "fetchedAt": "2026-09-18T17:11:02Z",
+      "trimmedTo": "nothing. The filing's revenue by region, whole: the United States, Taiwan, China including Hong Kong and the rest, each a group stating revenue for the quarter and the half against the year before, in millions. It is a segment report named for revenue, so the route reads it past the segment table and keeps it as a table of revenue by a grouping. Each group opens with an abstract row, 'Revenues', whose cells are empty and which a reader taking a group's first figure reads as a quarter with no revenue."
+    },
+    {
+      "file": "segment-report-NVDA-R67.htm",
+      "endpoint": "Archives/edgar/data/1045810/000104581026000075/R67.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000075/R67.htm",
+      "fetchedAt": "2026-09-18T17:11:03Z",
+      "trimmedTo": "nothing. The filing's revenue by market platform, whole: data center, and within it hyperscale and AI clouds, industrial and enterprise, and edge computing, each stating revenue for the quarter and the half against the year before, in millions. The quarter's data center revenue, 89,023 as rendered, is the figure the results release led with, and the segment table beside it states no such figure."
+    },
+    {
       "file": "filing-types-KEYS-8k.htm",
       "endpoint": "Archives/edgar/data/1601046/000160104626000029/0001601046-26-000029-index.htm",
       "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000029/0001601046-26-000029-index.htm",

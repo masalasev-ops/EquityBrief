@@ -25,6 +25,19 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - SCHEMA.md - the fundamentals row carries the filing's other tables of revenue by a grouping
+
+Authorised by: The filing's other tables of revenue by a grouping are kept beside its segment table
+Was:
+> The company financials endpoint supplies eight parts and the filings archive three: `segments`, `guidance` and `facts`, which that endpoint files for no name at all. The archive's three sit on the newest filing's row alone
+> A twelfth part, `periodEnd`, is the quarter's end
+> `segments` holds the report the figures were read from, the scale the table stated, its period columns and its groups in the order the table states them; `guidance`
+Now:
+> The company financials endpoint supplies eight parts and the filings archive four: `segments`, `revenueTables`, `guidance` and `facts`, which that endpoint files for no name at all. The archive's four sit on the newest filing's row alone
+> A thirteenth part, `periodEnd`, is the quarter's end
+> `segments` holds the report the figures were read from, the scale the table stated, its period columns and its groups in the order the table states them; `revenueTables` holds the filing's other tables of revenue by a grouping, by market, product or region, each in that shape (see: The filing's other tables of revenue by a grouping are kept beside its segment table); `guidance`
+Why: the figures a results release headlines are often in a filing's tables by market or region rather than its segment table, and the first live research pass was refused for quoting two of them.
+
 ### 2026-09-18 - RUNBOOK.md - how the screens are opened
 
 Corrects: the runbook said nowhere how to start the read surface, and started the way the worker is it stopped for want of a data root; found when the operator went to open the screens for the first time.

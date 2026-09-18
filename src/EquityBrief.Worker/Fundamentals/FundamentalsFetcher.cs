@@ -313,7 +313,7 @@ public sealed class FundamentalsFetcher : IComponent
     // The parts the archive supplies, which is what the source column answers about
     // when there was no archive to read.
     public static readonly string[] ArchiveParts =
-        [SecEdgarArchive.Segments, SecEdgarArchive.Guidance, SecEdgarArchive.Facts];
+        [SecEdgarArchive.Segments, SecEdgarArchive.RevenueTables, SecEdgarArchive.Guidance, SecEdgarArchive.Facts];
 
     // Which parts of a row are absent, over both feeds and counted once.
     //
@@ -441,24 +441,11 @@ public sealed class FundamentalsFetcher : IComponent
             // Null rather than left out where there is nothing, because a key that
             // is not there reads as this name having none, and the source column
             // beside this one says which of the three reasons it was.
-            segments = newest && filings?.Segments is { } breakdown ? new
-            {
-                report = breakdown.Report,
-                title = breakdown.Title,
-                scale = breakdown.Scale,
-                periods = breakdown.Periods.Select(period => new
-                {
-                    months = period.Months,
-                    ended = Stored(period.Ended),
-                }),
-                consolidated = Lines(breakdown.Consolidated),
-                groups = breakdown.Groups.Select(group => new
-                {
-                    label = group.Label,
-                    dimension = group.Dimension,
-                    figures = Lines(group.Figures),
-                }),
-            } : null,
+            segments = newest && filings?.Segments is { } breakdown ? Table(breakdown) : null,
+            // The filing's other tables of revenue by a grouping, by market, product or region,
+            // on the same row for the same reason and in the segment table's own shape.
+            // see: The filing's other tables of revenue by a grouping are kept beside its segment table
+            revenueTables = newest && filings?.RevenueTables is { Count: > 0 } tables ? tables.Select(Table) : null,
             // Management's own words, with the exhibit and the date they were filed
             // on, and never a figure taken out of them. A heading locates the
             // passage for five of twelve filers measured, so a passage nobody
@@ -491,6 +478,27 @@ public sealed class FundamentalsFetcher : IComponent
                 value = Money(fact.Value),
             }) : null,
         });
+
+    // One table as the payload holds it: the report it was read from, the title and the
+    // scale it states, its period columns, and its groups in the order it states them.
+    static object Table(SegmentBreakdown breakdown) => new
+    {
+        report = breakdown.Report,
+        title = breakdown.Title,
+        scale = breakdown.Scale,
+        periods = breakdown.Periods.Select(period => new
+        {
+            months = period.Months,
+            ended = Stored(period.Ended),
+        }),
+        consolidated = Lines(breakdown.Consolidated),
+        groups = breakdown.Groups.Select(group => new
+        {
+            label = group.Label,
+            dimension = group.Dimension,
+            figures = Lines(group.Figures),
+        }),
+    };
 
     // One table's rows as the payload holds them. Money as text in the invariant
     // form, which is the storage form money takes, and the unit beside a figure
@@ -535,7 +543,7 @@ public sealed class FundamentalsFetcher : IComponent
     public static readonly string[] Parts =
     [
         "periodEnd", "quarter", "margin", "balanceSheet", "earnings", "epsBases", "valuation",
-        "marketCapitalisation", "estimated", "segments", "guidance", "facts",
+        "marketCapitalisation", "estimated", "segments", "revenueTables", "guidance", "facts",
     ];
 
     public const string Margin = "margin";

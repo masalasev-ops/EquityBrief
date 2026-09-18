@@ -721,7 +721,11 @@ public class FilingsArchiveTests
         Assert.False(apple.Guidance.Located);
         Assert.Null(apple.Transcript);
         Assert.NotEmpty(apple.Facts);
-        Assert.Empty(apple.PartsNotCarried);
+
+        // The one part its filing does not serve: no segment report of it is named for
+        // revenue, so the route asks for nothing past the segment table.
+        Assert.Equal([SecEdgarArchive.RevenueTables], apple.PartsNotCarried);
+        Assert.Empty(apple.RevenueTables!);
     }
 
     [Fact]
@@ -788,15 +792,16 @@ public class FilingsArchiveTests
             new[] { "segment-report-AAPL-R46.htm", "segment-report-KEYS-R85.htm", "segment-report-NFLX-R65.htm" },
             file => Assert.True(SecEdgarArchive.StatesRevenue(SecEdgarArchive.Breakdown(Captured(file), file)!)));
 
-        // The route over the captured list and pages. A page past the one it takes
-        // is never asked for, which the missing capture would refuse.
+        // The route over the captured list and pages. Past the table it takes, the
+        // route asks only for the reports named for revenue, and a page it has no
+        // business with is never asked for, which the missing capture would refuse.
         var filings = await SecEdgarArchive.ReadAsync(
             Serving(report => Captured("segment-report-NVDA-" + report)),
             "NVDA",
             "0001045810");
 
         Assert.Equal("R63.htm", filings.Segments!.Report);
-        Assert.Equal(2, filings.SegmentReportsRead);
+        Assert.Equal(4, filings.SegmentReportsRead);
 
         // 88,299 as rendered under '$ in Millions', the quarter's revenue of the
         // larger segment in dollars.
@@ -809,7 +814,8 @@ public class FilingsArchiveTests
         Assert.Equal(new DateOnly(2026, 7, 26), revenue.Period.Ended);
 
         // Where no candidate states revenue, the first carrying figures is still
-        // taken, after the route has read as many pages as it may.
+        // taken, after the route has read as many pages as it may, and each revenue
+        // report past those once.
         var fallback = await SecEdgarArchive.ReadAsync(
             Serving(report => report == "R62.htm" ? Captured("segment-report-NVDA-R62.htm") : null),
             "NVDA",
@@ -817,8 +823,53 @@ public class FilingsArchiveTests
 
         Assert.NotNull(fallback.Segments);
         Assert.Equal("R62.htm", fallback.Segments.Report);
-        Assert.Equal(SecEdgarArchive.SegmentReportsAtMost, fallback.SegmentReportsRead);
+        Assert.Equal(SecEdgarArchive.SegmentReportsAtMost + 1, fallback.SegmentReportsRead);
         Assert.DoesNotContain(SecEdgarArchive.Segments, fallback.PartsNotCarried);
+        Assert.Contains(SecEdgarArchive.RevenueTables, fallback.PartsNotCarried);
+    }
+
+    [Fact]
+    public async Task TheFilingsOtherTablesOfRevenueByAGroupingAreKeptBesideItsSegmentTable()
+    {
+        // A filing states revenue by more than its segments: by market platform and by
+        // region beside the two segments. The figures a release headlines are there, the
+        // quarter's data center revenue among them, and the segment table alone holds
+        // none of them.
+        Assert.Equal(["R65.htm", "R67.htm"], SecEdgarArchive.RevenueCandidates(Captured("report-list-NVDA-10q.xml")));
+
+        // Neither other captured filing names a segment report for revenue, so neither
+        // read costs a further request.
+        Assert.Empty(SecEdgarArchive.RevenueCandidates(Captured("report-list-AAPL-10q.xml")));
+        Assert.Empty(SecEdgarArchive.RevenueCandidates(Captured("report-list-KEYS-10q.xml")));
+
+        var filings = await SecEdgarArchive.ReadAsync(
+            Serving(report => Captured("segment-report-NVDA-" + report)),
+            "NVDA",
+            "0001045810");
+
+        Assert.Equal(["R65.htm", "R67.htm"], filings.RevenueTables!.Select(table => table.Report));
+        Assert.DoesNotContain(SecEdgarArchive.RevenueTables, filings.PartsNotCarried);
+
+        // The rendered cells, scaled by the title's millions: 89,023 for data center and
+        // 26,985 for Taiwan, the quarter to 2026-07-26.
+        decimal Quarter(string report, string group) => filings.RevenueTables!
+            .Single(table => table.Report == report)
+            .Groups.Single(held => held.Label == group)
+            .Figures.First(figure => figure.LineItem == "Revenue" && figure.Period.Months == 3 && figure.Period.Ended == new DateOnly(2026, 7, 26))
+            .Value!.Value;
+
+        Assert.Contains(">89,023<", Captured("segment-report-NVDA-R67.htm"), StringComparison.Ordinal);
+        Assert.Equal(89_023_000_000m, Quarter("R67.htm", "Data Center"));
+        Assert.Equal(26_985_000_000m, Quarter("R65.htm", "Taiwan"));
+
+        // A report named for revenue that states none by a grouping is read and not kept,
+        // here the narrative table served under the region report's name.
+        var misnamed = await SecEdgarArchive.ReadAsync(
+            Serving(report => Captured("segment-report-NVDA-" + (report == "R65.htm" ? "R62.htm" : report))),
+            "NVDA",
+            "0001045810");
+
+        Assert.Equal(["R67.htm"], misnamed.RevenueTables!.Select(table => table.Report));
     }
 
     [Fact]
@@ -956,7 +1007,7 @@ public class FilingsArchiveTests
             "AAPL",
             AppleCik);
 
-        Assert.Equal(["segments", "facts"], filings.PartsNotCarried);
+        Assert.Equal(["segments", "revenueTables", "facts"], filings.PartsNotCarried);
         Assert.Null(filings.Segments);
         Assert.Empty(filings.Facts);
         Assert.Equal(0, filings.SegmentReportsRead);

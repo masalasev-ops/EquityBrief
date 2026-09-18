@@ -506,7 +506,7 @@ public class FundamentalsFetcherTests
     }
 
     [Fact]
-    public async Task AnArchiveThatRefusesLosesItsThreePartsAndNotTheOtherEight()
+    public async Task AnArchiveThatRefusesLosesItsFourPartsAndNotTheProvidersEight()
     {
         using var store = new TemporaryStore().Migrated();
 
@@ -528,7 +528,76 @@ public class FundamentalsFetcherTests
 
         // And the operator reads it, which is what makes a caught refusal legitimate
         // rather than swallowed.
-        Assert.Contains("absent: segments, guidance, facts", Detail(store), StringComparison.Ordinal);
+        Assert.Contains("absent: segments, revenueTables, guidance, facts", Detail(store), StringComparison.Ordinal);
+    }
+
+    // An archive answering as the recorded one does, with other tables of revenue by a
+    // grouping put on the read, which neither filer the recording holds files.
+    sealed class WithRevenueTables(IFilingsArchiveFeed inner, IReadOnlyList<SegmentBreakdown> tables) : IFilingsArchiveFeed
+    {
+        public int Requests => inner.Requests;
+
+        public async Task<ArchiveFilings> FilingsAsync(string ticker, string cik, CancellationToken cancellation = default) =>
+            await inner.FilingsAsync(ticker, cik, cancellation) is var read
+                ? read with
+                {
+                    RevenueTables = tables,
+                    PartsNotCarried = [.. read.PartsNotCarried.Where(part => part != SecEdgarArchive.RevenueTables)],
+                }
+                : throw new InvalidOperationException();
+    }
+
+    [Fact]
+    public async Task TheNewestRowCarriesTheFilingsOtherRevenueTablesInTheSegmentTablesShape()
+    {
+        // The table by market platform a filing states beside its segments, stored on the
+        // newest row as the segment table is, and the source column naming the archive for
+        // it. Where the filing names none, the source says the archive served none.
+        using var store = new TemporaryStore().Migrated();
+
+        var page = File.ReadAllText(Path.Combine(Folder(), "segment-report-NVDA-R67.htm"));
+        var platform = SecEdgarArchive.Breakdown(page, "R67.htm")!;
+
+        await WithArchive(store, Feed(), new WithRevenueTables(new RecordedFilingsArchiveFeed(Folder()), [platform]))
+            .RunAsync("AAPL", null, "open-1");
+
+        var rows = Rows(store, "AAPL");
+
+        using var newest = JsonDocument.Parse(rows[0].Payload);
+        using var source = JsonDocument.Parse(rows[0].Source);
+
+        var table = Assert.Single(newest.RootElement.GetProperty("revenueTables").EnumerateArray());
+
+        Assert.Equal("R67.htm", table.GetProperty("report").GetString());
+        Assert.Equal(1_000_000, table.GetProperty("scale").GetInt32());
+
+        var dataCenter = table.GetProperty("groups").EnumerateArray()
+            .Single(group => group.GetProperty("label").GetString() == "Data Center")
+            .GetProperty("figures").EnumerateArray()
+            .First(figure => figure.GetProperty("lineItem").GetString() == "Revenue"
+                && figure.GetProperty("months").GetInt32() == 3
+                && figure.GetProperty("ended").GetString() == "2026-07-26");
+
+        // 89,023 as rendered under '$ in Millions'.
+        Assert.Contains(">89,023<", page, StringComparison.Ordinal);
+        Assert.Equal(89_023_000_000m, decimal.Parse(dataCenter.GetProperty("value").GetString()!, CultureInfo.InvariantCulture));
+        Assert.Equal(FundamentalsFetcher.Archive, source.RootElement.GetProperty(SecEdgarArchive.RevenueTables).GetString());
+
+        // Only the newest row, for the reason the segment table sits there alone.
+        Assert.All(rows.Skip(1), row =>
+        {
+            using var older = JsonDocument.Parse(row.Payload);
+
+            Assert.Equal(JsonValueKind.Null, older.RootElement.GetProperty("revenueTables").ValueKind);
+        });
+
+        using var plain = new TemporaryStore().Migrated();
+
+        await WithArchive(plain, Feed()).RunAsync("AAPL", null, "open-1");
+
+        using var none = JsonDocument.Parse(Rows(plain, "AAPL")[0].Source);
+
+        Assert.Equal(FundamentalsFetcher.NotFiled, none.RootElement.GetProperty(SecEdgarArchive.RevenueTables).GetString());
     }
 
     [Fact]
