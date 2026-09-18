@@ -14982,11 +14982,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             live reason. M5 turned 2 red, the record test counting 6 wins of 6 where the rows under
             the carried multiple give 3 of 3, and the thresholds test counting 4 marked rows where
             the 2 keeping the multiple count.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1065 of 1065 tests
             ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim added
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 367 claims,
+            367 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 374 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim added
             and none moved: section 17's frozen measurement windows row is read as its two subjects,
             a rule by `nightly-run` and a threshold by `read-surface`, which is the claims at 367
             and the placements and verdicts reconciled at 374, and the pair holds 367 as 8.0's 361
