@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - SCHEMA.md - a quarter's end is the period the company's own report states
+
+Authorised by: A quarter ends on the date the company's own filing states
+Was:
+> **Two providers fill one row and `source` says which filled what, part by part.** The company financials endpoint supplies eight parts and the filings archive three: `segments`, `guidance` and `facts`, which that endpoint files for no name at all. The archive's three sit on the newest filing's row alone for the reason the ratios do and one of its own: a segment table is read from one filing's report page and the guidance from one announcement's exhibit, so writing either onto a historical row would state that an older quarter's segments were this quarter's, and deriving them per filing would cost a request per row for figures nothing reads.
+Now:
+> **Two providers fill one row and `source` says which filled what, part by part.** The company financials endpoint supplies eight parts and the filings archive three: `segments`, `guidance` and `facts`, which that endpoint files for no name at all. The archive's three sit on the newest filing's row alone for the reason the ratios do and one of its own: a segment table is read from one filing's report page and the guidance from one announcement's exhibit, so writing either onto a historical row would state that an older quarter's segments were this quarter's, and deriving them per filing would cost a request per row for figures nothing reads. A twelfth part, `periodEnd`, is the quarter's end and comes from either provider on any row: the company financials endpoint labels a quarter with the last day of its month, and the archive's index states the period each 10-Q and 10-K covers, so a row takes the period of the periodic report ending within a week of that label and keeps the label only where the archive was not read or indexes no such report, and `source` names whose date it is (see: A quarter ends on the date the company's own filing states).
+Why: the row stored the provider's month-end label as the quarter's end, so a written section stated a quarter ending on a day it did not end on, and the company's own date was refused.
+
 ### 2026-09-18 - .claude/rules/checks.md - `gap-refusal` reads a year asked for alone against the exchange calendar
 
 Corrects: the backfill read the calendar for its refusal off the names a night asked for, so a year asked for alone was stored with its gap, which a refused name asked for again always is; found writing the 1.2 correction's schedule.

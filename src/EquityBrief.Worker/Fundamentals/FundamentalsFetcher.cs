@@ -234,7 +234,7 @@ public sealed class FundamentalsFetcher : IComponent
                 command.Parameters.AddWithValue("$filing_date", Stored(quarter.FilingDate));
                 command.Parameters.AddWithValue("$fetched_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
                 command.Parameters.AddWithValue("$payload", Payload(fetched, quarter, quarter.FilingDate == newest, filings));
-                command.Parameters.AddWithValue("$source", Source(fetched, filings));
+                command.Parameters.AddWithValue("$source", Source(fetched, filings, quarter));
 
                 await command.ExecuteNonQueryAsync(cancellation);
 
@@ -358,7 +358,7 @@ public sealed class FundamentalsFetcher : IComponent
         ArchiveFilings? filings = null) =>
         JsonSerializer.Serialize(new
         {
-            periodEnd = Stored(quarter.PeriodEnd),
+            periodEnd = Stored(PeriodEnd(quarter, filings) ?? quarter.PeriodEnd),
             currency = fetched.Currency,
             // The company's identifier at the filings archive, on the newest row, from
             // 6.8. The archive is addressed by it and nothing else, and a research pass
@@ -509,7 +509,7 @@ public sealed class FundamentalsFetcher : IComponent
     // Which provider each part came from, which is what SCHEMA's `source` column
     // is for. The two parts this feed does not file say so by name, so a row can
     // be read later without knowing which endpoint filled it.
-    internal static string Source(CompanyFundamentals fetched, ArchiveFilings? filings = null)
+    internal static string Source(CompanyFundamentals fetched, ArchiveFilings? filings = null, FiledQuarter? quarter = null)
     {
         var sources = new Dictionary<string, string>(StringComparer.Ordinal);
         var fromArchive = NotCarried(filings);
@@ -517,6 +517,7 @@ public sealed class FundamentalsFetcher : IComponent
         foreach (var part in Parts)
         {
             sources[part] = part == Margin ? Computed
+                : part == PeriodEndPart ? quarter is { } covered && PeriodEnd(covered, filings) is not null ? Archive : Provider
                 : ArchiveParts.Contains(part, StringComparer.Ordinal)
                     ? fromArchive.Contains(part, StringComparer.Ordinal)
                         ? filings is null ? NotRead : NotFiled
@@ -533,11 +534,31 @@ public sealed class FundamentalsFetcher : IComponent
     // whose source nobody stated is one a later reader cannot attribute.
     public static readonly string[] Parts =
     [
-        "quarter", "margin", "balanceSheet", "earnings", "epsBases", "valuation",
+        "periodEnd", "quarter", "margin", "balanceSheet", "earnings", "epsBases", "valuation",
         "marketCapitalisation", "estimated", "segments", "guidance", "facts",
     ];
 
     public const string Margin = "margin";
+
+    public const string PeriodEndPart = "periodEnd";
+
+    // How far a periodic report's own period end may lie from the provider's label
+    // for the quarter and still be that quarter's. The provider labels a quarter by
+    // the last day of its month, and a fiscal quarter that ends on a weekday ends
+    // within a week of it either side; quarters are three months apart, so a week
+    // never reaches the next one.
+    public const int PeriodEndDays = 7;
+
+    // The quarter's end as the company's own periodic report states it, or null where
+    // the archive was not read or indexes no report ending within a week of the
+    // provider's label, which then stands.
+    // see: A quarter ends on the date the company's own filing states
+    internal static DateOnly? PeriodEnd(FiledQuarter quarter, ArchiveFilings? filings) =>
+        filings?.Periodic
+            .Where(filing => filing.PeriodEnd is { } ended && Math.Abs(ended.DayNumber - quarter.PeriodEnd.DayNumber) <= PeriodEndDays)
+            .OrderBy(filing => Math.Abs(filing.PeriodEnd!.Value.DayNumber - quarter.PeriodEnd.DayNumber))
+            .Select(filing => filing.PeriodEnd)
+            .FirstOrDefault();
 
     // Money as the store holds it, which is text in the invariant form, and null
     // as null rather than as a zero: a balance sheet line the provider did not
