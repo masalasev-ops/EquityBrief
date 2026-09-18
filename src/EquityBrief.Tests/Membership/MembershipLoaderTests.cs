@@ -478,6 +478,51 @@ public class MembershipLoaderTests
         Assert.Equal("Utilities - Regulated Electric", Industry(store, "YYYY"));
     }
 
+    [Fact]
+    public async Task TheCompanysNameIsReadFromItsSpanAndKeptOnANightThatStatesNone()
+    {
+        // The name the span states, current or departed, and a night whose span states none
+        // keeps the one the row holds, as the sector is kept.
+        using var store = new TemporaryStore().Migrated();
+
+        const string Named = """
+            {
+              "Components": { "0": { "Code": "ZZZZ", "Sector": "Technology", "Industry": "Semiconductors" } },
+              "HistoricalTickerComponents": {
+                "1": { "Code": "ZZZZ", "Name": "Zeta Semiconductor Corp", "StartDate": "2020-01-02" },
+                "2": { "Code": "XXXX", "Name": "Xi Holdings Inc", "StartDate": "2018-01-02", "EndDate": "2025-03-24" }
+              }
+            }
+            """;
+
+        const string Unnamed = """
+            {
+              "Components": { "0": { "Code": "ZZZZ", "Sector": "Technology", "Industry": "Semiconductors" } },
+              "HistoricalTickerComponents": {
+                "1": { "Code": "ZZZZ", "StartDate": "2020-01-02" },
+                "2": { "Code": "XXXX", "StartDate": "2018-01-02", "EndDate": "2025-03-24" }
+              }
+            }
+            """;
+
+        var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        await new MembershipLoader(new RecordedIndexMembershipFeed(Named), clock, store.DatabaseFile)
+            .LoadAsync(Index, "night-one");
+
+        Assert.Equal("Zeta Semiconductor Corp", Name(store, "ZZZZ"));
+        Assert.Equal("Xi Holdings Inc", Name(store, "XXXX"));
+
+        await new MembershipLoader(new RecordedIndexMembershipFeed(Unnamed), clock, store.DatabaseFile)
+            .LoadAsync(Index, "night-two");
+
+        Assert.Equal("Zeta Semiconductor Corp", Name(store, "ZZZZ"));
+        Assert.Equal("Xi Holdings Inc", Name(store, "XXXX"));
+    }
+
+    static string? Name(TemporaryStore store, string ticker) =>
+        Scalar(store, $"SELECT name FROM membership WHERE ticker = '{ticker}';");
+
     static string? Sector(TemporaryStore store, string ticker) =>
         Scalar(store, $"SELECT sector FROM membership WHERE ticker = '{ticker}';");
 

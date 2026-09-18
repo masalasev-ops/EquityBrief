@@ -29,7 +29,13 @@ namespace EquityBrief.Core.Providers;
 // `Industry` is read from the same snapshot beside the sector and is null for the
 // same reason. It is the theme a name's industry research is shared under, from 6.9
 // (see: A theme is the industry the index names for a member, and one theme pass serves every member it names).
-public sealed record IndexConstituent(string Ticker, DateOnly? Joined, DateOnly? Left, string? Sector = null, string? Industry = null);
+//
+// `Name` is the company's name as the span states it, which the spans carry for every name
+// they list, current or departed, so it is read from the span and not from the snapshot.
+// Null where a span states none. The name page states it beside the ticker, and a research
+// pass reads it to tell an article about the company from one that only mentions it
+// (see: The membership row carries the company's name the index feed states).
+public sealed record IndexConstituent(string Ticker, DateOnly? Joined, DateOnly? Left, string? Sector = null, string? Industry = null, string? Name = null);
 
 // The index membership feed of section 5, behind an interface so the nightly
 // path and the suite meet the same shape.

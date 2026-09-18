@@ -25,6 +25,17 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - SCHEMA.md - the membership row carries the company's name
+
+Authorised by: The membership row carries the company's name the index feed states
+Was:
+> | `industry` | TEXT | the industry the provider last named for this ticker, null where it has named none. Last because it was added by an `ALTER TABLE` at 6.9 |
+Now:
+> | `industry` | TEXT | the industry the provider last named for this ticker, null where it has named none. After `sector` because it was added by an `ALTER TABLE` at 6.9 |
+> | `name` | TEXT | the company's name as the provider's span for this ticker states it, null where the span states none. Last because it was added by an `ALTER TABLE` at the 5.1 correction of 2026-09-18 |
+> and a paragraph saying where the name comes from, that it is coalesced, and what reads it
+Why: the name page had no company name to state and a research pass had none to tell an article about the company from one that mentions it.
+
 ### 2026-09-18 - SCHEMA.md - the fundamentals row carries the quarter's growth
 
 Authorised by: A quarter's growth is computed on its own row from the filings the provider returned
