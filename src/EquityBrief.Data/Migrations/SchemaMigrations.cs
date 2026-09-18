@@ -649,12 +649,20 @@ public static class SchemaMigrations
         new Migration(26, "create rule_version and version_score", CreateRuleVersions),
         new Migration(27, "candidate_register refuses a replace", RefuseARegisterReplace),
         new Migration(28, "add rule_version.evidence", AddRuleVersionEvidence),
+        new Migration(29, "add membership.name", AddMembershipName),
     ];
 
     // The evidence a window was closed on, written by the close that ends or replaces it.
     // see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
     const string AddRuleVersionEvidence = @"
         ALTER TABLE rule_version ADD COLUMN evidence TEXT;
+    ";
+
+    // The company's name, on the membership row, from the span the index feed lists. Nullable
+    // for a span stating none, and coalesced by the loader as the sector is.
+    // see: The membership row carries the company's name the index feed states
+    const string AddMembershipName = @"
+        ALTER TABLE membership ADD COLUMN name TEXT;
     ";
 
     // The bar each plan set for itself, beside the setup it belongs to.

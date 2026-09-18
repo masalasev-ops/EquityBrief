@@ -139,7 +139,10 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
             Date(entry, "StartDate", ticker),
             Date(entry, "EndDate", ticker),
             sectors.TryGetValue(ticker, out var sector) ? sector : null,
-            industries.TryGetValue(ticker, out var industry) ? industry : null);
+            industries.TryGetValue(ticker, out var industry) ? industry : null,
+            entry.TryGetProperty("Name", out var name) && name.ValueKind == JsonValueKind.String && name.GetString() is { Length: > 0 } named
+                ? named.Trim()
+                : null);
     }
 
     // Three outcomes, kept apart on purpose.

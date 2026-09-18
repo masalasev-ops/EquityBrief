@@ -32,6 +32,8 @@
   "NFLX": "Entertainment"
  },
  "industryNote": "derived from the same Components object as the sectors, from 6.9, where the industry became what a theme is. Four members and four industries, so no two of this fixture's names share a theme, and the claim that one theme pass serves every member of an industry is asserted over a constructed pair rather than over these four. The departed constituents have no industry for the reason they have no sector.",
+ "names": {"AAL": "American Airlines Group", "AAPL": "Apple Inc.", "KEYS": "Keysight Technologies Inc", "MSFT": "Microsoft Corporation", "NFLX": "Netflix Inc", "XRAY": "Dentsply Sirona Inc"},
+ "nameNote": "derived from the HistoricalTickerComponents object of the same captured payload, which states a Name on every span, the two departed constituents included, where Components carries current members alone. Read off the payload by hand, not from a run.",
  "properties": {
   "aDepartedNameHasNoSectorBecauseTheSnapshotHoldsCurrentMembersAlone": "null, drawn as not on file",
   "aDepartedNameKeepsItsRowAndItsLeaveDate": "membership has no declared deleter",

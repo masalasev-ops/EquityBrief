@@ -444,6 +444,19 @@ public partial class FixtureExpectations
             [.. expected.GetProperty("departed").EnumerateArray().Select(_ => "")],
             Query(store, "SELECT IFNULL(industry, '') FROM membership WHERE left IS NOT NULL ORDER BY ticker;"));
 
+        // The company's name, read from the spans, which state one for every ticker they list,
+        // the departed ones included.
+        foreach (var named in expected.GetProperty("names").EnumerateObject())
+        {
+            Assert.Equal(
+                [named.Value.GetString()!],
+                Query(store, $"SELECT name FROM membership WHERE ticker = '{named.Name}';"));
+        }
+
+        Assert.Equal(
+            [expected.GetProperty("constituents").GetInt32().ToString()],
+            Query(store, "SELECT COUNT(*) FROM membership WHERE name IS NOT NULL;"));
+
         // The two populations are different, which is the thing a reader is
         // most likely to conflate: five constituents and three names.
         Assert.NotEqual(
@@ -2133,10 +2146,10 @@ public partial class FixtureExpectations
         // that, the membership file added its industry note at 6.9 and it caught
         // that, and so it did the two expectation files 6.9 added, the overnight queue's
         // statement of what it froze and its three notes at 6.10, and the research record's
-        // note on its theme and the theme record's note on its results at 6.11. Which is what
-        // it is for.
+        // note on its theme and the theme record's note on its results at 6.11, and the
+        // membership file's name note after them. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "reason-verdicts.note", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.note", "theme-record.resultsNote"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.nameNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "reason-verdicts.note", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.note", "theme-record.resultsNote"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

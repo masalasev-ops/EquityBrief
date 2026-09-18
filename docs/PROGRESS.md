@@ -15697,3 +15697,68 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.1 - correction: the membership row carries the company's name the index feed states, where the name page had none to state and a research pass none to rank by   2026-09-18
+Corrects:   the 5.1 entry records the membership loader writing each span with the sector the
+            snapshot object states, and 6.9 added the industry from the same object. The spans
+            state the company's name for every ticker they list and the loader read none of it, so
+            no screen could say which company a ticker is and nothing could tell an article about
+            the company from one that only mentions it.
+Found:      on 2026-09-18, twice: the operator's first sight of the screens found the name page
+            headed by a ticker alone, and the first live research pass handed NVDA's calendar
+            section another company's product launch, which the provider had attributed to NVDA
+            alone and whose title named Xeal and not NVIDIA.
+Measured:   the captured constituents payload states a Name on each of its six spans, the two
+            departed ones included, and the snapshot object states one for its four current
+            members only. The operator's store holds no name column.
+Repaired:   migration 29 adds `name` to membership; the parser reads each span's Name and the loader
+            writes it, coalesced as the sector is, so a night whose span states none keeps the name
+            the row holds. DECISIONS records it as The membership row carries the company's name
+            the index feed states; SCHEMA declares the column and says where it comes from, with
+            its prior text in CHANGELOG. The name page and a research pass read it from the
+            corrections that change them.
+Stored:     the operator's store gains the column when `tools/migrate` or the next night applies
+            migration 29, and the night after fills it for every span the feed lists.
+Missed:     the loader's tests and the fixture's expectation asserted the sector and the industry
+            the payload carries and never asked what else each span states.
+Guarded:    over the fixture, every one of the six spans' names is stored as the payload states it,
+            read off the payload by hand into the expectation; and over two constructed nights, a
+            current and a departed name keep the names the first night stored when the second
+            night's spans state none.
+Expected:   derived: the names are read off the captured payload into the membership expectation,
+            which gains them beside the sectors and industries.
+Tests:      1083, from 1082. One added to the loader's tests; the fixture's membership test reads
+            the names, the schema check counts eight membership columns, and the check that every
+            expectation key is read names the new note among those that are sentences. No file
+            this correction edits is a source either evaluator version or the ladder rules' code
+            version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each of the three properties this correction
+            adds, the name read from the span, the name written, and the name kept on a night that
+            states none.
+            Predicted:
+            M1 the span's name never read: the fixture's membership test red on the names, and the
+            loader's name test red; nothing else.
+            M2 the name never written: the same two red the same way; nothing else.
+            M3 the name not coalesced: the loader's name test red on the second night; nothing
+            else.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1082 of 1083 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 2 red, the fixture's membership test on the names, and the loader's name test,
+            each finding no name.
+            M2 turned 2 red, the same two the same way.
+            M3 turned 1 red, the loader's name test on the second night, the names cleared.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1083 of 1083 tests
+            ran with none failed, migrations 0 to 29 with one added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html`, and no roster row
+            changed. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.
+Carried:    nothing owed by this repair.
