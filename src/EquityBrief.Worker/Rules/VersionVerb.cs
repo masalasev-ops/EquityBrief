@@ -1,7 +1,6 @@
 using System.Globalization;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Time;
-using EquityBrief.Data.Migrations;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Rules;
@@ -40,7 +39,7 @@ public static class VersionVerb
         TextWriter output,
         TextWriter error)
     {
-        if (StoreRefusal(databaseFile) is { } refused)
+        if (VerbStore.Refusal(databaseFile) is { } refused)
         {
             await error.WriteLineAsync("version: " + refused);
 
@@ -61,33 +60,6 @@ public static class VersionVerb
 
             return 1;
         }
-    }
-
-    // A store that is missing, or behind this checkout, is refused before anything is read
-    // from it or written to it: a verb does not migrate a store.
-    static string? StoreRefusal(string databaseFile)
-    {
-        if (!File.Exists(databaseFile))
-        {
-            return $"no store at {databaseFile}. Run tools/migrate, which creates it.";
-        }
-
-        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
-        {
-            DataSource = databaseFile,
-            Mode = SqliteOpenMode.ReadOnly,
-            Pooling = false,
-        }.ConnectionString);
-
-        connection.Open();
-
-        var at = MigrationRunner.AppliedVersion(connection);
-
-        return at < SchemaMigrations.LatestVersion
-            ? FormattableString.Invariant(
-                $"the store is at schema {at} and this checkout reads schema {SchemaMigrations.LatestVersion}. ") +
-              "Run tools/migrate first; a verb does not migrate a store and writes nothing to one this checkout has not migrated."
-            : null;
     }
 
     static async Task<int> FormAsync(

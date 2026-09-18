@@ -58,80 +58,20 @@ static int NoVerb()
 // A verb rather than a step, because a registration is a decision a person takes
 // and never something a night arrives at: a register that filled itself would be
 // the thing pre-registration exists to stop. Nothing evaluates a registered
-// candidate at 8.3; the shadow column at 8.4 is what runs them.
+// candidate at 8.3; the shadow column at 8.4 is what runs them. The verb's work is in
+// `RegisterVerb`, so a test runs the verb a person runs rather than a copy of it.
 // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
 static async Task<int> Register(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
-    var clock = SystemClock.ForUnitedStatesSessions();
-    var runId = FormattableString.Invariant($"register-{clock.UtcNow:yyyyMMddTHHmmssZ}");
-    var registrar = new CandidateRegistrar(clock, store.DatabaseFile);
 
-    if (Argument(args, "--retire") is { } retiring)
-    {
-        var evidence = Argument(args, "--evidence");
-
-        if (string.IsNullOrWhiteSpace(evidence))
-        {
-            Console.Error.WriteLine(
-                "register: '--retire' was given without '--evidence'. A retirement states the figures " +
-                "that produced it, because a candidate withdrawn for no recorded reason is one nobody " +
-                "can tell from a candidate withdrawn for looking bad.");
-
-            return 1;
-        }
-
-        var withdrawn = await registrar.RetireAsync(retiring, evidence, runId);
-
-        Console.WriteLine("register: " + withdrawn.Detail);
-
-        return withdrawn.Outcome == CandidateRegistrar.Refused ? 1 : 0;
-    }
-
-    var candidate = Argument(args, "--candidate");
-    var rule = Argument(args, "--rule");
-    var test = Argument(args, "--test");
-    var evaluator = Argument(args, "--evaluator");
-
-    if (string.IsNullOrWhiteSpace(candidate)
-        || string.IsNullOrWhiteSpace(rule)
-        || string.IsNullOrWhiteSpace(test)
-        || string.IsNullOrWhiteSpace(evaluator))
-    {
-        Console.Error.WriteLine(
-            "register: a registration needs '--candidate', '--rule', '--test' and '--evaluator'. Each is " +
-            "a column of the row, and a registration missing one is a row that does not say what was " +
-            $"registered. Evaluators carried: {string.Join(", ", CandidateEvaluators.Names)}.");
-
-        return 1;
-    }
-
-    IReadOnlyDictionary<string, double> parameters;
-
-    try
-    {
-        parameters = VerbArguments.Parameters(Argument(args, "--parameters"));
-    }
-    catch (FormatException refusal)
-    {
-        Console.Error.WriteLine("register: " + refusal.Message);
-
-        return 1;
-    }
-
-    var outcome = await registrar.RegisterAsync(candidate, rule, test, evaluator, parameters, runId);
-
-    if (outcome.Outcome == CandidateRegistrar.Refused)
-    {
-        Console.Error.WriteLine("register: " + outcome.Detail);
-
-        return 1;
-    }
-
-    Console.WriteLine("register: " + outcome.Detail);
-
-    return 0;
+    return await RegisterVerb.RunAsync(
+        args,
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        Console.Out,
+        Console.Error);
 }
 
 // A ladder rule's window opened, closed or listed.

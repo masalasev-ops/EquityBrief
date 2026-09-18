@@ -153,11 +153,9 @@ public class CoverageReported
         Assert.Equal(Roster().Count, coverage.Count);
         Assert.DoesNotContain(coverage, entry => entry.Carrier.Length == 0);
 
-        // Every row carries a real carrier from 8.3, which is what promoting the
-        // last checkpoint row means. It was asserted the other way until then: a
-        // row reading "not due yet" had to be present, so that the marker could
-        // not quietly stop being written while rows still needed it.
-        Assert.DoesNotContain(coverage, entry => entry.Carrier == NotDueYet);
+        // A row that runs on every CI run has the class that carries it; a row rostered from a
+        // checkpoint carries the marker until then, which the pending-row proof holds.
+        Assert.DoesNotContain(coverage, entry => entry.Runs == "every CI run" && entry.Carrier == NotDueYet);
 
         // The marker is still what an unimplemented row gets, put to the same
         // reader the record above is built by rather than asserted of the corpus,

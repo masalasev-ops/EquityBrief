@@ -940,6 +940,110 @@ public class RegisterAppendOnly
     // The session zone is the one every other clock in this repository resolves,
     // so a test written against it exercises the derivation a night uses rather
     // than a second one written for the test.
+    // ---- the register verb ----
+
+    // The verb a person runs, over a store, rather than the registrar beneath it: every attempt,
+    // refused or not, is one row on the run log, and a refusal changes nothing in the register.
+    [Fact]
+    public async Task EveryAttemptTheRegisterVerbMakesIsOneRowOnTheRunLogAndARefusalChangesNothing()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        (string[] Args, string Refused)[] cases =
+        [
+            ([], "no form was given. The forms are '--candidate', '--retire'"),
+            (["--candidate", "x", "--retire", "y", "--evidence", "e"], "'--candidate' and '--retire' are 2 forms given together"),
+            (["--retire", "x"], "the '--retire' form needs '--evidence'"),
+            (["--candidate", "x", "--rule", "--test", "t", "--evaluator", "e"], "'--rule' is followed by '--test', where it takes a value"),
+            (["--candidate", "x", "--rule", "r", "--test", "t", "--evaluator", MomentumIndexReading.EvaluatorName, "--parameters", "level=3,0"], "is not a name and a number"),
+        ];
+
+        for (var at = 0; at < cases.Length; at++)
+        {
+            var (args, refused) = cases[at];
+            var when = Opened.AddMinutes(at);
+            var error = new StringWriter();
+            var before = RunLogRows(store);
+            var asked = string.Join(" ", args);
+
+            var code = await RegisterVerb.RunAsync([RegisterVerb.Name, .. args], Clock(when), store.DatabaseFile, new StringWriter(), error);
+            var said = error.ToString().TrimEnd();
+
+            Assert.StartsWith("register: ", said, StringComparison.Ordinal);
+            Assert.Equal((asked, 1, before + 1), (asked, code, RunLogRows(store)));
+            Assert.Equal((asked, $"{CandidateRegistrar.Refused}|0|{said["register: ".Length..]}"), (asked, Logged(store, RegisterVerb.RunIdAt(when))));
+            Assert.Contains(refused, said, StringComparison.Ordinal);
+            Assert.Empty(await RowsAsync(store));
+        }
+
+        // A registration through the verb is one registered row and one register row.
+        var registered = Opened.AddHours(1);
+
+        Assert.Equal(0, await RegisterVerb.RunAsync(
+            [
+                RegisterVerb.Name,
+                "--candidate", "momentum index at thirty",
+                "--rule", "the relative strength index at or below thirty",
+                "--test", "the share of its setups that beat their own break-even",
+                "--evaluator", MomentumIndexReading.EvaluatorName,
+                "--parameters", "level=30",
+            ],
+            Clock(registered),
+            store.DatabaseFile,
+            new StringWriter(),
+            new StringWriter()));
+        Assert.StartsWith($"{CandidateRegistrar.Registered}|1|", Logged(store, RegisterVerb.RunIdAt(registered)), StringComparison.Ordinal);
+        Assert.Single(await RowsAsync(store));
+
+        // A store behind this checkout is refused and nothing is written to it.
+        using var behind = new TemporaryStore();
+
+        new EquityBrief.Data.Migrations.MigrationRunner([.. EquityBrief.Data.Migrations.SchemaMigrations.All.Take(EquityBrief.Data.Migrations.SchemaMigrations.All.Count - 1)]).Apply(behind.DatabaseFile);
+
+        var refusal = new StringWriter();
+
+        Assert.Equal(1, await RegisterVerb.RunAsync([RegisterVerb.Name, "--retire", "x", "--evidence", "e"], Clock(Opened), behind.DatabaseFile, new StringWriter(), refusal));
+        Assert.Contains("tools/migrate", refusal.ToString(), StringComparison.Ordinal);
+        Assert.Equal(0, RunLogRows(behind));
+    }
+
+    [Fact]
+    public async Task TwoRegisterCommandsAtOneInstantWriteOneRow()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        string[] Registering(string candidate, int level) =>
+        [
+            RegisterVerb.Name,
+            "--candidate", candidate,
+            "--rule", "the relative strength index at or below a level",
+            "--test", "the share of its setups that beat their own break-even",
+            "--evaluator", MomentumIndexReading.EvaluatorName,
+            "--parameters", FormattableString.Invariant($"level={level}"),
+        ];
+
+        var error = new StringWriter();
+
+        Assert.Equal(0, await RegisterVerb.RunAsync(Registering("momentum index at thirty", 30), Clock(Opened), store.DatabaseFile, new StringWriter(), new StringWriter()));
+        Assert.Equal(1, await RegisterVerb.RunAsync(Registering("momentum index at twenty", 20), Clock(Opened), store.DatabaseFile, new StringWriter(), error));
+        Assert.Contains("another command wrote under the same run id", error.ToString(), StringComparison.Ordinal);
+        Assert.Equal(["momentum index at thirty"], (await RowsAsync(store)).Select(row => row.Candidate));
+        Assert.Equal(1, RunLogRows(store));
+        Assert.NotEqual(RegisterVerb.RunIdAt(Opened), RegisterVerb.RunIdAt(Opened.AddTicks(1)));
+    }
+
+    // One run log row as outcome, rows written and detail.
+    static string Logged(TemporaryStore store, string runId)
+    {
+        using var connection = store.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT outcome || '|' || rows_written || '|' || detail FROM run_log WHERE run_id = $run;";
+        command.Parameters.AddWithValue("$run", runId);
+
+        return (string)command.ExecuteScalar()!;
+    }
+
     static FixedClock Clock(DateTimeOffset at) => FixedClock.At(at, SessionZones.UnitedStates);
 
     static string SourceOf(CandidateEvaluator evaluator) =>

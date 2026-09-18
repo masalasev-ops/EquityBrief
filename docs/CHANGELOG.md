@@ -25,6 +25,42 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - ARCHITECTURE.html - the run page's route reads the register verb's rows as run by hand as well
+
+Corrects: the run page drew the register verb's rows as the night's stages, a registration among its failed stages, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> and neither is a day whose only rows are the <code>version</code> verb run by hand,
+Now:
+> and neither is a day whose only rows are the <code>version</code> or <code>register</code> verb run by hand,
+Why: the register verb's rows are a person's commands as the version verb's are, and a registration's outcome is not ok, so the page drew one as a failed stage.
+
+### 2026-09-18 - SCHEMA.md - a register command writes under a run id of its own
+
+Corrects: the register verb's attempts were not all rows on the run log and their run ids could collide, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> **A command a person runs through the `version` verb writes under a run id of the verb's name and its instant to the ten-millionth of a second.** Every open, replacement, close and backfill, refused or not, is one row under `rule-versions`, a listing writes none, and the run page draws the rows as run by hand rather than as stages of the night.
+Now:
+> **A command a person runs through the `version` or `register` verb writes under a run id of the verb's name and its instant to the ten-millionth of a second.** Every open, replacement, close and backfill, refused or not, is one row under `rule-versions`, a listing writes none, every registration and retirement, refused or not, is one row under `candidate-register`, and the run page draws the rows as run by hand rather than as stages of the night.
+Why: the register verb's own refusals wrote no row, and its run id, taken to the second, collided with a second command in the same second.
+
+### 2026-09-18 - RUNBOOK.md - a register attempt is one row under a run id of its own, and a command is one form
+
+Corrects: the register verb's refusals were not rows and its forms were read in a fixed order, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> Each attempt, refused or not, is a row on the run log under `candidate-register`.
+Now:
+> Each attempt, refused or not, is one row on the run log under `candidate-register` and a run id beginning `register-`, which the run page draws as run by hand; a command giving both `--candidate` and `--retire`, a flag where a value goes, or a store behind the checkout is refused, the last writing nothing.
+Why: the verb's own refusals wrote no row, a retirement given beside a registration dropped the registration without a word, and the run page drew a registration as a failed stage.
+
+### 2026-09-18 - .claude/rules/checks.md - register-append-only holds the register verb's forms and its run log rows
+
+Corrects: no test ran the register verb, found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> the refusal naming the floor section 17 sets before a live condition may be retired |
+Now:
+> the refusal naming the floor section 17 sets before a live condition may be retired; and the register verb takes one form at a time, with every attempt, refused or not, one row on the run log under a run id no second command shares and every refusal changing nothing |
+Why: the verb was not run by any test, every register test calling the registrar beneath it.
+
 ### 2026-09-18 - ARCHITECTURE.html - the rule version scorer's catalogue row names the replacement, the evidence, the New York date and the backfill's night
 
 Authorised by: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
