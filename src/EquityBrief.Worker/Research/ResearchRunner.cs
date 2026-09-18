@@ -117,6 +117,12 @@ public sealed class ResearchRunner(
     public const string SecondRound = "round 2";
     public const string ThirdRound = "round 3";
 
+    // The suffix a second ask of one section carries on the run log, after the round it was
+    // asked in.
+    public const string AskedAgainSuffix = "asked again";
+
+    public static string AskedAgain(string? round) => round is null ? AskedAgainSuffix : round + ", " + AskedAgainSuffix;
+
     const string FactsFor = @"
         SELECT payload, session_date FROM facts
         WHERE ticker = $ticker AND session_date <= $as_of AND payload != ''
@@ -680,6 +686,14 @@ public sealed class ResearchRunner(
 
             var call = await cap.AskAsync(request, runId, round, cancellation);
 
+            // An answer that arrived empty or cut short is asked for once more, under a stage of
+            // its own so both calls and what each cost stand on the run log.
+            // see: An answer that comes back empty or cut short is asked for once more
+            if (call.Unusable)
+            {
+                call = await cap.AskAsync(request, runId, AskedAgain(round), cancellation);
+            }
+
             if (call.Paused)
             {
                 foreach (var stopped in sections.Skip(at))
@@ -692,7 +706,7 @@ public sealed class ResearchRunner(
 
             if (call.Answer is not { } answer)
             {
-                notWritten.Add(new UnwrittenSection(section, call.Failure ?? "the research model returned nothing"));
+                notWritten.Add(new UnwrittenSection(section, call.Unusable ? ProseWriter.NoUsableAnswer : call.Failure ?? "the research model returned nothing"));
 
                 continue;
             }

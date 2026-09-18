@@ -6,9 +6,14 @@ namespace EquityBrief.Core.Providers;
 // rejected rate are worth asking again; a rejected key is wrong three times and
 // the retry only delays the message that says so.
 // see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
-public sealed class ProviderRefusal(string message, bool transient) : Exception(message)
+//
+// `Unusable` marks a model's answer that arrived and could not be stored, empty or cut short,
+// which a caller may ask for once more where it would not ask again after a refusal.
+public sealed class ProviderRefusal(string message, bool transient, bool unusable = false) : Exception(message)
 {
     public bool Transient { get; } = transient;
+
+    public bool Unusable { get; } = unusable;
 }
 
 // How many times, how long between, and how long any one of them may take.

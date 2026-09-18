@@ -28,7 +28,8 @@ public sealed record ProseOutcome(
     IReadOnlyList<UnwrittenSection> NotWritten,
     IReadOnlyList<UnwrittenSection> Skipped,
     int ModelCalls,
-    bool Unavailable);
+    bool Unavailable,
+    IReadOnlyList<UnwrittenSection>? Unusable = null);
 
 // The prose writer. Whatever sections the local lane holds, for one name, on the
 // operator's own model, at no cost.
@@ -83,6 +84,12 @@ public sealed class ProseWriter(
     // and the page say them the same way.
     public const string CannotHold = "the machine cannot hold it";
     public const string Unavailable = "the local model is unavailable";
+
+    // Why a section is left out after its answer came back empty or cut short twice. Said
+    // plainly, because a person reads it on the name page; what the model sent is on the run
+    // log's row.
+    // see: An answer that comes back empty or cut short is asked for once more
+    public const string NoUsableAnswer = "the model's answer came back empty or cut short twice";
     public const string NothingHanded = "no document was handed to the writer for it";
     public const string NoFactsFile = "no facts file is stored for the name on or before today";
     public const string NoDocumentInsideAMove = "no document handed to the writer was published inside any stored move";
@@ -277,6 +284,9 @@ public sealed class ProseWriter(
 
         var unavailable = false;
 
+        // What the model sent where an answer came back unusable, for the run log's row.
+        var unusableFirst = new List<(string Section, string Said)>();
+
         foreach (var (section, request, ids, retry, version) in planned)
         {
             if (unavailable)
@@ -298,9 +308,22 @@ public sealed class ProseWriter(
             {
                 try
                 {
-                    calls++;
+                    ModelAnswer answer;
 
-                    var answer = await model.CompleteAsync(request, cancellation).ConfigureAwait(false);
+                    try
+                    {
+                        calls++;
+                        answer = await model.CompleteAsync(request, cancellation).ConfigureAwait(false);
+                    }
+                    catch (ProviderRefusal unusable) when (unusable.Unusable)
+                    {
+                        // An answer that arrived empty or cut short is asked for once more: the
+                        // model spending its whole answer on its reasoning is not a property of
+                        // the section, and the second ask is the same request.
+                        unusableFirst.Add((section, unusable.Message));
+                        calls++;
+                        answer = await model.CompleteAsync(request, cancellation).ConfigureAwait(false);
+                    }
 
                     modelName = answer.Model;
                     prose = answer.Text;
@@ -311,6 +334,13 @@ public sealed class ProseWriter(
                     // waiting out a timeout per section would spend the evening on it.
                     unavailable = true;
                     notWritten.Add(new UnwrittenSection(section, $"{Unavailable}: {gone.Message}"));
+
+                    continue;
+                }
+                catch (ProviderRefusal refused) when (refused.Unusable)
+                {
+                    unusableFirst.Add((section, refused.Message));
+                    notWritten.Add(new UnwrittenSection(section, NoUsableAnswer));
 
                     continue;
                 }
@@ -338,7 +368,8 @@ public sealed class ProseWriter(
             written.Add(new WrittenSection(section, version, modelName, retry));
         }
 
-        var outcome = new ProseOutcome(ticker, asOf, written, notWritten, skipped, calls, unavailable);
+        var outcome = new ProseOutcome(ticker, asOf, written, notWritten, skipped, calls, unavailable,
+            [.. unusableFirst.Select(one => new UnwrittenSection(one.Section, one.Said))]);
 
         await using var record = connection.CreateCommand();
 
@@ -369,9 +400,13 @@ public sealed class ProseWriter(
             asOf = outcome.AsOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             written = outcome.Written.Select(section => new { section = section.Section, version = section.Version, model = section.Model, retry = section.Retry }),
             notWritten = outcome.NotWritten.Select(section => new { section = section.Section, reason = section.Reason }),
+            // What the model sent where an answer came back unusable, left out where none did.
+            unusable = outcome.Unusable is { Count: > 0 } said ? said.Select(one => new { section = one.Section, said = one.Reason }) : null,
             skipped = outcome.Skipped.Select(section => new { section = section.Section, reason = section.Reason }),
             modelCalls = outcome.ModelCalls,
-        });
+        }, Omitted);
+
+    static readonly JsonSerializerOptions Omitted = new() { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull };
 
     static async Task<long> SectionsHeldAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
     {

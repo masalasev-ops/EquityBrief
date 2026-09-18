@@ -123,6 +123,56 @@ public partial class FixtureExpectations
             .Select(line => (line.GetProperty("section").GetString()!, line.GetProperty("reason").GetString()!)),
     ];
 
+    // A local runtime whose first answers come back unusable, as a thinking model's answer spent
+    // on its reasoning does, and which otherwise answers as the recording does.
+    sealed class UnusableFirst(ILocalModelFeed inner, int unusable) : ILocalModelFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<ModelAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default) =>
+            ++Requests <= unusable
+                ? throw new ProviderRefusal(
+                    $"The local model returned no answer for {request.Section}: the finish reason was length after 1024 completion token(s).",
+                    transient: false,
+                    unusable: true)
+                : inner.CompleteAsync(request, cancellation);
+    }
+
+    [Fact]
+    public async Task AnAnswerThatComesBackUnusableIsAskedForOnceMoreAndASecondLeavesTheSectionOutSayingSo()
+    {
+        // One unusable answer: asked again, and the second is the section.
+        var (once, document) = await WithRelease();
+
+        using (once)
+        {
+            var feed = new UnusableFirst(new RecordedLocalModelFeed(Folder()), 1);
+            var outcome = await new ProseWriter(feed, LocalSettings(), ["What the company sells"], ProseClock, once.DatabaseFile)
+                .WriteAsync("KEYS", Handed(document), "prose-asked-again");
+
+            Assert.Equal(2, feed.Requests);
+            Assert.Equal(["What the company sells"], outcome.Written.Select(section => section.Section));
+            Assert.Empty(outcome.NotWritten);
+        }
+
+        // Two: left out with the plain reason a person reads on the page, and what the model sent
+        // on the run log's row rather than there.
+        var (twice, release) = await WithRelease();
+
+        using (twice)
+        {
+            var feed = new UnusableFirst(new RecordedLocalModelFeed(Folder()), 2);
+            var outcome = await new ProseWriter(feed, LocalSettings(), ["What the company sells"], ProseClock, twice.DatabaseFile)
+                .WriteAsync("KEYS", Handed(release), "prose-unusable-twice");
+
+            Assert.Equal(2, feed.Requests);
+            Assert.Empty(outcome.Written);
+            Assert.Equal(ProseWriter.NoUsableAnswer, Assert.Single(outcome.NotWritten).Reason);
+            Assert.DoesNotContain("finish reason", ProseWriter.NoUsableAnswer, StringComparison.Ordinal);
+            Assert.Contains("finish reason was length", Query(twice, "SELECT detail FROM run_log WHERE run_id = 'prose-unusable-twice';").Single(), StringComparison.Ordinal);
+        }
+    }
+
     // ---- the replay ----
 
     [Fact]
