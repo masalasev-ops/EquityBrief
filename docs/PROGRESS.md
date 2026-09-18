@@ -13782,3 +13782,185 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             own placeholder, which is the order done condition 8 asks for. Both gates ran with this
             entry in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+### 8.5 - correction: the verdict, the share and both floors over the resolved setups that set a bar, a withheld verdict never drawn as failed, and tonight's list drawing the three together   2026-09-18
+Corrects:   the 8.5 entry above records each reason's wins tested against the bar its own setups
+            demanded, drawn beside the reason and withheld below either floor. The verdict and the
+            figures drawn beside it were counted over different sets. The verdict counted every setup
+            carrying a bar, and a setup entered and still open at the 63-session cap is stored
+            unresolved with the bar its entry close set, so an unresolved setup was a losing draw in the
+            tail and counted toward both floors while the share beside it left it out: 125 wins and 125
+            losses at a bar of 40 per cent over 60 sessions clear at a tail of 0.00086, and with 30
+            unresolved setups beside them the page would have drawn "50 per cent of 250 resolved" and
+            "Does not clear" at 0.064; and 150 wins and 100 losses on 30 sessions with 30 unresolved
+            setups on 30 others drew a verdict "over 60 listing session(s)". The page's gate counted
+            every win and loss, a loss that entered and stopped on one session and set no bar included,
+            while the verdict counted the setups that set one: 125 and 124 with a bar and 6 without
+            opened the page at 255 on a verdict the test had withheld at 249 and drew it "Does not
+            clear" with no p, and 150 and 100 with 6 without drew "60 per cent of 256 resolved", where
+            60 per cent is 150 of 250. Tonight's list drew a reason that had earned a verdict as "N
+            resolved" under `data-verdict="due"`, with neither the share nor the bar 15.11 says are
+            shown with the count wherever the reason appears, and a reason short of sessions as "300 of
+            250 resolved" without naming the floor. The run page drew any p below 0.000005 as "p of 0"
+            beside the word exact, and the level beside the divisor as a literal 0.05. The plan's 8.5
+            text called the minimum "marked proposed", where the decision that rules it and section 17
+            do not.
+            And the entry's own statements. Built says the significance row "is the one claim this
+            checkpoint adds"; it added four, that row and section 15.11's at-or-above row read as four
+            claims rather than one, which the entry's Verified field counts. Tested says "963, from 956.
+            Seven added"; eight were added and one removed, the seven it lists and 8.2's
+            `NeitherTheShareNorTheBarIsDrawnOnTheRunPageAtEightTwo` rewritten in place as
+            `TheShareAndTheBarAreDrawnWithTheVerdictAndItsDivisorFromEightFive`, which asserts the
+            opposite of what the 8.2 test did, because 8.5 lifts the stop 8.2 held. Tested, and the
+            verdict note on section 17's minimum, say each floor is asserted "at each boundary and one
+            either side"; the test asserted 249 and 250 and 59 and 60, and neither 251 nor 61. M1's
+            result says "The three equal-probability cases stayed green inside the hand-worked test";
+            with the binomial at the mean in place that test's first failing assertion is its second, two
+            setups demanding a fifth and three fifths at 0.64 against 0.68, and a test stops at its first
+            failing assertion, so the one equal-probability case before it, three setups each demanding
+            a half, stayed green, and the cases after it, the uneven one the prediction named among them,
+            did not run. M2, "the session floor dropped", and M3, "the resolved floor loosened by one",
+            each name one floor, and the reds each records read two copies of it: the boundary test and
+            the expectation call `ReasonVerdict.For`, while the three-state test and 8.2's withholding
+            test read `ReasonRecord.HasEarnedAVerdict`, which that function does not reach. Those
+            results need the floor changed in both places, and the entry names one.
+Found:      by the phase 8 sign-off review on 2026-09-16, which ran `RunScreen.Records` and the renderer
+            from the built assemblies over each constructed population above, read tonight's list
+            against 15.11, and counted the 8.5 commit's tests from its diff. The operator ruled on
+            2026-09-16 that everything the review found is corrected before a sign-off handoff.
+Measured:   read immutable from the operator's store at schema 27 after the night of 2026-09-17: 241
+            setups resolved as a win or a loss, 65 and 176, of which 233 set a bar and 8, every one a
+            loss, set none; 166 never entered, 0 unresolved and 3,123 still open. By reason, as the
+            record counts a setup toward every reason that fired on its night, earnings soon and
+            breakout on volume only on rows written under their corrected rule: at entry zone 188
+            resolved and 188 setting a bar over 6 listing sessions, crossed a level 65 and 58 over 5,
+            trend state changed 11 and 11 over 3, unusual volume 1 and 1 over 1, and earnings soon and
+            breakout on volume none. No reason is near either floor, so no verdict is drawn before or
+            after this correction. What the run page draws differently is the dashed count where the
+            two differ: crossed a level read "65 of 250 resolved" and reads "58 of 250 resolved setups
+            that set a bar", beside a resolved column that still reads 65.
+Repaired:   one predicate, `ForwardReturnSeries.IsScored`, names the set a reason is scored over, being
+            the setups resolved as a win or a loss that set a bar, and the share and the verdict both
+            read it; the verdict is handed each setup's outcome rather than whether it won, so no caller
+            can hand it an unresolved setup as a loss. A setup that never entered is outside the set as
+            an unresolved one is, being neither a win nor a loss and carrying no bar. Both floors and the
+            sessions are counted over that set. The record carries the verdict's own answer and a page
+            opens on a verdict exactly where that answer says the test ran, so the floors are written
+            once, in `ReasonVerdict`, and the projection's copy of the minimum is gone. The count drawn
+            beside the share and inside the dashed outline is the set's count and says "resolved setups
+            that set a bar", and the row's resolved column keeps every win and loss. Tonight's list
+            draws the share, the count and the bar in the reason's span where a verdict is drawn, and
+            the count against the named floor where it is withheld. A p below five places is drawn as
+            "below 0.00001", its attribute carrying the tail as computed, and the level beside the
+            divisor is the one the record carries. A decision names the set (see: A reason's share,
+            verdict and both floors are counted over the resolved setups that set a bar); section 17's
+            minimum and record display rows, 15.11's below row, the plan's 8.5 text and the operating
+            row for the three reason records name it, and the plan's 8.5 text no longer calls the
+            minimum proposed, the verdict decision having ruled it. Prior text in CHANGELOG, and twelve
+            verdict notes restated to what the tests now read.
+Stored:     nothing to keep or rewrite. No verdict, share or count is stored: each is read from the
+            stored setups when a page is drawn, and no stored row changes.
+Missed:     every test that reached a verdict built its setups from wins and losses with a bar, or
+            losses without one, and none put an unresolved setup through `RunScreen.Records`. The
+            renderer's tests built records by hand with the count that set a bar left at nought, so the
+            drawn denominator was never one the share could disagree with, and the one population whose
+            two counts differed cleared both floors on both. The gate's two copies were never handed a
+            population on which they disagreed, tonight's list was drawn with records only over the
+            fixture, where nothing resolves, and the drawn p was asserted by its phrase. 8.5 named the
+            exclusion of setups that set no bar among what it did not mutate.
+Guarded:    through `RunScreen.Records` and onto both pages, over constructed setups: a clearing reason
+            with thirty unresolved setups beside it keeps its share, its tail to the last bit and its
+            sessions, where the same thirty read as losing draws take the tail over the threshold; a
+            reason whose wins and losses sit on thirty sessions is short of the night floor however many
+            sessions unresolved setups arrived on; every one of 54 populations either side of each floor,
+            with losses that set no bar and unresolved setups that would fill a floor if counted, earns a
+            verdict exactly where the rule says and draws one exactly where the verdict is not withheld,
+            24 earned and 30 withheld, none drawn as failed; the share's denominator is the set's count
+            where every win and loss gives another; tonight's list draws the three together for a reason
+            with a verdict and names the short floor for one without; a tail of 2 to the power of -250 is
+            drawn below 0.00001 and one of 0.00086 to five places; the level beside the divisor is the
+            record's; and each floor is asserted at its value and one either side.
+Expected:   derived. `reason-verdicts.json` gains four population cases, each count read off the
+            construction under the rule that a reason is scored over the resolved setups that set a bar,
+            with one case's tail stated equal to the clearing display case's because the setups it adds
+            are in no figure, and two drawn probability cases: 2 to the power of -250 for 250 setups each
+            demanding a half all winning, and 0.0008611238 for 125 of 250 at 0.4, summed in exact rational
+            arithmetic outside the suite. Constructed, as the file already states, because the committed
+            fixture holds one listing night and resolves nothing. `run-page.json` restates two of its
+            rules in words and changes no figure.
+Tests:      1029, from 1023. Six added to `read-surface`:
+            `EveryPopulationCaseInTheExpectationIsCountedOverTheResolvedSetupsThatSetABarAndNoOthers`,
+            `AnUnresolvedSetupIsCountedInItsOwnColumnAndInNoFloorNoShareAndNoTail`,
+            `ARecordEarnsAVerdictExactlyWhereTheTestRanAndAWithheldOneIsNeverDrawnAsFailing`,
+            `APValueIsDrawnToThePagesFivePlacesAndOneBelowThemAsTheBoundItLiesUnder`,
+            `TheLevelDrawnBesideTheDivisorIsTheOneTheRecordCarries` and
+            `TonightsListDrawsTheThreeTogetherBesideAReasonThatEarnedAVerdictAndNamesTheFloorThatIsShort`.
+            Nine rewritten in place: the boundary test gains 251 and 61; the pin reads the minimum as the
+            set and the figures every record carries rather than a second constant; the expectation's
+            tails and display states, the nothing-resolved record, 8.2's withholding test and the run
+            page's record count test read the verdict's own count and constants; the share-and-bar
+            test reads the set's denominator, the level from the constant and the bound for its p; and
+            the three-state test and the tonight fixture test draw the set's count. No file this
+            correction edits is a source either evaluator version or the ladder rules' code version
+            pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being the set
+            the verdict counts, the gate as the verdict's own answer, the denominator drawn beside the
+            share, the bound drawn for a p below five places, the three together on tonight's list, the
+            level drawn from the record, and the short floor named on tonight's list, each at the code
+            rather than at a test. Predicted:
+            M1 the verdict's filter as 8.5 built it, a bar and nothing else, in `ReasonVerdict.For`: the
+            unresolved test red on its counts, the population expectation red on its first case's count,
+            and the gate sweep red on its first population holding unresolved setups; nothing else, since
+            no other test hands the verdict an unresolved setup.
+            M2 the gate as 8.5 built it, every win and loss against the minimum and the verdict's sessions
+            against the night floor, in `ReasonRecord.HasEarnedAVerdict`: the gate sweep red where a loss
+            that set no bar lifts every win and loss to 250 over 249 that set a bar, and the population
+            expectation red on its third case's share; the tonight test and the renderer tests green,
+            since their records agree on both counts.
+            M3 the share's denominator drawn from every win and loss, in `ShareOfTheScored`: the
+            population expectation red on its fourth case's sentence and the tonight test red on its
+            span; the three-state and share-and-bar tests green, since their records carry one number in
+            both counts.
+            M4 the bound never applied, in `Probability`: the drawn probability test red on its first case
+            and the share-and-bar test red on "below 0.00001".
+            M5 tonight's span as 8.5 left it, `data-verdict="due"` and the resolved count alone: the
+            tonight test red, and nothing else, since the fixture's list earns no verdict.
+            M6 the level beside the divisor drawn as a literal 0.05 again, in the run page's cell: the
+            level test red on its sentence, and nothing else, since every other record drawn carries 0.05.
+            M7 tonight's dashed span drawing every win and loss against the minimum without naming the
+            floor, as 8.5 left it: the tonight test red on its dashed span and the fixture's tonight test
+            red on its phrase, and nothing else.
+            Not mutated, and named so the next sweep has them: the projection's copy of the minimum being
+            gone, and the 251 and 61 sides of each floor. Neither is a property of the code a single edit
+            breaks alone: the first is an absence, and the second is the boundary test's reach past the
+            floors, which any floor mutation reaches at 250 and 60 first. No file this correction edits
+            is one the ladder rules' code version or either evaluator version pins, so no mutation is
+            predicted to redden a pin test.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Eight
+            runs of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only the
+            mutated file and the worktree removed after. The baseline is 1028 of 1029 with one red,
+            and that red is this entry: `two-platform` reads every entry written since the 7.2 report
+            for its Windows record, and this one carried a placeholder until the run below filled it,
+            so each count that follows is on top of it.
+            M1 turned 3 red: the unresolved test, counting 280 where the set is 250; the population
+            expectation, its first case at 280; and the gate sweep, at its first population holding
+            unresolved setups, scored 279 over 89 sessions where the set is 249 over 59. M2 turned 2
+            red: the gate sweep, earning a verdict at 124 wins and a loss without a bar where the
+            verdict withholds one, and the population expectation, its third case drawing a share of
+            50.2 where none is drawn. M3 turned 2 red, the population expectation and the tonight test,
+            each missing "60 per cent of 250 resolved setups that set a bar". M4 turned 2 red, the
+            drawn probability test and the share-and-bar test, each missing "below 0.00001". M5 turned
+            1 red, the tonight test, finding `data-verdict="due"` where "cleared" is drawn. M6 turned 1
+            red, the level test, missing "which is 0.01 divided by a family of 6". M7 turned 2 red, the
+            tonight test missing "300 of 250 resolved setups that set a bar" and the fixture's tonight
+            test missing "of 250 resolved setups that set a bar".
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1029 of 1029 tests ran
+            with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            37 of 37 roster checks carried and all 37 run. No claim added and none moved: the rows
+            this correction edits keep their keys, and the twelve notes restated say what the tests
+            now read. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.
+Carried:    nothing.

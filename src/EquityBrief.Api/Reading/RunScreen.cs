@@ -16,23 +16,12 @@ namespace EquityBrief.Api.Reading;
 // see: A screen reads and renders, and computes nothing
 public static class RunScreen
 {
-    // Section 17's minimum. No verdict of any kind is reported below it, and
-    // what is shown instead is the count against the minimum inside a dashed
-    // outline.
-    // see: An unresolved setup is never a win
-    // see: Not yet measured is drawn as a dashed outline, never as a pale value
-    public const int MinimumResolvedSetups = 250;
-
     // One row per reason, in section 11's order, whether or not it has earned a
     // number. A reason absent from the page is a reason nobody can ask about.
     //
-    // The resolved count is the setups this reason produced that reached an
-    // outcome. The share that reached target before stop and the break-even
-    // those setups demanded are computed here from 8.2, and neither is drawn
-    // until 8.5: they are the other half of 15.10's row and they arrive with the
-    // verdict that reads them. Below the minimum they are not computed at all,
-    // because a rate over a handful of cases is a number that reads as evidence
-    // and is not, and a figure that exists is a figure something eventually draws.
+    // The row's resolved count is every win and loss; the share, the bar, both floors and the
+    // verdict are over the ones that set a bar, and the record carries that count apart.
+    // see: A reason's share, verdict and both floors are counted over the resolved setups that set a bar
     public static IReadOnlyList<ReasonRecord> Records(
         IReadOnlyList<ListingRow> listings,
         IReadOnlyList<ResolvedSetup> resolved)
@@ -42,21 +31,9 @@ public static class RunScreen
             _ => (Fired: 0, Won: 0, Lost: 0, Unresolved: 0, NeverEntered: 0),
             StringComparer.Ordinal);
 
-        // Each reason's setups as they arrive, so the arithmetic that reads them
-        // is handed a population rather than a running total. The counts above
-        // are what the row states; these are what the record is computed over,
-        // and they are not the same set.
+        // Each reason's setups with the session each was listed on, handed to the arithmetic as a
+        // population; which of them a reason is scored over is that arithmetic's question.
         var setupsByReason = ShortlistSeries.Reasons.ToDictionary(
-            reason => reason,
-            _ => new List<(string? Outcome, double? BreakEven)>(),
-            StringComparer.Ordinal);
-
-        // The same setups again, carrying the session each was listed on, which
-        // is what the night floor counts over. Kept apart from the pair above
-        // rather than widening it, because that pair is what the arithmetic in
-        // `ForwardReturnSeries` is handed and a session means nothing to it.
-        // see: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold
-        var verdictSetups = ShortlistSeries.Reasons.ToDictionary(
             reason => reason,
             _ => new List<ReasonVerdict.ScoredSetup>(),
             StringComparer.Ordinal);
@@ -114,16 +91,8 @@ public static class RunScreen
             {
                 var counted = byReason[reason];
 
-                // The setup as it stands, with the bar its own plan set, kept for
-                // the arithmetic below. Which of these carry a bar and which do
-                // not is that arithmetic's question rather than this loop's.
                 // see: A condition is judged against the break-even its own plan demands
-                setupsByReason[reason].Add((setup.Outcome, setup.BreakEven));
-
-                verdictSetups[reason].Add(new ReasonVerdict.ScoredSetup(
-                    setup.Outcome == ForwardReturnSeries.Win,
-                    setup.BreakEven,
-                    setup.SessionDate));
+                setupsByReason[reason].Add(new ReasonVerdict.ScoredSetup(setup.Outcome, setup.BreakEven, setup.SessionDate));
 
                 byReason[reason] = setup.Outcome switch
                 {
@@ -148,15 +117,15 @@ public static class RunScreen
             .. ShortlistSeries.Reasons.Select(reason =>
             {
                 var counted = byReason[reason];
-                var scored = ForwardReturnSeries.Record(setupsByReason[reason]);
+                var setups = setupsByReason[reason];
+                var scored = ForwardReturnSeries.Record([.. setups.Select(setup => ((string?)setup.Outcome, setup.BreakEven))]);
 
-                // The verdict, from 8.5. The family is the six live reasons,
-                // registered by section 11 before the first listing night; a
-                // candidate promoted to live would join them and restart the
-                // window, which is why the divisor is the family and not a
-                // count of anything this page holds.
+                // The family is the six live reasons, registered by section 11
+                // before the first listing night; a candidate promoted to live
+                // would join them and restart the window, which is why the
+                // divisor is the family and not a count of anything this page holds.
                 // see: Adding a candidate later restarts the clock
-                var tested = ReasonVerdict.For(verdictSetups[reason], ReasonVerdict.LiveFamily);
+                var tested = ReasonVerdict.For(setups, ReasonVerdict.LiveFamily);
 
                 var record = new ReasonRecord(
                     reason,
@@ -164,26 +133,19 @@ public static class RunScreen
                     counted.Won,
                     counted.Lost,
                     counted.Unresolved,
-                    MinimumResolvedSetups,
+                    ReasonVerdict.MinimumResolved,
                     counted.NeverEntered,
-                    scored.Scored,
+                    tested.Scored,
                     Sessions: tested.Sessions,
                     SessionMinimum: ReasonVerdict.MinimumSessions,
                     Threshold: tested.Threshold,
                     Divisor: tested.Divisor,
-                    Nights: nights[reason].Count);
+                    Nights: nights[reason].Count,
+                    Withheld: tested.Withheld,
+                    Significance: ReasonVerdict.Significance);
 
-                // The two figures 8.2 adds, withheld here rather than at the page.
-                // A reason below the minimum has no share and no mean break-even
-                // at all, so no surface can draw one by forgetting to ask, which
-                // is the shape a gate kept only in a renderer takes the evening
-                // somebody writes a second renderer. What is shown instead is the
-                // resolved count against the minimum, which the record already
-                // carries.
-                //
-                // Neither is worked out here. `ForwardReturnSeries.Record` owns
-                // the arithmetic, as it owns the base rate's, and this counts and
-                // pairs as the rest of the file does.
+                // Withheld here rather than at the page, so no surface can draw a share, a bar or a
+                // verdict for a reason below either floor by forgetting to ask.
                 // see: A screen reads and renders, and computes nothing
                 // see: The record column stays empty until it has earned a number
                 // see: A reason's record is displayed, beside the reason and never beside the name

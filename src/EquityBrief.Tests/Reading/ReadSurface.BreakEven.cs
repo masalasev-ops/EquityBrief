@@ -87,7 +87,7 @@ public partial class ReadSurface
         Assert.False(below.HasEarnedAVerdict);
         Assert.Null(below.Share);
         Assert.Null(below.BreakEven);
-        Assert.Equal((249, RunScreen.MinimumResolvedSetups), (below.Scored, below.Minimum));
+        Assert.Equal((249, ReasonVerdict.MinimumResolved), (below.Scored, below.Minimum));
 
         // At the minimum both are computed. 125 of 250 is half, against a bar of
         // 40 per cent, which is a reason clearing what its own plans demanded.
@@ -153,14 +153,14 @@ public partial class ReadSurface
         // The three together, which is what 15.11 says at or above the minimum: a
         // share without its denominator hides how much was checked, and a share
         // without the break-even hides whether it was any good.
-        Assert.Contains("50 per cent of 300 resolved", drawn, StringComparison.Ordinal);
+        Assert.Contains("50 per cent of 300 resolved setups that set a bar", drawn, StringComparison.Ordinal);
         Assert.Contains("33.5 per cent those setups demanded", drawn, StringComparison.Ordinal);
 
         // The divisor, drawn beside the verdict, because a verdict without it
         // hides how hard the test actually was.
         // see: The significance threshold is divided by the family size, and the divisor is shown
         Assert.Contains("data-divisor=\"6\"", drawn, StringComparison.Ordinal);
-        Assert.Contains("0.05 divided by a family of 6", drawn, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"{ReasonVerdict.Significance} divided by a family of {ReasonVerdict.LiveFamily}"), drawn, StringComparison.Ordinal);
         Assert.Contains("data-threshold=\"0.00833\"", drawn, StringComparison.Ordinal);
 
         // Half of 300 against a bar of 33.5 per cent is a reason well clear of
@@ -168,7 +168,9 @@ public partial class ReadSurface
         // exact p is beside it.
         Assert.Contains("data-verdict=\"cleared\"", drawn, StringComparison.Ordinal);
         Assert.Contains("Clears at 0.00833", drawn, StringComparison.Ordinal);
-        Assert.Contains("exact one-sided p of", drawn, StringComparison.Ordinal);
+        // 150 of 300 at 0.335 has a binomial tail of about 2.8 in a billion, worked in
+        // exact rational arithmetic, which is below the page's five places.
+        Assert.Contains("exact one-sided p below 0.00001", drawn, StringComparison.Ordinal);
 
         // The row's own columns, unchanged from 8.1.
         var row = Assert.Single(Blocks(drawn, $"<tr data-reason=\"{ShortlistSeries.AtEntryZone}\".*?</tr>"));

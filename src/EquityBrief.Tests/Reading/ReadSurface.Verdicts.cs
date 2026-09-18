@@ -1,7 +1,11 @@
+using System.Globalization;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
+using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Reading;
@@ -67,7 +71,7 @@ public partial class ReadSurface
                     one.GetProperty("sessions").GetInt32()),
                 expectation.GetProperty("liveFamily").GetInt32());
 
-            Assert.Equal((state, one.GetProperty("resolved").GetInt32()), (state, verdict.Resolved));
+            Assert.Equal((state, one.GetProperty("resolved").GetInt32()), (state, verdict.Scored));
             Assert.Equal((state, one.GetProperty("short").GetString()), (state, verdict.Withheld));
 
             var expectedVerdict = one.GetProperty("verdict");
@@ -108,7 +112,7 @@ public partial class ReadSurface
 
         Assert.Contains(
             FormattableString.Invariant(
-                $"{ReasonVerdict.MinimumResolved} resolved setups spread over at least {ReasonVerdict.MinimumSessions} distinct listing sessions"),
+                $"{ReasonVerdict.MinimumResolved} resolved setups that set a bar, spread over at least {ReasonVerdict.MinimumSessions} distinct listing sessions"),
             architecture,
             StringComparison.Ordinal);
 
@@ -126,10 +130,13 @@ public partial class ReadSurface
 
         Assert.True(ReasonVerdict.MinimumBeforeALiveReasonIsRetired > ReasonVerdict.MinimumResolved);
 
-        // The read API's own minimum is the same number, stated in two places
-        // because the projection and the test are two components, and asserted
-        // equal so the two cannot drift.
-        Assert.Equal(ReasonVerdict.MinimumResolved, RunScreen.MinimumResolvedSetups);
+        // And the figures the projection hands every record it draws are these
+        // constants rather than copies of them.
+        Assert.All(
+            RunScreen.Records([], []),
+            record => Assert.Equal(
+                (ReasonVerdict.MinimumResolved, ReasonVerdict.MinimumSessions, ReasonVerdict.Significance),
+                (record.Minimum, record.SessionMinimum, record.Significance)));
     }
 
     [Fact]
@@ -277,7 +284,7 @@ public partial class ReadSurface
         var at = 0;
 
         ReasonVerdict.ScoredSetup One(bool won) =>
-            new(won, breakEven, night.AddDays(-(++at % Math.Max(sessions, 1))));
+            new(won ? ForwardReturnSeries.Win : ForwardReturnSeries.Loss, breakEven, night.AddDays(-(++at % Math.Max(sessions, 1))));
 
         return
         [
@@ -295,7 +302,9 @@ public partial class ReadSurface
         var below = ReasonVerdict.For(Scored(125, 124, 40, ReasonVerdict.MinimumSessions), ReasonVerdict.LiveFamily);
         var at = ReasonVerdict.For(Scored(125, 125, 40, ReasonVerdict.MinimumSessions), ReasonVerdict.LiveFamily);
 
-        Assert.Equal((249, 250), (below.Resolved, at.Resolved));
+        var above = ReasonVerdict.For(Scored(126, 125, 40, ReasonVerdict.MinimumSessions), ReasonVerdict.LiveFamily);
+
+        Assert.Equal((249, 250, 251), (below.Scored, at.Scored, above.Scored));
         Assert.Null(below.Cleared);
         Assert.Null(below.PValue);
         Assert.Equal(ReasonVerdict.BelowTheResolvedMinimum, below.Withheld);
@@ -303,24 +312,27 @@ public partial class ReadSurface
         Assert.NotNull(at.Cleared);
         Assert.NotNull(at.PValue);
         Assert.Equal(ReasonVerdict.Shown, at.Withheld);
+        Assert.Equal(ReasonVerdict.Shown, above.Withheld);
 
         // The night floor, at its own boundary, over a population that clears the
         // row floor comfortably. This is the case a single floor would have drawn
         // a verdict for: 300 resolved setups arriving on 59 sessions.
         var fewNights = ReasonVerdict.For(Scored(150, 150, 40, ReasonVerdict.MinimumSessions - 1), ReasonVerdict.LiveFamily);
         var enough = ReasonVerdict.For(Scored(150, 150, 40, ReasonVerdict.MinimumSessions), ReasonVerdict.LiveFamily);
+        var more = ReasonVerdict.For(Scored(150, 150, 40, ReasonVerdict.MinimumSessions + 1), ReasonVerdict.LiveFamily);
 
-        Assert.Equal((59, 60), (fewNights.Sessions, enough.Sessions));
-        Assert.Equal(300, fewNights.Resolved);
+        Assert.Equal((59, 60, 61), (fewNights.Sessions, enough.Sessions, more.Sessions));
+        Assert.Equal(300, fewNights.Scored);
         Assert.Null(fewNights.Cleared);
         Assert.Equal(ReasonVerdict.BelowTheSessionMinimum, fewNights.Withheld);
         Assert.NotNull(enough.Cleared);
+        Assert.NotNull(more.Cleared);
 
         // Every verdict names its divisor and the threshold that divisor set,
         // withheld or not, because a reader has to be able to see how hard the
         // test would be before deciding whether the wait is worth it.
         // see: The significance threshold is divided by the family size, and the divisor is shown
-        foreach (var verdict in new[] { below, at, fewNights, enough })
+        foreach (var verdict in new[] { below, at, above, fewNights, enough, more })
         {
             Assert.Equal(ReasonVerdict.LiveFamily, verdict.Divisor);
             Assert.Equal(ReasonVerdict.Significance / ReasonVerdict.LiveFamily, verdict.Threshold, 10);
@@ -335,10 +347,10 @@ public partial class ReadSurface
         // reason the share is: a count tested against a bar has to be the count of
         // the rows that bar was averaged over.
         var mixed = Scored(125, 125, 40, ReasonVerdict.MinimumSessions)
-            .Concat(Enumerable.Range(0, 20).Select(_ => new ReasonVerdict.ScoredSetup(false, null, new DateOnly(2026, 9, 4))))
+            .Concat(Enumerable.Range(0, 20).Select(_ => new ReasonVerdict.ScoredSetup(ForwardReturnSeries.Loss, null, new DateOnly(2026, 9, 4))))
             .ToArray();
 
-        Assert.Equal(250, ReasonVerdict.For(mixed, ReasonVerdict.LiveFamily).Resolved);
+        Assert.Equal(250, ReasonVerdict.For(mixed, ReasonVerdict.LiveFamily).Scored);
     }
 
     [Fact]
@@ -375,12 +387,12 @@ public partial class ReadSurface
         // minimum, and the run page says that rather than leaving the cell blank.
         var none = ReasonVerdict.For([], ReasonVerdict.LiveFamily);
 
-        Assert.Equal((0, 0), (none.Resolved, none.Sessions));
+        Assert.Equal((0, 0), (none.Scored, none.Sessions));
         Assert.Null(none.Cleared);
         Assert.Equal(ReasonVerdict.BelowTheResolvedMinimum, none.Withheld);
 
         var record = new ReasonRecord(
-            ShortlistSeries.EarningsSoon, 400, 0, 0, 40, RunScreen.MinimumResolvedSetups,
+            ShortlistSeries.EarningsSoon, 400, 0, 0, 40, ReasonVerdict.MinimumResolved,
             Sessions: 0, SessionMinimum: ReasonVerdict.MinimumSessions,
             Threshold: none.Threshold, Divisor: none.Divisor);
 
@@ -390,5 +402,312 @@ public partial class ReadSurface
         Assert.Contains("0 of 250 resolved", drawn, StringComparison.Ordinal);
         Assert.Contains("data-fired=\"400\"", drawn, StringComparison.Ordinal);
         Assert.DoesNotContain("per cent of", drawn, StringComparison.Ordinal);
+    }
+
+    // The projection's record for one reason over constructed setups, every one
+    // listed under that reason on the session it carries.
+    static ReasonRecord RecordOf(IReadOnlyList<ResolvedSetup> setups, string reason = ShortlistSeries.AtEntryZone) =>
+        RunScreen.Records(Listings(setups, reason), setups).Single(one => one.Reason == reason);
+
+    // Unresolved setups at a bar, on the given sessions' own days or one each on
+    // days of their own past them.
+    static IReadOnlyList<ResolvedSetup> Unresolved(DateOnly night, int count, double breakEven, int sessions, bool elsewhere) =>
+    [
+        .. Enumerable.Range(0, count).Select(at => new ResolvedSetup(
+            $"U{at:0000}",
+            night.AddDays(-(elsewhere ? sessions + at : at % sessions)),
+            ForwardReturnSeries.Unresolved,
+            breakEven)),
+    ];
+
+    [Fact]
+    public void EveryPopulationCaseInTheExpectationIsCountedOverTheResolvedSetupsThatSetABarAndNoOthers()
+    {
+        // The derived expectation for the verdict's set, through the projection and onto the run page,
+        // so a count, a floor, a share or a tail taken over any other set is red here.
+        // see: A reason's share, verdict and both floors are counted over the resolved setups that set a bar
+        var expectation = Expected("reason-verdicts");
+        var cases = expectation.GetProperty("population").GetProperty("cases").EnumerateArray().ToArray();
+
+        Assert.True(cases.Length >= 4, $"The expectation states {cases.Length} population case(s), expected at least 4.");
+
+        var display = expectation.GetProperty("display").EnumerateArray()
+            .ToDictionary(one => one.GetProperty("state").GetString()!, StringComparer.Ordinal);
+
+        var night = new DateOnly(2026, 9, 4);
+        var marks = new MarkRenderer();
+
+        foreach (var one in cases)
+        {
+            var what = one.GetProperty("case").GetString();
+            var sessions = one.GetProperty("sessions").GetInt32();
+            var breakEven = one.GetProperty("breakEven").GetDouble();
+
+            IReadOnlyList<ResolvedSetup> setups =
+            [
+                .. Setups(night, one.GetProperty("wins").GetInt32(), one.GetProperty("losses").GetInt32(), breakEven, one.GetProperty("withoutABar").GetInt32(), sessions),
+                .. Unresolved(night, one.GetProperty("unresolved").GetInt32(), breakEven, sessions, one.GetProperty("unresolvedOnOtherSessions").GetBoolean()),
+            ];
+
+            var record = RecordOf(setups);
+
+            Assert.Equal((what, one.GetProperty("resolved").GetInt32()), (what, record.Resolved));
+            Assert.Equal((what, one.GetProperty("scored").GetInt32()), (what, record.Scored));
+            Assert.Equal((what, one.GetProperty("scoredSessions").GetInt32()), (what, record.Sessions));
+            Assert.Equal((what, one.GetProperty("short").GetString()), (what, record.Withheld));
+            Assert.Equal((what, one.GetProperty("unresolved").GetInt32()), (what, record.Unresolved));
+
+            var verdict = one.GetProperty("verdict");
+            var share = one.GetProperty("share");
+
+            Assert.Equal((what, verdict.ValueKind == JsonValueKind.Null ? (bool?)null : verdict.GetBoolean()), (what, record.Cleared));
+            Assert.Equal((what, share.ValueKind == JsonValueKind.Null ? (double?)null : share.GetDouble()), (what, record.Share));
+
+            // Where the case is a display case with setups added that are in no
+            // figure, its tail is that case's tail to the last bit.
+            if (one.TryGetProperty("sameTailAs", out var same))
+            {
+                var shown = display[same.GetString()!];
+                var alone = ReasonVerdict.For(
+                    Scored(shown.GetProperty("wins").GetInt32(), shown.GetProperty("losses").GetInt32(), shown.GetProperty("breakEven").GetDouble(), shown.GetProperty("sessions").GetInt32()),
+                    ReasonVerdict.LiveFamily);
+
+                Assert.Equal((what, alone.PValue), (what, record.PValue));
+            }
+
+            var drawn = marks.ReasonRecords([record], RunScreen.Tracks([record]), Rates(1.2, 3.4), 60);
+
+            Assert.Contains(one.GetProperty("drawn").GetString()!, drawn, StringComparison.Ordinal);
+
+            if (record.Cleared is null)
+            {
+                Assert.Contains("data-verdict=\"none\"", drawn, StringComparison.Ordinal);
+                Assert.DoesNotContain("per cent of", drawn, StringComparison.Ordinal);
+                Assert.DoesNotContain("Does not clear", drawn, StringComparison.Ordinal);
+            }
+        }
+    }
+
+    [Fact]
+    public void AnUnresolvedSetupIsCountedInItsOwnColumnAndInNoFloorNoShareAndNoTail()
+    {
+        // 13.3's "reported in its own column and excluded from the rate", through
+        // the projection the page reads rather than at the arithmetic alone.
+        // see: An unresolved setup is never a win
+        var night = new DateOnly(2026, 9, 4);
+
+        // The set, named once: a win or a loss that set a bar, and nothing else.
+        Assert.Equal(
+            (true, true, false, false, false),
+            (ForwardReturnSeries.IsScored(ForwardReturnSeries.Win, 40),
+                ForwardReturnSeries.IsScored(ForwardReturnSeries.Loss, 40),
+                ForwardReturnSeries.IsScored(ForwardReturnSeries.Loss, null),
+                ForwardReturnSeries.IsScored(ForwardReturnSeries.Unresolved, 40),
+                ForwardReturnSeries.IsScored(ForwardReturnSeries.NeverEntered, null)));
+
+        var clearing = Setups(night, wins: 125, losses: 125, breakEven: 40d);
+        var alone = RecordOf(clearing);
+        var withThirty = RecordOf([.. clearing, .. Unresolved(night, 30, 40d, ReasonVerdict.MinimumSessions, elsewhere: false)]);
+
+        // Its own column, and its own segment of the track.
+        Assert.Equal(30, withThirty.Unresolved);
+        Assert.Equal((125, 125, 30), (RunScreen.Tracks([withThirty])[0].Won, RunScreen.Tracks([withThirty])[0].Lost, RunScreen.Tracks([withThirty])[0].Unresolved));
+
+        // And in no figure: the counts, the sessions, the share and the tail are
+        // the ones the population without them has.
+        Assert.Equal((250, 250, 60), (withThirty.Resolved, withThirty.Scored, withThirty.Sessions));
+        Assert.Equal(alone.Share, withThirty.Share);
+        Assert.Equal(alone.PValue, withThirty.PValue);
+        Assert.True(withThirty.Cleared);
+
+        // Not a case that cannot fail: the same thirty read as losing draws put
+        // the tail over the threshold, so a verdict counting them would not clear.
+        var counted = PoissonBinomial.UpperTail([.. Enumerable.Repeat(0.4, 280)], 125);
+
+        Assert.True(counted > withThirty.Threshold, $"125 wins in 280 at a bar of 40 per cent has a tail of {counted}, which clears {withThirty.Threshold} and proves nothing.");
+
+        // A session only unresolved setups arrived on is not one the record stands on.
+        var fewNights = Setups(night, wins: 150, losses: 100, breakEven: 40d, sessions: 30);
+        var shortOfNights = RecordOf([.. fewNights, .. Unresolved(night, 30, 40d, sessions: 30, elsewhere: true)]);
+
+        Assert.Equal((30, ReasonVerdict.BelowTheSessionMinimum), (shortOfNights.Sessions, shortOfNights.Withheld));
+        Assert.False(shortOfNights.HasEarnedAVerdict);
+        Assert.Null(shortOfNights.Cleared);
+        Assert.Null(shortOfNights.Share);
+
+        // And at the verdict itself, whoever hands it the setups.
+        var direct = ReasonVerdict.For(
+            [
+                .. Scored(125, 125, 40, ReasonVerdict.MinimumSessions),
+                .. Enumerable.Range(0, 30).Select(at => new ReasonVerdict.ScoredSetup(ForwardReturnSeries.Unresolved, 40, night.AddDays(-(100 + at)))),
+            ],
+            ReasonVerdict.LiveFamily);
+
+        Assert.Equal((250, 60, (bool?)true), (direct.Scored, direct.Sessions, direct.Cleared));
+    }
+
+    [Fact]
+    public void ARecordEarnsAVerdictExactlyWhereTheTestRanAndAWithheldOneIsNeverDrawnAsFailing()
+    {
+        // Every population either side of each floor, holding setups that would fill a floor if counted,
+        // asserted against the rule and against the verdict in both directions.
+        // see: A verdict tests a reason's wins against each of its setups' own break-even at a corrected threshold
+        var night = new DateOnly(2026, 9, 4);
+        var marks = new MarkRenderer();
+        var (populations, earned, withheld) = (0, 0, 0);
+
+        foreach (var wins in new[] { 124, 125, 126 })
+        {
+            foreach (var withoutABar in new[] { 0, 1, 6 })
+            {
+                foreach (var unresolved in new[] { 0, 30 })
+                {
+                    foreach (var sessions in new[] { ReasonVerdict.MinimumSessions - 1, ReasonVerdict.MinimumSessions, ReasonVerdict.MinimumSessions + 1 })
+                    {
+                        var record = RecordOf(
+                        [
+                            .. Setups(night, wins, 125, 40d, withoutABar, sessions),
+                            .. Unresolved(night, unresolved, 40d, sessions, elsewhere: true),
+                        ]);
+
+                        var which = (wins, withoutABar, unresolved, sessions);
+
+                        // The wins and the 125 losses carrying a bar, spread over
+                        // every one of the sessions.
+                        var scored = wins + 125;
+                        var expected = scored >= ReasonVerdict.MinimumResolved && sessions >= ReasonVerdict.MinimumSessions;
+
+                        Assert.Equal((which, scored, sessions), (which, record.Scored, record.Sessions));
+                        Assert.Equal((which, expected), (which, record.HasEarnedAVerdict));
+                        Assert.Equal((which, record.HasEarnedAVerdict), (which, record.Cleared is not null));
+                        Assert.Equal((which, record.HasEarnedAVerdict), (which, record.PValue is not null));
+
+                        var drawn = marks.ReasonRecords([record], RunScreen.Tracks([record]), Rates(1.2, 3.4), 60);
+
+                        if (record.HasEarnedAVerdict)
+                        {
+                            earned++;
+                            Assert.Contains(record.Cleared is true ? "data-verdict=\"cleared\"" : "data-verdict=\"not cleared\"", drawn, StringComparison.Ordinal);
+                        }
+                        else
+                        {
+                            withheld++;
+                            Assert.Contains("data-verdict=\"none\"", drawn, StringComparison.Ordinal);
+                            Assert.DoesNotContain("not cleared", drawn, StringComparison.Ordinal);
+                            Assert.DoesNotContain("Does not clear", drawn, StringComparison.Ordinal);
+                        }
+
+                        populations++;
+                    }
+                }
+            }
+        }
+
+        // Stated before the loop: 3 x 3 x 2 x 3 populations, and a verdict needs 125 or 126 wins on 60 or
+        // 61 sessions, which is 2 x 3 x 2 x 2 of them.
+        Assert.Equal((54, 24, 30), (populations, earned, withheld));
+    }
+
+    [Fact]
+    public void APValueIsDrawnToThePagesFivePlacesAndOneBelowThemAsTheBoundItLiesUnder()
+    {
+        // A tail too small for five places is drawn as the bound it lies under,
+        // and the attribute carries the tail as computed, to the last bit.
+        var expectation = Expected("reason-verdicts").GetProperty("drawnProbability");
+        var cases = expectation.GetProperty("cases").EnumerateArray().ToArray();
+
+        Assert.True(cases.Length >= 2, $"The expectation states {cases.Length} drawn probability case(s), expected at least 2.");
+
+        var night = new DateOnly(2026, 9, 4);
+
+        foreach (var one in cases)
+        {
+            var what = one.GetProperty("case").GetString();
+            var record = RecordOf(Setups(
+                night,
+                one.GetProperty("wins").GetInt32(),
+                one.GetProperty("losses").GetInt32(),
+                one.GetProperty("breakEven").GetDouble(),
+                sessions: one.GetProperty("sessions").GetInt32()));
+
+            Assert.True(record.HasEarnedAVerdict, what);
+
+            if (one.TryGetProperty("powerOfTwo", out var power))
+            {
+                Assert.Equal((what, Math.ScaleB(1d, power.GetInt32())), (what, record.PValue!.Value));
+            }
+
+            if (one.TryGetProperty("tail", out var tail))
+            {
+                Assert.Equal((what, tail.GetDouble()), (what, Math.Round(record.PValue!.Value, 10)));
+            }
+
+            var drawn = new MarkRenderer().ReasonRecords([record], RunScreen.Tracks([record]), Rates(1.2, 3.4), 60);
+
+            Assert.Contains($"on an exact one-sided p {one.GetProperty("drawn").GetString()}</td>", drawn, StringComparison.Ordinal);
+            Assert.DoesNotContain("p of 0<", drawn, StringComparison.Ordinal);
+
+            var attribute = Regex.Match(drawn, "data-p-value=\"([^\"]+)\"").Groups[1].Value;
+
+            Assert.Equal((what, record.PValue!.Value), (what, double.Parse(attribute, NumberStyles.Float, CultureInfo.InvariantCulture)));
+        }
+    }
+
+    [Fact]
+    public void TheLevelDrawnBesideTheDivisorIsTheOneTheRecordCarries()
+    {
+        // A record at a level the build does not use, so a renderer drawing a
+        // level of its own beside the divisor is red here.
+        var record = new ReasonRecord(
+            ShortlistSeries.CrossedALevel, 900, 150, 150, 0, ReasonVerdict.MinimumResolved,
+            Scored: 300, Share: 50d, BreakEven: 40d, Sessions: 60, SessionMinimum: ReasonVerdict.MinimumSessions,
+            Cleared: false, PValue: 0.002d, Threshold: 0.01 / 6, Divisor: 6,
+            Withheld: ReasonVerdict.Shown, Significance: 0.01);
+
+        var drawn = new MarkRenderer().ReasonRecords([record], RunScreen.Tracks([record]), Rates(1.2, 3.4), 60);
+
+        // 0.01 over 6 is 0.001666..., which is 0.00167 to five places.
+        Assert.Contains("Does not clear at 0.00167, which is 0.01 divided by a family of 6, on an exact one-sided p of 0.002", drawn, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TonightsListDrawsTheThreeTogetherBesideAReasonThatEarnedAVerdictAndNamesTheFloorThatIsShort()
+    {
+        // 15.11 says wherever the reason appears: one reason clears both floors beside six losses that
+        // set no bar, and the other has the rows and not the nights.
+        // see: A reason's record is displayed, beside the reason and never beside the name
+        var night = new DateOnly(2026, 9, 4);
+
+        var atEntry = Setups(night, wins: 150, losses: 100, breakEven: 40d, withoutABar: 6);
+        var crossed = Setups(night.AddDays(-400), wins: 150, losses: 150, breakEven: 40d, sessions: ReasonVerdict.MinimumSessions - 1);
+
+        var records = RunScreen.Records(
+            [.. Listings(atEntry, ShortlistSeries.AtEntryZone), .. Listings(crossed, ShortlistSeries.CrossedALevel)],
+            [.. atEntry, .. crossed]);
+
+        var list = new MarkRenderer().TonightList(
+            [new ListingCell("ZZZZ", night, 2, 0, 10m, [ShortlistSeries.AtEntryZone, ShortlistSeries.CrossedALevel])],
+            SinglePageApp.TonightDrawn,
+            records);
+
+        // Worked from the construction: 150 of the 250 that set a bar is 60 per
+        // cent, and the six that set none are in no figure.
+        var earned = Assert.Single(Regex.Matches(list, "<span class=\"record\" [^>]*>[^<]*</span>")).Value;
+
+        Assert.Contains("data-verdict=\"cleared\"", earned, StringComparison.Ordinal);
+        Assert.Contains("data-share=\"60\" data-scored=\"250\" data-break-even=\"40\"", earned, StringComparison.Ordinal);
+        Assert.Contains("60 per cent of 250 resolved setups that set a bar reached target before stop, against the 40 per cent those setups demanded", earned, StringComparison.Ordinal);
+        Assert.DoesNotContain("of 256", list, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-verdict=\"due\"", list, StringComparison.Ordinal);
+
+        var dashed = Assert.Single(Regex.Matches(list, "<span class=\"record not-measured\" [^>]*>[^<]*</span>")).Value;
+
+        Assert.Contains("data-short=\"sessions\"", dashed, StringComparison.Ordinal);
+        Assert.Contains("300 of 250 resolved setups that set a bar, over 59 of 60 listing session(s)", dashed, StringComparison.Ordinal);
+        Assert.DoesNotContain("per cent", dashed, StringComparison.Ordinal);
+
+        // Each inside its own reason's span, and neither beside the name.
+        Assert.Matches("<span class=\"reason\" data-reason=\"at entry zone\"[^>]*>at entry zone<span class=\"record\" ", list);
+        Assert.Matches("<span class=\"reason\" data-reason=\"crossed a level\"[^>]*>crossed a level<span class=\"record not-measured\" ", list);
     }
 }

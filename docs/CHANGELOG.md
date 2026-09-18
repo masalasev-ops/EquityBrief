@@ -25,6 +25,37 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - ARCHITECTURE.html - section 17's minimum and record display rows and 15.11's below row name the set a reason is counted over
+
+Authorised by: A reason's share, verdict and both floors are counted over the resolved setups that set a bar
+Was:
+> in section 17's Minimum resolved setups row: 250 resolved setups spread over at least 60 distinct listing sessions, each contributing at least one, before a verdict is reported at all; 400 before a live condition may be retired (see: An unresolved setup is never a win)
+>
+> in section 17's Reason record display row: below the minimum only the resolved count against the minimum is shown;
+>
+> in 15.11's Below the minimum row: a dashed outline carrying the resolved count against the minimum, and no rate
+Now:
+> the minimum reads "250 resolved setups that set a bar, spread over at least 60 distinct listing sessions, each contributing at least one", and cites the decision beside the one it already cited; the record display row reads "below the minimum only the count of resolved setups that set a bar against the minimum is shown"; and 15.11's row reads "a dashed outline carrying the count of resolved setups that set a bar against the minimum, and no rate".
+Why: the verdict counted unresolved setups toward both floors while the page's gate counted losses that set no bar, so the rows a reader checks a verdict against named no set while two different sets were being counted against them.
+
+### 2026-09-18 - BUILD_PLAN.md - 8.5's minimum no longer called proposed, and named over the set it counts
+
+Corrects: 8.5's text called the minimum "marked proposed", where the decision that rules it at 8.0 and section 17's row state it unmarked and no carried row settles it, and it named no set for the count. Found by the phase 8 sign-off review, reading the three against each other.
+Was:
+> Below the minimum nothing is shown but the count against it, and the minimum is 250 resolved setups spread over at least 60 distinct listing sessions, each contributing at least one, marked proposed: sixty is the quarter of trading the bands look back over and the threshold calibration already uses, and a count of rows alone can be filled by a handful of nights of one market move.
+Now:
+> the minimum is "250 resolved setups that set a bar, spread over at least 60 distinct listing sessions, each contributing at least one", citing the decision that names the set, and "Both figures are ruled with the verdict rather than proposed", before the same reasoning for sixty.
+Why: section 17's preamble requires a proposed value to be settled before the phase that depends on it, and the verdict decision settled both figures in the planning commit that left the marker, so the marker had nothing behind it and no row to end it.
+
+### 2026-09-18 - BUILD_PLAN.md - the operating row for the three reason records reads the count the page draws
+
+Authorised by: A reason's share, verdict and both floors are counted over the resolved setups that set a bar
+Was:
+> 250 resolved setups, which is the minimum section 17 already states, read on the run page, which 5.6 builds and 8.5 fills with verdicts.
+Now:
+> 250 resolved setups that set a bar, which is the minimum section 17 already states, read on the run page, which 5.6 builds and 8.5 fills with verdicts.
+Why: the trigger is read off the dashed count on the run page, and that count is of the resolved setups that set a bar.
+
 ### 2026-09-17 - ARCHITECTURE.html - a figure's rows fit the column they are drawn in
 
 Corrects: figure 5.1's outside-the-system row held eight boxes on a line the stylesheet gave no way to wrap, needing 1143px of the 1024px the column holds, and a figure is a scroll box, so the surplus was clipped rather than shown and the language models box lost most of its text where nobody could reach it. The row fit at seven boxes with 25px to spare and crossed the column when 4.0 added the earnings calendar feed; found by the operator reading section 5 on 2026-09-17.

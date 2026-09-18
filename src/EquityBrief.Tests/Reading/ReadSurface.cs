@@ -2487,7 +2487,7 @@ public partial class ReadSurface
 
         Assert.Equal(expected.GetProperty("counts").GetProperty("reasons").GetInt32(), records.Count);
         Assert.Equal(ShortlistSeries.Reasons.Length, records.Count);
-        Assert.Equal(RunScreen.MinimumResolvedSetups, expected.GetProperty("rules").GetProperty("minimumResolvedSetups").GetInt32());
+        Assert.Equal(ReasonVerdict.MinimumResolved, expected.GetProperty("rules").GetProperty("minimumResolvedSetups").GetInt32());
         Assert.Equal(expected.GetProperty("counts").GetProperty("resolved").GetInt32(), records.Sum(record => record.Resolved));
         Assert.Equal(expected.GetProperty("counts").GetProperty("fired").GetInt32(), records.Sum(record => record.Fired));
 
@@ -2623,18 +2623,20 @@ public partial class ReadSurface
         // the rows on 12 sessions, which is the case a single floor would have
         // drawn a verdict for.
         var below = new ReasonRecord(
-            ShortlistSeries.AtEntryZone, 400, 6, 5, 40, RunScreen.MinimumResolvedSetups,
-            Sessions: 4, SessionMinimum: ReasonVerdict.MinimumSessions);
+            ShortlistSeries.AtEntryZone, 400, 6, 5, 40, ReasonVerdict.MinimumResolved,
+            Scored: 11, Sessions: 4, SessionMinimum: ReasonVerdict.MinimumSessions,
+            Withheld: ReasonVerdict.BelowTheResolvedMinimum);
 
         var above = new ReasonRecord(
-            ShortlistSeries.CrossedALevel, 900, 150, 130, 60, RunScreen.MinimumResolvedSetups,
-            Share: 53.57d, BreakEven: 41d, Sessions: 90, SessionMinimum: ReasonVerdict.MinimumSessions,
+            ShortlistSeries.CrossedALevel, 900, 150, 130, 60, ReasonVerdict.MinimumResolved,
+            Scored: 280, Share: 53.57d, BreakEven: 41d, Sessions: 90, SessionMinimum: ReasonVerdict.MinimumSessions,
             Cleared: true, PValue: 0.0001d, Threshold: ReasonVerdict.Significance / ReasonVerdict.LiveFamily,
-            Divisor: ReasonVerdict.LiveFamily);
+            Divisor: ReasonVerdict.LiveFamily, Withheld: ReasonVerdict.Shown, Significance: ReasonVerdict.Significance);
 
         var fewNights = new ReasonRecord(
-            ShortlistSeries.UnusualVolume, 900, 150, 130, 60, RunScreen.MinimumResolvedSetups,
-            Sessions: 12, SessionMinimum: ReasonVerdict.MinimumSessions);
+            ShortlistSeries.UnusualVolume, 900, 150, 130, 60, ReasonVerdict.MinimumResolved,
+            Scored: 280, Sessions: 12, SessionMinimum: ReasonVerdict.MinimumSessions,
+            Withheld: ReasonVerdict.BelowTheSessionMinimum);
 
         Assert.False(below.HasEarnedAVerdict);
         Assert.True(above.HasEarnedAVerdict);
@@ -2656,7 +2658,7 @@ public partial class ReadSurface
         // they are waiting for rows or for nights cannot tell how long for.
         Assert.Contains("data-short=\"resolved\"", drawn, StringComparison.Ordinal);
         Assert.Contains("data-short=\"sessions\"", drawn, StringComparison.Ordinal);
-        Assert.Contains("280 of 250 resolved over 12 of 60 listing session(s)", drawn, StringComparison.Ordinal);
+        Assert.Contains("280 of 250 resolved setups that set a bar, over 12 of 60 listing session(s)", drawn, StringComparison.Ordinal);
 
         // The row that cleared both draws the three together with its verdict and
         // divisor; neither of the other two draws a rate at all.
@@ -2884,7 +2886,7 @@ public partial class ReadSurface
             rows.Sum(row => row.Reasons.Count),
             Regex.Matches(list, "class=\"record not-measured\"").Count);
 
-        Assert.Contains($"of {RunScreen.MinimumResolvedSetups} resolved", list, StringComparison.Ordinal);
+        Assert.Contains($"of {ReasonVerdict.MinimumResolved} resolved setups that set a bar", list, StringComparison.Ordinal);
 
         // And it is drawn INSIDE the reason's own span, which is the hard rule
         // rather than a detail of the markup: the record says how this reason
