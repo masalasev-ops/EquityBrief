@@ -14594,6 +14594,28 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             microsecond apart being equal, and nothing else.
             M4 the verb's store check removed: the register attempts test red on the store one
             migration behind, whose refusal no longer names `tools/migrate`, and nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Five
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1054 of 1055
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 1 red, the register attempts test on its first case, no form given, the run
+            log holding 0 rows where the refused command is 1. M2 turned 1 red, the run page test
+            finding no stage drawn as run by hand, the registration drawn as a stage of the night
+            with its outcome `registered`. M3 turned 1 red, the one-instant test reading the same
+            run id, "register-20260916T210000Z", for two instants a tenth of a microsecond apart. M4
+            turned 1 red, the register attempts test on the store one migration behind, whose
+            command was refused by the registrar, "'x' does not stand registered", rather than by
+            the store check naming `tools/migrate`.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            and none moved: the route row of section 15.10 this correction edits keeps its key, and
+            the one roster row it edits, `register-append-only`, keeps its key. Both gates ran with
+            this entry in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
