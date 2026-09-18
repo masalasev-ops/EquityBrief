@@ -15603,6 +15603,29 @@ Mutated:    the rule, stated before the sweep: break each of the four properties
             nothing else.
             M4 the part not the archive's: the fetcher's revenue tables test red on the source, and
             the refusing archive's test red on the parts it names absent; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Five runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1080 of 1081 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 2 red, the revenue tables test on NVDA's candidates, none read, and the
+            segment table test on its read count, two pages where four were expected.
+            M2 turned 1 red, the revenue tables test on the misnamed report, its narrative table
+            kept beside R67.
+            M3 turned 1 red, the fetcher's revenue tables test on the stored part, null where a
+            table was expected.
+            M4 turned 2 red, the fetcher's revenue tables test on the source, naming the provider,
+            and the refusing archive's test on the parts named absent, three where four were
+            expected.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html`, and no roster row
+            changed. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.
 Carried:    nothing owed by this repair.
