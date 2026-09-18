@@ -14996,3 +14996,78 @@ Carried:    one operating row, opened here and cited from 8.4, the runbook and t
             candidate's record computed and a promotion written against it, triggered by the first
             candidate registered, read on the run page's shadow candidates region. The phase's
             sign-off is owed on phase 8 as a whole by a session that has committed no code.
+
+### 5.1 - correction: a ticker the provider listed under two join dates drawn once, which had stopped tonight's list and every name page   2026-09-18
+Corrects:   the 5.1 entry records the universe read as every current member of the index with what
+            the night computed for it. It read one row per open membership span, and the membership
+            table keys a span on its join date, so a ticker the provider lists under a corrected join
+            date holds two open spans. On 2026-09-17 the provider re-dated VMRK's span from
+            2026-08-18 to 2001-12-03 and that night's membership step wrote the second row. From
+            then the universe read handed VMRK back twice, and every page building a map by ticker
+            from it threw: tonight's list and every name page, the report export among them,
+            answered with a server error, and the universe page drew VMRK twice. The run page's
+            stale list takes the same membership read and would list a stale ticker once per open
+            span.
+Found:      on 2026-09-18, by serving the screens over a copy of the operator's store after
+            rehearsing that night's run on it: tonight's list and the name pages answered 500 with
+            "An item with the same key has already been added. Key: VMRK", and the run and universe
+            pages 200.
+Measured:   read immutable from the operator's store on 2026-09-18, at schema 27 and last written
+            2026-09-17 23:41:00 UTC: 822 membership rows, 505 current on 2026-09-17 over 504
+            tickers, VMRK the one ticker current twice, joined 2026-08-18 and last observed
+            2026-09-10 23:30 UTC, and joined 2001-12-03 with the sector Real Estate and last
+            observed 2026-09-17 23:30 UTC.
+Repaired:   the universe read draws each ticker once, from its current span with the newest
+            `observed_at`, and the stale list reads each ticker once. The nightly stages already
+            write one row a ticker and are unchanged. SCHEMA's membership section says a re-dated
+            span leaves two open rows and which each side reads, with its prior text in CHANGELOG.
+Stored:     nothing to rewrite. The store holds both of VMRK's rows as the provider sent them, and
+            the read no longer draws the older.
+Missed:     every universe test ran over a fixture holding one span a ticker, and no test re-dated a
+            span.
+Guarded:    over the fixture's store with a member given a second, older span and a name with no
+            bars given two, the universe read returns each ticker once, in order, with the member's
+            sector from its newest span; the stale list names the second name once; and tonight's
+            list, the universe, the member's page and the run page each answer 200, the universe
+            drawing the index's four names and the one added.
+Expected:   derived: the rule is stated in SCHEMA and asserted over constructed spans; no expectation
+            file changes, because the fixture's payload lists no ticker under two join dates.
+Tests:      1066, from 1065. One added to `read-surface`: a ticker listed under two join dates drawn
+            once, from the span listed most recently. One rewritten in place: `nightly-run`'s stated
+            set of the membership reads that ask the join date, where the universe now reads it
+            twice. No file this correction edits is a source either evaluator version or the ladder
+            rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being
+            one row a ticker in the universe, the newest span chosen, and one stale row a ticker.
+            Predicted:
+            M1 the universe's one-span predicate removed: the new test red on the universe handing
+            back the member and the name each twice, and `nightly-run`'s stated set of membership
+            reads red on the universe's second site gone; nothing else.
+            M2 the stale list's DISTINCT removed: the new test red on the stale list naming the name
+            twice, and nothing else.
+            M3 the oldest span chosen in place of the newest: the new test red on the member's sector
+            read from its older span, and nothing else.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Four
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1065 of 1066
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 2 red: the new test on the universe handing back AAPL twice, and
+            `nightly-run`'s stated set of membership reads missing the third ReadApi site. M2 turned
+            1 red, the new test on the stale list naming ZZZZ twice. M3 turned 1 red, the new test
+            on AAPL's sector read as "an earlier span" where its newest span says Technology.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1066 of 1066 tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 367 claims,
+            367 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 374 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html` and no roster row.
+            Both gates ran with this entry in place, and the operator's store under `data/` was not
+            touched by either.
+Carried:    nothing owed by this repair. Noted rather than owed, for the operator: a span the
+            provider stops listing without a leave date still reads as a member, which is EQR's case
+            since 2026-09-17, stale since its bars end on 2026-08-17; whether such a span is read as
+            left is a ruling nobody has made.

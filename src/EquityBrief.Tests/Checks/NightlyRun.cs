@@ -1661,9 +1661,10 @@ public class NightlyRun
             stored.Order(StringComparer.Ordinal));
 
         // Every other read asks the join date as well. Stated as a set, and a
-        // site added under either form moves one of the two.
+        // site added under either form moves one of the two. The universe reads
+        // it twice: for its rows and for the one span a ticker is drawn from.
         Assert.Equal(
-            ["CalendarFetcher", "LadderBuilder", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ShortlistBuilder"],
+            ["CalendarFetcher", "LadderBuilder", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder"],
             member.Order(StringComparer.Ordinal));
     }
 

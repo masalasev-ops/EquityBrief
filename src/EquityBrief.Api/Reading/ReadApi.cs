@@ -727,6 +727,9 @@ public sealed class ReadApi : IComponent
     // searched for. `as_of` binds to the maximum for the same reason the level
     // query binds it: a screen holding two nights of bands is a screen holding
     // two charts.
+    //
+    // One row a ticker. A provider that re-dates a member's span leaves two open
+    // spans for one ticker, and the screen draws the one it listed most recently.
     const string Universe = @"
         SELECT m.ticker,
                m.sector,
@@ -746,6 +749,14 @@ public sealed class ReadApi : IComponent
         WHERE m.index_code = $index_code
           AND (m.joined IS NULL OR m.joined <= $session)
           AND (m.""left"" IS NULL OR m.""left"" > $session)
+          AND m.rowid = (
+              SELECT o.rowid FROM membership o
+              WHERE o.index_code = m.index_code
+                AND o.ticker = m.ticker
+                AND (o.joined IS NULL OR o.joined <= $session)
+                AND (o.""left"" IS NULL OR o.""left"" > $session)
+              ORDER BY o.observed_at DESC, o.rowid DESC
+              LIMIT 1)
         ORDER BY m.ticker;
     ";
 
@@ -823,7 +834,7 @@ public sealed class ReadApi : IComponent
     // as effective the night it was announced.
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string StaleNames = @"
-        SELECT m.ticker
+        SELECT DISTINCT m.ticker
         FROM membership m
         WHERE m.index_code = $index
           AND (m.joined IS NULL OR m.joined <= $session)
