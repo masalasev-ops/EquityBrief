@@ -15324,3 +15324,68 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             row changed: `gap-refusal`'s. Both gates ran with this entry in place, and the
             operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 6.1 - correction: a quarter ends on the date its own report states, where the row had stored the provider's month-end label   2026-09-18
+Corrects:   the 6.1 entry records the fundamentals fetcher storing each filing under the period it
+            covers, read off the company financials provider. That provider labels every quarter
+            with the last day of its month, and a company whose fiscal quarters end on a weekday
+            ends them up to a week either side of it, so the row stored a label as the quarter's
+            end, the facts file carried it as the latest quarter end and the numbers section drew
+            it under Quarter.
+Found:      on 2026-09-18, in the first live research pass, NVDA's: its short version wrote that
+            the quarter ended on 2026-07-31, which the claim checker accepted because the facts file
+            held it, while the two local sections that gave the company's own date, July 26, 2026,
+            were refused twice on it and left out.
+Measured:   read immutable from a copy of the operator's store taken after that pass: NVDA's twelve
+            rows, the only fundamentals the store holds, each carry a month-end label, and the
+            segment table the archive read on the same pass states the quarter as ended 2026-07-26.
+            Over the fixture, the six AAPL quarters the captured index holds a report for ended on
+            2026-06-27, 2026-03-28, 2025-12-27, 2025-09-27, 2025-06-28 and 2025-03-29, each two to
+            four days before the label the provider files it under.
+Repaired:   a row's quarter end is the period of the 10-Q or 10-K the archive's index lists as
+            ending within a week of the provider's label, and the label only where the archive was
+            not read or indexes no such report; the source column gains a part, `periodEnd`, naming
+            whose date it is. DECISIONS records it as A quarter ends on the date the company's own
+            filing states, and SCHEMA's paragraph on the two providers says so, with its prior text
+            in CHANGELOG.
+Stored:     NVDA's twelve rows keep the labels they were written with, since the table is never
+            updated; the operator has asked for everything that pass fetched to be removed, and the
+            next pass for the name fetches them again under this rule.
+Missed:     the fetcher's test asserted AAPL's quarter as 2026-06-30, the provider's label, beside a
+            captured 10-Q stating 2026-06-27, and no test compared the two.
+Guarded:    over the fixture with the archive read, AAPL's six newest rows carry their reports' own
+            period ends and name the archive as their source, each differing from the provider's
+            label, and the six older ones, which the captured index does not reach, carry the
+            provider's labels and name the provider.
+Expected:   derived: the period ends are the captured index's own report dates and the labels are
+            read off the captured payload in the test; no expectation file changes.
+Tests:      1073, from 1072. One added to the fundamentals fetcher's tests. No file this correction
+            edits is a source either evaluator version or the ladder rules' code version pins, so no
+            pin moves.
+Mutated:    the rule, stated before the sweep: break each of the two properties this correction
+            adds, a quarter's end taken from its own report and the source naming whose date it is.
+            Predicted:
+            M1 the report's period never taken: the new test red on the six newest quarters' ends;
+            nothing else.
+            M2 the source never naming the archive: the new test red on the six newest rows'
+            source; nothing else.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Three
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1072 of 1073
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the new test on the six newest quarters' ends, each the provider's
+            month-end label.
+            M2 turned 1 red, the new test on the six newest rows' source, each naming the provider.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1073 of 1073 tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html`, and no roster row
+            changed. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.
+Carried:    nothing owed by this repair.

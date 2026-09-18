@@ -365,6 +365,40 @@ public class FundamentalsFetcherTests
     }
 
     [Fact]
+    public async Task AQuarterEndsOnTheDateItsOwnReportStatesAndOnTheProvidersLabelOnlyWhereTheArchiveIndexesNone()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await WithArchive(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        var labelled = (await Feed().FundamentalsAsync("AAPL")).Filed.ToDictionary(
+            quarter => quarter.FilingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            quarter => quarter.PeriodEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var ends = Rows(store, "AAPL").Select(row =>
+        {
+            using var payload = JsonDocument.Parse(row.Payload);
+            using var source = JsonDocument.Parse(row.Source);
+
+            return (row.FilingDate, Ended: payload.RootElement.GetProperty("periodEnd").GetString()!, From: source.RootElement.GetProperty("periodEnd").GetString()!);
+        }).ToArray();
+
+        // The captured index holds six periodic reports, the annual one among them, and
+        // each of the six newest quarters takes its report's own period, days before the
+        // month's last day the provider labels it with.
+        Assert.Equal(
+            ["2026-06-27", "2026-03-28", "2025-12-27", "2025-09-27", "2025-06-28", "2025-03-29"],
+            ends.Take(6).Select(end => end.Ended));
+        Assert.All(ends.Take(6), end => Assert.Equal(FundamentalsFetcher.Archive, end.From));
+        Assert.All(ends.Take(6), end => Assert.NotEqual(labelled[end.FilingDate], end.Ended));
+
+        // A quarter the index holds no report for keeps the provider's label, and the
+        // row says whose date it is.
+        Assert.Equal(FundamentalsFetcher.StoredFilings - 6, ends.Skip(6).Count());
+        Assert.All(ends.Skip(6), end => Assert.Equal((labelled[end.FilingDate], FundamentalsFetcher.Provider), (end.Ended, end.From)));
+    }
+
+    [Fact]
     public async Task TheArchivesPartsSitOnTheNewestFilingAlone()
     {
         using var store = new TemporaryStore().Migrated();
