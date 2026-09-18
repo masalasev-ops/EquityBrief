@@ -14963,8 +14963,35 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             M5 the threshold filter removed from the reasons the run page counts: the record test
             red on counting the rows under another threshold and under none, and the thresholds test
             red on counting the marked rows given another multiple, and nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Six
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1064 of 1065
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 1 red, the mapping test's constructed proof missing its first expected fault,
+            the extended name's body read in place of the exact one. M2 turned 1 red, the mapping
+            test's constructed proof missing the cell word nothing covers. M3 turned 4 red: the
+            record reader test on the checkpoints headed only by entries that are not checkpoint
+            entries, 2.0, 3.0, 6.0 and 7.0, read as built; the planning pass test on a planning
+            entry landing its phase; the ruling test on the 6.0, 7.0 and 7.2 rulings read as landing
+            beside 8.2's; and `obligation-reconciles`' planning checkpoint proof on the ruling
+            landing 9.0. M4 turned 1 red, the promoted candidate test on its retirement refused as a
+            live reason. M5 turned 2 red, the record test counting 6 wins of 6 where the rows under
+            the carried multiple give 3 of 3, and the thresholds test counting 4 marked rows where
+            the 2 keeping the multiple count.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim added
+            and none moved: section 17's frozen measurement windows row is read as its two subjects,
+            a rule by `nightly-run` and a threshold by `read-surface`, which is the claims at 367
+            and the placements and verdicts reconciled at 374, and the pair holds 367 as 8.0's 361
+            and each row read as its parts. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
 Carried:    one operating row, opened here and cited from 8.4, the runbook and the decision: a
             candidate's record computed and a promotion written against it, triggered by the first
             candidate registered, read on the run page's shadow candidates region. The phase's
