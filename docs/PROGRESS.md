@@ -13955,11 +13955,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             red, the level test, missing "which is 0.01 divided by a family of 6". M7 turned 2 red, the
             tonight test missing "300 of 250 resolved setups that set a bar" and the fixture's tonight
             test missing "of 250 resolved setups that set a bar".
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1029 of 1029 tests ran
             with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
-            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
-            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
-            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: the rows
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 366 claims, 366 PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, 373 placements and verdicts reconciled against a floor of 34,
+            37 of 37 roster checks carried and all 37 run. No claim added and none moved: the rows
             this correction edits keep their keys, and the twelve notes restated say what the tests
             now read. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
