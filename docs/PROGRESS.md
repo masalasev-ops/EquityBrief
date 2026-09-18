@@ -15145,8 +15145,30 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             member's span still closed after the feed lists it again; nothing else.
             M7 the closed spans left out of the rows written: the bound's lower case red on the
             rows written; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Eight
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1068 of 1069
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 2 red: the night test on the backfill stopping at ZZZZ, for which the recorded
+            feed holds no year, and the bound's lower case on 10 tickers still open. M2 turned 2
+            red: the night test on the same stop, and the bound's lower case on none of its 10
+            closed on the session. M3 turned 1 red, the night test on the spans closed reading AAPL
+            and ZZZZ without KEYS. M4 turned 1 red, the bound's lower case on 10 tickers still open.
+            M5 turned 1 red, the bound's upper case on none of its 11 still open. M6 turned 1 red,
+            the night test on AAPL's span still closed after the feed listed it again. M7 turned 1
+            red, the bound's lower case on 6 rows written where 16 were.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim
+            added: section 18's row for a ticker the index feed stops listing, reached by
+            `nightly-run`, and no roster row changed. Both gates ran with this entry in place, and
+            the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. Noted rather than owed, for the operator: from 2026-09-21
             the joiner is P_old, which holds no bar, since the price file carries it as P; the
             backfill asks for a member holding no bar on every night, which is corrected at 1.2
