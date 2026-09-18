@@ -15305,6 +15305,22 @@ Mutated:    the rule, stated before the sweep: break the one property this corre
             asked for alone read against the exchange calendar. Predicted:
             M1 a lone year read against nothing: the new test red on the second answer's refusal
             missing; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, the mutation turning exactly the test named for it red and
+            nothing else, on the assertion named for it, read off the failure message. Two runs of
+            the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1071 of 1072 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the count that follows is on top of it.
+            M1 turned 1 red, the new test on the second answer's refusals, empty where KEYS's
+            missing session was, which is the year stored with its hole.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html`, and one roster
+            row changed: `gap-refusal`'s. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
