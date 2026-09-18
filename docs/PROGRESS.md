@@ -15258,11 +15258,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             where 15 did. M5 turned 1 red, the night test on the row of the fifth ask, which named a
             week's date where the next night was due. M6 and M7 each turned 1 red, the night test on
             the page's line, missing under M6 and read off the first night's row under M7.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1071 of 1071 tests
             ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim
             added: section 18's row for a name the provider serves no year, reached by
             `nightly-run`, and one roster row changed: `nightly-cost`'s, for the backfill's
             schedule. Both gates ran with this entry in place, and the operator's store under
