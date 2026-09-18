@@ -3418,7 +3418,7 @@ public partial class ReadSurface
     [Fact]
     public void TheHarnessRegionCountsOutOfScopeApartFromUnexaminedAndSaysSoWithNoReport()
     {
-        // Section 15.10's last region, and CLAUDE.md's rule about the two
+        // Section 15.10's last region, and the rule in .claude/rules/checks.md about the two
         // counts: only one of them is a defect, and a page that summed them
         // would report a build that has not reached a claim as one that failed
         // to check it.

@@ -24,6 +24,38 @@ public class ChangelogReconciles
     internal static int EntriesIn(string changelog) =>
         Regex.Matches(changelog, EntryHeading, RegexOptions.Multiline).Count;
 
+    // One commit's `git show --numstat` output: the paths it touched, and whether
+    // it deleted a line from a spec or a rules file.
+    internal static (IReadOnlyList<string> Touched, bool DeletedFromSpec) Numstat(string output)
+    {
+        var touched = new List<string>();
+        var deletedFromSpec = false;
+
+        foreach (var line in output.Split((char)10, StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = line.Split('\t');
+
+            if (parts.Length != 3)
+            {
+                continue;
+            }
+
+            touched.Add(parts[2].Trim());
+
+            // The rules files are spec-kind, so a commit deleting a line from
+            // one owes a changelog entry as a commit deleting from CLAUDE.md
+            // does. They carry CLAUDE.md's own text and the prior text of an
+            // edit to them is the prior text of a rule.
+            if (Corpus.SpecsAndRules.Contains(parts[2].Trim(), StringComparer.Ordinal)
+                && int.TryParse(parts[1], out var deleted) && deleted > 0)
+            {
+                deletedFromSpec = true;
+            }
+        }
+
+        return (touched, deletedFromSpec);
+    }
+
     [Fact]
     public void EveryCommitThatDeletedASpecLineChangedTheChangelog()
     {
@@ -62,30 +94,7 @@ public class ChangelogReconciles
                 $"git show exited {stat.ExitCode} for {commit}. A commit whose diff could not be " +
                 $"read is not a commit that deleted nothing. {stat.StandardError}");
 
-            var touched = new List<string>();
-            var deletedFromSpec = false;
-
-            foreach (var line in stat.StandardOutput.Split((char)10, StringSplitOptions.RemoveEmptyEntries))
-            {
-                var parts = line.Split('\t');
-
-                if (parts.Length != 3)
-                {
-                    continue;
-                }
-
-                touched.Add(parts[2].Trim());
-
-                // The rules files are spec-kind, so a commit deleting a line from
-                // one owes a changelog entry as a commit deleting from CLAUDE.md
-                // does. They carry CLAUDE.md's own text and the prior text of an
-                // edit to them is the prior text of a rule.
-                if (Corpus.SpecsAndRules.Contains(parts[2].Trim(), StringComparer.Ordinal)
-                    && int.TryParse(parts[1], out var deleted) && deleted > 0)
-                {
-                    deletedFromSpec = true;
-                }
-            }
+            var (touched, deletedFromSpec) = Numstat(stat.StandardOutput);
 
             if (!deletedFromSpec)
             {

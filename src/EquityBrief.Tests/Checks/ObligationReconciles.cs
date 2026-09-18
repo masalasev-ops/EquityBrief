@@ -87,7 +87,7 @@ public class ObligationReconciles
 
     static IReadOnlyList<Obligation> All() => In(Corpus.Read("docs/BUILD_PLAN.md"));
 
-    static IReadOnlyList<CorpusFinding> Cited() =>
+    internal static IReadOnlyList<CorpusFinding> Cited() =>
         Corpus.SourceAndDocuments()
             .SelectMany(file => Corpus.Citations(Corpus.Obligation, File.ReadAllText(file), file))
             .ToArray();
@@ -190,7 +190,7 @@ public class ObligationReconciles
     // Named separately from the fact so the proof below exercises the code the
     // corpus is measured by. A row is cited back by the marker naming it inside
     // the text of the checkpoint that owes it, and by nothing else. Its name's
-    // words in that text are prose that happens to use them, which CLAUDE.md
+    // words in that text are prose that happens to use them, which .claude/rules/corpus-edits.md
     // gives as the reason the marker exists, and read off the words a checkpoint
     // whose heading is its row's name cited the row back with no marker at all:
     // 7.0's sweep deleted 7.1's citation of the row it owes and nothing went red.

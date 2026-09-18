@@ -47,7 +47,7 @@ internal static class DuePoints
     // alone where it has not. The fallback exists because a later phase gets its
     // checkpoints only at the previous phase's sign-off, so requiring a
     // checkpoint by name would forbid the roster from naming anything past the
-    // phase in hand, which is the case `CLAUDE.md` argues for. It applied to
+    // phase in hand, which is the case `.claude/rules/checks.md` argues for. It applied to
     // every due point until the sixth phase 5 sign-off review, so "5.8" was in
     // the plan before 5.8 was written and an obligation could be owed at a
     // checkpoint nobody had created.

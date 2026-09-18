@@ -13964,3 +13964,233 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             now read. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing.
+
+### 8.2 - correction: a matured setup's bar asserted through the filler's rewrite, an entry admitted only inside its plan's own range, and the rules directory's readers, table and ruling record held to what they state   2026-09-18
+Corrects:   the 8.2 entry and the 8.2 ruling entry above, in the places named here.
+            The 8.2 entry's Rules field says the bar "is present exactly where the setup horizon's
+            return is and absent exactly where that is, being one rule rather than two". Over every
+            plan the builder writes that held, and over two shapes the arithmetic accepts it did
+            not: a plan with no entry zone admitted its listing close as the entry wherever that
+            close sat, and a zone whose top edge sat above the plan's own target admitted a listing
+            close between the two, so a setup listed below its stop or above its target resolved
+            with a return and no bar. Its Expected field says the listing night's own close "is
+            admitted only at or above the stop", and the expectation's note said the same in the
+            words "is admitted as an entry only at or above the stop"; both were false for the first
+            shape. The test held that half by finding the words "the series cannot produce" in the
+            note rather than by scoring a setup, and the refusal case it did score, an entry of 120
+            over a target of 110, resolved as a win with a return of 0 and no bar, of which the test
+            read the bar alone. No stored plan takes either shape.
+            Its Tested field reads "Four added: the six break-even cases and the refusal read from
+            the expectation; the bar each of the four setup cases set, asserted present exactly
+            where the return is; the withholding at the boundary, being 249 resolved with no share
+            and no bar and 250 with both, and a mixed population where 256 resolved rows set 250
+            bars; and the run page drawing neither figure for a reason that has earned a verdict."
+            The right words: four added, being the six break-even cases and the refusal read from
+            the expectation, the withholding at the boundary and over the mixed population, the run
+            page drawing neither figure, and `TheReadApiHandsBackTheBarEachPlanSetAsTheStoreHoldsIt`,
+            the read API handing back a stored bar unchanged over rows inserted in the shape the
+            filler writes; and one extended, 8.1's setup test gaining the bar each of its four cases
+            set. The read API test's comment said "the filler writes it" of rows the test inserted
+            itself. No test read a setup row the filler had rewritten after the setup matured, which
+            is the only path a stored setup's bar is written by, since a setup is first written on
+            its listing night with nothing after it.
+            Its Mutated field predicted of M2 "every expectation case red but the two ends, which
+            are symmetric", and recorded "M2 turned the same two red, every case but the two ends of
+            the rule, which are symmetric and cannot tell the swap". Swapping risk and reward turns
+            a bar into one hundred less it, so the two ends read 100 and 0 and are the cases the swap
+            moves furthest, and the only case it cannot move is a bar of 50, the plan entered at
+            100. Each test's loop stops at its first failing case, being section 13's tranche read
+            as 67.82 rather than 32.18 and 8.1's entry at 99 read as 55 rather than 45, so the run
+            could not show which of the other cases were red. The two tests did go red, and M1, M3
+            and M4c stand as recorded.
+            The 8.2 ruling entry opens "Built:", where the 6.0, 7.0 and 7.2 ruling entries open
+            "Not a checkpoint entry", so `DuePoints.Built` and `two-platform` read it as a second
+            building entry of 8.2. 8.2 had landed from its own entry before the ruling merged, so no
+            due point moved, and the entry records the Windows run. Its four commit subjects put the
+            word in the checkpoint slot, as "Phase 8 / 8.2 ruling - ...", where the form the 7.2
+            ruling used is "Phase 7 / 7.2 - ruling: ...". Merged subjects stay as they are.
+            Its Measured field reads "`CLAUDE.md` carried 16 decision citations and 1 obligation
+            citation and now carries 14 and none". Those are lines, where the 446 in the same field
+            counts citations: by that method `CLAUDE.md` carried 18 decision citations on 16 lines
+            and carries 16 on 14.
+            Its Tested field says the test added proves "that a citation inside a rules file is read
+            by `decision-resolves`". The test asserted that the rules files are members of the
+            populations and that the reader parses a constructed line. It asserted of no check that
+            the check reads those populations, so `pinned-constants` or `changelog-reconciles`
+            returning to `Corpus.Specs` left the suite green. Its Mutated field named no property the
+            ruling added and did not mutate: those two checks' switch to the wider population,
+            `banned-prose`'s assertion that a rules file is scanned, and `coverage-reported`
+            locating the roster in the rules file.
+            It predicted of M4 "green on this tree, because the table is in both files while the
+            move is in flight, and red once it is not", and recorded "every prediction held". The
+            roster left `CLAUDE.md` at e8bc531, before the entry was written at 6b1e76b, so on the
+            tree the sweep ran on the table was in one file. What ran was the pointer half alone,
+            the green half of the prediction was false there, and the 24 red it recorded are that
+            half's result.
+            It recorded M2's survival as "a mutation that survives by design". It is an unreachable
+            boundary, which `.claude/rules/writing-tests.md` classes as a defect in the test: every
+            read was over the four files committed, so no test reached a directory below the floor,
+            and M3 went red only on the test's own copy of the floor, which the refusal made
+            unreachable whenever the refusal was in place. `Corpus.Rules`'s comment said adding a
+            fifth file "is a change here as well", which the floor did not make true, and nothing
+            held `CLAUDE.md`'s table of four files or its two statements of the count to the
+            directory.
+            The ruling's commit e8bc531 added the `.claude/rules` row to `CLAUDE.md`'s layout block
+            and a clause to its `.gitignore` line with no prior text recorded, and four of its
+            changelog entries, the ones moving the roster, the verification rules, the editing
+            conventions and the script mechanics, open "Corrects: no defect.", which names neither a
+            defect nor a decision: the moves were authorised by the ruling phase 8's opening in
+            `BUILD_PLAN.md` states, which carries no decision name to cite. The form had precedent,
+            as "Corrects: nothing that was wrong. This is a reordering rather than a repair" and
+            "Corrects: nothing. This records a clean edit rather than a defect" in earlier entries,
+            and the entry format names no field for a move that changes no rule, so those four are
+            not read as defects left standing; what they lacked was the ruling they could have
+            named. The same commit edited `CHANGELOG.md`'s own opening, which read "Specs are
+            `CLAUDE.md`, `ARCHITECTURE.html`, `SCHEMA.md`, `BUILD_PLAN.md` and `RUNBOOK.md`. Records
+            correct themselves with new dated entries and do not appear here." and now names the
+            four rules files after `RUNBOOK.md`.
+            And the ruling scoped `corpus-edits.md` to `docs/**` alone, while it carries the citation
+            forms code writes and the rule that a new component's catalogue row lands in the commit
+            that adds it, and `writing-tests.md` to the test project alone, while its mutation and
+            population rules govern a record entry's Mutated and Measured fields.
+Found:      by the phase 8 sign-off review on 2026-09-16, reading PR 99 and PR 100 against their
+            entries and their commits. The filler's rewrite was shown unguarded by a mutation over a
+            copy of 57f6e7f: with the break-even clause removed from the upsert, no forward return,
+            break-even, read surface or night test went red. The citation counts were recounted
+            from the history with the reader's own patterns, and the roster's location was read at
+            each of the ruling's four commits. The review recommended carrying the shape a ruling's
+            entry takes to the pass that plans phase 9; it is corrected here on the operator's
+            ruling of 2026-09-16 that every finding and every carry the review reported is corrected
+            before the sign-off handoff.
+Measured:   read immutable from the operator's store on 2026-09-18, at schema 27 and last written
+            2026-09-17 23:41:00 UTC, after that night's run: 3,530 listings on nine sessions, 2,256
+            whose plan carries a stop, 1,928 carrying a stop and a first traded target, and every one
+            of those 1,928 carrying its entry zone's top edge at or above its stop and below its
+            target, compared in decimal. A price counts as carried where the plan holds text under
+            its name and as absent otherwise, which is how the filler reads a plan, so 0 carry a stop
+            and a target with no entry zone, and 328 carry a stop with no target, which have no
+            setup. So an entry admitted only inside the plan's own range admits exactly the closes
+            8.1's rule admitted over every stored plan. Over the history, `CLAUDE.md` at 1e3e733
+            carried 18 decision citations on 16 lines and 1 obligation citation, and at 6b1e76b 16
+            on 14 lines and none, with 446 decision and 114 obligation citations over the 241 and
+            245 files walked, the same before and after.
+Repaired:   the filler's rewrite of a setup that matures after its row was written is asserted: a
+            setup filled on its listing night with nothing after it carries nothing, and filled again
+            once its closes are stored on the exchange sessions that follow carries the outcome, the
+            session it resolved on, the return and the bar the rule gives, on the same row. An entry
+            is admitted only inside the plan's own range, from its stop to the lower of its entry
+            zone's top edge and its target, each at the listing session's scale as the 8.1 correction
+            reads a plan, on the listing night and on every later session, and a plan with no zone
+            takes its whole range as the zone, so no outcome carries a return without a bar. That is
+            a decision, written beside the break-even decision and cited where the rule is applied
+            and in `SCHEMA.md`. Section 13.1's worked tranche is read from the document and held to
+            the expectation's first case, and each case's bar to risk over risk plus reward of its
+            own prices. `pinned-constants` and `changelog-reconciles` are each asserted to read every
+            rules file on the function the check calls, and `decision-resolves`,
+            `no-superseded-citation` and `obligation-reconciles` to read every citation a rules file
+            carries on the reader each of them calls. The rules directory's refusal runs over
+            constructed directories and the proof's copy of its floor is gone. `stated-counts` holds
+            the rules files `CLAUDE.md` names, with the paths each loads for, to the files on disk
+            and their front matter, refusing a table row it cannot read, and its count words to the
+            number of files. `corpus-edits.md` loads for `src/**` as well and `writing-tests.md` for
+            `docs/PROGRESS.md` as well. `CLAUDE.md` states a ruling's subject and opening beside the
+            planning pass's, and `corpus-edits.md` names it among the conventions `CLAUDE.md` holds.
+            `architecture-conformance` reads every entry whose heading follows its checkpoint with
+            the word ruling, in the heading's form or the commit subject's, finds one headed in any
+            other form, and finds every ruling entry that would land its checkpoint, naming the 8.2
+            ruling as the one that does. The pointers still sending a reader to `CLAUDE.md` for a
+            rule that moved name the rules file: two in `BUILD_PLAN.md`, two in `DECISIONS.md` and
+            nine comments in code. The layout block's prior text is recorded in `CHANGELOG.md`, and
+            two comments in the break-even code no longer carry a store figure and its date.
+Stored:     nothing to keep or rewrite. The admission rule admits the same closes over every stored
+            plan, as measured above, so no stored outcome, return or bar changes.
+Missed:     no test read a row the filler rewrote after its setup had matured: the fixture's
+            listings sit on its last stored session, and the runs that did rewrite rows, the
+            whole-night tests run twice over one store, read nothing from `forward_return`. The one
+            break-even case outside its plan's range, the refusal, was asserted on its bar alone, so
+            the return it carried beside no bar went unread, and the other half of the refusal was
+            asserted on the words of a note. And the ruling's proof asserted what the lists hold
+            rather than what the checks read.
+Guarded:    over the fixture replayed through the listings with a constructed listing added: its
+            setup row carries the expectation's first-night state after the first fill, and the
+            case's outcome, session, return and bar after the second, its closes stored on the
+            exchange sessions after the listing. Over the break-even cases, each bar equals risk over
+            risk plus reward of its own prices, and three plans outside their range score as worked
+            by hand. Over 486 constructed setups, six zone shapes by nine listing closes by nine
+            series, a return and a bar are present together or absent together, and each bar lies
+            between 0 and 100, which is the invariant `BreakEven`'s own refusal rests on now that no
+            call reaches it. Over the real rules files, `pinned-constants` and
+            `changelog-reconciles` read all four, and the readers `decision-resolves`,
+            `no-superseded-citation` and `obligation-reconciles` call return every citation each file
+            carries. The floors under the first two of those, 13 and 100, guard a read that has
+            emptied rather than a count, and a rules file's citations leaving what they read is
+            caught by that equality rather than by either floor. Over constructed directories, the
+            read refuses with none to three files and with the directory absent, and returns four
+            files and nothing that is not markdown. Over `CLAUDE.md` and the directory, every row of
+            the table is read, and its files and paths are the directory's and its front matter's.
+            Over the record, every ruling entry is headed as a ruling, and the only one landing a
+            checkpoint is the 8.2 ruling, which lands one 8.2's own entry had already landed; over a
+            constructed record, a ruling opening "Built:" is found, one opening "Not a checkpoint
+            entry" is not, one headed in the commit subject's form is read and named as out of form,
+            and a planning heading that mentions rulings is not read as one.
+Expected:   derived. `forward-returns.json` gains a block naming the case whose row the filler
+            rewrites and its state on the listing night, every field null, worked from the rule that
+            a row with no session after it has matured nothing, and its derivation names the
+            constructed later night. Its refusal and the note calling the other half an invariant
+            the series could not produce are replaced by three cases outside the plan's range, each
+            worked by hand: a zone above the target listed between the two is never entered at the
+            first close above the target; a plan with no zone listed at 85 below its stop of 90
+            enters at 100 and wins at 112, a return of 12 and a bar of 50; and one listed at 120
+            above its target of 110 is never entered. Its `entry` rule names the range.
+Tests:      1036, from 1029. Seven added: to `fixture-expectations`, the matured setup's bar written
+            through the filler's rewrite, section 13.1's tranche read from the document, and a return
+            and a bar together over every plan shape; to `decision-resolves`, every check over the
+            widened populations reading every rules file, and the directory read refusing below its
+            floor; to `stated-counts`, the rules files `CLAUDE.md` names being the directory's; and
+            to `architecture-conformance`, every ruling entry opening as landing nothing save the one
+            named. Three edited in place: the break-even cases gain their risk-over-range derivation
+            and replace the refusal with the three cases outside the range; the rules-file proof
+            loses its copy of the floor; and the changelog walk reads each commit through the
+            function the new proof calls. The read API test's comment no longer credits the filler.
+Mutated:    the rule, stated before the sweep: break each property this correction adds whose
+            failure is silent, being the filler's rewrite of a matured row, an entry admitted only
+            inside the range on the listing night and on a later session, a check's read of the
+            rules files, the directory read's refusal, a ruling entry's opening, and which entries
+            are read as rulings. Added and not mutated: section 13.1's figures held to the
+            expectation, and `CLAUDE.md`'s rules table held to the directory and to each file's front
+            matter, each of which fails on the document edit that breaks it rather than in a run;
+            each case's bar held to risk over risk plus reward of its own prices, which fails on an
+            edit to the expectation; a rules table row the parser cannot read refused;
+            `CitedOutsideTheRecords` and `ObligationReconciles.Cited` held to each rules file's
+            citations, the narrowing M3 breaks in `PinnedConstants.Specs`;
+            `ChangelogReconciles.Numstat` as a parser, which the walk over the history calls and M3
+            does not reach; and
+            `BreakEven`'s refusal of an entry outside the range, which no call reaches since the
+            caller admits none, an unproducible shape whose invariant the plan-shape test asserts as
+            every bar lying between 0 and 100. Predicted:
+            M1 the break-even column dropped from the upsert's update, whatever form the update
+            takes: the matured setup test red on the row's bar reading null after the second fill,
+            and nothing else.
+            M2 the listing close admitted as 8.1 wrote it, wherever it sits where the plan has no
+            zone and up to a zone's top edge above the target, with the later sessions' admission
+            left: the plan-shape test red on the first plan with no zone listed below its stop, and
+            the break-even cases red on the zone above the target scoring a win, and nothing else.
+            M2b a later close admitted only where the plan has a zone, as 8.1 wrote it, with the
+            listing night's admission left: the break-even cases red on the plan with no zone listed
+            below its stop scoring never entered, and nothing else, since a setup that enters
+            nowhere carries neither figure and every entry M2b still admits is inside the range.
+            M3 `PinnedConstants.Specs` over `Corpus.Specs`: the widened-populations test red naming
+            the four rules files, and nothing else, since no rules file states a version.
+            M4 the directory read's floor set to nothing, refusing only below none: the refusal test
+            red on no exception, and nothing else, since four files are on disk.
+            M5 the 7.2 ruling entry opening "Built:" in place of "Not a checkpoint entry.": the
+            ruling test red with the 7.2 ruling listed beside the 8.2 ruling, and nothing else,
+            since 7.2 had landed and that entry records the Windows run.
+            M6 entries read as rulings in the heading's own form alone: the ruling test red on the
+            constructed ruling headed in the commit subject's form going unread, and nothing else,
+            since every ruling the record holds is headed in the heading's form.
+            None of the seven edits a source the ladder rules' code version or either evaluator
+            version pins, so the pin tests stay green under each.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing.

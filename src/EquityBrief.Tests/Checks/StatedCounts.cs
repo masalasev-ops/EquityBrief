@@ -71,6 +71,48 @@ public class StatedCounts
     }
 
     [Fact]
+    public void TheRulesFilesClaudeMdNamesAreTheFilesTheRulesDirectoryHolds()
+    {
+        var rules = Corpus.Read("CLAUDE.md");
+        var table = rules[rules.IndexOf("| Rules file | Loads for | What it covers |", StringComparison.Ordinal)..];
+
+        var rows = table.Split((char)10)
+            .Skip(2)
+            .TakeWhile(line => line.StartsWith('|'))
+            .Select(line => (Line: line, Row: Regex.Match(line, @"^\| `(?<file>[^`]+)` \| (?<paths>[^|]+) \|")))
+            .ToArray();
+
+        // Every row the table holds is read, so a row this cannot parse is a
+        // failure rather than a file left out of both sides of the comparison.
+        Assert.True(rows.Length >= Corpus.RulesFloor, $"Read {rows.Length} rows of the rules table, expected at least {Corpus.RulesFloor}.");
+        Assert.All(rows, row => Assert.True(row.Row.Success, $"The rules table row \"{row.Line.TrimEnd()}\" does not name one file and its paths."));
+
+        var named = rows
+            .Select(row => row.Row)
+            .ToDictionary(
+                row => row.Groups["file"].Value,
+                row => string.Join(", ", Regex.Matches(row.Groups["paths"].Value, "`([^`]+)`").Select(path => path.Groups[1].Value)),
+                StringComparer.Ordinal);
+
+        var held = Corpus.Rules;
+
+        Assert.Equal(held.Order(StringComparer.Ordinal), named.Keys.Order(StringComparer.Ordinal));
+
+        foreach (var file in held)
+        {
+            var front = Regex.Match(Corpus.Read(file), @"\A---\r?\npaths: (?<paths>[^\r\n]+)\r?\n---");
+
+            Assert.True(front.Success, $"{file} does not open with a paths front matter block.");
+            Assert.Equal((file, front.Groups["paths"].Value.Trim()), (file, named[file]));
+        }
+
+        var word = Numbers.Single(number => number.Value == held.Count).Key;
+
+        Assert.Matches($@"\b{word}\s+path-scoped\s+rules\s+files\b", rules);
+        Assert.Matches($@"\bthe\s+{word}\s+rules\s+files\b", rules);
+    }
+
+    [Fact]
     public void TheArchitectureCountsItsOwnReasons()
     {
         var table = ArchitectureTables

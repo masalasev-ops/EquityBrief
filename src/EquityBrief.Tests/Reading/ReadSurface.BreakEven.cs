@@ -182,9 +182,9 @@ public partial class ReadSurface
     [Fact]
     public async Task TheReadApiHandsBackTheBarEachPlanSetAsTheStoreHoldsIt()
     {
-        // The column end to end: migration 24 creates it, the filler writes it,
-        // and the read API hands it back unchanged, which is what the roster row
-        // for this check claims of every stored value.
+        // The read API hands the column back unchanged, which is what the roster
+        // row for this check claims of every stored value. The filler's write of it
+        // is asserted in fixture-expectations.
         using var store = await FixtureExpectations.WithReturns();
 
         var night = NightIn(store);

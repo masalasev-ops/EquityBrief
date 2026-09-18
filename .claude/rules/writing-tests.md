@@ -1,5 +1,5 @@
 ---
-paths: src/EquityBrief.Tests/**
+paths: src/EquityBrief.Tests/**, docs/PROGRESS.md
 ---
 
 # Writing an assertion

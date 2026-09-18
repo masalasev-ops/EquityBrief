@@ -445,7 +445,7 @@ public partial class ArchitectureConformance
         //
         // This number falls as the build advances and reaches zero at phase 8 by
         // construction, so no floor under it can be far enough below that
-        // ordinary building never moves it, which is the test CLAUDE.md sets for
+        // ordinary building never moves it, which is the test .claude/rules/checks.md sets for
         // keeping one. It stood at 100, then 80 at 5.4, then 70 at 5.6, and each
         // fall was recorded with the same sentence saying the number is a fact
         // about how far the build has got rather than about the property. That
@@ -1504,7 +1504,7 @@ public partial class ArchitectureConformance
         Assert.False(DuePoints.InThePlan("6.4", plan));
 
         // A phase with no checkpoints written takes its points on the phase
-        // alone, which is the case CLAUDE.md argues for: a later phase gets its
+        // alone, which is the case .claude/rules/checks.md argues for: a later phase gets its
         // detail at the previous phase's sign-off, and a roster row has to be
         // able to name a check that starts there.
         Assert.True(DuePoints.InThePlan("9.2", plan));

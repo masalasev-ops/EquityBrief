@@ -18,7 +18,7 @@ public class DecisionCitations
     //
     // The passages describing a citation form now name a real decision and a
     // real obligation instead, so they resolve rather than needing exempting.
-    static IReadOnlyList<CorpusFinding> Cited() =>
+    internal static IReadOnlyList<CorpusFinding> Cited() =>
         Corpus.SourceAndDocuments()
             .SelectMany(file => Corpus.Citations(File.ReadAllText(file), file))
             .ToArray();
@@ -51,7 +51,7 @@ public class DecisionCitations
     // in numbers and the exclusion is asserted to be doing work rather than
     // being a filter that matches nothing, which is the drift this file already
     // carries one story about.
-    static IReadOnlyList<CorpusFinding> CitedOutsideTheRecords()
+    internal static IReadOnlyList<CorpusFinding> CitedOutsideTheRecords()
     {
         var records = Corpus.Records
             .Select(record => Path.Combine(Repository.Root, record.Replace('/', Path.DirectorySeparatorChar)))
@@ -145,14 +145,11 @@ public class DecisionCitations
         // the reader and the population rather than today's contents.
         var rules = Corpus.Rules;
 
-        Assert.True(
-            rules.Count >= 4,
-            $"Read {rules.Count} rules files, expected at least 4.");
-
         Assert.All(rules, path => Assert.StartsWith(".claude/rules/", path, StringComparison.Ordinal));
 
         // Every rules file is in the population the citation readers walk, and
-        // in the one `pinned-constants` and `changelog-reconciles` treat as specs.
+        // in the one `pinned-constants` and `changelog-reconciles` treat as specs;
+        // that each of those checks reads it is asserted on the check below.
         var documents = Corpus.Documents;
         var reached = Corpus.SourceAndDocuments().ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -189,6 +186,66 @@ public class DecisionCitations
         // the ones carrying the moved text.
         Assert.Equal(8, beforeTheWidening.Length);
         Assert.Equal(beforeTheWidening.Length + rules.Count, documents.Count);
+    }
+
+    [Fact]
+    public void EveryCheckOverTheWidenedPopulationsReadsEveryRulesFile()
+    {
+        var rules = Corpus.Rules;
+
+        var pinned = PinnedConstants.Specs();
+
+        Assert.All(rules, path => Assert.True(pinned.ContainsKey(path), $"pinned-constants does not read {path}."));
+
+        foreach (var path in rules)
+        {
+            Assert.True(ChangelogReconciles.Numstat("0\t1\t" + path).DeletedFromSpec, $"changelog-reconciles does not count a deletion from {path}.");
+            Assert.False(ChangelogReconciles.Numstat("1\t0\t" + path).DeletedFromSpec, $"changelog-reconciles counts an addition to {path} as a deletion.");
+        }
+
+        Assert.False(ChangelogReconciles.Numstat("0\t1\tdocs/PROGRESS.md").DeletedFromSpec);
+
+        // The citations each rules file carries, read from the file on its own,
+        // are among what `decision-resolves`, `no-superseded-citation` and
+        // `obligation-reconciles` read.
+        static string Key(CorpusFinding citation) =>
+            $"{Path.GetFileName(citation.File)}:{citation.Line}:{citation.Detail}";
+
+        var decisions = rules.SelectMany(path => Corpus.Citations(Corpus.Read(path), path)).Select(Key).ToArray();
+        var obligations = rules.SelectMany(path => Corpus.Citations(Corpus.Obligation, Corpus.Read(path), path)).Select(Key).ToArray();
+
+        Assert.True(decisions.Length >= 1, $"The rules files carry {decisions.Length} decision citations, expected at least 1.");
+        Assert.True(obligations.Length >= 1, $"The rules files carry {obligations.Length} obligation citations, expected at least 1.");
+
+        bool InRules(CorpusFinding citation) =>
+            citation.File.Replace('\\', '/').Contains("/.claude/rules/", StringComparison.Ordinal);
+
+        Assert.Equal(decisions.Order(StringComparer.Ordinal), DecisionCitations.Cited().Where(InRules).Select(Key).Order(StringComparer.Ordinal));
+        Assert.Equal(decisions.Order(StringComparer.Ordinal), DecisionCitations.CitedOutsideTheRecords().Where(InRules).Select(Key).Order(StringComparer.Ordinal));
+        Assert.Equal(obligations.Order(StringComparer.Ordinal), ObligationReconciles.Cited().Where(InRules).Select(Key).Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void ARulesDirectoryReadBelowItsFloorRefusesRatherThanReturningWhatItFound()
+    {
+        using var directory = new TemporaryDirectory();
+
+        Assert.Throws<InvalidOperationException>(() => Corpus.RulesIn(Path.Combine(directory.Path, "absent")));
+
+        for (var count = 0; count < Corpus.RulesFloor; count++)
+        {
+            var refusal = Assert.Throws<InvalidOperationException>(() => Corpus.RulesIn(directory.Path));
+
+            Assert.Contains($"Read {count} rules files", refusal.Message, StringComparison.Ordinal);
+
+            File.WriteAllText(Path.Combine(directory.Path, $"rule-{count}.md"), "---\npaths: docs/**\n---\n");
+        }
+
+        File.WriteAllText(Path.Combine(directory.Path, "not-a-rule.txt"), "");
+
+        Assert.Equal(
+            Enumerable.Range(0, Corpus.RulesFloor).Select(at => $".claude/rules/rule-{at}.md"),
+            Corpus.RulesIn(directory.Path));
     }
 
     [Fact]

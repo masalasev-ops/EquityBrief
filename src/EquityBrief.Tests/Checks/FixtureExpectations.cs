@@ -3827,6 +3827,10 @@ public partial class FixtureExpectations
             // derivation rather than three numbers and an answer.
             Assert.Equal((what, Price(one, "risk")), (what, Price(one, "entryClose") - Price(one, "stop")));
             Assert.Equal((what, Price(one, "reward")), (what, Price(one, "firstTradedTarget") - Price(one, "entryClose")));
+            Assert.Equal(
+                one.GetProperty("breakEven").GetDouble(),
+                (double)(Price(one, "risk") / (Price(one, "risk") + Price(one, "reward")) * 100m),
+                6);
 
             Assert.Equal((what, ForwardReturnSeries.Win), (what, scored.Outcome));
             Assert.Equal((what, true), (what, scored.BreakEven is not null));
@@ -3853,18 +3857,26 @@ public partial class FixtureExpectations
         Assert.Equal(45d, entered.BreakEven!.Value, 6);
         Assert.Null(ForwardReturnSeries.OverSetup(Closes(110m), stop, target, top, 120m).BreakEven);
 
-        // The refusal, over the one shape of it a stored plan can take. The other
-        // half, an entry below the stop, the series cannot produce, and the
-        // expectation states that as the invariant it is rather than asserting it
-        // over a case the world does not hold.
-        foreach (var one in expectation.GetProperty("refused").EnumerateArray())
+        foreach (var one in expectation.GetProperty("outsideTheRange").EnumerateArray())
         {
             var what = one.GetProperty("case").GetString();
+            decimal? zoneTop = one.GetProperty("entryHigh").ValueKind == JsonValueKind.Null ? null : Price(one, "entryHigh");
 
-            Assert.Equal((what, (double?)null), (what, Score(one, Price(one, "entryClose")).BreakEven));
+            var scored = ForwardReturnSeries.OverSetup(
+                Closes([.. one.GetProperty("closes").EnumerateArray().Select(close => decimal.Parse(close.GetString()!, CultureInfo.InvariantCulture))]),
+                Price(one, "stop"),
+                Price(one, "firstTradedTarget"),
+                zoneTop,
+                Price(one, "listedAt"));
+
+            double? Figure(string name) => one.GetProperty(name).ValueKind == JsonValueKind.Null ? null : one.GetProperty(name).GetDouble();
+
+            Assert.Equal((what, one.GetProperty("outcome").GetString()), (what, scored.Outcome));
+            Assert.Equal((what, Figure("returnPct") is null), (what, scored.ReturnPct is null));
+            Assert.Equal((what, Figure("breakEven") is null), (what, scored.BreakEven is null));
+            Assert.Equal(Figure("returnPct") ?? 0d, scored.ReturnPct ?? 0d, 6);
+            Assert.Equal(Figure("breakEven") ?? 0d, scored.BreakEven ?? 0d, 6);
         }
-
-        Assert.Contains("the series cannot produce", expectation.GetProperty("refusedNote").GetString()!, StringComparison.Ordinal);
     }
 
     [Fact]

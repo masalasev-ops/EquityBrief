@@ -434,7 +434,7 @@ public static class RunScreen
     // The text is handed in rather than opened here, so nothing on the read
     // surface reaches the filesystem for it, and a machine with no report says
     // so instead of showing four zeros. Out of scope is carried separately from
-    // unexamined for the reason CLAUDE.md states: only one of them is a defect,
+    // unexamined for the reason .claude/rules/checks.md states: only one of them is a defect,
     // and a page that summed them would report a build that has not reached a
     // claim as one that failed to check it.
     public static HarnessCounts? Harness(string? report)
