@@ -15825,11 +15825,11 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             M2 turned 1 red, the research retry test on the stage asked again, none on the run log.
             M3 turned 1 red, the research retry test on the reason, the provider's sentence where
             the plain one was expected.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1085 of 1085 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
             and none moved: this correction edits no claim in `ARCHITECTURE.html`, and no roster row
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
