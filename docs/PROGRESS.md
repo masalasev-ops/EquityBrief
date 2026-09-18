@@ -15389,3 +15389,83 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 6.2 - correction: the segment table is the first to state revenue by segment, and a row written in percentages keeps out of the money scale   2026-09-18
+Corrects:   the 6.2 entry records the route taking the first segment candidate that carries figures,
+            settled over two filers whose first table carrying figures was their revenue table. A
+            filing can list a table ahead of it carrying other figures by segment, and the route
+            took that one. The same entry records a row marked by a unit after its label as the
+            row kept out of the table's scale, and a share written as percentages carries no unit
+            after its label.
+Found:      on 2026-09-18, in the first live research pass, NVDA's: its page showed as the segment
+            table depreciation, counts of segments and a customer concentration share stored as
+            38000000.00, with no segment revenue, and the segment commentary had none to write
+            about.
+Measured:   read immutable from a copy of the operator's store taken after that pass: NVDA's newest
+            fundamentals row, filed 2026-08-26, names R62.htm, "Segment Information - Narrative
+            (Details)", as its segment report, and stores the Non-US concentration share for the
+            quarter to 2026-07-26 as 38000000.00 with no unit. The filing's report list, captured
+            the same day, names six segment candidates in the Details category, R62 to R67, and
+            the second, R63, is the schedule of reportable segments, stating revenue and operating
+            income for both segments. Each of the three tables the route took over the fixture,
+            AAPL's R46, KEYS's R85 and NFLX's R65, states revenue by segment.
+Repaired:   the route takes the first candidate, of the four it may read, that states revenue under
+            one of its groupings, read off the concept a row is filed against in the three
+            spellings the captured tables use, and the first carrying any figure only where none
+            does; a row whose every figure is written as a percentage carries the unit % and is
+            left as filed. DECISIONS records it as The segment table is the first of the filing's
+            segment reports to state revenue by segment. No spec changes: none states which
+            candidate is taken or how a share is scaled.
+Captured:   three NVDA responses committed to the fixture with their manifest entries: the 10-Q's
+            report list trimmed to 13 of its 71 reports, being the eight naming segments and five
+            others, and the R62 and R63 pages whole. The fixture gains no filing index for NVDA, so
+            the replay's population and every expectation over it stay as they were.
+Stored:     NVDA's fundamentals rows keep the table they were written with, since the table is
+            never updated; the operator has asked for everything that pass fetched to be removed,
+            and the next pass for the name reads R63.
+Missed:     the choice was asserted over two filers whose first table carrying figures states
+            revenue, so taking the first with figures and taking the first with revenue could not
+            be told apart over the fixture, and no captured table carried a percentage.
+Guarded:    NVDA's narrative table carries its share as 38, 30, 30 and 35 under the unit % while its
+            depreciation by segment keeps the millions; the route over NVDA's captured list and
+            pages reads two pages, takes R63, whose larger segment's quarter revenue is 88,299
+            millions as rendered, and asks for no third page; where no candidate states revenue it
+            reads four and takes the narrative table; and the three other captured tables the route
+            takes each state revenue by segment.
+Expected:   derived: the shares and the revenue are the captured pages' own rendered cells, and the
+            candidates are the captured list's; the fixture's expectations for AAPL and KEYS,
+            including each read's page count, stand unchanged and pass.
+Tests:      1075, from 1073. Two added to the filings archive tests. No file this correction edits
+            is a source either evaluator version or the ladder rules' code version pins, so no pin
+            moves.
+Mutated:    the rule, stated before the sweep: break each of the three properties this correction
+            adds, a percentage row kept out of the scale, the revenue table preferred, and the first
+            table carrying figures kept where none states revenue.
+            Predicted:
+            M1 no row read as percentages: the percentage test red on the shares' values; nothing
+            else.
+            M2 the route taking every table carrying figures as stating revenue: the route test red
+            on the report taken; nothing else.
+            M3 no table kept for the fallback: the route test red on the fallback's table; nothing
+            else.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1074 of 1075 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the percentage test on the shares' values, each stored in millions.
+            M2 turned 1 red, the route test on the report taken, R62.htm where R63.htm was expected.
+            M3 turned 1 red, the route test on the fallback's table, none taken where no candidate
+            states revenue.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1075 of 1075 tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html`, and no roster row
+            changed. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.
+Carried:    nothing owed by this repair.

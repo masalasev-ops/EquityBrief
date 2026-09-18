@@ -282,6 +282,41 @@ public class FilingsArchiveTests
     }
 
     [Fact]
+    public void ARowWrittenInPercentagesIsAShareAndNotInTheTablesScale()
+    {
+        // A narrative table in millions carries a customer concentration share
+        // written as percentages, with no unit after its label. A reader applying
+        // the title's scale to every such row stores 38 percent as 38 million.
+        var page = Captured("segment-report-NVDA-R62.htm");
+        var table = SecEdgarArchive.Breakdown(page, "R62.htm")!;
+
+        Assert.Equal(1_000_000, table.Scale);
+
+        var rendered = new[] { "38.00%", "30.00%", "35.00%" };
+
+        Assert.All(rendered, cell => Assert.Contains(">" + cell + "<", page, StringComparison.Ordinal));
+
+        var shares = table.Groups
+            .SelectMany(group => group.Figures)
+            .Where(figure => figure.LineItem == "Concentration risk (as percent)")
+            .ToArray();
+
+        Assert.Equal([38m, 30m, 30m, 35m], shares.Select(figure => figure.Value));
+        Assert.All(shares, figure => Assert.Equal(SecEdgarArchive.Percent, figure.Unit));
+
+        // The money rows of the same table keep the scale, so the exemption is the
+        // row's and not the table's.
+        var depreciation = table.Groups
+            .SelectMany(group => group.Figures)
+            .Where(figure => figure.LineItem == "Depreciation and amortization" && figure.Value is not null)
+            .ToArray();
+
+        Assert.NotEmpty(depreciation);
+        Assert.All(depreciation, figure => Assert.Null(figure.Unit));
+        Assert.Contains(depreciation, figure => figure.Value == 642_000_000m);
+    }
+
+    [Fact]
     public void APeriodColumnBelongsToTheHeaderWhoseSpanReachesIt()
     {
         // One end date under two spans. A reader keyed on the date alone takes the
@@ -705,6 +740,85 @@ public class FilingsArchiveTests
         // the two captures exist for.
         Assert.True(keysight.Guidance!.Located);
         Assert.Equal("Outlook", keysight.Guidance.Heading);
+    }
+
+    // A filing index holding the one periodic filing a captured report list belongs
+    // to, constructed because the segment half of the route asks the index for
+    // nothing but that filing.
+    const string NvidiaIndex = """
+        {"cik": "1045810", "filings": {"recent": {
+          "accessionNumber": ["0001045810-26-000075"],
+          "filingDate": ["2026-08-26"],
+          "reportDate": ["2026-07-26"],
+          "form": ["10-Q"],
+          "items": [""],
+          "primaryDocument": ["nvda-20260726.htm"]}}}
+        """;
+
+    static ArchiveFetch Serving(Func<string, string?> report) =>
+        (request, _) => Task.FromResult<string?>(request.Document switch
+        {
+            ArchiveDocument.Submissions => NvidiaIndex,
+            ArchiveDocument.ReportList => Captured("report-list-NVDA-10q.xml"),
+            ArchiveDocument.SegmentReport => report(Path.GetFileName(request.Path)),
+            _ => null,
+        });
+
+    [Fact]
+    public async Task TheTableTakenIsTheFirstStatingRevenueBySegmentAndNotTheFirstCarryingAFigure()
+    {
+        // A filing whose first segment candidate is a narrative table carrying
+        // figures by segment that are not what the segments earned. A route taking
+        // the first table with any grouped figure stores depreciation and a
+        // concentration share as the segment table, and the revenue table after it
+        // goes unread.
+        Assert.Equal(
+            ["R62.htm", "R63.htm", "R64.htm", "R65.htm", "R66.htm", "R67.htm"],
+            SecEdgarArchive.SegmentCandidates(Captured("report-list-NVDA-10q.xml")));
+
+        var narrative = SecEdgarArchive.Breakdown(Captured("segment-report-NVDA-R62.htm"), "R62.htm")!;
+        var schedule = SecEdgarArchive.Breakdown(Captured("segment-report-NVDA-R63.htm"), "R63.htm")!;
+
+        Assert.False(SecEdgarArchive.StatesRevenue(narrative));
+        Assert.True(SecEdgarArchive.StatesRevenue(schedule));
+
+        // Every other captured table the route takes states revenue by segment, so
+        // the preference moves no other filer's choice.
+        Assert.All(
+            new[] { "segment-report-AAPL-R46.htm", "segment-report-KEYS-R85.htm", "segment-report-NFLX-R65.htm" },
+            file => Assert.True(SecEdgarArchive.StatesRevenue(SecEdgarArchive.Breakdown(Captured(file), file)!)));
+
+        // The route over the captured list and pages. A page past the one it takes
+        // is never asked for, which the missing capture would refuse.
+        var filings = await SecEdgarArchive.ReadAsync(
+            Serving(report => Captured("segment-report-NVDA-" + report)),
+            "NVDA",
+            "0001045810");
+
+        Assert.Equal("R63.htm", filings.Segments!.Report);
+        Assert.Equal(2, filings.SegmentReportsRead);
+
+        // 88,299 as rendered under '$ in Millions', the quarter's revenue of the
+        // larger segment in dollars.
+        var revenue = filings.Segments.Groups
+            .Single(group => group.Label.EndsWith("Compute & Networking", StringComparison.Ordinal))
+            .Figures
+            .First(figure => figure.LineItem == "Revenue" && figure.Period.Months == 3);
+
+        Assert.Equal(88_299_000_000m, revenue.Value);
+        Assert.Equal(new DateOnly(2026, 7, 26), revenue.Period.Ended);
+
+        // Where no candidate states revenue, the first carrying figures is still
+        // taken, after the route has read as many pages as it may.
+        var fallback = await SecEdgarArchive.ReadAsync(
+            Serving(report => report == "R62.htm" ? Captured("segment-report-NVDA-R62.htm") : null),
+            "NVDA",
+            "0001045810");
+
+        Assert.NotNull(fallback.Segments);
+        Assert.Equal("R62.htm", fallback.Segments.Report);
+        Assert.Equal(SecEdgarArchive.SegmentReportsAtMost, fallback.SegmentReportsRead);
+        Assert.DoesNotContain(SecEdgarArchive.Segments, fallback.PartsNotCarried);
     }
 
     [Fact]
