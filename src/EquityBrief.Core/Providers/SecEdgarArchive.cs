@@ -120,6 +120,13 @@ public static class SecEdgarArchive
 
     public const string Facts = "facts";
 
+    // The filing's other tables of revenue by a grouping, beside its segment table.
+    public const string RevenueTables = "revenueTables";
+
+    // How many of those one read will fetch past the segment table. Three, because the one
+    // captured filing that files any files two, by market platform and by region.
+    public const int RevenueTablesAtMost = 3;
+
     // One read of one name's archive, in the order the route derives.
     //
     // Six requests where every part is served: the company's filing index, the
@@ -148,11 +155,11 @@ public static class SecEdgarArchive
         var notCarried = new List<string>();
 
         var (guidance, transcript, release) = await GuidanceAsync(fetch, padded, results, notCarried, cancellation).ConfigureAwait(false);
-        var (segments, read) = await SegmentsAsync(fetch, padded, periodic, notCarried, cancellation).ConfigureAwait(false);
+        var (segments, revenue, read) = await SegmentsAsync(fetch, padded, periodic, notCarried, cancellation).ConfigureAwait(false);
         var facts = await FactsAsync(fetch, padded, notCarried, cancellation).ConfigureAwait(false);
 
         return new ArchiveFilings(
-            ticker, padded, periodic, results, segments, guidance, facts, transcript, notCarried, read, release);
+            ticker, padded, periodic, results, segments, guidance, facts, transcript, notCarried, read, release, revenue);
     }
 
     // Whether a filing is a results announcement, which is an 8-K carrying item
@@ -377,6 +384,29 @@ public static class SecEdgarArchive
                 && shortName is not null
                 && shortName.Contains("segment", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(category, "Details", StringComparison.OrdinalIgnoreCase))
+            {
+                candidates.Add(file);
+            }
+        }
+
+        return candidates;
+    }
+
+    // The segment reports named for revenue or sales, in the order the filing states them,
+    // which is where a filing puts its tables of revenue by market, product or region.
+    public static IReadOnlyList<string> RevenueCandidates(string reportList)
+    {
+        var candidates = new List<string>();
+
+        foreach (Match report in Regex.Matches(reportList, "<Report\\b.*?</Report>", RegexOptions.Singleline))
+        {
+            var shortName = Element(report.Value, "ShortName") ?? string.Empty;
+            var file = Element(report.Value, "HtmlFileName");
+
+            if (file is { Length: > 0 }
+                && shortName.Contains("segment", StringComparison.OrdinalIgnoreCase)
+                && (shortName.Contains("revenue", StringComparison.OrdinalIgnoreCase) || shortName.Contains("sales", StringComparison.OrdinalIgnoreCase))
+                && string.Equals(Element(report.Value, "MenuCategory"), "Details", StringComparison.OrdinalIgnoreCase))
             {
                 candidates.Add(file);
             }
@@ -931,7 +961,7 @@ public static class SecEdgarArchive
             new FiledRelease(Address(request), release.FileName, announcement.FilingDate, Plain(exhibit)));
     }
 
-    static async Task<(SegmentBreakdown? Segments, int Read)> SegmentsAsync(
+    static async Task<(SegmentBreakdown? Segments, IReadOnlyList<SegmentBreakdown> Revenue, int Read)> SegmentsAsync(
         ArchiveFetch fetch,
         string padded,
         IReadOnlyList<IndexedFiling> periodic,
@@ -941,8 +971,9 @@ public static class SecEdgarArchive
         if (periodic.Count == 0)
         {
             notCarried.Add(Segments);
+            notCarried.Add(RevenueTables);
 
-            return (null, 0);
+            return (null, [], 0);
         }
 
         // The most recent periodic filing, which is not always a quarter. A filer
@@ -961,42 +992,86 @@ public static class SecEdgarArchive
         if (list is null)
         {
             notCarried.Add(Segments);
+            notCarried.Add(RevenueTables);
 
-            return (null, 0);
+            return (null, [], 0);
         }
 
         var read = 0;
-        SegmentBreakdown? other = null;
+        var tables = new Dictionary<string, SegmentBreakdown?>(StringComparer.Ordinal);
 
-        foreach (var candidate in SegmentCandidates(list).Take(SegmentReportsAtMost))
+        // One report page, read once however many of the two searches below ask for it.
+        async Task<SegmentBreakdown?> Table(string candidate)
         {
+            if (tables.TryGetValue(candidate, out var held))
+            {
+                return held;
+            }
+
             var page = await fetch(
                 Request(ArchiveDocument.SegmentReport, padded, filing.Accession, candidate),
                 cancellation).ConfigureAwait(false);
 
             read++;
 
-            if (page is null || Breakdown(page, candidate) is not { } breakdown)
+            var table = page is null ? null : Breakdown(page, candidate);
+
+            tables[candidate] = table;
+
+            return table;
+        }
+
+        SegmentBreakdown? segments = null;
+        SegmentBreakdown? other = null;
+
+        foreach (var candidate in SegmentCandidates(list).Take(SegmentReportsAtMost))
+        {
+            if (await Table(candidate) is not { } breakdown)
             {
                 continue;
             }
 
             if (StatesRevenue(breakdown))
             {
-                return (breakdown, read);
+                segments = breakdown;
+
+                break;
             }
 
             other ??= breakdown;
         }
 
-        if (other is not null)
+        segments ??= other;
+
+        if (segments is null)
         {
-            return (other, read);
+            notCarried.Add(Segments);
         }
 
-        notCarried.Add(Segments);
+        // The filing's other tables of revenue by a grouping: a segment report named for
+        // revenue or sales, read past the segment table and kept where it states revenue by a
+        // grouping. Named here, where the segment table is not, because these are read only
+        // after the table is found, and a filing listing four segment reports none of which is
+        // named for revenue costs no further request.
+        // see: The filing's other tables of revenue by a grouping are kept beside its segment table
+        var revenue = new List<SegmentBreakdown>();
 
-        return (null, read);
+        foreach (var candidate in RevenueCandidates(list)
+            .Where(candidate => !string.Equals(candidate, segments?.Report, StringComparison.Ordinal))
+            .Take(RevenueTablesAtMost))
+        {
+            if (await Table(candidate) is { } breakdown && StatesRevenue(breakdown))
+            {
+                revenue.Add(breakdown);
+            }
+        }
+
+        if (revenue.Count == 0)
+        {
+            notCarried.Add(RevenueTables);
+        }
+
+        return (segments, revenue, read);
     }
 
     // Whether a table states revenue under one of its groups, read off the concept

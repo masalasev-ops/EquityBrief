@@ -15546,3 +15546,63 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 6.2 - correction: the filing's other tables of revenue by a grouping are kept beside its segment table, where the figures a release headlines were refused for want of them   2026-09-18
+Corrects:   the 6.2 entry records the archive read keeping one table of a filing's segment
+            reports, the one holding figures by segment. A filing states revenue by more than
+            its segments, by market platform, product or region, and the figures a results
+            release headlines are often in those tables, so a section quoting them quoted a
+            figure nothing the store held carried.
+Found:      on 2026-09-18, in the first live research pass, NVDA's: the two cases were refused
+            for, among others, data center revenue of $89.0 billion and $27.0 billion billed to
+            customers in Taiwan, and what the company sells fell back for the $89.0 billion and a
+            $7.2 billion it gave edge computing.
+Measured:   the filing's report list, captured the same day, names six segment reports in the
+            Details category, and two of them are named for revenue: R65, revenue by geographic
+            region, and R67, revenue by market platform. R67 states data center revenue for the
+            quarter to 2026-07-26 as 89,023 and edge computing as 7,198, in millions; R65 states
+            Taiwan as 26,985. The segment table, R63, states two segments and none of those
+            figures. The two other captured filings name no segment report for revenue.
+Repaired:   past the segment table the archive read takes the segment reports named for revenue
+            or sales, at most three, and keeps each that states revenue under a grouping; the
+            fundamentals fetcher stores them on the newest filing's row as a fourth archive part,
+            `revenueTables`, in the segment table's shape, with the source column naming the
+            archive, and where a filing names none the part is null and the source says the
+            archive served none. DECISIONS records it as The filing's other tables of revenue by
+            a grouping are kept beside its segment table; SCHEMA's paragraph on the two providers
+            says so, with its prior text in CHANGELOG. The facts file does not read the part yet:
+            what a section is handed changes with the correction that rewrites the evidence a
+            pass hands, which records the fixture's model calls again.
+Captured:   NVDA's R65 and R67 committed whole to the fixture with their manifest entries, fetched
+            with the report list on 2026-09-18.
+Stored:     nothing rewritten: a row is never updated, and NVDA's next pass stores the part.
+Missed:     the choice of table was tested over filers whose segment table was their only table
+            of revenue, and no test asked what else a filing states revenue by.
+Guarded:    over NVDA's captured list and pages the route keeps R65 and R67, reading four pages,
+            with data center at 89,023 millions and Taiwan at 26,985 millions as rendered; a
+            report named for revenue that states none is read and not kept; the AAPL and KEYS
+            reads cost the pages they did and name the part as not served; and the fetcher stores
+            the tables on the newest row alone, with the source naming the archive or saying it
+            served none.
+Expected:   derived: the figures are the captured pages' rendered cells and the candidates the
+            captured list's; no expectation file changes, and every read's page count in the
+            fixture expectations stands.
+Tests:      1081, from 1079. Two added, one to the filings archive tests and one to the fetcher's,
+            and four updated for the part and the reads, one of them renamed for the four parts.
+            No file this correction edits is a source either evaluator version or the ladder
+            rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each of the four properties this correction
+            adds, the revenue reports read, a table kept only where it states revenue, the tables
+            stored, and the source naming the archive for them.
+            Predicted:
+            M1 no report read as a revenue report: the revenue tables test red on the candidates,
+            and the segment table test red on its read count; nothing else.
+            M2 every revenue report's table kept: the revenue tables test red on the misnamed
+            report's table; nothing else.
+            M3 the tables never stored: the fetcher's revenue tables test red on the stored part;
+            nothing else.
+            M4 the part not the archive's: the fetcher's revenue tables test red on the source, and
+            the refusing archive's test red on the parts it names absent; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.
