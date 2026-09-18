@@ -13935,6 +13935,32 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             floors, which any floor mutation reaches at 250 and 60 first. No file this correction edits
             is one the ladder rules' code version or either evaluator version pins, so no mutation is
             predicted to redden a pin test.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Eight
+            runs of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only the
+            mutated file and the worktree removed after. The baseline is 1028 of 1029 with one red,
+            and that red is this entry: `two-platform` reads every entry written since the 7.2 report
+            for its Windows record, and this one carried a placeholder until the run below filled it,
+            so each count that follows is on top of it.
+            M1 turned 3 red: the unresolved test, counting 280 where the set is 250; the population
+            expectation, its first case at 280; and the gate sweep, at its first population holding
+            unresolved setups, scored 279 over 89 sessions where the set is 249 over 59. M2 turned 2
+            red: the gate sweep, earning a verdict at 124 wins and a loss without a bar where the
+            verdict withholds one, and the population expectation, its third case drawing a share of
+            50.2 where none is drawn. M3 turned 2 red, the population expectation and the tonight test,
+            each missing "60 per cent of 250 resolved setups that set a bar". M4 turned 2 red, the
+            drawn probability test and the share-and-bar test, each missing "below 0.00001". M5 turned
+            1 red, the tonight test, finding `data-verdict="due"` where "cleared" is drawn. M6 turned 1
+            red, the level test, missing "which is 0.01 divided by a family of 6". M7 turned 2 red, the
+            tonight test missing "300 of 250 resolved setups that set a bar" and the fixture's tonight
+            test missing "of 250 resolved setups that set a bar".
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests ran
+            with none failed, migrations 0 to 27 with none added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims, <P> PASS, 0 FAIL,
+            0 out of scope, 0 unexamined, <R> placements and verdicts reconciled against a floor of 34,
+            <K> of <K> roster checks carried and all <K> run. No claim added and none moved: the rows
+            this correction edits keep their keys, and the twelve notes restated say what the tests
+            now read. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.
 Carried:    nothing.
