@@ -25,6 +25,28 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - SCHEMA.md - a span the feed no longer lists leaves on the night that finds it unlisted
+
+Authorised by: A ticker the index feed stops listing leaves the index on the night it goes unlisted
+Was:
+> | `left` | TEXT | the date the name stops being a member, null until a leave is announced. The provider carries a leave before it takes effect, so a name with a date here is still a member on every session before it |
+>
+> **A provider that re-dates a member's span leaves two open rows for one ticker, and a screen draws the one observed most recently.** The upsert is keyed on the join date, so a span whose start the provider corrects is written as a second row, and the first stays open, dated by the `observed_at` it was last seen with. The read surface draws each ticker once, from its open span with the newest `observed_at`, and the nightly stages read every open span and write one row a ticker. A span the provider stops listing without a leave date still reads as a member, which is a question about what the provider sends rather than about this table.
+Now:
+> | `left` | TEXT | the date the name stops being a member, null until a leave is announced or the feed stops listing the span. The provider carries a leave before it takes effect, so a name with a date here is still a member on every session before it. A span the feed no longer lists carries the session of the night that found it unlisted |
+>
+> **A span the feed no longer lists leaves on the session of the night that finds it unlisted, and a screen draws one span a ticker.** The upsert is keyed on the join date, so a span whose start the provider corrects is written as a second row, and the night that writes it closes the first on its session, as it closes the span of a ticker the provider renamed and lists no longer. A span the feed lists again is reopened by the upsert, which writes the feed's leave date over the one the night wrote. A night whose feed stops listing more tickers than the loader closes in one night closes none (see: A ticker the index feed stops listing leaves the index on the night it goes unlisted). The sessions before a re-dated span was closed are covered by both of its rows, so the read surface draws each ticker once, from its current span with the newest `observed_at`, and the nightly stages read every current span and write one row a ticker.
+Why: the operator ruled that a ticker the feed stops listing leaves the index, which the loader now writes into this column, and the paragraph's last sentence, which left that question to the provider, is the one the ruling answers.
+
+### 2026-09-18 - ARCHITECTURE.html - the failure table gains a ticker the index feed stops listing
+
+Authorised by: A ticker the index feed stops listing leaves the index on the night it goes unlisted
+Was:
+> (no row for a ticker the feed stops listing without a leave date)
+Now:
+> <tr><td>A ticker the index feed stops listing</td><td>the night whose membership feed does not list a span still open on its session closes that span on the session, whether the ticker is gone from the feed or listed under another join date, and a span the feed lists again is reopened; a night whose feed stops listing more than 10 tickers in one night closes none of them, and its membership step ends partial (see: A ticker the index feed stops listing leaves the index on the night it goes unlisted)</td><td>the ticker leaves the universe and tonight's list that night and the run page's membership line names it; a night that closed none has its membership step on the stale-and-failed region with every ticker named</td><td>a provider that renames a ticker lists the new one and stops listing the old without a leave date on either, so closing only the spans the feed dates kept one company in the index under two tickers and, from a rebalance, under three. A feed missing that many names at once is a fault in the feed rather than that many departures</td></tr>
+Why: the row for a name leaving the index covered a leave the feed dates and nothing covered a ticker the feed stops listing, which kept EQR in the index beside VMRK from 2026-09-17 and would have kept the joiner of 2026-09-21 in it under three tickers.
+
 ### 2026-09-18 - SCHEMA.md - a ticker holding two open spans is drawn once, from the span observed most recently
 
 Corrects: the membership section stated one row per span and nothing about one ticker holding two open spans, which the provider produced on 2026-09-17 by re-dating VMRK's span; the universe read drew the ticker twice, and tonight's list, every name page and the report export stopped on it. Found on 2026-09-18 by serving the screens over a copy of the operator's store.

@@ -77,6 +77,7 @@ public class NightlyRun
             CheckReach.Key(Scope.FailureTable, "A session the night finds missing"),
             CheckReach.Key(Scope.FailureTable, "A night on a day the exchange did not trade"),
             CheckReach.Key(Scope.FailureTable, "An index change announced before it takes effect"),
+            CheckReach.Key(Scope.FailureTable, "A ticker the index feed stops listing"),
 
             // The stale-and-failed region's stopped stage, which only a night
             // can put there, decomposed from the region at the phase 5 sign-off.
@@ -1539,6 +1540,138 @@ public class NightlyRun
     }
 
     [Fact]
+    public async Task ATickerTheFeedStopsListingLeavesTheIndexOnTheNightItGoesUnlisted()
+    {
+        // A renamed ticker is one the feed stops listing with no leave date, and a
+        // re-dated span is one it lists under another join date. The night that
+        // finds a span it does not list closes it on that night's session, and a
+        // second run of the night whose feed lists it again reopens it.
+        using var store = new TemporaryStore();
+
+        var members = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).ToArray();
+        var renamed = members[0];
+        var redated = members[1];
+        var feeds = NightFeeds.FromFixture(FixtureFolder());
+
+        var (first, _, firstError) = await NightAsync(store, feeds, "night-listed", FixedClock.At(Night, SessionZones.UnitedStates));
+
+        Assert.True(first == 0, firstError);
+
+        store.Execute(
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES " +
+            $"('GSPC', '{redated}', '2001-01-02', NULL, '2026-09-01T23:30:00Z'), " +
+            "('GSPC', 'ZZZZ', '2026-09-21', NULL, '2026-09-01T23:30:00Z');");
+
+        var wednesday = FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8));
+
+        var unlisted = feeds with
+        {
+            Membership = new RebalancedMembershipFeed(feeds.Membership, renamed, null, null, drop: true),
+            Bulk = bulk,
+        };
+
+        var (second, _, secondError) = await NightAsync(store, unlisted, "night-unlisted", wednesday);
+
+        Assert.True(second == 0, secondError);
+
+        Assert.Equal(
+            [renamed, redated, "ZZZZ"],
+            Texts(store, "SELECT ticker FROM membership WHERE \"left\" = '2026-09-09' ORDER BY ticker;"));
+        Assert.Equal(["2001-01-02"], Texts(store, $"SELECT joined FROM membership WHERE ticker = '{redated}' AND \"left\" = '2026-09-09';"));
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM membership WHERE ticker = '{redated}' AND \"left\" IS NULL;"));
+
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM listing WHERE ticker = '{renamed}' AND session_date = '2026-09-08';"));
+        Assert.Equal(0, Scalar(store, $"SELECT COUNT(*) FROM listing WHERE ticker = '{renamed}' AND session_date = '2026-09-09';"));
+        Assert.Equal(members.Length - 1, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-09';"));
+
+        var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, wednesday);
+        var night = new DateOnly(2026, 9, 9);
+
+        Assert.Equal(members[1..], (await api.UniverseAsync("GSPC", night)).Select(row => row.Ticker));
+
+        var stages = EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync(night));
+        var line = stages.Single(stage => stage.Stage == MembershipLoader.Stage);
+
+        Assert.Equal("ok", line.Outcome);
+        Assert.Equal(
+            $"2 ticker(s) the feed no longer lists, each left the index on 2026-09-09: {renamed}, ZZZZ; " +
+            $"1 span(s) the feed lists under another join date, each closed on 2026-09-09: {redated} joined 2001-01-02",
+            line.Detail);
+        Assert.Contains(line.Detail, new EquityBrief.Web.Marks.MarkRenderer().OperationalHeader(night, stages), StringComparison.Ordinal);
+
+        var (third, _, thirdError) = await NightAsync(store, feeds with { Bulk = bulk }, "night-listed-again", wednesday);
+
+        Assert.True(third == 0, thirdError);
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM membership WHERE ticker = '{renamed}' AND \"left\" IS NULL;"));
+        Assert.Equal(["ZZZZ"], Texts(store, "SELECT ticker FROM membership WHERE ticker = 'ZZZZ' AND \"left\" = '2026-09-09';"));
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM listing WHERE ticker = '{renamed}' AND session_date = '2026-09-09';"));
+        Assert.Equal(members.Length, Scalar(store, "SELECT COUNT(*) FROM listing WHERE session_date = '2026-09-09';"));
+    }
+
+    [Theory]
+    [InlineData(MembershipLoader.MostUnlistedInANight, false)]
+    [InlineData(MembershipLoader.MostUnlistedInANight + 1, true)]
+    public async Task AFeedThatStopsListingMoreTickersThanANightClosesClosesNoneAndSaysSo(int unlisted, bool held)
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var feed = RecordedIndexMembershipFeed.FromFile(Path.Combine(FixtureFolder(), "index-constituents.json"));
+
+        await new MembershipLoader(feed, FixedClock.At(Night, SessionZones.UnitedStates), store.DatabaseFile).LoadAsync("GSPC", "night-listed");
+
+        var tickers = Enumerable.Range(0, unlisted).Select(index => $"Z{index:D3}").ToArray();
+
+        store.Execute(
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES " +
+            string.Join(", ", tickers.Select(ticker => $"('GSPC', '{ticker}', '2020-01-02', NULL, '2026-09-01T23:30:00Z')")) + ";");
+
+        var wednesday = FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new MembershipLoader(feed, wednesday, store.DatabaseFile).LoadAsync("GSPC", "night-unlisted");
+
+        Assert.Equal(held ? unlisted : 0, Scalar(store, "SELECT COUNT(*) FROM membership WHERE ticker LIKE 'Z%' AND \"left\" IS NULL;"));
+        Assert.Equal(held ? 0 : unlisted, Scalar(store, "SELECT COUNT(*) FROM membership WHERE ticker LIKE 'Z%' AND \"left\" = '2026-09-09';"));
+
+        // The spans the feed wrote and the ones the night closed.
+        Assert.Equal(
+            FixtureExpectation.Constituents + (held ? 0 : unlisted),
+            Scalar(store, "SELECT rows_written FROM run_log WHERE run_id = 'night-unlisted';"));
+
+        var api = new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, wednesday);
+        var failed = EquityBrief.Api.Reading.RunScreen.Failed(
+            EquityBrief.Api.Reading.RunScreen.Stages(await api.RunLogAsync(new DateOnly(2026, 9, 9))));
+        var region = new EquityBrief.Web.Marks.MarkRenderer().StaleAndFailed([], failed, [], []);
+
+        if (held)
+        {
+            var stage = Assert.Single(failed);
+
+            Assert.Equal((MembershipLoader.Stage, MembershipLoader.Held), (stage.Stage, stage.Outcome));
+            Assert.Contains(
+                $"{unlisted} ticker(s) the feed no longer lists, more than the {MembershipLoader.MostUnlistedInANight} a night closes, " +
+                $"so none was closed: {string.Join(", ", tickers)}",
+                region,
+                StringComparison.Ordinal);
+        }
+        else
+        {
+            Assert.Empty(failed);
+            Assert.Contains("no stage of this night failed", region, StringComparison.Ordinal);
+        }
+
+        // The figure the failure table states, read off its own cell.
+        var document = Corpus.Read("docs/ARCHITECTURE.html");
+        var at = document.IndexOf("<td>A ticker the index feed stops listing</td>", StringComparison.Ordinal);
+
+        Assert.True(at >= 0, "Section 18 no longer carries the row for a ticker the feed stops listing.");
+
+        var does = document[at..document.IndexOf("</tr>", at, StringComparison.Ordinal)].Split("</td>")[1];
+
+        Assert.Contains($"more than {MembershipLoader.MostUnlistedInANight} tickers in one night", does, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task AJoinerBackfilledThroughTonightDoesNotHideAMissedSession()
     {
         // The store ends on 2026-09-08 and the night is 2026-09-10, so
@@ -1655,9 +1788,10 @@ public class NightlyRun
         // rather than admitting an unknown one and is the one form here that
         // answers about a date other than tonight.
         // The action check reads the form twice: for the names it checks and,
-        // from the phase 5 sign-off, for the suspect names it retries.
+        // from the phase 5 sign-off, for the suspect names it retries. The
+        // loader reads it for the spans it closes when the feed stops listing them.
         Assert.Equal(
-            ["Backfill", "BarFetcher", "CorporateActionChecker", "CorporateActionChecker", "MembershipLoader"],
+            ["Backfill", "BarFetcher", "CorporateActionChecker", "CorporateActionChecker", "MembershipLoader", "MembershipLoader"],
             stored.Order(StringComparer.Ordinal));
 
         // Every other read asks the join date as well. Stated as a set, and a
@@ -1956,6 +2090,25 @@ public class NightlyRun
         command.CommandText = sql;
 
         return Convert.ToInt32(command.ExecuteScalar());
+    }
+
+    static IReadOnlyList<string> Texts(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        var values = new List<string>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            values.Add(reader.GetString(0));
+        }
+
+        return values;
     }
 
     static int Count(TemporaryStore store)

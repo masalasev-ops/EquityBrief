@@ -924,7 +924,10 @@ public partial class ArchitectureConformance
     ];
 
     // Rows the document gained after the prediction, each one claim.
-    static readonly string[] AddedAfterThePrediction = [];
+    static readonly string[] AddedAfterThePrediction =
+    [
+        CheckReach.Key(Scope.FailureTable, "A ticker the index feed stops listing"),
+    ];
 
     [Fact]
     public void ThePairEightZeroPredictedIsCheckedAgainstTheActual()
