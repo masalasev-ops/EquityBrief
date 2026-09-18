@@ -6,6 +6,11 @@
   "listing",
   "forward_return"
  ],
+ "thresholds": {
+  "derivedFrom": "section 11's own words: unusual volume fires on volume above twice the fifty-day average and earnings soon on a print within twenty sessions, so their rows store a multiple of 2 and a horizon of 20. The fixture's night fires neither reason, so the rule that a reason's record counts a fired reason only where its row stores the threshold the code carries is put to the replayed store's own rows with unusual volume marked firing on each: it counts on the rows that keep the multiple of 2 and on none of the rows given another, which the suite recounts from the rows rather than reading from here.",
+  "unusual volume": { "value": "multiple", "carried": "2" },
+  "earnings soon": { "value": "horizon", "carried": "20" }
+ },
  "counts": {
   "reasons": 6,
   "fired": 6,

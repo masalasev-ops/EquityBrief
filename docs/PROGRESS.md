@@ -14713,3 +14713,286 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             roster row it edits, `pinned-constants`, keeps its key. Both gates ran with this entry
             in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 8.7 - correction: the guardrails read against code that names their mechanism, a threshold's window read off its rows, a promoted candidate let out of the family, and the report's own readers made able to fail   2026-09-18
+Corrects:   the 8.7 entry and the 8.7 correction above record every guardrail of section 13.3 held
+            clause by clause by a test whose own body exercises the code the clause is enforced by,
+            section 13.2 read against the checkpoints that built it, the pair 8.0 predicted checked
+            against the actual, and a live reason's name refused at the register. The check behind
+            each said more than it read.
+            The mapping asked that a chosen string appear anywhere in a test's body with whole-line
+            comments removed. A trailing or block comment, a string literal, a longer identifier and
+            a skipped test all passed. "Reported in its own column and excluded from the rate" was
+            held by a test that builds no unresolved setup;
+            "no verdict of any kind below the stated minimum" by a test of the arithmetic that never
+            reaches the gate the run page draws through; "a promotion, a retirement or a rule
+            version change is written with the evidence that produced it" by a retirement alone,
+            while a rule version change recorded no evidence until the 8.6 correction above and
+            nothing records a promotion; "with its rule, its test and the date" by a test that
+            asserts none of the three; and "no condition appears on the list until it has a shadow
+            record meeting the minimum" by a test of section 11's names. Nothing read whether a
+            guardrail's clauses covered its cell. A rule or threshold's frozen window was held for
+            ladder rules only: a reason's thresholds had no window, and a record read every row it
+            ever fired on.
+            The 13.2 test asserted a list of checkpoints written in the test and two phrases of the
+            thresholds row's own cell, and its comment called that row, which is first, the third.
+            The pair was one bare 361, written again in the failure message, beside three zeros and
+            an identity over a run where every check passed. Its account was wrong in three places.
+            The 8.6 entry says claims stood "six above 8.0's prediction of 360 and 360, being the
+            five the decompositions at 8.4 and 8.5 added and one more this checkpoint added by
+            giving the version store its own roster row"; 8.0 predicted 361, and a roster row adds
+            no claim. The 8.7 entry says the first two stand five above it, "six of the section 15
+            rows the prediction counted as one claim each being read by the harness as the things
+            they state, and the version store's claims having a roster row of their own"; it is two
+            rows, 15.10's Shadow candidates read as three and 15.11's At or above the minimum read
+            as four, and nothing else. The test's comment said the same.
+            The anchor 8.7 put in place of the plan's last checkpoint, every plan checkpoint the
+            record does not show as landed asserted absent from what it does, is empty for any
+            reader, because landing is read through that same reader; the entry said it
+            "moves with the build and cannot be overtaken". It came in the figures commit c601565,
+            after the four mutations had run, and was never mutated. Beside it, "9.9" was asserted
+            never built, which a phase of nine checkpoints overtakes; the assertion is older, and
+            that commit wrote over it the comment "which no build can overtake".
+            The loop's night counted a candidate as evaluated wherever its name appeared in the
+            shadow column, which a skip also satisfies.
+            The register refused a live reason's name before asking whether the name stood
+            registered. For the six live names the answer is the same either way; for a candidate
+            promoted under its own name, section 11 and the code changed first, it made the
+            candidate's retirement impossible, keeping it in the divisor and in one of the eight
+            places for good. The floor of 400 gated nothing and was named only in that refusal, and
+            no decision stated any of it. The 8.7 correction predicted its M5
+            "red on the retirement's outcome"; the outcome stays refused through the standing check
+            and the red is on the refusal's words. Section 17's minimum verdict note credited
+            `read-surface` with "the constant the register names when it refuses a live reason",
+            which `register-append-only` asserts and `read-surface` does not. And the 8.7 correction
+            wrote "No expectation file changes" for a refusal the fixture's register replay reaches.
+            The 8.7 entry's Measured field says "93 resolved setups of 250 over seven listing
+            sessions of 60": 93 is 8.0's count of what the store's setups resolve to under the entry
+            rule, made by that pass on 2026-09-16, and not a read of the store, which held 147 wins
+            and 51 losses as the filler wrote them before any night ran 8.1's code. Both are below
+            250. And BUILD_PLAN's phase 8 opening still justified filing the rules directory ruling
+            on 8.2 with the anchor 8.7 removed.
+            The 8.7 correction's figures commit c601565 also replaced the anchor assertion in
+            `ArchitectureConformance.cs`; its figures were measured over that commit's tree, so no
+            figure is unverified, and what the history hides is that the replacement was never
+            mutated. The 8.7 correction's live reason refusal changed no expectation file and
+            carried no row for condition 7; the refusals `candidate-register.json` gains below
+            discharge it. What the 8.7 correction said of the loop opening one operating row and 8.0
+            ruling that the family size opens none was corrected in that correction's own Corrects
+            field and is named here so the next sweep does not raise it again.
+Found:      by the phase 8 sign-off review on 2026-09-16, whose findings and judgements the operator
+            ruled on that date are all corrected before a sign-off handoff. It is labelled for 8.7,
+            which built the report's checks and whose correction built the mapping and the refusal.
+            Three things the review found in the same checks were built at 8.3 and 8.6 and are
+            corrected in those checkpoints' corrections above.
+Measured:   read immutable from the operator's store on 2026-09-18, at schema 27 and last written
+            2026-09-17 23:41:00 UTC: 3,530 listing rows over 9 sessions from 2026-04-16 to
+            2026-09-17; unusual volume stored with `multiple` 2 on all 3,530 and earnings soon with
+            `horizon` 20 on all 3,530, and no row of either reason stores another value or none. The
+            register holds no row.
+Repaired:   the mapping is twenty-seven pairs, each a clause, and a subject where the cell lists
+            several, quoted from its cell and together covering every word of it but "and", "or" and
+            "so". A pair is held by a test whose code, lexed with its comments and literals set
+            apart, names a shipped member the clause is enforced by, or whose literals name the
+            stored or drawn name it is enforced through, or it is owed by an open carried
+            obligation; the member is looked up in the shipped assemblies and the stored name in the
+            shipped source, a skipped test holds nothing, no test holds two, and a clause mapped for
+            one subject is mapped for every subject its guardrail lists. Twenty-four pairs are held
+            and three are owed by the obligation below. Whether each test's assertions hold its
+            clause is a reading no scan makes, and it is recorded under Read. The clauses held by
+            the wrong tests are held by the tests the 8.5 correction added, which put unresolved
+            setups and both floors through the records the run page reads, by a registration stored
+            with the rule, the test and the instant it was given, and, for the rule version change's
+            evidence, by the test the 8.6 correction above added with it.
+            A reason's record, its track and its verdict count a fired reason only where its row
+            stores the threshold the code carries, read off the value each thresholded reason
+            already writes (see: A reason's record reads only the rows written under the threshold
+            the code carries, and the rows written under another are kept). Section 17's frozen
+            windows row is read as its two subjects, a rule by `nightly-run` and a threshold by
+            `read-surface`.
+            The register asks whether a name stands registered before whether it is a live reason,
+            so a promoted candidate is retired like any other; it refuses a registration stating no
+            rule or no test and a retirement stating no evidence (see: A live reason is added or
+            retired only by a change to section 11 and the code together, and the register holds
+            candidates alone). No component computes a candidate's record, so no promotion can be
+            made; that is an operating row, triggered by the first candidate registered (owes: A
+            candidate's shadow record computed, and a promotion written against it).
+            13.2's rows are read against the checkpoints of the phase their Phase cell names, by
+            title, and the thresholds row against the obligation it now cites, by its trigger of 60
+            nights and the run page. The pair is 8.0's 361 and 0 plus each row read as its parts,
+            named in the test, which is 367 with section 17's row. The derived negative reads which
+            checkpoints the record heads only with entries that are not checkpoint entries and
+            asserts the reader builds none of them and nothing unheaded; the fixed anchor is gone.
+            The loop's night is asserted to evaluate the candidate on every listing row it wrote,
+            skip it on none, and score the version on every one.
+            The roster rows for `architecture-conformance`, `register-append-only` and
+            `listings-coverage`, the 13.2 and 13.3 placements, section 17's minimum note, the
+            architecture's 13.2, 13.3 and section 17 rows, 8.4's text, phase 8's opening and the
+            runbook say so, with prior text in CHANGELOG. `pinned-constants` counts the family's
+            maximum once more in the decisions, where the new decision cites the one that sets it.
+Stored:     nothing to keep or rewrite. No stored value changes: every listing row states the
+            threshold the code carries, so every record reads as before, and the register holds no
+            row.
+Missed:     by the check that was the report's own, twice. The 8.7 correction replaced a mapping
+            that asked only for names with one that asked for a string, and read its own mechanism
+            strings against the tests it chose; a string chosen by the person choosing the test is
+            the same reader one step removed. And the report's self-checks were moved off
+            populations that emptied at the end of the phase onto constructed ones without asking
+            whether the constructed ones ran the reader; one could not fail by definition and the
+            fixed anchor beside it had failed three times before.
+Read:       each held pair, read against its test's assertions as the tests stand at this
+            correction.
+            Registered in advance. Written to the append-only register: an update, a delete and a
+            replace in each form SQLite accepts, with recursive triggers off and on, are each
+            refused at the file with the trigger's "append only", and the register reads as before.
+            With its rule, its test and the date: two registrations read back as the rule, test and
+            instant given, and a blank rule or test is refused. Before it is scored: a candidate
+            registered a second after the night's start is absent from every row's shadow column and
+            one a second before it present. The stated maximum: the ninth is refused naming 8 and
+            the eighth admitted.
+            Corrected for the family. Divided by the number registered: the divisor counts the
+            candidates registered before the window and not retired before it over ten hand-worked
+            rows, a name retired and registered again once and a registration in the window's own
+            second from the next second; the division itself is asserted where the family grows, a
+            second registration halving the threshold. The divisor recorded with the verdict: the
+            run page draws the divisor and "0.05 divided by a family of 6" beside a cleared verdict.
+            Minimum resolved setups. No verdict below the minimum: over 54 populations either side
+            of each floor, holding losses that set no bar and unresolved setups that would fill a
+            floor if counted, each put through the records the run page reads, a record earns a
+            verdict on exactly the 24 where 250 setups that set a bar arrived over at least 60
+            sessions, and each of the other 30 is drawn as no verdict and never as one that failed.
+            A higher minimum before a live condition may be retired: each live name is refused as a
+            retirement with the floor in the refusal and as a registration, twelve refusals and
+            nothing written; no runtime path retires a live reason, and the count the floor is read
+            against is drawn on the run page.
+            Unresolved is never a win. Neither target nor stop by the cap: four hand-worked cases
+            resolve to the expectation's outcome, date and return, a setup entered and flat for the
+            cap's 63 sessions is unresolved, and one never entered by the cap is never entered. Its
+            own column: the unresolved segment is drawn apart as a dashed outline of its own count
+            out of one denominator. Excluded from the rate: thirty unresolved setups beside 250 that
+            clear are drawn in their own column and change no count, session, share or tail, the
+            same thirty read as losses would keep the record from clearing, and a session only
+            unresolved setups arrived on is not one the record stands on.
+            Shadow before live. Not on the list: a candidate firing on every member leaves every
+            row's reasons section 11's six and its fired count theirs. Scored and stored nightly:
+            evaluated on every member including one no live reason fired on, skipped on none. Shown
+            nowhere: the candidate's name and the column's are absent from the run, tonight,
+            universe and every name page.
+            Frozen windows. A rule not changed: a live window whose hash moved is found for every
+            ladder rule and a steady one is not. A threshold not changed: rows under another
+            multiple or stating none count toward nothing. A rule's change keeps the old window: a
+            replacement closes the old row with its evidence and the name replacing it, keeping the
+            parameters, hash and opening instant it was opened with, and the version opened in its
+            place is the only one open after. A threshold's change keeps the old: every numeric
+            threshold constant is written on its reason's rows under its own name, and over the
+            fixture's rows marked firing, unusual volume counts on those keeping the carried
+            multiple and on none given another.
+            Adding restarts the clock. Inflates the family: the region's count and divisor move 0,
+            2, 1 with registrations and a retirement. Verdicts recomputed: one record clears at a
+            family of 6 and not at 7, and no verdict is stored, so each is computed under the family
+            as it stands.
+            Every change is recorded. A retirement's evidence: a blank one is refused and a given
+            one stored exactly. The version a retirement replaced: the retiring row names what it
+            retires and carries its evaluator, version and parameters beside the registration
+            standing byte for byte. A rule version change's evidence: a replacement closes the old
+            window with the evidence given and the name replacing it and opens that version in the
+            same write, at the rule's cap as well, a blank evidence is refused among five refusals
+            that change nothing, and a close takes its evidence and is refused without it. The
+            version it replaced: a replacement through the verb stores the name replacing it and its
+            evidence on the closed row, with that row's parameters kept.
+Guarded:    over the corpus and over a constructed table, suite, source and obligations table, where
+            a mechanism named only in a literal, a block comment, a trailing comment and a longer
+            identifier, a clause the cell lacks, a test the suite lacks, a skipped test, a member
+            nothing ships, a stored name only in a comment, a discharged and an unwritten
+            obligation, a clause mapped for one listed subject of two, a cell word nothing covers
+            and a test holding two are each reported, and a fully mapped constructed guardrail is
+            not; and a method whose name extends a mapped one and an overload with a parameter are
+            declared before it, so only the exact declaration is read. 13.2's reader over a
+            constructed plan, record and obligation, where a checkpoint not built, a part no title
+            carries, a part two carry, a resolution the reading does not say, a trigger the cell
+            does not state, a read row the table lacks and a table row nothing reads are each
+            reported. The record reader over a record written here with a building entry, a ruling
+            and a checkpoint named only in a body. A promoted candidate over constructed rows and a
+            constructed live set, the shared list untouched. A reason's record over rows under the
+            carried multiple, another and none.
+Expected:   derived, and added to the fixture. `candidate-register.json` gains five refusals, each
+            worked from the registrar's own rules and attempted after the replay's registrations,
+            retirement and registration made again, each refused with the register still holding its
+            four rows. `run-page.json` gains the thresholds section 11 states in words, twice the
+            fifty-day average and twenty sessions, and the rule that over the replayed rows marked
+            firing unusual volume the record counts those keeping the multiple of 2 and none given
+            another, recounted from the rows. That is condition 7 for this correction and for the
+            refusal the 8.7 correction added.
+Tests:      1065, from 1058. Seven added: in `register-append-only`, a registration stored with the
+            rule, the test and the instant it was given, a retirement's evidence stored or refused,
+            a promoted candidate retired out of the family, and every refusal the fixture works
+            refused; in `listings-coverage`, a candidate firing on every member reaching no row's
+            reasons; in `read-surface`, a reason's record counting only rows under the carried
+            threshold, and every threshold written on its rows under its own name. Rewritten in
+            place: the guardrail mapping, renamed
+            `EveryGuardrailIsMappedClauseByClauseToATestThatNamesItsMechanismOrTheObligationThatOwesIt`;
+            13.2's test, renamed
+            `EveryRowOfWhatCanImproveIsReadAgainstTheCheckpointsItNamesOrTheObligationItCites`; the
+            pair; the loop's night; the record reader; the decomposed element count, 136 to 138; and
+            `pinned-constants`' count of the family's maximum in the decisions, 2 to 3. No file this
+            correction edits is a source either evaluator version or the ladder rules' code version
+            pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds that decides
+            what the report or the run page states, taking first the reader a sign-off survivor
+            asked to see go red and the cell coverage the review found missing, then the record
+            reader's negative, the promotion trap and the threshold window. Not mutated, and named
+            so the next sweep has them: the subject cross product, the owed obligation's lookup, the
+            skipped test refusal, the shipped member lookup, the 13.2 reader, the pair's account
+            entries, the loop night's exact counts, the registration's rule and test refusal, the
+            retirement's evidence refusal, and section 17's decomposition. Predicted:
+            M1 the body reader's declaration loosened to a name followed by any word characters and
+            any parameters: the mapping test red on its constructed proof, where the extended name's
+            body is read and its first expected fault goes missing, and nothing else, since no
+            mapped name is the opening of another test's.
+            M2 the cell coverage fault dropped: the mapping test red on its constructed proof, where
+            a cell word nothing covers is no longer reported, and nothing else.
+            M3 the record reader landing an entry that opens as not a checkpoint entry, at
+            `LandsACheckpoint`, the one statement of it: the record reader test red on its derived
+            negative, the checkpoints headed only by such entries read as built; the planning pass
+            test red on a planning entry landing its phase; the ruling test red on the earlier
+            rulings read as landing beside 8.2's; and `obligation-reconciles`' planning checkpoint
+            proof red on the ruling landing 9.0; and nothing else.
+            M4 the register asking whether a name is a live reason before whether it stands
+            registered: the promoted candidate test red on its retirement refused as a live reason,
+            and nothing else, since no live name ever stands registered.
+            M5 the threshold filter removed from the reasons the run page counts: the record test
+            red on counting the rows under another threshold and under none, and the thresholds test
+            red on counting the marked rows given another multiple, and nothing else.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Six
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1064 of 1065
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 1 red, the mapping test's constructed proof missing its first expected fault,
+            the extended name's body read in place of the exact one. M2 turned 1 red, the mapping
+            test's constructed proof missing the cell word nothing covers. M3 turned 4 red: the
+            record reader test on the checkpoints headed only by entries that are not checkpoint
+            entries, 2.0, 3.0, 6.0 and 7.0, read as built; the planning pass test on a planning
+            entry landing its phase; the ruling test on the 6.0, 7.0 and 7.2 rulings read as landing
+            beside 8.2's; and `obligation-reconciles`' planning checkpoint proof on the ruling
+            landing 9.0. M4 turned 1 red, the promoted candidate test on its retirement refused as a
+            live reason. M5 turned 2 red, the record test counting 6 wins of 6 where the rows under
+            the carried multiple give 3 of 3, and the thresholds test counting 4 marked rows where
+            the 2 keeping the multiple count.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1065 of 1065 tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 367 claims,
+            367 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 374 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim added
+            and none moved: section 17's frozen measurement windows row is read as its two subjects,
+            a rule by `nightly-run` and a threshold by `read-surface`, which is the claims at 367
+            and the placements and verdicts reconciled at 374, and the pair holds 367 as 8.0's 361
+            and each row read as its parts. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
+Carried:    one operating row, opened here and cited from 8.4, the runbook and the decision: a
+            candidate's record computed and a promotion written against it, triggered by the first
+            candidate registered, read on the run page's shadow candidates region. The phase's
+            sign-off is owed on phase 8 as a whole by a session that has committed no code.

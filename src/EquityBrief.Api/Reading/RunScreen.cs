@@ -478,6 +478,9 @@ public static class RunScreen
     // so the setups those rows seeded are not earnings soon's; breakout on volume
     // written before it could not fire, so its rows remove nothing.
     // see: Sessions to a dated event are counted on the exchange calendar and never on stored bars
+    //
+    // A reason counts only where the row stored the threshold the code carries now.
+    // see: A reason's record reads only the rows written under the threshold the code carries, and the rows written under another are kept
     static (IReadOnlyList<string> Counted, IReadOnlyList<string> Fired) Counting(string reasons)
     {
         using var document = JsonDocument.Parse(reasons);
@@ -486,6 +489,9 @@ public static class RunScreen
             .Where(reason => !ShortlistSeries.WrittenBeforeTheCorrection(
                 reason.GetProperty("name").GetString()!,
                 value => reason.GetProperty("values").TryGetProperty(value, out _)))
+            .Where(reason => !ShortlistSeries.MeasuredUnderAnotherThreshold(
+                reason.GetProperty("name").GetString()!,
+                value => reason.GetProperty("values").TryGetProperty(value, out var stored) ? stored.GetString() : null))
             .ToArray();
 
         return (

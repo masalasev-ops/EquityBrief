@@ -165,10 +165,10 @@ internal static class PhaseReport
         // table's rows is built is a table claimed before most of it exists,
         // which is what these two said at 8.1 until 8.0 read them row by row.
         ["13.2 Three things that can improve, shallowest first"] = new Placement(
-            "the loop's own plan, each row read against the checkpoint its Phase cell names and against what the record shows built, with the row that names no checkpoint asserted to be the one an operating obligation carries",
+            "the loop's own plan, each row that names a phase read against the checkpoints of that phase its cell names, by title, and against what the record shows built, and the row that names none read against the open operating obligation it cites, by its trigger and its surface",
             Check: "architecture-conformance"),
         ["13.3 The guardrails"] = new Placement(
-            "the loop's guardrails, each clause quoted from its cell and mapped to the test that holds it, whose own body has to exercise the code the clause is enforced by, with every guardrail mapped and no test holding two clauses; and the loop asserted to have changed nothing on evidence below its stated minimum over the register's rows and the version windows a whole recorded night ran over",
+            "the loop's guardrails, each clause and each listed subject quoted from its cell with the cell covered by them, mapped to a test whose own code names the shipped member the clause is enforced by, or whose literals name the stored name it is enforced through, or to the obligation owing it, with every guardrail mapped and no test holding two; whether each test's assertions hold its clause is a reading recorded when the mapping changes; and the loop asserted to have changed nothing on evidence below its stated minimum over the register's rows and the version windows a whole recorded night ran over",
             Check: "architecture-conformance"),
         // 1.8, and the journey here is worth stating because it was wrong twice.
         //

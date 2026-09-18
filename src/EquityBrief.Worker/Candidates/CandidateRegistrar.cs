@@ -98,7 +98,7 @@ public sealed class CandidateRegistrar : IComponent
 
         var rows = await RowsAsync(connection, cancellation);
 
-        if (Refusal(rows, candidate, evaluator, parameters, startedAt) is { } refusal)
+        if ((Unstated(rule, test) ?? Refusal(rows, candidate, evaluator, parameters, startedAt)) is { } refusal)
         {
             await transaction.RollbackAsync(cancellation);
             await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation);
@@ -148,21 +148,8 @@ public sealed class CandidateRegistrar : IComponent
 
         var rows = await RowsAsync(connection, cancellation);
 
-        if (LiveReasonRefusal(candidate) is { } live)
+        if (RetirementRefusal(rows, candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
         {
-            await transaction.RollbackAsync(cancellation);
-            await RecordAsync(connection, runId, startedAt, Refused, 0, live, cancellation);
-
-            return new RegistrationOutcome(Refused, null, live);
-        }
-
-        if (!CandidateFamily.StandsAt(rows, candidate, startedAt))
-        {
-            var refusal =
-                $"'{candidate}' does not stand registered, so there is nothing to retire. A retirement " +
-                "names a candidate the register holds, and one naming nothing would leave the divisor " +
-                "reading as though something had been withdrawn.";
-
             await transaction.RollbackAsync(cancellation);
             await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation);
 
@@ -199,17 +186,45 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Retired, id, detail);
     }
 
-    // A live reason's name, refused in both directions.
-    //
-    // The six live reasons are section 11's and the code's, a family of their own,
-    // and none of them is a row here. Registering a candidate under one's name
-    // would give a retirement of that name two meanings, and retiring one through
-    // this door would withdraw a live reason on the strength of a register row.
-    // A live reason is retired only by a person changing section 11 and the code
-    // together, once its record holds the higher floor section 17 states.
-    // see: An unresolved setup is never a win
-    public static string? LiveReasonRefusal(string candidate) =>
-        ShortlistSeries.Reasons.Contains(candidate.Trim(), StringComparer.OrdinalIgnoreCase)
+    // Why a retirement is refused, or null. A candidate standing registered is retired
+    // whatever the live reasons carry, so a promoted candidate can leave the family.
+    // see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone
+    public static string? RetirementRefusal(
+        IReadOnlyList<RegisterRow> rows,
+        string candidate,
+        string evidence,
+        DateTimeOffset at,
+        IReadOnlyCollection<string> liveReasons)
+    {
+        if (string.IsNullOrWhiteSpace(evidence))
+        {
+            return $"'{candidate}' is not retired on no evidence. A retirement states the figures that produced it.";
+        }
+
+        if (CandidateFamily.StandsAt(rows, candidate, at))
+        {
+            return null;
+        }
+
+        return LiveReasonRefusal(candidate, liveReasons)
+            ?? $"'{candidate}' does not stand registered, so there is nothing to retire. A retirement " +
+               "names a candidate the register holds, and one naming nothing would leave the divisor " +
+               "reading as though something had been withdrawn.";
+    }
+
+    // A registration with no rule or no test is a row that does not say what was registered.
+    public static string? Unstated(string rule, string test) =>
+        string.IsNullOrWhiteSpace(rule) || string.IsNullOrWhiteSpace(test)
+            ? "a registration states its rule and its test, and a row missing either does not say what was registered."
+            : null;
+
+    public static string? LiveReasonRefusal(string candidate) => LiveReasonRefusal(candidate, ShortlistSeries.Reasons);
+
+    // A live reason's name, refused as a registration and, where it does not stand registered,
+    // as a retirement: a live reason is section 11's and the code's, never a register row.
+    // see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone
+    public static string? LiveReasonRefusal(string candidate, IReadOnlyCollection<string> liveReasons) =>
+        liveReasons.Contains(candidate.Trim(), StringComparer.OrdinalIgnoreCase)
             ? $"'{candidate}' is a live reason, which is not a row in the register. A live reason is retired " +
               "only by a change to section 11 and the code's reasons together, once its record holds " +
               FormattableString.Invariant($"{ReasonVerdict.MinimumBeforeALiveReasonIsRetired} resolved setups, ") +

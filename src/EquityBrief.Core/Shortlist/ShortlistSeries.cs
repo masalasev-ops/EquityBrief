@@ -48,6 +48,9 @@ public sealed record ReasonInputs(
 // reason nobody can check.
 public sealed record ReasonOutcome(string Name, bool Fired, IReadOnlyDictionary<string, string> Values);
 
+// A threshold a reason is evaluated under, as its rows store it.
+public sealed record ReasonThreshold(string Reason, string Value, string Constant, string Carried);
+
 // The six reasons of section 11.
 //
 // A name is on tonight's list if any is true. There is no score and no fixed
@@ -82,6 +85,25 @@ public static class ShortlistSeries
     // The multiple of the fifty-day average volume that counts as unusual.
     // A proposal, like the two the section 11 callout names.
     public const double UnusualVolumeMultiple = 2;
+
+    public const string MultipleValue = "multiple";
+
+    public const string HorizonValue = "horizon";
+
+    // Each threshold a reason is evaluated under: the value its rows store it as, the
+    // constant that holds it, and that constant as a row writes it.
+    // see: A reason's record reads only the rows written under the threshold the code carries, and the rows written under another are kept
+    public static IReadOnlyList<ReasonThreshold> Thresholds { get; } =
+    [
+        new(UnusualVolume, MultipleValue, nameof(UnusualVolumeMultiple), UnusualVolumeMultiple.ToString(CultureInfo.InvariantCulture)),
+        new(EarningsSoon, HorizonValue, nameof(EarningsHorizonSessions), EarningsHorizonSessions.ToString(CultureInfo.InvariantCulture)),
+    ];
+
+    // Whether a stored reason was evaluated under a threshold other than the one the code
+    // carries. A row that states none cannot say which window it belongs to.
+    public static bool MeasuredUnderAnotherThreshold(string reason, Func<string, string?> valueOf) =>
+        Thresholds.FirstOrDefault(threshold => threshold.Reason == reason) is { } carried
+            && valueOf(carried.Value) != carried.Carried;
 
     public static IReadOnlyList<ReasonOutcome> For(ReasonInputs inputs)
     {
@@ -174,7 +196,7 @@ public static class ShortlistSeries
             Values(
                 ("volume", Count(inputs.Volume)),
                 ("fifty-day average volume", Average(inputs.VolumeAverage50)),
-                ("multiple", UnusualVolumeMultiple.ToString(CultureInfo.InvariantCulture)))));
+                (MultipleValue, UnusualVolumeMultiple.ToString(CultureInfo.InvariantCulture)))));
 
         // Earnings soon: the next earnings date is within twenty sessions. A
         // calendar fact rather than a setup, listed so a print is never a
@@ -199,7 +221,7 @@ public static class ShortlistSeries
                     : inputs.SessionsToNextEvent is { } counted
                         ? counted.ToString(CultureInfo.InvariantCulture)
                         : inputs.NextEvent is null ? NotOnFile : BeyondTheExchangeCalendar),
-                ("horizon", EarningsHorizonSessions.ToString(CultureInfo.InvariantCulture)))));
+                (HorizonValue, EarningsHorizonSessions.ToString(CultureInfo.InvariantCulture)))));
 
         return outcomes;
     }

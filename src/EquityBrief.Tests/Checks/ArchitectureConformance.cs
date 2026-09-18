@@ -778,50 +778,32 @@ public partial class ArchitectureConformance
         Assert.Contains("1.1", built);
         Assert.Contains("1.2", built);
 
-        // The other direction, against a checkpoint far enough out that this does
-        // not have to be edited as the build advances. It named 1.3 first, which
-        // was true when it was written and false an hour later when 1.3's entry
-        // landed; then 6.8, until 6.8's own entry landed; then the plan's last
-        // checkpoint, on the reasoning that no entry records it while any work in
-        // the phase is still to build.
-        //
-        // That third anchor failed at 8.7, and it failed for the reason the first
-        // two did. The plan's last checkpoint is exactly the one a phase's final
-        // checkpoint is, so the assertion forbade the last checkpoint of any phase
-        // from ever being recorded as built: the same guard that refused a ruling
-        // numbered 8.8 at the 8.2 ruling, arriving from the other end. Each
-        // anchor was chosen to be far enough out and each was overtaken.
-        //
-        // So the negative is derived rather than named. Every plan checkpoint the
-        // record does not show as landed is absent from what it does, which is a
-        // direction over real checkpoints and cannot be overtaken because it
-        // moves with the build. Where the build has reached the end of the plan
-        // that set is empty, so the assertion that cannot empty is the
-        // constructed one below it.
-        var unbuilt = PlanCheckpoints.All()
-            .Select(point => point.Id)
-            .Where(id => !DuePoints.HasLanded(id, progress))
+        // The other direction, derived from the record's own headings: a checkpoint every
+        // one of whose entries opens as not a checkpoint entry is one the reader never builds.
+        var entries = progress.Split("\n### ")
+            .Skip(1)
+            .Select(entry => (Id: Regex.Match(entry, @"^(\d+\.\d+)").Groups[1].Value, Body: entry[(entry.IndexOf('\n') + 1)..].TrimStart()))
+            .Where(entry => entry.Id.Length > 0)
             .ToArray();
 
-        var wrongly = unbuilt.Where(built.Contains).ToArray();
+        var headed = entries.Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal);
 
-        Assert.True(
-            wrongly.Length == 0,
-            $"{wrongly.Length} of {unbuilt.Length} unbuilt plan checkpoint(s) are read as built: " +
-            string.Join(", ", wrongly));
+        var neverBuilt = entries
+            .GroupBy(entry => entry.Id, StringComparer.Ordinal)
+            .Where(group => group.All(entry => entry.Body.StartsWith(DuePoints.NotACheckpoint, StringComparison.Ordinal)))
+            .Select(group => group.Key)
+            .ToArray();
 
-        // A checkpoint the plan does not have at all, which no build can overtake.
-        Assert.DoesNotContain("9.9", built);
+        Assert.True(neverBuilt.Length >= 1, $"Read {neverBuilt.Length} checkpoint(s) headed only by entries that are not checkpoint entries, expected at least 1.");
+        Assert.DoesNotContain(neverBuilt, built.Contains);
+        Assert.DoesNotContain(built, id => !headed.Contains(id));
 
-        // And the reader told apart over a record written here, so the direction
-        // above holds whether or not the plan still has an unbuilt checkpoint in
-        // it. Without this the day the plan runs out is the day the negative
-        // stops being asserted over anything.
-        var constructed = DuePoints.Built(
-            "### 9.1 - a thing that is built   2026-10-01\nBuilt:      a thing.\n\n");
-
-        Assert.Contains("9.1", constructed);
-        Assert.DoesNotContain("9.2", constructed);
+        // And over a record written here, where a ruling and a checkpoint named only in a body sit beside a building entry.
+        Assert.Equal(
+            ["9.1"],
+            DuePoints.Built(
+                "### 9.1 - a thing that is built   2026-10-01\nBuilt:      a thing, ahead of 9.3.\n\n" +
+                "### 9.2 ruling - an item carried to 9.2\nNot a checkpoint entry. It belongs to 9.2, which has not landed.\n\n"));
     }
 
     // The opening checkpoints of phases something other than the opening has built.
@@ -1399,39 +1381,9 @@ public partial class ArchitectureConformance
             string.Join("; ", unnamed) +
             ". A decomposition the document does not carry is a second statement of the row's content.");
 
-        // Stated in advance, and it is the scope carrying the property: twenty
-        // four elements over nine rows, four on the level chart, two on the gap
-        // failure, two on the unavailable feed, two on the two-hundred-bar row
-        // 3.1 decomposed, six 5.0 added, and four on the run page's
-        // stale-and-failed region, which the phase 5 sign-off found PASS whole
-        // while two of its parts are phase 6's. Zero would pass every assertion
-        // above.
-        //
-        // An exact count rather than a floor, so a decomposition added without
-        // being argued for fails here. It moved from eight at 3.1, where the
-        // two-hundred-bar row was split because its behaviour half is the stored
-        // indicator and its other half is a string on a page nothing draws yet,
-        // and from twelve at 5.0, where the universe screen's sector strip and
-        // table were split at the listing store 5.1 does not have and the run
-        // page's reason record was split between the counts 5.6 draws and the
-        // verdicts that need resolved setups.
-        // 95 from 88 at 6.1, the seven being the fact strip's own parts. 101 from
-        // 95 at 6.3, the six being section 19.1's inadmissible document row,
-        // which is the first row outside section 15 to be decomposed and the
-        // obligation 6.0 filed against that checkpoint. The reader that holds
-        // these to the row's own words is the same one, because it was written
-        // over every cell of a row rather than over one column.
-        // 107 from 101 at 6.5, the six being section 15.9's two research-state
-        // rows, each read as the line this checkpoint draws and the parts the
-        // research runner draws. 120 from 107 at 6.6, thirteen being section 18's
-        // two local lane rows at five parts each and the provenance footer's three.
-        // 124 at 6.7, being section 18's spend cap row and section 15.9's research
-        // paused row at two parts each. 128 at the 7.0 ruling, being tonight's list row's
-        // line beside a suspect name and the name screen's line for it at three parts.
-        // 129 at 8.1, the reason records row's never-entered count. 132 at 8.4, the
-        // shadow candidates row's three.
-        // 136 at 8.5, that row's four.
-        Assert.Equal(136, checkedElements);
+        // An exact count rather than a floor, so a decomposition added without being argued
+        // for fails here; the argument for each is its checkpoint's entry.
+        Assert.Equal(138, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
