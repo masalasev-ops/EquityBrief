@@ -14689,6 +14689,27 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             M4 the reader's cut at "Previously decided" pointed at a document it never reads: the
             constructed proof red on the superseded decision's figure, counted and read, and nothing
             else, since no superseded decision states a figure the patterns match.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Five
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1057 of 1058
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 1 red, the restatement test on SCHEMA restating the merge distance's cap at a
+            value the code does not hold. M2 turned 1 red, the census on its figure 22, the earnings
+            horizon row stating 21 where the census holds 20. M3 turned 1 red, the census on 43
+            minutes no longer being 503 passes at the row's rate, and on its figure 28, the row
+            stating 5.31 where the census holds 5.13. M4 turned 1 red, the constructed proof reading
+            the superseded decision's cap, counted twice where once is stated and read as three
+            windows.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            and none moved: this correction edits no claim in `ARCHITECTURE.html`, and the one
+            roster row it edits, `pinned-constants`, keeps its key. Both gates ran with this entry
+            in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
