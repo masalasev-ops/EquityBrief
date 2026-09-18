@@ -303,6 +303,41 @@ public class ListingsCoverage
     }
 
     [Fact]
+    public async Task ACandidateThatFiresOnEveryMemberReachesNoRowsReasons()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        await RegisterAsync(store, "momentum index at one hundred", 100, NightStart.AddDays(-1));
+
+        var listed = await RunTheNightAsync(store, "coverage-shadow-list");
+
+        Assert.True(listed.Count >= 4, $"Read {listed.Count} listing row(s), expected at least 4.");
+
+        foreach (var ticker in listed)
+        {
+            using var reasons = System.Text.Json.JsonDocument.Parse(Query(store, $"SELECT reasons FROM listing WHERE ticker = '{ticker}';").Single());
+            using var shadow = System.Text.Json.JsonDocument.Parse(Query(store, $"SELECT shadow_reasons FROM listing WHERE ticker = '{ticker}';").Single());
+
+            // The candidate fired on the row, and the row's reasons are section 11's six and
+            // its fired count theirs alone.
+            Assert.Equal(
+                (ticker, true),
+                (ticker, shadow.RootElement.GetProperty("candidates").EnumerateArray()
+                    .Single(one => one.GetProperty("candidate").GetString() == "momentum index at one hundred")
+                    .GetProperty("fired").GetBoolean()));
+
+            Assert.Equal(
+                (ticker, string.Join("|", ShortlistSeries.Reasons)),
+                (ticker, string.Join("|", reasons.RootElement.EnumerateArray().Select(one => one.GetProperty("name").GetString()!))));
+
+            Assert.Equal(
+                (ticker, reasons.RootElement.EnumerateArray().Count(one => one.GetProperty("fired").GetBoolean()).ToString(CultureInfo.InvariantCulture)),
+                (ticker, Query(store, $"SELECT fired_count FROM listing WHERE ticker = '{ticker}';").Single()));
+        }
+    }
+
+
+    [Fact]
     public async Task AShadowCandidateIsEvaluatedOnTheNightsNoLiveReasonFired()
     {
         // The done condition 8.4 rests on, and the reason this check owns it: a

@@ -34,7 +34,7 @@ public class NightlyRun
             // stopping behaviour is the whole of: a window measuring a rule
             // that moved is closed by stopping the night rather than by a note.
             CheckReach.Key(NightlyRunSteps.Heading, "Replay tonight's name-nights under every open version of each ladder rule from the stored bars, and store the plan each version produced, flagging as in sample any score for a session on or before the New York date its version's window opened on so it counts toward no record (see: A version's score counts only for a session after the New York date its window opened on). This makes no request: the bars are already stored, so a version costs the ladder arithmetic run again and, for a version of the merge distance, the level arithmetic as well. A live rule whose parameters or code have moved while a window measuring it is open stops the night at this step and names the rule (see: Adding a candidate later restarts the clock)."),
-            CheckReach.Key(Scope.LimitsTable, "Frozen measurement windows"),
+            CheckReach.Key(Scope.LimitsTable, "Frozen measurement windows, a rule"),
 
             // 5.5, the forward returns and the news pulse.
             CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate."),

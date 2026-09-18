@@ -394,10 +394,14 @@ internal static class Scope
         // 8.6, the rule versions. One claim ends and six arrive, being the
         // scorer's catalogue and matrix rows, the two store rows, the nightly
         // step and the bound.
-        [CheckReach.Key(LimitsTable, "Frozen measurement windows")] = new Scoped(
+        [CheckReach.Key(LimitsTable, "Frozen measurement windows, a rule")] = new Scoped(
             Verdict.Pass,
             "a whole recorded night over a live window whose rule moved inside it stops at the version step naming the rule, with nothing scored and no close, and once the windows are closed with their evidence and opened again the next night keeps the closed rows as they were opened and scores under the new windows alone",
             ByNight),
+        [CheckReach.Key(LimitsTable, "Frozen measurement windows, threshold")] = new Scoped(
+            Verdict.Pass,
+            "a reason's record, its track and its verdict count a fired reason only where its row stores the threshold the code carries, a row under another or under none counting toward nothing and staying stored, and every numeric threshold a reason is evaluated under is written onto its rows under its own name",
+            ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Rule version scorer")] = new Scoped(
             Verdict.Pass,
             "the class declares each store it reads, the versions it reads and writes, the scores it writes and drops, and the run log it appends to, reconciled against its row's cells and against SCHEMA's ownership; and the verb the row says a window opens and closes through is one the worker dispatches, names in its help and the runbook shows",
@@ -470,7 +474,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "Minimum resolved setups")] = new Scoped(
             Verdict.Pass,
-            "no verdict of any kind appears below 250 resolved setups that set a bar or below 60 distinct listing sessions they arrived on, asserted at each boundary and one either side and over every population either side of each floor holding losses that set no bar and unresolved setups that would fill a floor if counted, with a withheld verdict never drawn as one that failed and the count drawn beside every withheld verdict; and the higher floor a live condition's retirement waits on is the constant the register names when it refuses a live reason",
+            "no verdict of any kind appears below 250 resolved setups that set a bar or below 60 distinct listing sessions they arrived on, asserted at each boundary and one either side and over every population either side of each floor holding losses that set no bar and unresolved setups that would fill a floor if counted, with a withheld verdict never drawn as one that failed and the count drawn beside every withheld verdict; and the higher floor a live condition's retirement waits on is the constant section 17 and the runbook state, which no page computes and which is read against the resolved count drawn beside the reason",
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "Significance threshold")] = new Scoped(
             Verdict.Pass,
@@ -1980,6 +1984,7 @@ internal static class Scope
     // table, fails too.
     static readonly Dictionary<string, string[]> Elements = new(StringComparer.Ordinal)
     {
+        [CheckReach.Key(LimitsTable, "Frozen measurement windows")] = ["a rule", "threshold"],
         // Every part these rows enumerate, added at the fifth phase 5 sign-off
         // review, which found a row's parts chosen by this reader rather than read
         // off the row: a clause the reader left out had no verdict of its own

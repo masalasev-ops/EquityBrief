@@ -25,6 +25,105 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - ARCHITECTURE.html - a live reason's retirement and a candidate's promotion cited where the architecture places them
+
+Authorised by: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone
+Was:
+> a condition whose setups fail to clear their own break-even over enough resolved cases is retired; a new one is registered and scored in shadow until it has earned promotion</td>
+>
+> <td>no verdict of any kind below the stated minimum; a higher minimum before a live condition may be retired</td>
+>
+> <td>a promotion, a retirement or a rule version change is written with the evidence that produced it and the version it replaced</td>
+>
+> 400 before a live condition may be retired (see: An unresolved setup is never a win) (see: A reason's share, verdict and both floors are counted over the resolved setups that set a bar)</td>
+Now:
+> a condition whose setups fail to clear their own break-even over enough resolved cases is retired; a new one is registered and scored in shadow until it has earned promotion (see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone)</td>
+>
+> <td>no verdict of any kind below the stated minimum; a higher minimum before a live condition may be retired (see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone)</td>
+>
+> <td>a promotion, a retirement or a rule version change is written with the evidence that produced it and the version it replaced (see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone)</td>
+>
+> 400 before a live condition may be retired (see: An unresolved setup is never a win) (see: A reason's share, verdict and both floors are counted over the resolved setups that set a bar) (see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone)</td>
+Why: section 13.2 placed which conditions exist at the register and section 13.3 a live condition's retirement beside the verdict's minimum, and neither said a live reason is changed only in section 11 and the code, which is what the register refusing its name assumes.
+
+### 2026-09-18 - ARCHITECTURE.html - a threshold's window cited where the guardrail and the limit state it
+
+Authorised by: A reason's record reads only the rows written under the threshold the code carries, and the rows written under another are kept
+Was:
+> <td>a rule or threshold is not changed during a window it is being measured over. A change starts a new window and the old one is kept</td>
+>
+> a change opens a new window and the previous one is kept (see: Adding a candidate later restarts the clock)</td>
+Now:
+> <td>a rule or threshold is not changed during a window it is being measured over. A change starts a new window and the old one is kept (see: A reason's record reads only the rows written under the threshold the code carries, and the rows written under another are kept)</td>
+>
+> a change opens a new window and the previous one is kept (see: Adding a candidate later restarts the clock) (see: A reason's record reads only the rows written under the threshold the code carries, and the rows written under another are kept)</td>
+Why: the guardrail named thresholds and only ladder rules had windows.
+
+### 2026-09-18 - ARCHITECTURE.html - section 13.2's thresholds row states the trigger its obligation reads, and two of section 17's rows say what asserts them
+
+Corrects: architecture-conformance read 13.2's rows against a list of checkpoints written in the test and read the thresholds row for two phrases of its own, and section 17's frozen windows row named "rule version stamps on every scored listing", which no listing carries. Found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> <td>none. Phase 5 is what first records how many names fire each night, and the calibration itself waits on sixty nights of that record, which no checkpoint accumulates. It is carried as an operating obligation and read on the run page, using those nights rather than a backfill</td>
+>
+> <td>the run page must show the count beside every verdict and withhold the verdict below either floor, naming the one that is short</td>
+>
+> <td>rule version stamps on every scored listing</td>
+Now:
+> <td>none. Phase 5 is what first records how many names fire each night, and the calibration itself waits on 60 nights of that record, which no checkpoint accumulates. It is carried as an operating obligation and read on the run page, using those nights rather than a backfill (owes: The six reason thresholds calibrated from the nights they fired on)</td>
+>
+> <td>the run page must show the count beside every verdict and withhold the verdict below either floor, naming the one that is short; no page computes the retirement floor, which is read against that count</td>
+>
+> <td>each ladder rule's windows kept as rows the night's drift check reads, and each reason's threshold stored on every listing row it was evaluated on</td>
+Why: a row read against its obligation has to state the trigger in the obligation's own form and cite it, a bound states where its end shows, and a column naming a mechanism has to name one that exists.
+
+### 2026-09-18 - BUILD_PLAN.md - the 8.2 ruling's reason no longer rests on the guard 8.7 removed
+
+Corrects: phase 8's opening justified filing the rules directory ruling on 8.2 with "a checkpoint appended after the phase report would be the plan's last, which no entry may record as built while work in the phase remains", which is the anchor 8.7 found forbade every phase's last checkpoint and removed. Found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> It is a ruling on an existing checkpoint rather than a checkpoint of its own, because the loop's numbers are fixed by the claims still out of scope at 8.3 to 8.6 and a checkpoint appended after the phase report would be the plan's last, which no entry may record as built while work in the phase remains.
+Now:
+> It is a ruling on an existing checkpoint rather than a checkpoint of its own, because the loop's numbers are fixed by the claims still out of scope at 8.3 to 8.6, and a checkpoint appended after the phase report would build nothing the report covers.
+Why: a later session reading the old sentence would refuse a checkpoint after a phase report on the strength of a guard that no longer exists.
+
+### 2026-09-18 - BUILD_PLAN.md - 8.4 names the promotion nothing yet computes, and the obligation that owes it
+
+Authorised by: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone
+Was:
+> is skipped on its own row and counted on the stage's line, and is not a failure (see: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip).
+>
+> (no row named A candidate's shadow record computed, and a promotion written against it)
+Now:
+> is skipped on its own row and counted on the stage's line, and is not a failure (see: Only a missing or moved evaluator fails the shadow column, and a name-night without the readings is a counted skip). No component this phase builds computes a candidate's record, so the region withholds a record nothing computes and no candidate can be promoted until one does (owes: A candidate's shadow record computed, and a promotion written against it).
+>
+> | **A candidate's shadow record computed, and a promotion written against it** | 8.7 correction | operating | 1 candidate condition registered, read on the run page's shadow candidates region, which 8.4 builds. A candidate's record cannot meet the minimum before 60 distinct listing sessions have passed after it was registered, since that is the minimum's own floor, so the plan written when this fires has at least that long. Phase 8 built the register and the shadow column and nothing that computes a candidate's record from them, so section 13's shadow before live and every change is recorded each promise a promotion nothing can yet make: the plan builds the candidate's record over the shadow column and forward returns, the minimum and the corrected threshold applied to it, and the change to section 11 and the code a promotion is, with the retirement row that takes the candidate out of the family (see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone) |
+Why: 13.3 promises a promotion written with its evidence and a shadow record meeting the minimum before one, and phase 8 built no component that computes a candidate's record.
+
+### 2026-09-18 - RUNBOOK.md - the registrar's refusals as built, and a live reason's retirement and a candidate's promotion
+
+Authorised by: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone
+Was:
+> The registrar refuses an evaluator the code does not carry, a parameter the evaluator does not read, a value that is not a finite number, a ninth candidate, a live reason's name, and any change to a candidate that stands registered. A live reason is retired only by changing section 11 and the code together, once its record holds 400 resolved setups. A change is a retirement and a new registration, under the same name or another, and a name registered again stands once:
+Now:
+> The registrar refuses an evaluator the code does not carry, a parameter the evaluator does not read, a value that is not a finite number, a ninth candidate, a registration stating no rule or no test, a retirement stating no evidence, a live reason's name, and any change to a candidate that stands registered. A live reason is retired, and a candidate promoted, only by changing section 11 and the code together (see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone). A live reason is retired once its record holds 400 resolved setups, read against the resolved count the run page draws beside it, since no page computes that floor. A candidate standing registered under a name section 11 has come to carry is retired like any other, which is how a promoted candidate leaves the family; no candidate can be promoted yet, because nothing computes a candidate's record (owes: A candidate's shadow record computed, and a promotion written against it). A change is a retirement and a new registration, under the same name or another, and a name registered again stands once:
+Why: the operator reads here what a registration is refused for and how a live reason leaves, and the old paragraph named a floor with nowhere it shows.
+
+### 2026-09-18 - .claude/rules/checks.md - architecture-conformance says what its mapping reads, and register-append-only and listings-coverage what they now assert
+
+Corrects: the architecture-conformance row said each 13.3 clause maps to "a test whose own body exercises the code the clause is enforced by", and the check confirmed a string appeared somewhere in a body with whole-line comments removed; three clauses passed on tests that do not hold them. Found by the phase 8 sign-off review on 2026-09-16.
+Was:
+> Section 13.3's guardrails are mapped clause by clause, each clause quoted from its cell, to a test whose own body exercises the code the clause is enforced by, with no test holding two; and the loop is shown to have changed nothing over the register's rows and the version windows a whole recorded night ran over on evidence below the minimum |
+>
+> and a live reason's name is refused both as a registration and as a retirement, the refusal naming the floor section 17 sets before a live condition may be retired;
+>
+> named as a failure on the stage's own run log row rather than in a note.
+Now:
+> Section 13.3's guardrails are mapped clause by clause, and subject by subject where a cell lists several, each quoted from its cell and together covering every word of it but its joining words, to a test whose own code, read with its comments and literals set apart, names the shipped member the clause is enforced by, or whose literals name the stored or drawn name it is enforced through, or to the open carried obligation that owes it; no test holds two and no skipped test holds any; whether a mapped test's assertions hold its clause is a reading no scan can make, recorded pair by pair in the entry that last changed the mapping. Section 13.2's rows are each read against the checkpoints of the phase their Phase cell names, by checkpoint title, or against the open operating obligation the cell cites, by its trigger and the surface it is read on. The loop is shown to have changed nothing over the register's rows and the version windows a whole recorded night ran over on evidence below the minimum, the candidate evaluated on every listing row of that night and the version scored on every one |
+>
+> a registration stating no rule or no test and a retirement stating no evidence are refused, and a registration is stored with the rule, the test and the instant it was given; and a live reason's name is refused as a registration and, where it does not stand registered, as a retirement, the refusal naming the floor section 17 sets before a live condition may be retired, while a candidate standing registered under a name the live reasons carry is retired like any other, so a promoted candidate leaves the family;
+>
+> named as a failure on the stage's own run log row rather than in a note, and a candidate that fires on every member leaves every row's reasons section 11's six and its fired count theirs.
+Why: a roster row that says more than its check reads is the under-reporting the roster exists to prevent, and a limit a check cannot pass is stated beside the check.
+
 ### 2026-09-18 - .claude/rules/checks.md - pinned-constants states the figures it reads and the ones it does not
 
 Corrects: the roster row said numeric constants stated in docs match the code constant they describe, and the check read the framework version and the SDK feature band; phase 8's restated figures and seven section 17 rows' figures were read by no test. Found by the phase 8 sign-off review on 2026-09-16.

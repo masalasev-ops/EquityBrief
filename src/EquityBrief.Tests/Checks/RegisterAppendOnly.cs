@@ -814,6 +814,41 @@ public class RegisterAppendOnly
         }
     }
 
+    [Fact]
+    public async Task EveryRefusalTheFixtureWorksByHandIsRefusedAndWritesNothing()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await ReplayRegistrationsAsync(store);
+
+        var expectation = FixtureExpectation.Of("candidate-register");
+        var attempts = expectation.GetProperty("refusals").GetProperty("attempts").EnumerateArray().ToArray();
+
+        Assert.True(attempts.Length >= 5, $"The expectation works {attempts.Length} refusal(s), expected at least 5.");
+
+        foreach (var (one, index) in attempts.Select((one, index) => (one, index)))
+        {
+            var registrar = new CandidateRegistrar(Clock(At(one, "at")), store.DatabaseFile);
+            var candidate = one.GetProperty("candidate").GetString()!;
+            var runId = FormattableString.Invariant($"fixture-refusal-{index}");
+
+            var outcome = one.GetProperty("attempt").GetString() == "retire"
+                ? await registrar.RetireAsync(candidate, one.GetProperty("evidence").GetString()!, runId)
+                : await registrar.RegisterAsync(
+                    candidate,
+                    one.GetProperty("rule").GetString()!,
+                    one.GetProperty("test").GetString()!,
+                    one.GetProperty("evaluator").GetString()!,
+                    one.GetProperty("parameters").EnumerateObject().ToDictionary(pair => pair.Name, pair => pair.Value.GetDouble(), StringComparer.Ordinal),
+                    runId);
+
+            Assert.Equal((candidate, CandidateRegistrar.Refused), (candidate, outcome.Outcome));
+            Assert.Contains(one.GetProperty("refusedBecause").GetString()!, outcome.Detail, StringComparison.Ordinal);
+            Assert.Equal((candidate, expectation.GetProperty("rowsWritten").GetInt32()), (candidate, (await RowsAsync(store)).Count));
+        }
+    }
+
+
     // ---- the source half, and the document ----
 
     [Fact]
@@ -916,6 +951,120 @@ public class RegisterAppendOnly
         // A candidate under a name no live reason carries is not caught by it.
         Assert.Null(CandidateRegistrar.LiveReasonRefusal("momentum index at thirty"));
     }
+
+    [Fact]
+    public async Task ARegistrationIsStoredWithTheRuleTheTestAndTheInstantItWasGiven()
+    {
+        // Two registrations whose rule and test differ, so a row carrying the other's
+        // columns, or one column in the other's place, reads differently from what was given.
+        var at = new DateTimeOffset(2026, 9, 16, 21, 0, 17, TimeSpan.Zero);
+
+        using var store = new TemporaryStore().Migrated();
+
+        var registrar = new CandidateRegistrar(Clock(at), store.DatabaseFile);
+
+        foreach (var (candidate, rule, test) in new[]
+        {
+            ("momentum index at thirty", "the relative strength index at or below thirty", "the share of its setups that beat their own break-even"),
+            ("momentum index at twenty", "the relative strength index at or below twenty", "the share of its setups that beat their own break-even over sixty sessions"),
+        })
+        {
+            Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync(
+                candidate,
+                rule,
+                test,
+                MomentumIndexReading.EvaluatorName,
+                new Dictionary<string, double>(StringComparer.Ordinal) { [MomentumIndexReading.Level] = 30 },
+                "register-stated-" + candidate.Replace(' ', '-'))).Outcome);
+        }
+
+        var rows = await RowsAsync(store);
+
+        Assert.Equal(
+            [
+                ("momentum index at thirty", "the relative strength index at or below thirty", "the share of its setups that beat their own break-even", at),
+                ("momentum index at twenty", "the relative strength index at or below twenty", "the share of its setups that beat their own break-even over sixty sessions", at),
+            ],
+            rows.Select(row => (row.Candidate, row.Rule, row.Test, row.RegisteredAt)).ToArray());
+
+        // A registration stating no rule or no test is refused and writes nothing.
+        foreach (var (rule, test) in new[] { (" ", "a test"), ("a rule", "") })
+        {
+            var refused = await registrar.RegisterAsync(
+                "momentum index at forty",
+                rule,
+                test,
+                MomentumIndexReading.EvaluatorName,
+                new Dictionary<string, double>(StringComparer.Ordinal) { [MomentumIndexReading.Level] = 40 },
+                "register-unstated-" + rule.Length);
+
+            Assert.Equal(CandidateRegistrar.Refused, refused.Outcome);
+        }
+
+        Assert.Equal(2, (await RowsAsync(store)).Count);
+    }
+
+    [Fact]
+    public async Task ARetirementStatesTheEvidenceItWasGivenAndOneGivenNoneIsRefused()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var registrar = new CandidateRegistrar(Clock(Opened), store.DatabaseFile);
+
+        await registrar.RegisterAsync(
+            "momentum index at thirty",
+            "the relative strength index at or below thirty",
+            "the share of setups that beat their own break-even",
+            MomentumIndexReading.EvaluatorName,
+            new Dictionary<string, double>(StringComparer.Ordinal) { [MomentumIndexReading.Level] = 30 },
+            "register-evidence-1");
+
+        var later = new CandidateRegistrar(Clock(Opened.AddDays(1)), store.DatabaseFile);
+
+        foreach (var none in new[] { "", "  " })
+        {
+            Assert.Equal(CandidateRegistrar.Refused, (await later.RetireAsync("momentum index at thirty", none, "register-evidence-none-" + none.Length)).Outcome);
+        }
+
+        Assert.Single(await RowsAsync(store));
+
+        const string Given = "14 resolved setups of a minimum of 250, and the reading fired on 4 of 2,018 name-nights";
+
+        Assert.Equal(CandidateRegistrar.Retired, (await later.RetireAsync("momentum index at thirty", Given, "register-evidence-2")).Outcome);
+        Assert.Equal(Given, (await RowsAsync(store))[1].Evidence);
+    }
+
+    [Fact]
+    public void ACandidatePromotedUnderItsOwnNameIsRetiredAndLeavesTheFamily()
+    {
+        // The live reasons as they would stand once a promotion has added the
+        // candidate's name to section 11 and the code.
+        var registered = Opened.AddDays(-1);
+        RegisterRow[] rows = [Row(1, "momentum index at thirty", CandidateFamily.Registered, null, registered)];
+        string[] promoted = [.. ShortlistSeries.Reasons, "momentum index at thirty"];
+
+        Assert.Null(CandidateRegistrar.RetirementRefusal(rows, "momentum index at thirty", "promoted on 250 resolved setups", Opened, promoted));
+
+        RegisterRow[] retired = [.. rows, Row(2, "momentum index at thirty", CandidateFamily.Retired, "momentum index at thirty", Opened)];
+
+        Assert.Equal((1, 0), (CandidateFamily.Divisor(rows, Opened.AddDays(1)), CandidateFamily.Divisor(retired, Opened.AddDays(1))));
+        Assert.Empty(ShadowColumn.StandingAt(retired, Opened.AddDays(1)));
+
+        // Once it has left, its name is a live reason the register refuses to retire again.
+        Assert.Contains("is a live reason", CandidateRegistrar.RetirementRefusal(retired, "momentum index at thirty", "again", Opened.AddDays(1), promoted), StringComparison.Ordinal);
+
+        // A live reason that never stood registered is refused with the floor, and a name
+        // neither live nor registered is refused as standing nowhere.
+        Assert.Contains(
+            FormattableString.Invariant($"once its record holds {ReasonVerdict.MinimumBeforeALiveReasonIsRetired} resolved setups"),
+            CandidateRegistrar.RetirementRefusal([], ShortlistSeries.AtEntryZone, "a record", Opened, ShortlistSeries.Reasons),
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "does not stand registered",
+            CandidateRegistrar.RetirementRefusal([], "momentum index at thirty", "a record", Opened, ShortlistSeries.Reasons),
+            StringComparison.Ordinal);
+    }
+
 
     [Fact]
     public void TheMaximumTheLimitsRowStatesIsTheOneTheCodeCarries()

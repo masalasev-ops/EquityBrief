@@ -41,6 +41,16 @@
    "registeredAt": "2026-09-08T22:20:00Z"
   }
  ],
+ "refusals": {
+  "derivedFrom": "each refusal worked from the registrar's own rules rather than read back from a run: a registration states its rule and its test, a retirement states the evidence that produced it, a live reason's name is never registered and is never retired where no candidate stands registered under it, and nothing that does not stand registered is retired. Each is attempted after the registrations, the retirement and the registration made again above, in the order given, so the register holds the four rows written above before and after every one of them. The histogram turn stands registered when its retirement without evidence is attempted, so the evidence is the only thing refusing it, and the name retired last was never registered at all.",
+  "attempts": [
+   { "attempt": "register", "candidate": "momentum index at forty", "rule": "", "test": "the share of its setups that beat their own break-even, against the reason records", "evaluator": "momentum-index-reading", "parameters": { "level": 40 }, "at": "2026-09-08T22:30:00Z", "refusedBecause": "states its rule and its test" },
+   { "attempt": "register", "candidate": "unusual volume", "rule": "the relative strength index at or below forty", "test": "the share of its setups that beat their own break-even, against the reason records", "evaluator": "momentum-index-reading", "parameters": { "level": 40 }, "at": "2026-09-08T22:31:00Z", "refusedBecause": "is a live reason" },
+   { "attempt": "retire", "candidate": "at entry zone", "evidence": "a record of 400 resolved setups", "at": "2026-09-08T22:32:00Z", "refusedBecause": "once its record holds 400 resolved setups" },
+   { "attempt": "retire", "candidate": "momentum histogram turning up", "evidence": " ", "at": "2026-09-08T22:33:00Z", "refusedBecause": "on no evidence" },
+   { "attempt": "retire", "candidate": "momentum index at twenty", "evidence": "a retirement of a name never registered", "at": "2026-09-08T22:34:00Z", "refusedBecause": "does not stand registered" }
+  ]
+ },
  "rowsWritten": 4,
  "divisors": [
   {

@@ -79,6 +79,7 @@ public partial class ReadSurface
             CheckReach.Key(Scope.LimitsTable, "Reason record display"),
             CheckReach.Key(Scope.LimitsTable, "Minimum resolved setups"),
             CheckReach.Key(Scope.LimitsTable, "Significance threshold"),
+            CheckReach.Key(Scope.LimitsTable, "Frozen measurement windows, threshold"),
 
             CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered"),
             CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets"),
