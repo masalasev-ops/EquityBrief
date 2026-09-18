@@ -103,7 +103,31 @@ public sealed class MembershipLoader(
         SELECT COUNT(*) FROM membership WHERE index_code = $index_code AND observed_at = $observed_at;
     ";
 
+    // Every span still open on tonight's session, an announced joiner's included,
+    // read after tonight's rows are written so a span the feed closed is not in it.
+    const string OpenSpans = @"
+        SELECT rowid, ticker, joined FROM membership
+        WHERE index_code = $index_code
+          AND (""left"" IS NULL OR ""left"" > $session);
+    ";
+
+    const string CloseSpan = @"
+        UPDATE membership SET ""left"" = $session WHERE rowid = $rowid;
+    ";
+
     public const string Stage = "membership";
+
+    // The outcome of a night that closed nothing because the feed stopped listing
+    // more tickers than a night closes, which puts the stage on the run page's
+    // failed region.
+    public const string Held = "partial";
+
+    // A span the feed no longer lists leaves the index on tonight's session, and a
+    // span the feed lists again is reopened by the upsert. A feed that stops
+    // listing more tickers than this in one night is read as a fault in the feed
+    // rather than as that many departures, and closes none of them.
+    // see: A ticker the index feed stops listing leaves the index on the night it goes unlisted
+    public const int MostUnlistedInANight = 10;
 
     public async Task<int> LoadAsync(
         string indexCode,
@@ -135,12 +159,45 @@ public sealed class MembershipLoader(
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
 
+        var session = Text(clock.SessionDateAt(startedAt));
+        var listed = constituents.Select(constituent => (constituent.Ticker, Text(constituent.Joined))).ToHashSet();
+        var tickers = constituents.Select(constituent => constituent.Ticker).ToHashSet(StringComparer.Ordinal);
+
+        var unlisted = (await OpenSpansAsync(connection, indexCode, session, cancellationToken))
+            .Where(span => !listed.Contains((span.Ticker, span.Joined)))
+            .OrderBy(span => span.Ticker, StringComparer.Ordinal)
+            .ThenBy(span => span.Joined, StringComparer.Ordinal)
+            .ToArray();
+
+        var gone = unlisted
+            .Select(span => span.Ticker)
+            .Where(ticker => !tickers.Contains(ticker))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        var redated = unlisted.Where(span => tickers.Contains(span.Ticker)).ToArray();
+        var held = gone.Length > MostUnlistedInANight;
+        var closed = 0;
+
+        if (!held)
+        {
+            foreach (var span in unlisted)
+            {
+                await using var close = connection.CreateCommand();
+                close.CommandText = CloseSpan;
+                close.Parameters.AddWithValue("$session", session);
+                close.Parameters.AddWithValue("$rowid", span.RowId);
+
+                closed += await close.ExecuteNonQueryAsync(cancellationToken);
+            }
+        }
+
         await using var measure = connection.CreateCommand();
         measure.CommandText = RowsObservedAt;
         measure.Parameters.AddWithValue("$index_code", indexCode);
         measure.Parameters.AddWithValue("$observed_at", observedAt);
 
-        var written = Convert.ToInt32(await measure.ExecuteScalarAsync(cancellationToken));
+        var written = Convert.ToInt32(await measure.ExecuteScalarAsync(cancellationToken)) + closed;
 
         await using var log = connection.CreateCommand();
         log.CommandText = AppendRun;
@@ -148,7 +205,7 @@ public sealed class MembershipLoader(
         log.Parameters.AddWithValue("$stage", Stage);
         log.Parameters.AddWithValue("$started_at", observedAt);
         log.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("O"));
-        log.Parameters.AddWithValue("$outcome", "ok");
+        log.Parameters.AddWithValue("$outcome", held ? Held : "ok");
         log.Parameters.AddWithValue("$rows_written", written);
 
         // Read off the feed rather than stated, for the same reason rows_written
@@ -157,7 +214,7 @@ public sealed class MembershipLoader(
         // asserted against. A literal here cannot go wrong today and cannot go
         // right on the night a feed starts paging.
         log.Parameters.AddWithValue("$network_requests", requests);
-        log.Parameters.AddWithValue("$detail", DBNull.Value);
+        log.Parameters.AddWithValue("$detail", Detail(session, gone, redated, held) ?? (object)DBNull.Value);
 
         await log.ExecuteNonQueryAsync(cancellationToken);
 
@@ -188,6 +245,54 @@ public sealed class MembershipLoader(
         }
 
         return members;
+    }
+
+    sealed record Span(long RowId, string Ticker, string? Joined);
+
+    static async Task<IReadOnlyList<Span>> OpenSpansAsync(
+        SqliteConnection connection,
+        string indexCode,
+        string session,
+        CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = OpenSpans;
+        command.Parameters.AddWithValue("$index_code", indexCode);
+        command.Parameters.AddWithValue("$session", session);
+
+        var spans = new List<Span>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            spans.Add(new Span(reader.GetInt64(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)));
+        }
+
+        return spans;
+    }
+
+    static string? Detail(string session, IReadOnlyList<string> gone, IReadOnlyList<Span> redated, bool held)
+    {
+        if (held)
+        {
+            return $"{gone.Count} ticker(s) the feed no longer lists, more than the {MostUnlistedInANight} a night closes, " +
+                $"so none was closed: {string.Join(", ", gone)}";
+        }
+
+        var parts = new List<string>();
+
+        if (gone.Count > 0)
+        {
+            parts.Add($"{gone.Count} ticker(s) the feed no longer lists, each left the index on {session}: {string.Join(", ", gone)}");
+        }
+
+        if (redated.Count > 0)
+        {
+            parts.Add($"{redated.Count} span(s) the feed lists under another join date, each closed on {session}: " +
+                string.Join(", ", redated.Select(span => $"{span.Ticker} joined {span.Joined ?? "on no stated date"}")));
+        }
+
+        return parts.Count == 0 ? null : string.Join("; ", parts);
     }
 
     string ConnectionString => new SqliteConnectionStringBuilder

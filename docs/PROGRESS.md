@@ -15071,3 +15071,105 @@ Carried:    nothing owed by this repair. Noted rather than owed, for the operato
             provider stops listing without a leave date still reads as a member, which is EQR's case
             since 2026-09-17, stale since its bars end on 2026-08-17; whether such a span is read as
             left is a ruling nobody has made.
+
+### 1.1 - correction: a ticker the index feed stops listing leaves the index on the night it goes unlisted   2026-09-18
+Corrects:   the 1.1 entry records the membership loader as recording tonight's constituents with
+            their join and leave dates. It wrote every span the feed listed and closed only the
+            spans the feed dated, so a span the feed stopped listing stayed open for good. A
+            provider renaming a ticker lists the new one and stops listing the old, with no leave
+            date on either: EQR became VMRK on 2026-08-18 and read as a member beside it from
+            2026-09-17, and the joiner of 2026-09-21 that the price file carries as P was listed as
+            P, then PSTG, then P_old, so from that rebalance the store would have counted one
+            company three times and 506 tickers where the feed listed 503.
+Found:      on 2026-09-18, sorting the review of that morning into defects and the rest after the
+            operator asked how a sign-off could stand over what it listed; the operator then ruled
+            that a ticker the feed stops listing leaves the index (see: A ticker the index feed
+            stops listing leaves the index on the night it goes unlisted).
+Measured:   read immutable from the operator's store on 2026-09-18, at schema 27 and last written
+            2026-09-17 23:41:00 UTC: EQR joined 2001-12-03 and last observed 2026-09-16 23:30 UTC,
+            its bars ending 2026-08-17 at a close of 63.66, which is VMRK's close that session;
+            VMRK's span joined 2026-08-18 last observed 2026-09-10; P and PSTG joining 2026-09-21
+            and last observed 2026-09-10 and 2026-09-16, PSTG's bars ending 2026-04-16 at a close
+            of 67.8, which is P's that session; and P_old joining 2026-09-21, last observed
+            2026-09-17, with no bar. A night rehearsed over a copy that morning fetched the feed:
+            it lists BE, ILMN and P_old joining and BLDR, TAP and TTD leaving on 2026-09-21, and
+            lists none of EQR, P, PSTG or VMRK's span joined 2026-08-18.
+Repaired:   the loader closes every span still open on the night's session that the night's feed
+            does not list, on that session, whether the ticker is gone from the feed or listed
+            under another join date, and names each on its run log line; the upsert reopens a
+            span the feed lists again. A feed that stops listing more than 10 tickers in one night
+            closes none, and the stage ends partial, which puts it on the run page's
+            stale-and-failed region with every ticker named. The stage's rows written count the
+            spans it closed. Section 18 gains the row, DECISIONS the ruling, and SCHEMA's
+            membership section the rule, with the prior text of both specs in CHANGELOG.
+Stored:     nothing rewritten by hand. The night of 2026-09-18 is the first to run it, and over the
+            feed as fetched that morning it closes EQR's, P's and PSTG's spans and VMRK's span
+            joined 2026-08-18 on 2026-09-18, which leaves the feed's 503 tickers as the index.
+            Listings already written are kept as written.
+Missed:     every membership test loaded a feed listing every span its store held, and no test ran
+            a night whose feed had stopped listing one.
+Guarded:    over the fixture's second night, a member the feed drops, a second span of a member it
+            lists under another join date and an announced joiner it stopped listing are each
+            closed on the night's session; the dropped member keeps the night before's listing,
+            has none that night, is out of the universe and is named on the run page's membership
+            line; and a second run of the night whose feed lists it again reopens it and lists it.
+            A feed not listing one ticker more than a night closes closes none, writes only the
+            feed's spans and ends partial on the stale-and-failed region with every ticker named,
+            and one not listing exactly that many closes every one and counts each as written. The
+            row's figure is read off section 18 and held to the loader's constant.
+Expected:   derived: the rule is stated in section 18 and DECISIONS and asserted over constructed
+            spans; no expectation file changes, because the fixture's payload lists every span its
+            store holds.
+Tests:      1069, from 1066. Three added to `nightly-run`: the night that finds a span unlisted,
+            and the bound from either side. One rewritten in place: `nightly-run`'s stated set of
+            the membership reads that store, where the loader now reads that form twice. And
+            `architecture-conformance`'s pair names the row added after 8.0's prediction. No file
+            this correction edits is a source either evaluator version or the ladder rules' code
+            version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, being
+            the close, the session it is dated, a re-dated span closed beside a dropped ticker,
+            the bound's edge, the bound itself, the reopening, and the closed spans counted as
+            written. Predicted:
+            M1 the close skipped: the night test red on the night stopping at the backfill, which
+            asks for the announced joiner the close would have taken out, and the bound's lower
+            case red on its tickers still open; nothing else.
+            M2 the close dated the day after the session: the night test red the same way, since a
+            span closed after the session is still open on it, and the bound's lower case red on
+            no span closed on the session; nothing else.
+            M3 a span the feed lists under another join date kept open: the night test red on the
+            member's second span missing from the spans closed; nothing else.
+            M4 the bound at its figure rather than past it: the bound's lower case red on its
+            tickers still open; nothing else.
+            M5 the bound removed: the bound's upper case red on its tickers closed; nothing else.
+            M6 the upsert keeping a leave date the night wrote: the night test red on the dropped
+            member's span still closed after the feed lists it again; nothing else.
+            M7 the closed spans left out of the rows written: the bound's lower case red on the
+            rows written; nothing else.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Eight
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1068 of 1069
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 2 red: the night test on the backfill stopping at ZZZZ, for which the recorded
+            feed holds no year, and the bound's lower case on 10 tickers still open. M2 turned 2
+            red: the night test on the same stop, and the bound's lower case on none of its 10
+            closed on the session. M3 turned 1 red, the night test on the spans closed reading AAPL
+            and ZZZZ without KEYS. M4 turned 1 red, the bound's lower case on 10 tickers still open.
+            M5 turned 1 red, the bound's upper case on none of its 11 still open. M6 turned 1 red,
+            the night test on AAPL's span still closed after the feed listed it again. M7 turned 1
+            red, the bound's lower case on 6 rows written where 16 were.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1069 of 1069 tests
+            ran with none failed, migrations 0 to 28 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 368 claims,
+            368 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 375 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim
+            added: section 18's row for a ticker the index feed stops listing, reached by
+            `nightly-run`, and no roster row changed. Both gates ran with this entry in place, and
+            the operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair. Noted rather than owed, for the operator: from 2026-09-21
+            the joiner is P_old, which holds no bar, since the price file carries it as P; the
+            backfill asks for a member holding no bar on every night, which is corrected at 1.2
+            apart from this.
