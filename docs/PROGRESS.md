@@ -14482,8 +14482,42 @@ Mutated:    the rule, stated before the sweep: one mutation per kind of defect t
             where 6 and 12 are worked, since the replay holds the verb's counts; seven more
             `rule-versions-scored` tests red on a count one name short; and the pin test red;
             nothing else, since the loop night's floors are 8.7's and still read above zero.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: every prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the reason named for it, read off the failure message. Eight
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1051 of 1052
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so each count that follows is on top of it.
+            M1 turned 3 red: the fixture commands test on `anchors only`, opened at midnight in New
+            York on the session's own date, its 3 scores flagged scored where the worked flag is in
+            sample; the backfilled score flag test reading a score flagged scored beside in sample
+            on its window's New York date; and the pin test on the code version reading
+            c622631cbcae. M2 turned 2 red: the price scale test on the refetched name's replayed
+            plan reading `ReachesTheZone` where the night's own reads `AvailableNow`, and the pin
+            test on 55cf83c2e560. M3 turned 1 red, the recorded nights test counting 1 request on
+            the version step on each night where it counts none. M4 turned 1 red, the any-form test
+            reporting that `Bar history kept` names `bar-bounds`, which does not declare reach over
+            the row. M5 turned 1 red, the moved live rule night test finding no row for the version
+            step on the stopped night's run log. M6 turned 1 red, `NothingIsUnexamined` reading the
+            constructed deferred subject's note, "nothing asserts this by 1.4", as saying nowhere it
+            ends. M7 turned 85 red: the recorded nights test on the one-version night's 3 scores
+            where 1 version over 4 listed names is 4; the 76 tests that replay the fixture, each in
+            the replay on its first backfill writing 4 and keeping 8; seven `rule-versions-scored`
+            tests, four reading 3 where 4 is expected, one 6 where 8 is, one 12 where 16 is, and one
+            3 names left out and 1 score written where 2 and 2 are; and the pin test on
+            d808e5546d5b.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 28 with migration 28 the one added and none
+            pending, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at
+            <C> claims, <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts
+            reconciled against a floor of 34, <K> of <K> roster checks carried and all <K> run. No
+            claim added and none moved: section 14's version step keeps its place and its claim
+            under its new words, the rows this correction edits keep their keys, and `nightly-cost`
+            now declares reach over the version bound's row beside `rule-versions-scored`, whose
+            verdict it is. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing owed by this repair. Noted rather than owed: a research pass started by hand writes
             stages the run page draws beside the night's, which the spend cap's operating row reads
             there, and this correction leaves that as it is.
