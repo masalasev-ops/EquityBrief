@@ -16069,11 +16069,11 @@ Mutated:    the rule, stated before the sweep: one mutation for each rule this c
             of these; and its M2 as first written compared a variable with itself, which the build
             refuses as a warning, so it was rewritten to compare with the earliest date before any
             prediction was written.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1094 of 1094 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
             and none moved: this correction rewrites the text of eight rows `ARCHITECTURE.html`
             carries, the facts assembler's and the fundamentals fetcher's catalogue rows, the lane
             table's rows for the cause of each large move, the key under each figure, the industry
