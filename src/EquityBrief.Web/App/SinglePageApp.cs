@@ -476,7 +476,10 @@ public sealed class SinglePageApp : IComponent
 
         // The chart region: the level chart and, on its price scale, the volume profile
         // beside it, both drawn at one scale so a price is at one height in both.
-        const double Scale = 0.7;
+        //
+        // At its own size, which is what the column is as wide as. A picture drawn smaller
+        // than the space it is read in loses a year of candles to save nothing.
+        const double Scale = 1;
 
         var chart = new StringBuilder();
 

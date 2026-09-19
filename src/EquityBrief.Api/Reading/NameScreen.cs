@@ -147,6 +147,7 @@ public static class NameScreen
             "proposal and none has been tested. They are calibrated against resolved setups on the " +
             "run page, not tuned in advance.</p>");
 
+        html.Append("<div class=\"tbl-wrap\">");
         html.Append("<table class=\"event-table\"><tr><th>Setup</th><th>Trigger</th><th>Entry, stop and target</th></tr>");
 
         foreach (var setup in setups)
@@ -161,7 +162,7 @@ public static class NameScreen
             html.Append(CultureInfo.InvariantCulture, $"<td>enter {Drawn(entry, Figures.Price)}, stop {Drawn(stop, Figures.Price)}, target {Drawn(target, Figures.Price)}</td></tr>");
         }
 
-        html.Append("</table></section>");
+        html.Append("</table></div></section>");
 
         return html.ToString();
     }
@@ -388,6 +389,7 @@ public static class NameScreen
                 $"{filings.Count} filing(s), fewer than the {QuartersShown} quarters this section states.</p>");
         }
 
+        html.Append("<div class=\"tbl-wrap\">");
         html.Append("<table class=\"numbers-quarters\"><tr><th>Quarter</th><th>Revenue</th>");
         html.Append("<th>Gross margin</th><th>Net margin</th><th>Net income</th><th>Filed</th></tr>");
 
@@ -407,7 +409,7 @@ public static class NameScreen
             html.Append(CultureInfo.InvariantCulture, $"<td data-filed=\"{Day(filing.FilingDate)}\">{Day(filing.FilingDate)}</td></tr>");
         }
 
-        html.Append("</table>");
+        html.Append("</table></div>");
 
         html.Append(Guidance(newest.RootElement, Attribution(filings[0].Source)));
 
@@ -529,6 +531,7 @@ public static class NameScreen
 
         var html = new System.Text.StringBuilder();
 
+        html.Append("<div class=\"tbl-wrap\">");
         html.Append("<table class=\"numbers-segments\"")
             .Append(FormattableString.Invariant($" data-report=\"{report}\" data-months=\"{shortest}\""))
             .Append(FormattableString.Invariant($" data-period-end=\"{ended}\">"));
@@ -561,7 +564,7 @@ public static class NameScreen
             }
         }
 
-        html.Append("</table>");
+        html.Append("</table></div>");
         html.Append("<p class=\"segments-source\">")
             .Append(FormattableString.Invariant(
                 $"The {shortest} month(s) to {ended}, from {report} of that filing, {rows} line(s)."))
@@ -628,13 +631,14 @@ public static class NameScreen
 
         var html = new System.Text.StringBuilder();
 
+        html.Append("<div class=\"tbl-wrap\">");
         html.Append(CultureInfo.InvariantCulture, $"<table class=\"numbers-balance-sheet\" data-filed=\"{Day(filed)}\">");
         html.Append("<tr><th>Total assets</th><th>Total liabilities</th><th>Equity</th><th>Cash</th><th>Net debt</th></tr><tr>");
         foreach (var name in new[] { "totalAssets", "totalLiabilities", "equity", "cash", "netDebt" })
         {
             html.Append(Cell(sheet, name, value => Figures.Money(value, currency)));
         }
-        html.Append("</tr></table>");
+        html.Append("</tr></table></div>");
 
         return html.ToString();
     }
@@ -656,10 +660,11 @@ public static class NameScreen
 
         var html = new System.Text.StringBuilder();
 
+        html.Append("<div class=\"tbl-wrap\">");
         html.Append("<table class=\"numbers-valuation\"><tr><th>Basis</th><th>Earnings per share</th><th>Price to earnings</th></tr>");
         html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"trailing\"><td>trailing</td>{Cell(bases, "trailing", Figures.PerShare)}{Cell(valuation, "trailingPe", Figures.Multiple)}</tr>");
         html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"forward\"><td>next year</td>{Cell(bases, "nextYear", Figures.PerShare)}{Cell(valuation, "forwardPe", Figures.Multiple)}</tr>");
-        html.Append("</table>");
+        html.Append("</table></div>");
 
         return html.ToString();
     }
@@ -717,6 +722,7 @@ public static class NameScreen
         }
         else
         {
+            html.Append("<div class=\"tbl-wrap\">");
             html.Append("<table class=\"arithmetic-table\">");
             html.Append("<tr><th>From</th><th>Entry</th><th>Risk</th><th>Reward</th><th>Reward to risk</th></tr>");
 
@@ -733,7 +739,7 @@ public static class NameScreen
                     $"{Figure(figures, "blendedRewardToRisk", Figures.Ratio)}</tr>");
             }
 
-            html.Append("</table>");
+            html.Append("</table></div>");
 
             // The break-even, which is what the plan demands of itself rather
             // than a benchmark borrowed from elsewhere.
@@ -757,6 +763,7 @@ public static class NameScreen
 
         if (prints.Length > 0)
         {
+            html.Append("<div class=\"tbl-wrap\">");
             html.Append("<table class=\"earnings-rule\"><tr><th>Print</th><th>Session</th><th>One-day move</th><th>Against the stop</th></tr>");
 
             foreach (var print in prints)
@@ -773,7 +780,7 @@ public static class NameScreen
                     : $"<td class=\"num\" data-share-of-stop=\"{share}\">{Drawn(share, Figures.Percent)} of the stop distance</td></tr>");
             }
 
-            html.Append("</table>");
+            html.Append("</table></div>");
         }
 
         html.Append("</section>");
