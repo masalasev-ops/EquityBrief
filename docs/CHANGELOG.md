@@ -25,6 +25,33 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - .claude/rules/checks.md - `nightly-run` asserts how long a writer waits for another
+
+Authorised by: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
+Was:
+> | `nightly-run` | every CI run | The night runs the steps that exist in the order section 14 states, each step doing what its own text says, and a failure names the step and exits non-zero. A night bounded by a deadline it cannot meet stops and says which step it was on, and a payload that arrives and is wrong, being for another session or holding none of the index, is refused before anything is stored. The rule version step runs after the arithmetic it replays and before the close, a live rule that moved inside an open window stops the night there naming the rule with nothing scored and no close, and the night after its windows are closed and opened again scores under the new ones; and no document, fixture, script or source names a night's step by its number except section 14's own note and the night's own step list, both held to section 14's order |
+Now:
+> | `nightly-run` | every CI run | The night runs the steps that exist in the order section 14 states, each step doing what its own text says, and a failure names the step and exits non-zero. A night bounded by a deadline it cannot meet stops and says which step it was on, and a payload that arrives and is wrong, being for another session or holding none of the index, is refused before anything is stored. The rule version step runs after the arithmetic it replays and before the close, a live rule that moved inside an open window stops the night there naming the rule with nothing scored and no close, and the night after its windows are closed and opened again scores under the new ones; and no document, fixture, script or source names a night's step by its number except section 14's own note and the night's own step list, both held to section 14's order; and every connection the worker opens outside a source a rule's version pins waits for another writer as long as section 17 states, read from the shipped source and shown over a write another connection holds, and a research pass and a theme pass store the documents they fetched in one write, so a store refusing one partway keeps none |
+Why: the check carries the tests of section 17's new row, and a roster row not saying what its check asserts is a property nobody wrote down.
+
+### 2026-09-18 - ARCHITECTURE.html - section 17 states how long a writer waits for another
+
+Authorised by: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
+Was:
+> no row
+Now:
+> a row stating the 600 seconds a statement waits for another writer's write outside the sources a rule's version pins, and that a pass stores what it fetched in one write, with why and what asserts it
+Why: the wait was the driver's thirty seconds and stated nowhere, and a pass storing its documents one to a write outlasted it and failed the night's queue.
+
+### 2026-09-18 - RUNBOOK.md - a step failing on the store's lock added to the morning table
+
+Authorised by: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
+Was:
+> no row
+Now:
+> a row for a night's step or a research pass failing with `database is locked`: what held the store, and how the night is run again for its session
+Why: a pass beside the overnight queue failed the queue on the lock, and the table said nothing of it.
+
 ### 2026-09-18 - SCHEMA.md - the analysts' ratings are stored
 
 Authorised by: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone

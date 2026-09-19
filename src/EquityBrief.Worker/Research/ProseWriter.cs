@@ -5,6 +5,7 @@ using EquityBrief.Core.Facts;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Research;
@@ -173,7 +174,7 @@ public sealed class ProseWriter(
         var startedAt = clock.UtcNow;
         var asOf = clock.SessionDateAt(startedAt);
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var written = new List<WrittenSection>();

@@ -4,6 +4,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Research;
@@ -84,7 +85,7 @@ public sealed class SpendCap(
     {
         var startedAt = clock.UtcNow;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var ceiling = model.Ceiling(request);

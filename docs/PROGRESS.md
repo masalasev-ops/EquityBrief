@@ -16155,3 +16155,91 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. The screens' redesign draws them, in the session the
             operator has put it to.
+
+### 6.8 - correction: a pass stores what it fetched in one write and a writer waits ten minutes for another, where a pass beside the night's queue failed the queue on the store's lock   2026-09-18
+Corrects:   the 6.8 entry records the research runner storing each document it fetches with its
+            admissibility verdict. It stored them one to a write, and the theme runner its pages the
+            same way, and every connection the worker opens waited the driver's own thirty seconds
+            for another writer before a statement failed. Two writers on the store could not share
+            it for longer than that.
+Found:      on 2026-09-18 at 23:10 New York time, when a research pass for NVDA, run beside the
+            night's overnight queue on this session's word that the two could share the store,
+            failed the queue with database is locked after it had written the key for 207 of the 431
+            listed names.
+Measured:   off the operator's store after the pass, read without a lock once nothing wrote to it:
+            the pass fetched 7,206 documents and stored them one to a write, each a disk sync on the
+            operator's spinning disk, from shortly after 03:06 UTC to 03:28, and the queue's write
+            gave up at 03:10:40 after its thirty seconds. The night's longest stage on that machine
+            over the run log's ten nights from 2026-09-10 is the levels at 218 seconds, then the
+            indicators at 191 and the volume profile at 164. The store's integrity check passed
+            after the pass.
+Repaired:   a pass and a theme pass store the documents they fetched in one write, as the facts
+            assembler stores its files. Every connection the worker and the store open goes through
+            one helper, `StoreConnection`, which waits up to 600 seconds for another writer, except
+            in the five sources a ladder rule's code version or a candidate evaluator's version
+            pins, `LadderBuilder`, `LevelBuilder`, `RuleVersionScorer`, `IndicatorEngine` and
+            `ShortlistBuilder`, which keep the driver's wait: an edit there moves the code version
+            the operator's four open windows record and the versions two registered candidates
+            carry, and those stages wait on a pass for one write. The read surface keeps the
+            driver's wait. DECISIONS records it as A writer waits up to ten minutes for another, and
+            a pass stores what it fetched in one write; section 17 carries the row Waiting on
+            another writer, RUNBOOK's morning table a row for a step failing on the lock, and
+            `nightly-run`'s roster row what its tests now assert, with prior text in CHANGELOG.
+Stored:     nothing rewritten. The night of 2026-09-18 is run again for its session once this
+            merges, and its queue drafts the 224 names it did not reach.
+Missed:     the facts assembler's own comment names the cost of a write a row, and the pass's
+            document store, written after it, stored one to a write. No test ran one writer beside
+            another.
+Guarded:    section 17's figure is read off the row against the wait every connection outside a
+            pinned source carries; the shipped source is scanned for a connection string written
+            anywhere but the helper and the sources the two pin lists name; the wait is shown over a
+            write another connection holds, a connection allowed a second refused and one the helper
+            opened still waiting when the write ends and then writing; and a pass and a theme pass
+            whose store refuses the fifth and the third document keep none of what they fetched.
+Expected:   derived: the rows a refusal partway would leave are worked from the trigger, four before
+            the fifth and two before the third, and the wait is read off the row. No expectation
+            file changes: what a pass stores, hands each section and records is the same in one
+            write or many.
+Tests:      1099, from 1096. Three added to `nightly-run`. No pin moves: the five pinned sources are
+            not edited, and the ladder rules' code version stays 31de414eaa47.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, the pass's
+            one write, the theme pass's one write, the wait the helper sets, the figure the row
+            states, and every connection outside a pinned source going through the helper. Not
+            mutated: the driver holding a statement to the connection's own timeout, which the first
+            test shows over a held write rather than this code stating it.
+            Predicted:
+            M1 the pass's documents one to a write: the pass's one-write test red on four documents
+            kept; nothing else.
+            M2 the theme pass's pages one to a write: the theme pass's one-write test red on two
+            pages kept; nothing else.
+            M3 the helper's wait dropped: the wait test red on a connection carrying 30 against 600;
+            nothing else.
+            M4 the wait's figure moved to 30: the wait test red on the row not stating it, and
+            section 17's census red on a figure the code no longer holds; nothing else.
+            M5 the overnight queue's connection opened without the helper: the wait test red naming
+            its file; nothing else.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Six runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated files and the worktree removed after. The baseline is 1098 of 1099 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the pass's one-write test on four documents kept.
+            M2 turned 1 red, the theme pass's one-write test on two pages kept.
+            M3 turned 1 red, the wait test on a connection carrying the driver's thirty seconds.
+            M4 turned 2 red, the wait test on the row's figure and section 17's census on a figure
+            the code no longer holds.
+            M5 turned 1 red, the wait test on the file writing a connection string of its own.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1099 of 1099 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 370 claims,
+            370 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 377 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim
+            added: section 17's row Waiting on another writer, which passes on `nightly-run`, the
+            check that reached it, and which 8.0's pair counts among the rows the document gained
+            after its prediction. Both gates ran with this entry in place, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing owed by this repair. A page waiting on a night's write keeps the driver's thirty
+            seconds, which is the screens' question, in the session the operator has put them to.

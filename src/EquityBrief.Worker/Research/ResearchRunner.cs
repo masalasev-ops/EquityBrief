@@ -5,6 +5,7 @@ using EquityBrief.Core.Facts;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using EquityBrief.Worker.Facts;
 using Microsoft.Data.Sqlite;
 
@@ -219,7 +220,7 @@ public sealed class ResearchRunner(
         var startedAt = clock.UtcNow;
         var asOf = clock.SessionDateAt(startedAt);
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         // One pass a name at a time. A second press while a pass runs is refused by
@@ -422,12 +423,21 @@ public sealed class ResearchRunner(
         // see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
         var company = facts.FirstOrDefault(fact => fact.Name == FactsAssembler.CompanyName)?.Value;
 
-        for (var index = 0; index < intake.Rows.Count; index++)
+        // Every document the pass fetched is stored in one write. Stored one to a write,
+        // each costs a disk sync, and a pass's thousands of them hold the store for minutes
+        // on a spinning disk and leave another writer no turn.
+        // see: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
+        await using (var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation))
         {
-            evidence.Add(new EvidenceDocument(
-                await StoreAsync(connection, intake.Rows[index], cancellation),
-                fetched[index].Symbols,
-                Evidence.NamesTheCompany(intake.Rows[index].Title, ticker, company)));
+            for (var index = 0; index < intake.Rows.Count; index++)
+            {
+                evidence.Add(new EvidenceDocument(
+                    await StoreAsync(connection, transaction, intake.Rows[index], cancellation),
+                    fetched[index].Symbols,
+                    Evidence.NamesTheCompany(intake.Rows[index].Title, ticker, company)));
+            }
+
+            await transaction.CommitAsync(cancellation);
         }
 
         var handed = Evidence.ForSections(facts, evidence, ownFiling);
@@ -804,10 +814,11 @@ public sealed class ResearchRunner(
             documents,
         });
 
-    async Task<StoredDocument> StoreAsync(SqliteConnection connection, StoredDocument row, CancellationToken cancellation)
+    async Task<StoredDocument> StoreAsync(SqliteConnection connection, SqliteTransaction transaction, StoredDocument row, CancellationToken cancellation)
     {
         await using (var insert = connection.CreateCommand())
         {
+            insert.Transaction = transaction;
             insert.CommandText = InsertDocument;
             insert.Parameters.AddWithValue("$id", row.Id);
             insert.Parameters.AddWithValue("$url", row.Url);
@@ -824,6 +835,7 @@ public sealed class ResearchRunner(
         // fetched where an earlier pass stored it, and this pass's where it did not.
         await using var read = connection.CreateCommand();
 
+        read.Transaction = transaction;
         read.CommandText = StoredDocument;
         read.Parameters.AddWithValue("$id", row.Id);
 

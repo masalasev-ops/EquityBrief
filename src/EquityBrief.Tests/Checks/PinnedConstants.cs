@@ -11,6 +11,7 @@ using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Swings;
 using EquityBrief.Core.Volume;
+using EquityBrief.Data;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Research;
@@ -86,6 +87,7 @@ public class PinnedConstants
             new(Retry, "4", (decimal)RetryPolicy.Standard.WaitBefore(3).TotalSeconds, "the wait before the third attempt"),
             new(Retry, "30", (decimal)RetryPolicy.Standard.Timeout.TotalSeconds, "RetryPolicy.Standard.Timeout in seconds"),
             new(Retry, "15", (decimal)RetryPolicy.Standard.Deadline.TotalMinutes, "RetryPolicy.Standard.Deadline in minutes"),
+            new("Waiting on another writer", "600", StoreConnection.WaitSeconds, "StoreConnection.WaitSeconds"),
             new(Budget, "100,000", ProviderWeights.DailyAllowance, "ProviderWeights.DailyAllowance"),
             new(Budget, "100", ProviderWeights.BulkEndOfDay, "ProviderWeights.BulkEndOfDay"),
             new(Budget, "1", ProviderWeights.HistoricalPerTicker, "ProviderWeights.HistoricalPerTicker"),

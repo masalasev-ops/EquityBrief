@@ -24,8 +24,7 @@ public sealed class MigrationRunner
 
     public static MigrationRunner Standard() => new(SchemaMigrations.All);
 
-    public static string ConnectionStringFor(string databaseFile) =>
-        new SqliteConnectionStringBuilder { DataSource = databaseFile }.ConnectionString;
+    public static string ConnectionStringFor(string databaseFile) => StoreConnection.For(databaseFile);
 
     public MigrationOutcome Apply(string databaseFile)
     {

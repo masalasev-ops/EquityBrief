@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.News;
@@ -99,7 +100,7 @@ public sealed class NewsPulseCounter : IComponent
         var articles = await feed.ArticlesAsync(sessionDate, sessionDate, cancellation);
         var byName = NewsAttribution.ByName(articles);
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var members = await MembersAsync(connection, indexCode, sessionDate, cancellation);

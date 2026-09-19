@@ -5,6 +5,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Facts;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using EquityBrief.Worker.Fundamentals;
 using Microsoft.Data.Sqlite;
 
@@ -256,7 +257,7 @@ public sealed class FactsAssembler : IComponent
     {
         var startedAt = clock.UtcNow;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var tickers = await TickersAsync(connection, cancellation);

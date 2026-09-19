@@ -1,14 +1,20 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
+using EquityBrief.Data.Migrations;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Rules;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
@@ -60,6 +66,11 @@ public class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Build the levels for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Classify the trend state and build the ladder for every name, writing a row whether or not it carries a tranche (see: A ladder row is written for every index member every night) (see: The trend classifier returns its label to the ladder builder)."),
             CheckReach.Key(Scope.LimitsTable, "Per-request timeout and the night's deadline"),
+
+            // 6.8's correction: every connection the worker opens waits for another writer,
+            // and a pass stores what it fetched in one write, so a pass beside the night
+            // leaves the night's writes a turn.
+            CheckReach.Key(Scope.LimitsTable, "Waiting on another writer"),
 
             // 6.10, the overnight queue, run last and after the close.
             CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for listed names whose research is missing or stale, in priority order, until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about)."),
@@ -192,6 +203,175 @@ public class NightlyRun
         // And the population is the index the fetch returned rather than the
         // literal 500, which is the other half of the row's own claim.
         Assert.Contains("rather than as the literal 500", wallClock, StringComparison.Ordinal);
+    }
+
+    // Section 17's row on waiting for another writer, read rather than repeated. A connection
+    // the worker or the store opens carries the wait wherever the file opening it writes no
+    // connection string of its own, and the files that do are the sources a rule's version
+    // pins, read from the two pin lists rather than named here.
+    // see: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
+    [Fact]
+    public async Task EveryConnectionTheWorkerOpensOutsideAPinnedSourceWaitsAsLongAsTheLimitsRowSays()
+    {
+        var document = Corpus.Read("docs/ARCHITECTURE.html");
+        var at = document.IndexOf("<td>Waiting on another writer</td>", StringComparison.Ordinal);
+
+        Assert.True(at >= 0, "Section 17 no longer carries the row on waiting for another writer.");
+
+        var descriptionStart = document.IndexOf("<td>", at + 1, StringComparison.Ordinal);
+        var description = document[descriptionStart..document.IndexOf("</td>", descriptionStart, StringComparison.Ordinal)];
+
+        Assert.Contains($"waits up to {StoreConnection.WaitSeconds} seconds", description, StringComparison.Ordinal);
+
+        using (var connection = new SqliteConnection(StoreConnection.For("store.db")))
+        {
+            Assert.Equal(StoreConnection.WaitSeconds, connection.DefaultTimeout);
+        }
+
+        // The wait is the connection's default timeout, which the driver holds a statement to while
+        // another writer has the store: one allowed a second is refused on a write held longer, and
+        // one the helper opens is still waiting when that write ends, and then writes.
+        using (var store = new TemporaryStore().Migrated())
+        {
+            using var holder = new SqliteConnection(StoreConnection.For(store.DatabaseFile));
+            holder.Open();
+            Write(holder, "CREATE TABLE waited (n INTEGER);");
+
+            using (var held = holder.BeginTransaction())
+            {
+                Write(holder, "INSERT INTO waited VALUES (1);", held);
+
+                var brief = StoreConnection.Builder(store.DatabaseFile);
+                brief.DefaultTimeout = 1;
+
+                using (var impatient = new SqliteConnection(brief.ConnectionString))
+                {
+                    impatient.Open();
+
+                    Assert.Contains(
+                        "database is locked",
+                        Assert.Throws<SqliteException>(() => Write(impatient, "INSERT INTO waited VALUES (2);")).Message,
+                        StringComparison.Ordinal);
+                }
+
+                var patient = Task.Run(() =>
+                {
+                    using var waiting = new SqliteConnection(StoreConnection.For(store.DatabaseFile));
+                    waiting.Open();
+                    Write(waiting, "INSERT INTO waited VALUES (3);");
+                });
+
+                await Task.Delay(TimeSpan.FromSeconds(1));
+
+                Assert.False(patient.IsCompleted, "A connection the helper opened did not wait for the write another held.");
+
+                held.Commit();
+                await patient;
+            }
+
+            using var read = holder.CreateCommand();
+            read.CommandText = "SELECT group_concat(n) FROM (SELECT n FROM waited ORDER BY n);";
+
+            Assert.Equal("1,3", read.ExecuteScalar());
+        }
+
+        var separator = Path.DirectorySeparatorChar;
+        var sources = Repository.SourceFiles()
+            .Where(file => file.Contains($"{separator}EquityBrief.Worker{separator}", StringComparison.Ordinal)
+                || file.Contains($"{separator}EquityBrief.Data{separator}", StringComparison.Ordinal))
+            .ToDictionary(file => file, file => SourceStatements.WithoutComments(File.ReadAllText(file)), StringComparer.Ordinal);
+        var opening = sources.Count(source => source.Value.Contains("new SqliteConnection(", StringComparison.Ordinal));
+
+        // Scope, as floors below the counts when this was written: the files the two projects
+        // hold, and those among them opening a connection.
+        Assert.True(sources.Count >= 40, $"Read {sources.Count} source files in the worker and the store, expected at least 40.");
+        Assert.True(opening >= 25, $"Read {opening} files opening a connection, expected at least 25.");
+
+        var pinned = RuleVersionScorer.CodeVersionSources
+            .Concat(CandidateEvaluator.EvaluationSources)
+            .Select(source => Path.GetFullPath(Path.Combine(Repository.Root, source)))
+            .ToHashSet(StringComparer.Ordinal);
+        var ownString = sources
+            .Where(source => Path.GetFileName(source.Key) != nameof(StoreConnection) + ".cs")
+            .Where(source => source.Value.Contains("Data Source=", StringComparison.Ordinal)
+                || source.Value.Contains("SqliteConnectionStringBuilder", StringComparison.Ordinal))
+            .Select(source => Path.GetFullPath(source.Key))
+            .ToArray();
+
+        Assert.Empty(ownString.Where(file => !pinned.Contains(file)).Select(Path.GetFileName));
+    }
+
+    // The row's second clause, over a store refusing the fifth document a pass stores. One
+    // write keeps none of them, where a write a document would leave the four before it.
+    [Fact]
+    public async Task APassStoresTheDocumentsItFetchedInOneWriteSoARefusalPartwayKeepsNone()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        RefuseADocument(store, 5);
+
+        var refused = await Assert.ThrowsAsync<SqliteException>(() => FixtureReplay
+            .Researcher(store, FixedClock.At(Night, SessionZones.UnitedStates), search: new FixtureExpectations.NoResults())
+            .RunAsync("KEYS", "research-one-write"));
+
+        Assert.Contains(DocumentRefused, refused.Message, StringComparison.Ordinal);
+        Assert.Equal(0L, Documents(store));
+    }
+
+    // And a theme pass, over the recorded theme's pages.
+    [Fact]
+    public async Task AThemePassStoresThePagesItFetchedInOneWriteSoARefusalPartwayKeepsNone()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var clock = FixedClock.At(Night, SessionZones.UnitedStates);
+        var cap = new SpendCap(new RecordedResearchModelFeed(FixtureFolder(), Providers.ResearchModelFeedTests.Shipped()), SpendCaps.Default, clock, store.DatabaseFile);
+
+        RefuseADocument(store, 3);
+
+        var refused = await Assert.ThrowsAsync<SqliteException>(() => FixtureReplay
+            .Themer(store, clock, cap, new ClaimChecker(clock, store.DatabaseFile))
+            .RunAsync(FixtureReplay.RecordedTheme, "theme-one-write"));
+
+        Assert.Contains(DocumentRefused, refused.Message, StringComparison.Ordinal);
+        Assert.Equal(0L, Documents(store));
+    }
+
+    static void Write(SqliteConnection connection, string sql, SqliteTransaction? transaction = null)
+    {
+        using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = sql;
+        command.ExecuteNonQuery();
+    }
+
+    const string DocumentRefused = "the store refused a document";
+
+    // A store refusing the nth document it is asked to take, counting the ones it holds, which
+    // inside a write include the ones that write has taken so far.
+    static void RefuseADocument(TemporaryStore store, int nth)
+    {
+        using var connection = new SqliteConnection(MigrationRunner.ConnectionStringFor(store.DatabaseFile));
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+
+        command.CommandText = FormattableString.Invariant(
+            $"CREATE TRIGGER refuse_a_document BEFORE INSERT ON source_document WHEN (SELECT COUNT(*) FROM source_document) >= {nth - 1} BEGIN SELECT RAISE(ABORT, '{DocumentRefused}'); END;");
+        command.ExecuteNonQuery();
+    }
+
+    static long Documents(TemporaryStore store)
+    {
+        using var connection = new SqliteConnection(MigrationRunner.ConnectionStringFor(store.DatabaseFile));
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT COUNT(*) FROM source_document;";
+
+        return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture);
     }
 
     // A payload that arrives and is wrong, in the two shapes section 18 now

@@ -4,6 +4,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Research;
@@ -134,7 +135,7 @@ public sealed class ThemeResearchRunner(
         var asOf = clock.SessionDateAt(startedAt);
         var requestsBefore = search.Requests + cap.Probes;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         // One pass a theme at a time, for the per-name runner's reason: two members of one
@@ -200,9 +201,16 @@ public sealed class ThemeResearchRunner(
 
         var stored = new List<StoredDocument>();
 
-        foreach (var row in documents.Rows)
+        // Stored in one write, as a name's pass stores its documents.
+        // see: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
+        await using (var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation))
         {
-            stored.Add(await StoreAsync(connection, row, cancellation));
+            foreach (var row in documents.Rows)
+            {
+                stored.Add(await StoreAsync(connection, transaction, row, cancellation));
+            }
+
+            await transaction.CommitAsync(cancellation);
         }
 
         var written = new List<WrittenSection>();
@@ -394,10 +402,11 @@ public sealed class ThemeResearchRunner(
             documents,
         });
 
-    async Task<StoredDocument> StoreAsync(SqliteConnection connection, StoredDocument row, CancellationToken cancellation)
+    async Task<StoredDocument> StoreAsync(SqliteConnection connection, SqliteTransaction transaction, StoredDocument row, CancellationToken cancellation)
     {
         await using (var insert = connection.CreateCommand())
         {
+            insert.Transaction = transaction;
             insert.CommandText = InsertDocument;
             insert.Parameters.AddWithValue("$id", row.Id);
             insert.Parameters.AddWithValue("$url", row.Url);
@@ -414,6 +423,7 @@ public sealed class ThemeResearchRunner(
         // fetched where an earlier pass stored it.
         await using var read = connection.CreateCommand();
 
+        read.Transaction = transaction;
         read.CommandText = StoredDocument;
         read.Parameters.AddWithValue("$id", row.Id);
 

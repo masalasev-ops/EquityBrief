@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Facts;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Facts;
@@ -130,7 +131,7 @@ public sealed class ChangeDetector : IComponent
     {
         var startedAt = clock.UtcNow;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var pairs = new List<(string Ticker, string SessionDate, string Payload, string? Previous, string? Stored)>();

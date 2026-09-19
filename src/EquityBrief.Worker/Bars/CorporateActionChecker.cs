@@ -194,7 +194,7 @@ public sealed class CorporateActionChecker : IComponent
         var session = clock.SessionDateAt(started);
         var observed = started.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync();
 
         var members = await MembersAsync(connection, indexCode, session);
