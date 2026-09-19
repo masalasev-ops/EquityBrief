@@ -135,7 +135,10 @@ public sealed record UniverseCell(
     bool EventBeyondTheTable = false,
     // The company's name as the membership row holds it, drawn under the ticker, and
     // null for a row that carries none.
-    string? Name = null);
+    string? Name = null,
+    // The day the name's newest researched section was written, drawn under its name, and
+    // null for a name holding none.
+    DateOnly? Researched = null);
 
 // One of a name's biggest moves, as the table is given it. `Cause` is the text of
 // the accepted cause section that names this move, and null where no sentence of
@@ -459,7 +462,7 @@ public sealed class MarkRenderer : IComponent
     // A price as a picture prints it, to two places with a thousands separator. The stored value
     // stays whole on the mark's own data attributes, which is where anything reading the mark
     // takes it from.
-    static string Price(decimal value) => value.ToString("#,##0.00", Invariant);
+    static string Price(decimal value) => Figures.Price(value);
 
     // Five places, and below them the bound a tail lies under, since no tail over setups that can
     // lose is zero.
@@ -735,7 +738,8 @@ public sealed class MarkRenderer : IComponent
     }
 
     // The tranche table and the exit table, which are what the plan column's
-    // figure is read beside. Every cell is a stored value.
+    // figure is read beside. Every cell is a stored value, drawn at the places it
+    // is read at with the stored edges on its row.
     public string PlanTables(string ticker, IReadOnlyList<PlanRow> rows)
     {
         var tranches = rows.Where(row => row.Kind == PlanKind.Tranche).ToArray();
@@ -748,7 +752,7 @@ public sealed class MarkRenderer : IComponent
 
         foreach (var row in tranches)
         {
-            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\"><td>{row.LowEdge} to {row.HighEdge}</td>");
+            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\"><td class=\"num\">{Zone(row)}</td>");
             html.Append(Invariant, $"<td>{Escaped(row.Detail)}</td></tr>");
         }
 
@@ -759,8 +763,8 @@ public sealed class MarkRenderer : IComponent
 
         foreach (var row in exits)
         {
-            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-traded=\"{(row.Traded ? "true" : "false")}\">");
-            html.Append(Invariant, $"<td>{row.LowEdge} to {row.HighEdge}</td><td>{Escaped(row.Detail)}</td></tr>");
+            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\" data-traded=\"{(row.Traded ? "true" : "false")}\">");
+            html.Append(Invariant, $"<td class=\"num\">{Zone(row)}</td><td>{Escaped(row.Detail)}</td></tr>");
         }
 
         html.Append("</table>");
@@ -1083,12 +1087,12 @@ public sealed class MarkRenderer : IComponent
             // A band of one price is written as one price rather than as a range
             // from a number to itself, because the second reads as a mistake.
             var edges = band.LowEdge == band.HighEdge
-                ? band.LowEdge.ToString(Invariant)
-                : $"{band.LowEdge.ToString(Invariant)} to {band.HighEdge.ToString(Invariant)}";
+                ? Price(band.LowEdge)
+                : $"{Price(band.LowEdge)} to {Price(band.HighEdge)}";
 
             var role = band.Immediate ? $"{band.Role}, immediate" : band.Role;
 
-            table.Append(Invariant, $"<tr class=\"band\" data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" ");
+            table.Append(Invariant, $"<tr class=\"band\" data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" data-high-edge=\"{band.HighEdge.ToString(Invariant)}\" ");
             table.Append(Invariant, $"data-role=\"{Escaped(band.Role)}\" data-immediate=\"{(band.Immediate ? 1 : 0)}\" ");
             table.Append(Invariant, $"data-members=\"{band.Members.Count}\" data-anchored=\"{(band.HasNonAverageAnchor ? 1 : 0)}\">");
             table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td><td>{band.Strength}</td><td>");
@@ -1104,8 +1108,8 @@ public sealed class MarkRenderer : IComponent
 
             foreach (var member in band.Members)
             {
-                table.Append(Invariant, $"<li class=\"member\" data-kind=\"{Escaped(member.Kind)}\" data-date=\"{member.Date:yyyy-MM-dd}\">");
-                table.Append(Invariant, $"{Escaped(member.Kind)} at {member.Price.ToString(Invariant)} on {member.Date:yyyy-MM-dd}</li>");
+                table.Append(Invariant, $"<li class=\"member\" data-kind=\"{Escaped(member.Kind)}\" data-date=\"{member.Date:yyyy-MM-dd}\" data-price=\"{member.Price.ToString(Invariant)}\">");
+                table.Append(Invariant, $"{Escaped(member.Kind)} at {Price(member.Price)} on {member.Date:yyyy-MM-dd}</li>");
             }
 
             table.Append(band.Members.Count > 0 ? "</ul></details></td></tr>" : "</ul></td></tr>");
@@ -1581,7 +1585,7 @@ public sealed class MarkRenderer : IComponent
             why.Append(Invariant, $"<p class=\"reason\" data-reason=\"{Escaped(reason.Name)}\">");
             why.Append(Invariant, $"{Escaped(Sentence(reason.Name))}");
             why.Append(Invariant, $" <span class=\"values\" data-values=\"{Escaped(string.Join(", ", reason.Values.Select(value => $"{value.Key} {value.Value}")))}\">");
-            why.Append(Invariant, $"{Escaped(string.Join(", ", reason.Values.Select(value => $"{value.Key} {value.Value}")))}</span></p>");
+            why.Append(Invariant, $"{Escaped(string.Join(", ", reason.Values.Select(value => $"{value.Key} {Figures.Read(value.Value)}")))}</span></p>");
         }
 
         why.Append("</section>");
@@ -3171,15 +3175,17 @@ public sealed class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-sector=\"{Escaped(row.Sector)}\" ");
             table.Append(Invariant, $"data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\">");
 
-            // The ticker is the way to the name's page, with the company's name beneath it.
+            // The ticker is the way to the name's page, with the company's name beneath it and
+            // the day its research was written where it holds any.
             table.Append(Invariant, $"<td class=\"c-nm\"><a class=\"tk\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
-            table.Append(row.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
+            table.Append(row.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty);
+            table.Append(row.Researched is { } written
+                ? $"<span class=\"researched-on\" data-researched=\"{written.ToString("yyyy-MM-dd", Invariant)}\">researched {written.ToString("yyyy-MM-dd", Invariant)}</span></td>"
+                : "</td>");
             table.Append(Formatted($"<td>{Escaped(row.Sector)}</td>"));
-            // The close, interpolated with the provider rather than converted
-            // through the storage helper, which lives in the project that
-            // stores things and is not one this project references. A name the
-            // night computed nothing for says so rather than showing a zero.
-            table.Append(Invariant, $"<td>{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
+            // The close, drawn at the places a price is read at with the stored value on the
+            // cell. A name the night computed nothing for says so rather than showing a zero.
+            table.Append(Invariant, $"<td class=\"num\" data-close=\"{(row.Close is { } held ? held.ToString(Invariant) : "none")}\">{(row.Close is { } close ? Price(close) : "not computed")}</td>");
             table.Append(Formatted(
                 $"<td>{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>"));
             table.Append(Formatted($"<td>{DistanceRow(row)}</td>"));

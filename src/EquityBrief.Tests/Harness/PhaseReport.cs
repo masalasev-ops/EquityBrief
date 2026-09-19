@@ -190,10 +190,6 @@ internal static class PhaseReport
             Check: "architecture-conformance"),
         ["20. Build phases, each with its visible output"] = new Placement(
             "the plan, held by BUILD_PLAN.md and recorded against by PROGRESS.md"),
-        ["Settled since the version above"] = new Placement(
-            "a record of decisions taken, not a claim about code"),
-        ["23. Changelog"] = new Placement(
-            "a record, not a claim about code"),
     };
 
     // The figures, placed on the same terms as the tables.

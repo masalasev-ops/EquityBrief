@@ -538,6 +538,24 @@ app.MapGet("/screens/universe", async (
         "text/html; charset=utf-8");
 });
 
+// The masthead search's list, section 15.13: every current member of the index by its
+// ticker, with its company's name and the day its research was written.
+app.MapGet("/screens/find", async (ReadApi read, SinglePageApp page) =>
+{
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+    var names = await read.FindableAsync(index, await read.NewestNightAsync());
+
+    return Results.Content(
+        page.FindOptions([.. names.Select(name => new Findable(name.Ticker, name.Name, name.Researched))]),
+        "text/html; charset=utf-8");
+});
+
+// The researched names, section 15.8's researched region on a route of its own.
+app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>
+    Results.Content(
+        page.ResearchedRegion([.. (await read.ResearchedAsync()).Select(row => new ResearchedCell(row.Ticker, row.Name, row.Sector, row.Written, row.Sections))]),
+        "text/html; charset=utf-8"));
+
 // The run page, section 15.10, read here and composed by the app.
 //
 // `/screens/run` resolves to the newest night the run log holds and

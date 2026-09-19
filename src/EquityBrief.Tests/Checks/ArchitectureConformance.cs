@@ -1313,8 +1313,9 @@ public partial class ArchitectureConformance
         // phase 6's. A run finding none would otherwise pass both directions
         // over an empty set.
         // 42 from 41 at the 7.0 ruling, which added the name screen's line for a name whose
-        // stored series is suspect.
-        Assert.Equal(42, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // stored series is suspect. 43 at the 5.8 correction that listed the names holding
+        // research on the universe screen.
+        Assert.Equal(43, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1340,7 +1341,9 @@ public partial class ArchitectureConformance
         // 127 at 8.5, section 15.11's "at or above the minimum" row decomposed into
         // the three figures it names and the claim that they arrive together: one
         // leaves and four arrive.
-        Assert.Equal(127, inDocument.Length);
+        // 128 at the 5.8 correction that listed the names holding research, one row and one
+        // claim.
+        Assert.Equal(128, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
