@@ -2436,7 +2436,7 @@ public sealed class MarkRenderer : IComponent
     // [D2] is checkable only where [D2] says which document it is.
     // see: A research record is written and dated per section, not as a whole
     // see: Every researched claim must name a stored source document
-    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents)
+    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on")
     {
         var drawn = new StringBuilder();
 
@@ -2449,7 +2449,7 @@ public sealed class MarkRenderer : IComponent
             drawn.Append("<p class=\"prose\">").Append(Escaped(paragraph)).Append("</p>");
         }
 
-        drawn.Append(Invariant, $"<p class=\"written-by\">written on {section.AsOf:yyyy-MM-dd} by {Escaped(section.Model)}</p>");
+        drawn.Append(Invariant, $"<p class=\"written-by\">{Escaped(dated)} {section.AsOf:yyyy-MM-dd} by {Escaped(section.Model)}</p>");
 
         if (section.SourceIds.Count > 0)
         {
@@ -2472,6 +2472,17 @@ public sealed class MarkRenderer : IComponent
 
         return drawn.ToString();
     }
+
+    // Where the key under each figure would be, when the one on file explains another
+    // night's figures than the page draws: which night it was written for, and why it is
+    // not drawn beside these.
+    // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+    public string KeyForAnotherNight(string ticker, string section, DateOnly writtenFor, DateOnly? session) =>
+        FormattableString.Invariant($"<p class=\"key-elsewhere\" data-ticker=\"{Escaped(ticker)}\" data-section=\"{Escaped(section)}\" data-written-for=\"{writtenFor:yyyy-MM-dd}\">")
+        + (session is { } on
+            ? FormattableString.Invariant($"Not drawn: the newest key explains the figures of {writtenFor:yyyy-MM-dd}, and the figures on this page are {on:yyyy-MM-dd}'s.")
+            : FormattableString.Invariant($"Not drawn: the newest key explains the figures of {writtenFor:yyyy-MM-dd}, and no session is stored for this name."))
+        + "</p>";
 
     // Dates and sources, section 15.9's region and section 4's last two sections: the
     // calendar, the dated items a pass read out of the documents, and every document the

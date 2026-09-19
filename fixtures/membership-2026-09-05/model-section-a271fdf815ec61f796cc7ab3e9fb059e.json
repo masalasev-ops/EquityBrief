@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-bocyxa9irvqqcthp50v0n",
+  "object": "chat.completion",
+  "created": 1789825518,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock for Keysight Technologies Inc closed at 333.42, trading above the 20-day average of 330.47 and the 50-day average of 326.21 while remaining below the immediate resistance high edge of 366.41. Technical indicators show a 14-day relative strength index of 54.21 and a MACD value of -1.45 with a histogram of 0.39, suggesting mixed momentum near the current session high of 333.82 and low of 325.75. The company is in an uptrend state supported by immediate support edges at 332.78 and 300.87, with recent significant moves including a 28.62 percent increase measured from 2026-02-17 and a session volume of 1.02 million shares.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 996,
+    "completion_tokens": 202,
+    "total_tokens": 1198,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

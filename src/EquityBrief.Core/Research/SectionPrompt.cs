@@ -75,8 +75,12 @@ public static class SectionPrompt
             "Say what the company sells and to whom, in two to four sentences, using only the documents listed.",
         ["The segment commentary"] =
             "Write one sentence for each business segment whose figures are listed, saying what that segment reported for the quarter, using only the segment facts listed.",
+        // Handed its facts as a reader reads them and asked to copy them, because asked to
+        // round them the model cut digits off, and asked nothing it copied six places.
+        // see: The key under each figure is handed its facts as a reader reads them, rounded by code
         ["The key under each figure"] =
-            "In three to five sentences, say what the close, the averages, the latest quarter and the valuation listed in the facts show, for a reader who has not seen the figures.",
+            "In three to five sentences, say what the close, the averages, the latest quarter and the valuation listed in the facts show, for a reader who has not seen the figures. "
+            + "Write every number in digits. Each figure listed is already rounded, so copy it and its name as they are listed. Write no figure you work out yourself.",
         // Asked with no figure and no full date, because a theme has no facts file and every
         // figure in a theme section is refused: which way the industry's prices are moving
         // and why, in words, each sentence resting on a document.
@@ -180,8 +184,12 @@ public static class SectionPrompt
 
         prompt.Append("Facts:\n");
 
-        foreach (var fact in facts)
+        var read = string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal);
+
+        foreach (var stored in facts)
         {
+            var fact = read ? FactReading.Read(stored) : stored;
+
             prompt.Append("- ").Append(fact.Name).Append(" = ").Append(fact.Value).Append('\n');
         }
 

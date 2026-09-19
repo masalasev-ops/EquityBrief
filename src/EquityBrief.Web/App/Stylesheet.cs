@@ -234,6 +234,7 @@ p.trend-state{display:inline-block;margin:0 0 4px;font:600 11.5px var(--sans);bo
 .written-section .prose{max-width:66ch;margin:0 0 10px}
 .card.spined[data-section='The short version'] .prose{font:19px/1.55 var(--serif);max-width:60ch}
 .written-by{margin-top:10px;font-size:12.5px;color:var(--soft)}
+.key-elsewhere{font-size:13.5px;color:var(--soft)}
 .section-sources,.sources{margin:10px 0 0;padding-left:20px;font-size:13px;color:var(--ink-2)}
 .section-sources li,.sources li{margin:3px 0}
 .research p{margin:0 0 8px}

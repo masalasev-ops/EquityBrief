@@ -50,7 +50,7 @@ public partial class FixtureExpectations
     // ---- what the queue writes ----
 
     [Fact]
-    public async Task TheQueueWritesTheListedNamesDraftsInOrderOfReasonsFiredAndSpendsNothing()
+    public async Task TheQueueWritesEveryNamesKeyTheListedFirstInOrderOfReasonsFiredAndSpendsNothing()
     {
         var expected = Expected("overnight-queue");
         var events = new List<string>();
@@ -141,9 +141,10 @@ public partial class FixtureExpectations
         // the order of reasons fired and the order of tickers are one order there and a queue
         // reading either passed, which 6.10's sweep showed. Over a copy of that night two
         // listings are changed: NFLX firing three reasons, which puts it first where its ticker
-        // puts it last, and KEYS firing none, which takes it off tonight's list. Until the 5.4
-        // correction AAPL fired two, earnings soon among them, and NFLX one, earnings soon
-        // alone, each on a count of 0 read off stored bars the night did not hold.
+        // puts it last, and KEYS firing none, which takes it off tonight's list and puts it
+        // after every name that fired. Until the 5.4 correction AAPL fired two, earnings soon
+        // among them, and NFLX one, earnings soon alone, each on a count of 0 read off stored
+        // bars the night did not hold.
         var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = new NothingAnsweringLocal() });
 
         using var store = night.Store;
@@ -172,9 +173,8 @@ public partial class FixtureExpectations
             store.DatabaseFile).RunAsync("reordered", new DateOnly(2026, 9, 8));
 
         Assert.Equal(["NFLX", "AAPL", "MSFT"], reordered.Listed);
-        Assert.Equal(["NFLX", "AAPL", "MSFT"], reordered.Queued);
-        Assert.Equal(["NFLX", "AAPL", "MSFT"], reordered.Completed.Select(pass => pass.Ticker));
-        Assert.DoesNotContain("KEYS", Query(store, "SELECT DISTINCT ticker FROM research_section;"));
+        Assert.Equal(["NFLX", "AAPL", "MSFT", "KEYS"], reordered.Queued);
+        Assert.Equal(["NFLX", "AAPL", "MSFT", "KEYS"], reordered.Completed.Select(pass => pass.Ticker));
     }
 
     // A local runtime answering one name's first draft with a figure no facts file holds and its
@@ -239,8 +239,8 @@ public partial class FixtureExpectations
         // The other name's draft was checked by the queue's first pass, and refused.
         Assert.Equal([ClaimChecker.Rejected], Query(store, "SELECT status FROM research_section WHERE ticker = 'ORCL';"));
 
-        Assert.Equal(["AAPL", "KEYS", "MSFT"], outcome.Completed.Select(pass => pass.Ticker));
-        Assert.Equal([1, 1, 2], outcome.Completed.Select(pass => pass.ModelCalls));
+        Assert.Equal(["AAPL", "KEYS", "MSFT", "NFLX"], outcome.Completed.Select(pass => pass.Ticker));
+        Assert.Equal([1, 1, 2, 1], outcome.Completed.Select(pass => pass.ModelCalls));
 
         var secondRound = ProseWriter.StageFor(ResearchRunner.SecondRound);
 
@@ -287,16 +287,15 @@ public partial class FixtureExpectations
     public async Task ABusyNightLeavesNamesForTheNextNightAtTheBoundaryEitherSide()
     {
         // Every call moves the clock on a minute, so AAPL's pass ends at one minute, KEYS's
-        // at two and MSFT's two calls at four. A limit of one minute is reached as KEYS's
-        // pass would start, so KEYS and MSFT are left; a limit a tick past one minute lets
-        // KEYS's pass start inside it and run to its end, and MSFT, whose turn comes at two,
-        // is left. A limit a tick past two minutes lets MSFT's pass start inside it and run
-        // past it to its end, both of its calls.
+        // at two, MSFT's two calls at four and NFLX's at five. A limit of one minute is
+        // reached as KEYS's pass would start, so KEYS, MSFT and NFLX are left; a limit a tick
+        // past one minute lets KEYS's pass start inside it and run to its end, and MSFT, whose
+        // turn comes at two, is left with NFLX. A limit a tick past two minutes lets MSFT's
+        // pass start inside it and run past it to its end, both of its calls, and NFLX, whose
+        // turn comes at four, is left.
         //
-        // Three names since the 5.4 correction. NFLX fired earnings soon alone on the
-        // fixture's night, on a count of 0 read off the stored bars after it, and its print
-        // is thirty sessions out, so it fires nothing, is not listed and is not queued. The
-        // boundaries this test named at MSFT and NFLX moved one name earlier with it.
+        // NFLX fires nothing on the fixture's night and is queued after the names that did,
+        // because the queue writes every name's key.
         var step = TimeSpan.FromMinutes(1);
 
         async Task<QueueOutcome> WithLimit(TimeSpan limit)
@@ -331,13 +330,13 @@ public partial class FixtureExpectations
 
         Assert.Equal(OvernightQueue.StoppedAtItsLimit, at.Outcome);
         Assert.Equal(["AAPL"], at.Completed.Select(pass => pass.Ticker));
-        Assert.Equal(["KEYS", "MSFT"], at.Left);
+        Assert.Equal(["KEYS", "MSFT", "NFLX"], at.Left);
 
         var inside = await WithLimit(step + TimeSpan.FromTicks(1));
 
         Assert.Equal(OvernightQueue.StoppedAtItsLimit, inside.Outcome);
         Assert.Equal(["AAPL", "KEYS"], inside.Completed.Select(pass => pass.Ticker));
-        Assert.Equal(["MSFT"], inside.Left);
+        Assert.Equal(["MSFT", "NFLX"], inside.Left);
 
         // A pass that started inside the limit runs past it to its end, both of its calls: MSFT's
         // first draft is answered with a figure no facts file holds, so its pass asks twice.
@@ -346,6 +345,7 @@ public partial class FixtureExpectations
         Assert.Equal(["AAPL", "KEYS", "MSFT"], past.Completed.Select(pass => pass.Ticker));
         Assert.Equal(2, past.Completed[^1].ModelCalls);
         Assert.Equal((step * 2).TotalSeconds, past.Completed[^1].Seconds);
+        Assert.Equal(["NFLX"], past.Left);
 
         // And a limit that covers every pass leaves nothing.
         var covering = await WithLimit(step * 4 + TimeSpan.FromTicks(1));

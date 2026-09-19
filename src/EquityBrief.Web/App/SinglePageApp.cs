@@ -366,6 +366,24 @@ public sealed class SinglePageApp : IComponent
                     continue;
                 }
 
+                // The key under each figure is dated by the night whose figures it explains,
+                // so it is drawn only beside that night's, and elsewhere the card says which
+                // night it was written for.
+                // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+                if (UnderTheFigures.Contains(name, StringComparer.Ordinal))
+                {
+                    region.Append(Cards.Dated(
+                        name,
+                        KeyDated,
+                        section.AsOf,
+                        section.AsOf == session
+                            ? marks.WrittenSection(ticker, section, documents, dated: "written for the close of")
+                            : marks.KeyForAnotherNight(ticker, name, section.AsOf, session),
+                        section: name));
+
+                    continue;
+                }
+
                 region.Append(Cards.Dated(
                     name,
                     "Written",
@@ -596,6 +614,10 @@ public sealed class SinglePageApp : IComponent
     public static readonly string[] BeforeTheNumbers = ["What the company sells", "The segment commentary"];
     public static readonly string[] AfterTheNumbers = ["The industry cycle", "The two cases"];
     public static readonly string[] UnderTheFigures = ["The key under each figure"];
+
+    // What the key's card states its date as, which is the night whose figures it explains
+    // rather than the day it was written.
+    public const string KeyDated = "For the close of";
     public static readonly string[] AfterThePlan = ["The risks, each with what would confirm it"];
     public const string InTheDates = "The dated calendar items";
     public const string InTheMovesTable = "The cause of each large move";
@@ -719,7 +741,7 @@ public sealed class SinglePageApp : IComponent
 
         body.Append(Cards.Key(
             "What is listed.",
-            "Every name holding a section a research pass wrote and the claim checker accepted, newest first, with the day its newest section was written. The key under each figure is not counted, because the overnight queue writes it for every listed name each night.",
+            "Every name holding a section a research pass wrote and the claim checker accepted, newest first, with the day its newest section was written. The key under each figure is not counted, because the overnight queue writes it for every name in the index each night.",
             "A name here opens with its research in place. Any other name offers to write it on its own page, and the search box above finds any name in the index."));
 
         return Invariant($"<section class=\"researched\" data-names=\"{rows.Count}\">")

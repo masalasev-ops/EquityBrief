@@ -16515,3 +16515,100 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    nothing owed by this repair. The key under each figure still writes stored figures whole
             in its prose, which the claim checker accepts, and changing what the local model is
             asked is a change to the lane rather than to a screen.
+
+### 6.10 - correction: the key under each figure written for every name each night, dated by the night whose figures it explains and drawn only beside them, and handed its facts as a reader reads them   2026-09-19
+Corrects:   6.10 built the overnight queue over the names on tonight's list, and the 6.8 correction
+            of 2026-09-18 had it write the key under each figure again each night for those names
+            alone, while a name page drew whatever key the name held beside the night's figures,
+            dated by the day it was written. The key was handed the facts file as stored and asked
+            to round its figures itself.
+Found:      by the operator on 2026-09-19, reading pages over a copy of the store: keys under each
+            figure written for an earlier night, which they asked to have fixed and left the fix to
+            be worked out.
+Measured:   over that copy, read without a lock, after the night of 2026-09-18: 424 of the 503 names
+            held that night's key, 78 an earlier night's and one none. 70 of the 78 fired nothing
+            that night, so the queue never asked, and the checker refused both drafts of the other
+            eight. The queue's first drafts were refused for 51 names: figures cut off rather than
+            rounded, 271.9963 written as 271.99 and 8.996088 as 8.99, windows written in words or as
+            RSI-14, and figures the file does not hold; and 28 first drafts sampled among those
+            accepted carried 4.6 figures past two places a key. Asked again of the local model at
+            temperature 0 with that night's prompt, three of the 51 gave the same refusal, and with
+            the key as it is now handed, 50 of the 51 and all 28 were accepted on the first draft
+            with none past two places. NVDA, the one name whose facts carried a filing, was accepted
+            with its revenue written as 96.22 billion and its growth as 105.9 per cent, and the one
+            refused was Phillips 66, whose name carries a number. The queue's row for that night ran
+            224 passes in 21 minutes with their judging, 5.6 seconds a pass, which comes to 47
+            minutes for the 503, inside its hour.
+Repaired:   the overnight queue takes every name the night wrote a listing row for, the listed ones
+            first in order of reasons fired and the rest by ticker, and its row still names the
+            listed ones as listed. The prose writer dates the key's row by the night of the facts
+            file it was written from rather than by the day, and passes it over while that is the
+            newest file, saying so, so a pass on a later day with no newer file asks nothing. The
+            name page draws the key only where its night is the session the page's figures are from,
+            and anywhere else its card names the night it was written for and says it is not drawn.
+            The key is handed each fact as a reader reads it: the ten indicators named with their
+            window as days before them, money and counts of a million or more in millions, billions
+            or trillions with the word, a growth or a margin as a percentage to one place, anything
+            else past two places to two, and a reading the claim checker would not match to the
+            stored value handed as stored. Every other section is handed the file as stored.
+Stored:     the fixture's recordings of the key, asked again: 14 local answers from LM Studio
+            serving qwen/qwen3.5-9b in place of nine, the five more being KEYS's and NFLX's keys on
+            the two later nights and AAPL's on a night after a short catch-up, which the queue now
+            asks; and four answers from the paid model with the operator's yes, in place of three,
+            because the lane comparison asks the key the same prompt and the short version is
+            written from the key: the key and the short version in the comparison, and the short
+            version in the pass with the configured lanes, whose first draft the checker refused and
+            whose second it accepted. The four cost $0.0170 at the shipped rates, off peak. Every
+            recording no test asks for went with its manifest entry, twelve in all, as the token
+            test's both directions require.
+Missed:     every test of the queue read the listed names alone, since the fixture's fourth member
+            fired nothing; no test read the night a key was written for against the page's; and the
+            key's prompt was tested as a request the recordings answer, which a prompt handing raw
+            figures satisfies.
+Guarded:    the queue over a whole fixture night writing all four members' keys, NFLX, which fired
+            nothing, after the three that did; the order by reasons fired over a changed night with
+            the name that fired nothing queued last; the limit's boundaries moved by the fourth
+            pass, and the unavailable model leaving all four; a pass two days after the fixture's
+            night dating the key by the night and a pass the day after passing it over without a
+            call; a stale and a paused page each drawing the key's card naming the night it was
+            written for in place of the key; the rule worked by hand over twelve facts reaching
+            every branch, the guard among them; every fact the fixture's night writes handed as the
+            stored value or a figure the checker matches to it; and only the key handed read facts.
+Expected:   derived: the twelve readings are worked by hand from the rule and added to the prose
+            expectation, and the queue's order, its limit's boundaries and its passes follow from
+            the fixture's four members and the reasons each fired. Frozen: the claim checker's
+            verdict on each recorded draft, which put the first draft of the short version in the
+            pass with the configured lanes to a refusal, so the research record gains a version, two
+            stages and a paid call, and its spend and the comparison's move with the recordings. The
+            token estimate of the asked prompt the machine can hold is counted again over the prompt
+            as it is now, 6,274 tokens.
+Tests:      1115, from 1111. Four added to `fixture-expectations`. The queue's, the prose's and the
+            research record's tests, the read-surface helper every written section is drawn through
+            and the token test move as above, and `architecture-conformance`'s key for section 14's
+            last step follows its text.
+Mutated:    the rule, stated before the sweep: break four of the properties this correction adds,
+            the queue writing every name's key, the key dated by the night of its facts file, the
+            key drawn only beside that night, and the guard handing a reading the checker would
+            refuse as stored. Not mutated: the readings' formats beyond the cases worked by hand,
+            the indicator names, the key's wording, the key being the one section handed read facts,
+            and the reasons a pass gives for passing the key over, because each of those re-keys
+            every recording of the key or is text.
+            Predicted:
+            M1 the queue back to the listed names: the queue over the fixture's night, the order
+            over a changed night, the pass writing again only its own refusal, the limit's
+            boundaries and the unavailable model red on NFLX or KEYS missing where it was queued,
+            and the token test red on recordings nothing asked; nothing else.
+            M2 the key dated by the day it was written: the dating test red on the key's row dated
+            2026-09-10; nothing else.
+            M3 a key written for another night drawn: the stale and the paused pages red on a key
+            written for 2026-08-01 drawn beside the figures of 2026-09-08; nothing else.
+            M4 a reading the checker would refuse handed as read: the readings worked by hand red on
+            the growth of twelve and a half times; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair. A key stored before it keeps the day it was written as its
+            date, so one written in the day before its night ran reads as that night's key until the
+            night after writes it again. The keys on the pages now were written under the prompt
+            before this one and read their figures as stored until the next night writes every
+            name's again. The claim checker refuses a figure inside a company's own name, which
+            Phillips 66's first draft drew; its retry is told why.

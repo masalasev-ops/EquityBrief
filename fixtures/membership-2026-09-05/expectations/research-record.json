@@ -63,7 +63,8 @@
     { "section": "The key under each figure", "version": 1, "lane": "local", "status": "accepted" },
     { "section": "The risks, each with what would confirm it", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The segment commentary", "version": 1, "lane": "local", "status": "accepted" },
-    { "section": "The short version", "version": 1, "lane": "paid", "status": "accepted" },
+    { "section": "The short version", "version": 1, "lane": "paid", "status": "rejected" },
+    { "section": "The short version", "version": 2, "lane": "paid", "status": "accepted" },
     { "section": "The two cases", "version": 1, "lane": "paid", "status": "rejected" },
     { "section": "The two cases", "version": 2, "lane": "paid", "status": "accepted" },
     { "section": "What the company sells", "version": 1, "lane": "local", "status": "accepted" }
@@ -82,13 +83,15 @@
     "research call: The two cases, round 2",
     "research call: The short version, round 2",
     "claims, round 2",
+    "research call: The short version, round 3",
+    "claims, round 3",
     "research"
   ],
   "modelCalls": {
     "local": 3,
-    "paid": 7
+    "paid": 8
   },
-  "spend": "0.033337314",
+  "spend": "0.034046598",
   "theme": {
     "theme": "Scientific & Technical Instruments",
     "searches": 12,
@@ -112,7 +115,7 @@
       },
       "fallback": [],
       "calls": 11,
-      "spend": "0.034349328"
+      "spend": "0.036846078"
     },
     "local": {
       "accepted": {

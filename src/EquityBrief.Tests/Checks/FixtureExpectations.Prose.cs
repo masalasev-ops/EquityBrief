@@ -570,11 +570,19 @@ public partial class FixtureExpectations
             asked.AddRange(queued.Asked);
         }
 
-        // And the queue on the two later nights the nightly run's tests make, the session after
-        // the fixture's night and the night after one that did not run, each of which writes the
-        // key under each figure again for the night's own facts file.
-        // see: The key under each figure is written for each night's facts file
-        foreach (var (at, runId) in new[] { (new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), "token-night-two"), (new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), "token-night-after-a-miss") })
+        // And the queue on the three later nights the nightly run's tests make, the session
+        // after the fixture's night, the night after one that did not run, and that night
+        // where the caught-up file carried nothing for one member, each of which writes the
+        // key under each figure for every name for the night's own facts file.
+        // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+        var shortOf = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).First();
+
+        foreach (var (at, runId, holed) in new[]
+        {
+            (new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), "token-night-two", false),
+            (new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), "token-night-after-a-miss", false),
+            (new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), "token-night-after-a-short-catch-up", true),
+        })
         {
             using var later = new TemporaryStore();
 
@@ -583,7 +591,8 @@ public partial class FixtureExpectations
             Assert.True(first == 0, firstError);
 
             var laterQueued = new RecordedLocalModelFeed(Folder());
-            var feeds = NightFeeds.FromFixture(Folder()) with { Bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8)) };
+            IBulkPriceFeed bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8));
+            var feeds = NightFeeds.FromFixture(Folder()) with { Bulk = holed ? new HoledBulkFeed(bulk, new DateOnly(2026, 9, 9), [shortOf]) : bulk };
             var (code, _, error) = await NightlyRun.NightAsync(later, feeds, runId, FixedClock.At(at, SessionZones.UnitedStates), NightQueue.FromFixture(Folder()) with { LocalModel = laterQueued });
 
             Assert.True(code == 0, error);
@@ -611,9 +620,12 @@ public partial class FixtureExpectations
         // research pass's own request; three from the research pass with the configured lanes;
         // nine from the comparison with every section in the local lane, four of them drafts
         // written after the checker refused the first; two from the queue over the fixture's
-        // night, AAPL's key and KEYS's, MSFT's being the replay's request asked again; and four
-        // from the two later nights, MSFT's key and AAPL's on each.
-        Assert.Equal(23, recorded.Length);
+        // night, AAPL's key and KEYS's, MSFT's and NFLX's being the replay's requests asked
+        // again; eight from the two later nights, every member's key on each; and one from the
+        // night after a short catch-up, the key of the member the caught-up file left out, over
+        // the facts file its missing session left it, the other three being the missed night's
+        // requests asked again.
+        Assert.Equal(28, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

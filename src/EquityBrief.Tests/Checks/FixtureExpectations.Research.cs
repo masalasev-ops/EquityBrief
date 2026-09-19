@@ -318,10 +318,10 @@ public partial class FixtureExpectations
     [Fact]
     public void TheKeyUnderEachFigureIsWarrantedOnAnyDayAfterTheOneItWasWrittenFor()
     {
-        // The key explains the night's figures, so one accepted on an earlier night is written
-        // again though nothing fired, where any other section accepted then stands, and one
-        // accepted today is not written twice.
-        // see: The key under each figure is written for each night's facts file
+        // The key explains a night's figures and is dated by that night, so one accepted for an
+        // earlier night is written again though nothing fired, where any other section accepted
+        // then stands, and one accepted for tonight is not written twice.
+        // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
         var today = new DateOnly(2026, 9, 8);
         var earlier = new DateOnly(2026, 9, 4);
         var stands = new StalenessVerdict(today, ResearchState.Stands, [], [], earlier, new PulseReading(0, 0, null, 0, false, null));
