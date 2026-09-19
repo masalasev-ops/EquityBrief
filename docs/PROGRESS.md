@@ -16232,11 +16232,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             M4 turned 2 red, the wait test on the row's figure and section 17's census on a figure
             the code no longer holds.
             M5 turned 1 red, the wait test on the file writing a connection string of its own.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1099 of 1099 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 370 claims,
+            370 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 377 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim
             added: section 17's row Waiting on another writer, which passes on `nightly-run`, the
             check that reached it, and which 8.0's pair counts among the rows the document gained
             after its prediction. Both gates ran with this entry in place, and the operator's store
