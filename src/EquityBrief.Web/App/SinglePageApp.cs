@@ -346,7 +346,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
         NoYear? noYear = null,
         NameMast? mast = null,
-        DateOnly? filedOn = null)
+        DateOnly? filedOn = null,
+        ListingHistoryCard? history = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -520,6 +521,21 @@ public sealed class SinglePageApp : IComponent
             "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
 
         region.Append(Cards.Computed("The plan", planned.ToString(), title: "Where it is bought, sold, and wrong", stamp: Cards.Night(session), region: "plan"));
+
+        // The listing history, after the plan: the evenings the name was on the list and what
+        // followed each, section 15.9's row.
+        if (history is not null)
+        {
+            region.Append(Cards.Computed(
+                "Listing history",
+                marks.ListingHistory(ticker, history) + Cards.Key(
+                    "How to read it.",
+                    "The strip marks each stored session, inked where the name was on the list. Each row is one of those evenings, with where the price was five and twenty-one sessions later. A win means it was higher. The base rate is the share of every name on every night that was higher over the same span.",
+                    "One evening is one observation. A record is measured per reason across every name it fired on, so none is formed here for this name."),
+                title: "The evenings it was on the list",
+                stamp: Cards.Night(session),
+                region: "listing-history"));
+        }
 
         // What the company sells, section 4's fifth section, after the plan and before the numbers.
         Draw(BeforeTheNumbers);

@@ -881,6 +881,14 @@ public sealed class ReadApi : IComponent
         ORDER BY session_date, ticker, horizon;
     ";
 
+    // One name's forward returns, newest listing first, which its listing history reads.
+    const string ForwardReturnsForName = @"
+        SELECT ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even
+        FROM forward_return
+        WHERE ticker = $ticker
+        ORDER BY session_date DESC, horizon;
+    ";
+
     // The candidate register, for the run page's count and its divisor. The
     // columns the region draws from and no others.
     const string RegisteredCandidates = @"
@@ -1212,12 +1220,17 @@ public sealed class ReadApi : IComponent
         return (ended - started).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
     }
 
-    public async Task<IReadOnlyList<ForwardReturnRow>> ForwardReturnsAsync()
+    public async Task<IReadOnlyList<ForwardReturnRow>> ForwardReturnsAsync(string? ticker = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = ForwardReturns;
+        command.CommandText = ticker is null ? ForwardReturns : ForwardReturnsForName;
+
+        if (ticker is not null)
+        {
+            command.Parameters.AddWithValue("$ticker", ticker);
+        }
 
         var rows = new List<ForwardReturnRow>();
 

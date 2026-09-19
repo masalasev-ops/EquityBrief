@@ -260,7 +260,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // Where the name holds no bar, whether the backfill asked for its year and none came back.
         bars.Count == 0 ? await read.NoYearAsync(ticker) : null,
         // The membership row the masthead names the company, its sector and industry from.
-        universe.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)));
+        universe.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
+        // The name's listings over the strip's window and its forward returns, which its listing
+        // history draws.
+        await read.ListingsAsync(ticker, UniverseScreen.StripSessions),
+        await read.ForwardReturnsAsync(ticker));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

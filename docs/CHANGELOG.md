@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - ARCHITECTURE.html - section 15.9's listing history is a row of the page
+
+Authorised by: A name's listing history states what followed each evening it was listed and forms no rate for the name
+Was:
+> <p>A tab on this screen carries the name's listing history: the listing strip over sixty sessions, then one row per evening it fired, with the close that night and what happened five and twenty-one sessions later. A row too recent to have matured says so rather than showing a blank or a zero.</p>
+Now:
+> <tr><td>Listing history</td><td>the listing strip over sixty sessions and one row per evening the name was listed, each with the reasons that fired and the close that night and what followed five and twenty-one sessions later beside the universe base rate or the words that it has not matured (see: A name's listing history states what followed each evening it was listed and forms no rate for the name)</td></tr>
+Why: the listing history is drawn as a card after the plan, as every region of the page is, and a row of the table is what the harness reads as a claim.
+
+### 2026-09-19 - .claude/rules/checks.md - read-surface asserts a name's listing history
+
+Authorised by: A name's listing history states what followed each evening it was listed and forms no rate for the name
+Was:
+> the read-surface row ended at "a key written for another night replaced by its card naming that night"
+Now:
+> "; and a name's listing history states what followed each evening it was listed beside the base rate its row carries and forms no rate for the name" added at its end
+Why: the name page draws the listing history, and read-surface is the check that reads the page.
+
 ### 2026-09-19 - ARCHITECTURE.html - section 4 puts the chart and the plan third and fourth
 
 Corrects: section 4's numbered order put the company, its numbers and the two cases before the chart and the plan, where the approved screens draw the chart and the plan first

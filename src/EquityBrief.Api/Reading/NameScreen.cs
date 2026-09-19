@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Research;
+using EquityBrief.Core.Returns;
 using EquityBrief.Core.Spending;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -848,7 +849,9 @@ public static class NameScreen
         DateOnly? today = null,
         SuspectSeriesRow? suspect = null,
         NoYearRow? noYear = null,
-        UniverseRow? member = null)
+        UniverseRow? member = null,
+        IReadOnlyList<ListingRow>? history = null,
+        IReadOnlyList<ForwardReturnRow>? outcomes = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -960,7 +963,40 @@ public static class NameScreen
             listing is null ? [] : TonightScreen.WrittenBeforeTheCorrection([listing]),
             noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next),
             new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars)),
-            filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null);
+            filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
+            history is null ? null : History(history, outcomes ?? [], bars));
+    }
+
+    // A name's listing history over the evenings the store holds its listings for: whether it was
+    // on the list each evening, oldest first, and each evening it was, newest first, with the
+    // reasons that fired, the stored close that night and what the two session horizons came to.
+    // It forms no rate for the name.
+    // see: A name's listing history states what followed each evening it was listed and forms no rate for the name
+    public static ListingHistoryCard History(IReadOnlyList<ListingRow> listings, IReadOnlyList<ForwardReturnRow> outcomes, IReadOnlyList<BarRow> bars)
+    {
+        HorizonResult Result(DateOnly evening, string horizon) =>
+            outcomes.FirstOrDefault(row => row.SessionDate == evening && row.Horizon == horizon) is { } row
+                ? new HorizonResult(row.Outcome, row.ReturnPct, row.BaseRate)
+                : new HorizonResult(null, null, null);
+
+        return new ListingHistoryCard(
+            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)],
+            [
+                .. listings
+                    .Where(listing => listing.FiredCount > 0)
+                    .OrderByDescending(listing => listing.SessionDate)
+                    .Select(listing =>
+                    {
+                        var fired = FiredReasons(listing);
+
+                        return new ListingEvening(
+                            listing.SessionDate,
+                            [.. fired.Select(reason => reason.Name)],
+                            bars.FirstOrDefault(bar => bar.SessionDate == listing.SessionDate)?.Close,
+                            Result(listing.SessionDate, ForwardReturnSeries.FiveSessions),
+                            Result(listing.SessionDate, ForwardReturnSeries.TwentyOneSessions));
+                    }),
+            ]);
     }
 
     // The change on the day the masthead states, off the two newest stored closes, by the
