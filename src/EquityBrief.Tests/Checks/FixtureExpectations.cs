@@ -2149,7 +2149,7 @@ public partial class FixtureExpectations
         // note on its theme and the theme record's note on its results at 6.11, and the
         // membership file's name note after them. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.nameNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "reason-verdicts.note", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.note", "theme-record.resultsNote"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.nameNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "reason-verdicts.note", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.aNameWithNoRecordNote", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.handedNote", "theme-record.note", "theme-record.resultsNote"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 
@@ -5082,6 +5082,7 @@ public partial class FixtureExpectations
                 ("fromMove", FactsAssembler.FromMoves),
                 ("fromSwing", FactsAssembler.FromSwings),
                 ("fromCalendar", FactsAssembler.FromCalendar),
+                ("fromMembership", FactsAssembler.FromMembership),
             })
             {
                 Assert.Equal(
@@ -6438,7 +6439,7 @@ public partial class FixtureExpectations
                 // The whole of what is stored is prose, which is the ruling. A range
                 // in the passage is management's sentence and not a figure this
                 // report struck.
-                // see: Guidance is stored as management's own prose and never parsed into a figure
+                // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
                 Assert.Equal(JsonValueKind.String, guidance.GetProperty("passage").ValueKind);
             }
             else

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Facts;
 
 namespace EquityBrief.Core.Research;
@@ -9,34 +10,32 @@ namespace EquityBrief.Core.Research;
 // an article about the company alone names its own listings, and a roundup names every
 // company it mentions. 6.8 measured KEYS's stored year at 656 articles, 207 of them
 // attributed to Keysight's own two listings alone and the widest to 50.
-public sealed record EvidenceDocument(StoredDocument Stored, int Symbols);
+//
+// `NamesTheCompany` is whether its title names the company, which a document the provider
+// attributed to this company alone can still fail: a launch by another company that
+// mentions this one in its text is attributed to this one.
+public sealed record EvidenceDocument(StoredDocument Stored, int Symbols, bool NamesTheCompany = false);
 
 // Which of the documents a pass fetched each section is handed.
 //
 // Code picks the documents a section may rest on, and the model writes the words
-// around them. A year of one name's news is millions of characters, far past what any
+// around them. A quarter of one name's news is millions of characters, far past what any
 // section can be handed and past what a reader of the section would want it resting
-// on, so the choice is a rule rather than everything: the documents inside each move
-// for the cause of that move, the company's own filing for what it sells and its
-// segments, and the company's own filing and the documents since it for the sections
-// built across the evidence. Within each, the fewest companies named first.
+// on, so the choice is a rule rather than everything: the documents inside each episode's
+// largest move for the cause of that episode, the company's own filing for what it sells
+// and its segments, and the company's own filing and documents spread over the days since
+// it for the sections built across the evidence. Within each, a title naming the company
+// first, then the fewest companies named.
 // see: Code owns every number
-// see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
+// see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
 public static class Evidence
 {
-    // The documents one move's cause may rest on, at most. Two, measured over KEYS's
-    // eight moves in the stored year its captured news covers: five of the moves
-    // overlap, and two a move picks six documents across all eight, every one naming
-    // the company alone, which is a prompt the local lane's context holds with the
-    // company's own release among them.
+    // The documents one episode's cause may rest on, at most.
     public const int DocumentsPerMove = 2;
 
     // The documents a section built across the evidence is handed beside the
-    // company's own filing, at most. Six, measured over KEYS's quarter from its
-    // release on 2026-08-18 to the night the fixture holds: 56 articles, of which the
-    // six naming the fewest companies name Keysight alone, three under its one ticker
-    // and three under its two listings, and the sixth is taken by id from three of
-    // those published on the same day.
+    // company's own filing, at most, one from each of as many equal stretches of the
+    // days since the filing where each stretch has one.
     public const int DocumentsSinceTheFiling = 6;
 
     // The company's own filing is attributed to the company and nothing else.
@@ -56,14 +55,6 @@ public static class Evidence
         "The short version",
     ];
 
-    // The documents each section is handed, by figure 12.2's names. A section that
-    // rests on no document, and the industry cycle, which rests on the theme record,
-    // are absent from the map.
-    //
-    // Admitted documents where there are any, and the refused ones only where a
-    // section has no admitted document to rest on, so the section is inserted citing
-    // what was fetched and the checker leaves it out saying no admissible source was
-    // found, rather than the pass deciding that itself.
     public static IReadOnlyDictionary<string, IReadOnlyList<StoredDocument>> ForSections(
         IReadOnlyList<Fact> facts,
         IReadOnlyList<EvidenceDocument> documents,
@@ -99,20 +90,23 @@ public static class Evidence
         return handed;
     }
 
-    // For each stored move, the documents published inside it naming the fewest
-    // companies and then the earliest, at most two a move, listed once each in the
-    // order they were published.
+    // For each episode, the documents published inside its largest move, a title naming
+    // the company first, then the newest, then the fewest companies named, at most two an
+    // episode, listed once each in the order they were published. The newest before the
+    // fewest companies, because a move's first session is the one before it moved and what
+    // was published on it is about that session.
     public static IReadOnlyList<StoredDocument> Moves(IReadOnlyList<Fact> facts, IReadOnlyList<EvidenceDocument> documents)
     {
         var chosen = new Dictionary<string, EvidenceDocument>(StringComparer.Ordinal);
 
-        foreach (var move in MoveWindows.In(facts))
+        foreach (var episode in MoveWindows.Episodes(facts))
         {
-            var inside = Usable(documents.Where(document => document.Stored.PublishedOn is { } published && MoveWindows.Holds(move, published)));
+            var inside = Usable(documents.Where(document => document.Stored.PublishedOn is { } published && MoveWindows.Holds(episode.Largest, published)));
 
             foreach (var document in inside
-                .OrderBy(document => document.Symbols)
-                .ThenBy(document => document.Stored.PublishedOn)
+                .OrderBy(document => document.NamesTheCompany ? 0 : 1)
+                .ThenByDescending(document => document.Stored.PublishedOn)
+                .ThenBy(document => document.Symbols)
                 .ThenBy(document => document.Stored.Id, StringComparer.Ordinal)
                 .Take(DocumentsPerMove))
             {
@@ -129,26 +123,60 @@ public static class Evidence
         ];
     }
 
-    // The company's own filing first, then the documents published on or after the day
-    // it was filed naming the fewest companies and then the newest. With no filing of
-    // its own, the documents across the whole window, chosen the same way.
+    // The company's own filing first, then documents published on or after the day it was
+    // filed, one from each of six equal stretches of the days from the filing to the newest,
+    // each the best of its stretch, and where a stretch has none the next best of the rest.
+    // With no filing of its own, the same over the whole window.
     public static IReadOnlyList<StoredDocument> Across(IReadOnlyList<EvidenceDocument> documents, EvidenceDocument? own)
     {
         var since = own?.Stored.PublishedOn;
 
         var candidates = Usable(documents.Where(document =>
-            !ReferenceEquals(document, own)
-            && (since is null || document.Stored.PublishedOn is { } published && published >= since)));
+                !ReferenceEquals(document, own)
+                && document.Stored.PublishedOn is { } published
+                && (since is null || published >= since)))
+            .ToArray();
 
-        var rest = candidates
-            .OrderBy(document => document.Symbols)
-            .ThenByDescending(document => document.Stored.PublishedOn)
+        if (candidates.Length == 0)
+        {
+            return own is null ? [] : [own.Stored];
+        }
+
+        var first = since ?? candidates.Min(document => document.Stored.PublishedOn!.Value);
+        var last = candidates.Max(document => document.Stored.PublishedOn!.Value);
+        var days = last.DayNumber - first.DayNumber + 1;
+        var chosen = new List<EvidenceDocument>();
+
+        for (var stretch = 0; stretch < DocumentsSinceTheFiling; stretch++)
+        {
+            var from = first.DayNumber + (stretch * days / DocumentsSinceTheFiling);
+            var to = first.DayNumber + ((stretch + 1) * days / DocumentsSinceTheFiling);
+
+            if (Ranked(candidates.Where(document => document.Stored.PublishedOn!.Value.DayNumber >= from
+                    && document.Stored.PublishedOn!.Value.DayNumber < to)).FirstOrDefault() is { } best)
+            {
+                chosen.Add(best);
+            }
+        }
+
+        chosen.AddRange(Ranked(candidates.Except(chosen)).Take(DocumentsSinceTheFiling - chosen.Count));
+
+        var rest = chosen
+            .OrderBy(document => document.Stored.PublishedOn)
             .ThenBy(document => document.Stored.Id, StringComparer.Ordinal)
-            .Take(DocumentsSinceTheFiling)
             .Select(document => document.Stored);
 
         return own is null ? [.. rest] : [own.Stored, .. rest];
     }
+
+    // The order every choice here ranks by: a title naming the company first, then the
+    // fewest companies named, then the newest, and the id where all three tie.
+    static IEnumerable<EvidenceDocument> Ranked(IEnumerable<EvidenceDocument> documents) =>
+        documents
+            .OrderBy(document => document.NamesTheCompany ? 0 : 1)
+            .ThenBy(document => document.Symbols)
+            .ThenByDescending(document => document.Stored.PublishedOn)
+            .ThenBy(document => document.Stored.Id, StringComparer.Ordinal);
 
     // Admitted documents where any are admitted, and otherwise the refusals, so a
     // section with nothing admissible still cites what the pass fetched for it.
@@ -158,5 +186,35 @@ public static class Evidence
         var admitted = all.Where(document => document.Stored.Admitted).ToArray();
 
         return admitted.Length > 0 ? admitted : all;
+    }
+
+    // Whether a title names the company: its ticker as a word, or the first word of its name
+    // once a leading "The" is taken off, read without regard to case. The first word rather
+    // than the whole name, because a title writes a company's short name and never its legal
+    // one, and a name whose first word is a common one ranks every title using that word
+    // alongside it, which costs order and never a document.
+    public static bool NamesTheCompany(string? title, string ticker, string? company)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return false;
+        }
+
+        var words = new List<string> { ticker };
+
+        if (FirstWord(company) is { } word)
+        {
+            words.Add(word);
+        }
+
+        return words.Any(named => Regex.IsMatch(title, @"(?<![\p{L}\p{N}])" + Regex.Escape(named) + @"(?![\p{L}\p{N}])", RegexOptions.IgnoreCase));
+    }
+
+    static string? FirstWord(string? company)
+    {
+        var words = (company ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var start = words.Length > 1 && string.Equals(words[0], "The", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+
+        return start < words.Length ? words[start].TrimEnd(',', '.') : null;
     }
 }

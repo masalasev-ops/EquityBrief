@@ -1,12 +1,12 @@
 {
   "stage": "theme-record",
   "derivation": "derived",
-  "derivedFrom": "section 12's rules for the industry cycle and the decisions that a theme is the industry the index names for a member, that a theme section states no figure, that a theme search is scoped by parameter, that a theme pass searches each site on the industry list alone and hands the model a bounded set of the pages they return, and that a list of publishers is a noise filter; and the fixture's own captures: the twelve searches a theme pass builds for Semiconductors, one for each site of the industry list over the quarter to 2026-09-08, and the two research model answers keyed on the requests the pass builds from what those searches kept. Which results are dropped for their site and which for being short of a document, the order the pages are kept in, every site's first result before any site's second, which pages are stored and admitted, which ten the cycle is handed, and how many searches and calls the pass and a second member's pass take were worked out from those rules and the captures' own bytes before the tests that read this file were run. Section 19.1's theme record. What each member's pass records that it did is derived from the decision that a pass for a name with no facts file refreshes its industry's theme and says so, since neither constructed member holds a bar and so neither holds a facts file.",
+  "derivedFrom": "section 12's rules for the industry cycle and the decisions that a theme is the industry the index names for a member, that a theme section states no figure, that a theme search is scoped by parameter, that a theme pass searches each site on the industry list alone and hands the model a bounded set of the pages they return, that a theme page is handed to the model only where its text names the industry, and that a list of publishers is a noise filter; and the fixture's own captures: the twelve searches a theme pass builds for Semiconductors, one for each site of the industry list over the quarter to 2026-09-08, and the research model answer keyed on the request the pass builds from what those searches kept. Which results are dropped for their site and which for being short of a document, the order the pages are kept in, every site's first result before any site's second, which pages are stored and admitted, which of them name the industry's words at least five times in every ten thousand characters of their title and text and so are handed to the cycle, counted page by page off the captures' own titles and text, and how many searches and calls the pass and a second member's pass take were worked out from those rules and the captures' own bytes before the tests that read this file were run. Section 19.1's theme record. What each member's pass records that it did is derived from the decision that a pass for a name with no facts file refreshes its industry's theme and says so, since neither constructed member holds a bar and so neither holds a facts file.",
   "tables": [
     "theme_section",
     "source_document"
   ],
-  "frozen": "the prose the recorded model wrote, the checker's verdict on each draft, which refused the first for a sentence naming no document and accepted the second, and what the two calls cost, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
+  "frozen": "the prose the recorded model wrote, the checker's verdict on it, which accepted the first draft, and what the call cost, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
   "theme": "Semiconductors",
   "night": "2026-09-08",
   "window": {
@@ -30,27 +30,31 @@
   "documents": {
     "stored": 16,
     "admitted": 16,
-    "handed": 10
+    "handed": 6
   },
+  "handedPages": [
+    "https://www.digitimes.com/news/a20260902PR200/taiwan.html?chid=9",
+    "https://www.statista.com/statistics/283359/top-20-semiconductor-companies",
+    "https://www.digitimes.com/news/a20260804VL208/industrial-capacity-equipment-production-cxmt.html",
+    "https://www.statista.com/statistics/277404/global-semiconductor-sales-by-month",
+    "https://www.digitimes.com/news/a20260903PD217/tsmc-equipment-demand-supply-chain-taiwan.html",
+    "https://www.statista.com/statistics/267008/forecast-of-semiconductor-revenue-in-japan-since-2006"
+  ],
+  "handedNote": "the pages kept that name the industry's word, semiconductor with its plurals, at least five times in every ten thousand characters, in the order the pass kept them: digitimes.com's three at 12.85, 17.65 and 17.13 and statista.com's three at 42.63, 46.78 and 35.13. The other ten are stored and admitted and handed nothing, census.gov's three at 0.97, 2.02 and 1.31, federalreserve.gov's three at 0.95, 3.24 and 0.42, iea.org's three at 2.70, 2.23 and 0.00, and ihsmarkit.com's one at 0.31, the industrial production release over twice the opening's length among them.",
+  "longPage": "https://www.federalreserve.gov/releases/g17/current/g17.pdf",
   "versions": [
     {
       "section": "The industry cycle",
       "version": 1,
-      "lane": "paid",
-      "status": "rejected"
-    },
-    {
-      "section": "The industry cycle",
-      "version": 2,
       "lane": "paid",
       "status": "accepted"
     }
   ],
   "calls": {
     "searches": 12,
-    "paid": 2
+    "paid": 1
   },
-  "spend": "0.011904468",
+  "spend": "0.002072784",
   "passes": {
     "note": "the first member's pass finds the theme missing, refreshes it and is left with the accepted version as of the night, so its sentence says the cycle was refreshed; the second member's pass finds that version accepted today, refreshes nothing, and its sentence says nothing of the cycle. Neither writes anything of its own.",
     "outcome": "no facts file",

@@ -4771,7 +4771,7 @@ public partial class ReadSurface
     {
         // The filer whose release states none under any heading, which is the
         // absence this surface must not draw as a company that guided nothing.
-        // see: Guidance is stored as management's own prose and never parsed into a figure
+        // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
         using var store = await WithFundamentals(withTheArchive: true);
 
         var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));

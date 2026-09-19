@@ -11,6 +11,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Facts;
+using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Research;
 using Microsoft.Extensions.Configuration;
 
@@ -173,6 +174,52 @@ public partial class FixtureExpectations
         }
     }
 
+    // A local runtime answering a section's first draft with one text and every later draft with
+    // another, noting what it was asked.
+    sealed class TwoDrafts(string first, string second) : ILocalModelFeed
+    {
+        public int Requests => Asked.Count;
+
+        public List<ModelRequest> Asked { get; } = [];
+
+        public Task<ModelAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default)
+        {
+            Asked.Add(request);
+
+            return Task.FromResult(new ModelAnswer(request.Model, Asked.Count == 1 ? first : second, 0, 0, "stop"));
+        }
+    }
+
+    [Fact]
+    public async Task ASectionTheCheckerRefusedIsAskedOnceMoreToldWhyAndTheSecondDraftStands()
+    {
+        // The local lane's retry over a scripted runtime: the key's first draft quotes a close no
+        // facts file holds and is refused, and the next pass asks once more, told why, and stores
+        // the second draft, which quotes the close the file holds and is accepted.
+        var (store, document) = await WithRelease();
+
+        using (store)
+        {
+            var feed = new TwoDrafts("Keysight closed at 999.99 on the night.", "Keysight closed at 333.42 on the night.");
+            var writer = new ProseWriter(feed, LocalSettings(), [ClaimRules.ComputedSection], ProseClock, store.DatabaseFile);
+            var checker = new ClaimChecker(ProseClock, store.DatabaseFile);
+
+            await writer.WriteAsync("KEYS", Handed(document), "prose-refused-1");
+            var first = await checker.RunAsync("claims-refused-1");
+            var again = await writer.WriteAsync("KEYS", Handed(document), "prose-refused-2");
+            var second = await checker.RunAsync("claims-refused-2");
+
+            Assert.Equal([$"{ClaimRules.ComputedSection}|{ClaimChecker.Rejected}"], first.Checked.Select(section => $"{section.Section}|{section.Status}"));
+            Assert.Equal([ClaimRules.ComputedSection], again.Written.Where(section => section.Retry).Select(section => section.Section));
+            Assert.DoesNotContain("previous draft", feed.Asked[0].Prompt, StringComparison.Ordinal);
+            Assert.Contains($"Your previous draft of this section was refused by the checker for: {ClaimRules.UnmatchedFigure}", feed.Asked[1].Prompt, StringComparison.Ordinal);
+            Assert.Equal([$"{ClaimRules.ComputedSection}|{ClaimChecker.Accepted}"], second.Checked.Select(section => $"{section.Section}|{section.Status}"));
+            Assert.Equal(
+                [$"1|{ClaimChecker.Rejected}", $"2|{ClaimChecker.Accepted}"],
+                Query(store, $"SELECT version, status FROM research_section WHERE ticker = 'KEYS' AND section = '{ClaimRules.ComputedSection}' ORDER BY version;"));
+        }
+    }
+
     // ---- the replay ----
 
     [Fact]
@@ -215,7 +262,7 @@ public partial class FixtureExpectations
     // ---- the release ----
 
     [Fact]
-    public async Task APassOverTheReleaseWritesTheCauseOfTheOneMoveTheReleaseFallsInsideAndRetriesOnce()
+    public async Task APassOverTheReleaseWritesTheCauseOfTheOneMoveTheReleaseFallsInsideAndASecondTheSameDayWritesNothing()
     {
         var release = Expected("prose").GetProperty("release");
         var (store, document) = await WithRelease();
@@ -419,16 +466,21 @@ public partial class FixtureExpectations
 
             // The derivation the expectation states, held against the prompts rather than
             // taken on its word: the release's text outside digits and outside ASCII
-            // exceeds the room alone, and the asked prompt is shorter in characters than
-            // the room, so it fits however its characters count.
+            // exceeds the room alone, and the asked prompt, counted as the rule counts it,
+            // each digit and each byte outside ASCII a token and the rest at the stated
+            // characters a token, fits inside it.
             var room = context - OpenAiCompatibleModelFeed.AnswerTokens;
             var plain = document.Body!.EnumerateRunes().Count(rune => rune.IsAscii && !Rune.IsDigit(rune));
 
             Assert.True(plain / SectionPrompt.CharactersPerToken > room, $"The release carries {plain} plain characters, which fit in {room} tokens.");
 
             var asked = feed.Asked.Single();
+            var runes = (asked.System + asked.Prompt).EnumerateRunes().ToArray();
+            var counted = runes.Sum(rune => rune.IsAscii ? (Rune.IsDigit(rune) ? 1 : 0) : rune.Utf8SequenceLength)
+                + Math.Ceiling(runes.Count(rune => rune.IsAscii && !Rune.IsDigit(rune)) / SectionPrompt.CharactersPerToken);
 
-            Assert.True(asked.System.Length + asked.Prompt.Length <= room, $"The facts-only prompt is {asked.System.Length + asked.Prompt.Length} characters against {room}.");
+            Assert.True(counted <= room, $"The facts-only prompt counts {counted} tokens against {room}.");
+            Assert.Equal(hold.GetProperty("askedTokens").GetInt32(), counted);
         }
     }
 
@@ -518,6 +570,26 @@ public partial class FixtureExpectations
             asked.AddRange(queued.Asked);
         }
 
+        // And the queue on the two later nights the nightly run's tests make, the session after
+        // the fixture's night and the night after one that did not run, each of which writes the
+        // key under each figure again for the night's own facts file.
+        // see: The key under each figure is written for each night's facts file
+        foreach (var (at, runId) in new[] { (new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), "token-night-two"), (new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), "token-night-after-a-miss") })
+        {
+            using var later = new TemporaryStore();
+
+            var (first, _, firstError) = await NightlyRun.NightAsync(later, runId: "token-night-one");
+
+            Assert.True(first == 0, firstError);
+
+            var laterQueued = new RecordedLocalModelFeed(Folder());
+            var feeds = NightFeeds.FromFixture(Folder()) with { Bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8)) };
+            var (code, _, error) = await NightlyRun.NightAsync(later, feeds, runId, FixedClock.At(at, SessionZones.UnitedStates), NightQueue.FromFixture(Folder()) with { LocalModel = laterQueued });
+
+            Assert.True(code == 0, error);
+            asked.AddRange(laterQueued.Asked);
+        }
+
         var (store, document) = await WithRelease();
 
         using (store)
@@ -534,14 +606,14 @@ public partial class FixtureExpectations
 
         var recorded = Directory.GetFiles(Folder(), RecordedLocalModelFeed.FilePrefix + "*.json").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
 
-        // Seven from 6.6, and twelve from 6.8's research pass and its comparison, the
-        // key under each figure's two being requests 6.6 had already recorded. And three
-        // from 6.10's queue over a whole night: AAPL's key under each figure and KEYS's,
-        // which no replay asked for, since the replay holds no facts file for AAPL that night
-        // and writes KEYS's sections from version one itself, and MSFT's second draft, which
-        // the replay never asks for because it writes one draft a name and stops. MSFT's and
-        // NFLX's first drafts are the replay's own requests, asked again.
-        Assert.Equal(22, recorded.Length);
+        // Two from the replay, MSFT's key under each figure and NFLX's; three from the release's
+        // passes, what the company sells, the segment commentary and the cause, the key being the
+        // research pass's own request; three from the research pass with the configured lanes;
+        // nine from the comparison with every section in the local lane, four of them drafts
+        // written after the checker refused the first; two from the queue over the fixture's
+        // night, AAPL's key and KEYS's, MSFT's being the replay's request asked again; and four
+        // from the two later nights, MSFT's key and AAPL's on each.
+        Assert.Equal(23, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)
@@ -571,24 +643,36 @@ public partial class FixtureExpectations
 
             var segments = document.RootElement.GetProperty("segments");
 
-            var latest = segments.GetProperty("periods").EnumerateArray()
+            var quarters = segments.GetProperty("periods").EnumerateArray()
                 .Where(period => period.GetProperty("months").GetInt32() == 3)
                 .Select(period => period.GetProperty("ended").GetString()!)
-                .Max(StringComparer.Ordinal)!;
+                .ToArray();
+            var latest = quarters.Max(StringComparer.Ordinal)!;
+
+            // The same quarter a year before, which the table states beside it.
+            var yearBefore = quarters.Single(ended => Math.Abs(
+                DateOnly.ParseExact(ended, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayNumber
+                - DateOnly.ParseExact(latest, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddYears(-1).DayNumber) <= FundamentalsFetcher.PeriodEndDays);
 
             var facts = FactsAssembler.Segments(document.RootElement);
 
-            // Every segment fact is the latest quarter's, and every quarter line the table
-            // carries for that period is a fact, counted off the table rather than stated.
-            var lines = segments.GetProperty("consolidated").EnumerateArray()
+            // Every segment fact is the latest quarter's or the same quarter a year before, and
+            // every quarter line the table carries for those two periods is a fact, counted off
+            // the table rather than stated.
+            int Lines(string ended) => segments.GetProperty("consolidated").EnumerateArray()
                 .Concat(segments.GetProperty("groups").EnumerateArray().SelectMany(group => group.GetProperty("figures").EnumerateArray()))
                 .Count(line => line.GetProperty("months").GetInt32() == 3
-                    && line.GetProperty("ended").GetString() == latest
+                    && line.GetProperty("ended").GetString() == ended
                     && line.GetProperty("value").ValueKind == JsonValueKind.String);
 
+            var lines = Lines(latest);
+
             Assert.True(lines >= 2, $"The table carries {lines} lines for {latest}.");
-            Assert.Equal(lines, facts.Count);
-            Assert.All(facts, fact => Assert.EndsWith(" " + latest, fact.Name, StringComparison.Ordinal));
+            Assert.Equal(lines + Lines(yearBefore), facts.Count);
+            Assert.Equal(lines, facts.Count(fact => fact.Name.EndsWith(" " + latest, StringComparison.Ordinal)));
+            Assert.All(facts, fact => Assert.True(
+                fact.Name.EndsWith(" " + latest, StringComparison.Ordinal) || fact.Name.EndsWith(" " + yearBefore, StringComparison.Ordinal),
+                fact.Name));
             Assert.All(facts, fact => Assert.Equal(FactsAssembler.FromFundamentals, fact.Source));
             Assert.Equal(facts.Count, facts.Select(fact => fact.Name).Distinct(StringComparer.Ordinal).Count());
 
@@ -598,6 +682,114 @@ public partial class FixtureExpectations
 
             Assert.All(facts, fact => Assert.Contains(file, held => held.Name == fact.Name && held.Value == fact.Value));
         }
+    }
+
+    [Fact]
+    public async Task AnOpenedNamesFileCarriesItsGrowthItsEarningsAgainstTheEstimateItsTablesGrowthAndItsGuidedFigures()
+    {
+        // KEYS's, each worked by hand from the provider's payload, the captured segment table and
+        // the release's outlook, as the expectation says.
+        // see: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns
+        // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
+        var expected = Expected("facts").GetProperty("openedName");
+        var ticker = expected.GetProperty("ticker").GetString()!;
+        var (store, _) = await WithRelease();
+
+        using (store)
+        {
+            var file = FactsFile.Read(Query(store, $"SELECT payload FROM facts WHERE ticker = '{ticker}' AND session_date = '{Iso(ProseClock.SessionDateAt(ProseNight))}';").Single());
+
+            foreach (var fact in expected.GetProperty("facts").EnumerateObject())
+            {
+                Assert.Contains(file, held => held.Name == fact.Name && held.Value == fact.Value.GetString() && held.Source == FactsAssembler.FromFundamentals);
+            }
+
+            // A group's growth is found by the words its name carries, since its label is the
+            // archive's own, and exactly one fact carries them.
+            foreach (var grown in expected.GetProperty("tableGrowth").EnumerateArray())
+            {
+                var words = grown.GetProperty("nameCarries").EnumerateArray().Select(word => word.GetString()!).ToArray();
+                var named = file.Where(held => words.All(word => held.Name.Contains(word, StringComparison.Ordinal))).ToArray();
+
+                Assert.Equal(grown.GetProperty("value").GetString(), Assert.Single(named).Value);
+            }
+
+            // The guided figures are numbered in the order the passage states them, and no other
+            // fact is named for guidance.
+            Assert.Equal(
+                expected.GetProperty("facts").EnumerateObject().Count(fact => fact.Name.StartsWith("guidance figure ", StringComparison.Ordinal)),
+                file.Count(held => held.Name.StartsWith("guidance figure ", StringComparison.Ordinal)));
+
+            // And the company's name, which the membership row holds.
+            Assert.Contains(file, held => held.Name == FactsAssembler.CompanyName
+                && held.Value == Expected("membership").GetProperty("names").GetProperty(ticker).GetString());
+        }
+    }
+
+    [Fact]
+    public void AFilingsOtherTablesAndEachGroupsGrowthAreNamedForWhatTheTableGroupsBy()
+    {
+        // NVDA's table by market platform in the shape the fetcher stores it, its data center
+        // revenue as the captured R67 states it, and the growth the fetcher computed for it, beside
+        // a growth from the segment table, which no other table names.
+        // see: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns
+        const string Payload = """
+        {
+          "revenueTables": [
+            {
+              "report": "R67.htm",
+              "title": "Segment Information - Schedule of Revenue by Market Platform (Details)",
+              "periods": [
+                { "months": 3, "ended": "2026-07-26" },
+                { "months": 3, "ended": "2025-07-27" },
+                { "months": 6, "ended": "2026-07-26" }
+              ],
+              "consolidated": [
+                { "lineItem": "Revenue", "months": 3, "ended": "2026-07-26", "value": "96221000000" },
+                { "lineItem": "Revenue", "months": 3, "ended": "2025-07-27", "value": "46743000000" }
+              ],
+              "groups": [
+                {
+                  "label": "Data Center",
+                  "figures": [
+                    { "lineItem": "Revenue", "months": 3, "ended": "2026-07-26", "value": "89023000000" },
+                    { "lineItem": "Revenue", "months": 3, "ended": "2025-07-27", "value": "41096000000" },
+                    { "lineItem": "Revenue", "months": 6, "ended": "2026-07-26", "value": "164269000000" }
+                  ]
+                }
+              ]
+            }
+          ],
+          "tableGrowth": [
+            { "report": "R67.htm", "group": 1, "label": "Data Center", "lineItem": "Revenue", "months": 3, "ended": "2026-07-26", "yearEarlier": "2025-07-27", "value": "1.166221" },
+            { "report": "R63.htm", "group": 0, "label": "total", "lineItem": "Revenue", "months": 3, "ended": "2026-07-26", "yearEarlier": "2025-07-27", "value": "1.058533" }
+          ]
+        }
+        """;
+
+        using var document = JsonDocument.Parse(Payload);
+
+        // The latest quarter and the same quarter a year before, named for what the title says
+        // the table groups by, so a figure by market platform is never read as a segment's.
+        Assert.Equal(
+            [
+                "segment revenue by market platform Data Center Revenue 2025-07-27",
+                "segment revenue by market platform Data Center Revenue 2026-07-26",
+                "segment revenue by market platform total Revenue 2025-07-27",
+                "segment revenue by market platform total Revenue 2026-07-26",
+            ],
+            FactsAssembler.RevenueTables(document.RootElement).Select(fact => fact.Name).Order(StringComparer.Ordinal));
+        Assert.Contains(FactsAssembler.RevenueTables(document.RootElement), fact => fact.Name == "segment revenue by market platform Data Center Revenue 2026-07-26" && fact.Value == "89023000000");
+
+        var grown = FactsAssembler.TableGrowth(document.RootElement);
+
+        Assert.Equal(2, grown.Count);
+        Assert.Contains(grown, fact => fact.Name == "segment revenue by market platform Data Center Revenue growth on a year earlier 2026-07-26" && fact.Value == "1.166221");
+        Assert.Contains(grown, fact => fact.Name == "segment total Revenue growth on a year earlier 2026-07-26" && fact.Value == "1.058533");
+        Assert.All(grown, fact => Assert.Equal(FactsAssembler.FromFundamentals, fact.Source));
+
+        // And the segment table's reader reads the segment table alone.
+        Assert.Empty(FactsAssembler.Segments(document.RootElement));
     }
 
     [Fact]
@@ -638,12 +830,16 @@ public partial class FixtureExpectations
 
         var carried = FactsAssembler.Segments(annual.RootElement);
 
-        // The newest period, and only it, with the months in every name so a sentence
-        // quoting a year cannot be read as a quarter.
-        Assert.Equal(3, carried.Count);
-        Assert.All(carried, fact => Assert.EndsWith(" 12 months to 2026-06-30", fact.Name, StringComparison.Ordinal));
+        // The newest period with the months in every name, so a sentence quoting a year cannot
+        // be read as a quarter, and the same months a year before, which the table states
+        // beside it. The column two years back is not carried.
+        // see: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns
+        Assert.Equal(4, carried.Count);
+        Assert.Equal(3, carried.Count(fact => fact.Name.EndsWith(" 12 months to 2026-06-30", StringComparison.Ordinal)));
         Assert.Contains(carried, fact => fact.Name == "segment total Revenue 12 months to 2026-06-30" && fact.Value == "270000000000");
         Assert.Contains(carried, fact => fact.Name == "segment Productivity Operating income 12 months to 2026-06-30");
+        Assert.Contains(carried, fact => fact.Name == "segment total Revenue 12 months to 2025-06-30" && fact.Value == "245000000000");
+        Assert.DoesNotContain(carried, fact => fact.Name.EndsWith("2024-06-30", StringComparison.Ordinal));
 
         // And a table that files a quarter keeps the quarter, whose name has no months in
         // it, because every stored facts file and every section written from one carries it.
@@ -669,6 +865,7 @@ public partial class FixtureExpectations
         var expected = Expected("prose").GetProperty("withoutAQuarter");
         var ticker = expected.GetProperty("ticker").GetString()!;
         var period = expected.GetProperty("period").GetString()!;
+        var yearBefore = expected.GetProperty("yearBefore").GetString()!;
         var (store, release) = await WithRelease();
 
         using (store)
@@ -701,8 +898,13 @@ public partial class FixtureExpectations
 
             var carried = FactsAssembler.Segments(withoutAQuarter.RootElement);
 
-            Assert.True(carried.Count >= 2, $"Carried {carried.Count} segment figure(s) for {period}.");
-            Assert.All(carried, fact => Assert.EndsWith(" " + period, fact.Name, StringComparison.Ordinal));
+            var latest = carried.Where(fact => fact.Name.EndsWith(" " + period, StringComparison.Ordinal)).ToArray();
+
+            Assert.True(latest.Length >= 2, $"Carried {latest.Length} segment figure(s) for {period}.");
+            Assert.All(carried, fact => Assert.True(
+                fact.Name.EndsWith(" " + period, StringComparison.Ordinal) || fact.Name.EndsWith(" " + yearBefore, StringComparison.Ordinal),
+                fact.Name));
+            Assert.Contains(carried, fact => fact.Name.EndsWith(" " + yearBefore, StringComparison.Ordinal));
 
             Fact[] facts = [.. stored.Where(fact => !fact.Name.StartsWith(SegmentPeriods.Prefix, StringComparison.Ordinal)), .. carried];
 
@@ -716,7 +918,7 @@ public partial class FixtureExpectations
 
             // The table's largest total for the period, its revenue, rounded to millions, under
             // each period's name the expectation lists.
-            var total = carried
+            var total = latest
                 .Where(fact => fact.Name.StartsWith(SegmentPeriods.Prefix + "total ", StringComparison.Ordinal))
                 .MaxBy(fact => decimal.Parse(fact.Value, CultureInfo.InvariantCulture))!;
             var millions = Math.Round(decimal.Parse(total.Value, CultureInfo.InvariantCulture) / 1_000_000m, 0).ToString(CultureInfo.InvariantCulture);

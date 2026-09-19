@@ -55,9 +55,11 @@ public partial class FixtureExpectations
         var own = paid.Asked.Where(request => request.Section != ClaimRules.CycleSection).ToArray();
         var theme = expected.GetProperty("theme");
 
+        // A section the model answered with nothing stored no draft, so only the sections that did
+        // are read against their recordings.
         var answered = local.Asked
             .Select(request => (request.Section, Text: OpenAiCompatibleModelFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedLocalModelFeed.FileFor(request))), request.Section).Text))
-            .Concat(own.Select(request => (request.Section, Text: OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)))
+            .Concat(own.Where(request => drafts.Contains(request.Section)).Select(request => (request.Section, Text: OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)))
             .ToLookup(answer => answer.Section, answer => answer.Text);
 
         foreach (var section in drafts)
@@ -68,7 +70,7 @@ public partial class FixtureExpectations
         Assert.Equal(expected.GetProperty("modelCalls").GetProperty("local").GetInt32(), local.Requests);
         Assert.Equal(expected.GetProperty("modelCalls").GetProperty("paid").GetInt32(), own.Length);
 
-        // The theme's one call, over the ten pages it was handed, answered with nothing: the
+        // The theme's one call, over the pages it was handed, answered with nothing: the
         // recording carries no answer, and the pass stored no cycle.
         var cycle = Assert.Single(paid.Asked, request => request.Section == ClaimRules.CycleSection);
 
@@ -118,7 +120,11 @@ public partial class FixtureExpectations
                 .Select(id => Query(store, $"SELECT title FROM source_document WHERE id = '{id.GetString()}';").Single()),
         ];
 
-        Assert.Equal(Listed(handed.GetProperty("The cause of each large move")), Titles("The cause of each large move"));
+        // The cause stored no version, the model having answered it with nothing, so what it was
+        // handed is read off the documents its request carried.
+        Assert.Equal(
+            Listed(handed.GetProperty("The cause of each large move")),
+            own.First(request => request.Section == ClaimRules.CauseSection).DocumentIds.Select(id => Query(store, $"SELECT title FROM source_document WHERE id = '{id}';").Single()));
         Assert.Equal(Listed(handed.GetProperty("What the company sells")), Titles("What the company sells"));
         Assert.Equal(Listed(handed.GetProperty("The segment commentary")), Titles("The segment commentary"));
 
@@ -307,6 +313,25 @@ public partial class FixtureExpectations
             .RunAsync("KEYS", "research-warranted-rewrite", new ResearchPassRequest(Refresh: true));
 
         Assert.Equal(warranted, rewrite.Warranted);
+    }
+
+    [Fact]
+    public void TheKeyUnderEachFigureIsWarrantedOnAnyDayAfterTheOneItWasWrittenFor()
+    {
+        // The key explains the night's figures, so one accepted on an earlier night is written
+        // again though nothing fired, where any other section accepted then stands, and one
+        // accepted today is not written twice.
+        // see: The key under each figure is written for each night's facts file
+        var today = new DateOnly(2026, 9, 8);
+        var earlier = new DateOnly(2026, 9, 4);
+        var stands = new StalenessVerdict(today, ResearchState.Stands, [], [], earlier, new PulseReading(0, 0, null, 0, false, null));
+
+        SectionStanding Accepted(string section, DateOnly on) => new(section, on, ClaimChecker.Accepted);
+
+        Assert.True(ResearchRunner.Warranted(ClaimRules.ComputedSection, Accepted(ClaimRules.ComputedSection, earlier), stands, today));
+        Assert.False(ResearchRunner.Warranted(ClaimRules.ComputedSection, Accepted(ClaimRules.ComputedSection, today), stands, today));
+        Assert.False(ResearchRunner.Warranted(Evidence.Sells, Accepted(Evidence.Sells, earlier), stands, today));
+        Assert.False(ResearchRunner.Warranted(Evidence.Segments, Accepted(Evidence.Segments, earlier), stands, today));
     }
 
     [Fact]
@@ -534,6 +559,7 @@ public partial class FixtureExpectations
         Assert.Equal(expected, news.Asked);
         Assert.True(news.Asked.Count < moves.Count + 1, $"The pass asked for {news.Asked.Count} windows over {moves.Count} moves and the filing, so no overlap was read once.");
         Assert.DoesNotContain(news.Asked, window => window.From <= new DateOnly(2026, 9, 8).AddYears(-ResearchRunner.WindowYears) && window.To >= new DateOnly(2026, 9, 8));
+        Assert.All(news.Asked, window => Assert.True(window.From >= new DateOnly(2026, 9, 8).AddMonths(-NewsWindows.NewsMonths)));
 
         // And what each section was handed is what the stored year handed it: the research record
         // expectation's titles, read by the test above, rest on documents inside these windows.
@@ -637,12 +663,25 @@ public partial class FixtureExpectations
             new("move 6", new DateOnly(2026, 8, 20), new DateOnly(2026, 8, 25)),
         ];
 
-        // Overlapping spans are one, and a span starting the day after another ends is one with it;
-        // a move whose start has left the stored year is no window; and the filing's span to the
-        // night takes in a move inside it.
+        // Nothing older than three months before the night: February's and March's moves and May's
+        // are no windows, and the filing's span to the night takes in the move inside it.
         Assert.Equal(
-            [(new DateOnly(2026, 2, 17), new DateOnly(2026, 3, 6)), (new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 8)), (new DateOnly(2026, 8, 18), night)],
+            [(new DateOnly(2026, 8, 18), night)],
             NewsWindows.For(moves, new DateOnly(2026, 8, 18), night));
+
+        // Overlapping spans are one, and a span starting the day after another ends is one with it,
+        // and a move whose start has left the stored year is no window, over an earlier night whose
+        // three months take in the moves stored by then.
+        var later = new DateOnly(2026, 5, 20);
+
+        Assert.Equal(
+            [(new DateOnly(2026, 2, 20), new DateOnly(2026, 3, 6)), (new DateOnly(2026, 5, 1), later)],
+            NewsWindows.For([.. moves.Where(move => move.To <= later)], new DateOnly(2026, 5, 1), later));
+
+        // A span reaching back past the bound is read from the bound.
+        Assert.Equal(
+            [(later.AddMonths(-NewsWindows.NewsMonths), later)],
+            NewsWindows.For([new MoveWindow("largest move", new DateOnly(2026, 1, 5), later)], later, later));
 
         // With no filing, the quarter back from the night; and a filing dated after the night is read
         // as none.
@@ -654,12 +693,16 @@ public partial class FixtureExpectations
     public async Task ACapReachedInsideAPassStopsItsRemainingPaidCallsRatherThanWarning()
     {
         // The pass as the recordings have it, once with the caps that let it run, to read what its
-        // first paid call cost and what its second could cost.
+        // first paid call cost and what its second could cost. The cause of each large move is left
+        // to a local model that does not answer, since the recordings answer it with nothing, so the
+        // first paid call is one they answer with prose, and the short version with it, which would
+        // otherwise be asked over a set of sections no recording was made over.
         var asked = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        IReadOnlyList<string> lane = [.. ProseWriter.DefaultLane, ClaimRules.CauseSection, "The short version"];
 
         using (var free = await FixtureReplay.ReplayedForResearchAsync())
         {
-            await FixtureReplay.Researcher(free, ResearchClock, paid: asked, search: new NoResults()).RunAsync("KEYS", "research-priced");
+            await FixtureReplay.Researcher(free, ResearchClock, lane: lane, paid: asked, search: new NoResults(), localModel: new NothingAnsweringLocal()).RunAsync("KEYS", "research-priced");
         }
 
         var first = asked.Asked[0];
@@ -675,7 +718,7 @@ public partial class FixtureExpectations
         using var store = await FixtureReplay.ReplayedForResearchAsync();
 
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
-        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, caps: new SpendCaps(cap, 50m), search: new NoResults()).RunAsync("KEYS", "research-cap-reached");
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, lane: lane, paid: paid, caps: new SpendCaps(cap, 50m), search: new NoResults(), localModel: new NothingAnsweringLocal()).RunAsync("KEYS", "research-cap-reached");
 
         // One call made and written, and no call after the refusal: the pass is paused, and every
         // paid section it had not reached is named with the cap's line rather than written.
@@ -696,7 +739,8 @@ public partial class FixtureExpectations
     {
         // The paid lane's sections are written while the local model is not answering, and
         // the local lane's are left absent with their reason, which the page reads. The short
-        // version is in the local lane here, so every paid call is one the default pass made.
+        // version is in the local lane here, so every paid call is one the default pass made,
+        // the cause of each large move among them, which the recordings answer with nothing twice.
         using var fresh = await FixtureReplay.ReplayedForResearchAsync();
 
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
@@ -708,8 +752,9 @@ public partial class FixtureExpectations
             [.. ProseWriter.DefaultLane, "The short version"],
             outcome.NotWritten.Where(line => line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(line => line.Section).ToArray());
         Assert.Equal(
-            ["The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
+            ["The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The two cases"],
             outcome.Written.Select(section => section.Section).ToArray());
+        Assert.Contains(outcome.NotWritten, line => line.Section == ClaimRules.CauseSection && line.Reason == ProseWriter.NoUsableAnswer);
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
         Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalModelSettings.DefaultModel}';").Single());
     }
@@ -823,10 +868,10 @@ public partial class FixtureExpectations
 
         var handed = Evidence.ForSections(facts, documents, "own-filing");
 
-        // Each move: fewest companies, then earliest, at most two, listed once in the
-        // order they were published. February's roundup and its two-listing article lose
-        // to the two naming the company alone; August's refusal is not handed while an
-        // admitted document is.
+        // Each move: the newest, then the fewest companies, at most two, listed once in the
+        // order they were published. February's roundup and its two-listing article, published
+        // on the move's first day, lose to the two published after them; August's refusal is
+        // not handed while an admitted document is.
         Assert.Equal(
             ["company-alone-early-february", "company-alone-late-february", "own-filing", "company-alone-august"],
             handed[Evidence.CauseSection].Select(document => document.Id).ToArray());
@@ -847,11 +892,12 @@ public partial class FixtureExpectations
         Assert.Equal(["own-filing"], handed[Evidence.Sells].Select(document => document.Id));
         Assert.Equal(["own-filing"], handed[Evidence.Segments].Select(document => document.Id));
 
-        // Across the evidence: the filing first, then since the day it was filed, fewest
-        // companies and then the newest, at most six, the roundup and the earlier document
-        // left out.
+        // Across the evidence: the filing first, then the best of each of six equal stretches of
+        // the nineteen days from the filing to the newest document, by fewest companies and then
+        // the newest, the stretches with none filled from the rest by the same order, at most six
+        // listed in the order they were published; the roundup and the earlier document left out.
         Assert.Equal(
-            ["own-filing", "company-alone-august", "since-filing-newest-two", "since-c", "since-filing-older-two", "since-b", "since-a"],
+            ["own-filing", "company-alone-august", "since-a", "since-b", "since-filing-older-two", "since-c", "since-filing-newest-two"],
             handed["The two cases"].Select(document => document.Id).ToArray());
         Assert.Equal(1 + Evidence.DocumentsSinceTheFiling, handed["The two cases"].Count);
         Assert.All(Evidence.AcrossTheEvidence, section => Assert.Equal(handed["The two cases"], handed[section]));
@@ -865,6 +911,118 @@ public partial class FixtureExpectations
         // No filing of its own: across the whole window, chosen the same way.
         Assert.DoesNotContain("own-filing", Evidence.ForSections(facts, [.. documents.Where(document => document.Stored.Id != "own-filing")], null)["The two cases"].Select(document => document.Id));
         Assert.False(Evidence.ForSections(facts, documents, null).ContainsKey(Evidence.Sells));
+    }
+
+    [Fact]
+    public void AMovesEpisodeIsHandedTheNewestDocumentsInsideItsLargestMoveATitleNamingTheCompanyFirst()
+    {
+        // Three moves sharing sessions are one run of the price, and its cause is asked for once,
+        // from inside its largest move: a title naming the company first, then the fewest companies
+        // named, then the newest. The first session's articles are about the day before it moved.
+        Fact[] facts =
+        [
+            new("largest move session", "2026-08-05", "move"),
+            new("largest move measured from", "2026-07-29", "move"),
+            new("largest move per cent", "15.37", "move"),
+            new("move 2 session", "2026-08-06", "move"),
+            new("move 2 measured from", "2026-07-30", "move"),
+            new("move 2 per cent", "12.28", "move"),
+            new("move 3 session", "2026-08-07", "move"),
+            new("move 3 measured from", "2026-07-31", "move"),
+            new("move 3 per cent", "11.56", "move"),
+            new("move 4 session", "2026-05-12", "move"),
+            new("move 4 measured from", "2026-05-05", "move"),
+            new("move 4 per cent", "12.36", "move"),
+        ];
+
+        var episodes = MoveWindows.Episodes(facts);
+
+        Assert.Equal(2, episodes.Count);
+        Assert.Equal(["move 4", "largest move"], episodes.Select(episode => episode.Largest.Name));
+        Assert.Equal(3, episodes[1].Moves.Count);
+
+        static EvidenceDocument Document(string id, string published, int symbols, bool named) =>
+            new(new StoredDocument(id, "https://example.test/" + id, id, DateOnly.Parse(published, CultureInfo.InvariantCulture), DateTimeOffset.UnixEpoch, "text", Admissibility.Accepted), symbols, named);
+
+        EvidenceDocument[] documents =
+        [
+            Document("selloff-first-session", "2026-07-29", 1, named: true),
+            Document("rally-cause", "2026-08-05", 1, named: true),
+            Document("roundup-naming-it", "2026-08-04", 3, named: true),
+            Document("other-company-alone", "2026-08-05", 1, named: false),
+            Document("inside-move-2-only", "2026-08-06", 1, named: true),
+        ];
+
+        var cause = Evidence.Moves(facts, documents).Select(document => document.Id).ToArray();
+
+        // The newest two naming the company inside the largest move; the document published after
+        // it and inside the episode's other moves only is not handed, since the sentence names the
+        // largest move's session.
+        Assert.Equal(["roundup-naming-it", "rally-cause"], cause);
+
+        var handed = Evidence.Moves(facts, documents).Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, "text")).ToArray();
+        var markers = SectionPrompt.MovesWithDocuments(facts, handed);
+
+        Assert.Equal(["largest move"], markers.Select(move => move.Move.Name));
+
+        // Each move listed says which way it went, as its change fact is written, so a document
+        // about a rise is not given as the cause of a fall.
+        Assert.Contains("- largest move, from 2026-07-29 to 2026-08-05, up 15.37 per cent: D1, D2\n", SectionPrompt.Prompt("NVDA", Evidence.CauseSection, facts, handed), StringComparison.Ordinal);
+        Assert.Equal("down 13.98 per cent", SectionPrompt.Went([new("move 8 per cent", "-13.98", "move")], new MoveWindow("move 8", new DateOnly(2026, 8, 17), new DateOnly(2026, 8, 24))));
+        Assert.Null(SectionPrompt.Went([], episodes[1].Largest));
+    }
+
+    [Fact]
+    public void TheSectionsBuiltAcrossTheEvidenceAreHandedDocumentsSpreadOverTheDaysSinceTheFiling()
+    {
+        // Twelve documents naming the company alone, eight of them on the last two days: the six
+        // newest would be those two days, and one from each of six stretches since the filing is
+        // what the sections are handed. A title naming the company ranks first within a stretch.
+        static EvidenceDocument Document(string id, string published, int symbols = 1, bool named = true) =>
+            new(new StoredDocument(id, "https://example.test/" + id, id, DateOnly.Parse(published, CultureInfo.InvariantCulture), DateTimeOffset.UnixEpoch, "text", Admissibility.Accepted), symbols, named);
+
+        var own = Document("own-filing", "2026-08-26");
+
+        EvidenceDocument[] documents =
+        [
+            own,
+            Document("day-1", "2026-08-27"),
+            Document("day-5", "2026-08-31"),
+            Document("day-9", "2026-09-04"),
+            Document("day-13-other", "2026-09-08", named: false),
+            Document("day-13", "2026-09-08", symbols: 2),
+            Document("day-17", "2026-09-12"),
+            .. Enumerable.Range(0, 4).Select(at => Document($"late-17-{at}", "2026-09-17")),
+            .. Enumerable.Range(0, 4).Select(at => Document($"late-18-{at}", "2026-09-18")),
+        ];
+
+        var handed = Evidence.Across(documents, own).Select(document => document.Id).ToArray();
+
+        Assert.Equal("own-filing", handed[0]);
+        Assert.Equal(1 + Evidence.DocumentsSinceTheFiling, handed.Length);
+        Assert.Contains("day-1", handed);
+        Assert.Contains("day-5", handed);
+        Assert.Contains("day-9", handed);
+        Assert.Contains("day-13", handed);
+        Assert.DoesNotContain("day-13-other", handed);
+
+        // Listed in the order they were published.
+        Assert.Equal(
+            handed.Skip(1).Select(id => documents.Single(document => document.Stored.Id == id).Stored.PublishedOn),
+            handed.Skip(1).Select(id => documents.Single(document => document.Stored.Id == id).Stored.PublishedOn).Order());
+    }
+
+    [Fact]
+    public void ATitleNamesTheCompanyByItsTickerOrTheFirstWordOfItsName()
+    {
+        Assert.True(Evidence.NamesTheCompany("Nvidia stock rises after Musk says SpaceX will exclusively use company's chips", "NVDA", "NVIDIA Corporation"));
+        Assert.True(Evidence.NamesTheCompany("Why NVDA Rallied Today", "NVDA", null));
+        // The cost the rule states: a name whose first word is not the one titles use.
+        Assert.False(Evidence.NamesTheCompany("Disney's parks lift the quarter", "DIS", "The Walt Disney Company"));
+        Assert.False(Evidence.NamesTheCompany("Xeal to Launch Laitent, World's First Edge Inference Compute Using Idle EV Charging Capacity", "NVDA", "NVIDIA Corporation"));
+        Assert.False(Evidence.NamesTheCompany("Nvidias of the world", "NVDA", "NVIDIA Corporation"));
+        Assert.False(Evidence.NamesTheCompany(null, "NVDA", "NVIDIA Corporation"));
+        Assert.True(Evidence.NamesTheCompany("Walt Disney beats", "DIS", "The Walt Disney Company"));
     }
 
     [Fact]
@@ -884,7 +1042,7 @@ public partial class FixtureExpectations
 
         var runbook = Corpus.Read("docs/RUNBOOK.md");
 
-        Assert.Contains($"{words[Evidence.DocumentsPerMove]} a move for the cause of each move, and {words[Evidence.DocumentsSinceTheFiling]} since the release", runbook, StringComparison.Ordinal);
+        Assert.Contains($"{words[Evidence.DocumentsPerMove]} a move for the cause of each move's episode, and {words[Evidence.DocumentsSinceTheFiling]} since the release", runbook, StringComparison.Ordinal);
 
         // What a pass over the fixture cost, as RUNBOOK states it, to the hundredth of a cent
         // of what the research record's paid calls came to.
@@ -895,7 +1053,8 @@ public partial class FixtureExpectations
         // And the windows a pass reads the news over, which the runbook states as the rule does:
         // inside each stored move and from the release's filing date to the night.
         Assert.Equal(1, ResearchRunner.WindowYears);
-        Assert.Contains("the name's news inside each stored move and from the release's filing date to the night, overlapping spans once", runbook, StringComparison.Ordinal);
+        Assert.Contains("the name's news inside each stored move and from the release's filing date to the night, overlapping spans once and none older than three months before the night", runbook, StringComparison.Ordinal);
+        Assert.Equal(3, NewsWindows.NewsMonths);
         Assert.DoesNotContain("news for the stored year", runbook, StringComparison.Ordinal);
     }
 

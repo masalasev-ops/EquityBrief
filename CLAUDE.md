@@ -135,7 +135,7 @@ Named, and cited by name. A violation is a defect regardless of what else is tru
 
 **The candidate register is append-only.** No update and no delete. A retirement is a new dated row naming what it retires. A register that can be edited after results are in is not a pre-registration.
 
-**Nothing expires on a timer.** Research is rewritten when a filing appears, an earnings date passes, a name's news volume jumps above its own baseline, or the operator asks. (see: Nothing expires on a timer)
+**Nothing expires on a timer.** Research is rewritten when a filing appears, an earnings date passes, a name's news volume jumps above its own baseline, or the operator asks. The key under each figure, which explains the night's figures, is written for each night's facts file. (see: Nothing expires on a timer) (see: The key under each figure is written for each night's facts file)
 
 **The spend cap is a hard stop, denominated in money.** At the cap, research pauses and the page says so. The overnight queue never makes a paid call at all. (see: The spend cap is a stop, not an allowance)
 

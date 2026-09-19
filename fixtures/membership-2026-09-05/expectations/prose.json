@@ -33,7 +33,7 @@
     },
     "modelCallsPerName": 1,
     "verdicts": {
-      "MSFT": "rejected",
+      "MSFT": "accepted",
       "NFLX": "accepted"
     }
   },
@@ -62,25 +62,19 @@
           "The cause of each large move": "accepted",
           "What the company sells": "accepted",
           "The segment commentary": "accepted",
-          "The key under each figure": "rejected"
+          "The key under each figure": "accepted"
         }
       },
       {
-        "written": [
-          "The key under each figure"
-        ],
-        "retried": [
-          "The key under each figure"
-        ],
+        "written": [],
         "skipped": {
           "The cause of each large move": "it was already written today",
           "What the company sells": "it was already written today",
-          "The segment commentary": "it was already written today"
+          "The segment commentary": "it was already written today",
+          "The key under each figure": "it was already written today"
         },
-        "modelCalls": 1,
-        "verdicts": {
-          "The key under each figure": "accepted"
-        }
+        "modelCalls": 0,
+        "verdicts": {}
       }
     ],
     "causeNames": [
@@ -98,7 +92,8 @@
     "asked": [
       "The key under each figure"
     ],
-    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its 22,996 characters of text, of which at least 19,184 are neither digits nor outside ASCII, and those alone come to 6,976 tokens at 2.75 characters a token, so none fits in 8,000. The key under each figure carries the facts file alone, 6,411 characters in all, and fits whatever its share of digits, because no character in it counts as more than one token."
+    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its 22,996 characters of text, of which at least 19,184 are neither digits nor outside ASCII, and those alone come to 6,976 tokens at 2.75 characters a token, so none fits in 8,000. The key under each figure carries the facts file alone, 14,401 characters in all, 1,971 of them digits and none outside ASCII, which the rule counts as a token each, and 12,430 others at 2.75 characters a token, 4,520 tokens, so 6,491 in all, which fits with the answer's budget in 8,000.",
+    "askedTokens": 6491
   },
   "unavailable": {
     "modelCalls": 1,
@@ -113,9 +108,10 @@
   },
   "withoutAQuarter": {
     "ticker": "KEYS",
-    "derivedFrom": "the segment report the fixture captured for KEYS, whose columns are three months and nine months each to 2026-07-31 and to 2025-07-31, because the filing is a third quarter's report and files the year to date beside the quarter; and the decision that a segment figure held for a period longer than a quarter is asked for by that period and refused where its sentence names a period of another length. With the three-month columns taken out the newest period the table files is the nine months to 2026-07-31, so every segment figure is named for it and the segment commentary is asked for that period by its months. A sentence quoting one of its figures is refused for that and for nothing else where it names a quarter or six months, and passes where it names nine months in words or the period as the facts file names it, the date in each being the quarter end the facts file holds. Each was worked out from the table's own column headings and the decision before the test that reads this was run. The figure quoted is read back from the stored table at test time, rounded to millions.",
+    "derivedFrom": "the segment report the fixture captured for KEYS, whose columns are three months and nine months each to 2026-07-31 and to 2025-07-31, because the filing is a third quarter's report and files the year to date beside the quarter; and the decision that a segment figure held for a period longer than a quarter is asked for by that period and refused where its sentence names a period of another length. With the three-month columns taken out the newest period the table files is the nine months to 2026-07-31, so every segment figure is named for it or for the same nine months a year before, to 2025-07-31, which the table states beside it, and the segment commentary is asked for that period by its months. A sentence quoting one of its figures is refused for that and for nothing else where it names a quarter or six months, and passes where it names nine months in words or the period as the facts file names it, the date in each being the quarter end the facts file holds. Each was worked out from the table's own column headings and the decision before the test that reads this was run. The figure quoted is read back from the stored table at test time, rounded to millions.",
     "period": "9 months to 2026-07-31",
-    "asked": "reported for the 9 months to 2026-07-31. Every segment figure listed covers that period and no other, so name it by its months and never as a quarter, a half or any other period.",
+  "yearBefore": "9 months to 2025-07-31",
+    "asked": "reported for the 9 months to 2026-07-31. Each segment figure listed is named with the period it covers, so name a period by its months and never as a quarter, a half or any other period.",
     "verdicts": [
       {
         "wording": "for the quarter",

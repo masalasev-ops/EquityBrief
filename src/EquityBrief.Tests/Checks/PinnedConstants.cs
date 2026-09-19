@@ -112,6 +112,8 @@ public class PinnedConstants
             new("Spend cap", "50", SpendCaps.DefaultMonth, "SpendCaps.DefaultMonth"),
             new("Theme search parameters", "3", ThemeSearch.ResultsASite, "ThemeSearch.ResultsASite"),
             new("Theme search parameters", "10", ThemeSearch.MostPages, "ThemeSearch.MostPages"),
+            new("Theme search parameters", "5", ThemeSearch.MentionsPerTenThousand, "ThemeSearch.MentionsPerTenThousand"),
+            new("Theme search parameters", "10,000", ThemeSearch.CountedOver, "ThemeSearch.CountedOver"),
             new("Theme search parameters", "30,000", ThemeSearch.CharactersAPage, "ThemeSearch.CharactersAPage"),
             new(Admissible, "6.3", null, Checkpoint, () => Landed("6.3")),
             new(Admissible, "3", Admissibility.SentencesInAParagraph, "Admissibility.SentencesInAParagraph"),

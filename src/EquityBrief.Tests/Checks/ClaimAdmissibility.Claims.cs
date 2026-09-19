@@ -698,6 +698,14 @@ public partial class ClaimAdmissibility
         Assert.False(Holds("hundreds of millions of dollars"));
         Assert.False(Holds("twelve new products"));
         Assert.True(Holds("two segments"));
+
+        // A window written in words from eleven up is read as the number it names and held as
+        // one in digits is: the 200 of sma200 by its words, and a length no name carries refused.
+        Assert.True(Holds("the two-hundred-day average"));
+        Assert.True(Holds("the two hundred day average"));
+        Assert.False(Holds("the one-hundred-day average"));
+        Assert.False(Holds("over twenty sessions"));
+        Assert.Equal(21m, ClaimRules.ValueInWords("twenty-one"));
     }
 
     [Fact]

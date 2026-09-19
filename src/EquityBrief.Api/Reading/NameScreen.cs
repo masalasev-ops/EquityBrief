@@ -294,7 +294,7 @@ public static class NameScreen
     // The guided quarter is management's own passage rather than a figure, and the
     // consensus estimate is drawn beside it and named for what it is: what analysts
     // expect rather than what management said.
-    // see: Guidance is stored as management's own prose and never parsed into a figure
+    // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
     public static string Numbers(IReadOnlyList<FilingRow> filings)
     {
         var html = new System.Text.StringBuilder();
@@ -404,7 +404,7 @@ public static class NameScreen
     // from. Never a figure: the release states it in a sentence and a range pulled
     // out of prose by pattern is neither computed from stored data nor copied from a
     // payload with its filing date.
-    // see: Guidance is stored as management's own prose and never parsed into a figure
+    // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
     static string Guidance(JsonElement payload, IReadOnlyDictionary<string, string> source)
     {
         if (!payload.TryGetProperty("guidance", out var guidance) || guidance.ValueKind != JsonValueKind.Object)

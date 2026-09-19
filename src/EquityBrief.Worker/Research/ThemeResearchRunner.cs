@@ -71,6 +71,10 @@ public sealed class ThemeResearchRunner(
     public const string NothingFound = "the search returned no page from the industry list with its text";
     public const string ShortOfADocument = "short of a document";
 
+    // Why a cycle is not written where every page the searches kept only mentions the industry.
+    // see: A theme page is handed to the model only where its text names the industry
+    public const string NoPageAboutTheIndustry = "the searches returned no page about the industry";
+
     const string NewestCycle = @"
         SELECT version, as_of, status, reject_reason
         FROM theme_section
@@ -284,7 +288,16 @@ public sealed class ThemeResearchRunner(
         CancellationToken cancellation)
     {
         var version = ((await NewestAsync(connection, theme, cancellation))?.Version ?? 0) + 1;
-        var admitted = stored.Where(document => document.Admitted).ToArray();
+        var kept = stored.Where(document => document.Admitted).ToArray();
+        var admitted = kept.Where(document => ThemeSearch.AboutTheIndustry(document, theme)).ToArray();
+
+        // Pages admitted and none about the industry: nothing is asked and nothing is paid for.
+        if (kept.Length > 0 && admitted.Length == 0)
+        {
+            notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, NoPageAboutTheIndustry));
+
+            return null;
+        }
 
         if (admitted.Length == 0)
         {

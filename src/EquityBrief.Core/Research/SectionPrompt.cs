@@ -18,7 +18,7 @@ public sealed record PromptDocument(string Id, string Title, DateOnly? Published
 // copied or rounded from a fact listed, every sentence of a researched section
 // cites a listed document, and numbers from eleven up are written in digits.
 // see: The model never fetches; components fetch and hand it documents
-// see: A claim is a sentence, and every sentence in a researched section names the document it rests on
+// see: A claim is a sentence, every sentence in a researched section names the document it rests on, and a window written in words is read as its number
 public static class SectionPrompt
 {
     public const string Lane = "local";
@@ -69,6 +69,7 @@ public static class SectionPrompt
         ["The cause of each large move"] =
             "For each move listed under Moves with a document beside it, write one sentence that begins with the session the move ended on "
             + "and says what that document gives as the cause of the move, ending with that document's marker. "
+            + "Where no document beside a move gives a cause for it going the way it went, write nothing for that move. "
             + "Write nothing about any move not listed there.",
         ["What the company sells"] =
             "Say what the company sells and to whom, in two to four sentences, using only the documents listed.",
@@ -84,7 +85,7 @@ public static class SectionPrompt
             "Say where the industry's own prices are in their cycle and the three things capping or driving them, using only the documents listed. "
             + "No facts are listed for an industry, so write no figure and no date: say in words which way prices are moving and what is moving them.",
         ["The dated calendar items"] =
-            "List, one sentence each, the dated events the documents name that fall after the session stated below, each with the date a listed document gives for it and ending with that document's marker. "
+            "List, one sentence each, the dated events of the company named in the facts that the documents name and that fall after the session stated below, each with the date a listed document gives for it and ending with that document's marker. "
             + "Write no event dated on or before that session, and no date no listed document states.",
         ["The two cases"] =
             "Write the bull case and the bear case side by side, each ending in what it needs to see at the next report.",
@@ -100,7 +101,7 @@ public static class SectionPrompt
     public static string SegmentsOverALongerPeriod(int months, string ended) =>
         "Write one sentence for each business segment whose figures are listed, saying what that segment reported for the "
         + months.ToString(CultureInfo.InvariantCulture) + " months to " + ended
-        + ". Every segment figure listed covers that period and no other, so name it by its months and never as a quarter, a half or any other period. "
+        + ". Each segment figure listed is named with the period it covers, so name a period by its months and never as a quarter, a half or any other period. "
         + "Use only the segment facts listed.";
 
     static string AskFor(string section, IReadOnlyList<Fact> facts) =>
@@ -162,8 +163,16 @@ public static class SectionPrompt
             {
                 prompt.Append("- ").Append(move.Name)
                     .Append(", from ").Append(move.From!.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
-                    .Append(" to ").Append(move.To.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
-                    .Append(": ").Append(string.Join(", ", markers)).Append('\n');
+                    .Append(" to ").Append(move.To.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                // Which way the move went, since the newest documents inside a fall can be about the
+                // rise before it.
+                if (Went(facts, move) is { } went)
+                {
+                    prompt.Append(", ").Append(went);
+                }
+
+                prompt.Append(": ").Append(string.Join(", ", markers)).Append('\n');
             }
 
             prompt.Append('\n');
@@ -248,17 +257,27 @@ public static class SectionPrompt
         DateOnly? night = null) =>
         Request(model, ticker, section, facts, documents, refusedBecause, written, night) with { Lane = PaidLane };
 
-    // Each stored move that a handed document was published inside, with the markers
-    // of those documents in the order the prompt lists them. A move no document falls
-    // inside is left out, and so is one whose start the facts file does not carry,
-    // since nothing can be shown to fall inside a span with no start.
+    // Which way a move went and by how much, as its change fact is written in the facts file:
+    // "down 13.98 per cent" for a change written with a minus sign, "up" otherwise, and nothing
+    // where the file carries no change for the move.
+    public static string? Went(IReadOnlyList<Fact> facts, MoveWindow move) =>
+        facts.FirstOrDefault(fact => fact.Name == move.Name + " " + MoveWindows.PerCent)?.Value is { Length: > 0 } change
+            ? (change.StartsWith('-') ? "down " + change[1..] : "up " + change) + " " + MoveWindows.PerCent
+            : null;
+
+    // The largest move of each episode that a handed document was published inside, with the
+    // markers of those documents in the order the prompt lists them. The other moves of an
+    // episode are the same run of the price and are not listed, so its cause is asked for once.
+    // A move no document falls inside is left out, and so is one whose start the facts file
+    // does not carry, since nothing can be shown to fall inside a span with no start.
+    // see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
     public static IReadOnlyList<(MoveWindow Move, IReadOnlyList<string> Markers)> MovesWithDocuments(
         IReadOnlyList<Fact> facts,
         IReadOnlyList<PromptDocument> documents)
     {
         var paired = new List<(MoveWindow, IReadOnlyList<string>)>();
 
-        foreach (var move in MoveWindows.In(facts))
+        foreach (var move in MoveWindows.Episodes(facts).Select(episode => episode.Largest))
         {
             var markers = new List<string>();
 

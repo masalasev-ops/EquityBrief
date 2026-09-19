@@ -68,7 +68,7 @@ public sealed record ClaimVerdict(IReadOnlyList<ClaimFinding> Findings, bool NoA
 // And every sentence of a researched section names a stored document that
 // admissibility admitted, by a marker the section's source list resolves.
 // see: Every researched claim must name a stored source document
-// see: A claim is a sentence, and every sentence in a researched section names the document it rests on
+// see: A claim is a sentence, every sentence in a researched section names the document it rests on, and a window written in words is read as its number
 //
 // The checker reads the admissibility verdict on the row and never applies the
 // test again, which 6.0 ruled: the test runs on a document as it is fetched, and
@@ -485,6 +485,45 @@ public static class ClaimRules
         @"\b(?:eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundreds?|thousands?|millions?|billions?|trillions?|dozens?)\b",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    // A window written in words, "the twenty-day average" or "fourteen periods", is a count
+    // before a unit of time as one in digits is, and is held to the facts file the same way.
+    // From eleven up, as the words read below are, so "a five-day move" stays language.
+    // see: A claim is a sentence, every sentence in a researched section names the document it rests on, and a window written in words is read as its number
+    static readonly Regex WindowInWords = new(
+        @"\b(?<words>(?:(?:one|two|three|four|five|six|seven|eight|nine)[ -])?"
+        + @"(?:eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)"
+        + @"(?:[ -](?:one|two|three|four|five|six|seven|eight|nine))?)"
+        + @"[ -](?:day|session|week|period)s?\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    static readonly string[] Units =
+    [
+        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+        "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen",
+    ];
+
+    static readonly string[] Tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+    // The number a window's words name: units and tens added, a hundred multiplying what came
+    // before it, so "two hundred" is 200 and "twenty-one" is 21.
+    public static decimal ValueInWords(string words)
+    {
+        var value = 0m;
+
+        foreach (var word in words.ToLowerInvariant().Split(' ', '-'))
+        {
+            var unit = Array.IndexOf(Units, word);
+            var ten = Array.IndexOf(Tens, word);
+
+            value = word == "hundred" ? Math.Max(value, 1m) * 100m
+                : unit >= 0 ? value + unit
+                : ten >= 2 ? value + ten * 10
+                : value;
+        }
+
+        return value;
+    }
+
     public static IReadOnlyList<ProseFigure> Figures(string sentence)
     {
         var text = Citation.Replace(sentence, " ");
@@ -554,6 +593,9 @@ public static class ClaimRules
 
             figures.Add(new ProseFigure(match.Value.Trim(), kind, magnitude, decimals, scale, percent, null, null, null));
         });
+
+        text = Blank(text, WindowInWords, match =>
+            figures.Add(new ProseFigure(match.Value, FigureKind.Window, ValueInWords(match.Groups["words"].Value), 0, 1m, false, null, null, null)));
 
         Blank(text, NumberWord, match =>
             figures.Add(new ProseFigure(match.Value, FigureKind.Unmatchable, 0m, 0, 1m, false, null, null, null)));

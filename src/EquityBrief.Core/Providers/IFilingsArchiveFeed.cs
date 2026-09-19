@@ -126,7 +126,7 @@ public sealed record SegmentBreakdown(
 // at least two more state it inside an ordinary paragraph, so a heading finds it
 // for fewer than half. A passage nobody located is not a company that gave no
 // guidance, and the two are never collapsed.
-// see: Guidance is stored as management's own prose and never parsed into a figure
+// see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
 public sealed record FiledGuidance(
     string Document,
     DateOnly FiledOn,

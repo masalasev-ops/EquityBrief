@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-hjmyu4pp8zv5bnfw604g99",
+  "object": "chat.completion",
+  "created": 1789765510,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock of Keysight Technologies Inc closed at 333.42, trading above its 20-day simple moving average of 330.47 and the 50-day average of 326.21 while remaining below the immediate resistance level of 366.41. The relative strength index for the past 14 days stands at 54.21, indicating a moderate bullish momentum within an identified uptrend state supported by strong immediate support at 300.87. Volume averaged 1.42 million shares over the last 20 sessions compared to a 1.34 million average over 50 sessions, with the current session volume of 1.02 million being lower than these averages. The moving average convergence divergence indicator shows a value of -1.45 with a histogram of 0.39 and a signal line at -1.84, suggesting potential short-term stabilization after recent declines.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1016,
+    "completion_tokens": 206,
+    "total_tokens": 1222,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -460,7 +460,7 @@ public class FundamentalsFetcherTests
         using var store = new TemporaryStore().Migrated();
 
         // The filer whose release carries guidance under a heading.
-        // see: Guidance is stored as management's own prose and never parsed into a figure
+        // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
         await WithArchive(store, Feed()).RunAsync("KEYS", null, "open-1");
 
         using var payload = JsonDocument.Parse(Rows(store, "KEYS")[0].Payload);
