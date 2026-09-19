@@ -16218,7 +16218,28 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             section 17's census red on a figure the code no longer holds; nothing else.
             M5 the overnight queue's connection opened without the helper: the wait test red naming
             its file; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Six runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated files and the worktree removed after. The baseline is 1098 of 1099 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the pass's one-write test on four documents kept.
+            M2 turned 1 red, the theme pass's one-write test on two pages kept.
+            M3 turned 1 red, the wait test on a connection carrying the driver's thirty seconds.
+            M4 turned 2 red, the wait test on the row's figure and section 17's census on a figure
+            the code no longer holds.
+            M5 turned 1 red, the wait test on the file writing a connection string of its own.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim
+            added: section 17's row Waiting on another writer, which passes on `nightly-run`, the
+            check that reached it, and which 8.0's pair counts among the rows the document gained
+            after its prediction. Both gates ran with this entry in place, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing owed by this repair. A page waiting on a night's write keeps the driver's thirty
             seconds, which is the screens' question, in the session the operator has put them to.
