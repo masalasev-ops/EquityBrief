@@ -56,7 +56,7 @@ public sealed record QueueOutcome(
 // resting on documents rests on ones only a pass that fetched them stored, so such a
 // section waits for the pass an open starts, and what the queue writes is what the facts
 // file alone supports.
-// see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about
+// see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about
 public sealed class OvernightQueue(
     StalenessJudge judge,
     Func<IReadOnlyList<string>, ProseWriter> writerFor,

@@ -22,7 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface, 6.8: the name page once a research pass has written something a reader
-// is shown. The written sections in section 4's order with their dates and models, the
+// is shown. The written sections in section 4's order with their dates, the
 // dates and sources, the three research states with what each offers, the control and
 // the cost stated before it is pressed, the route that control reaches, and tonight's
 // count of reports carrying fresh prose against reused. Each is read back off the markup
@@ -114,7 +114,7 @@ public partial class ReadSurface
             var paragraphs = Regex.Matches(drawn.Groups[3].Value, "<p class=\"prose\">([^<]*)</p>").Select(match => WebUtility.HtmlDecode(match.Groups[1].Value));
 
             Assert.Equal(Regex.Replace(row[3], @"\s+", " ").Trim(), Regex.Replace(string.Join(" ", paragraphs), @"\s+", " ").Trim());
-            Assert.Contains($"<p class=\"written-by\">{(key ? "written for the close of" : "written on")} {row[1]} by {WebUtility.HtmlEncode(row[2])}</p>", drawn.Groups[3].Value, StringComparison.Ordinal);
+            Assert.Contains($"<p class=\"written-by\">{(key ? "written for the close of" : "written on")} {row[1]}</p>", drawn.Groups[3].Value, StringComparison.Ordinal);
             Assert.Single(Regex.Matches(page, $"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(row[0]))}\""));
         }
     }
@@ -161,7 +161,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheShortVersionIsDrawnAtTheTopWithItsDateAndTheModelThatWroteItBeneathIt()
+    public async Task TheShortVersionIsDrawnAtTheTopWithItsDateBeneathIt()
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
@@ -173,12 +173,12 @@ public partial class ReadSurface
         Assert.Equal(stored[1], drawn.Groups[1].Value);
         Assert.Equal(stored[2], WebUtility.HtmlDecode(drawn.Groups[2].Value));
 
-        // Beneath it: the date and model after the last paragraph of the prose.
+        // Beneath it: the date after the last paragraph of the prose.
         var body = drawn.Groups[3].Value;
 
         Assert.True(
             body.LastIndexOf("<p class=\"prose\">", StringComparison.Ordinal) < body.IndexOf("<p class=\"written-by\">", StringComparison.Ordinal),
-            "the date and model are not beneath the short version");
+            "the date is not beneath the short version");
 
         // At the top: above the chart, the table of moves and every other written section.
         var at = page.IndexOf("<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"The short version\"", StringComparison.Ordinal);
@@ -203,7 +203,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheResearchedSectionsAreDrawnInSectionFoursOrderEachWithItsOwnDateAndModel()
+    public async Task TheResearchedSectionsAreDrawnInSectionFoursOrderEachWithItsOwnDate()
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
@@ -221,15 +221,25 @@ public partial class ReadSurface
         int At(string marker) => page.IndexOf(marker, StringComparison.Ordinal);
         int Section(string section) => At($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"");
 
-        // Section 4's order: what the company sells and its segments, the numbers, the two
-        // cases, then the chart and the plan, then what would make it wrong.
-        Assert.True(Section("What the company sells") < Section("The segment commentary"));
-        Assert.True(Section("The segment commentary") < At("<section class=\"numbers\""));
-        Assert.True(At("<section class=\"numbers\"") < Section("The two cases"));
-        Assert.True(Section("The two cases") < At("class=\"level-summary\""));
-        Assert.True(At("class=\"level-summary\"") < Section("The key under each figure"));
-        Assert.True(Section("The key under each figure") < At("<section class=\"plan-arithmetic\""));
-        Assert.True(At("<section class=\"plan-arithmetic\"") < Section("The risks, each with what would confirm it"));
+        // Section 4's order: how it got here, the chart with the key beneath its figures and
+        // the plan, then what the company sells and its segments, the numbers, the two cases,
+        // and what would make it wrong. Read as the order the page draws them in, so a page
+        // drawing them otherwise says which came where.
+        (string Part, int At)[] drawn =
+        [
+            ("how it got here", At("<section class=\"how-it-got-here\"")),
+            ("the chart", At("class=\"level-summary\"")),
+            ("the key", Section("The key under each figure")),
+            ("the plan", At("<section class=\"plan-arithmetic\"")),
+            ("what it sells", Section("What the company sells")),
+            ("the segments", Section("The segment commentary")),
+            ("the numbers", At("<section class=\"numbers\"")),
+            ("the two cases", Section("The two cases")),
+            ("the risks", Section("The risks, each with what would confirm it")),
+        ];
+
+        Assert.All(drawn, part => Assert.True(part.At >= 0, $"{part.Part} is not drawn"));
+        Assert.Equal(drawn.Select(part => part.Part), drawn.OrderBy(part => part.At).Select(part => part.Part));
 
         // The cycle is the theme's, and the research model answered the theme's call over the
         // pages its searches kept for the name's industry with nothing, so it is not drawn and
@@ -244,6 +254,24 @@ public partial class ReadSurface
         Assert.Equal(
             $"The industry cycle is not written: {reason}",
             WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The industry cycle\">([^<]*)</p>").Groups[1].Value));
+    }
+
+    [Fact]
+    public async Task NoModelThatWroteASectionIsNamedInThePagesWords()
+    {
+        // The store keeps the model that wrote each section and the element each is drawn in
+        // carries it, and the words a reader reads name none of them.
+        using var store = await FixtureReplay.ResearchedAsync();
+
+        var page = await ResearchedPage(store, "KEYS", AWeekLater);
+        var models = Rows(store, "SELECT DISTINCT model FROM research_section WHERE ticker = 'KEYS' ORDER BY model;").Select(row => row[0]).ToArray();
+
+        Assert.Equal(2, models.Length);
+        Assert.All(models, model => Assert.Contains($"data-model=\"{WebUtility.HtmlEncode(model)}\"", page, StringComparison.Ordinal));
+
+        var words = WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(page, @"<(script|style)[^>]*>[\s\S]*?</\1>", " "), "<[^>]+>", " "));
+
+        Assert.DoesNotContain(models, model => words.Contains(model, StringComparison.Ordinal));
     }
 
     [Fact]

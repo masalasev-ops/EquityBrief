@@ -8,7 +8,7 @@ namespace EquityBrief.Web.App;
 // and what to take from it. A card holds a region's markup as the marks and the regions
 // wrote it and adds only words and layout, so a card can be restyled without a figure
 // inside it moving.
-// see: Every part of a page states where it came from and as of when
+// see: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
 // see: Every figure carries a plain-language key
 public static class Cards
 {

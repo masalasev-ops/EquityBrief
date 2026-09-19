@@ -2427,8 +2427,9 @@ public sealed class MarkRenderer : IComponent
     static string Capitalised(string line) =>
         line.Length == 0 ? line : char.ToUpperInvariant(line[0]) + line[1..];
 
-    // One written section, under its own heading, with the date it was written on and the
-    // model that wrote it beneath the prose, and the documents its markers resolve to.
+    // One written section, under its own heading, with the date it was written on beneath
+    // the prose and the model that wrote it on the element, and the documents its markers
+    // resolve to.
     //
     // The prose is drawn as stored, a paragraph at each blank line, and as text: a model's
     // words are quoted rather than rendered, so markup inside them is shown rather than
@@ -2449,7 +2450,7 @@ public sealed class MarkRenderer : IComponent
             drawn.Append("<p class=\"prose\">").Append(Escaped(paragraph)).Append("</p>");
         }
 
-        drawn.Append(Invariant, $"<p class=\"written-by\">{Escaped(dated)} {section.AsOf:yyyy-MM-dd} by {Escaped(section.Model)}</p>");
+        drawn.Append(Invariant, $"<p class=\"written-by\">{Escaped(dated)} {section.AsOf:yyyy-MM-dd}</p>");
 
         if (section.SourceIds.Count > 0)
         {
@@ -2472,6 +2473,9 @@ public sealed class MarkRenderer : IComponent
 
         return drawn.ToString();
     }
+
+    // The one section dated by the close it explains rather than by the day it was written.
+    public const string KeySection = "The key under each figure";
 
     // Where the key under each figure would be, when the one on file explains another
     // night's figures than the page draws: which night it was written for, and why it is
@@ -2558,9 +2562,9 @@ public sealed class MarkRenderer : IComponent
     // Three kinds of part and each states its own. The computed sections, as of the
     // newest session the store holds for the name. The numbers, as of the filing
     // they were read from. And each written section of the research, as of the day
-    // it was written and naming the model that wrote it, which is the first thing a
-    // reader of a paragraph a model wrote needs and the reason every section stores
-    // both (see: A research record is written and dated per section, not as a whole).
+    // it was written, and the key under each figure as of the close it explains, with
+    // the model that wrote each on the element and not in the words (see: A research
+    // record is written and dated per section, not as a whole).
     // A part with nothing behind it says so rather than being left out, for the
     // reason every absence on these pages is stated.
     public string ProvenanceFooter(string ticker, DateOnly? computedThrough, DateOnly? filedOn, IReadOnlyList<WrittenPart> written)
@@ -2595,7 +2599,7 @@ public sealed class MarkRenderer : IComponent
         foreach (var part in written)
         {
             footer.Append(Invariant, $"<p data-part=\"research\" data-section=\"{Escaped(part.Section)}\" data-as-of=\"{part.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(part.Model)}\">");
-            footer.Append(Invariant, $"{Escaped(part.Section)} was written on {part.AsOf:yyyy-MM-dd} by {Escaped(part.Model)}</p>");
+            footer.Append(Invariant, $"{Escaped(part.Section)} was {(part.Section == KeySection ? "written for the close of" : "written on")} {part.AsOf:yyyy-MM-dd}</p>");
         }
 
         footer.Append("</footer>");

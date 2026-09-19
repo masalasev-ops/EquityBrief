@@ -25,6 +25,105 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - ARCHITECTURE.html - section 4 puts the chart and the plan third and fourth
+
+Corrects: section 4's numbered order put the company, its numbers and the two cases before the chart and the plan, where the approved screens draw the chart and the plan first
+Was:
+> sections 3 to 8 in the order what the company sells, the numbers, the industry cycle, the two cases, the chart, entries and exits
+Now:
+> sections 3 to 8 in the order the chart, entries and exits, what the company sells, the numbers, the industry cycle, the two cases, each row's words unchanged
+Why: the operator chose on 2026-09-19 the approved screens' order, the chart and the plan straight after how the price got here, over section 4's.
+
+### 2026-09-19 - ARCHITECTURE.html - section 4's key names the free sections by their new numbers
+
+Corrects: section 4's numbered order put the company, its numbers and the two cases before the chart and the plan, where the approved screens draw the chart and the plan first
+Was:
+> It shows sections 2 without its cause column, 4, 7, 8 and 10,
+Now:
+> It shows sections 2 without its cause column, 3, 4, 6 and 10,
+Why: the free sections were renumbered with the chart and the plan third and fourth.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.9's short version is dated without its model
+
+Authorised by: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
+Was:
+> <tr><td>The short version</td><td>the narrative verdict, with its own date and the model that wrote it beneath it</td></tr>
+Now:
+> <tr><td>The short version</td><td>the narrative verdict, with the date it was written beneath it</td></tr>
+Why: the operator ruled that a page says when a section was written and not which model wrote it.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.9's written sections carry their dates alone
+
+Authorised by: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
+Was:
+> the researched and computed sections in the order section 4 specifies, each carrying its own date and model</td>
+Now:
+> the researched and computed sections in the order section 4 specifies, each carrying its own date</td>
+Why: the operator ruled that a page says when a section was written and not which model wrote it.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.9's provenance footer dates research without its model
+
+Authorised by: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
+Was:
+> computed tonight, fundamentals as of a filing date, research as of a date and the model that wrote it</td>
+Now:
+> computed tonight, fundamentals as of a filing date, research as of the date it was written</td>
+Why: the operator ruled that a page says when a section was written and not which model wrote it.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.12's fourth step renders sections by their dates
+
+Authorised by: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
+Was:
+> <li>Whatever sections are stored render with their own dates and the model that wrote each. A section drafted overnight by the local model says so, with the option to have the paid model rewrite it. Nothing is spent for any of this.</li>
+Now:
+> <li>Whatever sections are stored render with the date each was written. The page offers to have the paid model write again what the local model drafted. Nothing is spent for any of this.</li>
+Why: the operator ruled that a page says when a section was written and not which model wrote it.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15's screen rule cites the provenance decision's successor
+
+Authorised by: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
+Was:
+> states where it came from and as of when. (see: A screen reads and renders, and computes nothing) (see: Every part of a page states where it came from and as of when)</li>
+Now:
+> states where it came from and as of when. (see: A screen reads and renders, and computes nothing) (see: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it)</li>
+Why: the decision it cited is superseded.
+
+### 2026-09-19 - ARCHITECTURE.html - section 18's local model row cites the queue decision's successor
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about
+Was:
+> the answer for each is the other lane (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about)</td>
+Now:
+> the answer for each is the other lane (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about)</td>
+Why: the decision it cited is superseded.
+
+### 2026-09-19 - ARCHITECTURE.html - section 14's last step cites the queue decision's successor
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about
+Was:
+> and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about).</li>
+Now:
+> and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).</li>
+Why: the decision it cited is superseded.
+
+### 2026-09-19 - BUILD_PLAN.md - 6.10 cites the queue decision's successor
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about
+Was:
+> no part of the arithmetic depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about).
+Now:
+> no part of the arithmetic depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).
+Why: the decision it cited is superseded.
+
+### 2026-09-19 - RUNBOOK.md - the queue's paragraph cites the queue decision's successor
+
+Authorised by: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about
+Was:
+> and the night fetches nothing for a name (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about).
+Now:
+> and the night fetches nothing for a name (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).
+Why: the decision it cited is superseded.
+
 ### 2026-09-19 - .claude/rules/checks.md - banned-prose reads the architecture for a path
 
 Corrects: the architecture named files of the repository by their paths and nothing read its words for one; the operator asked on 2026-09-19 for each to be named by what it is

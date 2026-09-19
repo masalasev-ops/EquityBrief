@@ -171,7 +171,7 @@ A lane naming a section figure 12.2 does not name is refused when the lane is re
 
 ### The overnight queue's settings
 
-The queue runs as the night's last step, in the same invocation, after the arithmetic has closed and recorded its counts, over the local model and nothing else. It writes the local lane's sections that rest on no document, which in this machine's lane is the key under each figure: what the company sells and the segment commentary rest on the company's own filing, which the pass an open starts fetches, and the night fetches nothing for a name (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about). A name whose only outstanding section rests on documents is not queued.
+The queue runs as the night's last step, in the same invocation, after the arithmetic has closed and recorded its counts, over the local model and nothing else. It writes the local lane's sections that rest on no document, which in this machine's lane is the key under each figure: what the company sells and the segment commentary rest on the company's own filing, which the pass an open starts fetches, and the night fetches nothing for a name (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about). A name whose only outstanding section rests on documents is not queued.
 
 | Setting | Key | Default |
 |---|---|---|
