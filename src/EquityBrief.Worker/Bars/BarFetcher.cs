@@ -144,7 +144,7 @@ public sealed class BarFetcher : IComponent
     {
         var started = clock.UtcNow;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync();
 
         // The session this night is for, decided here and asked for by name.

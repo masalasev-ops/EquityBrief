@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Nights;
@@ -52,7 +53,7 @@ public static class NightSession
             return null;
         }
 
-        using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         connection.Open();
 
         using var command = connection.CreateCommand();

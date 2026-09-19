@@ -333,7 +333,7 @@ public sealed class Backfill(
 
     static string Text(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    string ConnectionString => new SqliteConnectionStringBuilder { DataSource = databaseFile }.ToString();
+    string ConnectionString => StoreConnection.For(databaseFile);
 }
 
 // A member still holding no year after a night: how many nights it has been asked

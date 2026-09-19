@@ -106,7 +106,7 @@ public sealed class ForwardReturnFiller : IComponent
     {
         var startedAt = clock.UtcNow;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var listings = new List<Listing>();

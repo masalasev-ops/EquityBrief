@@ -4,6 +4,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Candidates;
@@ -89,7 +90,7 @@ public sealed class CandidateRegistrar : IComponent
     {
         var startedAt = clock.UtcNow;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         // The row and its run log row are one write, so a row that cannot be recorded
@@ -141,7 +142,7 @@ public sealed class CandidateRegistrar : IComponent
     {
         var startedAt = clock.UtcNow;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -303,7 +304,7 @@ public sealed class CandidateRegistrar : IComponent
 
     public async Task<IReadOnlyList<RegisterRow>> RowsAsync(CancellationToken cancellation = default)
     {
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         return await RowsAsync(connection, cancellation);
@@ -379,7 +380,7 @@ public sealed class CandidateRegistrar : IComponent
     // A refusal the verb reaches before the registrar does, recorded as the registrar's own are.
     public async Task RecordRefusalAsync(string runId, string refusal, CancellationToken cancellation = default)
     {
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         await RecordAsync(connection, runId, clock.UtcNow, Refused, 0, refusal, cancellation);

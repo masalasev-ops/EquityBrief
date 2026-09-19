@@ -75,7 +75,7 @@ public sealed class TrendClassifier : IComponent
         decimal close,
         CancellationToken cancellation = default)
     {
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         return await ForAsync(connection, ticker, asOf, close, cancellation);

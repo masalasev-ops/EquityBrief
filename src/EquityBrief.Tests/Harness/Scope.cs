@@ -1653,6 +1653,10 @@ internal static class Scope
             Verdict.Pass,
             "the three attempts, the doubling wait and both bounds are read off the row and asserted against the policy the code uses, and a night given a deadline it cannot meet stops on the step it was on and says so",
             ByNight),
+        [CheckReach.Key(LimitsTable, "Waiting on another writer")] = new Scoped(
+            Verdict.Pass,
+            "the wait is read off the row and asserted against the one every connection the worker and the store open carries, read from the shipped source, where no file but the helper and the sources the two pin lists name writes a connection string, and a pass and a theme pass whose store refuses a document partway keep none of the documents they fetched",
+            ByNight),
         [CheckReach.Key(LimitsTable, "Weighted-call budget")] = new Scoped(
             Verdict.Pass,
             "every weight and the allowance the code holds, the earnings calendar's among them, are read back out of RUNBOOK rather than repeated in code, a request from every feed role the night composes is counted in weighted calls against the example the row's reason gives and against the cost of a calendar window its expectation records, the night reports its weighted total beside its request count, and a night already at the allowance stops before its next step",

@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using EquityBrief.Worker.Nights;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
@@ -140,7 +141,7 @@ public sealed class OvernightQueue(
         var stopAt = startedAt + limit;
         var today = clock.SessionDateAt(startedAt);
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var listed = await ListedAsync(connection, night, cancellation);

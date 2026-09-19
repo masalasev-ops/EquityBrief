@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Nights;
@@ -102,7 +103,7 @@ public sealed class NightClose : IComponent
     {
         var startedAt = clock.UtcNow;
 
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var computed = await CountAsync(connection, NamesComputed, null, null, cancellation);
@@ -217,7 +218,7 @@ public sealed class NightClose : IComponent
         string detail,
         int networkRequests = 0)
     {
-        await using var connection = new SqliteConnection($"Data Source={databaseFile}");
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync();
 
         foreach (var stage in stages)

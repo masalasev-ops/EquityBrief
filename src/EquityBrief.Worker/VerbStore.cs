@@ -1,3 +1,4 @@
+using EquityBrief.Data;
 using EquityBrief.Data.Migrations;
 using Microsoft.Data.Sqlite;
 
@@ -14,12 +15,11 @@ public static class VerbStore
             return $"no store at {databaseFile}. Run tools/migrate, which creates it.";
         }
 
-        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
-        {
-            DataSource = databaseFile,
-            Mode = SqliteOpenMode.ReadOnly,
-            Pooling = false,
-        }.ConnectionString);
+        var settings = StoreConnection.Builder(databaseFile);
+        settings.Mode = SqliteOpenMode.ReadOnly;
+        settings.Pooling = false;
+
+        using var connection = new SqliteConnection(settings.ConnectionString);
 
         connection.Open();
 

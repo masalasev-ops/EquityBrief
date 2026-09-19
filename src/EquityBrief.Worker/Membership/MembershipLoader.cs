@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Membership;
@@ -298,10 +299,7 @@ public sealed class MembershipLoader(
         return parts.Count == 0 ? null : string.Join("; ", parts);
     }
 
-    string ConnectionString => new SqliteConnectionStringBuilder
-    {
-        DataSource = databaseFile,
-    }.ToString();
+    string ConnectionString => StoreConnection.For(databaseFile);
 
     // A session date is a date and not an instant, which SCHEMA states and which
     // is why the comparisons above are string comparisons: an ISO date sorts
