@@ -54,6 +54,59 @@ public static class MoveWindows
         return windows;
     }
 
+    // One episode: stored moves whose spans share a session, which are one run of the price
+    // measured from several starts, and the largest of them by its change, which is the move
+    // the episode's cause is written for.
+    public sealed record Episode(MoveWindow Largest, IReadOnlyList<MoveWindow> Moves);
+
+    public const string PerCent = "per cent";
+
+    // The stored moves as episodes, in the order of their largest moves' ends. Five-session
+    // moves ranked by change overlap whenever one run carries several of the largest, so a
+    // cause asked for per move would be asked once for each of them. A move whose start the
+    // file does not carry is an episode of its own, since nothing can be shown to share a
+    // session with it.
+    public static IReadOnlyList<Episode> Episodes(IReadOnlyList<Fact> facts)
+    {
+        var changes = facts
+            .GroupBy(fact => fact.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First().Value, StringComparer.Ordinal);
+
+        decimal Change(MoveWindow move) =>
+            changes.TryGetValue(move.Name + " " + PerCent, out var value)
+            && decimal.TryParse(value, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var parsed)
+                ? Math.Abs(parsed)
+                : 0m;
+
+        var episodes = new List<List<MoveWindow>>();
+
+        foreach (var move in In(facts).OrderBy(move => move.From ?? move.To).ThenBy(move => move.To))
+        {
+            var last = episodes.Count > 0 ? episodes[^1] : null;
+
+            if (last is not null
+                && move.From is { } from
+                && last.All(held => held.From is not null)
+                && from <= last.Max(held => held.To))
+            {
+                last.Add(move);
+            }
+            else
+            {
+                episodes.Add([move]);
+            }
+        }
+
+        return
+        [
+            .. episodes
+                .Select(moves => new Episode(
+                    moves.OrderByDescending(Change).ThenBy(move => move.To).First(),
+                    moves))
+                .OrderBy(episode => episode.Largest.To),
+        ];
+    }
+
     // Whether a document published on a date falls inside a move.
     //
     // Both edges are inside. A publish date carries no time, so a release filed

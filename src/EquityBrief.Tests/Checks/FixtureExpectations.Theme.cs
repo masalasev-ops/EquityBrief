@@ -94,8 +94,7 @@ public partial class FixtureExpectations
         Assert.Equal([$"theme-first|{ThemeResearchRunner.Written}"], Query(store, "SELECT run_id, outcome FROM run_log WHERE stage = 'theme research' ORDER BY rowid;"));
 
         // One record, for the theme and the industries that map to it, in the lane figure 12.2
-        // puts the cycle in: the first draft refused and the second, written in the same pass,
-        // accepted.
+        // puts the cycle in, each draft with the verdict the expectation reads off its recording.
         var versions = expected.GetProperty("versions").EnumerateArray().ToArray();
         var industries = JsonSerializer.Serialize(Listed(expected.GetProperty("industries")));
 
@@ -164,14 +163,18 @@ public partial class FixtureExpectations
 
         Assert.Equal(documents.GetProperty("stored").GetInt32(), kept.Length);
 
-        // The cycle is handed the first ten of them, each carrying its opening, and each draft's
-        // prose is the recording its request is keyed on, byte for byte.
-        var handed = kept.Take(documents.GetProperty("handed").GetInt32()).ToArray();
+        // The cycle is handed the kept pages that name the industry, the ones the expectation lists
+        // in the order they were kept, each carrying its opening, and each draft's prose is the
+        // recording its request is keyed on, byte for byte.
+        // see: A theme page is handed to the model only where its text names the industry
+        var about = Listed(expected.GetProperty("handedPages"));
+        var handed = kept.Where(result => about.Contains(result.Url)).ToArray();
         var ids = handed.Select(result => SourceDocuments.Id(result.Url)).ToArray();
 
-        Assert.Equal(ThemeSearch.MostPages, handed.Length);
-        Assert.Equal([JsonSerializer.Serialize(ids), JsonSerializer.Serialize(ids)], Query(store, "SELECT source_ids FROM theme_section ORDER BY version;"));
-        Assert.Equal(2, firstPaid.Asked.Count);
+        Assert.Equal(documents.GetProperty("handed").GetInt32(), handed.Length);
+        Assert.Equal(about, handed.Select(result => result.Url));
+        Assert.Equal([.. firstPaid.Asked.Select(_ => JsonSerializer.Serialize(ids))], Query(store, "SELECT source_ids FROM theme_section ORDER BY version;"));
+        Assert.Equal(calls.GetProperty("paid").GetInt32(), firstPaid.Asked.Count);
 
         foreach (var request in firstPaid.Asked)
         {
@@ -182,26 +185,27 @@ public partial class FixtureExpectations
             Assert.Contains("Facts:\n\n", request.Prompt, StringComparison.Ordinal);
         }
 
-        // A page longer than the opening a call carries is handed its opening and not the rest,
-        // and the stored document keeps its whole text: the Federal Reserve's industrial
-        // production release is over twice the opening's length.
-        var longest = handed.Single(result => result.Text!.Length > ThemeSearch.CharactersAPage * 2);
+        // Every page handed carries its opening, and a page kept and not handed is not in the call:
+        // the Federal Reserve's industrial production release, over twice the opening's length,
+        // names the industry too seldom to be handed and is stored whole.
+        Assert.All(handed, result => Assert.Contains(ThemeSearch.Opening(result.Text!), firstPaid.Asked[0].Prompt, StringComparison.Ordinal));
 
-        Assert.Contains(ThemeSearch.Opening(longest.Text!), firstPaid.Asked[0].Prompt, StringComparison.Ordinal);
-        Assert.DoesNotContain(longest.Text![ThemeSearch.CharactersAPage..(ThemeSearch.CharactersAPage + 200)], firstPaid.Asked[0].Prompt, StringComparison.Ordinal);
+        var longest = kept.Single(result => result.Url == expected.GetProperty("longPage").GetString());
+
+        Assert.DoesNotContain(longest.Url, about);
+        Assert.DoesNotContain(ThemeSearch.Opening(longest.Text!)[..200], firstPaid.Asked[0].Prompt, StringComparison.Ordinal);
         Assert.True(
             int.Parse(Query(store, $"SELECT length(body) FROM source_document WHERE id = '{SourceDocuments.Id(longest.Url)}';").Single(), CultureInfo.InvariantCulture) > ThemeSearch.CharactersAPage * 2,
             "The stored page is its opening rather than its whole text.");
 
-        // The second call told why the first draft was refused.
+        // The first draft is asked with no refusal to answer.
         Assert.DoesNotContain("previous draft", firstPaid.Asked[0].Prompt, StringComparison.Ordinal);
-        Assert.Contains("Your previous draft of this section was refused by the checker for:", firstPaid.Asked[1].Prompt, StringComparison.Ordinal);
 
         Assert.Equal(
             [.. firstPaid.Asked.Select(request => OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)],
             Query(store, "SELECT prose FROM theme_section ORDER BY version;"));
 
-        // What the two calls cost, off the rows the spend cap wrote.
+        // What the calls cost, off the rows the spend cap wrote.
         Assert.Equal(
             decimal.Parse(expected.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
             Query(store, "SELECT spend FROM run_log WHERE run_id = 'theme-first' AND stage LIKE 'research call: The industry cycle%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
@@ -219,6 +223,7 @@ public partial class FixtureExpectations
 
         Assert.Contains($"asks for that site's first {ThemeSearch.ResultsASite} results", row[1], StringComparison.Ordinal);
         Assert.Contains($"handed at most {ThemeSearch.MostPages} of the pages it admitted", row[1], StringComparison.Ordinal);
+        Assert.Contains($"at least {ThemeSearch.MentionsPerTenThousand} times in every {ThemeSearch.CountedOver.ToString("N0", CultureInfo.InvariantCulture)} characters", row[1], StringComparison.Ordinal);
         Assert.Contains($"each carried as its first {ThemeSearch.CharactersAPage.ToString("N0", CultureInfo.InvariantCulture)} characters", row[1], StringComparison.Ordinal);
 
         // A search a site: as many searches as the list has sites, each restricted to one.
@@ -253,6 +258,13 @@ public partial class FixtureExpectations
 
         Assert.Equal(stored.Take(ThemeSearch.MostPages).Select(document => document.Id), ThemeSearch.Handed(stored).Select(document => document.Id));
 
+        // A page longer than the opening is handed its opening and not the rest.
+        var longer = new string('a', ThemeSearch.CharactersAPage) + "the rest";
+
+        Assert.Equal(
+            ThemeSearch.Opening(longer),
+            Assert.Single(ThemeSearch.Handed([stored[0] with { Body = longer }])).Body);
+
         // A page at the opening's length is carried whole, one character longer is cut to it,
         // and a cut that would split a character in two stops before it.
         var exact = new string('a', ThemeSearch.CharactersAPage);
@@ -263,6 +275,38 @@ public partial class FixtureExpectations
         var split = new string('a', ThemeSearch.CharactersAPage - 1) + "\U0001F600" + "tail";
 
         Assert.Equal(new string('a', ThemeSearch.CharactersAPage - 1), ThemeSearch.Opening(split));
+    }
+
+    [Fact]
+    public void APageIsAboutItsIndustryWhereItsTextNamesTheIndustrysWordsFiveTimesInTenThousandCharacters()
+    {
+        // The industry's own words, less the separators and the words that qualify an industry
+        // rather than name one, each read with a plural it may take.
+        // see: A theme page is handed to the model only where its text names the industry
+        Assert.Equal(["semiconductor"], ThemeSearch.IndustryWords("Semiconductors"));
+        Assert.Equal(["scientific", "technical", "instrument"], ThemeSearch.IndustryWords("Scientific & Technical Instruments"));
+        Assert.Equal(["drug", "manufacturer"], ThemeSearch.IndustryWords("Drug Manufacturers - General"));
+        Assert.Equal(["bank"], ThemeSearch.IndustryWords("Banks - Regional"));
+
+        // Over the title and the text together: a title of one character, a space, and the text,
+        // ten thousand characters in all.
+        static StoredDocument Page(string words) =>
+            new("d", "https://a.test/", "t", ThemeNight, DateTimeOffset.UnixEpoch, words + " " + new string('x', 10_000 - 2 - words.Length - 1), Admissibility.Accepted);
+
+        static string Times(string word, int count) => string.Join(" ", Enumerable.Repeat(word, count));
+
+        Assert.Equal(10_000, ("t " + Page(Times("semiconductors", 5)).Body).Length);
+
+        // Five in ten thousand is the floor and is kept; four is not.
+        Assert.Equal(ThemeSearch.MentionsPerTenThousand, ThemeSearch.Mentions(Page(Times("semiconductors", 5)), "Semiconductors"));
+        Assert.True(ThemeSearch.AboutTheIndustry(Page(Times("semiconductors", 5)), "Semiconductors"));
+        Assert.False(ThemeSearch.AboutTheIndustry(Page(Times("semiconductors", 4)), "Semiconductors"));
+
+        // A singular, a plural and any case are the industry's word, and a word it runs into is not.
+        Assert.Equal(5.0, ThemeSearch.Mentions(Page("Semiconductor SEMICONDUCTORS semiconductor semiconductors Semiconductors semiconductorless"), "Semiconductors"));
+
+        // Every word of a longer name counts toward the one floor.
+        Assert.True(ThemeSearch.AboutTheIndustry(Page("scientific technical instruments instrument Scientific"), "Scientific & Technical Instruments"));
     }
 
     // ---- what a search keeps ----
@@ -500,14 +544,15 @@ public partial class FixtureExpectations
         Assert.Equal(before, Query(store, "SELECT * FROM theme_section;"));
         Assert.Equal([$"{ThemeResearchRunner.Unavailable}|2"], Query(store, "SELECT outcome, network_requests FROM run_log WHERE run_id = 'research-search-down' AND stage = 'theme research';"));
 
-        // The name is written from its own filings and news, every section but the cycle, and
-        // the cycle is absent with the reason.
+        // The name is written from its own filings and news, every section but the cycle and the
+        // cause of each large move, which the recordings answer with nothing twice, and the cycle
+        // is absent with the reason.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
         Assert.Equal(
-            ClaimRules.Sections.Where(section => section != ClaimRules.CycleSection).Order(StringComparer.Ordinal),
+            ClaimRules.Sections.Where(section => section != ClaimRules.CycleSection && section != ClaimRules.CauseSection).Order(StringComparer.Ordinal),
             Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS' ORDER BY section;").Order(StringComparer.Ordinal));
         Assert.Equal(
-            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{unavailable}"],
+            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{unavailable}", $"{ClaimRules.CauseSection}|{ProseWriter.NoUsableAnswer}"],
             outcome.NotWritten.Select(line => $"{line.Section}|{line.Reason}").ToArray());
     }
 
@@ -524,13 +569,14 @@ public partial class FixtureExpectations
         Assert.Equal(1, refused.Requests);
         Assert.Empty(Query(store, "SELECT theme FROM theme_section;"));
 
-        // Every section of the name's own is written and stored, the cycle is omitted with the
-        // one line saying the theme could not be refreshed, and the theme record is as it was.
+        // Every section of the name's own is written and stored but the cause of each large move,
+        // which the recordings answer with nothing twice, the cycle is omitted with the one line
+        // saying the theme could not be refreshed, and the theme record is as it was.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
-        Assert.Equal(8, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
+        Assert.Equal(7, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
         Assert.DoesNotContain(ClaimRules.CycleSection, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';"));
         Assert.Equal(
-            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}"],
+            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}", $"{ClaimRules.CauseSection}|{ProseWriter.NoUsableAnswer}"],
             outcome.NotWritten.Select(line => $"{line.Section}|{line.Reason}").ToArray());
     }
 
@@ -628,10 +674,11 @@ public partial class FixtureExpectations
             folder.Path,
             FixtureReplay.RecordedTheme,
             """
-            {"results":[{"url":"https://www.semiconductors.org/sales","title":"Sales","content":"A snippet.","raw_content":"Global sales rose again in July as demand for advanced chips kept climbing across the industry.","published_date":"Fri, 04 Sep 2026 00:00:00 GMT"}]}
+            {"results":[{"url":"https://www.semiconductors.org/sales","title":"Sales","content":"A snippet.","raw_content":"Global semiconductor sales rose again in July as demand for advanced chips kept climbing across the semiconductor industry.","published_date":"Fri, 04 Sep 2026 00:00:00 GMT"}]}
             """);
 
-        // A first draft quoting a figure no facts file holds, and a second in words.
+        // A page naming its industry, so it is handed. A first draft quoting a figure no facts file
+        // holds, and a second in words.
         var model = new ScriptedModel(
             "Sales across the industry rose 35.1% in the quarter [D1].",
             "Sales across the industry kept rising as demand for advanced chips climbed [D1].");

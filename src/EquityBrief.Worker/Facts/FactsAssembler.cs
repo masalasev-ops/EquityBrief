@@ -1,8 +1,11 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Facts;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Worker.Fundamentals;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Facts;
@@ -32,6 +35,7 @@ public sealed class FactsAssembler : IComponent
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
@@ -66,6 +70,12 @@ public sealed class FactsAssembler : IComponent
     public const string FromMoves = "move";
     public const string FromCalendar = "calendar";
     public const string FromFundamentals = "fundamental";
+    public const string FromMembership = "membership";
+
+    // The fact carrying the company's name, which every prompt lists with the other facts and a
+    // research pass reads to rank a document whose title names the company.
+    // see: The membership row carries the company's name the index feed states
+    public const string CompanyName = "company name";
 
     // How a move's facts are named, stated once, because the claim checker reads
     // a move's span back by these names and a name spelled twice is a span that
@@ -139,6 +149,15 @@ public sealed class FactsAssembler : IComponent
     ";
 
     const string SwingCountFor = "SELECT COUNT(*) FROM swing WHERE ticker = $ticker;";
+
+    // The company's name the membership row holds, from its newest span that states one.
+    const string NameFor = @"
+        SELECT name
+        FROM membership
+        WHERE ticker = $ticker AND name IS NOT NULL
+        ORDER BY observed_at DESC
+        LIMIT 1;
+    ";
 
     // Every move the annotator stored, in rank order. The largest was the only one
     // until 6.6, which is where a local model first writes the cause of each of
@@ -374,6 +393,9 @@ public sealed class FactsAssembler : IComponent
             facts.Add(new Fact("session volume", reader.GetInt64(4).ToString(CultureInfo.InvariantCulture), FromBars));
         }
 
+        await ReadAsync(connection, NameFor, ticker, cancellation, reader =>
+            facts.Add(new Fact(CompanyName, reader.GetString(0), FromMembership)));
+
         await ReadAsync(connection, IndicatorsFor, ticker, cancellation, reader =>
             facts.Add(new Fact(
                 reader.GetString(0),
@@ -497,6 +519,23 @@ public sealed class FactsAssembler : IComponent
             Add(facts, "net debt", Text(sheet, "netDebt"));
         }
 
+        // The quarter's earnings per share against the estimate for it, and its growth on the
+        // same quarter a year before and on the one before it, as the fetcher computed it.
+        // see: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns
+        if (root.TryGetProperty("earnings", out var earnings) && earnings.ValueKind == JsonValueKind.Object)
+        {
+            Add(facts, "latest quarter earnings per share", Text(earnings, "epsActual"));
+            Add(facts, "latest quarter earnings per share estimate", Text(earnings, "epsEstimate"));
+        }
+
+        if (root.TryGetProperty("growth", out var growth) && growth.ValueKind == JsonValueKind.Object)
+        {
+            Add(facts, "latest quarter revenue growth on a year earlier", Text(growth, "revenue"));
+            Add(facts, "latest quarter net income growth on a year earlier", Text(growth, "netIncome"));
+            Add(facts, "latest quarter earnings per share growth on a year earlier", Text(growth, "epsActual"));
+            Add(facts, "latest quarter revenue growth on the quarter before", Text(growth, "revenueOnTheQuarterBefore"));
+        }
+
         if (root.TryGetProperty("epsBases", out var bases))
         {
             Add(facts, "trailing earnings per share", Text(bases, "trailing"));
@@ -509,6 +548,9 @@ public sealed class FactsAssembler : IComponent
         }
 
         facts.AddRange(Segments(root));
+        facts.AddRange(RevenueTables(root));
+        facts.AddRange(TableGrowth(root));
+        facts.AddRange(Guided(root));
 
         return facts;
     }
@@ -521,13 +563,85 @@ public sealed class FactsAssembler : IComponent
     // the archive does for one filer the fixture holds, and a facts file names each
     // fact once, so a repeated name carries the group's position in the table.
     // owes: The facts file carries the figures a local lane section quotes
-    public static IReadOnlyList<Fact> Segments(JsonElement root)
+    public static IReadOnlyList<Fact> Segments(JsonElement root) =>
+        root.TryGetProperty("segments", out var segments) && segments.ValueKind == JsonValueKind.Object
+            ? Table(segments, SegmentPeriods.Prefix)
+            : [];
+
+    // The filing's other tables of revenue by a grouping, each named by what its title says it
+    // groups by, so a figure by market platform is not read as a segment's.
+    // see: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns
+    public static IReadOnlyList<Fact> RevenueTables(JsonElement root) =>
+        root.TryGetProperty("revenueTables", out var tables) && tables.ValueKind == JsonValueKind.Array
+            ? [.. tables.EnumerateArray().SelectMany(table => Table(table, Prefix(table)))]
+            : [];
+
+    // Each group's growth on the same months a year before, in the segment table and the other
+    // tables, as the fetcher computed it from each table's own columns, named as the table's own
+    // figures are, a repeated label by its position.
+    public static IReadOnlyList<Fact> TableGrowth(JsonElement root)
     {
-        if (!root.TryGetProperty("segments", out var segments) || segments.ValueKind != JsonValueKind.Object)
+        if (!root.TryGetProperty("tableGrowth", out var grown) || grown.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
 
+        var prefixes = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        if (root.TryGetProperty("revenueTables", out var tables) && tables.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var table in tables.EnumerateArray())
+            {
+                prefixes[table.GetProperty("report").GetString()!] = Prefix(table);
+            }
+        }
+
+        var facts = new List<Fact>();
+        var taken = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var figure in grown.EnumerateArray())
+        {
+            var prefix = prefixes.GetValueOrDefault(figure.GetProperty("report").GetString()!, SegmentPeriods.Prefix);
+            var label = figure.GetProperty("label").GetString();
+            var line = figure.GetProperty("lineItem").GetString() + " growth on a year earlier "
+                + SegmentPeriods.Name(figure.GetProperty("months").GetInt32(), figure.GetProperty("ended").GetString()!);
+            var name = $"{prefix}{label} {line}";
+
+            if (!taken.Add(name))
+            {
+                name = $"{prefix}{label} {figure.GetProperty("group").GetInt32().ToString(CultureInfo.InvariantCulture)} {line}";
+
+                if (!taken.Add(name))
+                {
+                    continue;
+                }
+            }
+
+            facts.Add(new Fact(name, figure.GetProperty("value").GetString()!, FromFundamentals));
+        }
+
+        return facts;
+    }
+
+    // How a table of revenue by a grouping names its figures: the segment prefix and what its title
+    // says it groups by.
+    static string Prefix(JsonElement table) =>
+        SegmentPeriods.Prefix + Grouping(table.GetProperty("title").GetString() ?? string.Empty) + " ";
+
+    // What a table of revenue groups by, read off its title: "revenue by market platform" from a
+    // title reading "Segment Information - Schedule of Revenue by Market Platform (Details)".
+    static string Grouping(string title)
+    {
+        var named = Regex.Match(title, @"(?i)\b(?:revenue|sales)\s+by\s+[^()|$]+");
+
+        return (named.Success ? named.Value : "other table").Trim().ToLowerInvariant();
+    }
+
+    // The figures of one table: the latest period it files, being the latest quarter where it files
+    // one and otherwise its newest period, and the same months ending within a week of a year
+    // before it, each named by group, line item and period end.
+    static IReadOnlyList<Fact> Table(JsonElement segments, string prefix)
+    {
         // see: A facts file carries the latest period of the segment table, and says which period it is
         var periods = segments.GetProperty("periods").EnumerateArray()
             .Select(period => (Months: period.GetProperty("months").GetInt32(), Ended: period.GetProperty("ended").GetString()!))
@@ -548,43 +662,87 @@ public sealed class FactsAssembler : IComponent
         var facts = new List<Fact>();
         var taken = new HashSet<string>(StringComparer.Ordinal);
 
-        // A quarter keeps the name every stored facts file carries; a longer period
-        // names its months, which the prompt and the claim checker read back.
-        var period = SegmentPeriods.Name(months, ended);
+        // The same months a year before, which the table states beside the latest.
+        var yearBefore = DateOnly.ParseExact(ended, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddYears(-1);
+        var earlier = periods
+            .Where(held => held.Months == months
+                && Math.Abs(DateOnly.ParseExact(held.Ended, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayNumber - yearBefore.DayNumber) <= FundamentalsFetcher.PeriodEndDays)
+            .Select(held => held.Ended)
+            .FirstOrDefault();
 
-        void Take(string group, JsonElement lines, int position)
+        void Take(string group, JsonElement lines, int position, string at)
         {
+            // A quarter keeps the name every stored facts file carries; a longer period
+            // names its months, which the prompt and the claim checker read back.
+            var period = SegmentPeriods.Name(months, at);
+
             foreach (var line in lines.EnumerateArray())
             {
                 if (line.GetProperty("months").GetInt32() != months
-                    || line.GetProperty("ended").GetString() != ended
+                    || line.GetProperty("ended").GetString() != at
                     || line.GetProperty("value").ValueKind != JsonValueKind.String)
                 {
                     continue;
                 }
 
-                var name = $"{SegmentPeriods.Prefix}{group} {line.GetProperty("lineItem").GetString()} {period}";
+                var name = $"{prefix}{group} {line.GetProperty("lineItem").GetString()} {period}";
 
+                // A label repeated in one table is told apart by its position, and a line repeated
+                // under one group for one period is the same figure twice, which is kept once, since
+                // a file naming a fact twice cannot be written.
                 if (!taken.Add(name))
                 {
-                    name = $"{SegmentPeriods.Prefix}{group} {position.ToString(CultureInfo.InvariantCulture)} {line.GetProperty("lineItem").GetString()} {period}";
-                    taken.Add(name);
+                    name = $"{prefix}{group} {position.ToString(CultureInfo.InvariantCulture)} {line.GetProperty("lineItem").GetString()} {period}";
+
+                    if (!taken.Add(name))
+                    {
+                        continue;
+                    }
                 }
 
                 facts.Add(new Fact(name, line.GetProperty("value").GetString()!, FromFundamentals));
             }
         }
 
-        Take("total", segments.GetProperty("consolidated"), 0);
-
-        var index = 0;
-
-        foreach (var group in segments.GetProperty("groups").EnumerateArray())
+        foreach (var at in earlier is null ? [ended] : new[] { ended, earlier })
         {
-            Take(group.GetProperty("label").GetString()!, group.GetProperty("figures"), ++index);
+            Take(FundamentalsFetcher.CompanyRows, segments.GetProperty("consolidated"), 0, at);
+
+            var index = 0;
+
+            foreach (var group in segments.GetProperty("groups").EnumerateArray())
+            {
+                Take(group.GetProperty("label").GetString()!, group.GetProperty("figures"), ++index, at);
+            }
         }
 
         return facts;
+    }
+
+    // Each figure the claim checker reads in management's located guidance passage, as the checker
+    // reads it, named by its place in the passage and never by what it guides. A passage no
+    // heading located carries none, because nothing says which paragraph is the guidance.
+    // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
+    internal static IReadOnlyList<Fact> Guided(JsonElement root)
+    {
+        if (!root.TryGetProperty("guidance", out var guidance)
+            || guidance.ValueKind != JsonValueKind.Object
+            || !guidance.TryGetProperty("located", out var located)
+            || located.ValueKind != JsonValueKind.True
+            || Text(guidance, "passage") is not { Length: > 0 } passage)
+        {
+            return [];
+        }
+
+        return
+        [
+            .. ClaimRules.Figures(passage)
+                .Where(figure => figure.Kind == FigureKind.Figure)
+                .Select((figure, at) => new Fact(
+                    $"guidance figure {(at + 1).ToString(CultureInfo.InvariantCulture)}",
+                    (figure.Magnitude * figure.Scale).ToString("0.############", CultureInfo.InvariantCulture),
+                    FromFundamentals)),
+        ];
     }
 
     // A figure the filing does not carry is left out rather than written as a

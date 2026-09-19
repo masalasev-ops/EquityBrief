@@ -15909,3 +15909,178 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             changed. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 6.8 - correction: a research pass reads three months of news and hands each section documents about the company spread over the days since its filing, asks a move's cause once an episode and says which way it went, and the facts file carries what a release headlines, where the first live pass wrote causes from the wrong days and was refused for figures nothing carried   2026-09-18
+Corrects:   the 6.8 entry records a research pass reading a name's news inside each stored move and
+            since its own filing and handing each section documents code picks, the fewest companies
+            named first; 6.1 and 6.6 the facts file the sections are held to; 6.4 the claim checker;
+            6.9 the theme pass; and 6.10 the overnight queue that writes the key under each figure.
+            Each was built as stated. What the first live pass showed is that the choices it states
+            fail on a name with ten thousand articles a year, and that the facts file carried none
+            of the figures a release headlines.
+Found:      on 2026-09-18, in the first live research pass, NVDA's, and the operator's review of its
+            page. The pass read 10,709 articles to hand its sections a few dozen. The cause of its
+            largest move, from 2026-07-29 to 2026-08-05, was handed that first day's articles about
+            a selloff, while the ones published on 2026-08-04 and 2026-08-05 named the cause, and
+            its eight moves were three runs of the price, the cause asked for each run three times.
+            The sections built across the evidence were handed six articles from the pass's last two
+            days, and the calendar was handed another company's product launch that named NVDA in
+            its text. The two cases were refused for revenue up 106%, data center revenue of $89.0
+            billion up 117%, $27.0 billion billed to customers in Taiwan and earnings of $2.22 a
+            share, and management's guidance of $108.0 billion, none of which the facts file
+            carried. The industry cycle cited a productivity release, a durable goods report, a
+            central bank note and another company's credit rating. The key under each figure,
+            written on 2026-09-14, quoted a close of 210.96 on a page whose close was 219.34. And
+            427 of the 455 reasons the local model's keys were refused for over the operator's store
+            were numbers in words, most of them an average's length.
+Measured:   NVDA's store held 10,709 articles, 7,117 of them from the last three months; of the
+            4,927 since its filing, 1,134 name Nvidia or NVDA in the title. The industry's words per
+            ten thousand characters on the ten pages its cycle was handed: SIA 55 and 69, TrendForce
+            25, Digitimes 16 and Statista 39, against two productivity releases at 2 and 1.5, a
+            durable goods report at 2, the central bank note at 0.4 and the credit rating at 3.8.
+            Over the fixture, KEYS's pass reads 8 of its 13 articles, from 2026-08-17 to the night,
+            where it read 12; the Semiconductors pass hands its cycle 6 of the 16 pages it keeps and
+            KEYS's industry pass 2 of 11.
+Repaired:   a pass reads no news older than three months before the night, by the operator's ruling
+            that day, a move older than that being read with no document. Stored moves whose spans
+            share a session are one episode, its cause asked for once, from at most two documents
+            published inside its largest move, a title naming the company first, then the newest,
+            then the fewest companies named; each move is listed with which way it went and by how
+            much, and the model is told to write nothing for a move no document gives a cause for in
+            that direction. The sections built across the evidence are handed the company's own
+            filing and the best document of each of six equal stretches of the days since it, the
+            rest filled by the same order. A title names the company where it carries the ticker as
+            a word or the first word of the company's name.
+            The facts file carries the company's name from the membership row, the quarter's
+            earnings per share and the estimate for it, its growth on a year before and on the
+            quarter before as the fetcher computed it, the segment table's and the other revenue
+            tables' latest period with the same months a year before, each group's growth, and each
+            figure the claim checker reads in management's located guidance. A theme page is handed
+            to the cycle only where its title and text name the industry's words at least 5 times in
+            every 10,000 characters, which section 17's theme row now states and a pin holds. The
+            key under each figure is written for each night's facts file, so the overnight queue
+            writes it again for a listed name whose key is from an earlier night. The claim checker
+            reads a window written in words from eleven up as its number. The segment commentary
+            over a longer period is told each figure is named with its period, since the
+            year-earlier column is listed beside it, and a figure repeated under one group for one
+            period is kept once rather than written twice into a file that refuses it.
+            DECISIONS supersedes the news decision, the guidance decision and the claim decision,
+            each moved below with its reasoning, and adds the theme page rule, what the facts file
+            carries and the key's rewrite. ARCHITECTURE's lane table, catalogue rows, matrix and
+            section 17's theme row, RUNBOOK's pass and cost sentences, SCHEMA's guidance note and
+            CLAUDE.md's hard rule on timers say so, each prior text in CHANGELOG. The fixture's
+            model calls were recorded again, 36 recordings added and 44 no request asks deleted with
+            their manifest entries, 17 of the calls paid, with the operator's yes: $0.045 for the
+            thirteen whose recordings are kept and less than $0.03 for four superseded the same day.
+Stored:     nothing rewritten: a stored section stands until a trigger fires, the key until the next
+            night's queue, and the next pass for a name reads and hands by these rules.
+Missed:     the fixture's one researched name has thirteen articles a year and a release as its only
+            filing, so its choices were never among thousands, and the cause its pass wrote for
+            KEYS's fall to 2026-08-24, from the results that lifted the shares on 2026-08-19, was
+            accepted, since a sentence is checked for its figures and its citations and not for
+            which way a move went. The facts file held what the fixture's sections quoted, and
+            nothing asked what a release headlines.
+Guarded:    over constructed documents, a move's episode is handed its newest documents naming the
+            company and its cause prompt says which way it went, the sections across the evidence
+            are handed one document a stretch, and a title names the company by its ticker or its
+            first word; the windows stop three months before the night; the key is warranted on any
+            day after the one it was written for and no other section is; the other revenue tables
+            and each group's growth are named for what a table groups by; and a page is about its
+            industry at five mentions in ten thousand characters and not at four. Over the fixture,
+            KEYS's opened facts file carries the figures worked by hand, the research record hands
+            each section the documents worked by hand, the cause the model answered with nothing
+            twice is left out with the page saying so, the Semiconductors cycle is handed the six
+            pages worked by hand, and the local lane's retry is shown over a scripted runtime, since
+            no recorded draft is refused any more.
+Expected:   derived: the documents each section of KEYS's pass is handed, the window it reads, the
+            pages the theme passes hand their cycles, KEYS's growth, earnings, table growth and
+            guided figures, the company name on every file and the cannot-hold count, each worked
+            from the rules and the captures outside the code. Frozen, as readings of the new
+            recordings: each verdict, call count and spend.
+Tests:      1094, from 1086. Eight added: three over constructed documents, one over the opened
+            name's facts file, the key's rewrite, the revenue tables' facts, the theme page floor
+            and the local retry. No file this correction edits is a source either evaluator version
+            or the ladder rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: one mutation for each rule this correction adds to
+            what a pass reads, hands, writes or checks, at the line that states it. Not mutated,
+            being properties of kinds mutated, and named so the next sweep has them: the growth and
+            earnings facts, the revenue tables' names, the year-earlier columns, the company name
+            fact, the repeated-figure guard and the longer-period ask. Predicted from each
+            mutation's reach, and checked by a run of each over the change before it was committed:
+            M1 the three-month bound taken off, a year read back from the night: the windows test red on
+            the spans read, February's among them; and the 26 tests that replay KEYS's research pass red
+            on its paid cause request, which no recording answers since the pass reads the February
+            episode's news; nothing else.
+            M2 no two moves one episode: the episode test red on four episodes where two are worked;
+            nothing else, since KEYS's one move with documents inside it is one episode either way.
+            M3 a move's documents taken earliest first: the episode test red on the first session's
+            selloff handed, and the choice test red on February's roundup handed; nothing else, since
+            KEYS's four articles inside its fall share one day.
+            M4 no stretches, the sections across the evidence handed the best six by rank alone: the
+            spread test red on the first days' documents left out; nothing else, since KEYS's six are
+            the same six either way.
+            M5 the title rule on the ticker alone: the title test red on Nvidia's title; and the 27
+            tests that replay KEYS's pass red on its paid calendar request, which no recording answers
+            since titles naming Keysight no longer rank first; nothing else.
+            M6 the page floor at zero: the floor test red on a page at four mentions kept; the 28 tests
+            that replay a theme's pass red on its cycle request, which no recording answers since every
+            kept page is handed; and the second press test red on its wait, the pass it holds failing
+            before it runs; nothing else.
+            M7 the key's rewrite taken off: the key test red on a key from an earlier night not
+            warranted, and the token test red on the later nights' keys no request asks; nothing else.
+            M8 the guided figures left out of the facts file: the opened name's facts test red on
+            guidance figure 1, and the 42 tests whose passes list KEYS's facts red on a request no
+            recording answers, local or paid; nothing else.
+            M9 each move's direction left off the cause prompt: the episode test red on the move's line,
+            and the 29 tests that ask KEYS's cause red on a request no recording answers; nothing else.
+            M10 a window in words no longer read as its number: the claim test red on the two hundred
+            day average refused; the replay test red on MSFT's key refused, since it names an average's
+            length in words; the 20 tests whose fixture night runs the queue red on that key's second
+            draft, which no recording answers; and 14 more, the nightly run's, the nightly cost's, the
+            listings night's and the conformance loop's, red on a night whose queue step failed on it;
+            nothing else.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the failure named for it, read off the failure message. Eleven
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1093 of 1094
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so the counts that follow are on top of it.
+            M1 turned 27 red: the windows test on February's spans read, and the 26 replays of
+            KEYS's pass on its paid cause request.
+            M2 turned 1 red, the episode test on four episodes.
+            M3 turned 2 red, the episode test and the choice test on the earliest documents handed.
+            M4 turned 1 red, the spread test on the first days' documents left out.
+            M5 turned 28 red: the title test, and the 27 replays of KEYS's pass on its paid calendar
+            request.
+            M6 turned 30 red: the floor test, the 28 replays of a theme's pass on its cycle request,
+            and the second press test on its wait.
+            M7 turned 2 red, the key test and the token test.
+            M8 turned 43 red: the opened name's facts test, and the 42 tests whose passes list
+            KEYS's facts on a request no recording answers.
+            M9 turned 30 red: the episode test on the move's line, and the 29 tests that ask KEYS's
+            cause.
+            M10 turned 36 red: the claim test, the replay test on MSFT's key, the 20 queue nights on
+            that key's second draft, and the 14 nights whose queue step failed on it.
+            The precheck the predictions were checked against ran each mutation over the change
+            before it was committed, where the captures the change adds were not yet tracked, so the
+            capture check was red in every run of it, the baseline's among them, and is red in none
+            of these; and its M2 as first written compared a variable with itself, which the build
+            refuses as a warning, so it was rewritten to compare with the earliest date before any
+            prediction was written.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1094 of 1094 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 369 claims,
+            369 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 376 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved: this correction rewrites the text of eight rows `ARCHITECTURE.html`
+            carries, the facts assembler's and the fundamentals fetcher's catalogue rows, the lane
+            table's rows for the cause of each large move, the key under each figure, the industry
+            cycle and the two cases, the facts assembler's row of the read and write matrix and
+            section 17's theme search row, each still passing on the check that reached it, and no
+            roster row changed. Both gates ran with this entry in place, and the operator's store
+            under `data/` was not touched by either.
+Carried:    the page drawing the key only on the night it was written for, and saying where a move
+            older than three months has no cause because its news is not read, belong to the
+            screens' redesign, which the operator has put to a session of its own.

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-d0md7e8qzcs6q6jtexwqm",
+  "object": "chat.completion",
+  "created": 1789765468,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The closing price for Netflix Inc is 76.77, which sits below the 20-day simple moving average of 79.334 and above the 50-day simple moving average of 75.4994. The stock is currently in a range trend state with an RSI14 of 45.431383, indicating neutral momentum between immediate support edges ranging from 75.4994 to 75.8178 and immediate resistance edges from 78.3545 to 79.334. Recent volatility is captured by an average true range of 2.391062, while the latest quarter's activity saw a session volume of 33865470 against a 20-day volume average of 28384331.6. The current valuation context shows the stock trading below its 200-day simple moving average of 86.6969, suggesting it is priced lower than its longer-term trend level.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1015,
+    "completion_tokens": 230,
+    "total_tokens": 1245,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

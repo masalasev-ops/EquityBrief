@@ -192,10 +192,14 @@ public partial class ReadSurface
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
-        // Eight written over one pass, stated in advance, and seven drawn as sections: the
-        // cause of each move is drawn in the moves table.
-        Assert.Equal(8, Accepted(store, "KEYS").Count);
+        // Seven written over one pass, stated in advance, and all seven drawn as sections: the
+        // cause of each move, which is drawn in the moves table where it is written, was answered
+        // with nothing twice, and the page says so.
+        Assert.Equal(7, Accepted(store, "KEYS").Count);
         AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        Assert.Equal(
+            $"The cause of each large move is not written: {ProseWriter.NoUsableAnswer}",
+            WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The cause of each large move\">([^<]*)</p>").Groups[1].Value));
 
         int At(string marker) => page.IndexOf(marker, StringComparison.Ordinal);
         int Section(string section) => At($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"");

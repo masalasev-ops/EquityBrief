@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-zehy746rfqeb98yre2dij",
+  "object": "chat.completion",
+  "created": 1789765488,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies Inc sells technology solutions to engineering teams across end markets including AI infrastructure, communications, industrial automation, aerospace and defense, automotive, semiconductor, and general electronics [D1]. The company serves as a mission-critical design enablement partner for the world's most complex engineering challenges by connecting market-leading design, emulation, and test solutions across the full lifecycle [D1]. Customers rely on Keysight to bridge virtual design and physical reality, enabling confident decisions earlier in the development process [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 10904,
+    "completion_tokens": 102,
+    "total_tokens": 11006,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

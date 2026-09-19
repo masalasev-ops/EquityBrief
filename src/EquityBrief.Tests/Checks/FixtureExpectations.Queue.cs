@@ -177,6 +177,32 @@ public partial class FixtureExpectations
         Assert.DoesNotContain("KEYS", Query(store, "SELECT DISTINCT ticker FROM research_section;"));
     }
 
+    // A local runtime answering one name's first draft with a figure no facts file holds and its
+    // draft asked again in words, and every other request as the runtime it wraps does.
+    sealed class FirstDraftRefused(ILocalModelFeed inner, string ticker) : ILocalModelFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<ModelAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            if (!request.Prompt.StartsWith($"Company: {ticker}\n", StringComparison.Ordinal))
+            {
+                return inner.CompleteAsync(request, cancellation);
+            }
+
+            var again = request.Prompt.Contains("Your previous draft of this section was refused", StringComparison.Ordinal);
+
+            return Task.FromResult(new ModelAnswer(
+                request.Model,
+                again ? "The shares closed above their averages on the night." : "The shares closed at 999.99 on the night.",
+                0,
+                0,
+                "stop"));
+        }
+    }
+
     [Fact]
     public async Task APassWritesAgainOnlyWhatTheCheckerRefusedOfItsOwnName()
     {
@@ -185,7 +211,8 @@ public partial class FixtureExpectations
         // wrote during the night, or one a pass stopped before its check left behind. Over a
         // copy of the fixture's night, ORCL's key waits with a figure no facts file holds. The
         // first pass's check refuses it, and that pass, whose own draft was accepted, writes no
-        // second round, while MSFT's, whose own first draft was refused, still writes one.
+        // second round, while MSFT's, whose own first draft is answered here with a figure no
+        // facts file holds and refused, still writes one.
         var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = new NothingAnsweringLocal() });
 
         using var store = night.Store;
@@ -197,7 +224,7 @@ public partial class FixtureExpectations
             $"VALUES ('ORCL', '{ClaimRules.ComputedSection}', 1, '2026-09-08', '{LocalModelSettings.DefaultModel}', 'pending', 'The close of 123.45 sits above the average.', '[]', NULL);");
 
         var clock = FixedClock.At(QueueNight, SessionZones.UnitedStates);
-        var local = new RecordedLocalModelFeed(Folder());
+        var local = new FirstDraftRefused(new RecordedLocalModelFeed(Folder()), "MSFT");
 
         var outcome = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
@@ -275,7 +302,7 @@ public partial class FixtureExpectations
         async Task<QueueOutcome> WithLimit(TimeSpan limit)
         {
             var clock = new CallClock(QueueNight);
-            var local = new NotedLocal(new RecordedLocalModelFeed(Folder()), [], () => clock.Advance(step));
+            var local = new NotedLocal(new FirstDraftRefused(new RecordedLocalModelFeed(Folder()), "MSFT"), [], () => clock.Advance(step));
 
             var night = await FixtureReplay.NightAsync(
                 new NightQueue(local, new LocalModelSettings(null, null, null, null, null), ProseWriter.DefaultLane, limit, new RecordingAwake()),
@@ -312,7 +339,8 @@ public partial class FixtureExpectations
         Assert.Equal(["AAPL", "KEYS"], inside.Completed.Select(pass => pass.Ticker));
         Assert.Equal(["MSFT"], inside.Left);
 
-        // A pass that started inside the limit runs past it to its end, both of its calls.
+        // A pass that started inside the limit runs past it to its end, both of its calls: MSFT's
+        // first draft is answered with a figure no facts file holds, so its pass asks twice.
         var past = await WithLimit(step * 2 + TimeSpan.FromTicks(1));
 
         Assert.Equal(["AAPL", "KEYS", "MSFT"], past.Completed.Select(pass => pass.Ticker));

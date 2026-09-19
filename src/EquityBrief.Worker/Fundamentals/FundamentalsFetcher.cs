@@ -488,7 +488,7 @@ public sealed class FundamentalsFetcher : IComponent
             // on, and never a figure taken out of them. A heading locates the
             // passage for five of twelve filers measured, so a passage nobody
             // located is recorded as not located and never as guidance not given.
-            // see: Guidance is stored as management's own prose and never parsed into a figure
+            // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
             guidance = newest && filings?.Guidance is { } guided ? new
             {
                 document = guided.Document,

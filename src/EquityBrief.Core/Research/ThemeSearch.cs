@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Core.Research;
@@ -95,6 +96,48 @@ public static class ThemeSearch
 
         return new SearchAnswer(merged);
     }
+
+    // How densely a page names its industry before a theme call is handed it: mentions of the
+    // industry's words in every ten thousand characters of its title and text.
+    // see: A theme page is handed to the model only where its text names the industry
+    public const int MentionsPerTenThousand = 5;
+
+    // The characters those mentions are counted over.
+    public const int CountedOver = 10_000;
+
+    // The words an industry's name uses to qualify an industry rather than name one, left out of
+    // what a page is counted for.
+    static readonly string[] Qualifiers =
+        ["general", "diversified", "specialty", "regional", "other", "services", "products", "equipment", "and", "the", "of"];
+
+    // The words a page is counted for: the industry's own, lowercased, less its separators and
+    // qualifiers, each with a plural it may take.
+    public static IReadOnlyList<string> IndustryWords(string industry) =>
+    [
+        .. industry.ToLowerInvariant()
+            .Split([' ', '-', '&', ',', '/'], StringSplitOptions.RemoveEmptyEntries)
+            .Where(word => word.Length > 2 && !Qualifiers.Contains(word, StringComparer.Ordinal))
+            .Select(word => word.EndsWith("ies", StringComparison.Ordinal) ? word[..^3] + "y"
+                : word.EndsWith('s') && word.Length > 3 ? word[..^1]
+                : word)
+            .Distinct(StringComparer.Ordinal),
+    ];
+
+    // Mentions of the industry's words in every ten thousand characters of a page's title and text.
+    public static double Mentions(StoredDocument document, string industry)
+    {
+        var text = document.Title + " " + document.Body;
+        var found = IndustryWords(industry).Sum(word => Regex.Matches(
+            text,
+            @"\b" + (word.EndsWith('y') ? Regex.Escape(word[..^1]) + "(?:y|ies)" : Regex.Escape(word) + "(?:s|es)?") + @"\b",
+            RegexOptions.IgnoreCase).Count);
+
+        return 1.0 * found * CountedOver / Math.Max(text.Length, 1);
+    }
+
+    // Whether a page is about its industry by that count.
+    public static bool AboutTheIndustry(StoredDocument document, string industry) =>
+        Mentions(document, industry) >= MentionsPerTenThousand;
 
     // What a theme call is handed: the admitted pages in the order the pass kept them, at most
     // ten, each carrying its opening characters. The stored document keeps its whole text,

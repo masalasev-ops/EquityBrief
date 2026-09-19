@@ -5,7 +5,7 @@
   "tables": [
     "research_section"
   ],
-  "frozen": "the claim checker's verdict on each draft the recorded local model wrote, which is a reading of a recording rather than a figure a rule produces, and with it the one retry MSFT's refused first draft draws. Every other value in this file is derived.",
+  "frozen": "the claim checker's verdict on each draft the recorded local model wrote, which is a reading of a recording rather than a figure a rule produces, and with it that no draft draws a retry, every first draft being accepted. Every other value in this file is derived.",
   "night": "2026-09-08",
   "limitHours": 1,
   "listed": [
@@ -44,13 +44,12 @@
     },
     {
       "ticker": "MSFT",
-      "modelCalls": 2,
+      "modelCalls": 1,
       "versions": [
-        "rejected",
         "accepted"
       ]
     }
   ],
-  "modelCalls": 4,
+  "modelCalls": 3,
   "spend": "0"
 }

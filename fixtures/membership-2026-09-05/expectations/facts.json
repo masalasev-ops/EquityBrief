@@ -76,6 +76,10 @@
   "fromCalendar": [
    "next dated event"
   ],
+  "fromMembership": [
+   "company name"
+  ],
+  "membershipNote": "the company's name the membership row holds, which every fixture name's span states (see the membership expectation's names), so every file carries it: a prompt lists it and a research pass ranks a document whose title names the company by it.",
   "note": "ordinal order, which is what the payload is written in: sma200 sorts before sma50 because a string comparison reads the third character and not the number.",
   "movesNote": "every move the annotator stores, which is section 17's eight a name, from 6.6: the largest keeps the name it has carried since 5.3 and the other seven are named for their rank, four facts each. They arrived because a local model writing the cause of each move names each move's date, and a date in prose has to be one this file holds. The fourth, the session a move was measured from, arrived later in the same checkpoint, because a cause may rest only on a document published inside the move and a span with one edge holds nothing; each is derived here from the exchange calendar, as the session that many sessions before the one the move ended on, rather than read back off the bars. Every fixture name holds eight moves over its stored year, which is what makes the count per name the same for all four."
  },
@@ -85,5 +89,45 @@
   "aNameWithNoBarsGetsNoRow": "an absence rather than a file of nulls",
   "aNameWithNoDatedEventSaysSo": "not on file, rather than a blank a reader supplies themselves",
   "theChangeListSurvivesAFactsRerun": "the two writers own disjoint columns of the same row, and the assembler's statement names two columns and no more"
+ },
+ "openedName": {
+  "ticker": "KEYS",
+  "derivedFrom": "worked by hand from the fixture's captured inputs, not from a run. The quarter's figures are the provider's payload for KEYS, fundamentals-KEYS.json, the quarter to 2026-07-31 against the one to 2025-07-31 and the one to 2026-04-30, each change being the later figure less the earlier over the earlier, rounded to six places: revenue 1,846 against 1,352 millions, net income 397 against 191, earnings per share 2.82 against 1.72, and revenue 1,846 against 1,717 the quarter before; the estimate is the one the provider files beside the reported 2.82. The table growth is read off the captured segment table, segment-report-KEYS-R85.htm, the same way: the company's revenues 1,846 against 1,352, Communications Solutions Group's revenue 1,345 against 940 and Electronic Industrial Solutions Group's 501 against 412, in millions, each group found by the words its fact's name carries because a group's label is the archive's own. The guided figures are the six the claim checker reads in the release's Outlook passage, in the order it states them: revenue of $1.930 billion to $1.950 billion, growth of approximately 37%, earnings per share of $3.34 to $3.40 and approximately 172 million shares, each a magnitude times the scale its unit word carries; the years the passage names are read as years and are not figures.",
+  "facts": {
+   "latest quarter earnings per share": "2.82",
+   "latest quarter earnings per share estimate": "2.16",
+   "latest quarter revenue growth on a year earlier": "0.365385",
+   "latest quarter net income growth on a year earlier": "1.078534",
+   "latest quarter earnings per share growth on a year earlier": "0.639535",
+   "latest quarter revenue growth on the quarter before": "0.075131",
+   "guidance figure 1": "1930000000",
+   "guidance figure 2": "1950000000",
+   "guidance figure 3": "37",
+   "guidance figure 4": "3.34",
+   "guidance figure 5": "3.4",
+   "guidance figure 6": "172000000"
+  },
+  "tableGrowth": [
+   {
+    "nameCarries": [
+     "segment total Revenues, Total growth on a year earlier 2026-07-31"
+    ],
+    "value": "0.365385"
+   },
+   {
+    "nameCarries": [
+     "Communications Solutions Group",
+     "Revenue from Contract with Customer, Including Assessed Tax growth on a year earlier 2026-07-31"
+    ],
+    "value": "0.430851"
+   },
+   {
+    "nameCarries": [
+     "Electronic Industrial Solutions Group",
+     "Revenue from Contract with Customer, Including Assessed Tax growth on a year earlier 2026-07-31"
+    ],
+    "value": "0.216019"
+   }
+  ]
  }
 }

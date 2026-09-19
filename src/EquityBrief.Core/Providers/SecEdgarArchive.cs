@@ -58,7 +58,7 @@ namespace EquityBrief.Core.Providers;
 // Management's guidance is prose under a heading in an exhibit, in no structured
 // field anywhere in the filing, and a heading locates it for five of twelve filers
 // measured. So it is stored as the passage and never parsed into a figure.
-// see: Guidance is stored as management's own prose and never parsed into a figure
+// see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
 //
 // And the archive files revenue under several concepts at once without keeping
 // them current: over both captured filers whole, one carries `Revenues` to 2018

@@ -91,7 +91,7 @@ public class NightlyRun
 
     static string FixtureFolder() => Path.Combine(Repository.Root, "fixtures", Fixture);
 
-    static async Task<(int Code, string Output, string Error)> NightAsync(
+    internal static async Task<(int Code, string Output, string Error)> NightAsync(
         TemporaryStore store,
         string? fixture = null,
         string? runId = null,
@@ -1457,7 +1457,7 @@ public class NightlyRun
 
     // A night over feeds the caller assembled, so a test can read what every
     // feed was asked for afterwards rather than trusting the stage's own line.
-    static async Task<(int Code, string Output, string Error)> NightAsync(
+    internal static async Task<(int Code, string Output, string Error)> NightAsync(
         TemporaryStore store,
         NightFeeds feeds,
         string runId,

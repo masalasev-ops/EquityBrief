@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-k8kw0vdbm6c0lr6rohqz24",
+  "object": "chat.completion",
+  "created": 1789765922,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 493.95, trading between a session high of 495.19 and a session low of 490.15 with volume of 18882338 shares. Technical indicators show an RSI of 56.17 and a MACD of 11.48, while the price sits below the 20-day average of 494.46 but above the 50-day average of 450.95 and the 200-day average of 429.54. The market is in an uptrend with immediate support at 491.30 and resistance at 506.35, and the largest measured move occurred on 2026-08-03 representing a gain of 25.33 percent from levels on 2026-07-27.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1029,
+    "completion_tokens": 202,
+    "total_tokens": 1231,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -5,6 +5,7 @@ using EquityBrief.Core.Facts;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Worker.Facts;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Research;
@@ -40,7 +41,7 @@ public sealed record ResearchPassOutcome(
 // section the documents code picks for it.
 // see: Everything expensive happens when a name is opened
 // see: The model never fetches; components fetch and hand it documents
-// see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
+// see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
 // see: Every paid call is made through the spend cap, which holds the research model
 //
 // One pass, one run id, however many rounds it takes. A section refused on its first
@@ -386,7 +387,7 @@ public sealed class ResearchRunner(
         // The news inside each stored move and since the filing, overlapping spans once, and
         // never the stored year: a window the provider has more of than a query reads is named
         // as unread and the others are still read.
-        // see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first
+        // see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
         var seen = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var (windowFrom, windowTo) in NewsWindows.For(MoveWindows.In(facts), filing?.Document.PublishedOn, asOf))
@@ -417,9 +418,16 @@ public sealed class ResearchRunner(
         var intake = SourceDocuments.Of([.. fetched.Select(one => one.Document)], from, asOf, startedAt);
         var evidence = new List<EvidenceDocument>();
 
+        // Whether each document's title names the company, by the name the facts file carries.
+        // see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
+        var company = facts.FirstOrDefault(fact => fact.Name == FactsAssembler.CompanyName)?.Value;
+
         for (var index = 0; index < intake.Rows.Count; index++)
         {
-            evidence.Add(new EvidenceDocument(await StoreAsync(connection, intake.Rows[index], cancellation), fetched[index].Symbols));
+            evidence.Add(new EvidenceDocument(
+                await StoreAsync(connection, intake.Rows[index], cancellation),
+                fetched[index].Symbols,
+                Evidence.NamesTheCompany(intake.Rows[index].Title, ticker, company)));
         }
 
         var handed = Evidence.ForSections(facts, evidence, ownFiling);
@@ -577,12 +585,16 @@ public sealed class ResearchRunner(
     //
     // Over the judge's own standings from 6.10, so the overnight queue asks the question
     // this pass asks rather than a second statement of it.
+    // The key under each figure explains the night's figures, so it is written again on any day
+    // after the one it was written on, where every other section stands until a trigger fires.
+    // see: The key under each figure is written for each night's facts file
     public static bool Warranted(string section, SectionStanding? newest, StalenessVerdict verdict, DateOnly asOf) =>
         newest switch
         {
             null => true,
             { Status: ClaimChecker.Pending } => false,
-            { Status: ClaimChecker.Accepted } accepted => accepted.AsOf != asOf && verdict.StaleSections.Contains(section, StringComparer.Ordinal),
+            { Status: ClaimChecker.Accepted } accepted => accepted.AsOf != asOf
+                && (verdict.StaleSections.Contains(section, StringComparer.Ordinal) || string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal)),
             { Status: ClaimChecker.Fallback } left => left.AsOf != asOf,
             _ => true,
         };

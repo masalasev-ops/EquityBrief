@@ -1,12 +1,12 @@
 {
   "stage": "research-record",
   "derivation": "derived",
-  "derivedFrom": "section 12's rules and the lane configuration assigns each section, the decision that a research pass hands each section the documents code picks for it with the company's own filing first, the decision that a dated calendar item's date rests on a document the sentence cites, the decision that the fixture comparison moved the cause of each large move into the paid lane, the decision that a theme is the industry the index names for a member, and the fixture's own captures: KEYS's thirteen articles, of which the twelve published inside a stored move or since the release are the ones a pass reads, its release filed on 2026-08-18, its eight stored moves, and the twelve theme searches for its industry, Scientific & Technical Instruments, one a site of the industry list, which keep eleven pages from bls.gov, statista.com, spglobal.com, census.gov and digitimes.com, being two job postings, three labour and price releases, a quarterly financial report, three statistics pages and two trade news items, so the theme's one call is asked over the openings of the ten it is handed, the research model answers it with nothing, its reasoning finding no page carrying the industry's prices, and the industry cycle is not written and says why. Which lane writes each section, which sections a pass warrants, which documents are fetched, admitted, refused and handed to each section, and in which order, were worked out from those rules and captures outside this repository before the tests that read this file were run, by ranking each move's documents on the listings the provider attributes them to and then on their dates. Section 19.1's research record, whose local half 6.6's prose file carries.",
+  "derivedFrom": "section 12's rules and the lane configuration assigns each section, the decision that a research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the decision that a dated calendar item's date rests on a document the sentence cites, the decision that the fixture comparison moved the cause of each large move into the paid lane, the decision that a theme is the industry the index names for a member, the decision that a theme page is handed to the model only where its text names the industry, and the fixture's own captures: KEYS's thirteen articles, of which the eight published from 2026-08-17 to the night are the ones a pass reads, since the stored year's only move inside the three months before 2026-09-08 is the fall to 2026-08-24, measured from 2026-08-17, and it and the days since the release filed on 2026-08-18 are one window; its eight stored moves, the other seven of which fall in two episodes older than three months and are read with no document; and the twelve theme searches for its industry, Scientific & Technical Instruments, one a site of the industry list, which keep eleven pages from bls.gov, statista.com, spglobal.com, census.gov and digitimes.com, two of which name the industry's words at least five times in every ten thousand characters, a payroll note at 11.04 and a page on India's machinery industry at 5.22, so the theme's one call is handed those two, the research model answers it with nothing, and the industry cycle is not written and says why. Every title of the thirteen names the company. The cause of the one episode with documents inside it is handed the two newest inside the fall, both published on 2026-08-19 and both naming one listing, taken by id where three tie; the sections built across the evidence are handed the release and one article from each stretch of the seventeen days from the release to the newest article where a stretch has one, 2026-08-19, 2026-08-28 and 2026-09-03, and three more by fewest listings, newest and id, listed in the order they were published. Which lane writes each section, which sections a pass warrants, which documents are fetched, admitted, refused and handed to each section, and in which order, were worked out from those rules and captures outside this repository before the tests that read this file were run, the ids as the SHA-256 of each article's address. Section 19.1's research record, whose local half 6.6's prose file carries.",
   "tables": [
     "research_section",
     "source_document"
   ],
-  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call with nothing, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
+  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call with nothing and the cause's with nothing twice, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
   "ticker": "KEYS",
   "night": "2026-09-08",
   "window": {
@@ -28,22 +28,19 @@
     ]
   },
   "notWritten": {
-    "The industry cycle": "the theme could not be refreshed: The research model returned no answer for The industry cycle: the finish reason was stop after 2593 completion token(s), 2592 of them reasoning. A section stored from this would be empty."
+    "The industry cycle": "the theme could not be refreshed: The research model returned no answer for The industry cycle: the finish reason was stop after 654 completion token(s), 653 of them reasoning. A section stored from this would be empty.",
+    "The cause of each large move": "the model's answer came back empty or cut short twice"
   },
   "documents": {
-    "fetched": 13,
-    "admitted": 13,
+    "fetched": 9,
+    "admitted": 9,
     "refused": {},
     "ownFiling": "Results release, exhibit991-q326pressrelease.htm"
   },
   "handed": {
     "The cause of each large move": [
-      "Keysight Q4 2025 Earnings Preview",
-      "Keysight expects FY 2026 revenue growth at or above 7% target while expanding AI and 6G initiatives",
-      "Keysight signals 30% Q2 revenue growth and 35% EPS rise, highlights robust AI and defense demand",
-      "Keysight Technologies, Inc. Q1 2026 Earnings Call Summary",
-      "Results release, exhibit991-q326pressrelease.htm",
-      "Keysight Technologies Shares Rise After Record Third-Quarter Results"
+      "Keysight Technologies Shares Rise After Record Third-Quarter Results",
+      "Keysight expects Q4 revenue $1.93B-$1.95B as it raises FY 2026 outlook"
     ],
     "What the company sells": [
       "Results release, exhibit991-q326pressrelease.htm"
@@ -56,20 +53,19 @@
       "Keysight Technologies Shares Rise After Record Third-Quarter Results",
       "Keysight expects Q4 revenue $1.93B-$1.95B as it raises FY 2026 outlook",
       "Keysight Technologies, Inc. Q3 2026 Earnings Call Summary",
-      "Keysight Collaborates with the Centre for Assuring Autonomy at the University of York to Advance AI Safety Assurance for Software-Defined Vehicles",
+      "Wall Street Analysts Predict a 30% Upside in Keysight (KEYS): Here's  What You Should Know",
       "Keysight Technologies Announces Participation in Upcoming Investor Conferences",
-      "Wall Street Analysts Predict a 30% Upside in Keysight (KEYS): Here's  What You Should Know"
+      "Keysight Collaborates with the Centre for Assuring Autonomy at the University of York to Advance AI Safety Assurance for Software-Defined Vehicles"
     ]
   },
   "versions": [
-    { "section": "The cause of each large move", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The dated calendar items", "version": 1, "lane": "paid", "status": "accepted" },
-    { "section": "The key under each figure", "version": 1, "lane": "local", "status": "rejected" },
-    { "section": "The key under each figure", "version": 2, "lane": "local", "status": "accepted" },
+    { "section": "The key under each figure", "version": 1, "lane": "local", "status": "accepted" },
     { "section": "The risks, each with what would confirm it", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The segment commentary", "version": 1, "lane": "local", "status": "accepted" },
     { "section": "The short version", "version": 1, "lane": "paid", "status": "accepted" },
-    { "section": "The two cases", "version": 1, "lane": "paid", "status": "accepted" },
+    { "section": "The two cases", "version": 1, "lane": "paid", "status": "rejected" },
+    { "section": "The two cases", "version": 2, "lane": "paid", "status": "accepted" },
     { "section": "What the company sells", "version": 1, "lane": "local", "status": "accepted" }
   ],
   "stages": [
@@ -78,60 +74,60 @@
     "theme research",
     "prose",
     "research call: The cause of each large move",
+    "research call: The cause of each large move, asked again",
     "research call: The dated calendar items",
     "research call: The two cases",
     "research call: The risks, each with what would confirm it",
     "claims",
-    "prose, round 2",
+    "research call: The two cases, round 2",
     "research call: The short version, round 2",
     "claims, round 2",
     "research"
   ],
   "modelCalls": {
-    "local": 4,
-    "paid": 5
+    "local": 3,
+    "paid": 7
   },
-  "spend": "0.020124825",
+  "spend": "0.033337314",
   "theme": {
     "theme": "Scientific & Technical Instruments",
     "searches": 12,
     "stored": 11,
     "admitted": 11,
-    "handed": 10,
+    "handed": 2,
     "paid": 1,
-    "spend": "0.00749835"
+    "spend": "0.0013566"
   },
   "themeNote": "the theme's searches, its call and what the call cost are the theme's, made inside the name's pass and under its run. The name's own calls and spend above, and the lane comparison below, leave them out, since both runs of the comparison make the same call.",
   "comparison": {
     "paid": {
       "accepted": {
-        "The cause of each large move": 1,
         "What the company sells": 2,
-        "The segment commentary": 2,
+        "The segment commentary": 1,
         "The key under each figure": 1,
         "The dated calendar items": 1,
-        "The two cases": 1,
+        "The two cases": 2,
         "The risks, each with what would confirm it": 1,
-        "The short version": 2
+        "The short version": 1
       },
       "fallback": [],
       "calls": 11,
-      "spend": "0.025778823"
+      "spend": "0.034349328"
     },
     "local": {
       "accepted": {
+        "The cause of each large move": 1,
         "What the company sells": 1,
         "The segment commentary": 1,
-        "The key under each figure": 2
+        "The key under each figure": 1,
+        "The risks, each with what would confirm it": 2
       },
       "fallback": [
-        "The cause of each large move",
         "The dated calendar items",
         "The two cases",
-        "The risks, each with what would confirm it",
         "The short version"
       ],
-      "calls": 14,
+      "calls": 12,
       "spend": "0"
     }
   }

@@ -25,6 +25,141 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - RUNBOOK.md - what a pass over the fixture costs
+
+Authorised by: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
+Was:
+> Over the fixture's KEYS a pass wrote all eight sections it could write, three on the local model and five through the spend cap for $0.0201.
+Now:
+> Over the fixture's KEYS a pass wrote seven of the eight sections it could write, three on the local model and four through the spend cap for $0.0333, a sum that includes the cause of each large move, asked twice and answered with nothing both times, since a call answered with nothing is billed.
+Why: the pass reads three months of news and states which way each move went, and over the fixture the model answers the cause of KEYS's one fall it can read with nothing.
+
+### 2026-09-18 - ARCHITECTURE.html - a move's cause was handed the earliest documents inside it
+
+Authorised by: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
+Was:
+> then, for each move, the documents fetched for the name that were published inside it, at most two a move, naming the fewest companies and then the earliest (see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first). A move with no document inside it is not put to the model, and a section with none at all is not written
+Now:
+> moves whose spans share a session read as one episode; then, for each episode, the documents fetched for the name that were published inside its largest move, at most two a move, a title naming the company first, then the newest, then the fewest companies named, and none older than three months before the night (see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it). A move with no document inside it is not put to the model, and a section with none at all is not written
+Why: a move's cause was handed the earliest documents inside it, which are about the session before it moved, and overlapping moves were asked for one run three times.
+
+### 2026-09-18 - ARCHITECTURE.html - the cause is asked once an episode, and not for a move no document explains
+
+Authorised by: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
+Was:
+> <td>one sentence for each move that has a document inside it, saying what that document gives as the cause</td>
+Now:
+> <td>one sentence for each episode whose largest move has a document inside it, beginning with the session that move ended on and saying what that document gives as the cause, and nothing for a move no document beside it gives a cause for in the direction it went</td>
+Why: the cause is asked once an episode, since overlapping moves are one run of the price, and a document about a rise is not given as the cause of a fall.
+
+### 2026-09-18 - ARCHITECTURE.html - the six newest documents since the filing were one or two days of news
+
+Authorised by: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
+Was:
+> the facts file, the company's own filing and at most six documents published since it naming the fewest companies, and the theme record where one is stored, handed over together
+Now:
+> the facts file, the company's own filing and at most six documents published since it, one from each of six equal stretches of the days since, a title naming the company first and then the fewest companies named, and the theme record where one is stored, handed over together
+Why: the six newest documents since the filing were one or two days of news.
+
+### 2026-09-18 - ARCHITECTURE.html - a key written on an earlier night stated figures the page no longer showed
+
+Authorised by: The key under each figure is written for each night's facts file
+Was:
+> <td>nothing new: every value the figure draws, the close, the averages, the levels, momentum, the latest quarter and the valuation, is already computed and in the facts file</td>
+Now:
+> <td>nothing new: every value the figure draws, the close, the averages, the levels, momentum, the latest quarter and the valuation, is already computed and in the facts file, which is the night's, so the key is written for each night's facts file (see: The key under each figure is written for each night's facts file)</td>
+Why: a key written on an earlier night stated figures the page no longer showed.
+
+### 2026-09-18 - ARCHITECTURE.html - the cycle was written from pages that only mentioned the industry
+
+Authorised by: A theme page is handed to the model only where its text names the industry
+Was:
+> a search per industry rather than per name, scoped to the industry's source list, a date range and full page text, with what passes admissibility stored as the theme record every name in the industry shares
+Now:
+> a search per industry rather than per name, scoped to the industry's source list, a date range and full page text, with what passes admissibility stored as the theme record every name in the industry shares, and a page handed to the model only where its text names the industry (see: A theme page is handed to the model only where its text names the industry)
+Why: the cycle was written from pages that only mentioned the industry.
+
+### 2026-09-18 - ARCHITECTURE.html - the theme page floor is a limit of the row's own kind
+
+Authorised by: A theme page is handed to the model only where its text names the industry
+Was:
+> its call is handed at most 10 of the pages it admitted, every site's first before any site's second, each carried as its first 30,000 characters (see: A theme search is scoped by parameter, not by hope) (see: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return)</td>
+Now:
+> its call is handed at most 10 of the pages it admitted, those whose title and text name the industry's own words at least 5 times in every 10,000 characters, every site's first before any site's second, each carried as its first 30,000 characters (see: A theme search is scoped by parameter, not by hope) (see: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return) (see: A theme page is handed to the model only where its text names the industry)</td>
+Why: the theme page floor is a limit of the row's own kind.
+
+### 2026-09-18 - RUNBOOK.md - the operator ruled research news bounded to the last three months
+
+Authorised by: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
+Was:
+> then the name's news inside each stored move and from the release's filing date to the night, overlapping spans once,
+Now:
+> then the name's news inside each stored move and from the release's filing date to the night, overlapping spans once and none older than three months before the night,
+Why: the operator ruled research news bounded to the last three months.
+
+### 2026-09-18 - RUNBOOK.md - the choice of documents changed
+
+Authorised by: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
+Was:
+> two a move for the cause of each move, and six since the release beside the release itself for the sections built across the evidence (see: A research pass reads a name's news inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the company's own filing first)
+Now:
+> two a move for the cause of each move's episode, and six since the release beside the release itself for the sections built across the evidence, one from each stretch of the days since it (see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it)
+Why: the choice of documents changed.
+
+### 2026-09-18 - CLAUDE.md - the key under each figure explains figures that move every session
+
+Authorised by: The key under each figure is written for each night's facts file
+Was:
+> **Nothing expires on a timer.** Research is rewritten when a filing appears, an earnings date passes, a name's news volume jumps above its own baseline, or the operator asks. (see: Nothing expires on a timer)
+Now:
+> **Nothing expires on a timer.** Research is rewritten when a filing appears, an earnings date passes, a name's news volume jumps above its own baseline, or the operator asks. The key under each figure, which explains the night's figures, is written for each night's facts file. (see: Nothing expires on a timer) (see: The key under each figure is written for each night's facts file)
+Why: the key under each figure explains figures that move every session, and a key from an earlier night stated figures the page no longer showed.
+
+### 2026-09-18 - ARCHITECTURE.html - the decision it cited was superseded
+
+Authorised by: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
+Was:
+> The guidance is stored as management's own passage with the exhibit and date it was filed on, and never as a figure (see: Guidance is stored as management's own prose and never parsed into a figure)
+Now:
+> The guidance is stored as management's own passage with the exhibit and date it was filed on, and never as a figure (see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it)
+Why: the decision it cited was superseded, and the stored passage is still never a figure.
+
+### 2026-09-18 - SCHEMA.md - the decision it cited was superseded
+
+Authorised by: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
+Was:
+> `guidance` holds management's own passage with the exhibit and the date it was filed on, and never a figure struck from it (see: Guidance is stored as management's own prose and never parsed into a figure)
+Now:
+> `guidance` holds management's own passage with the exhibit and the date it was filed on, and never a figure struck from it (see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it)
+Why: the decision it cited was superseded, and the stored passage is still never a figure.
+
+### 2026-09-18 - ARCHITECTURE.html - the facts file carries more than the eleven facts the row counted
+
+Authorised by: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns
+Was:
+> The fundamentals joined its reads at 6.1, which is the checkpoint that created that store, and eleven facts come off the newest filing a name holds.
+Now:
+> The fundamentals joined its reads at 6.1, which is the checkpoint that created that store, and the newest filing a name holds gives the quarter's figures, its growth and its earnings against the estimate, the balance sheet, the valuation, the filing's own tables with the same months a year before and each group's growth, and every figure management's located guidance states (see: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns) (see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it). The membership row gives the company's name (see: The membership row carries the company's name the index feed states).
+Why: the facts file carries more than the eleven facts the row counted, and a count restated here goes stale with the next fact.
+
+### 2026-09-18 - ARCHITECTURE.html - the facts assembler reads the company's name off the membership row
+
+Authorised by: The membership row carries the company's name the index feed states
+Was:
+> <td>bar store, indicators, swings, volume profile, levels, ladders, moves, calendar, fundamentals</td><td>facts</td>
+Now:
+> <td>membership, bar store, indicators, swings, volume profile, levels, ladders, moves, calendar, fundamentals</td><td>facts</td>
+Why: the facts assembler reads the company's name off the membership row.
+
+### 2026-09-18 - ARCHITECTURE.html - the facts assembler reads membership
+
+Authorised by: The membership row carries the company's name the index feed states
+Was:
+> <tr><td>Facts assembler</td><td></td><td><span class="r">R</span></td>
+Now:
+> <tr><td>Facts assembler</td><td><span class="r">R</span></td><td><span class="r">R</span></td>
+Why: the facts assembler reads membership, in the read and write matrix.
+
 ### 2026-09-18 - SCHEMA.md - the fundamentals row carries each table group's growth
 
 Authorised by: A group's growth in a filing's own tables is computed from the columns the table states
