@@ -17008,11 +17008,11 @@ Mutated:    the rule, stated before the sweep: break each of the four properties
             M2 turned 1 red, the quiet-day test on the evening the page names.
             M3 turned 1 red, the earlier-night test on the control the page must not offer.
             M4 turned 1 red, the earlier-night test on where a neighbour's link goes.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1124 of 1124 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 372 claims,
+            372 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 379 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
             and none moved, a screen's routes being stated in section 15.3's list and in the
             screen's own line rather than as rows of its table. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
