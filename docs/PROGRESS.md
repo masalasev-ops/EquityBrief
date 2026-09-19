@@ -16352,3 +16352,49 @@ Carried:    the run page answers with an error on a night whose overnight queue 
             and eighth, and a key under each figure written for an earlier night is drawn with its
             date where the operator's default was to hide it. Each stands as the corpus has it until
             ruled.
+
+### 6.10 - correction: the run page reads a night's queue row written last and a failed step's message as a message, where a night run again after its queue failed stopped the run page drawing   2026-09-19
+Corrects:   6.10 drew the run page's overnight queue region from the night's queue row with the
+            latest instant and read every row's detail as the queue's own record. A step that fails
+            writes its message there instead, and a night run again for its session stamps its
+            stages from that session's evening, so its queue row is written after the failed one
+            with an earlier instant.
+Found:      on 2026-09-19 in the rehearsal of the screens correction before it, over a copy of the
+            operator's store: the night of 2026-09-18 holds a queue row that failed on the store's
+            lock at 03:10 UTC, and the run again for its session wrote the queue's own row after it
+            stamped 21:15 UTC the evening before. The page picked the failed row, read its message
+            as a record and answered with an error for that night, which is the night the run page
+            opens on.
+Measured:   off that copy, read without a lock: two queue rows for the night, the failed one written
+            first with the later instant and a message for its detail, and the queue's own row
+            written second with the earlier instant, 224 of 224 queued passes completed and none
+            left.
+Repaired:   the queue's rows are read in the order they were written and the night's row written
+            last is the one drawn, and a row whose detail is not the queue's record is drawn as a
+            queue that failed, with the step's own message and no count it does not hold.
+Stored:     nothing. The page reads the run log and writes none of it.
+Missed:     every test built the queue's rows with the instants in the order they were written, and
+            none wrote a failed step's row, so the two properties the page rested on were true of
+            every row the suite had and of none a failed night writes.
+Guarded:    the run page over the fixture night's store rewritten as a night run again after its
+            queue failed, answering and drawing the row written last; a night whose row written last
+            is a failed step's, drawn as a queue that failed with its message; and the order read as
+            the order written whatever the instants.
+Expected:   derived: the counts are the fixture row's own, two queued, and the message is the one
+            the night wrote on the store's lock. No expectation file changes.
+Tests:      1107, from 1106. One added to `read-surface`, and one changed: 6.10's own test drew the
+            newest of a night's rows by its instant, and draws the row written last now.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, the row
+            written last being the night's, a message read as a message, and a failed queue said to
+            have failed.
+            Predicted:
+            M1 the night's row taken by its latest instant again: the queue row test red on the page
+            drawing the failed row, and 6.10's own queue test red on the row written last; nothing
+            else.
+            M2 a message read as the queue's record: the queue row test red on the message failing
+            to parse; nothing else.
+            M3 a failed queue drawn as one that ran: the queue row test red on the line saying it
+            failed; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.

@@ -174,11 +174,13 @@ public partial class ReadSurface
         Assert.Equal(new DateOnly(2026, 9, 9), ((EquityBrief.Core.Time.IClock)EquityBrief.Core.Time.FixedClock.At(started, EquityBrief.Core.Time.SessionZones.UnitedStates)).SessionDateAt(started));
         Assert.Equal(new DateOnly(2026, 9, 8), Assert.Single(await Api(store).QueueRowsAsync()).Night);
 
-        // Two rows for one night, being a night run twice: the newest is what the page draws.
+        // Two rows for one night, being a night run twice: the row written last is what the page
+        // draws, whatever the instants, since a night run again for its session stamps its stages
+        // from that session's evening and so carries an earlier instant than the row it replaces.
         var earlier = Row(new DateOnly(2026, 9, 8), OvernightQueue.Unavailable) with { StartedAt = new DateTimeOffset(2026, 9, 9, 1, 0, 0, TimeSpan.Zero) };
         var later = Row(new DateOnly(2026, 9, 8)) with { StartedAt = new DateTimeOffset(2026, 9, 9, 2, 0, 0, TimeSpan.Zero) };
 
-        Assert.Equal(OvernightQueue.Ran, RunScreen.Queue([later, earlier], new DateOnly(2026, 9, 8), ExchangeClosures.IsSession).Outcome);
+        Assert.Equal(OvernightQueue.Unavailable, RunScreen.Queue([later, earlier], new DateOnly(2026, 9, 8), ExchangeClosures.IsSession).Outcome);
         Assert.Equal(OvernightQueue.Ran, RunScreen.Queue([earlier, later], new DateOnly(2026, 9, 8), ExchangeClosures.IsSession).Outcome);
     }
 

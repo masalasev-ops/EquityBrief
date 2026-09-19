@@ -2653,7 +2653,11 @@ public sealed class MarkRenderer : IComponent
         region.Append(Invariant, $"<section class=\"overnight-queue\" data-night=\"{queue.Night:yyyy-MM-dd}\" data-queue=\"{(ran ? "ran" : queue.NeverRan ? "never" : "not run")}\" ");
         region.Append(Invariant, $"data-outcome=\"{Escaped(queue.Outcome ?? "none")}\" data-queued=\"{queue.Queued}\" data-completed=\"{queue.Completed}\" data-left=\"{queue.Left}\" data-not-run=\"{queue.NotRun.Count}\">");
 
-        if (ran)
+        if (ran && queue.Outcome == "failed")
+        {
+            region.Append(Invariant, $"<p data-outcome=\"failed\">the overnight queue failed on {queue.Night:yyyy-MM-dd}: {Escaped(queue.Reason ?? "the run log states no reason")}</p>");
+        }
+        else if (ran)
         {
             region.Append(Invariant, $"<p data-queue=\"ran\">the overnight queue ran on {queue.Night:yyyy-MM-dd}: {queue.Completed} of {queue.Queued} queued pass(es) completed, {queue.Left} left for the next night</p>");
 
