@@ -1,9 +1,11 @@
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace EquityBrief.Tests.Checks;
 
 // banned-prose. No file in the corpus or the shipped source carries the banned
-// string or any form of it, and no file carries an em dash.
+// string or any form of it, and no file carries an em dash. And the architecture names
+// no file of the repository by its path or its file name.
 //
 // The string is assembled from parts so this file is not itself an occurrence,
 // which keeps the exemption to the one line that has to name it.
@@ -258,6 +260,49 @@ public class BannedProse
         // The permanent proof for that reader, over constructed paths.
         Assert.Equal(["b.json"], Untracked(["a.json", "b.json"], ["a.json", "c.json"]));
         Assert.Empty(Untracked(["a.json"], ["a.json", "b.json"]));
+    }
+
+    // A file or a folder of the repository named by its path or its file name. The architecture
+    // is read by people who have not seen the tree, and a path tells such a reader nothing that
+    // naming the thing does: the decisions record kept beside this document, the runbook, the
+    // phase report. A folder is one of the repository's own, and a file name one of the kinds it
+    // holds, so a section number, a namespace and a date are not read as either, and neither is a
+    // path inside an address, which starts after a slash.
+    internal static readonly Regex NamedByItsPath = new(
+        @"(?<![\w/.-])(?:(?:docs|src|tools|fixtures|artifacts|data|data-ci|prompts|\.claude|\.github)/[\w./*-]*"
+        + @"|[\w-]+(?:\.[\w-]+)*\.(?:md|html|json|ps1|sh|cs|csproj|slnx|props|yml|db))(?![\w/-])",
+        RegexOptions.Compiled);
+
+    // The architecture's words as its reader sees them, its style sheet and its markup set aside.
+    internal static string ReaderText(string html) =>
+        WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(html, @"<style[\s\S]*?</style>", " "), "<[^>]+>", " "));
+
+    static string[] NamedIn(string html) => [.. NamedByItsPath.Matches(ReaderText(html)).Select(match => match.Value)];
+
+    [Fact]
+    public void TheArchitectureNamesNoFileByItsPath()
+    {
+        var text = ReaderText(Corpus.Read("docs/ARCHITECTURE.html"));
+
+        // The scope, stated in advance: the document's words run past two hundred thousand
+        // characters, so a reader that lost them fails here rather than finding nothing.
+        Assert.True(text.Length > 150_000, $"Read {text.Length} characters of the architecture, expected more than 150,000.");
+        Assert.Empty(NamedIn(Corpus.Read("docs/ARCHITECTURE.html")));
+    }
+
+    [Fact]
+    public void AFileNamedByItsPathOrItsFileNameIsFound()
+    {
+        // The four shapes the architecture carried, each found alone.
+        Assert.Equal(["docs/DECISIONS.md"], NamedIn("<p>live in <code>docs/DECISIONS.md</code>, grouped by topic</p>"));
+        Assert.Equal(["RUNBOOK.md"], NamedIn("<td>`RUNBOOK.md` stated the allowance</td>"));
+        Assert.Equal(["artifacts/phase-report"], NamedIn("<td><code>artifacts/phase-report</code> with every row</td>"));
+        Assert.Equal(["phase-report.json"], NamedIn("<td>the page and phase-report.json</td>"));
+
+        // And what is not a file of the repository is left alone.
+        Assert.Empty(NamedIn(
+            "<p>section 15.9, EquityBrief.Api and 0.1.2, on 2026-09-19 at 0.5 per cent, read from "
+            + "https://www.sec.gov/Archives/edgar/data/1601046/x.htm and/or its index</p>"));
     }
 
     // The captures on disk that git does not track.

@@ -99,8 +99,7 @@ internal static class ComponentVocabulary
         ["returns the label to the ladder builder"] = [],
         // The harness writes files, not stores, which is the distinction the
         // section 16 key draws for it in so many words.
-        ["artifacts/phase-report.html"] = [],
-        ["artifacts/phase-report.json"] = [],
+        ["the phase report, as a page and as data"] = [],
         ["this document, the code, and the fixture, including the fixture's own store; never a store under the data root"] = [],
     };
 

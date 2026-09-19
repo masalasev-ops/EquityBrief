@@ -25,6 +25,60 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - .claude/rules/checks.md - banned-prose reads the architecture for a path
+
+Corrects: the architecture named files of the repository by their paths and nothing read its words for one; the operator asked on 2026-09-19 for each to be named by what it is
+Was:
+> the banned-prose row ended at "matched on the sentence that states the rule"
+Now:
+> ". And the architecture's words, read as its reader sees them, name no file of the repository by its path or its file name, with the matcher shown to find each shape the document carried and to leave ordinary text alone" added at its end
+Why: a defect the operator reports in the corpus lands with a check that refuses it again.
+
+### 2026-09-19 - ARCHITECTURE.html - section 22's settled questions restored
+
+Corrects: the 2026-09-19 removal of section 22's note and its table of settled questions, which went beyond the operator's request, that day, to remove the architecture's changelog sections
+Was:
+> <p class="note">No question is open.</p>
+Now:
+> the note and the table as they stood before that removal, with two changes: the table's heading read "Settled since the version above", and the version line it pointed at is gone, so it reads "Settled questions"; and its last row said the overnight queue writes free drafts for listed names, which the 6.10 correction of the same day made every name
+Why: the operator asked for the changelog sections to go, and the settled questions are not one.
+
+### 2026-09-19 - ARCHITECTURE.html - section 21 names the decisions record by what it is
+
+Corrects: the architecture named a file of the repository by its path, which tells a reader who has not seen the tree nothing; the operator asked on 2026-09-19 for each to be named by what it is
+Was:
+> <p>The decisions and the superseded ones live in <code>docs/DECISIONS.md</code>, grouped by topic, and not here.
+Now:
+> <p>The decisions and the superseded ones live in the decisions record kept beside this document, grouped by topic, and not here.
+Why: a reader of the design meets the name before the tree, if ever.
+
+### 2026-09-19 - ARCHITECTURE.html - section 17's night cost row names the runbook by what it is
+
+Corrects: the architecture named a file of the repository by its path, which tells a reader who has not seen the tree nothing; the operator asked on 2026-09-19 for each to be named by what it is
+Was:
+> `RUNBOOK.md` stated the allowance and every weight
+Now:
+> The runbook, the guide to operating the system kept beside this document, stated the allowance and every weight
+Why: a reader of the design meets the name before the tree, if ever.
+
+### 2026-09-19 - ARCHITECTURE.html - section 20's phase 0 row names the phase report by what it is
+
+Corrects: the architecture named a file of the repository by its path, which tells a reader who has not seen the tree nothing; the operator asked on 2026-09-19 for each to be named by what it is
+Was:
+> <code>artifacts/phase-report.html</code> with every row
+Now:
+> the phase report's page with every row
+Why: a reader of the design meets the name before the tree, if ever.
+
+### 2026-09-19 - ARCHITECTURE.html - the harness's catalogue row names the phase report by what it is
+
+Corrects: the architecture named a file of the repository by its path, which tells a reader who has not seen the tree nothing; the operator asked on 2026-09-19 for each to be named by what it is
+Was:
+> <td>artifacts/phase-report.html, artifacts/phase-report.json</td>
+Now:
+> <td>the phase report, as a page and as data</td>
+Why: a reader of the design meets the name before the tree, if ever.
+
 ### 2026-09-19 - .claude/rules/checks.md - read-surface asserts the key drawn only beside its night
 
 Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
