@@ -16039,8 +16039,48 @@ Mutated:    the rule, stated before the sweep: one mutation for each rule this c
             draft, which no recording answers; and 14 more, the nightly run's, the nightly cost's, the
             listings night's and the conformance loop's, red on a night whose queue step failed on it;
             nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, each on the failure named for it, read off the failure message. Eleven
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1093 of 1094
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so the counts that follow are on top of it.
+            M1 turned 27 red: the windows test on February's spans read, and the 26 replays of
+            KEYS's pass on its paid cause request.
+            M2 turned 1 red, the episode test on four episodes.
+            M3 turned 2 red, the episode test and the choice test on the earliest documents handed.
+            M4 turned 1 red, the spread test on the first days' documents left out.
+            M5 turned 28 red: the title test, and the 27 replays of KEYS's pass on its paid calendar
+            request.
+            M6 turned 30 red: the floor test, the 28 replays of a theme's pass on its cycle request,
+            and the second press test on its wait.
+            M7 turned 2 red, the key test and the token test.
+            M8 turned 43 red: the opened name's facts test, and the 42 tests whose passes list
+            KEYS's facts on a request no recording answers.
+            M9 turned 30 red: the episode test on the move's line, and the 29 tests that ask KEYS's
+            cause.
+            M10 turned 36 red: the claim test, the replay test on MSFT's key, the 20 queue nights on
+            that key's second draft, and the 14 nights whose queue step failed on it.
+            The precheck the predictions were checked against ran each mutation over the change
+            before it was committed, where the captures the change adds were not yet tracked, so the
+            capture check was red in every run of it, the baseline's among them, and is red in none
+            of these; and its M2 as first written compared a variable with itself, which the build
+            refuses as a warning, so it was rewritten to compare with the earliest date before any
+            prediction was written.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            and none moved: this correction rewrites the text of eight rows `ARCHITECTURE.html`
+            carries, the facts assembler's and the fundamentals fetcher's catalogue rows, the lane
+            table's rows for the cause of each large move, the key under each figure, the industry
+            cycle and the two cases, the facts assembler's row of the read and write matrix and
+            section 17's theme search row, each still passing on the check that reached it, and no
+            roster row changed. Both gates ran with this entry in place, and the operator's store
+            under `data/` was not touched by either.
 Carried:    the page drawing the key only on the night it was written for, and saying where a move
             older than three months has no cause because its news is not read, belong to the
             screens' redesign, which the operator has put to a session of its own.
