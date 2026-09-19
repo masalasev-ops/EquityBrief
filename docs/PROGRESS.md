@@ -16486,8 +16486,32 @@ Mutated:    the rule, stated before the sweep: break four of the properties this
             holding two names; nothing else.
             M4 the search's list without a researched name's day: the researched test red on that
             name's label; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Five runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1110 of 1111 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 2 red, the formats test on $96.2B drawn as $96221000000.00 and the name page
+            test on the fixture's figures drawn whole among the words a reader sees.
+            M2 turned 1 red, the why-it-is-here test on its values drawn as stored. The sweep's
+            pattern for M2 first read the assertion's words past the forty or so characters the
+            failure message quotes, and so stopped the sweep on a red it had predicted; it was cut
+            to the words the message quotes, as M4's was before it ran, and the sweep run again from
+            this entry's commit.
+            M3 turned 1 red, the researched test on the list holding two names, the key's among
+            them.
+            M4 turned 1 red, the researched test on the researched name's label without its day.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim
+            added, section 15.8's Researched row, which passes on `read-surface`, and the two tables
+            the architecture no longer carries are no longer placed. Both gates ran with this entry
+            in place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. The key under each figure still writes stored figures whole
             in its prose, which the claim checker accepts, and changing what the local model is
             asked is a change to the lane rather than to a screen.
