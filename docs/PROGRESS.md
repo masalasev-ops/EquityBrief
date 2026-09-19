@@ -16635,3 +16635,67 @@ Carried:    nothing owed by this repair. A key stored before it keeps the day it
             before this one and read their figures as stored until the next night writes every
             name's again. The claim checker refuses a figure inside a company's own name, which
             Phillips 66's first draft drew; its retry is told why.
+
+### 5.8 - correction: section 22's settled questions restored and every file the architecture names named by what it is   2026-09-19
+Corrects:   the 5.8 correction of the same day moved the architecture's history out, and with its
+            version stamps and its changelog section it took section 22's note and its table of
+            settled questions, which the operator had not asked to go. The architecture also named
+            four files of the repository by their paths or file names: the decisions record in
+            section 21, the runbook in section 17's night cost row, and the phase report in section
+            20's phase 0 row and in the harness's catalogue row.
+Found:      by the operator on 2026-09-19, reading the architecture after its history was moved:
+            that it should not state a relative folder name, since a new reader cannot know what one
+            is, and that they had asked only for the changelog to go.
+Measured:   over the architecture as it stood, read as its reader reads it with its markup and its
+            style sheet set aside: 206,518 characters, in which five paths or file names stood in
+            four places and nothing else the matcher reads as one.
+Repaired:   section 22's note and its table restored as they stood before the removal, but for two
+            things the day's other changes made untrue: the heading pointed at a version line that
+            is gone and now reads Settled questions, and the last row's queue drafts for every name
+            rather than for the listed ones. Its placement in the phase report is restored under
+            that heading. Each of the four places names the file by what it is: the decisions record
+            kept beside this document, the runbook as the guide to operating the system, the phase
+            report's page, and the phase report as a page and as data.
+Missed:     no check read the architecture's words for a path, and the history pass read section 22
+            as history because it held settled things.
+Guarded:    banned-prose reads the architecture's words as its reader sees them and refuses a path
+            into one of the repository's folders or a file name of the kinds the repository holds,
+            over the document with a floor under its length; and the matcher is shown to find each
+            of the four shapes the document carried alone and to leave a section number, a
+            namespace, a version, a date, a percentage, an address and and/or alone.
+Expected:   derived: the four shapes and the ordinary text are worked by hand. No expectation file
+            changes.
+Tests:      1117, from 1115. Two added to `banned-prose`, whose roster row states the property, and
+            `component-access`'s vocabulary reads the harness's catalogue cell as one phrase in
+            place of the two paths.
+Mutated:    the rule, stated before the sweep: break the two halves of the matcher and the
+            document's own property, the repository's folders, the file names, and a path put back
+            in the architecture. Not mutated: the restored table and its placement, which are text
+            and a placement the report's build refuses to lose, and the words each file is named by.
+            Predicted:
+            M1 the matcher without the repository's folders: the matcher's test red on the decisions
+            record's path found nowhere; nothing else.
+            M2 the matcher without its file names: the matcher's test red on the runbook's file name
+            found nowhere; nothing else.
+            M3 a path put back in section 21: the architecture's test red on the decisions record's
+            path; nothing else.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1116 of 1117 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the matcher's test on the decisions record's path found nowhere.
+            M2 turned 1 red, the matcher's test on the runbook's file name found nowhere.
+            M3 turned 1 red, the architecture's test on the decisions record's path in section 21.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1117 of 1117 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 371 claims,
+            371 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 378 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added:
+            section 22's restored table is placed as a record, as it was before it was removed, and
+            the rows reworded keep their subjects. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair.
