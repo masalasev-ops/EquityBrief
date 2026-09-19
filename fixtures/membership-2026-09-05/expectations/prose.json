@@ -1,7 +1,7 @@
 {
   "stage": "prose",
   "derivation": "derived",
-  "derivedFrom": "the decision that the local lane is a configured list of section names the writer takes whole, the decision that a cause of a move rests only on a document published inside that move, section 18's rows for a section the machine cannot hold and for the local model unavailable, and the fixture's own dates: the KEYS release exhibit filed on 2026-08-18 by the archive's own index, and KEYS's eight stored moves. Which sections a pass asks for, which it leaves unwritten and why, which move the release falls inside, and which sections a context of 8,000 tokens holds, were each worked out from those rules and dates before the tests that read this file were run. The local lane's half of section 19.1's research record, whose paid half is 6.8's. The release passes are written over releaseLane, which held the cause of each large move until 6.8's fixture comparison moved that section to the paid lane on this machine; the writer takes whatever lane it is handed, so those passes read as they were recorded, and lane is the configured default the replay's pass and the research runner hand it.",
+  "derivedFrom": "the decision that the local lane is a configured list of section names the writer takes whole, the decision that a cause of a move rests only on a document published inside that move, section 18's rows for a section the machine cannot hold and for the local model unavailable, and the fixture's own dates: the KEYS release exhibit filed on 2026-08-18 by the archive's own index, and KEYS's eight stored moves. Which sections a pass asks for, which it leaves unwritten and why, which move the release falls inside, and which sections a context of 8,000 tokens holds, were each worked out from those rules and dates before the tests that read this file were run. The local lane's half of section 19.1's research record, whose paid half is 6.8's. The release passes are written over releaseLane, which held the cause of each large move until 6.8's fixture comparison moved that section to the paid lane on this machine; the writer takes whatever lane it is handed, so those passes read as they were recorded, and lane is the configured default the replay's pass and the research runner hand it. A second pass the same day passes every section over, the key under each figure as already written for the newest facts file and the rest as written today, because the key is dated by the night whose figures it explains and every other section by the day it was written.",
   "tables": [
     "research_section"
   ],
@@ -71,7 +71,7 @@
           "The cause of each large move": "it was already written today",
           "What the company sells": "it was already written today",
           "The segment commentary": "it was already written today",
-          "The key under each figure": "it was already written today"
+          "The key under each figure": "it was already written for the newest facts file"
         },
         "modelCalls": 0,
         "verdicts": {}
@@ -81,6 +81,23 @@
       "2026-08-24"
     ],
     "causeNamesNote": "the sessions the accepted cause section names as a move's end, which is the one move the release falls inside and no other"
+  },
+  "keyFactsAsRead": {
+    "note": "each worked by hand from the rule the decision that the key under each figure is handed its facts as a reader reads them states, over KEYS's stored values where the fixture carries them and a few chosen to reach each branch: an indicator named with its window as days before it, money and counts of a million or more in millions, billions or trillions with the word to at most two places, a growth or a margin as a percentage to one place, any other figure past two places to two, rounding half away from zero, and a reading the claim checker would not match to the stored value handed as stored. The last is a growth of 12.5, twelve and a half times, whose percentage the checker reads only of a fraction below ten.",
+    "facts": [
+      { "name": "close", "value": "333.42", "readName": "close", "readValue": "333.42" },
+      { "name": "sma200", "value": "289.30685", "readName": "200-day average", "readValue": "289.31" },
+      { "name": "rsi14", "value": "47.740381", "readName": "14-day relative strength index", "readValue": "47.74" },
+      { "name": "macd_hist", "value": "-0.257949", "readName": "MACD histogram", "readValue": "-0.26" },
+      { "name": "session volume", "value": "3604363", "readName": "session volume", "readValue": "3.6 million" },
+      { "name": "latest quarter revenue", "value": "1846000000.00", "readName": "latest quarter revenue", "readValue": "1.85 billion" },
+      { "name": "net debt", "value": "-1234567890.00", "readName": "net debt", "readValue": "-1.23 billion" },
+      { "name": "latest quarter gross margin", "value": "0.658722", "readName": "latest quarter gross margin", "readValue": "65.9 per cent" },
+      { "name": "latest quarter revenue growth on a year earlier", "value": "1.058511", "readName": "latest quarter revenue growth on a year earlier", "readValue": "105.9 per cent" },
+      { "name": "latest quarter net income growth on a year earlier", "value": "12.5", "readName": "latest quarter net income growth on a year earlier", "readValue": "12.5" },
+      { "name": "immediate support strength", "value": "2", "readName": "immediate support strength", "readValue": "2" },
+      { "name": "latest quarter end", "value": "2026-07-31", "readName": "latest quarter end", "readValue": "2026-07-31" }
+    ]
   },
   "cannotHold": {
     "contextTokens": 8000,
@@ -92,8 +109,8 @@
     "asked": [
       "The key under each figure"
     ],
-    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its 22,996 characters of text, of which at least 19,184 are neither digits nor outside ASCII, and those alone come to 6,976 tokens at 2.75 characters a token, so none fits in 8,000. The key under each figure carries the facts file alone, 14,401 characters in all, 1,971 of them digits and none outside ASCII, which the rule counts as a token each, and 12,430 others at 2.75 characters a token, 4,520 tokens, so 6,491 in all, which fits with the answer's budget in 8,000.",
-    "askedTokens": 6491
+    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its 22,996 characters of text, of which at least 19,184 are neither digits nor outside ASCII, and those alone come to 6,976 tokens at 2.75 characters a token, so none fits in 8,000. The key under each figure carries the facts file alone, as a reader reads it, 14,919 characters in all, 1,334 of them digits and none outside ASCII, which the rule counts as a token each, and 13,585 others at 2.75 characters a token, 4,940 tokens, so 6,274 in all, which fits with the answer's budget in 8,000.",
+    "askedTokens": 6274
   },
   "unavailable": {
     "modelCalls": 1,

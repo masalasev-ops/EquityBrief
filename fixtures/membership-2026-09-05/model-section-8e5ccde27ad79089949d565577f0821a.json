@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-x2ir9bna7selbw099ird5",
+  "object": "chat.completion",
+  "created": 1789825551,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc. closed at 316.22, trading within a session high of 320.7 and a session low of 314.9 with a volume of 35.42 million shares. The stock is currently in a range trend state supported by an immediate support high edge at 323.67 and capped by an immediate resistance high edge at 330.81. Valuation context shows the price above the 20-day average of 314.10 and the 50-day average of 316.34, while remaining below the 200-day average of 283.93. Technical indicators include a MACD of 1.91 with a histogram of 0.47 above a signal line of 1.44 and a 14-day relative strength index of 50.26.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 997,
+    "completion_tokens": 195,
+    "total_tokens": 1192,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

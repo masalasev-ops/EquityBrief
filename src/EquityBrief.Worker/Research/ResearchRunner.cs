@@ -595,9 +595,10 @@ public sealed class ResearchRunner(
     //
     // Over the judge's own standings from 6.10, so the overnight queue asks the question
     // this pass asks rather than a second statement of it.
-    // The key under each figure explains the night's figures, so it is written again on any day
-    // after the one it was written on, where every other section stands until a trigger fires.
-    // see: The key under each figure is written for each night's facts file
+    // The key under each figure explains a night's figures and is dated by that night, so it is
+    // asked for on any day after it, where every other section stands until a trigger fires, and
+    // the writer passes it over where the newest facts file is the one it was written from.
+    // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
     public static bool Warranted(string section, SectionStanding? newest, StalenessVerdict verdict, DateOnly asOf) =>
         newest switch
         {

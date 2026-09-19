@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-gb14xkhklo9slqtemtpgzk",
+  "object": "chat.completion",
+  "created": 1789825557,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc. closed at 316.22, trading above the 20-day average of 313.54 and the 50-day average of 315.64 while remaining below the immediate resistance edge at 334.70 and above the immediate support high edge at 320.28. The stock shows a positive MACD reading of 2.25 with a histogram of 0.92 above the signal line of 1.32, indicating bullish momentum supported by a 14-day relative strength index of 50.26 and a 14-day average true range of 7.50. Recent price action includes significant moves such as an 8.30 percent increase measured from 2026-06-30 on 2026-07-08 and a 9.94 percent decline measured from 2026-07-27 on 2026-08-03, with the largest single move reaching 12.17 percent measured from 2026-06-25. Trading volume for the session was 35.42 million shares against a 20-day average volume of 39.18 million and a 50-day average volume of 48.64 million, while technical analysis identifies 43 marked swings with the trend state currently not classified.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 999,
+    "completion_tokens": 313,
+    "total_tokens": 1312,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

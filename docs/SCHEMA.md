@@ -377,7 +377,7 @@ Grain: one row per ticker, section and version.
 | `ticker` | TEXT | |
 | `section` | TEXT | which of the report's sections this is, named as figure 12.2's lane table names it |
 | `version` | INTEGER | increments; earlier versions are kept |
-| `as_of` | TEXT | date this section was written |
+| `as_of` | TEXT | date this section was written, and for the key under each figure the night of the facts file it was written from (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures) |
 | `model` | TEXT | which model wrote it |
 | `status` | TEXT | `pending`, `accepted`, `rejected`, `fallback` |
 | `prose` | TEXT | empty where the section had no admissible source to be written from |

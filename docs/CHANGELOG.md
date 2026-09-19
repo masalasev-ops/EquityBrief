@@ -25,6 +25,123 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - .claude/rules/checks.md - read-surface asserts the key drawn only beside its night
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> the read-surface row ended at "and the names holding research are listed on their own route and found, with every other member, from the masthead's search"
+Now:
+> "; and the key under each figure is drawn only beside the night whose figures it explains, a key written for another night replaced by its card naming that night" added at its end
+Why: the name page draws the key only beside the night it was written for, and read-surface is the check that reads the page.
+
+### 2026-09-19 - ARCHITECTURE.html - the lane table writes the key for every name and dates it by its night
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> is already computed and in the facts file, which is the night's, so the key is written for each night's facts file (see: The key under each figure is written for each night's facts file)</td>
+Now:
+> is already computed and in the facts file, which is the night's, so the key is written for each night's facts file, for every name, and dated by that night (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures)</td>
+Why: the key was written again each night for the listed names alone, so 78 of the 503 names on the operator's store drew an earlier night's key beside the night's figures, and the entry this cell cited is superseded.
+
+### 2026-09-19 - ARCHITECTURE.html - the lane table hands the key its facts as a reader reads them
+
+Authorised by: The key under each figure is handed its facts as a reader reads them, rounded by code
+Was:
+> <td>three to five sentences on what those values show, for a reader who has not seen the figure, with money rounded to millions or billions and margins written as percentages</td>
+Now:
+> <td>three to five sentences on what those values show, for a reader who has not seen the figure, copying each value as it is handed, named as a reader reads it and rounded by code, money in millions or billions and growth and margins as percentages (see: The key under each figure is handed its facts as a reader reads them, rounded by code)</td>
+Why: asked to round the figures itself the local model cut digits off, 271.9963 written as 271.99, and otherwise copied six places onto the page.
+
+### 2026-09-19 - ARCHITECTURE.html - section 14's last step runs the queue over every name
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> writing the sections in the local lane that rest on no document for listed names whose research is missing or stale, in priority order, until the configured time limit
+Now:
+> writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in order of reasons fired (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit
+Why: the queue reached the listed names alone, and 70 names that fired nothing on 2026-09-18 kept a key written for an earlier night.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.8 says the queue writes the key for every name
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> which the overnight queue writes for every listed name each night
+Now:
+> which the overnight queue writes for every name each night
+Why: the queue now writes the key for every name in the index.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.9 draws the key only beside the night it was written for
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> section 15.9 said nothing of where the key under each figure is drawn or which night's it is
+Now:
+> <p>The key under each figure is drawn beneath the chart only where it was written for the night whose figures the page draws. A key written for another night is not drawn: its card names the night it was written for and says so, because a paragraph explaining another night's close beside these figures explains figures the page does not show (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures).</p>
+Why: a page drew a key written for an earlier night beside the night's figures, NVDA's quoting a close of 210.96 on a page whose close was 219.34.
+
+### 2026-09-19 - ARCHITECTURE.html - section 17's overnight queue row runs the queue over every name
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> for listed names whose research is missing or stale, in order of reasons fired, starting no pass once a configured number of hours has passed
+Now:
+> for every name in the index whose research is missing or stale, the names on tonight's list first in order of reasons fired, starting no pass once a configured number of hours has passed
+Why: the queue reached the listed names alone, and the hour this row states was already set to cover every member of the index.
+
+### 2026-09-19 - ARCHITECTURE.html - section 18 says what a page draws when the queue did not run
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> and listed names open without a draft as normal</td>
+Now:
+> and each name's page names the earlier night its key under each figure was written for rather than drawing the key</td>
+Why: a key written for an earlier night is no longer drawn beside the night's figures.
+
+### 2026-09-19 - SCHEMA.md - research_section's as_of dates the key by its facts file's night
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> | `as_of` | TEXT | date this section was written |
+Now:
+> | `as_of` | TEXT | date this section was written, and for the key under each figure the night of the facts file it was written from (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures) |
+Why: a key written in the day from the night before carried that day's date and read as the next night's key.
+
+### 2026-09-19 - RUNBOOK.md - the schedule table's overnight queue row covers every name
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> for listed names whose research is missing or stale, in priority order, starting no pass once the configured hours have passed
+Now:
+> for every name in the index whose research is missing or stale, the listed names first, starting no pass once the configured hours have passed
+Why: the queue now writes the key for every name in the index.
+
+### 2026-09-19 - RUNBOOK.md - what a pass costs, from the pass recorded again
+
+Authorised by: The key under each figure is handed its facts as a reader reads them, rounded by code
+Was:
+> three on the local model and four through the spend cap for $0.0333,
+Now:
+> three on the local model and four through the spend cap for $0.0340,
+Why: the fixture's pass was recorded again with the key handed its facts as a reader reads them, and the short version, written from the key, was refused once and written again, so the pass made eight paid calls rather than seven.
+
+### 2026-09-19 - BUILD_PLAN.md - 6.10's queue covers every name
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> for listed names whose research is missing or stale, in order of reasons fired, until the configured time limit
+Now:
+> for every name in the index whose research is missing or stale, the listed names first in order of reasons fired, until the configured time limit
+Why: the 6.10 correction of 2026-09-19 widened the queue to every name, which this checkpoint's own statement of it now says.
+
+### 2026-09-19 - CLAUDE.md - the timer rule cites the key's new decision
+
+Authorised by: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+Was:
+> The key under each figure, which explains the night's figures, is written for each night's facts file. (see: Nothing expires on a timer) (see: The key under each figure is written for each night's facts file)
+Now:
+> The key under each figure, which explains the night's figures, is written for every name for each night's facts file and drawn only beside the figures it explains. (see: Nothing expires on a timer) (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures)
+Why: the decision this rule cited is superseded.
+
 ### 2026-09-19 - ARCHITECTURE.html - section 15.2 states the places a figure is drawn at
 
 Authorised by: A figure is drawn at the places it is read at, and its element carries the stored value whole

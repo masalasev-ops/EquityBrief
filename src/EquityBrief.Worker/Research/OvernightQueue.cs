@@ -38,9 +38,12 @@ public sealed record QueueOutcome(
     public int ModelCalls => Completed.Sum(pass => pass.ModelCalls) + (Stopped?.ModelCalls ?? 0);
 }
 
-// The overnight queue. After the arithmetic has closed, the names on tonight's list
-// whose research is missing or stale, in order of reasons fired, each given a pass of
-// the local lane's sections, until the configured number of hours has passed.
+// The overnight queue. After the arithmetic has closed, every name in the index whose
+// research is missing or stale, the names on tonight's list first in order of reasons
+// fired, each given a pass of the local lane's sections, until the configured number of
+// hours has passed. Every name rather than the listed ones, because the one section the
+// queue writes explains the night's figures and every name's page draws them.
+// see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
 //
 // It decides nothing a component already decides and writes no research itself. The
 // staleness judge says what stands; the prose writer writes the local lane; the claim
@@ -90,9 +93,11 @@ public sealed class OvernightQueue(
     // the words a person reading the machine's own power requests sees.
     public const string AwakeReason = "EquityBrief's overnight queue is writing tonight's drafts";
 
-    const string ListedOnNight = @"
-        SELECT ticker FROM listing
-        WHERE session_date = $session AND fired_count > 0
+    // A listing row is written for every name in the index every night, so the night's
+    // rows are the index that night, and the names that fired lead.
+    const string MembersOnNight = @"
+        SELECT ticker, fired_count FROM listing
+        WHERE session_date = $session
         ORDER BY fired_count DESC, ticker;
     ";
 
@@ -144,12 +149,13 @@ public sealed class OvernightQueue(
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var listed = await ListedAsync(connection, night, cancellation);
+        var members = await MembersAsync(connection, night, cancellation);
+        var listed = members.Where(member => member.Fired > 0).Select(member => member.Ticker).ToArray();
 
         using var held = awake.Hold(AwakeReason);
 
-        // Every listed name judged first, which spends nothing, so the queue is known
-        // before a pass starts and a name left at the limit is one the queue wanted.
+        // Every name judged first, which spends nothing, so the queue is known before a
+        // pass starts and a name left at the limit is one the queue wanted.
         //
         // A name is queued for the lane's sections a pass would write that rest on no
         // document. One resting on documents is not asked for, since the queue hands the
@@ -158,7 +164,7 @@ public sealed class OvernightQueue(
         // pass that wrote nothing.
         var queued = new List<(string Ticker, string RunId, string[] Sections)>();
 
-        foreach (var ticker in listed)
+        foreach (var (ticker, _) in members)
         {
             var runId = PassRunId(nightRunId, ticker);
             var verdict = await judge.JudgeAsync(ticker, refresh: false, runId, cancellation);
@@ -302,23 +308,23 @@ public sealed class OvernightQueue(
         seconds = pass.Seconds,
     };
 
-    static async Task<IReadOnlyList<string>> ListedAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    static async Task<IReadOnlyList<(string Ticker, int Fired)>> MembersAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
-        command.CommandText = ListedOnNight;
+        command.CommandText = MembersOnNight;
         command.Parameters.AddWithValue("$session", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
-        var tickers = new List<string>();
+        var members = new List<(string, int)>();
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
-            tickers.Add(reader.GetString(0));
+            members.Add((reader.GetString(0), reader.GetInt32(1)));
         }
 
-        return tickers;
+        return members;
     }
 
     static string Instant(DateTimeOffset instant) =>

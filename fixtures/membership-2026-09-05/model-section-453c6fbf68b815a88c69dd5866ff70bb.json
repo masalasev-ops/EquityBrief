@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-203thi49zl105799ffqsshd",
+  "object": "chat.completion",
+  "created": 1789825516,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Netflix Inc closed at 76.77, trading within a range bounded by immediate resistance edges at 79.33 and 78.35, and immediate support edges at 75.82 and 75.50. The stock is currently in a range trend state with a 14-day average true range of 2.39 and a 14-day relative strength index of 45.43. Recent session volume reached 33.87 million, which is higher than the 20-day average volume of 28.38 million but lower than the 50-day average volume of 38.53 million. The price sits below the 20-day average of 79.33 and the 200-day average of 86.70, while above the 50-day average of 75.50.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 993,
+    "completion_tokens": 195,
+    "total_tokens": 1188,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

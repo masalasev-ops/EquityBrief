@@ -100,6 +100,16 @@ public sealed class ProseWriter(
     public const string AwaitingTheChecker = "an earlier draft is still waiting on the claim checker";
     public const string WrittenToday = "it was already written today";
     public const string LeftOutToday = "it was left out today and a new pass is what writes it again";
+    public const string WrittenForTheNight = "it was already written for the newest facts file";
+    public const string LeftOutForTheNight = "it was left out for the newest facts file and the next night's is what writes it again";
+
+    // The date a section's row carries: the day it was written, and for the key under each
+    // figure the night of the facts file it was written from, because that night's figures
+    // are what it explains and a key written in the day from the night before is not about
+    // the figures the night after draws.
+    // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+    public static DateOnly DatedOn(string section, DateOnly writtenOn, DateOnly factsNight) =>
+        string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal) ? factsNight : writtenOn;
 
     const string FactsFor = @"
         SELECT payload, session_date FROM facts
@@ -200,7 +210,9 @@ public sealed class ProseWriter(
             }
 
             var newest = await NewestAsync(connection, ticker, section, cancellation);
-            var today = newest is { } found && found.AsOf == asOf;
+            var dated = DatedOn(section, asOf, night ?? asOf);
+            var byNight = string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal);
+            var today = newest is { } found && found.AsOf == dated;
 
             if (newest is { Status: "pending" })
             {
@@ -211,14 +223,14 @@ public sealed class ProseWriter(
 
             if (today && newest!.Status == "accepted")
             {
-                skipped.Add(new UnwrittenSection(section, WrittenToday));
+                skipped.Add(new UnwrittenSection(section, byNight ? WrittenForTheNight : WrittenToday));
 
                 continue;
             }
 
             if (today && newest!.Status == "fallback")
             {
-                skipped.Add(new UnwrittenSection(section, LeftOutToday));
+                skipped.Add(new UnwrittenSection(section, byNight ? LeftOutForTheNight : LeftOutToday));
 
                 continue;
             }
@@ -359,7 +371,7 @@ public sealed class ProseWriter(
             insert.Parameters.AddWithValue("$ticker", ticker);
             insert.Parameters.AddWithValue("$section", section);
             insert.Parameters.AddWithValue("$version", version);
-            insert.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            insert.Parameters.AddWithValue("$as_of", DatedOn(section, asOf, night ?? asOf).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             insert.Parameters.AddWithValue("$model", modelName);
             insert.Parameters.AddWithValue("$prose", prose);
             insert.Parameters.AddWithValue("$source_ids", JsonSerializer.Serialize(ids));

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-evetlwazj2ddy67poyi8eb",
+  "object": "chat.completion",
+  "created": 1789825513,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc. closed at 316.22, trading within a session range between 314.9 and 320.7 with volume of 35.42 million shares. The stock is currently in an uptrend supported by a 20-day average of 313.54 and a 50-day average of 315.64, while the 200-day average sits at 283.69. Technical indicators show a MACD value of 2.25 with a histogram of 0.92 above a signal line of 1.32, and a 14-day relative strength index of 50.26. Immediate resistance is located at 334.70 while support levels are found at 320.28 and 299.74, with the 14-day average true range measuring 7.50.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 998,
+    "completion_tokens": 203,
+    "total_tokens": 1201,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

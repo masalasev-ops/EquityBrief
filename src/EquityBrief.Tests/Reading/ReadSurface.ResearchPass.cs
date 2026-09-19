@@ -80,15 +80,32 @@ public partial class ReadSurface
 
     // Every accepted section but the cause, which the moves table draws, is drawn once
     // with the date and model the store holds, its paragraphs making up the stored prose.
+    // The key under each figure is dated by the night whose figures it explains, so it is
+    // drawn beside that night's figures alone, and a page of another night's says which
+    // night it was written for in its place.
     static void AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(TemporaryStore store, string page, int stated)
     {
         var accepted = Accepted(store, "KEYS").Where(row => row[0] != ClaimRules.CauseSection).ToArray();
+        var session = Rows(store, "SELECT MAX(session_date) FROM bar WHERE ticker = 'KEYS';").Single()[0];
 
         Assert.Equal(stated, accepted.Length);
 
         foreach (var row in accepted)
         {
             var drawn = WrittenOnThePage(page, row[0]);
+            var key = row[0] == ClaimRules.ComputedSection;
+
+            if (key && row[1] != session)
+            {
+                Assert.False(drawn.Success, $"{row[0]}, written for {row[1]}, is drawn beside the figures of {session}");
+                Assert.Contains(
+                    $"<p class=\"key-elsewhere\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(row[0])}\" data-written-for=\"{row[1]}\">"
+                    + $"Not drawn: the newest key explains the figures of {row[1]}, and the figures on this page are {session}'s.</p>",
+                    page,
+                    StringComparison.Ordinal);
+
+                continue;
+            }
 
             Assert.True(drawn.Success, $"{row[0]} is not drawn");
             Assert.Equal(row[1], drawn.Groups[1].Value);
@@ -97,7 +114,7 @@ public partial class ReadSurface
             var paragraphs = Regex.Matches(drawn.Groups[3].Value, "<p class=\"prose\">([^<]*)</p>").Select(match => WebUtility.HtmlDecode(match.Groups[1].Value));
 
             Assert.Equal(Regex.Replace(row[3], @"\s+", " ").Trim(), Regex.Replace(string.Join(" ", paragraphs), @"\s+", " ").Trim());
-            Assert.Contains($"<p class=\"written-by\">written on {row[1]} by {WebUtility.HtmlEncode(row[2])}</p>", drawn.Groups[3].Value, StringComparison.Ordinal);
+            Assert.Contains($"<p class=\"written-by\">{(key ? "written for the close of" : "written on")} {row[1]} by {WebUtility.HtmlEncode(row[2])}</p>", drawn.Groups[3].Value, StringComparison.Ordinal);
             Assert.Single(Regex.Matches(page, $"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(row[0]))}\""));
         }
     }
