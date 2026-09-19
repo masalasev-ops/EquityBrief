@@ -16320,8 +16320,29 @@ Mutated:    the rule, stated before the sweep: break each property the design ad
             on what to take from it; nothing else.
             M6 the chart's column naming a price no band holds: the chart test red on a price that
             is not stored; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Seven
+            runs of the whole suite, never a filter, at this entry's commit, each in its own
+            detached worktree under the session scratchpad, with the tree read before the run to
+            hold only the mutated file and the worktree removed after. The baseline is 1105 of 1106
+            with one red, and that red is this entry: `two-platform` reads every entry written since
+            the 7.2 report for its Windows record, and this one carried a placeholder until the run
+            below filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the plan test on two labels a line apart.
+            M2 turned 1 red, the profile test on the size it no longer states.
+            M3 turned 1 red, the distance test on none below.
+            M4 turned 1 red, the momentum test on the dashed box.
+            M5 turned 1 red, the screens test on a key that does not close on what to take from it.
+            M6 turned 1 red, the chart test on a price that is not stored.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added:
+            section 15's rows keep their parts, the reason totals row's words say counts in one
+            clause, and every ruling the design raised is a paragraph beside its table. Both gates
+            ran with this entry in place, and the operator's store under `data/` was not touched by
+            either.
 Carried:    the run page answers with an error on a night whose overnight queue wrote a row for a
             step that failed, because the page reads every queue row's detail as a record and a
             failed step writes its message; it is 6.10's, and is corrected next as its own entry.
