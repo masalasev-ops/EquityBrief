@@ -16410,11 +16410,11 @@ Mutated:    the rule, stated before the sweep: break each property this correcti
             does not say the queue ran, and the sweep run again from this entry's commit.
             M2 turned 1 red, the queue row test on the message failing to parse.
             M3 turned 1 red, the queue row test on the line saying the queue failed.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1107 of 1107 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added:
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 370 claims,
+            370 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 377 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added:
             section 15.10's overnight queue row already states what the region draws. Both gates ran
             with this entry in place, and the operator's store under `data/` was not touched by
             either.
