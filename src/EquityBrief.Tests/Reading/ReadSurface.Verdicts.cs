@@ -707,7 +707,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("per cent", dashed, StringComparison.Ordinal);
 
         // Each inside its own reason's span, and neither beside the name.
-        Assert.Matches("<span class=\"reason\" data-reason=\"at entry zone\"[^>]*>at entry zone<span class=\"record\" ", list);
-        Assert.Matches("<span class=\"reason\" data-reason=\"crossed a level\"[^>]*>crossed a level<span class=\"record not-measured\" ", list);
+        Assert.Matches("<span class=\"reason\" data-reason=\"at entry zone\"[^>]*>entry<span class=\"record\" ", list);
+        Assert.Matches("<span class=\"reason\" data-reason=\"crossed a level\"[^>]*>crossed<span class=\"record not-measured\" ", list);
     }
 }

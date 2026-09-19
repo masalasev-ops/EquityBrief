@@ -194,6 +194,33 @@ public static class NameScreen
 
         var html = new System.Text.StringBuilder();
 
+        // The strip as a grid a reader scans, each figure to the places it is read at, above the
+        // sentence that states every value as the store holds it.
+        // see: Every region is a card that states where its figures came from and how to read them
+        void Fact(string label, string value, string? note = null) =>
+            html.Append(CultureInfo.InvariantCulture, $"<div><dt>{label}</dt><dd>{value}{(note is null ? string.Empty : $" <small>{note}</small>")}</dd></div>");
+
+        var multiples = newest is not null
+            && newest.RootElement.TryGetProperty("valuation", out var stated)
+            && stated.ValueKind == JsonValueKind.Object
+                ? stated
+                : default;
+
+        html.Append("<dl class=\"facts\">");
+        Fact("Close", close is { } shownClose ? Read(shownClose) : NotOnFile);
+        Fact("Market value", Scaled(newest is null ? null : Text(newest.RootElement, "marketCapitalisation")));
+        Fact("High of the move", extremes is { } highs ? Read(highs.High) : NotOnFile, extremes is { } over ? Invariant($"over {over.Sessions} session(s)") : null);
+        Fact("Low of the move", extremes is { } lows ? Read(lows.Low) : NotOnFile);
+        Fact("Next dated event", nextEvent is { } coming ? Day(coming) : NotOnFile);
+        Fact("Price to earnings", Tenths(Text(multiples, "trailingPe")), Text(multiples, "forwardPe") is { } forward ? $"forward {Tenths(forward)}" : null);
+        Fact("20-day average", Hundredths(latest, IndicatorSeries.Sma20));
+        Fact("50-day average", Hundredths(latest, IndicatorSeries.Sma50));
+        Fact("200-day average", Hundredths(latest, IndicatorSeries.Sma200));
+        Fact("Relative strength", latest.TryGetValue(IndicatorSeries.Rsi14, out var strength) && strength is { } rsi ? rsi.ToString("0.0", CultureInfo.InvariantCulture) : NotOnFile);
+        Fact("Trend momentum", latest.TryGetValue(IndicatorSeries.MacdHist, out var momentum) && momentum is { } gap ? gap.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) : NotOnFile);
+        Fact("Typical daily move", Hundredths(latest, IndicatorSeries.Atr14));
+        html.Append("</dl>");
+
         html.Append(CultureInfo.InvariantCulture, $"<p class=\"fact-strip\" data-ticker=\"{ticker}\"");
 
         // close
@@ -266,6 +293,41 @@ public static class NameScreen
 
     static string Stated(decimal? value) =>
         value is { } held ? held.ToString(CultureInfo.InvariantCulture) : "not on file";
+
+    const string NotOnFile = "not on file";
+
+    // A figure as the fact grid reads it: a price to two places, a money figure in its scale, a
+    // multiple to one place. Each is the stored value rounded to be read, and the sentence beneath
+    // the grid states it whole.
+    static string Read(decimal price) => price.ToString("#,##0.00", CultureInfo.InvariantCulture);
+
+    static string Hundredths(IReadOnlyDictionary<string, double?> latest, string name) =>
+        latest.TryGetValue(name, out var value) && value is { } reading
+            ? reading.ToString("#,##0.00", CultureInfo.InvariantCulture)
+            : NotOnFile;
+
+    static string Tenths(string? stored) =>
+        stored is not null && double.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+            ? value.ToString("0.0", CultureInfo.InvariantCulture)
+            : NotOnFile;
+
+    static string Scaled(string? stored)
+    {
+        if (stored is null || !decimal.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+        {
+            return NotOnFile;
+        }
+
+        return value switch
+        {
+            >= 1_000_000_000_000m => Invariant($"${value / 1_000_000_000_000m:0.00}T"),
+            >= 1_000_000_000m => Invariant($"${value / 1_000_000_000m:0.0}B"),
+            >= 1_000_000m => Invariant($"${value / 1_000_000m:0.0}M"),
+            _ => Invariant($"${value:#,##0}"),
+        };
+    }
+
+    static string Invariant(FormattableString text) => text.ToString(CultureInfo.InvariantCulture);
 
     // How many reported quarters the numbers section draws, which is section 4's
     // own figure. The store holds twelve and this is what is shown, and the two
@@ -771,7 +833,8 @@ public static class NameScreen
         IReadOnlyList<(string RunId, decimal Spend)>? priced = null,
         DateOnly? today = null,
         SuspectSeriesRow? suspect = null,
-        NoYearRow? noYear = null)
+        NoYearRow? noYear = null,
+        UniverseRow? member = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -881,8 +944,19 @@ public static class NameScreen
             spend is null || priced is null ? null : Cost(priced, spend),
             Suspect(suspect),
             listing is null ? [] : TonightScreen.WrittenBeforeTheCorrection([listing]),
-            noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next));
+            noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next),
+            new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars)),
+            filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null);
     }
+
+    // The change on the day the masthead states, off the two newest stored closes, by the
+    // rule tonight's list takes a row's change by.
+    static double? DayChange(string ticker, IReadOnlyList<BarRow> bars) =>
+        bars.Count < 2
+            ? null
+            : TonightScreen.DayChange(
+                bars[^1].SessionDate,
+                [new CloseRow(ticker, bars[^1].SessionDate, bars[^1].Close), new CloseRow(ticker, bars[^2].SessionDate, bars[^2].Close)]);
 
     // A suspect row as the page states it, and nothing for a name whose series is trusted.
     // The instant and the reason are the row's, and a row carrying no reason says so.
@@ -1187,7 +1261,9 @@ public static class NameScreen
         // needs the indicator series this region does not read; the name page is
         // where it belongs and where it is drawn.
         return $"<section class=\"selected-name\" data-ticker=\"{ticker}\" data-plan-rows=\"{rows.Count}\" data-bands=\"{levels.Count}\">"
+            + "<div class=\"selwrap\"><div class=\"fig\">"
             + marks.PlanColumn(ticker, close, rows)
+            + "</div><div class=\"tbl-wrap\">"
             + marks.PlanTables(ticker, rows)
             + marks.LevelSummary(
                 ticker,
@@ -1200,7 +1276,7 @@ public static class NameScreen
                     level.HasNonAverageAnchor,
                     Members(level.Members)))],
                 [])
-            + "</section>";
+            + "</div></div></section>";
     }
 
     // The sessions of the last twelve months, which is what section 15.9's

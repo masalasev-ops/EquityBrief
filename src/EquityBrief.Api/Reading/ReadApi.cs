@@ -246,7 +246,11 @@ public sealed record UniverseRow(
     string? TrendState,
     decimal? NearestSupport,
     decimal? NearestResistance,
-    double? TypicalMove);
+    double? TypicalMove,
+    // The company's name and its industry, as the membership row holds them, which a
+    // page states beside the ticker. Null for a row that carries none.
+    string? Name = null,
+    string? Industry = null);
 
 // The read surface. Serves what the nightly run stored, and nothing else.
 //
@@ -750,7 +754,9 @@ public sealed class ReadApi : IComponent
                 AND v.immediate = 1 AND v.role = 'resistance'
                 AND v.as_of = (SELECT MAX(a.as_of) FROM level a WHERE a.ticker = m.ticker)),
                (SELECT i.value FROM indicator i WHERE i.ticker = m.ticker AND i.name = $typical
-                ORDER BY i.session_date DESC LIMIT 1)
+                ORDER BY i.session_date DESC LIMIT 1),
+               m.name,
+               m.industry
         FROM membership m
         WHERE m.index_code = $index_code
           AND (m.joined IS NULL OR m.joined <= $session)
@@ -1356,7 +1362,9 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(3) ? null : reader.GetString(3),
                 reader.IsDBNull(4) ? null : Money.FromStorage(reader.GetString(4)),
                 reader.IsDBNull(5) ? null : Money.FromStorage(reader.GetString(5)),
-                reader.IsDBNull(6) ? null : reader.GetDouble(6)));
+                reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8)));
         }
 
         return rows;

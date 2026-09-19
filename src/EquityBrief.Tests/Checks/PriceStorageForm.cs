@@ -311,6 +311,7 @@ public class PriceStorageForm
                 "MarkRenderer.cs: (double)band.Shares",
                 "MarkRenderer.cs: (double)bar.Volume",
                 "MarkRenderer.cs: (double)price",
+                "MarkRenderer.cs: (double)track.Total",
                 "RuleVersionScorer.cs: Convert.ToDouble(value",
         "ShortlistBuilder.cs: Convert.ToDouble(value",
                 "Statistic.cs: (decimal)statistic",

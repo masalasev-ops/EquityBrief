@@ -730,7 +730,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Reason totals")] = new Scoped(
             Verdict.Pass,
-            "the track across tonight's fired names, counted per reason off the stored listings, with every name on it in the unresolved state because nothing has scored tonight",
+            "each reason's count of tonight's fired names as a bar out of the fired count with the count written on it, counted per reason off the stored listings, and no won or lost segment because nothing has scored tonight",
             ByReadSurface),
                         [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = new Scoped(
             Verdict.Pass,

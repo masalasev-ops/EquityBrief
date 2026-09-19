@@ -83,8 +83,8 @@ public partial class ReadSurface
         // order, and each accepted section at the version and on the date the store holds it.
         var sessions = Rows(store, "SELECT session_date FROM bar WHERE ticker = 'KEYS' ORDER BY session_date;").Select(row => row[0]).ToArray();
 
-        // The name's own chart, the first the region draws, ahead of the moves table's year.
-        var chart = Blocks(file, "<svg[^>]*class=\"level-chart\" data-ticker=\"KEYS\".*?</svg>").First();
+        // The name's own chart, the one the chart card draws, rather than the moves table's year.
+        var chart = Blocks(file[file.IndexOf("data-card=\"chart\"", StringComparison.Ordinal)..], "<svg[^>]*class=\"level-chart\" data-ticker=\"KEYS\".*?</svg>").First();
 
         Assert.Contains($"class=\"level-chart\" data-ticker=\"KEYS\" data-sessions=\"{sessions.Length}\"", chart, StringComparison.Ordinal);
         Assert.Equal(sessions, Regex.Matches(chart, "<g class=\"candle\" data-session=\"([^\"]*)\">").Select(match => match.Groups[1].Value).ToArray());
