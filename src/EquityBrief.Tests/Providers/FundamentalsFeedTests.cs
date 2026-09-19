@@ -180,6 +180,26 @@ public class FundamentalsFeedTests
     }
 
     [Fact]
+    public void TheAnalystsRatingsAreReadAsFiledAndAPayloadFilingNoneSaysSo()
+    {
+        // Every captured name files them, AAPL's read off its payload by hand; and the same payload
+        // with the object taken out reads as ratings not filed rather than as a name no analyst
+        // follows.
+        // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+        Assert.Equal(new AnalystRatings(4.0417m, 324.4016m, 23, 7, 16, 1, 1), Read("AAPL").Ratings);
+        Assert.All(new[] { "AAPL", "MSFT", "KEYS", "NFLX" }, ticker => Assert.DoesNotContain("ratings", Read(ticker).PartsNotCarried));
+
+        var withNone = System.Text.Json.Nodes.JsonNode.Parse(Captured("AAPL"))!.AsObject();
+
+        withNone.Remove("AnalystRatings");
+
+        var without = RecordedFundamentalsFeed.Parse(withNone.ToJsonString(), "AAPL");
+
+        Assert.Contains("ratings", without.PartsNotCarried);
+        Assert.Equal(new AnalystRatings(null, null, null, null, null, null, null), without.Ratings);
+    }
+
+    [Fact]
     public void ThePartsReadAreTheOnesTheNumbersSectionStates()
     {
         // What is carried, said forward rather than only as an absence. Five

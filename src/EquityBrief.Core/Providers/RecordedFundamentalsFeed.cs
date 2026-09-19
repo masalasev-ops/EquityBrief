@@ -48,6 +48,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
     [
         ("segments", "segment"),
         ("guidance", "guidance"),
+        ("ratings", "AnalystRatings"),
     ];
 
     public int Requests { get; private set; }
@@ -152,6 +153,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             Bases(root),
             Valuation(root),
             Market(root),
+            Ratings(root),
             [.. MayBeAbsent.Where(part => !CarriesAKeyFor(root, part.Key)).Select(part => part.Part)],
             withNoFilingDate);
     }
@@ -239,6 +241,25 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
         root.TryGetProperty("Highlights", out var highlights)
             ? new MarketValue(Money(highlights, "MarketCapitalization"))
             : new MarketValue(null);
+
+    // What the analysts say of the company, from the one object the payload files it in.
+    static AnalystRatings Ratings(JsonElement root) =>
+        root.TryGetProperty("AnalystRatings", out var ratings)
+            ? new AnalystRatings(
+                Money(ratings, "Rating"),
+                Money(ratings, "TargetPrice"),
+                Count(ratings, "StrongBuy"),
+                Count(ratings, "Buy"),
+                Count(ratings, "Hold"),
+                Count(ratings, "Sell"),
+                Count(ratings, "StrongSell"))
+            : new AnalystRatings(null, null, null, null, null, null, null);
+
+    // A count of analysts, which the payload sends as a whole number.
+    static int? Count(JsonElement row, string name) =>
+        row.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var count)
+            ? count
+            : null;
 
     // Whether the payload carries a key named for a part, at any depth. A walk
     // over key names rather than a scan of the text, because the word segment

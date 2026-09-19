@@ -795,6 +795,30 @@ public class FundamentalsFetcherTests
     }
 
     [Fact]
+    public async Task TheAnalystsRatingsAreCopiedOntoTheNewestFilingAsTheProviderFilesThem()
+    {
+        // AAPL's, read off the captured payload by hand: a mean rating of 4.0417 on a scale of one
+        // to five, a mean target price of 324.4016, and 23, 7, 16, 1 and 1 analysts at each grade
+        // from a strong buy to a strong sell.
+        // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+        using var store = new TemporaryStore().Migrated();
+
+        await Fetcher(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        var rows = Rows(store, "AAPL");
+
+        using var newest = JsonDocument.Parse(rows[0].Payload);
+        using var source = JsonDocument.Parse(rows[0].Source);
+
+        var ratings = newest.RootElement.GetProperty("ratings");
+
+        Assert.Equal("4.0417", ratings.GetProperty("rating").GetString());
+        Assert.Equal("324.4016", ratings.GetProperty("targetPrice").GetString());
+        Assert.Equal([23, 7, 16, 1, 1], new[] { "strongBuy", "buy", "hold", "sell", "strongSell" }.Select(grade => ratings.GetProperty(grade).GetInt32()));
+        Assert.Equal(FundamentalsFetcher.Provider, source.RootElement.GetProperty(FundamentalsFetcher.RatingsPart).GetString());
+    }
+
+    [Fact]
     public async Task ANameFilingNoEstimateStoresNoneRatherThanAnEmptyOne()
     {
         using var store = new TemporaryStore().Migrated();
