@@ -368,9 +368,10 @@ public sealed class ReadApi : IComponent
         FROM research_section r
         WHERE r.ticker = $ticker
           AND r.status = 'accepted'
+          AND r.as_of <= $on
           AND r.version = (
               SELECT MAX(s.version) FROM research_section s
-              WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted')
+              WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted' AND s.as_of <= $on)
         ORDER BY r.section;
     ";
 
@@ -517,7 +518,7 @@ public sealed class ReadApi : IComponent
     const string FilingsForName = @"
         SELECT ticker, filing_date, payload, source
         FROM fundamentals
-        WHERE ticker = $ticker
+        WHERE ticker = $ticker AND filing_date <= $on
         ORDER BY filing_date DESC;
     ";
 
@@ -547,7 +548,7 @@ public sealed class ReadApi : IComponent
     const string LargestMoveForName = @"
         SELECT session_date, sessions
         FROM move
-        WHERE ticker = $ticker
+        WHERE ticker = $ticker AND session_date <= $on
         ORDER BY rank
         LIMIT 1;
     ";
@@ -574,7 +575,7 @@ public sealed class ReadApi : IComponent
                has_non_average_anchor, members
         FROM level
         WHERE ticker = $ticker
-              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker)
+              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker AND as_of <= $on)
         ORDER BY low_edge;
     ";
 
@@ -585,7 +586,7 @@ public sealed class ReadApi : IComponent
         SELECT ticker, as_of, band_low, band_high, share_count, share_of_period
         FROM volume_profile
         WHERE ticker = $ticker
-              AND as_of = (SELECT MAX(as_of) FROM volume_profile WHERE ticker = $ticker)
+              AND as_of = (SELECT MAX(as_of) FROM volume_profile WHERE ticker = $ticker AND as_of <= $on)
         ORDER BY band_low;
     ";
 
@@ -655,7 +656,7 @@ public sealed class ReadApi : IComponent
     const string LadderForName = @"
         SELECT ticker, as_of, trend_state, plan
         FROM ladder
-        WHERE ticker = $ticker
+        WHERE ticker = $ticker AND as_of <= $on
         ORDER BY as_of DESC
         LIMIT 1;
     ";
@@ -672,13 +673,13 @@ public sealed class ReadApi : IComponent
     const string MovesForName = @"
         SELECT ticker, session_date, sessions, change_pct, rank
         FROM move
-        WHERE ticker = $ticker
+        WHERE ticker = $ticker AND session_date <= $on
         ORDER BY rank;
     ";
 
     // The newest night the listings hold, so the front page resolves to it
     // without a date being asked for.
-    const string NewestNight = "SELECT MAX(session_date) FROM listing;";
+    const string NewestNight = "SELECT MAX(session_date) FROM listing WHERE session_date <= $on;";
 
     // The newest run the log carries a stage for, which is the night the run
     // page opens on. The read surface's own row and a night on a day with no
@@ -731,7 +732,7 @@ public sealed class ReadApi : IComponent
     const string ListingsForName = @"
         SELECT ticker, session_date, reasons, fired_count, plan_at_listing
         FROM listing
-        WHERE ticker = $ticker
+        WHERE ticker = $ticker AND session_date <= $on
         ORDER BY session_date DESC
         LIMIT $sessions;
     ";
@@ -1007,13 +1008,14 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    public async Task<IReadOnlyList<LevelRow>> LevelsAsync(string ticker)
+    public async Task<IReadOnlyList<LevelRow>> LevelsAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = LevelsForName;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
 
         var rows = new List<LevelRow>();
 
@@ -1036,13 +1038,14 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    public async Task<IReadOnlyList<ProfileRow>> ProfileAsync(string ticker)
+    public async Task<IReadOnlyList<ProfileRow>> ProfileAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = ProfileForName;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
 
         var rows = new List<ProfileRow>();
 
@@ -1313,12 +1316,18 @@ public sealed class ReadApi : IComponent
             : await NewestNightAsync();
     }
 
-    public async Task<DateOnly?> NewestNightAsync()
+    // The newest night the listings hold, or the newest on or before a date, which is the
+    // evening a page asked for an earlier one draws: a date the exchange did not trade on,
+    // or one a night never ran for, answers with the evening before it rather than with
+    // nothing, and the page says which evening it drew.
+    // see: A name's page for an earlier night is what the store held that night
+    public async Task<DateOnly?> NewestNightAsync(DateOnly? onOrBefore = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = NewestNight;
+        command.Parameters.AddWithValue("$on", On(onOrBefore));
 
         return await command.ExecuteScalarAsync() is string newest
             ? DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
@@ -1346,7 +1355,7 @@ public sealed class ReadApi : IComponent
         return await ListingsAsync(command);
     }
 
-    public async Task<IReadOnlyList<ListingRow>> ListingsAsync(string ticker, int sessions)
+    public async Task<IReadOnlyList<ListingRow>> ListingsAsync(string ticker, int sessions, DateOnly? asOf = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
@@ -1354,6 +1363,7 @@ public sealed class ReadApi : IComponent
         command.CommandText = ListingsForName;
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$sessions", sessions);
+        command.Parameters.AddWithValue("$on", On(asOf));
 
         return await ListingsAsync(command);
     }
@@ -1377,13 +1387,14 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    public async Task<IReadOnlyList<MoveRow>> MovesAsync(string ticker)
+    public async Task<IReadOnlyList<MoveRow>> MovesAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = MovesForName;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
 
         var rows = new List<MoveRow>();
 
@@ -1494,6 +1505,13 @@ public sealed class ReadApi : IComponent
 
     static DateOnly Day(string stored) => DateOnly.ParseExact(stored, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+    // The night a read is about. A page about tonight asks for the last date there is
+    // rather than for no bound, so one statement serves both and a night's page and
+    // tonight's differ in the date they hand over and in nothing else.
+    // see: A name's page for an earlier night is what the store held that night
+    static string On(DateOnly? asOf) =>
+        (asOf ?? DateOnly.MaxValue).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
     public async Task<CalendarRow?> NextEventAsync(string ticker, DateOnly onOrAfter)
     {
         await using var connection = Open();
@@ -1566,13 +1584,14 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    public async Task<LadderRow?> LadderAsync(string ticker)
+    public async Task<LadderRow?> LadderAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = LadderForName;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
 
         await using var reader = await command.ExecuteReaderAsync();
 
@@ -1591,13 +1610,14 @@ public sealed class ReadApi : IComponent
     // (see: Twelve filings are stored and five are shown). The payload and the
     // source are handed back as stored, since a read surface that unpacked the JSON
     // would be deciding which figures exist.
-    public async Task<IReadOnlyList<FilingRow>> FundamentalsAsync(string ticker)
+    public async Task<IReadOnlyList<FilingRow>> FundamentalsAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = FilingsForName;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
 
         var rows = new List<FilingRow>();
 
@@ -1695,13 +1715,14 @@ public sealed class ReadApi : IComponent
     // A name's written sections, one per section, each the newest the checker
     // accepted, with its industry cycle among them, which is its theme's rather than a row
     // of its own.
-    public async Task<IReadOnlyList<WrittenSectionRow>> WrittenSectionsAsync(string ticker)
+    public async Task<IReadOnlyList<WrittenSectionRow>> WrittenSectionsAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = WrittenSectionsForName;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
 
         var rows = new List<WrittenSectionRow>();
 
@@ -2078,7 +2099,7 @@ public sealed class ReadApi : IComponent
     }
 
     // The largest move's own high and low, or none where the name has no move.
-    public async Task<MoveExtremes?> MoveExtremesAsync(string ticker)
+    public async Task<MoveExtremes?> MoveExtremesAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
 
@@ -2089,6 +2110,7 @@ public sealed class ReadApi : IComponent
         {
             largest.CommandText = LargestMoveForName;
             largest.Parameters.AddWithValue("$ticker", ticker);
+            largest.Parameters.AddWithValue("$on", On(asOf));
 
             await using var reader = await largest.ExecuteReaderAsync();
 

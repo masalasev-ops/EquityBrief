@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - ARCHITECTURE.html - section 15.3's routes name the one that carries a date
+
+Authorised by: A name's page for an earlier night is what the store held that night
+Was:
+> the route list ran `#/researched`, `#/name/&lt;ticker&gt;`, `#/run/&lt;date&gt;`
+Now:
+> `#/researched`, `#/name/&lt;ticker&gt;`, `#/name/&lt;ticker&gt;/&lt;date&gt;`, `#/run/&lt;date&gt;`
+Why: section 15.9 named both of the name screen's routes and 15.3's list, which is where the routes are enumerated, named one of them.
+
+### 2026-09-19 - .claude/rules/checks.md - read-surface asserts a name's page for an earlier night
+
+Authorised by: A name's page for an earlier night is what the store held that night
+Was:
+> the read-surface row ended at "named where one is not"
+Now:
+> "; and a name's page for an earlier night draws that night's figures and not tonight's, asserted against tonight's own page over the same store, says which evening it drew, offers no control, walks that evening's list, and answers a day the listings hold no evening on with the evening before it and a date it cannot read with tonight"
+Why: the route draws a page, and read-surface is the check that reads the pages.
+
 ### 2026-09-19 - .claude/rules/checks.md - read-surface asserts that a screen fits the screen it is read on
 
 Authorised by: A screen is read at the width of the screen it is read on

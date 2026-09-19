@@ -16936,3 +16936,84 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             rather than as a row of one screen's table. Both gates ran with this entry in place, and
             the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: a name's page for an earlier night, every read it makes bounded by that night and the evening it drew stated on it   2026-09-19
+Corrects:   section 15.9 states two routes for the name page and 5.8 built one, so a name could be
+            read for tonight and for no other evening. The listing history drawn at 5.8 names the
+            evenings a name was listed on, and what the name looked like on one of them could be
+            read nowhere.
+Found:      by this session reading section 15 against the built screens for the operator on
+            2026-09-19, who asked for the next stages of section 15 to be built.
+Measured:   over the copy of the store the screens are read on: NVDA's page for 2026-09-15 states
+            its close of 212.17 against the 222.27 tonight's page states, its 20-day average 218.61
+            against 218.72, and no written section against the 7 tonight's page draws, its research
+            having been written on 2026-09-18. Every card on it is stamped for 2026-09-15 and it
+            offers no control.
+Repaired:   the route draws one name as the store held it on one evening. Every read the page makes
+            takes that evening: the bars and the readings stop there, the bands, the plan and the
+            profile are the ones that evening computed, the filings are those filed by then, and a
+            written section is the newest version accepted on or before it. The evening drawn is the
+            newest the listings hold on or before the date asked for, so a Saturday, a holiday and
+            an evening that never ran answer with the evening before rather than with nothing, and
+            the page says which evening it drew and links to tonight's. It offers no control and
+            states no spend or staleness, as the exported file does not, because a pass writes about
+            the company now. The walk links each neighbour on the same evening, the listing
+            history's evenings are links to the page for each, which is where a reader reaches one,
+            and a date that cannot be read is tonight's page with a line saying what was asked for,
+            as an unknown route is tonight's list with one.
+Missed:     a screen's routes are stated in section 15's prose rather than as rows of its table, and
+            the harness reads rows as claims, so nothing was owed on the second route and nothing
+            said it was not built. It is the shape the listing history was missed in a day earlier,
+            now in the part of the section that says where a screen is reached rather than what it
+            draws.
+Guarded:    over the fixture's night with an evening written on a session the store holds a bar for
+            and no listing on: the page for that evening draws its trend state, its band and its
+            close and not tonight's, read against tonight's own page over the same store so the
+            bound is what is asserted rather than the store; it names the evening above every
+            figure; it offers no control where tonight's page does; the walk links its neighbour on
+            that evening, the neighbour being a second name listed on it so the assertion is not an
+            empty loop; the chart's last candle is the store's own last bar on or before it; and a
+            day the listings hold no evening on draws the evening before it while a date that is not
+            one draws tonight with its line.
+Expected:   derived: the evening, the names and the figures are read off the store by the test's own
+            queries, and the page is read against the same name's page for tonight. No expectation
+            file changes.
+Tests:      1124, from 1122. Two added to `read-surface`, and no stated count moves, the route being
+            named in section 15.3's list and section 15.9's own line rather than as a row of a
+            screen's table.
+Mutated:    the rule, stated before the sweep: break each of the four properties this route rests
+            on, the reads being bounded by the evening, the evening being resolved to one the
+            listings hold, the page asking nothing about the company now, and the walk staying in
+            the evening. Not mutated: the line naming the evening and the link from the listing
+            history, which the same tests read and which no other property rests on.
+            Predicted:
+            M1 the bands read at their newest date rather than at the evening's: the earlier-night
+            test red on the band that evening held; nothing else.
+            M2 the date asked for taken as the evening rather than resolved to one the listings
+            hold: the quiet-day test red on the evening the page names; nothing else.
+            M3 the spend, the staleness and the newest pass read for an earlier night as they are
+            for tonight: the earlier-night test red on the control the page must not offer; nothing
+            else.
+            M4 the walk's neighbours linked without the evening: the earlier-night test red on where
+            a neighbour's link goes; nothing else.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Five runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated files and the worktree removed after. The baseline is 1123 of 1124 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the earlier-night test on the band that evening held.
+            M2 turned 1 red, the quiet-day test on the evening the page names.
+            M3 turned 1 red, the earlier-night test on the control the page must not offer.
+            M4 turned 1 red, the earlier-night test on where a neighbour's link goes.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1124 of 1124 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 372 claims,
+            372 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 379 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved, a screen's routes being stated in section 15.3's list and in the
+            screen's own line rather than as rows of its table. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair.
