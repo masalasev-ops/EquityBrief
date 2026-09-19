@@ -209,6 +209,19 @@ public sealed record NoYear(int Nights, DateOnly? Last, DateOnly? Next);
 // One reason that fired for a name, with the values that made it true.
 public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string> Values);
 
+// One horizon's result for one evening a name was on the list, as the store holds it: the
+// outcome, null while the horizon has not matured, the move from that night's close, and the
+// universe base rate the row carries.
+public sealed record HorizonResult(string? Outcome, double? ReturnPct, double? BaseRate);
+
+// One evening a name was on the list: the reasons that fired, the stored close that night,
+// and what the two session horizons came to.
+public sealed record ListingEvening(DateOnly Evening, IReadOnlyList<string> Reasons, decimal? Close, HorizonResult Five, HorizonResult TwentyOne);
+
+// A name's listing history: whether it was on the list on each stored evening of the window,
+// oldest first, and the evenings it was, newest first.
+public sealed record ListingHistoryCard(IReadOnlyList<bool> Strip, IReadOnlyList<ListingEvening> Evenings);
+
 // One reason and how many of tonight's names it fired on.
 public sealed record ReasonTotal(string Reason, int Names);
 
@@ -1644,6 +1657,64 @@ public sealed class MarkRenderer : IComponent
         walk.Append("</nav>");
 
         return walk.ToString();
+    }
+
+    // A name's listing history, section 15.9's region: the strip over the window, then one row
+    // per evening the name was on the list with the reasons that fired, the close that night and
+    // what followed five and twenty-one sessions on. Each result stands beside the universe base
+    // rate its row carries, and an evening too recent to have matured says so. No rate is formed
+    // for the name, because a record is a reason's and is measured across every name it fired on.
+    // see: Every forward-return figure is shown against the universe base rate
+    // see: A name's listing history states what followed each evening it was listed and forms no rate for the name
+    public string ListingHistory(string ticker, ListingHistoryCard history)
+    {
+        var drawn = new StringBuilder();
+
+        drawn.Append(Invariant, $"<section class=\"listing-history\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{history.Strip.Count}\" data-evenings=\"{history.Evenings.Count}\">");
+        drawn.Append(Invariant, $"<div class=\"sub\" style=\"margin-top:0\">The last {history.Strip.Count} stored sessions</div>");
+        drawn.Append(ListingStrip(ticker, history.Strip));
+
+        if (history.Evenings.Count == 0)
+        {
+            drawn.Append(Invariant, $"<p class=\"listing-none\">{Escaped(ticker)} was not on the list on any of these sessions.</p></section>");
+
+            return drawn.ToString();
+        }
+
+        drawn.Append("<div class=\"tbl-wrap\"><table class=\"listing-evenings\">");
+        drawn.Append("<tr><th>Evening</th><th>Why it was listed</th><th class=\"num\">Close that night</th><th>5 sessions on</th><th>21 sessions on</th></tr>");
+
+        foreach (var evening in history.Evenings)
+        {
+            drawn.Append(Invariant, $"<tr data-evening=\"{evening.Evening:yyyy-MM-dd}\" data-close=\"{(evening.Close is { } stored ? stored.ToString(CultureInfo.InvariantCulture) : "none")}\"{Horizon("5", evening.Five)}{Horizon("21", evening.TwentyOne)}>");
+            drawn.Append(Invariant, $"<td>{evening.Evening:yyyy-MM-dd}</td>");
+            drawn.Append(Invariant, $"<td>{Escaped(string.Join(", ", evening.Reasons))}</td>");
+            drawn.Append(Invariant, $"<td class=\"num\">{(evening.Close is { } close ? Figures.Price(close) : "not stored")}</td>");
+            drawn.Append(Invariant, $"<td>{Result(evening.Five)}</td><td>{Result(evening.TwentyOne)}</td></tr>");
+        }
+
+        drawn.Append("</table></div></section>");
+
+        return drawn.ToString();
+
+        static string Horizon(string window, HorizonResult result) =>
+            FormattableString.Invariant(
+                $" data-outcome-{window}=\"{result.Outcome ?? "none"}\" data-return-{window}=\"{(result.ReturnPct is { } move ? move.ToString("R", CultureInfo.InvariantCulture) : "none")}\" data-base-rate-{window}=\"{(result.BaseRate is { } rate ? rate.ToString("R", CultureInfo.InvariantCulture) : "none")}\"");
+
+        static string Result(HorizonResult result)
+        {
+            if (result.Outcome is null)
+            {
+                return "not yet matured";
+            }
+
+            var move = result.ReturnPct is { } change ? change.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + "%, " : string.Empty;
+            var rate = result.BaseRate is { } shared
+                ? "base rate " + shared.ToString("0.0", CultureInfo.InvariantCulture) + "%"
+                : "base rate not yet measured";
+
+            return Escaped($"{move}a {result.Outcome}; {rate}");
+        }
     }
 
     // The listing strip, section 15.5's mark: the evenings a name was on the

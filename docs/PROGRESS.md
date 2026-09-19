@@ -16781,3 +16781,53 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             new words, and section 4's table is a placement. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: a name's listing history drawn on its page, each evening it was listed with what followed beside the base rate and no rate for the name   2026-09-19
+Corrects:   5.8 built the name page without the listing history section 15.9 describes, the evenings
+            a name was on the list and what followed each, so a reader of a name could not see its
+            own history on the list anywhere but as the universe table's strip.
+Found:      by this session reading section 15 against the screens for the operator on 2026-09-19,
+            who chose it as the next thing to build.
+Measured:   over the copy of the store the screens were read on: NVDA was listed on all 8 of the
+            evenings the store holds, three of whose five-session horizons have matured, a loss of
+            4.26 per cent and wins of 0.45 and 1.82 against a base rate of 34.7, and none of the
+            twenty-one-session ones has. Its close for 2026-09-09 reads 223.42 in the stored bar and
+            223.1699 in the listing, the year having been refetched after a corporate action the
+            night after.
+Repaired:   the name page draws a listing history after the plan: the listing strip over the name's
+            stored evenings, sixty at most, and one row per evening it was listed, newest first,
+            with the reasons that fired, the stored bar's close that night, and what followed five
+            and twenty-one sessions on, each beside the base rate its row carries, or the words that
+            it has not matured. Nothing sums the evenings, and a name listed on none says so beneath
+            its strip. The read API reads one name's forward returns, and section 15.9's paragraph
+            describing the tab becomes a row of its table, with a decision naming what it states and
+            what it refuses.
+Missed:     section 15.9's description of the history was a paragraph beneath its table rather than
+            a row of it, and the harness reads rows as claims, so nothing was owed on it and nothing
+            said it was not built.
+Guarded:    over the fixture's night with two constructed evenings, the strip over every stored
+            evening and one row for each the name was listed on, newest first, against a query of
+            the test's own; the reason that fired; the stored bar's close rather than the one the
+            reason carried; the matured horizon beside its base rate with the stored figures whole
+            on the row; the unmatured one saying so; no evening summed; and a name listed on none
+            saying so.
+Expected:   derived: the constructed evenings are the rows the test writes, and the counts are read
+            off the store. No expectation file changes.
+Tests:      1120, from 1118. Two added to `read-surface`, and `architecture-conformance`'s stated
+            counts move for the row added, the screens' rows to 44, their subjects to 129 and the
+            claims to 372.
+Mutated:    the rule, stated before the sweep: break three of the properties the history adds, each
+            result beside its base rate, an unmatured horizon saying so, and the close the stored
+            bar's for that evening. Not mutated: the strip, which is the universe table's mark and
+            its own tests', the order of the evenings, and the name listed on none, which the second
+            test holds.
+            Predicted:
+            M1 a result drawn without its base rate: the listing history test red on the matured
+            horizon's words; nothing else.
+            M2 an unmatured horizon drawn blank: the listing history test red on the words that it
+            has not matured; nothing else.
+            M3 the close read from another session's bar: the listing history test red on the
+            evening's stored close; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.

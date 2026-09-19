@@ -273,6 +273,10 @@ internal static class Scope
             Verdict.Pass,
             "every name holding an accepted section besides the key under each figure is listed on its own route with the day its newest one was written and how many it holds, a name holding the key alone is not, and the masthead's search and the universe table carry the same day",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Listing history")] = new Scoped(
+            Verdict.Pass,
+            "the strip marks each stored evening and one row stands for each evening the name was listed, newest first, with the reasons that fired, the stored close that night and what followed five and twenty-one sessions on beside the base rate its row carries, an unmatured horizon saying so, nothing summing the evenings, and a name listed on none saying so beneath its strip",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "Fact strip, close")] = new Scoped(
             Verdict.Pass,
             "the last stored close, read back off the strip's own attribute against the bar the store holds",
@@ -1858,6 +1862,7 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "The table, sessions until earnings")] = "5.8",
         [CheckReach.Key("15.8 Universe", "The table, the evening last on the list")] = "5.4",
         [CheckReach.Key("15.8 Universe", "Researched")] = "5.8",
+        [CheckReach.Key("15.9 Name", "Listing history")] = "5.8",
         // The fact strip, whole at 6.1. Five of its seven parts existed from
         // phase 3 and two did not, and the row is one claim per part rather than
         // one for the row, so the five could not pass while the two were absent.
