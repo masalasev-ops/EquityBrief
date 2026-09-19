@@ -16604,8 +16604,31 @@ Mutated:    the rule, stated before the sweep: break four of the properties this
             written for 2026-08-01 drawn beside the figures of 2026-09-08; nothing else.
             M4 a reading the checker would refuse handed as read: the readings worked by hand red on
             the growth of twelve and a half times; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Five runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1114 of 1115 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 6 red: the queue over the fixture's night, the order over a changed night, the
+            pass writing again only its own refusal, the limit's boundaries and the unavailable
+            model, each on NFLX or KEYS missing where it was queued, and the token test on
+            recordings of the two later nights that nothing asked.
+            M2 turned 1 red, the dating test on the key's row dated 2026-09-10.
+            M3 turned 2 red, the stale and the paused pages each drawing a key written for
+            2026-08-01 beside the figures of 2026-09-08.
+            M4 turned 1 red, the readings worked by hand on a growth of twelve and a half times
+            handed as 1250.0 per cent.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added:
+            the rows this changes are reworded where they stand, and section 15.9's new sentence is
+            a paragraph rather than a row. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. A key stored before it keeps the day it was written as its
             date, so one written in the day before its night ran reads as that night's key until the
             night after writes it again. The keys on the pages now were written under the prompt
