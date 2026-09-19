@@ -16419,3 +16419,99 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             with this entry in place, and the operator's store under `data/` was not touched by
             either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: every figure a reader sees drawn at the places it is read at, the names holding research listed and found from a search on every screen, and the architecture's own history moved to the changelog   2026-09-19
+Corrects:   5.8 and its design correction drew the screens' figures at the places the store holds
+            them. The numbers section printed revenue as 96221000000.00 and a margin as 0.749753,
+            the plan's tables, its sentences and the level list printed prices to four places, the
+            break-even read as 0.5413 of the time, and why a name is on the list printed its volume
+            whole. The redesign's plan asked for figures formatted for reading with the stored value
+            kept on the element, and the design correction drew that for the fact strip and the
+            marks alone. The screens also offered no way to a name but its row in a list, and no
+            list of the names holding research.
+Found:      by the operator on 2026-09-19, reading NVDA's page over a copy of the store: the revenue
+            section had too many numbers and should be in millions or billions. Then that a
+            researched name such as NVDA could not be found, with a page of them or a search on the
+            first page asked for, and that the architecture's changelog sections should be removed.
+Measured:   over that copy, read without a lock: 133 text nodes on NVDA's page and 19 on tonight's
+            carried a number written to more than two places or a whole number of seven digits or
+            more, and after the repair one does, the key under each figure, which the local model
+            wrote and the page draws as the claim checker accepted it. Of 503 current members one
+            holds research, NVDA, six sections written on 2026-09-18, and 502 hold the key.
+Repaired:   one class draws a stored figure at the places it is read at: a price, a ratio and an
+            amount per share to two places, money and share counts in their scale, a fraction as a
+            percentage to one place and a multiple to one, and a number inside a sentence the ladder
+            wrote to two. Every table, sentence and list on the name page and in tonight's selected
+            plan draws through it, and each element keeps the stored value whole in a data
+            attribute. The names holding a section the checker accepted besides the key under each
+            figure are listed newest first on `#/researched`, linked from the masthead, marked in
+            the universe table and labelled in a search box every screen carries, which finds a name
+            by its ticker or its company's name and says so where nothing matches. Section 15.2
+            states the places, sections 15.3, 15.8 and 15.13 the route, the list and the search, and
+            two decisions the rules. The architecture's title, heading line and footer carried a
+            version and a date, section 22 a table of questions already settled and section 23 a
+            changelog of its own; all five are removed and their text is in `CHANGELOG.md`.
+Stored:     nothing. The pages read the store and write none of it.
+Missed:     every read-surface test read a figure off the attribute carrying the stored value and
+            none read the words beside it, so a page drawing every value whole passed; and no test
+            asked how a person reaches a name that tonight's list and the universe's first page do
+            not show.
+Guarded:    the formats worked by hand, the scale a figure a shade under a billion takes and a
+            currency other than the dollar among them; a reason's values drawn as read with the
+            stored ones on the element; the fixture's name page read off its route with no figure at
+            its stored places among the words a reader sees, over regions stated to be drawn, and
+            each quarter's figures read against the store; and the researched list, the universe's
+            line, the search's list and the shell's search, route and link read off their routes
+            over a store where one name holds two accepted sections, a refused draft and a section
+            left out, and another holds the key alone.
+Expected:   derived: every format is worked by hand from the rule, and the researched name, its day
+            and its count are the rows the test writes. No expectation file changes.
+Tests:      1111, from 1107. Four added to `read-surface`. The plan tables' row pattern carries the
+            high edge now, and `architecture-conformance`'s stated counts move for the one row this
+            adds, the screens' rows to 43, their subjects to 128 and the claims to 371, with the two
+            removed tables' placements gone with them.
+Mutated:    the rule, stated before the sweep: break four of the properties this correction adds,
+            money drawn in its scale, a reason's values drawn as read, the key under each figure not
+            counted as research, and the search's list labelling a researched name with its day. Not
+            mutated: the percentage, price, ratio and multiple formats beyond the cases worked by
+            hand, the plan's tables and sentences, the level list, the segment and earnings tables,
+            the universe's line, the search's words where nothing matches, and the architecture's
+            removals, which are text.
+            Predicted:
+            M1 money drawn at its stored places: the formats test red on the first money figure, and
+            the name page test red on the words a reader sees; nothing else.
+            M2 a reason's values drawn as stored: the why-it-is-here test red on the values drawn;
+            nothing else.
+            M3 the key under each figure counted as research: the researched test red on the list
+            holding two names; nothing else.
+            M4 the search's list without a researched name's day: the researched test red on that
+            name's label; nothing else.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Five runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1110 of 1111 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 2 red, the formats test on $96.2B drawn as $96221000000.00 and the name page
+            test on the fixture's figures drawn whole among the words a reader sees.
+            M2 turned 1 red, the why-it-is-here test on its values drawn as stored. The sweep's
+            pattern for M2 first read the assertion's words past the forty or so characters the
+            failure message quotes, and so stopped the sweep on a red it had predicted; it was cut
+            to the words the message quotes, as M4's was before it ran, and the sweep run again from
+            this entry's commit.
+            M3 turned 1 red, the researched test on the list holding two names, the key's among
+            them.
+            M4 turned 1 red, the researched test on the researched name's label without its day.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1111 of 1111 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 371 claims,
+            371 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 378 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim
+            added, section 15.8's Researched row, which passes on `read-surface`, and the two tables
+            the architecture no longer carries are no longer placed. Both gates ran with this entry
+            in place, and the operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair. The key under each figure still writes stored figures whole
+            in its prose, which the claim checker accepts, and changing what the local model is
+            asked is a change to the lane rather than to a screen.

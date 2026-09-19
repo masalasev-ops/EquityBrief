@@ -10,6 +10,13 @@ namespace EquityBrief.Web.App;
 // projection reads off the two newest stored closes.
 public sealed record NameMast(string? Company, string? Sector, string? Industry, double? DayChangePct);
 
+// A current member as the masthead's search offers it: its ticker, its company's name, and the
+// day its newest researched section was written, null where it holds none.
+public sealed record Findable(string Ticker, string? Name, DateOnly? Researched);
+
+// A name holding researched sections, as the researched list draws it.
+public sealed record ResearchedCell(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections);
+
 // The shell the browser loads once, and the routes it answers.
 //
 // Section 15.4 puts the shell and the marks on the server and the routing in
@@ -48,6 +55,9 @@ public sealed class SinglePageApp : IComponent
     // through the clock rather than through the UTC date the run log carries,
     // because a run that starts after the close in New York carries tomorrow's.
     public const string RunRoute = "#/run/";
+
+    // The researched names, reached from the masthead on every screen.
+    public const string ResearchedRoute = "#/researched";
 
     // Where the name page's control sends a press, and the header the page's own script
     // puts on it. A form another site's page submits to this address carries no such
@@ -93,7 +103,7 @@ public sealed class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{RunRoute}}}" data-view="run">Run</a></nav><button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a></nav><button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
@@ -130,6 +140,10 @@ public sealed class SinglePageApp : IComponent
             const ticker = encodeURIComponent(path.slice('{{{NameRoute}}}'.length));
             const response = await fetch('/screens/name/' + ticker);
             screen.innerHTML = await response.text();
+          } else if (path === '{{{ResearchedRoute}}}') {
+            view = 'researched';
+            const researched = await fetch('/screens/researched');
+            screen.innerHTML = await researched.text();
           } else {
             // An unknown route resolves to tonight with a line saying what was asked for,
             // rather than to a blank page.
@@ -235,8 +249,45 @@ public sealed class SinglePageApp : IComponent
           });
           form.insertAdjacentHTML('afterend', await response.text());
         });
+        // The masthead's search, over every current member by its ticker or its company's name.
+        // Its list is read after the first screen, so the first screen never waits on it, and a
+        // name picked from the list goes straight to its page.
+        const find = document.getElementById('find');
+        const findable = document.getElementById('findable');
+        function found(text) {
+          const typed = text.trim();
+          if (typed === '') { return null; }
+          const options = [...findable.querySelectorAll('option')];
+          if (options.length === 0) { return typed.toUpperCase(); }
+          const byTicker = options.find((option) => option.value === typed.toUpperCase());
+          if (byTicker) { return byTicker.value; }
+          const lower = typed.toLowerCase();
+          const byName = options.find((option) => option.textContent.toLowerCase().includes(lower));
+          return byName ? byName.value : null;
+        }
+        function go(text) {
+          for (const old of screen.querySelectorAll('.notice[data-not-found]')) { old.remove(); }
+          const ticker = found(text);
+          if (ticker) {
+            find.value = '';
+            find.blur();
+            fresh = true;
+            location.hash = '{{{NameRoute}}}' + encodeURIComponent(ticker);
+            return;
+          }
+          const line = document.createElement('p');
+          line.className = 'notice';
+          line.setAttribute('role', 'status');
+          line.setAttribute('data-not-found', text.trim());
+          line.textContent = 'No name in the index matches ' + text.trim() + '.';
+          screen.prepend(line);
+        }
+        document.getElementById('search').addEventListener('submit', (event) => { event.preventDefault(); go(find.value); });
+        find.addEventListener('input', (event) => {
+          if (event.inputType === 'insertReplacementText' && [...findable.querySelectorAll('option')].some((option) => option.value === find.value)) { go(find.value); }
+        });
         paintTheme();
-        show();
+        show().then(() => fetch('/screens/find')).then((response) => response.ok ? response.text() : '').then((options) => { findable.innerHTML = options; }).catch(() => { });
         </script>
         </body>
         </html>
@@ -620,6 +671,69 @@ public sealed class SinglePageApp : IComponent
         region.Append("</section>");
 
         return region.ToString();
+    }
+
+    // The masthead search's list: every current member by its ticker, labelled with its
+    // company's name and the day its research was written where it holds any.
+    public string FindOptions(IReadOnlyList<Findable> names)
+    {
+        var options = new StringBuilder();
+
+        foreach (var name in names)
+        {
+            var label = (name.Name is { Length: > 0 } company ? company : name.Ticker)
+                + (name.Researched is { } written ? ", researched " + Cards.Day(written) : string.Empty);
+
+            options.Append(Invariant($"<option value=\"{Escaped(name.Ticker)}\">{Escaped(label)}</option>"));
+        }
+
+        return options.ToString();
+    }
+
+    // The researched names, section 15.8's researched region on a route of its own: every name
+    // holding a researched section, newest first, each with the day its newest section was
+    // written and how many sections it holds.
+    // see: A researched name is one holding an accepted section besides the key under each figure
+    public string ResearchedRegion(IReadOnlyList<ResearchedCell> rows)
+    {
+        var body = new StringBuilder();
+
+        if (rows.Count == 0)
+        {
+            body.Append("<p class=\"degraded\" data-researched=\"none\">No name holds researched sections yet. A name's own page offers to write them, with what a pass has cost stated before it starts.</p>");
+        }
+        else
+        {
+            body.Append("<div class=\"tbl-wrap\"><table class=\"researched-table\"><thead><tr><th>Name</th><th>Sector</th><th>Written</th><th>Sections</th></tr></thead><tbody>");
+
+            foreach (var row in rows)
+            {
+                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-written=\"{Cards.Day(row.Written)}\" data-sections=\"{row.Sections}\">"));
+                body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>"));
+                body.Append(row.Name is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
+                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "not on file")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td class=\"num\">{row.Sections}</td></tr>"));
+            }
+
+            body.Append("</tbody></table></div>");
+        }
+
+        body.Append(Cards.Key(
+            "What is listed.",
+            "Every name holding a section a research pass wrote and the claim checker accepted, newest first, with the day its newest section was written. The key under each figure is not counted, because the overnight queue writes it for every listed name each night.",
+            "A name here opens with its research in place. Any other name offers to write it on its own page, and the search box above finds any name in the index."));
+
+        return Invariant($"<section class=\"researched\" data-names=\"{rows.Count}\">")
+            + Cards.Masthead(
+                "Researched",
+                "<span class=\"m-screen\">Researched names</span>",
+                rows.Count == 0 ? "No name holds researched sections yet" : Invariant($"{rows.Count} name(s) hold researched sections"))
+            + Cards.Computed(
+                "Researched",
+                body.ToString(),
+                title: "Names with research",
+                lede: "Research is written when it is asked for on a name's page, and that page says when a filing, an earnings date or the name's news has made it stale.",
+                region: "researched")
+            + "</section>";
     }
 
     // Tonight's list, section 15.7's four regions that the listings store feeds.

@@ -250,7 +250,18 @@ public sealed record UniverseRow(
     // The company's name and its industry, as the membership row holds them, which a
     // page states beside the ticker. Null for a row that carries none.
     string? Name = null,
-    string? Industry = null);
+    string? Industry = null,
+    // The day the name's newest researched section was written, and null for a name
+    // holding none.
+    DateOnly? Researched = null);
+
+// A current member as the masthead's search offers it: its ticker, its company's name, and
+// the day its newest researched section was written, null where it holds none.
+public sealed record FindableRow(string Ticker, string? Name, DateOnly? Researched);
+
+// A name holding researched sections: the day its newest one was written and how many
+// sections it holds.
+public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections);
 
 // The read surface. Serves what the nightly run stored, and nothing else.
 //
@@ -756,9 +767,17 @@ public sealed class ReadApi : IComponent
                (SELECT i.value FROM indicator i WHERE i.ticker = m.ticker AND i.name = $typical
                 ORDER BY i.session_date DESC LIMIT 1),
                m.name,
-               m.industry
+               m.industry,
+               " + ResearchedOn + @"
         FROM membership m
-        WHERE m.index_code = $index_code
+        WHERE " + CurrentMember + @"
+        ORDER BY m.ticker;
+    ";
+
+    // The current members of the index on a session, one row a ticker, for the reason the
+    // universe query states.
+    const string CurrentMember = @"
+          m.index_code = $index_code
           AND (m.joined IS NULL OR m.joined <= $session)
           AND (m.""left"" IS NULL OR m.""left"" > $session)
           AND m.rowid = (
@@ -768,8 +787,41 @@ public sealed class ReadApi : IComponent
                 AND (o.joined IS NULL OR o.joined <= $session)
                 AND (o.""left"" IS NULL OR o.""left"" > $session)
               ORDER BY o.observed_at DESC, o.rowid DESC
-              LIMIT 1)
+              LIMIT 1)";
+
+    // The day a member's newest researched section was written. A researched section is an
+    // accepted one a research pass wrote, and the key under each figure is not one: the
+    // overnight queue writes it for every listed name each night, so counting it would call
+    // most of the index researched.
+    // see: A researched name is one holding an accepted section besides the key under each figure
+    const string ResearchedOn = @"
+               (SELECT MAX(r.as_of) FROM research_section r
+                WHERE r.ticker = m.ticker AND r.status = 'accepted' AND r.section <> $computed)";
+
+    // Every current member with its company's name and the day its newest researched
+    // section was written, which is what the masthead's search offers.
+    const string Findable = @"
+        SELECT m.ticker, m.name, " + ResearchedOn + @"
+        FROM membership m
+        WHERE " + CurrentMember + @"
         ORDER BY m.ticker;
+    ";
+
+    // Every name holding a researched section, newest first, with the name and sector its
+    // newest membership row carries and how many sections it holds.
+    // see: A researched name is one holding an accepted section besides the key under each figure
+    const string Researched = @"
+        SELECT r.ticker,
+               (SELECT m.name FROM membership m WHERE m.ticker = r.ticker
+                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               (SELECT m.sector FROM membership m WHERE m.ticker = r.ticker
+                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               MAX(r.as_of),
+               COUNT(DISTINCT r.section)
+        FROM research_section r
+        WHERE r.status = 'accepted' AND r.section <> $computed
+        GROUP BY r.ticker
+        ORDER BY MAX(r.as_of) DESC, r.ticker;
     ";
 
     // Every stage of every run that started inside a window of UTC days, which
@@ -1351,6 +1403,7 @@ public sealed class ReadApi : IComponent
         command.Parameters.AddWithValue("$index_code", indexCode);
         command.Parameters.AddWithValue("$session", OnNight(night));
         command.Parameters.AddWithValue("$typical", IndicatorSeries.Atr14);
+        command.Parameters.AddWithValue("$computed", ClaimRules.ComputedSection);
 
         var rows = new List<UniverseRow>();
 
@@ -1367,11 +1420,66 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(5) ? null : Money.FromStorage(reader.GetString(5)),
                 reader.IsDBNull(6) ? null : reader.GetDouble(6),
                 reader.IsDBNull(7) ? null : reader.GetString(7),
-                reader.IsDBNull(8) ? null : reader.GetString(8)));
+                reader.IsDBNull(8) ? null : reader.GetString(8),
+                reader.IsDBNull(9) ? null : Day(reader.GetString(9))));
         }
 
         return rows;
     }
+
+    // Every current member as the masthead's search offers it.
+    public async Task<IReadOnlyList<FindableRow>> FindableAsync(string indexCode, DateOnly? night = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Findable;
+        command.Parameters.AddWithValue("$index_code", indexCode);
+        command.Parameters.AddWithValue("$session", OnNight(night));
+        command.Parameters.AddWithValue("$computed", ClaimRules.ComputedSection);
+
+        var rows = new List<FindableRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new FindableRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetString(1),
+                reader.IsDBNull(2) ? null : Day(reader.GetString(2))));
+        }
+
+        return rows;
+    }
+
+    // Every name holding a researched section, newest first.
+    public async Task<IReadOnlyList<ResearchedRow>> ResearchedAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Researched;
+        command.Parameters.AddWithValue("$computed", ClaimRules.ComputedSection);
+
+        var rows = new List<ResearchedRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new ResearchedRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetString(1),
+                reader.IsDBNull(2) ? null : reader.GetString(2),
+                Day(reader.GetString(3)),
+                reader.GetInt32(4)));
+        }
+
+        return rows;
+    }
+
+    static DateOnly Day(string stored) => DateOnly.ParseExact(stored, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     public async Task<CalendarRow?> NextEventAsync(string ticker, DateOnly onOrAfter)
     {

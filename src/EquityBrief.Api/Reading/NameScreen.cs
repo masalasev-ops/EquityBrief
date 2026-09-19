@@ -45,25 +45,25 @@ public static class NameScreen
         {
             var low = Price(tranche, "lowEdge");
             var high = Price(tranche, "highEdge");
-            var stop = tranche.GetProperty("stop").GetString();
+            decimal? stop = tranche.GetProperty("stop").GetString() is { } stored
+                ? decimal.Parse(stored, CultureInfo.InvariantCulture)
+                : null;
             var condition = tranche.GetProperty("condition").GetString();
 
             rows.Add(new PlanRow(
                 low,
                 high,
                 PlanKind.Tranche,
-                stop is null
-                    ? $"buy on {Words(condition)}, no stop beneath"
-                    : $"buy on {Words(condition)}, stop on a daily close below {stop}",
+                stop is { } below
+                    ? $"buy on {Words(condition)}, stop on a daily close below {Figures.Price(below)}"
+                    : $"buy on {Words(condition)}, no stop beneath",
                 Traded: true));
 
             // The stop is its own row, because it is a price a close is measured
             // against rather than a zone anything is bought in.
-            if (stop is not null)
+            if (stop is { } price)
             {
-                var price = decimal.Parse(stop, CultureInfo.InvariantCulture);
-
-                rows.Add(new PlanRow(price, price, PlanKind.Stop, $"stop for the {low} zone", Traded: true));
+                rows.Add(new PlanRow(price, price, PlanKind.Stop, $"stop for the {Figures.Price(low)} zone", Traded: true));
             }
         }
 
@@ -150,10 +150,14 @@ public static class NameScreen
 
         foreach (var setup in setups)
         {
-            html.Append(CultureInfo.InvariantCulture, $"<tr data-setup=\"{setup.GetProperty("name").GetString()}\" data-proposal=\"true\">");
+            var entry = setup.GetProperty("entry").GetString();
+            var stop = setup.GetProperty("stop").GetString();
+            var target = setup.GetProperty("target").GetString();
+
+            html.Append(CultureInfo.InvariantCulture, $"<tr data-setup=\"{setup.GetProperty("name").GetString()}\" data-proposal=\"true\" data-entry=\"{entry}\" data-stop=\"{stop}\" data-target=\"{target}\">");
             html.Append(CultureInfo.InvariantCulture, $"<td>{setup.GetProperty("name").GetString()} on {setup.GetProperty("eventDate").GetString()}</td>");
-            html.Append(CultureInfo.InvariantCulture, $"<td>{setup.GetProperty("trigger").GetString()}</td>");
-            html.Append(CultureInfo.InvariantCulture, $"<td>enter {setup.GetProperty("entry").GetString()}, stop {setup.GetProperty("stop").GetString()}, target {setup.GetProperty("target").GetString()}</td></tr>");
+            html.Append(CultureInfo.InvariantCulture, $"<td>{Figures.InSentence(setup.GetProperty("trigger").GetString() ?? string.Empty)}</td>");
+            html.Append(CultureInfo.InvariantCulture, $"<td>enter {Drawn(entry, Figures.Price)}, stop {Drawn(stop, Figures.Price)}, target {Drawn(target, Figures.Price)}</td></tr>");
         }
 
         html.Append("</table></section>");
@@ -268,15 +272,16 @@ public static class NameScreen
         html.Append(CultureInfo.InvariantCulture, $" data-{IndicatorSeries.Atr14}=\"{Reading(latest, IndicatorSeries.Atr14)}\">");
 
         // The sentence a person reads, which states the same figures in the same
-        // order the row lists them. A strip whose attributes and words disagree is
-        // two statements, so both come from the values above.
-        html.Append(CultureInfo.InvariantCulture, $"close {Stated(close)}, market capitalisation {capitalisation ?? "not on file"}, ");
+        // order the row lists them, at the places the grid reads them at. A strip
+        // whose attributes and words disagree is two statements, so both come from
+        // the values above.
+        html.Append(CultureInfo.InvariantCulture, $"close {(close is { } closed ? Read(closed) : NotOnFile)}, market capitalisation {Scaled(capitalisation)}, ");
         html.Append(extremes is { } drawn
-            ? FormattableString.Invariant($"the move's high {drawn.High} and low {drawn.Low} over {drawn.Sessions} session(s), ")
+            ? FormattableString.Invariant($"the move's high {Read(drawn.High)} and low {Read(drawn.Low)} over {drawn.Sessions} session(s), ")
             : "the move's high and low not on file, ");
         html.Append(CultureInfo.InvariantCulture, $"next dated event: {(nextEvent is { } on ? Day(on) : "not on file")}, ");
-        html.Append(CultureInfo.InvariantCulture, $"trailing multiple {Text(valuation, "trailingPe") ?? "not on file"}, ");
-        html.Append(CultureInfo.InvariantCulture, $"forward multiple {Text(valuation, "forwardPe") ?? "not on file"}");
+        html.Append(CultureInfo.InvariantCulture, $"trailing multiple {Tenths(Text(valuation, "trailingPe"))}, ");
+        html.Append(CultureInfo.InvariantCulture, $"forward multiple {Tenths(Text(valuation, "forwardPe"))}");
         html.Append("</p>");
 
         newest?.Dispose();
@@ -291,41 +296,31 @@ public static class NameScreen
             ? reading.ToString("0.######", CultureInfo.InvariantCulture)
             : "none";
 
-    static string Stated(decimal? value) =>
-        value is { } held ? held.ToString(CultureInfo.InvariantCulture) : "not on file";
-
     const string NotOnFile = "not on file";
 
     // A figure as the fact grid reads it: a price to two places, a money figure in its scale, a
-    // multiple to one place. Each is the stored value rounded to be read, and the sentence beneath
-    // the grid states it whole.
-    static string Read(decimal price) => price.ToString("#,##0.00", CultureInfo.InvariantCulture);
+    // multiple to one place. Each is the stored value rounded to be read, and the strip's own
+    // attributes carry it whole.
+    // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
+    static string Read(decimal price) => Figures.Price(price);
 
     static string Hundredths(IReadOnlyDictionary<string, double?> latest, string name) =>
         latest.TryGetValue(name, out var value) && value is { } reading
             ? reading.ToString("#,##0.00", CultureInfo.InvariantCulture)
             : NotOnFile;
 
-    static string Tenths(string? stored) =>
-        stored is not null && double.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
-            ? value.ToString("0.0", CultureInfo.InvariantCulture)
-            : NotOnFile;
+    static string Tenths(string? stored) => Drawn(stored, Figures.Multiple);
 
-    static string Scaled(string? stored)
-    {
-        if (stored is null || !decimal.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
-        {
-            return NotOnFile;
-        }
+    static string Scaled(string? stored) => Drawn(stored, value => Figures.Money(value));
 
-        return value switch
-        {
-            >= 1_000_000_000_000m => Invariant($"${value / 1_000_000_000_000m:0.00}T"),
-            >= 1_000_000_000m => Invariant($"${value / 1_000_000_000m:0.0}B"),
-            >= 1_000_000m => Invariant($"${value / 1_000_000m:0.0}M"),
-            _ => Invariant($"${value:#,##0}"),
-        };
-    }
+    // A stored figure as it is read, the stored text where it is not a number, and the absence
+    // said in words.
+    static string Drawn(string? stored, Func<decimal, string> read) =>
+        stored is null
+            ? NotOnFile
+            : decimal.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+                ? read(value)
+                : stored;
 
     static string Invariant(FormattableString text) => text.ToString(CultureInfo.InvariantCulture);
 
@@ -337,11 +332,12 @@ public static class NameScreen
 
     // Section 4's numbers, as the page shows them.
     //
-    // Every value is a stored one, rendered as the store holds it. Nothing here
-    // multiplies, divides or rounds: the margin was computed by the fetcher from
-    // the two figures in its own filing, and the valuation was copied from the
-    // provider with the earnings basis beside it.
+    // Every value is a stored one, drawn at the places it is read at with the
+    // stored value on its cell. Nothing here works a figure out: the margin was
+    // computed by the fetcher from the two figures in its own filing, and the
+    // valuation was copied from the provider with the earnings basis beside it.
     // see: A screen reads and renders, and computes nothing
+    // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     //
     // Each figure carries the filing date it came from, which is what the whole
     // table is keyed on (see: Fundamentals are stored with the filing date they
@@ -403,10 +399,10 @@ public static class NameScreen
 
             html.Append(CultureInfo.InvariantCulture, $"<tr data-period-end=\"{period}\" data-filed=\"{Day(filing.FilingDate)}\">");
             html.Append(CultureInfo.InvariantCulture, $"<td>{period}</td>");
-            html.Append(Cell(quarter, "revenue"));
-            html.Append(Cell(quarter, "grossMargin"));
-            html.Append(Cell(quarter, "netMargin"));
-            html.Append(Cell(quarter, "netIncome"));
+            html.Append(Cell(quarter, "revenue", value => Figures.Money(value, currency)));
+            html.Append(Cell(quarter, "grossMargin", Figures.Percent));
+            html.Append(Cell(quarter, "netMargin", Figures.Percent));
+            html.Append(Cell(quarter, "netIncome", value => Figures.Money(value, currency)));
             html.Append(CultureInfo.InvariantCulture, $"<td data-filed=\"{Day(filing.FilingDate)}\">{Day(filing.FilingDate)}</td></tr>");
         }
 
@@ -421,7 +417,7 @@ public static class NameScreen
                 $"<p class=\"estimate\" data-estimated-quarter=\"{Text(estimated, "periodEnd")}\"" +
                 $" data-eps-estimate=\"{Text(estimated, "epsEstimate")}\">The next quarter ends " +
                 $"{Text(estimated, "periodEnd")} and is expected on {Text(estimated, "reportDate")}, " +
-                $"with a consensus estimate of {Text(estimated, "epsEstimate")} per share.</p>");
+                $"with a consensus estimate of {Drawn(Text(estimated, "epsEstimate"), Figures.PerShare)} per share.</p>");
         }
         else
         {
@@ -430,9 +426,9 @@ public static class NameScreen
                 "next quarter, so no expected figure is shown.</p>");
         }
 
-        html.Append(Sheet(newest.RootElement, filings[0].FilingDate));
+        html.Append(Sheet(newest.RootElement, filings[0].FilingDate, currency));
         html.Append(Valuation(newest.RootElement));
-        html.Append(Segments(newest.RootElement, Attribution(filings[0].Source)));
+        html.Append(Segments(newest.RootElement, Attribution(filings[0].Source), currency));
 
         html.Append("</section>");
 
@@ -507,7 +503,7 @@ public static class NameScreen
     // Every group the table carries, in the order it carries them, because two
     // groups of one captured table share a member and two labels repeat: a screen
     // that keyed on the label would draw one of them and drop the other.
-    static string Segments(JsonElement payload, IReadOnlyDictionary<string, string> source)
+    static string Segments(JsonElement payload, IReadOnlyDictionary<string, string> source, string currency)
     {
         if (!payload.TryGetProperty("segments", out var segments) || segments.ValueKind != JsonValueKind.Object)
         {
@@ -556,7 +552,7 @@ public static class NameScreen
                     .Append("<td>").Append(label).Append("</td>")
                     .Append("<td>").Append(figure.GetProperty("lineItem").GetString()).Append("</td>")
                     .Append(value.ValueKind == JsonValueKind.String
-                        ? "<td>" + value.GetString() + Suffix(figure) + "</td>"
+                        ? "<td class=\"num\" data-segment-figure=\"" + value.GetString() + "\">" + SegmentFigure(value.GetString()!, figure, currency) + "</td>"
                         : "<td class=\"degraded\" data-segment-figure=\"absent\">not filed</td>")
                     .Append("</tr>");
 
@@ -587,12 +583,12 @@ public static class NameScreen
         }
     }
 
-    // A figure that is not in the table's currency carries the unit it is in, which
-    // is how a count of two segments stops reading as two million of them.
-    static string Suffix(JsonElement figure) =>
+    // A figure in the table's currency in its scale, and one that is not carrying the unit it
+    // is in, as filed, which is how a count of two segments stops reading as two million of them.
+    static string SegmentFigure(string stored, JsonElement figure, string currency) =>
         figure.GetProperty("unit").ValueKind == JsonValueKind.String
-            ? " " + figure.GetProperty("unit").GetString()
-            : string.Empty;
+            ? stored + " " + figure.GetProperty("unit").GetString()
+            : Drawn(stored, value => Figures.Money(value, currency));
 
     // A part the archive supplies and this row does not carry, with the reason read
     // off the source column rather than assumed. A read that did not happen and a
@@ -621,7 +617,7 @@ public static class NameScreen
     // The balance sheet, from the newest filing and labelled with its date. The
     // figures on this block are as of a filing rather than as of the fetch, which is
     // why the date is drawn beside them.
-    static string Sheet(JsonElement payload, DateOnly filed)
+    static string Sheet(JsonElement payload, DateOnly filed, string currency)
     {
         if (!payload.TryGetProperty("balanceSheet", out var sheet) || sheet.ValueKind != JsonValueKind.Object)
         {
@@ -633,11 +629,10 @@ public static class NameScreen
 
         html.Append(CultureInfo.InvariantCulture, $"<table class=\"numbers-balance-sheet\" data-filed=\"{Day(filed)}\">");
         html.Append("<tr><th>Total assets</th><th>Total liabilities</th><th>Equity</th><th>Cash</th><th>Net debt</th></tr><tr>");
-        html.Append(Cell(sheet, "totalAssets"));
-        html.Append(Cell(sheet, "totalLiabilities"));
-        html.Append(Cell(sheet, "equity"));
-        html.Append(Cell(sheet, "cash"));
-        html.Append(Cell(sheet, "netDebt"));
+        foreach (var name in new[] { "totalAssets", "totalLiabilities", "equity", "cash", "netDebt" })
+        {
+            html.Append(Cell(sheet, name, value => Figures.Money(value, currency)));
+        }
         html.Append("</tr></table>");
 
         return html.ToString();
@@ -661,23 +656,24 @@ public static class NameScreen
         var html = new System.Text.StringBuilder();
 
         html.Append("<table class=\"numbers-valuation\"><tr><th>Basis</th><th>Earnings per share</th><th>Price to earnings</th></tr>");
-        html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"trailing\"><td>trailing</td>{Cell(bases, "trailing")}{Cell(valuation, "trailingPe")}</tr>");
-        html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"forward\"><td>next year</td>{Cell(bases, "nextYear")}{Cell(valuation, "forwardPe")}</tr>");
+        html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"trailing\"><td>trailing</td>{Cell(bases, "trailing", Figures.PerShare)}{Cell(valuation, "trailingPe", Figures.Multiple)}</tr>");
+        html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"forward\"><td>next year</td>{Cell(bases, "nextYear", Figures.PerShare)}{Cell(valuation, "forwardPe", Figures.Multiple)}</tr>");
         html.Append("</table>");
 
         return html.ToString();
     }
 
-    // One figure, as the store holds it, with the stored text on the cell as well
-    // so a test reads back what was written rather than what was rendered. A figure
-    // the filing does not carry says so in words rather than as an empty cell.
-    static string Cell(JsonElement holder, string name)
+    // One figure, drawn at the places it is read at, with the stored text on the
+    // cell as well so a test reads back what was written rather than what was
+    // rendered. A figure the filing does not carry says so in words rather than as
+    // an empty cell.
+    static string Cell(JsonElement holder, string name, Func<decimal, string> read)
     {
         var value = Text(holder, name);
 
         return value is null
             ? $"<td class=\"degraded\" data-{name}=\"absent\">not filed</td>"
-            : $"<td data-{name}=\"{value}\">{value}</td>";
+            : $"<td class=\"num\" data-{name}=\"{value}\">{Drawn(value, read)}</td>";
     }
 
     // A date as the store holds it. Formatted here rather than in an
@@ -724,26 +720,28 @@ public static class NameScreen
             html.Append("<tr><th>From</th><th>Entry</th><th>Risk</th><th>Reward</th><th>Reward to risk</th></tr>");
 
             html.Append(CultureInfo.InvariantCulture,
-                $"<tr data-from=\"first\"><td>the first tranche</td><td>{figures.GetProperty("firstEntry").GetString()}</td>" +
-                $"<td>{figures.GetProperty("firstRisk").GetString()}</td><td>{figures.GetProperty("firstReward").GetString()}</td>" +
-                $"<td>{figures.GetProperty("firstRewardToRisk").GetString()}</td></tr>");
+                $"<tr data-from=\"first\"><td>the first tranche</td>{Figure(figures, "firstEntry", Figures.Price)}" +
+                $"{Figure(figures, "firstRisk", Figures.Price)}{Figure(figures, "firstReward", Figures.Price)}" +
+                $"{Figure(figures, "firstRewardToRisk", Figures.Ratio)}</tr>");
 
-            if (figures.GetProperty("blendedEntry").GetString() is { } blended)
+            if (figures.GetProperty("blendedEntry").GetString() is not null)
             {
                 html.Append(CultureInfo.InvariantCulture,
-                    $"<tr data-from=\"blended\"><td>the blended first two</td><td>{blended}</td>" +
-                    $"<td>{figures.GetProperty("blendedRisk").GetString()}</td><td>{figures.GetProperty("blendedReward").GetString()}</td>" +
-                    $"<td>{figures.GetProperty("blendedRewardToRisk").GetString()}</td></tr>");
+                    $"<tr data-from=\"blended\"><td>the blended first two</td>{Figure(figures, "blendedEntry", Figures.Price)}" +
+                    $"{Figure(figures, "blendedRisk", Figures.Price)}{Figure(figures, "blendedReward", Figures.Price)}" +
+                    $"{Figure(figures, "blendedRewardToRisk", Figures.Ratio)}</tr>");
             }
 
             html.Append("</table>");
 
             // The break-even, which is what the plan demands of itself rather
             // than a benchmark borrowed from elsewhere.
-            html.Append(CultureInfo.InvariantCulture,
-                $"<p class=\"break-even\" data-break-even=\"{figures.GetProperty("breakEven").GetString()}\">" +
-                $"This plan is worth taking if its first tranche reaches the target before the stop " +
-                $"more than {figures.GetProperty("breakEven").GetString()} of the time.</p>");
+            var breakEven = figures.GetProperty("breakEven").GetString();
+
+            html.Append(CultureInfo.InvariantCulture, $"<p class=\"break-even\" data-break-even=\"{breakEven}\">");
+            html.Append(breakEven is null
+                ? "This plan states no break-even, because its first tranche has no reward to set against its risk.</p>"
+                : $"This plan is worth taking if its first tranche reaches the target before the stop more than {Drawn(breakEven, Figures.Percent)} of the time.</p>");
 
             // The worked sizing example, from a risk budget the reader chooses.
             // The plan places a position and never sizes one, so the budget is a
@@ -751,7 +749,7 @@ public static class NameScreen
             // see: The plan places a position and never sizes one
             html.Append(CultureInfo.InvariantCulture,
                 $"<p class=\"sizing\" data-risk=\"{figures.GetProperty("firstRisk").GetString()}\">" +
-                $"Sizing is yours: a risk budget divided by {figures.GetProperty("firstRisk").GetString()} " +
+                $"Sizing is yours: a risk budget divided by {Drawn(figures.GetProperty("firstRisk").GetString(), Figures.Price)} " +
                 $"is the number of shares the first tranche takes. This tool places the position and " +
                 $"never sizes it.</p>");
         }
@@ -762,12 +760,16 @@ public static class NameScreen
 
             foreach (var print in prints)
             {
+                var share = print.GetProperty("shareOfStop").GetString();
+
                 html.Append(CultureInfo.InvariantCulture,
                     $"<tr data-print=\"{print.GetProperty("eventDate").GetString()}\">" +
                     $"<td>{print.GetProperty("eventDate").GetString()}</td>" +
                     $"<td>{print.GetProperty("session").GetString()}</td>" +
-                    $"<td>{print.GetProperty("move").GetString()}</td>" +
-                    $"<td>{print.GetProperty("shareOfStop").GetString() ?? "no stop to measure against"}</td></tr>");
+                    $"{Figure(print, "move", Figures.Price)}");
+                html.Append(share is null
+                    ? "<td>no stop to measure against</td></tr>"
+                    : $"<td class=\"num\" data-share-of-stop=\"{share}\">{Drawn(share, Figures.Percent)} of the stop distance</td></tr>");
             }
 
             html.Append("</table>");
@@ -780,6 +782,18 @@ public static class NameScreen
 
     static decimal Price(JsonElement row, string name) =>
         decimal.Parse(row.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
+
+    // One of the plan's figures in its cell, drawn at the places it is read at with the stored
+    // value on the cell, and a figure the plan does not state said in a word.
+    static string Figure(JsonElement holder, string name, Func<decimal, string> read) =>
+        holder.GetProperty(name).GetString() is { } stored
+            ? $"<td class=\"num\" data-{Attribute(name)}=\"{stored}\">{Drawn(stored, read)}</td>"
+            : $"<td data-{Attribute(name)}=\"none\">none</td>";
+
+    // A stored field's name as an attribute's, so firstRewardToRisk is read back off
+    // data-first-reward-to-risk.
+    static string Attribute(string name) =>
+        string.Concat(name.Select(letter => char.IsUpper(letter) ? "-" + char.ToLowerInvariant(letter) : letter.ToString()));
 
     // The condition in words. The enum's names are what the store holds and are
     // not what a reader reads, and this is the one place the two are paired.

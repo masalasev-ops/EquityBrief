@@ -157,7 +157,8 @@ public static class UniverseScreen
             nextEvent is { } dated && night is { } on ? ExchangeClosures.SessionsUntil(on, dated) : null,
             nextEvent,
             nextEvent is { } beyond && beyond > ExchangeClosures.CoveredThrough,
-            row.Name);
+            row.Name,
+            row.Researched);
     }
 
     // The gap to a band edge, in typical days' moves, as a distance rather than

@@ -125,6 +125,7 @@ public partial class ReadSurface
             CheckReach.Key("15.7 Tonight", "Selected name, whichever row is selected"),
             CheckReach.Key("15.8 Universe", "The table, paged"),
             CheckReach.Key("15.8 Universe", "The table, sessions until earnings"),
+            CheckReach.Key("15.8 Universe", "Researched"),
             CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, Everything above the marker is a sale"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, everything below is a purchase"),
@@ -1090,7 +1091,7 @@ public partial class ReadSurface
 
             // Every tranche row names its condition in words and its stop, and
             // every exit row says what to do there.
-            Assert.Equal(tranches, Regex.Matches(tables, "<tr data-low-edge=\"[^\"]+\"><td>").Count);
+            Assert.Equal(tranches, Regex.Matches(tables, "<tr data-low-edge=\"[^\"]+\" data-high-edge=\"[^\"]+\"><td class=\"num\">").Count);
             Assert.Equal(exits, Regex.Matches(tables, "data-traded=\"(true|false)\"").Count);
         }
 

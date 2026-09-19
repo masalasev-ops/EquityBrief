@@ -79,6 +79,10 @@ code{font-size:.92em}
 .m-nav a{text-decoration:none;color:var(--soft);padding-block:10px}
 .m-nav a[aria-current='page']{color:var(--ink);text-decoration:underline;text-underline-offset:6px}
 .theme{font:600 12.5px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 12px;min-height:36px;cursor:pointer}
+.m-search{margin:0}
+.m-search input{font:14px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 10px;min-height:36px;width:220px}
+.m-search input::placeholder{color:var(--soft)}
+.c-nm .researched-on{display:block;font-size:12px;color:var(--soft)}
 .notice{margin:18px 0 0;padding:10px 14px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);font-size:14px}
 main .screen-mast{display:none}
 .exported .screen-mast{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:14px 0 10px;border-bottom:1px solid var(--hair)}
@@ -327,6 +331,9 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
  .verdicts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .fired .big{font-size:56px}
  .mast .wrap{grid-template-columns:1fr}
+ .m-right{flex-wrap:wrap;gap:4px 14px}
+ .m-search{flex-basis:100%}
+ .m-search input{width:100%}
 }
 @media print{ .mast,.export,form[method='post']{display:none} .card{box-shadow:none;break-inside:avoid} }
 """;

@@ -929,6 +929,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.FailureTable, "A ticker the index feed stops listing"),
         CheckReach.Key(Scope.FailureTable, "The provider serves no year for a name the backfill asks for"),
         CheckReach.Key(Scope.LimitsTable, "Waiting on another writer"),
+        CheckReach.Key("15.8 Universe", "Researched"),
     ];
 
     [Fact]
