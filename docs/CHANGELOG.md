@@ -25,6 +25,77 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - .claude/rules/checks.md - `read-surface` asserts the screens' design
+
+Authorised by: Every region is a card that states where its figures came from and how to read them
+Was:
+> | `read-surface` | every CI run | The read API hands back every stored value unchanged, and the page draws one candle and one volume bar per stored session, matched session by session against the store |
+Now:
+> | `read-surface` | every CI run | The read API hands back every stored value unchanged, and the page draws one candle and one volume bar per stored session, matched session by session against the store; every screen is laid out in cards whose keys close on what to take from a figure, each of the seven marks is asserted over a full input and over the input it degrades on with the words it says in place of what it cannot draw, the name page opens with what it is for, its three refusals and its ten words, tonight's reasons stand in six columns in their set order, and the shell remembers the palette, defaults to the machine's and resolves an unknown route to tonight with a line naming it |
+Why: the check carries the tests of the screens drawn to the approved design, and a roster row not saying what its check asserts is a property nobody wrote down.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.6 states that every region is a card
+
+Authorised by: Every region is a card that states where its figures came from and how to read them
+Was:
+> (no such paragraph)
+Now:
+> <h4>Every region is a card</h4>
+> <p>Each region is a card on one paper palette. A region computed from the nightly store is ruled in slate and stamped with the night its figures are from, and a section written by research or taken from a filing is ruled in plum-grey with the day it was written or filed in a column at its left. Every picture carries a key that says how to read it and closes on what to take from it. The stylesheet the app and the exported report share opens with the rule each colour token is held to: the two hues for a level below and above the price, the dashed outline's ink for not yet measured and for nothing else, slate for what was computed tonight, plum-grey for what was written or filed, and four steps of one neutral for more or less. (see: Every region is a card that states where its figures came from and how to read them)</p>
+> 
+> <h3>15.7 Tonight</h3>
+Why: the approved design lays every region out as a card whose rule and stamp say where its figures came from, and section 15.6 is where the colour of each is stated.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.7's reason totals are counts
+
+Authorised by: Tonight's reason totals are counts, and a reason's record is the run page's
+Was:
+> <tr><td>Reason totals</td><td>the reason track mark across tonight's fired names, which says whether the evening is one thing happening to many names or many things happening to a few</td></tr>
+Now:
+> <tr><td>Reason totals</td><td>each reason's count of tonight's fired names drawn as a bar out of the fired count with the count on it, which says whether the evening is one thing happening to many names or many things happening to a few</td></tr>
+Why: a setup listed tonight has no outcome, so a track of outcomes drew one dashed segment per reason; the approved design draws the counts.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.7 states the list's columns, its order and what selecting a row does
+
+Authorised by: Selecting a row draws its plan beneath the list and is no navigation
+Was:
+> (no such note)
+Now:
+> <p class="note">The list draws each reason in a column of its own, in a set order, headed by one word with the reason's full name on it, so an evening that is one thing happening to many names reads as one stripe down one column. Each reason's record sits once at the foot of its column and inside the reason on each row, and never beside a name. The order is how many reasons fired and then band strength, which are facts about the chart (see: Tonight's list orders by the reasons that fired and then band strength, which are facts about the chart). Selecting a row draws its plan beneath the list and brings it into view (see: Selecting a row draws its plan beneath the list and is no navigation). The reason totals are tonight's counts, and a reason's record over time is the run page's (see: Tonight's reason totals are counts, and a reason's record is the run page's).</p>
+> 
+> <h3>15.8 Universe</h3>
+Why: the approved design draws the reasons in fixed columns and the selected plan beneath the list, and three questions the design raised are ruled.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.9 states the masthead and the page's opening
+
+Authorised by: The masthead carries the last stored close and the session it is from
+Was:
+> (no such paragraph)
+Now:
+> <p>The page opens with the line the masthead carries, being the ticker, the company's name, the last stored close as of the session it closed on with its change on the day, and the sector and industry (see: The masthead carries the last stored close and the session it is from), and with a paragraph saying what the page is for, its three refusals, being that it does not predict where the price will go, does not rank the name against any other and does not say how much to buy, and the ten words it uses one disclosure down. The sizing arithmetic states the risk a share carries and leaves the budget to the reader, which is what keeps the third refusal true (see: The sizing arithmetic states the risk a share carries and holds no account of the reader's).</p>
+> <p>A tab on this screen carries the name's listing history:
+Why: the approved design opens the name page with the masthead, what the page is for, its refusals and its words, and no screen fetches a price.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.11 says a record is drawn in two states
+
+Authorised by: A reason's record is drawn in two states, and a bare number beside a ticker is a prohibition rather than a third
+Was:
+> (no such note)
+Now:
+> <p class="note">The last row is a prohibition rather than a state: a record is drawn in one of the first two states, with its unresolved setups as the track's own segment in either (see: A reason's record is drawn in two states, and a bare number beside a ticker is a prohibition rather than a third).</p>
+> 
+> <h3>15.12 Opening a name, in order</h3>
+Why: the table's fourth row reads as a fourth state, and it is what no screen draws.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.14 names the two orders a screen uses
+
+Authorised by: Tonight's list orders by the reasons that fired and then band strength, which are facts about the chart
+Was:
+> <li>No screen ranks names by anything other than distance to a level, which is a fact about the chart rather than a judgement about the company. (see: Improving what surfaces a name is in scope; ranking names against each other is not)</li>
+Now:
+> <li>No screen orders names by a judgement about the company. The universe orders by distance to a level and tonight's list by how many reasons fired and then band strength, each a fact about the chart. (see: Improving what surfaces a name is in scope; ranking names against each other is not) (see: Tonight's list orders by the reasons that fired and then band strength, which are facts about the chart)</li>
+Why: section 15.7 orders tonight's list by reasons fired and band strength and this line forbade any order but distance, so one of the two had to change.
+
 ### 2026-09-18 - .claude/rules/checks.md - `nightly-run` asserts how long a writer waits for another
 
 Authorised by: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write

@@ -876,6 +876,9 @@ section carrying its own date and the model that wrote it.</p>
 <h4>Not yet measured is a dashed outline</h4>
 <p>Anywhere a figure has not earned a number yet, the space is drawn as a dashed outline carrying its count against its minimum, and never as a pale version of a value. The record column in 15.11 is in that state for the first year, and a pale number would read as a small one. (see: Not yet measured is drawn as a dashed outline, never as a pale value) (see: The record column stays empty until it has earned a number)</p>
 
+<h4>Every region is a card</h4>
+<p>Each region is a card on one paper palette. A region computed from the nightly store is ruled in slate and stamped with the night its figures are from, and a section written by research or taken from a filing is ruled in plum-grey with the day it was written or filed in a column at its left. Every picture carries a key that says how to read it and closes on what to take from it. The stylesheet the app and the exported report share opens with the rule each colour token is held to: the two hues for a level below and above the price, the dashed outline's ink for not yet measured and for nothing else, slate for what was computed tonight, plum-grey for what was written or filed, and four steps of one neutral for more or less. (see: Every region is a card that states where its figures came from and how to read them)</p>
+
 <h3>15.7 Tonight</h3>
 <p><b>Answers:</b> which names are sitting at a price their own chart has made significant, and how busy the evening was.</p>
 <p><b>Route:</b> <code>#/</code>, resolving to the newest night, and <code>#/night/&lt;date&gt;</code> for an earlier one.</p>
@@ -887,8 +890,10 @@ section carrying its own date and the model that wrote it.</p>
   <tr><td>The list</td><td>one row per name that fired, ordered by how many fired then by band strength, at most twenty drawn. Each row: name, close, day change, trend state in a word, the distance row mark, the reasons, and beside the name a line saying so where its prices may not reflect a dividend or split</td></tr>
   <tr><td>Reasons, per row</td><td>each reason named, with its measured record beside it under 15.11, and the values that made it true on hover</td></tr>
   <tr><td>Selected name</td><td>the plan column and the level summary for whichever row is selected, so the common case of checking a plan needs no navigation</td></tr>
-  <tr><td>Reason totals</td><td>the reason track mark across tonight's fired names, which says whether the evening is one thing happening to many names or many things happening to a few</td></tr>
+  <tr><td>Reason totals</td><td>each reason's count of tonight's fired names drawn as a bar out of the fired count with the count on it, which says whether the evening is one thing happening to many names or many things happening to a few</td></tr>
 </table>
+
+<p class="note">The list draws each reason in a column of its own, in a set order, headed by one word with the reason's full name on it, so an evening that is one thing happening to many names reads as one stripe down one column. Each reason's record sits once at the foot of its column and inside the reason on each row, and never beside a name. The order is how many reasons fired and then band strength, which are facts about the chart (see: Tonight's list orders by the reasons that fired and then band strength, which are facts about the chart). Selecting a row draws its plan beneath the list and brings it into view (see: Selecting a row draws its plan beneath the list and is no navigation). The reason totals are tonight's counts, and a reason's record over time is the run page's (see: Tonight's reason totals are counts, and a reason's record is the run page's).</p>
 
 <h3>15.8 Universe</h3>
 <p><b>Answers:</b> where does everything sit, including the names nothing happened to.</p>
@@ -923,6 +928,7 @@ section carrying its own date and the model that wrote it.</p>
   <tr><td>Provenance footer</td><td>for every part of the page: computed tonight, fundamentals as of a filing date, research as of a date and the model that wrote it</td></tr>
   <tr><td>Walk</td><td>previous and next on tonight's list, so an evening's reading is one pass through with no return to the list</td></tr>
 </table>
+<p>The page opens with the line the masthead carries, being the ticker, the company's name, the last stored close as of the session it closed on with its change on the day, and the sector and industry (see: The masthead carries the last stored close and the session it is from), and with a paragraph saying what the page is for, its three refusals, being that it does not predict where the price will go, does not rank the name against any other and does not say how much to buy, and the ten words it uses one disclosure down. The sizing arithmetic states the risk a share carries and leaves the budget to the reader, which is what keeps the third refusal true (see: The sizing arithmetic states the risk a share carries and holds no account of the reader's).</p>
 <p>A tab on this screen carries the name's listing history: the listing strip over sixty sessions, then one row per evening it fired, with the close that night and what happened five and twenty-one sessions later. A row too recent to have matured says so rather than showing a blank or a zero.</p>
 
 <h3>15.10 Run</h3>
@@ -953,6 +959,8 @@ section carrying its own date and the model that wrote it.</p>
   <p><b>This column is a dashed outline for the first year, and that is the correct behaviour rather than a defect.</b> The list surfaces roughly fifteen names a night, so a reason accumulates a few hundred listings a year and rather fewer resolved setups. A verdict that can separate a reason clearing its break-even by ten points from one that does not needs a few hundred resolved setups at a threshold corrected for the family, and clustering by sector and by date means the effective count is lower than the row count. Setting the minimum low enough to fill the column sooner would produce a figure that looks like evidence and is not, and a figure on a screen gets acted on. (see: The record column stays empty until it has earned a number)</p>
 </div>
 
+<p class="note">The last row is a prohibition rather than a state: a record is drawn in one of the first two states, with its unresolved setups as the track's own segment in either (see: A reason's record is drawn in two states, and a bare number beside a ticker is a prohibition rather than a third).</p>
+
 <h3>15.12 Opening a name, in order</h3>
 <ol>
   <li>The computed sections render immediately from the nightly store.</li>
@@ -977,7 +985,7 @@ section carrying its own date and the model that wrote it.</p>
   <li>No screen computes a level, a stop or a rate. Every figure is read, and every part of a page states where it came from and as of when. (see: A screen reads and renders, and computes nothing) (see: Every part of a page states where it came from and as of when)</li>
   <li>No screen shows a figure without its denominator where the figure is a share.</li>
   <li>No screen shows a number beside a ticker that could be read as that name's probability of rising.</li>
-  <li>No screen ranks names by anything other than distance to a level, which is a fact about the chart rather than a judgement about the company. (see: Improving what surfaces a name is in scope; ranking names against each other is not)</li>
+  <li>No screen orders names by a judgement about the company. The universe orders by distance to a level and tonight's list by how many reasons fired and then band strength, each a fact about the chart. (see: Improving what surfaces a name is in scope; ranking names against each other is not) (see: Tonight's list orders by the reasons that fired and then band strength, which are facts about the chart)</li>
 </ul>
 
 <h2>16. Data stores and the read and write matrix</h2>

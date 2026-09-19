@@ -258,7 +258,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // the application asks.
         (await read.SuspectSeriesAsync()).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
         // Where the name holds no bar, whether the backfill asked for its year and none came back.
-        bars.Count == 0 ? await read.NoYearAsync(ticker) : null);
+        bars.Count == 0 ? await read.NoYearAsync(ticker) : null,
+        // The membership row the masthead names the company, its sector and industry from.
+        universe.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -531,7 +533,8 @@ app.MapGet("/screens/universe", async (
             shown.Page,
             shown.At,
             UniverseScreen.PageSize,
-            TonightScreen.WrittenBeforeTheCorrection(history.Values.SelectMany(rows => rows))),
+            TonightScreen.WrittenBeforeTheCorrection(history.Values.SelectMany(rows => rows)),
+            night),
         "text/html; charset=utf-8");
 });
 

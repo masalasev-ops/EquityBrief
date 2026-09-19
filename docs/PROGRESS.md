@@ -16243,3 +16243,91 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    nothing owed by this repair. A page waiting on a night's write keeps the driver's thirty
             seconds, which is the screens' question, in the session the operator has put them to.
+
+### 5.8 - correction: the screens drawn to the design the operator approved, where the pages carried no design and a profile, a plan's labels and a list's reasons drew over each other   2026-09-19
+Corrects:   5.8 drew every part section 15 states, and drew it on pages with no design: a shell of
+            three styles, regions stacked with no card, key or stamp, prices at the precision they
+            are stored at, a volume profile with no size of its own that stretched across the page,
+            a plan column whose labels sat on one another, and a list's reasons run together in one
+            cell. Section 15.6's two designed palettes with the stamp remembered between visits, and
+            section 15.13's unknown route resolving to tonight with a line, were stated and not
+            built: the shell drew one palette and a blank page.
+Found:      on 2026-09-18, when the operator first opened the screens and judged them unusable
+            beside a sample report, and ruled a fix list whose screens half waited on a design
+            session; the design came back approved on 2026-09-19 with the questions it raised
+            against section 15.
+Measured:   the four screens served by the read surface over a copy of the operator's store taken
+            after the night of 2026-09-18 completed, screenshotted in both palettes and at a phone's
+            width with a headless browser, the copy in the session's scratch folder and the store
+            under `data/` read by nothing but the copy. The run page over that store answers with an
+            error, which is not this correction's and is carried below.
+Repaired:   one stylesheet, which the app and the exported report both carry, opening with the rule
+            each colour token is held to, in two designed palettes with the stamp remembered and the
+            machine's own the default. Every region is a card: slate over what was computed, with
+            the night it is from, and plum-grey over what was written or filed, with its date in a
+            column at its left, and every picture keyed with how to read it and what to take from
+            it. The masthead names the screen, and on a name's page the company, the last stored
+            close as of its session with the day's change, and its sector. The name page opens with
+            what it is for, its three refusals and its ten words. The marks are redrawn in the
+            design's form with every hook the suite reads kept: the chart names its bands and
+            averages and the prices it is read against, the profile has a size of its own and sits
+            beside the chart at the chart's scale, the plan column centres the price and keeps every
+            label on its own line, the momentum panel draws a stretch with no reading as a dashed
+            box with its count, the distance row says none below or none above, and tonight's
+            reasons stand in six columns with each record at the foot of its own. The fact strip is
+            a grid, prices on a picture print to two places with the stored value whole on the mark,
+            and the shell resolves an unknown route to tonight with a line, restores the scroll on
+            back and forward, picks a row anywhere on it and asks once before a pass starts.
+            DECISIONS records seven rulings under Presentation, section 15 carries each where it
+            applies, `read-surface`'s roster row says what its tests now assert, and CHANGELOG holds
+            the prior text.
+Stored:     nothing. The screens read the store and write none of it, and no migration is added.
+Missed:     the checks asserted every value and every part a row enumerates, off the markup, and
+            nothing asserted what a page looked like or that a mark had a size of its own, so a
+            profile drawn about nine times too wide passed every check. The screens were first
+            looked at when the operator opened them.
+Guarded:    each of the seven marks over a full input and over the input it degrades on, asserting
+            what it draws and the words it says in place of what it cannot: the chart over one bar,
+            the profile with no band, the plan with nothing to buy and with no plan, the momentum
+            panel over sixty sessions with no reading, the distance row with no band on a side, and
+            tonight's counts where a reason fired on none. The four screens served over the fixture
+            store, each region a card and every key closing on what to take from it, the name page's
+            opening, tonight's six columns in their set order, and the shell's palette and unknown
+            route.
+Expected:   derived: the plan column's centre, the profile's even rule and the chart's drawn size
+            are worked from the inputs the tests construct, and each degraded sentence is read off
+            the mark. No expectation file changes: the pages read what they read before.
+Tests:      1106, from 1099. Seven added to `read-surface`, and nine changed where the design moved
+            what they read: the reason totals are counts, the distance row's own drawing, the
+            momentum pane beneath its label, the profile read off its band rows in two, the name's
+            own chart read off its card in two, a reason's word in its column, and the renderer's
+            one new count divided by a count among the stated casts.
+Mutated:    the rule, stated before the sweep: break each property the design adds that a test
+            names, the plan column's labels kept apart, the profile's size of its own, the distance
+            row's words for a missing side, the momentum panel's dashed stretch, the keys' closing
+            line, and the chart naming only stored prices. Not mutated: the palette and the unknown
+            route, which the shell test reads off the script's own source.
+            Predicted:
+            M1 the plan column's labels left where their prices put them: the plan test red on two
+            labels a line apart; nothing else.
+            M2 the profile drawn the width of what holds it: the profile test red on the size it no
+            longer states; nothing else.
+            M3 the distance row's words for a missing side cut to a word: the distance test red on
+            none below; nothing else.
+            M4 the momentum panel's stretch drawn as plain pane: the momentum test red on the dashed
+            box; nothing else.
+            M5 the keys' closing line renamed: the screens test red on the key that does not close
+            on what to take from it; nothing else.
+            M6 the chart's column naming a price no band holds: the chart test red on a price that
+            is not stored; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    the run page answers with an error on a night whose overnight queue wrote a row for a
+            step that failed, because the page reads every queue row's detail as a record and a
+            failed step writes its message; it is 6.10's, and is corrected next as its own entry.
+            Three questions the design raised are the operator's to rule: it names the model that
+            wrote a section where the operator ruled on 2026-09-18 that no page should, it draws the
+            chart and the plan before what the company sells where section 4 numbers them seventh
+            and eighth, and a key under each figure written for an earlier night is drawn with its
+            date where the operator's default was to hide it. Each stands as the corpus has it until
+            ruled.

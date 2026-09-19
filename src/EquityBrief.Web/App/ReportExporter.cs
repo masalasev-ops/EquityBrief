@@ -39,25 +39,25 @@ public sealed partial class ReportExporter : IComponent
         var title = Escaped("EquityBrief: " + ticker + (session is null ? string.Empty : ", " + session));
         var held = session is null ? string.Empty : " on the session of " + session;
 
-        return $$"""
+        // The app's own stylesheet, so the file reads as the page it came from, in the
+        // palette of the machine it is opened on.
+        return $$$"""
             <!doctype html>
             <html lang="en">
             <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>{{title}}</title>
+            <title>{{{title}}}</title>
             <style>
-              :root { --ink: #1c1c1c; --muted: #6a6a6a; --rule: #d8d8d8; --panel: #f6f6f4; }
-              body { margin: 0; padding: 24px; font: 14px/1.5 "Segoe UI", system-ui, sans-serif; color: var(--ink); }
-              h1 { font-size: 19px; margin: 0 0 4px; }
-              p.exported { color: var(--muted); margin: 0 0 18px; }
-              .degraded { color: var(--muted); }
+            {{{Stylesheet.Css}}}
             </style>
             </head>
-            <body data-exported="report" data-ticker="{{Escaped(ticker)}}">
-            <h1>{{title}}</h1>
-            <p class="exported">One name's report, exported from EquityBrief with every figure as the store held it{{held}}.</p>
-            {{Unrouted(Opened(region))}}
+            <body data-exported="report" data-ticker="{{{Escaped(ticker)}}}">
+            <div class="wrap exported">
+            <h1>{{{title}}}</h1>
+            <p class="exported">One name's report, exported from EquityBrief with every figure as the store held it{{{held}}}.</p>
+            {{{Unrouted(Opened(region))}}}
+            </div>
             </body>
             </html>
             """;
@@ -78,7 +78,7 @@ public sealed partial class ReportExporter : IComponent
     [GeneratedRegex(@"<details(?![^>]*\bopen\b)", RegexOptions.IgnoreCase)]
     private static partial Regex Closed();
 
-    [GeneratedRegex("<a href=\"#/[^\"]*\">(.*?)</a>", RegexOptions.Singleline)]
+    [GeneratedRegex("<a (?:[^>]*? )?href=\"#/[^\"]*\"[^>]*>(.*?)</a>", RegexOptions.Singleline)]
     private static partial Regex Routed();
 
     static string Escaped(string text) =>

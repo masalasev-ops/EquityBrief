@@ -3,6 +3,7 @@ using EquityBrief.Core.Spending;
 using System.Text;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Returns;
+using EquityBrief.Core.Shortlist;
 
 namespace EquityBrief.Web.Marks;
 
@@ -131,7 +132,10 @@ public sealed record UniverseCell(
     // owes: The exchange closure table extended before the nights reach its end
     int? SessionsUntilEarnings = null,
     DateOnly? NextEvent = null,
-    bool EventBeyondTheTable = false);
+    bool EventBeyondTheTable = false,
+    // The company's name as the membership row holds it, drawn under the ticker, and
+    // null for a row that carries none.
+    string? Name = null);
 
 // One of a name's biggest moves, as the table is given it. `Cause` is the text of
 // the accepted cause section that names this move, and null where no sentence of
@@ -388,6 +392,13 @@ public sealed record PriceAxis(double Low, double High)
     public double Range => High - Low > 0 ? High - Low : 1;
 }
 
+// How a chart is drawn on a page. `Scale` gives the picture a width and a height of its
+// own, so a chart and the profile beside it drawn at one scale line up price for price,
+// and no scale draws it the width of whatever holds it. `Markers` are the sessions a
+// table beside the chart numbers, and `BandLabels` false leaves the bands unnamed where
+// the table beneath names them.
+public sealed record ChartFrame(double? Scale = null, IReadOnlyList<DateOnly>? Markers = null, bool BandLabels = true);
+
 // The marks, as SVG strings written server side.
 //
 // This is the level chart mark with one of its four elements absent. Section
@@ -444,6 +455,11 @@ public sealed class MarkRenderer : IComponent
     static double PlotValue(decimal price) => (double)price;
 
     static string Number(double value) => value.ToString("0.##", Invariant);
+
+    // A price as a picture prints it, to two places with a thousands separator. The stored value
+    // stays whole on the mark's own data attributes, which is where anything reading the mark
+    // takes it from.
+    static string Price(decimal value) => value.ToString("#,##0.00", Invariant);
 
     // Five places, and below them the bound a tail lies under, since no tail over setups that can
     // lose is zero.
@@ -523,39 +539,69 @@ public sealed class MarkRenderer : IComponent
                 $"band gets.</p>";
         }
 
-        var prices = rows
+        // The price now sits in the middle of the column and the scale reaches the row
+        // furthest from it on either side, so above the marker and below it are halves
+        // of one picture rather than whatever the prices happened to span.
+        var now = PlotValue(close);
+        var reach = rows
             .SelectMany(row => new[] { PlotValue(row.LowEdge), PlotValue(row.HighEdge) })
-            .Append(PlotValue(close))
-            .ToArray();
+            .Select(price => Math.Abs(price - now))
+            .Max();
+        var span = reach > 0 ? reach * 1.08 : Math.Max(Math.Abs(now) * 0.05, 1);
+        var half = (PlanHeight - (2 * PlanEdge)) / 2.0;
+        var middle = PlanEdge + half;
 
-        var axis = new PriceAxis(prices.Min(), prices.Max());
+        double Y(decimal price) => middle - ((PlotValue(price) - now) / span * half);
 
+        var axis = new PriceAxis(now - span, now + span);
         var svg = new StringBuilder();
 
-        svg.Append(Invariant, $"<svg class=\"plan-column\" viewBox=\"0 0 {Width} {PriceHeight}\" ");
+        svg.Append(Invariant, $"<svg class=\"plan-column\" viewBox=\"0 0 {PlanWidth} {PlanHeight}\" width=\"{PlanWidth}\" height=\"{PlanHeight}\" ");
         svg.Append(Invariant, $"role=\"img\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{rows.Count}\" ");
         svg.Append(Invariant, $"data-close=\"{close}\" data-axis-low=\"{axis.Low}\" data-axis-high=\"{axis.High}\">");
 
         svg.Append(Invariant, $"<title>{Escaped(ticker)} plan column</title>");
         svg.Append(Invariant, $"<desc>One vertical price axis. Everything above the price marker is a sale, everything below is a purchase, stops are horizontal rules and the invalidation is the lowest.</desc>");
 
-        // The column itself, and the price marker on it.
-        const double column = Width / 2d;
+        svg.Append("<text class=\"m-head\" x=\"0\" y=\"14\">ABOVE THE PRICE: SALES</text>");
+        svg.Append(Invariant, $"<text class=\"m-head\" x=\"0\" y=\"{PlanHeight - 6}\">BELOW THE PRICE: PURCHASES</text>");
+        svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"{PlanAxis}\" y1=\"{PlanEdge}\" x2=\"{PlanAxis}\" y2=\"{PlanHeight - PlanEdge}\"/>");
 
-        svg.Append(Invariant, $"<line class=\"axis\" x1=\"{column}\" y1=\"{Margin}\" x2=\"{column}\" y2=\"{PriceHeight - Margin}\" stroke=\"var(--rule, #d8d8d8)\" stroke-width=\"1\"/>");
+        // Where each row's words go. Zones are named to the right of the column and the
+        // rules to the left of it, each side pushed apart until no two labels share a
+        // line, with a leader from a label that moved to the price it names.
+        var right = new List<(int Row, double Wanted, string[] Lines)>();
+        var left = new List<(int Row, double Wanted, string[] Lines)>();
 
-        foreach (var row in rows)
+        for (var index = 0; index < rows.Count; index++)
         {
-            var top = At(axis, PlotValue(row.HighEdge));
-            var bottom = At(axis, PlotValue(row.LowEdge));
-            var height = Math.Max(bottom - top, 1);
+            var row = rows[index];
 
-            var hue = row.Kind switch
+            switch (row.Kind)
             {
-                PlanKind.Tranche => SupportHue,
-                PlanKind.Exit => ResistanceHue,
-                _ => "var(--muted, #6a6a6a)",
-            };
+                case PlanKind.Tranche:
+                    right.Add((index, Y(row.HighEdge) + 10, [Formatted($"Buy {Zone(row)}"), .. Clauses(row.Detail)]));
+                    break;
+                case PlanKind.Exit:
+                    right.Add((index, Y(row.LowEdge) - 2, [Formatted($"Sell at {Zone(row)}"), .. Clauses(row.Detail)]));
+                    break;
+                case PlanKind.Invalidation:
+                    left.Add((index, Y(row.LowEdge) - 5, [Formatted($"Invalidation {Price(row.LowEdge)}")]));
+                    break;
+                default:
+                    left.Add((index, Y(row.LowEdge) - 5, [Formatted($"Stop {Price(row.LowEdge)}")]));
+                    break;
+            }
+        }
+
+        var rightAt = Spread(right, fixedLines: []);
+        var leftAt = Spread(left, fixedLines: [(middle - 14, middle + 14)]);
+
+        foreach (var (row, index) in rows.Select((row, index) => (row, index)))
+        {
+            var top = Y(row.HighEdge);
+            var bottom = Y(row.LowEdge);
+            var height = Math.Max(bottom - top, 3);
 
             svg.Append(Invariant, $"<g class=\"plan-row\" data-kind=\"{Escaped(row.Kind)}\" ");
             svg.Append(Invariant, $"data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\" ");
@@ -566,38 +612,126 @@ public sealed class MarkRenderer : IComponent
             // exit are the band they sit on, which has width.
             if (row.Kind is PlanKind.Stop or PlanKind.Invalidation)
             {
-                svg.Append(Invariant, $"<line class=\"{row.Kind}-rule\" x1=\"{Margin}\" y1=\"{bottom}\" x2=\"{Width - Margin}\" y2=\"{bottom}\" ");
-                svg.Append(Invariant, $"stroke=\"{hue}\" stroke-width=\"1\" stroke-dasharray=\"4 3\"/>");
+                var heavy = row.Kind == PlanKind.Invalidation;
+
+                svg.Append(Invariant, $"<line class=\"{row.Kind}-rule\" x1=\"{PlanAxis - 10}\" y1=\"{Number(bottom)}\" x2=\"{PlanWidth - 2}\" y2=\"{Number(bottom)}\" ");
+                svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"{(heavy ? "2.5" : "1")}\"{(heavy ? string.Empty : " stroke-dasharray=\"4 3\"")}/>");
+            }
+            else if (row.Kind == PlanKind.Tranche)
+            {
+                svg.Append(Invariant, $"<rect class=\"tranche-zone\" x=\"{PlanAxis + 1}\" y=\"{Number(top)}\" width=\"20\" height=\"{Number(height)}\" ");
+                svg.Append(Invariant, $"fill=\"{SupportHue}\" fill-opacity=\"{(row.Traded ? 0.85 : 0.3)}\"/>");
             }
             else
             {
-                var left = row.Kind == PlanKind.Tranche ? Margin : column;
-
-                svg.Append(Invariant, $"<rect class=\"{row.Kind}-zone\" x=\"{left}\" y=\"{top}\" ");
-                svg.Append(Invariant, $"width=\"{(Width / 2d) - Margin}\" height=\"{height}\" ");
-                svg.Append(Invariant, $"fill=\"{hue}\" fill-opacity=\"{(row.Traded ? 0.30 : 0.12)}\"/>");
+                svg.Append(Invariant, $"<rect class=\"exit-zone\" x=\"{PlanAxis - 10}\" y=\"{Number(top)}\" width=\"20\" height=\"{Number(height)}\" ");
+                svg.Append(Invariant, $"fill=\"{ResistanceHue}\" fill-opacity=\"{(row.Traded ? 0.3 : 0.12)}\"/>");
+                svg.Append(Invariant, $"<line class=\"m-sale\" x1=\"{PlanAxis}\" y1=\"{Number(bottom)}\" x2=\"{PlanAxis + 22}\" y2=\"{Number(bottom)}\"/>");
             }
 
             // The row in words, because hue is never the only channel and a
             // reader who cannot separate the two loses nothing.
-            svg.Append(Invariant, $"<text class=\"plan-label\" x=\"{Width - Margin}\" y=\"{bottom - 2}\" text-anchor=\"end\" ");
-            svg.Append(Invariant, $"font-family=\"Segoe UI, Arial, sans-serif\" font-size=\"11\" fill=\"var(--muted, #6a6a6a)\">{Escaped(row.Detail)}</text>");
+            var onTheRight = rightAt.TryGetValue(index, out var placedRight);
+            var (wanted, labelY, lines) = onTheRight ? placedRight : leftAt[index];
+            var x = onTheRight ? PlanAxis + 28 : PlanAxis - 14;
+            var anchor = onTheRight ? "start" : "end";
+
+            if (Math.Abs(labelY - wanted) > 3)
+            {
+                var from = onTheRight ? PlanAxis + 22 : PlanAxis - 10;
+
+                svg.Append(Invariant, $"<line class=\"m-leader\" x1=\"{from}\" y1=\"{Number(wanted - 4)}\" x2=\"{x + (onTheRight ? -3 : 3)}\" y2=\"{Number(labelY - 4)}\"/>");
+            }
+
+            for (var line = 0; line < lines.Length; line++)
+            {
+                var style = line == 0 ? (row.Kind is PlanKind.Stop ? "m-rownote" : "m-row") : "m-rownote";
+                var kind = line == 0 ? "plan-label " : string.Empty;
+
+                svg.Append(Invariant, $"<text class=\"{kind}{style}\" x=\"{x}\" y=\"{Number(labelY + (line * 13))}\" text-anchor=\"{anchor}\">{Escaped(lines[line])}</text>");
+            }
 
             svg.Append("</g>");
         }
 
+        // A plan with nothing to buy says so where its purchases would be, rather than
+        // leaving the lower half of the column empty.
+        if (rows.All(row => row.Kind != PlanKind.Tranche))
+        {
+            var y0 = middle + 24;
+            var exits = rows.Count(row => row.Kind == PlanKind.Exit);
+
+            svg.Append(Invariant, $"<g class=\"no-purchase\"><rect class=\"m-absent\" x=\"{PlanAxis + 10}\" y=\"{Number(y0)}\" width=\"{PlanWidth - PlanAxis - 12}\" height=\"{Number(PlanHeight - PlanEdge - y0)}\"/>");
+            svg.Append(Invariant, $"<text class=\"m-absent-t\" x=\"{PlanAxis + 22}\" y=\"{Number(y0 + 24)}\">No support band below the price.</text>");
+            svg.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{PlanAxis + 22}\" y=\"{Number(y0 + 42)}\">No purchase and no invalidation are drawn.</text>");
+            svg.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{PlanAxis + 22}\" y=\"{Number(y0 + 57)}\">{exits} exit zone(s), all above the price.</text></g>");
+        }
+
         // The price marker last, so it is drawn over the zones rather than under
         // them: it is the one thing the whole figure is read against.
-        var at = At(axis, PlotValue(close));
-
         svg.Append(Invariant, $"<g class=\"price-marker\" data-close=\"{close}\">");
-        svg.Append(Invariant, $"<line x1=\"{Margin}\" y1=\"{at}\" x2=\"{Width - Margin}\" y2=\"{at}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1.4\"/>");
-        svg.Append(Invariant, $"<text x=\"{Margin}\" y=\"{at - 3}\" font-family=\"Segoe UI, Arial, sans-serif\" font-size=\"11\" fill=\"var(--ink, #1c1c1c)\">{close}</text>");
+        svg.Append(Invariant, $"<line class=\"m-nowline\" x1=\"0\" y1=\"{Number(middle)}\" x2=\"{PlanWidth - 2}\" y2=\"{Number(middle)}\"/>");
+        svg.Append(Invariant, $"<rect class=\"m-nowtag\" x=\"0\" y=\"{Number(middle - 11)}\" width=\"{PlanAxis - 24}\" height=\"22\" rx=\"2\"/>");
+        svg.Append(Invariant, $"<text class=\"m-nowtag-t\" x=\"7\" y=\"{Number(middle + 4)}\">Price now {Price(close)}</text>");
         svg.Append("</g>");
 
         svg.Append("</svg>");
 
         return svg.ToString();
+    }
+
+    // The plan column's drawing: its size, the band its heads sit in, and where the axis runs.
+    const int PlanWidth = 440;
+    const int PlanHeight = 440;
+    const int PlanEdge = 40;
+    const int PlanAxis = 150;
+
+    // A zone's prices as its label says them, and a zone of one price as that price.
+    static string Zone(PlanRow row) =>
+        row.LowEdge == row.HighEdge ? Price(row.LowEdge) : Formatted($"{Price(row.LowEdge)} to {Price(row.HighEdge)}");
+
+    // A row's sentence as the lines it is drawn on, one clause to a line.
+    static string[] Clauses(string detail) =>
+        [.. detail.Split(", ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+
+    // Each label's line, pushed down from the one above it until none overlap, and the
+    // whole run moved up where it would leave the picture. Bands a label may not sit in,
+    // such as the price marker's tag, are stepped over.
+    static Dictionary<int, (double Wanted, double At, string[] Lines)> Spread(
+        List<(int Row, double Wanted, string[] Lines)> labels,
+        IReadOnlyList<(double From, double To)> fixedLines)
+    {
+        var placed = new Dictionary<int, (double Wanted, double At, string[] Lines)>();
+        var floor = PlanEdge - 4.0;
+
+        foreach (var (row, wanted, lines) in labels.OrderBy(label => label.Wanted))
+        {
+            var at = Math.Max(wanted, floor + 12);
+            var height = lines.Length * 13;
+
+            foreach (var (from, to) in fixedLines)
+            {
+                if (at + height - 10 > from && at - 10 < to)
+                {
+                    at = wanted < (from + to) / 2 ? from - height + 8 : to + 12;
+                }
+            }
+
+            placed[row] = (wanted, at, lines);
+            floor = at + height - 12 + 4;
+        }
+
+        var overflow = placed.Values.Select(label => label.At + (label.Lines.Length * 13) - 12).DefaultIfEmpty(0).Max() - (PlanHeight - 22);
+
+        if (overflow > 0)
+        {
+            foreach (var row in placed.Keys.ToArray())
+            {
+                placed[row] = placed[row] with { At = placed[row].At - overflow };
+            }
+        }
+
+        return placed;
     }
 
     // The tranche table and the exit table, which are what the plan column's
@@ -641,7 +775,12 @@ public sealed class MarkRenderer : IComponent
     // twenty short stubs on a name whose volume is evenly spread. The share of
     // the period is on the row as a number instead, which is the figure the
     // report quotes and the one the shelf threshold is read against.
-    public string VolumeProfile(string ticker, IReadOnlyList<ProfileBand> bands, PriceAxis axis)
+    public string VolumeProfile(
+        string ticker,
+        IReadOnlyList<ProfileBand> bands,
+        PriceAxis axis,
+        IReadOnlyList<ChartBand>? levels = null,
+        double? scale = null)
     {
         if (bands.Count == 0)
         {
@@ -664,13 +803,37 @@ public sealed class MarkRenderer : IComponent
         var loudest = bands.Max(band => band.Shares);
         var busiest = loudest > 0 ? loudest : 1;
 
+        // Its own width and height rather than the width of what holds it, so the
+        // picture is the size of the chart's price pane beside it and never stretched
+        // across the page.
+        const int Drawn = PriceHeight + ProfileCaption;
+
+        var size = scale is { } at
+            ? Formatted($"width=\"{Number(ProfileWidth * at)}\" height=\"{Number(Drawn * at)}\"")
+            : Formatted($"width=\"{ProfileWidth}\" height=\"{Drawn}\"");
+
         var svg = new StringBuilder();
 
-        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {ProfileWidth} {PriceHeight}\" ");
+        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {ProfileWidth} {Drawn}\" {size} ");
         svg.Append(Invariant, $"role=\"img\" class=\"volume-profile\" data-ticker=\"{Escaped(ticker)}\" ");
         svg.Append(Invariant, $"data-bands=\"{bands.Count}\" data-axis-low=\"{Number(axis.Low)}\" data-axis-high=\"{Number(axis.High)}\">");
         svg.Append(Invariant, $"<title>{Escaped(ticker)}, shares traded in {bands.Count} price bands</title>");
         svg.Append("<desc>Shares traded in each price band, drawn against the price axis of the chart beside it.</desc>");
+
+        svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"0\" y=\"0\" width=\"{ProfileWidth}\" height=\"{PriceHeight}\"/>");
+
+        // The chart's level bands carried across, so a shelf and the band it sits in
+        // read as one price.
+        foreach (var level in levels ?? [])
+        {
+            var top = Math.Max(0, At(axis, PlotValue(level.HighEdge)));
+            var bottom = Math.Min(PriceHeight, At(axis, PlotValue(level.LowEdge)));
+
+            if (bottom > top)
+            {
+                svg.Append(Invariant, $"<rect class=\"m-band-{(level.Role == "support" ? "sup" : "res")}\" x=\"0\" y=\"{Number(top)}\" width=\"{ProfileWidth}\" height=\"{Number(bottom - top)}\"/>");
+            }
+        }
 
         foreach (var band in bands)
         {
@@ -690,10 +853,33 @@ public sealed class MarkRenderer : IComponent
             svg.Append(Invariant, $"height=\"{Number(Math.Max(0, height))}\" fill=\"var(--muted, #6a6a6a)\"/>");
         }
 
+        // Where a band would reach if every band had traded the same, and twice that, as
+        // two rules to read the bars against. They are positions on the picture and no
+        // band is marked by them.
+        var even = bands.Average(band => band.Shares);
+        var evenX = Margin + (even / busiest * (ProfileWidth - (2 * Margin)));
+
+        svg.Append(Invariant, $"<line class=\"m-evenrule\" x1=\"{Number(evenX)}\" y1=\"0\" x2=\"{Number(evenX)}\" y2=\"{PriceHeight}\"/>");
+        svg.Append(Invariant, $"<text class=\"m-tick\" x=\"{Number(evenX + 3)}\" y=\"{PriceHeight - 4}\">even</text>");
+
+        if (2 * even <= busiest)
+        {
+            var twiceX = Margin + (2 * even / busiest * (ProfileWidth - (2 * Margin)));
+
+            svg.Append(Invariant, $"<line class=\"m-evenrule2\" x1=\"{Number(twiceX)}\" y1=\"0\" x2=\"{Number(twiceX)}\" y2=\"{PriceHeight}\"/>");
+            svg.Append(Invariant, $"<text class=\"m-tick\" x=\"{Number(twiceX + 3)}\" y=\"11\">twice even</text>");
+        }
+
+        svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"0\" y1=\"{PriceHeight}\" x2=\"{ProfileWidth}\" y2=\"{PriceHeight}\"/>");
+        svg.Append(Invariant, $"<text class=\"m-tick\" x=\"0\" y=\"{PriceHeight + 14}\">Shares traded by price</text>");
+
         svg.Append("</svg>");
 
         return svg.ToString();
     }
+
+    // The row beneath the profile's pane its caption sits in.
+    const int ProfileCaption = 20;
 
     // Support is green and resistance is orange, and this is the one place in
     // the whole system those two hues are used. Every other mark is neutral ink
@@ -747,44 +933,105 @@ public sealed class MarkRenderer : IComponent
             var high = reading.Ceiling ?? Math.Max(drawn.Length > 0 ? drawn.Max() : reading.Neutral, reading.Neutral);
             var span = high - low > 0 ? high - low : 1;
 
-            double Y(double value) => top + ReadingHeight - 2 - ((value - low) / span * (ReadingHeight - 4));
+            double Y(double value) => top + ReadingHeight - 2 - ((value - low) / span * (ReadingHeight - 16));
 
-            var slot = (double)(Width - (2 * Margin)) / reading.Values.Count;
+            var slot = (double)(Width - (2 * Margin)) / Math.Max(reading.Values.Count, 1);
 
             svg.Append(Invariant, $"<g class=\"reading\" data-name=\"{Escaped(reading.Name)}\" ");
             svg.Append(Invariant, $"data-neutral=\"{Number(reading.Neutral)}\" data-values=\"{drawn.Length}\">");
+
+            svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"{Margin}\" y=\"{top + 14}\" width=\"{Width - (2 * Margin)}\" height=\"{ReadingHeight - 14}\"/>");
+
+            // A reading on a fixed scale carries the range it usually sits in, which is a
+            // reading convention the panel draws and nothing computes with.
+            // see: The momentum panel is context a reader weighs, and nothing computes with it
+            if (reading.Floor is { } floor && reading.Ceiling is { } ceiling)
+            {
+                var usualLow = floor + ((ceiling - floor) * 0.3);
+                var usualHigh = floor + ((ceiling - floor) * 0.7);
+
+                svg.Append(Invariant, $"<rect class=\"m-neutral\" x=\"{Margin}\" y=\"{Number(Y(usualHigh))}\" width=\"{Width - (2 * Margin)}\" height=\"{Number(Y(usualLow) - Y(usualHigh))}\"/>");
+            }
 
             // The rule first, so the reading is drawn over it.
             svg.Append(Invariant, $"<line class=\"neutral-rule\" x1=\"{Margin}\" y1=\"{Number(Y(reading.Neutral))}\" ");
             svg.Append(Invariant, $"x2=\"{Width - Margin}\" y2=\"{Number(Y(reading.Neutral))}\" ");
             svg.Append(Invariant, $"stroke=\"var(--rule, #d8d8d8)\" stroke-width=\"1\" stroke-dasharray=\"3 3\"/>");
             svg.Append(Invariant, $"<text x=\"{Margin}\" y=\"{Number(top + 10)}\" fill=\"var(--muted, #6a6a6a)\" font-size=\"10\">");
-            svg.Append(Invariant, $"{Escaped(reading.Name)}, neutral at {Number(reading.Neutral)}</text>");
+            svg.Append(Invariant, $"{Escaped(ReadingName(reading.Name))}, neutral at {Number(reading.Neutral)}</text>");
 
-            // One path per unbroken run, for the reason the averages break: a
-            // reading has no value until its warm-up ends.
-            var run = new StringBuilder();
+            if (reading.Name == "macd_hist")
+            {
+                // The gap between the two lines, as bars either side of its rule: above
+                // is strengthening and below is weakening.
+                for (var at = 0; at < reading.Values.Count; at++)
+                {
+                    if (reading.Values[at] is { } bar)
+                    {
+                        var y = Y(bar);
+                        var zero = Y(reading.Neutral);
+
+                        svg.Append(Invariant, $"<rect class=\"m-hist\" x=\"{Number(Margin + (slot * at) + (slot * 0.18))}\" y=\"{Number(Math.Min(y, zero))}\" width=\"{Number(slot * 0.64)}\" height=\"{Number(Math.Abs(zero - y))}\"/>");
+                    }
+                }
+            }
+            else
+            {
+                // One path per unbroken run, for the reason the averages break: a
+                // reading has no value until its warm-up ends.
+                var run = new StringBuilder();
+
+                for (var at = 0; at <= reading.Values.Count; at++)
+                {
+                    var value = at < reading.Values.Count ? reading.Values[at] : null;
+
+                    if (value is { } point)
+                    {
+                        run.Append(run.Length == 0 ? 'M' : 'L')
+                            .Append(Number(Margin + (slot * at) + (slot / 2)))
+                            .Append(' ')
+                            .Append(Number(Y(point)))
+                            .Append(' ');
+
+                        continue;
+                    }
+
+                    if (run.Length > 0)
+                    {
+                        svg.Append(Invariant, $"<path d=\"{run.ToString().Trim()}\" fill=\"none\" ");
+                        svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1.2\"/>");
+                        run.Clear();
+                    }
+                }
+            }
+
+            // Sessions with no reading are a dashed box saying how many, never a stretch of
+            // pane that reads as a quiet reading.
+            // see: Not yet measured is drawn as a dashed outline, never as a pale value
+            var gapStart = -1;
 
             for (var at = 0; at <= reading.Values.Count; at++)
             {
-                var value = at < reading.Values.Count ? reading.Values[at] : null;
+                var missing = at < reading.Values.Count && reading.Values[at] is null;
 
-                if (value is { } point)
+                if (missing && gapStart < 0)
                 {
-                    run.Append(run.Length == 0 ? 'M' : 'L')
-                        .Append(Number(Margin + (slot * at) + (slot / 2)))
-                        .Append(' ')
-                        .Append(Number(Y(point)))
-                        .Append(' ');
-
-                    continue;
+                    gapStart = at;
                 }
-
-                if (run.Length > 0)
+                else if (!missing && gapStart >= 0)
                 {
-                    svg.Append(Invariant, $"<path d=\"{run.ToString().Trim()}\" fill=\"none\" ");
-                    svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1.2\"/>");
-                    run.Clear();
+                    var from = Margin + (slot * gapStart);
+                    var wide = slot * (at - gapStart);
+
+                    svg.Append(Invariant, $"<g class=\"not-computed\" data-sessions=\"{at - gapStart}\"><rect class=\"m-absent\" x=\"{Number(from + 0.6)}\" y=\"{top + 15}\" width=\"{Number(Math.Max(wide - 1.2, 1))}\" height=\"{ReadingHeight - 16}\"/>");
+
+                    if (wide > 190)
+                    {
+                        svg.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{Number(from + 8)}\" y=\"{top + 14 + ((ReadingHeight - 14) / 2) + 4}\">{at - gapStart} of {reading.Values.Count} sessions: not yet computed</text>");
+                    }
+
+                    svg.Append("</g>");
+                    gapStart = -1;
                 }
             }
 
@@ -795,6 +1042,16 @@ public sealed class MarkRenderer : IComponent
 
         return svg.ToString();
     }
+
+    // A reading's name as a reader says it, with the name the store holds it under.
+    static string ReadingName(string name) => name switch
+    {
+        "rsi14" => "Relative strength over 14 sessions (rsi14)",
+        "macd" => "Trend momentum (macd)",
+        "macd_signal" => "Its signal line (macd_signal)",
+        "macd_hist" => "Momentum against its signal (macd_hist)",
+        _ => name,
+    };
 
     // The level summary table. Each band with its members and their dates.
     //
@@ -834,7 +1091,16 @@ public sealed class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr class=\"band\" data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" ");
             table.Append(Invariant, $"data-role=\"{Escaped(band.Role)}\" data-immediate=\"{(band.Immediate ? 1 : 0)}\" ");
             table.Append(Invariant, $"data-members=\"{band.Members.Count}\" data-anchored=\"{(band.HasNonAverageAnchor ? 1 : 0)}\">");
-            table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td><td>{band.Strength}</td><td><ul>");
+            table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td><td>{band.Strength}</td><td>");
+
+            // The members one disclosure down, under a line saying how many and over which
+            // sessions, since a band can rest on dozens of them.
+            if (band.Members.Count > 0)
+            {
+                table.Append(Invariant, $"<details><summary>{band.Members.Count} member(s), {band.Members.Min(member => member.Date):yyyy-MM-dd} to {band.Members.Max(member => member.Date):yyyy-MM-dd}</summary>");
+            }
+
+            table.Append("<ul>");
 
             foreach (var member in band.Members)
             {
@@ -842,7 +1108,7 @@ public sealed class MarkRenderer : IComponent
                 table.Append(Invariant, $"{Escaped(member.Kind)} at {member.Price.ToString(Invariant)} on {member.Date:yyyy-MM-dd}</li>");
             }
 
-            table.Append("</ul></td></tr>");
+            table.Append(band.Members.Count > 0 ? "</ul></details></td></tr>" : "</ul></td></tr>");
         }
 
         table.Append("</tbody>");
@@ -874,7 +1140,8 @@ public sealed class MarkRenderer : IComponent
         string ticker,
         IReadOnlyList<ChartBar> bars,
         IReadOnlyList<ChartAverage>? averages = null,
-        IReadOnlyList<ChartBand>? bands = null)
+        IReadOnlyList<ChartBand>? bands = null,
+        ChartFrame? frame = null)
     {
         if (bars.Count < FewestBars)
         {
@@ -922,10 +1189,14 @@ public sealed class MarkRenderer : IComponent
         var slot = (double)(Width - (2 * Margin)) / bars.Count;
         var body = Math.Max(1, Math.Min(11, slot * 0.62));
 
+        var size = frame?.Scale is { } scale
+            ? Formatted($"width=\"{Number(ChartWidth * scale)}\" height=\"{Number(ChartHeight * scale)}\"")
+            : "width=\"100%\"";
+
         var svg = new StringBuilder();
 
-        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {Width} {PriceHeight + Gap + VolumeHeight}\" ");
-        svg.Append(Invariant, $"width=\"100%\" role=\"img\" class=\"level-chart\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{bars.Count}\" ");
+        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {ChartWidth} {ChartHeight}\" ");
+        svg.Append(Invariant, $"{size} role=\"img\" class=\"level-chart\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{bars.Count}\" ");
         svg.Append(Invariant, $"data-axis-low=\"{Number(axis.Low)}\" data-axis-high=\"{Number(axis.High)}\">");
         svg.Append(Invariant, $"<title>{Escaped(ticker)}, {bars.Count} sessions from {bars[0].SessionDate:yyyy-MM-dd} to {bars[^1].SessionDate:yyyy-MM-dd}</title>");
 
@@ -941,6 +1212,12 @@ public sealed class MarkRenderer : IComponent
 
         svg.Append(Invariant, $"<desc>Daily candles {drawn}over a volume pane on a shared time axis, with {shaded}support below the price and resistance above it.</desc>");
 
+        svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"{Margin}\" y=\"0\" width=\"{Width - (2 * Margin)}\" height=\"{PriceHeight}\"/>");
+
+        // The prices the right-hand column names: the close, and every band edge. Each
+        // is a stored price, so the column states nothing the store does not hold.
+        var named = new List<(double Y, string Text)>();
+
         // The bands first, so everything else reads on top of them. A band drawn
         // over the candles hides the price it is a statement about, which is the
         // one thing the picture exists to show.
@@ -951,11 +1228,15 @@ public sealed class MarkRenderer : IComponent
         {
             svg.Append("<g class=\"level-bands\">");
 
+            var labelled = new List<double>();
+
             foreach (var band in shading)
             {
                 var top = At(axis, PlotValue(band.HighEdge));
                 var bottom = At(axis, PlotValue(band.LowEdge));
-                var hue = band.Role == "support" ? SupportHue : ResistanceHue;
+                var support = band.Role == "support";
+                var hue = support ? SupportHue : ResistanceHue;
+                var side = support ? "sup" : "res";
 
                 // A zero-width band is a real band: a single price with one
                 // member. It becomes a rule rather than a rectangle nothing
@@ -967,6 +1248,34 @@ public sealed class MarkRenderer : IComponent
                 svg.Append(Invariant, $"data-immediate=\"{(band.Immediate ? 1 : 0)}\" data-strength=\"{band.Strength}\" ");
                 svg.Append(Invariant, $"x=\"{Margin}\" y=\"{Number(Math.Min(top, bottom))}\" width=\"{Width - (2 * Margin)}\" ");
                 svg.Append(Invariant, $"height=\"{Number(Math.Max(height, 1))}\" fill=\"{hue}\" fill-opacity=\"{Number(band.Immediate ? 0.22 : 0.12)}\"/>");
+
+                // The band's edges, so where a band starts and stops is a line and
+                // not the fade of a tint.
+                svg.Append(Invariant, $"<line class=\"m-edge-{side}\" x1=\"{Margin}\" y1=\"{Number(top)}\" x2=\"{Width - Margin}\" y2=\"{Number(top)}\"/>");
+                svg.Append(Invariant, $"<line class=\"m-edge-{side}\" x1=\"{Margin}\" y1=\"{Number(bottom)}\" x2=\"{Width - Margin}\" y2=\"{Number(bottom)}\"/>");
+
+                // The band in words, because hue is never the only channel. A label
+                // that would sit on another is left to the column on the right,
+                // which names every edge.
+                var labelY = support ? bottom - 4 : top + 13;
+
+                if ((frame?.BandLabels ?? true) && labelled.All(other => Math.Abs(other - labelY) >= 18))
+                {
+                    labelled.Add(labelY);
+
+                    var words = band.LowEdge == band.HighEdge
+                        ? Formatted($"{band.Role} at {Price(band.LowEdge)}")
+                        : Formatted($"{band.Role} {Price(band.LowEdge)} to {Price(band.HighEdge)}");
+
+                    svg.Append(Invariant, $"<text class=\"m-bandlab m-bandlab-{side}\" x=\"{Margin + 8}\" y=\"{Number(labelY)}\">{Escaped(words)}{(band.Immediate ? ", nearest" : string.Empty)}</text>");
+                }
+
+                named.Add((top, Price(band.HighEdge)));
+
+                if (band.LowEdge != band.HighEdge)
+                {
+                    named.Add((bottom, Price(band.LowEdge)));
+                }
             }
 
             svg.Append("</g>");
@@ -984,6 +1293,8 @@ public sealed class MarkRenderer : IComponent
         // architecture states it once with its reasoning and a decision would be
         // a second place holding one fact.
         // see: Support and resistance own two hues and nothing else uses them
+        var averageLabels = new List<double>();
+
         for (var line = 0; line < lines.Count; line++)
         {
             var average = lines[line];
@@ -1019,6 +1330,24 @@ public sealed class MarkRenderer : IComponent
                     svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"{Number(shade)}\" stroke-width=\"1.4\"/>");
                     run.Clear();
                 }
+            }
+
+            // The line named where it ends, so a reader does not have to match a
+            // shade to a legend.
+            var ends = average.Values.Select((value, index) => (value, index)).Where(pair => pair.value is not null).ToArray();
+
+            if (ends.Length > 0)
+            {
+                var (last, at) = ends[^1];
+                var y = At(axis, last!.Value) - 5;
+
+                while (averageLabels.Any(other => Math.Abs(other - y) < 12))
+                {
+                    y -= 12;
+                }
+
+                averageLabels.Add(y);
+                svg.Append(Invariant, $"<text class=\"m-malab\" x=\"{Number(Centre(at) - 4)}\" y=\"{Number(Math.Max(10, y))}\" text-anchor=\"end\">{Escaped(AverageName(average.Name))}</text>");
             }
 
             svg.Append("</g>");
@@ -1064,6 +1393,62 @@ public sealed class MarkRenderer : IComponent
             svg.Append("</g>");
         }
 
+        // The sessions a table beside the chart numbers, each marked with its number
+        // above that session's candle.
+        if (frame?.Markers is { Count: > 0 } markers)
+        {
+            for (var mark = 0; mark < markers.Count; mark++)
+            {
+                var at = -1;
+
+                for (var index = 0; index < bars.Count; index++)
+                {
+                    if (bars[index].SessionDate == markers[mark])
+                    {
+                        at = index;
+                    }
+                }
+
+                if (at < 0)
+                {
+                    continue;
+                }
+
+                var y = Math.Max(10, At(axis, PlotValue(bars[at].High)) - 14);
+
+                svg.Append(Invariant, $"<g class=\"move-mark\" data-session=\"{markers[mark]:yyyy-MM-dd}\"><circle class=\"m-mark\" cx=\"{Number(Centre(at))}\" cy=\"{Number(y)}\" r=\"9\"/>");
+                svg.Append(Invariant, $"<text class=\"m-mark-t\" x=\"{Number(Centre(at))}\" y=\"{Number(y + 4)}\" text-anchor=\"middle\">{mark + 1}</text></g>");
+            }
+        }
+
+        // The last close as a rule across the pane and a tag in the column, since it is
+        // the price every band is read against.
+        var now = At(axis, PlotValue(bars[^1].Close));
+
+        svg.Append(Invariant, $"<line class=\"m-now\" x1=\"{Margin}\" y1=\"{Number(now)}\" x2=\"{Width - Margin}\" y2=\"{Number(now)}\" stroke-dasharray=\"4 3\"/>");
+
+        svg.Append(Invariant, $"<g class=\"price-column\" data-close=\"{bars[^1].Close.ToString(Invariant)}\">");
+        svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"{Width + 1}\" y1=\"0\" x2=\"{Width + 1}\" y2=\"{PriceHeight}\"/>");
+
+        var placed = new List<double> { now };
+
+        svg.Append(Invariant, $"<rect class=\"m-nowtag\" x=\"{Width + 4}\" y=\"{Number(now - 11)}\" width=\"{AxisWidth - 6}\" height=\"22\" rx=\"2\"/>");
+        svg.Append(Invariant, $"<text class=\"m-nowtag-t\" x=\"{Width + 9}\" y=\"{Number(now + 5)}\">{Price(bars[^1].Close)}</text>");
+
+        foreach (var (y, text) in named.OrderBy(price => Math.Abs(price.Y - now)))
+        {
+            if (y < 8 || y > PriceHeight - 4 || placed.Any(other => Math.Abs(other - y) < 18))
+            {
+                continue;
+            }
+
+            placed.Add(y);
+            svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"{Width + 1}\" y1=\"{Number(y)}\" x2=\"{Width + 5}\" y2=\"{Number(y)}\"/>");
+            svg.Append(Invariant, $"<text class=\"m-tick\" x=\"{Width + 9}\" y=\"{Number(y + 5)}\">{Escaped(text)}</text>");
+        }
+
+        svg.Append("</g>");
+
         var volumeTop = PriceHeight + Gap;
 
         svg.Append(Invariant, $"<g class=\"volume-pane\" data-sessions=\"{bars.Count}\">");
@@ -1080,18 +1465,46 @@ public sealed class MarkRenderer : IComponent
             svg.Append(Invariant, $"width=\"{Number(body)}\" height=\"{Number(height)}\" fill=\"var(--muted, #6a6a6a)\"/>");
         }
 
+        svg.Append(Invariant, $"<text class=\"m-cap\" x=\"{Margin + 6}\" y=\"{volumeTop + 12}\">Volume, the tallest bar {loudest.ToString("N0", Invariant)} shares</text>");
         svg.Append("</g>");
 
-        // The shared time axis, which is what makes the two panes one picture.
-        svg.Append(Invariant, $"<g class=\"time-axis\">");
-        svg.Append(Invariant, $"<text x=\"{Margin}\" y=\"{PriceHeight + Gap + VolumeHeight - 1}\" fill=\"var(--muted, #6a6a6a)\" font-size=\"11\">{bars[0].SessionDate:yyyy-MM-dd}</text>");
-        svg.Append(Invariant, $"<text x=\"{Width - Margin}\" y=\"{PriceHeight + Gap + VolumeHeight - 1}\" text-anchor=\"end\" fill=\"var(--muted, #6a6a6a)\" font-size=\"11\">{bars[^1].SessionDate:yyyy-MM-dd}</text>");
+        // The shared time axis, which is what makes the two panes one picture: the
+        // first and last sessions and three between, each a stored session date.
+        svg.Append("<g class=\"time-axis\">");
+
+        var dateY = PriceHeight + Gap + VolumeHeight + DateRow - 3;
+        var ticks = new[] { 0, bars.Count / 4, bars.Count / 2, bars.Count * 3 / 4, bars.Count - 1 }.Distinct().ToArray();
+
+        foreach (var tick in ticks)
+        {
+            var anchor = tick == 0 ? "start" : tick == bars.Count - 1 ? "end" : "middle";
+            var x = tick == 0 ? Margin : tick == bars.Count - 1 ? Width - Margin : Centre(tick);
+
+            svg.Append(Invariant, $"<text class=\"m-tick\" x=\"{Number(x)}\" y=\"{dateY}\" text-anchor=\"{anchor}\">{bars[tick].SessionDate:yyyy-MM-dd}</text>");
+        }
+
         svg.Append("</g>");
 
         svg.Append("</svg>");
 
         return svg.ToString();
     }
+
+    // The chart's whole drawing: the price pane, the volume pane beneath it, a row of
+    // dates, and the column on the right where the prices it is read against are named.
+    const int AxisWidth = 86;
+    const int DateRow = 16;
+    const int ChartWidth = Width + AxisWidth;
+    const int ChartHeight = PriceHeight + Gap + VolumeHeight + DateRow;
+
+    // An average's name as a reader says it.
+    static string AverageName(string name) => name switch
+    {
+        "sma20" => "20-day average",
+        "sma50" => "50-day average",
+        "sma200" => "200-day average",
+        _ => name,
+    };
 
     // The line a name's page opens with where its stored series is suspect, section
     // 15.9's region from the 7.0 ruling.
@@ -1292,8 +1705,25 @@ public sealed class MarkRenderer : IComponent
             return list.ToString();
         }
 
-        list.Append(Invariant, $"<table class=\"list-table\" data-rows=\"{shown.Length}\">");
-        list.Append("<tr><th>Name</th><th>Close</th><th>Day</th><th>Trend</th><th>Distance</th><th>Reasons</th></tr>");
+        // One column per reason, always in the same place, so an evening that is one thing
+        // happening to many names reads as one dark stripe down one column. A reason the
+        // store holds that is not one of the six still gets a column of its own after them.
+        var columns = ShortlistSeries.Reasons
+            .Concat(shown.SelectMany(row => row.Reasons).Where(reason => !ShortlistSeries.Reasons.Contains(reason, StringComparer.Ordinal)))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        var byReason = records?.ToDictionary(record => record.Reason, StringComparer.Ordinal);
+
+        list.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table\" data-rows=\"{shown.Length}\">");
+        list.Append("<thead><tr><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th><th class=\"c\">Distance to levels</th>");
+
+        foreach (var column in columns)
+        {
+            list.Append(Invariant, $"<th class=\"rz\"><abbr title=\"{Escaped(column)}\">{Escaped(Head(column))}</abbr></th>");
+        }
+
+        list.Append("</tr></thead><tbody>");
 
         foreach (var row in shown)
         {
@@ -1305,8 +1735,14 @@ public sealed class MarkRenderer : IComponent
             // a row a reader cannot select is a row the region can never be
             // about. The href carries the night as well as the name, so a
             // selected view of an earlier night is a link like every other view.
-            list.Append(Invariant, $"<td><a class=\"select\" data-selects=\"{Escaped(row.Ticker)}\" ");
+            list.Append(Invariant, $"<td class=\"c-nm\"><a class=\"select\" data-selects=\"{Escaped(row.Ticker)}\" ");
             list.Append(Invariant, $"href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+            list.Append(Invariant, $" <a class=\"open\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\" title=\"open the full report\">report</a>");
+
+            if (row.Distance?.Name is { Length: > 0 } company)
+            {
+                list.Append(Invariant, $"<span class=\"co\">{Escaped(company)}</span>");
+            }
 
             // Beside the name, where its stored series is suspect, so a row read from the
             // list does not pass for one whose prices carry every action's adjustment. The
@@ -1317,7 +1753,7 @@ public sealed class MarkRenderer : IComponent
                 ? $" <span class=\"prices-suspect\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\" title=\"last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}\">prices may not reflect a dividend or split</span></td>"
                 : "</td>");
 
-            list.Append(Invariant, $"<td>{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
+            list.Append(Invariant, $"<td class=\"r num\">{(row.Close is { } close ? close.ToString(Invariant) : "not computed")}</td>");
 
             // The day's change, signed and in words as well as by its sign. The
             // two hues are support's and resistance's and a day is not allowed
@@ -1333,19 +1769,49 @@ public sealed class MarkRenderer : IComponent
 
             // The distance row mark, the same mark the universe table draws, so
             // a shape means one thing on both screens.
-            list.Append(Invariant, $"<td>{(row.Distance is { } cell ? DistanceRow(cell) : "<span class=\"degraded\" data-distance=\"none\">no bands stored for this name</span>")}</td>");
+            list.Append(Invariant, $"<td class=\"c\">{(row.Distance is { } cell ? DistanceRow(cell) : "<span class=\"degraded\" data-distance=\"none\">no bands stored for this name</span>")}</td>");
 
-            list.Append(Invariant, $"<td data-reasons=\"{Escaped(string.Join(", ", row.Reasons))}\">{ReasonsForRow(row, records)}</td>");
+            list.Append(ReasonsForRow(row, columns, byReason));
             list.Append("</tr>");
         }
 
-        list.Append("</table>");
+        list.Append("</tbody>");
+
+        // Each reason's record once, at the foot of its own column: a property of the
+        // reason across every name it has fired for, and never of a row's name.
+        // see: A reason's record is displayed, beside the reason and never beside the name
+        if (byReason is not null)
+        {
+            list.Append("<tfoot><tr><td colspan=\"5\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
+            list.Append("Solid: the share that reached target before stop, of how many resolved, against the break-even they needed. ");
+            list.Append("Dashed: not enough setups have finished to say anything yet, shown as how many have finished against the number needed.</td>");
+
+            foreach (var column in columns)
+            {
+                list.Append("<td class=\"rz\">");
+
+                if (byReason.TryGetValue(column, out var record))
+                {
+                    list.Append(Invariant, $"<span class=\"reason\" data-reason=\"{Escaped(column)}\">");
+                    list.Append(record.HasEarnedAVerdict
+                        ? Formatted($"<span class=\"record-foot\" data-verdict=\"{VerdictWord(record)}\"><b>{Number(record.Share ?? 0)}%</b> of {record.Scored}, needs {Number(record.BreakEven ?? 0)}%</span>")
+                        : Formatted($"<span class=\"record-foot not-measured\" data-outline=\"dashed\">{record.Scored} of {record.Minimum}</span>"));
+                    list.Append("</span>");
+                }
+
+                list.Append("</td>");
+            }
+
+            list.Append("</tr></tfoot>");
+        }
+
+        list.Append("</table></div>");
 
         // What the drawn rows leave out, stated rather than left to arithmetic
         // a reader would have to do.
         if (rows.Count > shown.Length)
         {
-            list.Append(Invariant, $"<p class=\"more\" data-undrawn=\"{rows.Count - shown.Length}\">{rows.Count} name(s) fired and {shown.Length} are drawn</p>");
+            list.Append(Invariant, $"<p class=\"more\" data-undrawn=\"{rows.Count - shown.Length}\">{rows.Count} name(s) fired and {shown.Length} are drawn. <a href=\"#/universe\">See every name on the universe page</a></p>");
         }
 
         list.Append("</section>");
@@ -1353,7 +1819,21 @@ public sealed class MarkRenderer : IComponent
         return list.ToString();
     }
 
-    // The reasons on one row of tonight's list, section 15.7's fourth region.
+    // A reason's column head, one word, with the reason's full name on the head's own
+    // title.
+    static string Head(string reason) => reason switch
+    {
+        ShortlistSeries.AtEntryZone => "entry",
+        ShortlistSeries.CrossedALevel => "crossed",
+        ShortlistSeries.BreakoutOnVolume => "breakout",
+        ShortlistSeries.TrendStateChanged => "trend",
+        ShortlistSeries.UnusualVolume => "volume",
+        ShortlistSeries.EarningsSoon => "earnings",
+        _ => reason,
+    };
+
+    // The reasons on one row of tonight's list, section 15.7's fourth region: a cell
+    // per reason column, holding the reason where it fired and nothing where it did not.
     //
     // Each reason named, with its measured record beside it under 15.11 and the
     // values that made it true on hover. The record is the reason's and not the
@@ -1362,39 +1842,45 @@ public sealed class MarkRenderer : IComponent
     // is drawn inside the reason's own span rather than in a column of its own,
     // where a reader would take it for a property of the row.
     // see: A reason's record is displayed, beside the reason and never beside the name
-    static string ReasonsForRow(ListingCell row, IReadOnlyList<ReasonRecord>? records)
+    static string ReasonsForRow(ListingCell row, IReadOnlyList<string> columns, IReadOnlyDictionary<string, ReasonRecord>? byReason)
     {
-        var byReason = records?.ToDictionary(record => record.Reason, StringComparer.Ordinal);
-        var cell = new StringBuilder();
+        var cells = new StringBuilder();
 
         // The values arrive with `Fired` and the names without it, so a caller
         // that has only the names still draws the reasons rather than nothing.
         var fired = row.Fired
             ?? [.. row.Reasons.Select(name => new FiredReason(name, new Dictionary<string, string>(StringComparer.Ordinal)))];
 
-        foreach (var reason in fired)
+        foreach (var column in columns)
         {
+            if (fired.FirstOrDefault(reason => string.Equals(reason.Name, column, StringComparison.Ordinal)) is not { } reason)
+            {
+                cells.Append("<td class=\"rz\"></td>");
+
+                continue;
+            }
+
             var values = string.Join(
                 ", ",
                 reason.Values.OrderBy(value => value.Key, StringComparer.Ordinal).Select(value => $"{value.Key} {value.Value}"));
 
-            cell.Append(Invariant, $"<span class=\"reason\" data-reason=\"{Escaped(reason.Name)}\" ");
-            cell.Append(Invariant, $"title=\"{Escaped(values.Length == 0 ? "no values stored for this reason" : values)}\">");
-            cell.Append(Invariant, $"{Escaped(reason.Name)}");
+            cells.Append(Invariant, $"<td class=\"rz\"><span class=\"reason\" data-reason=\"{Escaped(reason.Name)}\" tabindex=\"0\" ");
+            cells.Append(Invariant, $"title=\"{Escaped(values.Length == 0 ? "no values stored for this reason" : values)}\">");
+            cells.Append(Invariant, $"{Escaped(Head(reason.Name))}");
 
             if (byReason is not null && byReason.TryGetValue(reason.Name, out var record))
             {
                 // 15.11's two states on this surface as on the run page: the share, the
                 // count and the bar in one span, or the count against the floor that is short.
-                cell.Append(record.HasEarnedAVerdict
+                cells.Append(record.HasEarnedAVerdict
                     ? Formatted($"<span class=\"record\" data-verdict=\"{VerdictWord(record)}\" data-share=\"{Number(record.Share ?? 0)}\" data-scored=\"{record.Scored}\" data-break-even=\"{Number(record.BreakEven ?? 0)}\">{ShareOfTheScored(record)}</span>")
                     : Formatted($"<span class=\"record not-measured\" data-outline=\"dashed\" data-verdict=\"none\" data-short=\"{record.Withheld}\" data-scored=\"{record.Scored}\" data-minimum=\"{record.Minimum}\">{CountAgainstTheFloors(record)}</span>"));
             }
 
-            cell.Append("</span>");
+            cells.Append("</span></td>");
         }
 
-        return cell.ToString();
+        return cells.ToString();
     }
 
     // The reason track, section 15.5's sixth mark.
@@ -2260,23 +2746,39 @@ public sealed class MarkRenderer : IComponent
     // Tonight's reason totals, section 15.7's last region: the reason track
     // across tonight's fired names, which says whether the evening is one thing
     // happening to many names or many things happening to a few.
-    public string ReasonTotals(IReadOnlyList<ReasonTrackRow> tracks)
+    public string ReasonTotals(IReadOnlyList<ReasonTrackRow> tracks, int fired = 0)
     {
         var region = new StringBuilder();
+        var names = tracks.Sum(track => track.Total);
+        var denominator = fired > 0 ? fired : Math.Max(1, tracks.Count == 0 ? 1 : tracks.Max(track => track.Total));
 
         region.Append(Invariant, $"<section class=\"reason-totals\" data-reasons=\"{tracks.Count}\" ");
-        region.Append(Invariant, $"data-names=\"{tracks.Sum(track => track.Total)}\">");
-        region.Append(ReasonTrack(tracks));
+        region.Append(Invariant, $"data-names=\"{names}\">");
+
+        // Tonight's counts, each out of tonight's fired names with the count written on
+        // its bar. A setup listed tonight has no outcome yet, so the counts are what the
+        // evening says and a reason's record over time is the run page's.
+        // see: Tonight's reason totals are counts, and a reason's record is the run page's
         region.Append("<table class=\"totals-table\"><tr><th>Reason</th><th>Names</th></tr>");
 
         foreach (var track in tracks)
         {
+            const int Wide = 420;
+            var bar = (double)track.Total / denominator * Wide;
+            var inside = bar >= 64;
+            var words = Formatted($"{track.Total} of {denominator}");
+
             region.Append(Invariant, $"<tr data-reason=\"{Escaped(track.Reason)}\" data-names=\"{track.Total}\">");
-            region.Append(Invariant, $"<td>{Escaped(track.Reason)}</td><td>{track.Total}</td></tr>");
+            region.Append(Invariant, $"<td><a href=\"#/run/?reason={Uri.EscapeDataString(track.Reason)}\">{Escaped(track.Reason)}</a></td><td>");
+            region.Append(Invariant, $"<svg class=\"reason-count\" role=\"img\" viewBox=\"0 0 {Wide} 20\" width=\"{Wide}\" height=\"20\" data-count=\"{track.Total}\" data-of=\"{denominator}\" aria-label=\"{Escaped(track.Reason)}: {words} of tonight's fired names\">");
+            region.Append(Invariant, $"<rect class=\"m-trk\" x=\"0\" y=\"2\" width=\"{Wide}\" height=\"16\"/>");
+            region.Append(Invariant, $"<rect class=\"m-won\" x=\"0\" y=\"2\" width=\"{Number(bar)}\" height=\"16\"/>");
+            region.Append(Invariant, $"<text class=\"{(inside ? "m-barlab-in" : "m-barlab-out")}\" x=\"{Number(inside ? bar - 6 : bar + 6)}\" y=\"14\" text-anchor=\"{(inside ? "end" : "start")}\">{words}</text>");
+            region.Append("</svg></td></tr>");
         }
 
         region.Append("</table>");
-        region.Append("<p class=\"degraded\" data-unresolved=\"all\">every name listed tonight is a setup nothing has scored yet, so the whole of tonight's track is the unresolved state</p>");
+        region.Append("<p class=\"degraded\" data-unresolved=\"all\">every name listed tonight is a setup nothing has scored yet, so these are counts and not outcomes; each reason's record over time is on the run page</p>");
         region.Append("</section>");
 
         return region.ToString();
@@ -2293,7 +2795,11 @@ public sealed class MarkRenderer : IComponent
         var header = new StringBuilder();
 
         header.Append(Invariant, $"<header class=\"night-header\" data-night=\"{night:yyyy-MM-dd}\" ");
-        header.Append(Invariant, $"data-index=\"{index}\" data-fired=\"{fired}\">");
+        header.Append(Invariant, $"data-index=\"{index}\" data-fired=\"{fired}\"><div class=\"night\">");
+
+        // The fired count as the headline, large, with the index it is out of beneath it.
+        header.Append(Invariant, $"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{fired}</div><div class=\"cap\">names fired<span>out of {index} in the index</span></div></div>");
+        header.Append("<div class=\"ops\">");
         header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} name(s) fired on {night:yyyy-MM-dd}</p>");
         header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration ?? "a time the run log does not record")}</p>");
 
@@ -2353,7 +2859,7 @@ public sealed class MarkRenderer : IComponent
             header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused is not read on this page</p>");
         }
 
-        header.Append("</header>");
+        header.Append("</div></div></header>");
 
         return header.ToString();
     }
@@ -2418,7 +2924,7 @@ public sealed class MarkRenderer : IComponent
         // with fewer sessions than a chart needs gets the sentence stating the
         // count rather than a picture drawn through nothing.
         table.Append(Invariant, $"<figure class=\"twelve-months\" data-sessions=\"{year.Count}\">");
-        table.Append(LevelChart(ticker, year, [], []));
+        table.Append(LevelChart(ticker, year, [], [], new ChartFrame(Markers: [.. moves.Select(move => move.SessionDate)])));
         table.Append(Invariant, $"<figcaption>the twelve months to {(year.Count > 0 ? year[^1].SessionDate.ToString("yyyy-MM-dd", Invariant) : "no stored session")}</figcaption>");
         table.Append("</figure>");
 
@@ -2492,9 +2998,16 @@ public sealed class MarkRenderer : IComponent
     // shape at one end is a shape a reader will read.
     public string DistanceRow(UniverseCell row)
     {
-        const int Width = 120;
-        const int Height = 18;
-        const int Middle = Height / 2;
+        // The close fixed at the centre, the nearest support a block to its left and
+        // below the line, the nearest resistance a block to its right and above it, one
+        // tick per typical day. A block against the centre is a name at an edge.
+        const int Half = 40;
+        const int Spare = 3;
+        const int Pad = 30;
+        const int Wide = (2 * Half) + (2 * Spare);
+        const int Height = 26;
+        const int Middle = 13;
+        const double Centre = Wide / 2.0;
 
         // The scale is fixed across every row rather than fitted to each, which
         // is the whole point of a mark meant to be scanned down a column: a
@@ -2503,10 +3016,6 @@ public sealed class MarkRenderer : IComponent
         // name far from everything sits at the edge rather than off it.
         const double Span = 4;
 
-        double Offset(double? days, int direction) => days is { } value
-            ? (Width / 2.0) + (direction * Math.Min(value, Span) / Span * (Width / 2.0))
-            : Width / 2.0;
-
         var mark = new StringBuilder();
 
         // Appended fragment by fragment with the provider on each, rather than
@@ -2514,31 +3023,68 @@ public sealed class MarkRenderer : IComponent
         // a plus are formatted in the current culture before anything sees them,
         // which is the coercion the compiler refuses here and the one this
         // repository bans everywhere else.
-        mark.Append(Invariant, $"<svg class=\"distance-row\" role=\"img\" viewBox=\"0 0 {Width} {Height}\" width=\"{Width}\" height=\"{Height}\" ");
+        mark.Append(Invariant, $"<svg class=\"distance-row\" role=\"img\" viewBox=\"{-Pad} 0 {Wide + (2 * Pad)} {Height}\" width=\"{Wide + (2 * Pad)}\" height=\"{Height}\" ");
         mark.Append(Invariant, $"data-ticker=\"{Escaped(row.Ticker)}\" ");
         mark.Append(Invariant, $"data-to-support=\"{Days(row.ToSupport)}\" data-to-resistance=\"{Days(row.ToResistance)}\" ");
         mark.Append(Invariant, $"data-nearest=\"{Days(row.Nearest)}\">");
 
-        mark.Append(Formatted(
-            $"<line x1=\"0\" y1=\"{Middle}\" x2=\"{Width}\" y2=\"{Middle}\" stroke=\"var(--rule, #d8d8d8)\" stroke-width=\"1\" />"));
+        mark.Append(Invariant, $"<line class=\"m-track\" x1=\"{Centre - Half}\" y1=\"{Middle}\" x2=\"{Centre + Half}\" y2=\"{Middle}\"/>");
 
-        if (row.ToSupport is not null)
+        for (var day = 1; day < Span; day++)
         {
-            mark.Append(Invariant, $"<line class=\"support-edge\" x1=\"{Offset(row.ToSupport, -1):0.##}\" y1=\"2\" ");
-            mark.Append(Invariant, $"x2=\"{Offset(row.ToSupport, -1):0.##}\" y2=\"{Height - 2}\" stroke=\"{SupportHue}\" stroke-width=\"2\" />");
+            var q = day / Span * Half;
+
+            mark.Append(Invariant, $"<line class=\"m-track\" x1=\"{Number(Centre - q)}\" y1=\"{Middle - 2}\" x2=\"{Number(Centre - q)}\" y2=\"{Middle + 2}\"/>");
+            mark.Append(Invariant, $"<line class=\"m-track\" x1=\"{Number(Centre + q)}\" y1=\"{Middle - 2}\" x2=\"{Number(Centre + q)}\" y2=\"{Middle + 2}\"/>");
         }
 
-        if (row.ToResistance is not null)
+        void Side(double? days, int direction)
         {
-            mark.Append(Invariant, $"<line class=\"resistance-edge\" x1=\"{Offset(row.ToResistance, 1):0.##}\" y1=\"2\" ");
-            mark.Append(Invariant, $"x2=\"{Offset(row.ToResistance, 1):0.##}\" y2=\"{Height - 2}\" stroke=\"{ResistanceHue}\" stroke-width=\"2\" />");
+            var support = direction < 0;
+            var side = support ? "sup" : "res";
+
+            if (days is not { } value)
+            {
+                // No band on this side: said in words inside a dashed box, never drawn
+                // as a block at an end, which is a shape a reader would read.
+                var boxWidth = Half + Pad - 8;
+                var left = support ? Centre - 4 - boxWidth : Centre + 4;
+
+                mark.Append(Invariant, $"<rect class=\"m-absent\" x=\"{Number(left + 0.5)}\" y=\"2.5\" width=\"{boxWidth}\" height=\"{Height - 5}\"/>");
+                mark.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{Number(left + (boxWidth / 2.0))}\" y=\"{Middle + 4}\" text-anchor=\"middle\">{(support ? "none below" : "none above")}</text>");
+
+                return;
+            }
+
+            var end = Centre + (direction * Math.Min(value, Span) / Span * Half);
+            var linkY = support ? Middle + 3 : Middle - 3;
+
+            mark.Append(Invariant, $"<line class=\"{(support ? "support" : "resistance")}-edge\" x1=\"{Number(Centre)}\" y1=\"{linkY}\" x2=\"{Number(end)}\" y2=\"{linkY}\" ");
+            mark.Append(Invariant, $"stroke=\"{(support ? SupportHue : ResistanceHue)}\" stroke-width=\"1.5\" />");
+
+            // Past the scale the block becomes an arrow, so a distant band reads as
+            // beyond the picture rather than at its edge.
+            if (value > Span)
+            {
+                mark.Append(Invariant, $"<polyline class=\"m-link-{side}\" points=\"{Number(end - (direction * 6))},{(support ? Middle : Middle - 8)} {Number(end)},{(support ? Middle + 4 : Middle - 4)} {Number(end - (direction * 6))},{(support ? Middle + 8 : Middle)}\"/>");
+            }
+            else
+            {
+                mark.Append(Invariant, $"<rect class=\"m-dist-{side}\" x=\"{Number(support ? end - 6 : end)}\" y=\"{(support ? Middle : Middle - 12)}\" width=\"6\" height=\"12\"/>");
+            }
+
+            mark.Append(Invariant, $"<text class=\"m-dnum\" x=\"{Number(support ? Centre - Half - Spare - 4 : Centre + Half + Spare + 4)}\" y=\"{Middle + 4}\" text-anchor=\"{(support ? "end" : "start")}\">");
+            mark.Append(support ? Formatted($"S {value:0.0}") : Formatted($"{value:0.0} R"));
+            mark.Append("</text>");
         }
+
+        Side(row.ToSupport, -1);
+        Side(row.ToResistance, 1);
 
         // The close, always drawn, because the mark is about where the price
         // sits between the two and a row with no marker is a row with no
         // subject.
-        mark.Append(Formatted(
-            $"<circle class=\"close\" cx=\"{Width / 2}\" cy=\"{Middle}\" r=\"2.5\" fill=\"var(--ink, #1c1c1c)\" />"));
+        mark.Append(Invariant, $"<rect class=\"close\" x=\"{Number(Centre - 1)}\" y=\"{Middle - 12}\" width=\"2\" height=\"24\" fill=\"var(--ink, #1c1c1c)\" />");
 
         mark.Append(row.ToSupport is null && row.ToResistance is null
             ? Formatted($"<title>{Escaped(row.Ticker)}: no band on either side yet</title>")
@@ -2621,7 +3167,9 @@ public sealed class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-sector=\"{Escaped(row.Sector)}\" ");
             table.Append(Invariant, $"data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\">");
 
-            table.Append(Formatted($"<td>{Escaped(row.Ticker)}</td>"));
+            // The ticker is the way to the name's page, with the company's name beneath it.
+            table.Append(Invariant, $"<td class=\"c-nm\"><a class=\"tk\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+            table.Append(row.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
             table.Append(Formatted($"<td>{Escaped(row.Sector)}</td>"));
             // The close, interpolated with the provider rather than converted
             // through the storage helper, which lives in the project that
@@ -2728,7 +3276,7 @@ public sealed class MarkRenderer : IComponent
         return "#/universe?" + string.Join("&amp;", parts);
     }
 
-    public string UniverseFilters(IReadOnlyList<UniverseCell> rows)
+    public string UniverseFilters(IReadOnlyList<UniverseCell> rows, string? trend = null, string? sector = null)
     {
         var states = rows
             .Select(row => row.TrendState ?? NotClassified)
@@ -2746,16 +3294,24 @@ public sealed class MarkRenderer : IComponent
 
         filters.Append(Invariant, $"<nav class=\"universe-filters\" data-states=\"{states.Length}\" data-sector-chips=\"{sectors.Length}\">");
 
+        // Two rows of chips, each with an "all" chip, and the lit chip marked. A chip keeps
+        // the other row's filter, so lighting a trend does not clear a sector.
+        filters.Append("<span class=\"chips-label\">Trend</span>");
+        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"all\" aria-pressed=\"{Flag(trend is null)}\" href=\"{Query(1, null, sector)}\">all</a>");
+
         foreach (var state in states)
         {
-            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"{Escaped(state)}\" ");
-            filters.Append(Invariant, $"href=\"#/universe?trend={Uri.EscapeDataString(state)}\">{Escaped(state.Replace('_', ' '))}</a>");
+            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"{Escaped(state)}\" aria-pressed=\"{Flag(state == trend)}\" ");
+            filters.Append(Invariant, $"href=\"#/universe?trend={Uri.EscapeDataString(state)}{(sector is { Length: > 0 } kept ? "&amp;sector=" + Uri.EscapeDataString(kept) : string.Empty)}\">{Escaped(state.Replace('_', ' '))}</a>");
         }
 
-        foreach (var sector in sectors)
+        filters.Append("<span class=\"chip-break\"></span><span class=\"chips-label\">Sector</span>");
+        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"all\" aria-pressed=\"{Flag(sector is null)}\" href=\"{Query(1, trend, null)}\">all</a>");
+
+        foreach (var named in sectors)
         {
-            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"{Escaped(sector)}\" ");
-            filters.Append(Invariant, $"href=\"#/universe?sector={Uri.EscapeDataString(sector)}\">{Escaped(sector)}</a>");
+            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"{Escaped(named)}\" aria-pressed=\"{Flag(named == sector)}\" ");
+            filters.Append(Invariant, $"href=\"#/universe?sector={Uri.EscapeDataString(named)}{(trend is { Length: > 0 } kept ? "&amp;trend=" + Uri.EscapeDataString(kept) : string.Empty)}\">{Escaped(named)}</a>");
         }
 
         filters.Append("</nav>");

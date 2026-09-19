@@ -697,7 +697,7 @@ public partial class ReadSurface
         // The chart's range is 10 to 40 and the bands run 20 to 26, so the top
         // band sits around the middle of the pane. Its own scale would put it at
         // the top margin, which is the picture this is written to refuse.
-        var tops = Regex.Matches(profile, @"y=""([0-9.]+)""")
+        var tops = Regex.Matches(profile, @"class=""band""[^>]*? y=""([0-9.]+)""")
             .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
             .ToArray();
 
@@ -707,7 +707,7 @@ public partial class ReadSurface
         // And the same bands against a different axis are drawn somewhere else,
         // so the axis is used rather than carried.
         var elsewhere = renderer.VolumeProfile("TEST", Bands(), new PriceAxis(19, 27));
-        var moved = Regex.Matches(elsewhere, @"y=""([0-9.]+)""")
+        var moved = Regex.Matches(elsewhere, @"class=""band""[^>]*? y=""([0-9.]+)""")
             .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
             .ToArray();
 
@@ -731,7 +731,7 @@ public partial class ReadSurface
         // Widths are relative to the busiest band rather than to the period, so
         // a name whose volume is evenly spread draws twenty full rows rather
         // than twenty stubs. The busiest is the full width less the margins.
-        var widths = Regex.Matches(profile, @"width=""([0-9.]+)""")
+        var widths = Regex.Matches(profile, @"class=""band""[^>]*? width=""([0-9.]+)""")
             .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
             .ToArray();
 
@@ -2114,7 +2114,7 @@ public partial class ReadSurface
         var rsi = Regex.Match(svg, "data-name=\"rsi14\".*?class=\"neutral-rule\" x1=\"[0-9]+\" y1=\"([0-9.]+)\"", RegexOptions.Singleline);
 
         Assert.True(rsi.Success);
-        Assert.Equal(32, double.Parse(rsi.Groups[1].Value, CultureInfo.InvariantCulture), 1);
+        Assert.Equal(38, double.Parse(rsi.Groups[1].Value, CultureInfo.InvariantCulture), 1);
     }
 
     [Fact]
@@ -3046,26 +3046,30 @@ public partial class ReadSurface
 
         var totals = TonightScreen.Totals(listings);
         var tracks = RunScreen.Tracks(totals);
-        var drawn = new MarkRenderer().ReasonTotals(tracks);
+        var fired = TonightScreen.Fired(listings);
+        var drawn = new MarkRenderer().ReasonTotals(tracks, fired);
 
         Assert.Equal(ShortlistSeries.Reasons.Length, tracks.Count);
 
-        // The region draws the mark and not only the table beside it. This row
-        // is the reason track on tonight's screen, so a region that lost the
-        // picture would be the claim gone with the table still passing.
-        Assert.Contains("<svg class=\"reason-track\"", drawn, StringComparison.Ordinal);
-        Assert.Contains($"data-reasons=\"{tracks.Count}\" data-denominator=", drawn, StringComparison.Ordinal);
+        // Each reason drawn as its count of tonight's fired names, out of tonight's
+        // fired count and with the count written on its bar. A region that lost the
+        // bars would be the claim gone with the table still passing.
+        // see: Tonight's reason totals are counts, and a reason's record is the run page's
+        Assert.Equal(tracks.Count, Regex.Matches(drawn, "<svg class=\"reason-count\"").Count);
 
-        // The counts are the store's, per reason, and the whole of tonight's
-        // track is the unresolved state.
+        // The counts are the store's, per reason, and tonight's setups have no outcome,
+        // so no won or lost segment is drawn.
         foreach (var total in totals)
         {
             Assert.Contains($"data-reason=\"{total.Reason}\" data-names=\"{total.Names}\"", drawn, StringComparison.Ordinal);
+            Assert.Contains($"data-count=\"{total.Names}\" data-of=\"{fired}\"", drawn, StringComparison.Ordinal);
+            Assert.Contains($">{total.Names} of {fired}</text>", drawn, StringComparison.Ordinal);
             Assert.Equal(total.Names, tracks.Single(track => track.Reason == total.Reason).Unresolved);
         }
 
         Assert.All(tracks, track => Assert.Equal(0, track.Won + track.Lost + track.ResolvedUnsplit));
         Assert.DoesNotContain("data-state=\"won\"", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-state=\"lost\"", drawn, StringComparison.Ordinal);
         Assert.Contains("data-unresolved=\"all\"", drawn, StringComparison.Ordinal);
 
         // The fired count on the page is the fired count in the store, summed
@@ -3279,7 +3283,7 @@ public partial class ReadSurface
         // Counted inside the level chart alone: the moves region draws its own
         // twelve-month picture from the same bars, and a count over the page would
         // count both.
-        var chartStart = region.IndexOf("class=\"level-chart\"", StringComparison.Ordinal);
+        var chartStart = region.IndexOf("class=\"level-chart\"", region.IndexOf("data-card=\"chart\"", StringComparison.Ordinal), StringComparison.Ordinal);
         var chart = region[chartStart..region.IndexOf("</svg>", chartStart, StringComparison.Ordinal)];
 
         Assert.Equal(
@@ -3709,7 +3713,7 @@ public partial class ReadSurface
         {
             Assert.NotNull(row.Distance);
             Assert.Contains(
-                $"<svg class=\"distance-row\" role=\"img\" viewBox=\"0 0 120 18\" width=\"120\" height=\"18\" data-ticker=\"{row.Ticker}\"",
+                $"<svg class=\"distance-row\" role=\"img\" viewBox=\"-30 0 146 26\" width=\"146\" height=\"26\" data-ticker=\"{row.Ticker}\"",
                 list,
                 StringComparison.Ordinal);
         }
