@@ -16828,6 +16828,24 @@ Mutated:    the rule, stated before the sweep: break three of the properties the
             has not matured; nothing else.
             M3 the close read from another session's bar: the listing history test red on the
             evening's stored close; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1119 of 1120 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the listing history test on the matured horizon drawn without its base
+            rate.
+            M2 turned 1 red, the listing history test on the unmatured horizon drawn blank.
+            M3 turned 1 red, the listing history test on the close read from the session after.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim
+            added, section 15.9's Listing history row, which passes on `read-surface`, the paragraph
+            it replaces having been no claim at all. Both gates ran with this entry in place, and
+            the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
