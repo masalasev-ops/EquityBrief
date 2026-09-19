@@ -16131,7 +16131,27 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             a filing that is not the newest; nothing else.
             M3 the part left off those a payload may lack: the feed's ratings test red on a payload
             without them read as filed; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1095 of 1096 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 2 red, the fetcher's ratings test on the target price and the feed's ratings
+            test on the record read.
+            M2 turned 1 red, the fundamentals store test on AAPL carrying ratings on a filing that
+            is not the newest.
+            M3 turned 1 red, the feed's ratings test on a payload without them read as filed.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            and none moved: this correction rewrites the text of the fundamentals fetcher's
+            catalogue row in `ARCHITECTURE.html`, which still passes on the check that reached it,
+            and no roster row changed. Both gates ran with this entry in place, and the operator's
+            store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. The screens' redesign draws them, in the session the
             operator has put it to.
