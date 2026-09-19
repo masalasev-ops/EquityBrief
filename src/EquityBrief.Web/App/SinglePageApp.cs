@@ -137,8 +137,12 @@ public sealed class SinglePageApp : IComponent
             screen.innerHTML = await universe.text();
           } else if (path.startsWith('{{{NameRoute}}}')) {
             view = 'name';
-            const ticker = encodeURIComponent(path.slice('{{{NameRoute}}}'.length));
-            const response = await fetch('/screens/name/' + ticker);
+            // A name alone is tonight's page for it, and a name and a date is that evening's.
+            const asked = path.slice('{{{NameRoute}}}'.length);
+            const cut = asked.indexOf('/');
+            const ticker = encodeURIComponent(cut < 0 ? asked : asked.slice(0, cut));
+            const night = cut < 0 ? '' : '/' + encodeURIComponent(asked.slice(cut + 1));
+            const response = await fetch('/screens/name/' + ticker + night);
             screen.innerHTML = await response.text();
           } else if (path === '{{{ResearchedRoute}}}') {
             view = 'researched';
@@ -347,7 +351,8 @@ public sealed class SinglePageApp : IComponent
         NoYear? noYear = null,
         NameMast? mast = null,
         DateOnly? filedOn = null,
-        ListingHistoryCard? history = null)
+        ListingHistoryCard? history = null,
+        DateOnly? night = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -402,6 +407,14 @@ public sealed class SinglePageApp : IComponent
         region.Append(marks.PricesSuspect(ticker, suspect));
         region.Append(marks.NoYearServed(ticker, noYear));
 
+        // A page about an earlier night says so above every figure it draws, and links to
+        // tonight's, since each of those figures is what the store held that evening and a
+        // reader arriving on a link has nothing else to tell them which evening they are in.
+        // see: A name's page for an earlier night is what the store held that night
+        region.Append(night is { } evening
+            ? Invariant($"<p class=\"notice earlier-night\" data-night=\"{evening:yyyy-MM-dd}\" role=\"status\">This is {Escaped(ticker)} as the store held it after the close of {evening:yyyy-MM-dd}. <a href=\"{NameRoute}{Escaped(ticker)}\">Tonight's page</a></p>")
+            : string.Empty);
+
         // The line the masthead carries: the ticker, the company, the last stored close
         // with its change on the day, and the session it is from. No screen fetches a
         // price, so the price is the last one the store holds and says so.
@@ -435,7 +448,12 @@ public sealed class SinglePageApp : IComponent
         var why = WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection) + marks.WhyItIsHere(ticker, firedReasons);
 
         region.Append(firedReasons.Count > 0
-            ? Cards.Computed("Why it is here", why, title: "On tonight's list for these reasons", stamp: Cards.Night(session), region: "why")
+            ? Cards.Computed(
+                "Why it is here",
+                why,
+                title: night is { } listed ? Invariant($"On the list on {listed:yyyy-MM-dd} for these reasons") : "On tonight's list for these reasons",
+                stamp: Cards.Night(session),
+                region: "why")
             : why);
 
         // The trend state, in a word. Read off the ladder row rather than worked
@@ -593,7 +611,7 @@ public sealed class SinglePageApp : IComponent
         // The walk, which section 15.9 puts last: previous and next on tonight's
         // list, so an evening's reading is one pass through with no return to
         // the list.
-        region.Append(marks.Walk(ticker, previousOnTheList, nextOnTheList));
+        region.Append(marks.Walk(ticker, previousOnTheList, nextOnTheList, night));
 
         region.Append("</section>");
 
@@ -1023,6 +1041,12 @@ public sealed class SinglePageApp : IComponent
 
         return banner.ToString();
     }
+
+    // A name asked for on something that is not a date: tonight's page with a line saying
+    // what was asked for, as an unknown route is tonight's list with one.
+    // see: A name's page for an earlier night is what the store held that night
+    public static string NotANight(string asked) =>
+        Invariant($"<p class=\"notice\" role=\"status\" data-not-a-night=\"{Escaped(asked)}\">{Escaped(asked)} is not an evening this reads, so this is tonight.</p>");
 
     // Every screen over a store behind this checkout, which names both schema numbers
     // rather than failing on the first column the store lacks.

@@ -1632,29 +1632,34 @@ public sealed class MarkRenderer : IComponent
     //
     // A name that is not on the list has no neighbours and says so, rather than
     // linking to the ends of a list it is not in.
-    public string Walk(string ticker, string? previous, string? next)
+    //
+    // A page about an earlier night walks that night's list: each neighbour is linked on the
+    // night the page is about, so a pass through an evening stays in that evening.
+    public string Walk(string ticker, string? previous, string? next, DateOnly? night = null)
     {
         var walk = new StringBuilder();
+        var on = night is { } evening ? FormattableString.Invariant($"/{evening:yyyy-MM-dd}") : string.Empty;
+        var list = night is null ? "tonight's list" : "that evening's list";
 
         walk.Append(Invariant, $"<nav class=\"walk\" data-ticker=\"{Escaped(ticker)}\" ");
         walk.Append(Invariant, $"data-previous=\"{Escaped(previous ?? "none")}\" data-next=\"{Escaped(next ?? "none")}\">");
 
         if (previous is null)
         {
-            walk.Append("<span class=\"degraded\">no previous name on tonight's list</span>");
+            walk.Append(Invariant, $"<span class=\"degraded\">no previous name on {list}</span>");
         }
         else
         {
-            walk.Append(Invariant, $"<a href=\"#/name/{Escaped(previous)}\">previous: {Escaped(previous)}</a>");
+            walk.Append(Invariant, $"<a href=\"#/name/{Escaped(previous)}{on}\">previous: {Escaped(previous)}</a>");
         }
 
         if (next is null)
         {
-            walk.Append("<span class=\"degraded\">no next name on tonight's list</span>");
+            walk.Append(Invariant, $"<span class=\"degraded\">no next name on {list}</span>");
         }
         else
         {
-            walk.Append(Invariant, $"<a href=\"#/name/{Escaped(next)}\">next: {Escaped(next)}</a>");
+            walk.Append(Invariant, $"<a href=\"#/name/{Escaped(next)}{on}\">next: {Escaped(next)}</a>");
         }
 
         walk.Append("</nav>");
@@ -1690,7 +1695,10 @@ public sealed class MarkRenderer : IComponent
         foreach (var evening in history.Evenings)
         {
             drawn.Append(Invariant, $"<tr data-evening=\"{evening.Evening:yyyy-MM-dd}\" data-close=\"{(evening.Close is { } stored ? stored.ToString(CultureInfo.InvariantCulture) : "none")}\"{Horizon("5", evening.Five)}{Horizon("21", evening.TwentyOne)}>");
-            drawn.Append(Invariant, $"<td>{evening.Evening:yyyy-MM-dd}</td>");
+            // The evening is a link to the page for it, which is the one place a reader
+            // reaches an earlier night's page from.
+            // see: A name's page for an earlier night is what the store held that night
+            drawn.Append(Invariant, $"<td><a href=\"#/name/{Escaped(ticker)}/{evening.Evening:yyyy-MM-dd}\">{evening.Evening:yyyy-MM-dd}</a></td>");
             drawn.Append(Invariant, $"<td>{Escaped(string.Join(", ", evening.Reasons))}</td>");
             drawn.Append(Invariant, $"<td class=\"num\">{(evening.Close is { } close ? Figures.Price(close) : "not stored")}</td>");
             drawn.Append(Invariant, $"<td>{Result(evening.Five)}</td><td>{Result(evening.TwentyOne)}</td></tr>");

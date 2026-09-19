@@ -858,7 +858,8 @@ public static class NameScreen
         NoYearRow? noYear = null,
         UniverseRow? member = null,
         IReadOnlyList<ListingRow>? history = null,
-        IReadOnlyList<ForwardReturnRow>? outcomes = null)
+        IReadOnlyList<ForwardReturnRow>? outcomes = null,
+        DateOnly? night = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -971,7 +972,8 @@ public static class NameScreen
             noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next),
             new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars)),
             filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
-            history is null ? null : History(history, outcomes ?? [], bars));
+            history is null ? null : History(history, outcomes ?? [], bars),
+            night);
     }
 
     // A name's listing history over the evenings the store holds its listings for: whether it was

@@ -155,6 +155,34 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
     return Results.Content(ReportExporter.Link(ticker) + name.Region, "text/html; charset=utf-8");
 });
 
+// One name as the store held it on an earlier night, section 15.9's second route.
+//
+// Every read the page makes is bounded by that night, so what it draws is what the night
+// computed rather than tonight's figures under an older date, and the evening it draws is the
+// newest the listings hold on or before the date asked for, so a Saturday or a night that
+// never ran answers with the evening before it. No control is offered and the file is not
+// linked: a pass writes about the company now and the file is tonight's report. A date that
+// cannot be read is tonight's page with a line saying what was asked for, as an unknown route
+// is tonight's list with one.
+// see: A name's page for an earlier night is what the store held that night
+app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
+{
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+
+    if (!DateOnly.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var asked))
+    {
+        var tonight = await NameAsync(read, marks, page, caps, clock, ticker, index, export: false);
+
+        return Results.Content(
+            SinglePageApp.NotANight(date) + ReportExporter.Link(ticker) + tonight.Region,
+            "text/html; charset=utf-8");
+    }
+
+    var name = await NameAsync(read, marks, page, caps, clock, ticker, index, export: false, on: await read.NewestNightAsync(asked) ?? asked);
+
+    return Results.Content(name.Region, "text/html; charset=utf-8");
+});
+
 // One name's report as a file to hand to someone, section 15.4's second surface: the name
 // screen's region composed by the same code from the same reads, less the research controls
 // and the pause, which are the application asking the operator something rather than the
@@ -171,18 +199,18 @@ app.MapGet(ReportExporter.Route + "{ticker}", async (string ticker, ReadApi read
 });
 
 // The name screen's region, read here and composed by the app, for the page and for the file.
-static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export)
+static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export, DateOnly? on = null)
 {
-    var bars = await read.BarsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
-    var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
-    var levels = await read.LevelsAsync(ticker);
-    var profile = await read.ProfileAsync(ticker);
-    var ladder = await read.LadderAsync(ticker);
-    var moves = await read.MovesAsync(ticker);
+    var bars = await read.BarsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
+    var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
+    var levels = await read.LevelsAsync(ticker, on);
+    var profile = await read.ProfileAsync(ticker, on);
+    var ladder = await read.LadderAsync(ticker, on);
+    var moves = await read.MovesAsync(ticker, on);
 
-    // Tonight's listing for this name, and its neighbours on the list, so the
+    // The night's listing for this name, and its neighbours on the list, so the
     // page can say why it is here and the walk is one pass through.
-    var night = await read.NewestNightAsync();
+    var night = on ?? await read.NewestNightAsync();
     var listings = night is { } dated ? await read.ListingsAsync(dated) : [];
 
     // The index on the night the list is from, so the neighbours are that
@@ -193,7 +221,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
 
     foreach (var member in universe)
     {
-        var found = await read.LevelsAsync(member.Ticker);
+        var found = await read.LevelsAsync(member.Ticker, on);
 
         strengths[member.Ticker] = found.Count == 0 ? 0 : found.Max(band => band.Strength);
     }
@@ -201,13 +229,13 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // The neighbours on the list, in the order the list itself is drawn in. The
     // walk is about position, so it takes the same ordering with the same inputs
     // rather than a cheaper one that could order differently.
-    var ordered = night is { } on
+    var ordered = night is { } evening
         ? TonightScreen.Rows(
-            on,
+            evening,
             listings,
             strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
-            await read.ClosesToTheNightAsync(on))
+            await read.ClosesToTheNightAsync(evening))
         : [];
 
     var at = ordered.Select((row, position) => (row.Ticker, position))
@@ -225,17 +253,17 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // Every filing this name holds, which the numbers section draws five of. A
     // name nobody has opened holds none and the section says so, because the
     // computed sections render from the nightly store whatever this read returns.
-    var fundamentals = await read.FundamentalsAsync(ticker);
+    var fundamentals = await read.FundamentalsAsync(ticker, on);
 
     // The high and the low of the sessions the largest move spans, which the fact
     // strip states beside the close. A name with no annotated move has none, and
     // the strip says so rather than drawing a blank.
-    var extremes = await read.MoveExtremesAsync(ticker);
+    var extremes = await read.MoveExtremesAsync(ticker, on);
 
     // The written sections and the documents they cite, which the dates-and-sources
     // region draws with the calendar from the newest stored session on. The industry
     // cycle among them is the theme's, read for the industry the index names the member in.
-    var written = await read.WrittenSectionsAsync(ticker);
+    var written = await read.WrittenSectionsAsync(ticker, on);
 
     var region = NameScreen.Region(
         page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
@@ -244,15 +272,18 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         listings.FirstOrDefault(listing => listing.Ticker == ticker),
         at is > 0 ? ordered[at.Value - 1].Ticker : null,
         at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null,
-        await read.SectionStatesAsync(ticker, DateOnly.MaxValue),
-        await read.StalenessAsync(ticker),
+        await read.SectionStatesAsync(ticker, on ?? DateOnly.MaxValue),
+        // The staleness verdict, the newest pass and what research has spent are the
+        // application asking about the company now, so a page about an earlier night carries
+        // none of them and offers no control, as the exported file carries none.
+        on is null ? await read.StalenessAsync(ticker) : null,
         written,
-        await read.NewestPassAsync(ticker),
-        export ? null : await SpendNow(read, caps, clock),
+        on is null ? await read.NewestPassAsync(ticker) : null,
+        export || on is not null ? null : await SpendNow(read, caps, clock),
         await read.CitedDocumentsAsync(NameScreen.Cited(written)),
         await read.EventsAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
-        export ? null : await read.PaidCallSpendsAsync(),
-        clock.SessionDateAt(clock.UtcNow),
+        export || on is not null ? null : await read.PaidCallSpendsAsync(),
+        on ?? clock.SessionDateAt(clock.UtcNow),
         // Whether the name's stored series is suspect, which the page opens with and the
         // file carries, since it is a statement about the figures rather than a question
         // the application asks.
@@ -263,8 +294,12 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         universe.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
         // The name's listings over the strip's window and its forward returns, which its listing
         // history draws.
-        await read.ListingsAsync(ticker, UniverseScreen.StripSessions),
-        await read.ForwardReturnsAsync(ticker));
+        await read.ListingsAsync(ticker, UniverseScreen.StripSessions, on),
+        // What followed each evening the name was listed, as the store has it now: the page
+        // draws the figures the night computed, and how a setup ended is something the store
+        // learned after it.
+        await read.ForwardReturnsAsync(ticker),
+        on);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
