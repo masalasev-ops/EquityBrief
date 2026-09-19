@@ -16334,11 +16334,11 @@ Mutated:    the rule, stated before the sweep: break each property the design ad
             M4 turned 1 red, the momentum test on the dashed box.
             M5 turned 1 red, the screens test on a key that does not close on what to take from it.
             M6 turned 1 red, the chart test on a price that is not stored.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1106 of 1106 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added:
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 370 claims,
+            370 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 377 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added:
             section 15's rows keep their parts, the reason totals row's words say counts in one
             clause, and every ruling the design raised is a paragraph beside its table. Both gates
             ran with this entry in place, and the operator's store under `data/` was not touched by
