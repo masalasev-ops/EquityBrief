@@ -16927,11 +16927,11 @@ Mutated:    the rule, stated before the sweep: break each of the four properties
             width.
             M4 turned 1 red, the column test on the rule that keeps each picture's own ratio as the
             column narrows.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1122 of 1122 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 372 claims,
+            372 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 379 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
             and none moved, the rule standing in section 15.2's words, which govern every screen,
             rather than as a row of one screen's table. Both gates ran with this entry in place, and
             the operator's store under `data/` was not touched by either.
