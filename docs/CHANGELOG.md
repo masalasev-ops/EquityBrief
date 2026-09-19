@@ -25,6 +25,42 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-18 - SCHEMA.md - the analysts' ratings are stored
+
+Authorised by: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+Was:
+> The company financials endpoint supplies eight parts and the filings archive four: `segments`, `revenueTables`, `guidance` and `facts`, which that endpoint files for no name at all. The archive's four sit on the newest
+Now:
+> The company financials endpoint supplies ten parts, the analysts' `ratings` among them, and the filings archive five: `segments`, `revenueTables`, `tableGrowth`, `guidance` and `facts`, which that endpoint files for no name at all. The archive's five sit on the newest
+Why: the analysts' ratings are stored, and the count had missed the two growth parts, `growth` from the endpoint's filings and `tableGrowth` from the archive's tables.
+
+### 2026-09-18 - SCHEMA.md - the parts before it are fifteen
+
+Authorised by: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+Was:
+> A thirteenth part, `periodEnd`, is the quarter's end
+Now:
+> A sixteenth part, `periodEnd`, is the quarter's end
+Why: the parts before it are fifteen.
+
+### 2026-09-18 - SCHEMA.md - the analysts' ratings are stored
+
+Authorised by: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+Was:
+> ; `facts` holds the archive's own filed figures
+Now:
+> ; `ratings` holds the analysts' mean rating on a scale of one to five, their mean target price and how many rate the name at each of five grades from a strong buy to a strong sell, as the provider files them (see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone); `facts` holds the archive's own filed figures
+Why: the analysts' ratings are stored.
+
+### 2026-09-18 - ARCHITECTURE.html - the fetcher stores the analysts' ratings
+
+Authorised by: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+Was:
+> fetches the quarters and the balance sheet when the stored copy predates the name's latest filing, and reads the filings archive for the segment table and management's guidance, which the company financials endpoint files for nobody. The two providers fail apart: an archive that could not be read leaves its two parts named as unread on the row and the other eight stored, because refusing the fetch would lose eight figures to recover two (see: Fundamentals are stored with the filing date they came from).
+Now:
+> fetches the quarters, the balance sheet and the analysts' ratings when the stored copy predates the name's latest filing (see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone), and reads the filings archive for the segment table, the other tables of revenue and management's guidance, which the company financials endpoint files for nobody. The two providers fail apart: an archive that could not be read leaves its five parts named as unread on the row and the other eleven stored, because refusing the fetch would lose eleven parts to recover five (see: Fundamentals are stored with the filing date they came from).
+Why: the fetcher stores the analysts' ratings, and the counts had missed the archive's other tables, their growth and its facts.
+
 ### 2026-09-18 - RUNBOOK.md - what a pass over the fixture costs
 
 Authorised by: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it

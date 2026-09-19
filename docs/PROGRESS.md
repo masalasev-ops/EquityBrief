@@ -16084,3 +16084,54 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the page drawing the key only on the night it was written for, and saying where a move
             older than three months has no cause because its news is not read, belong to the
             screens' redesign, which the operator has put to a session of its own.
+
+### 6.1 - correction: the analysts' ratings the provider files are stored on the newest filing's row, where SCHEMA named them since 6.1 and nothing stored them   2026-09-18
+Corrects:   the 6.1 entry records the fundamentals fetcher storing a name's quarters, balance sheet,
+            valuation and estimate. SCHEMA's payload column has named ratings since, and
+            ARCHITECTURE's company financials feed names analyst ratings, but no part of the row
+            carried them, so the name page had none to state.
+Found:      on 2026-09-18, in the operator's review of the screens against their reference report,
+            which gives the analysts' rating and target price a section of their own; the provider
+            files them in every captured payload.
+Measured:   the four captured payloads: AAPL a mean rating of 4.0417 and a mean target of 324.4016,
+            with 23, 7, 16, 1 and 1 analysts at the five grades from a strong buy to a strong sell;
+            KEYS 4.2308 and 415.0833 with 6, 5, 1, 1 and 0; MSFT 4.5902 and 572.9152 with 41, 15, 5,
+            0 and 0; NFLX 4.1225 and 93.66 with 25, 7, 16, 0 and 1.
+Repaired:   the feed reads the payload's analyst ratings into the mean rating, the mean target price
+            and the count at each grade, and a payload with no such object reads as ratings not
+            filed; the fetcher copies them onto the newest filing's row as `ratings`, the source
+            column naming the provider. They are not carried into the facts file, so no section
+            quotes them. DECISIONS records it as The fundamentals row carries the analysts' ratings
+            the provider files, on the newest filing alone; SCHEMA's note on the payload and its
+            count of the row's parts, and ARCHITECTURE's fetcher row, say so, with their prior text
+            in CHANGELOG. The counts had missed the two growth parts the corrections of the same day
+            added, and the archive's other tables and filed figures: SCHEMA now counts ten parts
+            from the endpoint, five from the archive and the period end a sixteenth, and
+            ARCHITECTURE five parts left unread where the archive could not be read and eleven
+            stored.
+Stored:     nothing rewritten: rows are never updated, and a name's next fetch stores the part.
+Missed:     SCHEMA's column note named ratings from the start, and nothing read the note against
+            what a row carries.
+Guarded:    over the fixture, AAPL's newest row carries the ratings worked by hand off its payload
+            and the source column names the provider for them; no older row of any name carries
+            them; and the captured payload with the object taken out reads as ratings not filed,
+            where every captured name files them.
+Expected:   derived: the ratings are read off the captured payloads by hand, and the stored filings
+            expectation lists the ratings among the parts on the newest filing alone.
+Tests:      1096, from 1094. Two added, one to the fetcher's tests and one to the feed's. No file
+            this correction edits is a source either evaluator version or the ladder rules' code
+            version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each of the three properties this correction
+            adds, the figures copied as filed, on the newest filing alone, and a payload without
+            them read as not filed.
+            Predicted:
+            M1 the target price read off the rating's key: the fetcher's ratings test red on the
+            target price, and the feed's ratings test red on the record read; nothing else.
+            M2 the ratings on every filing: the fundamentals store test red on AAPL carrying them on
+            a filing that is not the newest; nothing else.
+            M3 the part left off those a payload may lack: the feed's ratings test red on a payload
+            without them read as filed; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair. The screens' redesign draws them, in the session the
+            operator has put it to.

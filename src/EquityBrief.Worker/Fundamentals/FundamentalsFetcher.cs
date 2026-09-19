@@ -440,6 +440,19 @@ public sealed class FundamentalsFetcher : IComponent
             // strip states beside the close. As of the fetch for the reason the
             // ratios are, so it sits on the newest filing's row with them.
             marketCapitalisation = newest ? Money(fetched.Market.Capitalisation) : null,
+            // What the analysts following the company say of it, copied as the provider files it and
+            // on the newest filing's row for the reason the ratios are.
+            // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+            ratings = newest && !fetched.PartsNotCarried.Contains(RatingsPart, StringComparer.Ordinal) ? new
+            {
+                rating = Money(fetched.Ratings.Rating),
+                targetPrice = Money(fetched.Ratings.TargetPrice),
+                strongBuy = fetched.Ratings.StrongBuy,
+                buy = fetched.Ratings.Buy,
+                hold = fetched.Ratings.Hold,
+                sell = fetched.Ratings.Sell,
+                strongSell = fetched.Ratings.StrongSell,
+            } : null,
             // The next print as the provider has it, and named for what it is: an
             // analysts' estimate. Section 4 places the guided quarter at the
             // earnings release exhibit, which is management stating what it
@@ -583,12 +596,14 @@ public sealed class FundamentalsFetcher : IComponent
     public static readonly string[] Parts =
     [
         "periodEnd", "quarter", "margin", "growth", "balanceSheet", "earnings", "epsBases", "valuation",
-        "marketCapitalisation", "estimated", "segments", "revenueTables", "tableGrowth", "guidance", "facts",
+        "marketCapitalisation", "ratings", "estimated", "segments", "revenueTables", "tableGrowth", "guidance", "facts",
     ];
 
     public const string Margin = "margin";
 
     public const string GrowthPart = "growth";
+
+    public const string RatingsPart = "ratings";
 
     public const string TableGrowthPart = "tableGrowth";
 

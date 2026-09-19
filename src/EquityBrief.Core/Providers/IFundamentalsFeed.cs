@@ -88,6 +88,15 @@ public sealed record ValuationRatios(decimal? TrailingPe, decimal? ForwardPe);
 // this figure are the two parts of that strip no computed table can supply.
 public sealed record MarketValue(decimal? Capitalisation);
 
+// What the analysts following the company say of it, as the provider files it: the mean of
+// their ratings on a scale of one to five, their mean target price, and how many rate it at
+// each of five grades from a strong buy to a strong sell.
+//
+// As of the fetch rather than as of a filing, for the reason the ratios are: a rating moves
+// with every note an analyst writes.
+// see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+public sealed record AnalystRatings(decimal? Rating, decimal? TargetPrice, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell);
+
 // One name's fundamentals as one provider files them.
 //
 // `PartsNotCarried` is the part of this record that took a probe to write. The
@@ -117,6 +126,7 @@ public sealed record CompanyFundamentals(
     EpsBases Bases,
     ValuationRatios Valuation,
     MarketValue Market,
+    AnalystRatings Ratings,
     IReadOnlyList<string> PartsNotCarried,
     int QuartersWithNoFilingDate);
 
