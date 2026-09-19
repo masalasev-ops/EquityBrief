@@ -159,8 +159,8 @@ public partial class ReadSurface
 
         Assert.Contains($"<p data-part=\"fundamentals\" data-filed-on=\"{filed}\">", footer.Value, StringComparison.Ordinal);
 
-        // Each written section, as of its date and naming its model: the newest
-        // accepted version of each, which is what a reader is shown.
+        // Each written section, as of its date with its model on the element: the
+        // newest accepted version of each, which is what a reader is shown.
         var written = Rows(
             store,
             "SELECT section, as_of, model FROM research_section r WHERE ticker = 'KEYS' AND status = 'accepted' " +
@@ -177,6 +177,15 @@ public partial class ReadSurface
 
         Assert.Equal(written.Select(row => string.Join("|", row)), drawn.Select(row => string.Join("|", row)));
         Assert.Contains($"data-written=\"{written.Count}\"", region, StringComparison.Ordinal);
+
+        // In words, each says when it was written, and the key under each figure the close it
+        // explains, which is the night its row is dated by.
+        foreach (var row in written)
+        {
+            var dated = row[0] == ClaimRules.ComputedSection ? "written for the close of" : "written on";
+
+            Assert.Contains($">{WebUtility.HtmlEncode(row[0])} was {dated} {row[1]}</p>", footer.Value, StringComparison.Ordinal);
+        }
 
         // A name with nothing written, and a part with nothing behind it, each say so.
         using var replayed = await FixtureReplay.ReplayedAsync();

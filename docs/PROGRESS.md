@@ -16699,3 +16699,64 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             the rows reworded keep their subjects. Both gates ran with this entry in place, and the
             operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: the name page drawn with the chart and the plan first and each written section dated without the model that wrote it, and the queue's decision stated for every name   2026-09-19
+Corrects:   5.8 drew the name page in section 4's numbered order, what the company sells, the
+            numbers, the cycle and the two cases before the chart and the plan, where the screens
+            the operator approved draw the chart and the plan straight after how the price got here;
+            and each written section, the short version among them, and the provenance footer named
+            the model that wrote it, which the operator ruled off the page on 2026-09-18. It also
+            corrects the 6.10 correction of the same day, which widened the overnight queue to every
+            name and left the queue's decision saying it works through the names on tonight's list.
+Found:      by the operator on 2026-09-19, choosing among the questions the screens' redesign left
+            open: the chart and the plan first, and pages saying only when a section was written
+            with the store keeping the model. The queue's decision was found by this session scoping
+            the change, reading the decisions record against the queue it describes.
+Measured:   over the copy of the store the screens were read on, after the change: NVDA's page draws
+            why it is here, the fact strip, the short version, how it got here, the chart with the
+            key beneath its figures, the plan, what the company sells, the segment commentary, the
+            numbers, the two cases, the risks, dates and sources, the research and the provenance,
+            in that order. Its words name neither model, while its elements carry deepseek-flash 8
+            times and qwen/qwen3.5-9b 12 times.
+Repaired:   the name page draws the chart, the key and the plan after how it got here and before
+            what the company sells, and section 4's table is renumbered to match, the chart third
+            and entries and exits fourth. A written section's line and the provenance footer say
+            when it was written, the key under each figure the close it explains, and name no model,
+            which stays in the store and on each element. Two decisions are superseded: every part
+            of a page states where it came from and as of when, now with a written section by its
+            date alone; and the overnight queue's, now working through every name, the listed ones
+            first, and offering the paid model's rewrite of a local draft without saying which model
+            wrote what is read. Every citation of either moves to its successor, and the
+            architecture's 15.9 rows, 15.12's fourth step and section 4's key follow.
+Missed:     the order test read section 4's order, which it was written to, rather than the approved
+            screens'; no test read the page's words for a model's name, since every test read the
+            model off the markup; and the 6.10 correction superseded the key's decision and not the
+            queue's, whose statement of the names it takes it had changed.
+Guarded:    the page's words over the researched fixture name neither model that wrote its sections
+            while each element carries its model; the page draws how it got here, the chart, the
+            key, the plan, what the company sells, the segments, the numbers, the two cases and the
+            risks in that order, read as one sequence so a page drawing them otherwise says which
+            came where; and the footer says each section's date in words, the key's as the close it
+            explains.
+Expected:   derived: the order is section 4's as renumbered, and the words are the rule's. No
+            expectation file changes.
+Tests:      1118, from 1117. One added to `read-surface`. The order test reads the drawn sequence
+            and, like the short version's, is named for the date alone; the written-section helper
+            reads the date without a model; and the footer test reads each section's words.
+            `architecture-conformance`'s keys for the footer's research part and for section 14's
+            last step follow their text.
+Mutated:    the rule, stated before the sweep: break the three properties this correction adds, no
+            model's name in the page's words, the chart and the plan before what the company sells,
+            and the key's part of the footer dated by the close it explains. Not mutated: the
+            renumbered table, the decisions and the citations, which are text, and the short
+            version's line, which the written-section helper reads as every other section's.
+            Predicted:
+            M1 the footer naming the model again: the model-name test red on both models found in
+            the page's words, and the footer test red on its first section's words; nothing else.
+            M2 what the company sells drawn before the chart: the order test red on the sequence the
+            page drew; nothing else.
+            M3 the key's part of the footer dated as written on: the footer test red on the key's
+            words; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.

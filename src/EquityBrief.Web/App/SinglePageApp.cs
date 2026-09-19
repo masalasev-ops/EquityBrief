@@ -473,26 +473,6 @@ public sealed class SinglePageApp : IComponent
             stamp: Cards.Night(session),
             region: "how-it-got-here"));
 
-        // What the company sells, section 4's third section, before the numbers.
-        Draw(BeforeTheNumbers);
-
-        // The numbers, which section 4 puts fourth. It arrives already written, for the
-        // reason the event book does: what it holds is stored figures and the sentences
-        // that state an absence, rather than a mark.
-        region.Append(Cards.Dated(
-            "The numbers",
-            "Filed",
-            filedOn,
-            numbers + Cards.Key(
-                "Where these come from.",
-                "Each figure is from the company's own filing, dated as the filing is. The estimate is the analysts' average before the report.",
-                "These are the company's reported results. Nothing in the plan is computed from them."),
-            filed: true,
-            note: "from the filing"));
-
-        // The industry cycle and the two cases, section 4's fifth and sixth.
-        Draw(AfterTheNumbers);
-
         // The chart region: the level chart and, on its price scale, the volume profile
         // beside it, both drawn at one scale so a price is at one height in both.
         const double Scale = 0.7;
@@ -541,7 +521,27 @@ public sealed class SinglePageApp : IComponent
 
         region.Append(Cards.Computed("The plan", planned.ToString(), title: "Where it is bought, sold, and wrong", stamp: Cards.Night(session), region: "plan"));
 
-        // What would make this wrong, section 4's ninth, after the plan it is about.
+        // What the company sells, section 4's fifth section, after the plan and before the numbers.
+        Draw(BeforeTheNumbers);
+
+        // The numbers, which section 4 puts sixth. It arrives already written, for the
+        // reason the event book does: what it holds is stored figures and the sentences
+        // that state an absence, rather than a mark.
+        region.Append(Cards.Dated(
+            "The numbers",
+            "Filed",
+            filedOn,
+            numbers + Cards.Key(
+                "Where these come from.",
+                "Each figure is from the company's own filing, dated as the filing is. The estimate is the analysts' average before the report.",
+                "These are the company's reported results. Nothing in the plan is computed from them."),
+            filed: true,
+            note: "from the filing"));
+
+        // The industry cycle and the two cases, section 4's seventh and eighth.
+        Draw(AfterTheNumbers);
+
+        // What would make this wrong, section 4's ninth, after the two cases it tests.
         Draw(AfterThePlan);
 
         // Dates and sources, section 4's last two: the calendar, the dated items a pass
@@ -605,15 +605,15 @@ public sealed class SinglePageApp : IComponent
         "</details></section>";
 
     // Where each written section is drawn, which is section 4's order: the short version
-    // at the top, what the company sells before the numbers, the cycle and the two cases
-    // after them, the key beneath the figures, the risks after the plan, and the dated
-    // items with the dates. The cause of each large move is drawn in the moves table, in
+    // at the top, the key beneath the chart's figures, what the company sells after the
+    // plan and before the numbers, the cycle and the two cases after them, the risks after
+    // those, and the dated items with the dates. The cause of each large move is drawn in the moves table, in
     // the row of the move each sentence names, and `read-surface` asserts every section
     // figure 12.2 names is placed exactly once across these and that table.
     public static readonly string[] AtTheTop = ["The short version"];
     public static readonly string[] BeforeTheNumbers = ["What the company sells", "The segment commentary"];
     public static readonly string[] AfterTheNumbers = ["The industry cycle", "The two cases"];
-    public static readonly string[] UnderTheFigures = ["The key under each figure"];
+    public static readonly string[] UnderTheFigures = [MarkRenderer.KeySection];
 
     // What the key's card states its date as, which is the night whose figures it explains
     // rather than the day it was written.

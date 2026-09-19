@@ -1107,7 +1107,7 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included, which is where the queue writing no research is a claim: the sections a pass writes are inserted by the prose writer and moved by the checker, each under its own row",
             ByAccess),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in order of reasons fired (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document, and the paid model is for names you get serious about).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in order of reasons fired (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).")] = new Scoped(
             Verdict.Pass,
             "the night runs the queue as its last step, after the close has recorded the arithmetic's counts, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none",
             ByNight),
@@ -1222,11 +1222,11 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "The short version")] = new Scoped(
             Verdict.Pass,
-            "the accepted short version is drawn above the chart, the table of moves and every other written section, its paragraphs the stored prose drawn as text and its date and model beneath them read back against the store, and a name with none draws none",
+            "the accepted short version is drawn above the chart, the table of moves and every other written section, its paragraphs the stored prose drawn as text and its date beneath them with its model on the element, read back against the store, and a name with none draws none",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = new Scoped(
             Verdict.Pass,
-            "every accepted section is drawn once in section 4's order, what the company sells and its segments before the numbers, the two cases after them, the key beneath the figures and the risks after the plan, each with the date and model the store holds, every section figure 12.2 names placed exactly once, and the cycle drawn from the theme record for the name's industry, or absent with the reason the pass stored where the theme's search found nothing to write it from",
+            "every accepted section is drawn once in section 4's order, the key beneath the chart's figures and before the plan, what the company sells and its segments after the plan and before the numbers, the two cases after them and the risks after those, each with the date the store holds and its model on the element, every section figure 12.2 names placed exactly once, and the cycle drawn from the theme record for the name's industry, or absent with the reason the pass stored where the theme's search found nothing to write it from",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Dates and sources")] = new Scoped(
             Verdict.Pass,
@@ -1310,9 +1310,9 @@ internal static class Scope
             Verdict.Pass,
             "the footer states the newest filing date the fundamentals store holds for the name, against a query of the test's own, and says so where no filing is stored",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Provenance footer, research as of a date and the model that wrote it")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Provenance footer, research as of the date it was written")] = new Scoped(
             Verdict.Pass,
-            "the footer names each written section with the date it was written and the model that wrote it, being the newest version the checker accepted of each, against a query of the test's own over a store the recorded model wrote, and says so where nothing has been written",
+            "the footer names each written section with the date it was written, the key under each figure with the close it explains, and names no model in its words, carrying each on the element, being the newest version the checker accepted of each, against a query of the test's own over a store the recorded model wrote, and says so where nothing has been written",
             ByReadSurface),
         [CheckReach.Key(FailureTable, "A section is assigned to the local lane that the machine cannot hold, the pass is refused before it starts")] = new Scoped(
             Verdict.Pass,
@@ -1947,7 +1947,7 @@ internal static class Scope
         // a footer stating one of them.
         [CheckReach.Key("15.9 Name", "Provenance footer, computed tonight")] = "6.6",
         [CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date")] = "6.6",
-        [CheckReach.Key("15.9 Name", "Provenance footer, research as of a date and the model that wrote it")] = "6.6",
+        [CheckReach.Key("15.9 Name", "Provenance footer, research as of the date it was written")] = "6.6",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
         // parts the research runner draws. The line saying research is missing or
         // naming the trigger that fired is a reading of the stores this checkpoint
@@ -2224,7 +2224,7 @@ internal static class Scope
         [
             "computed tonight",
             "fundamentals as of a filing date",
-            "research as of a date and the model that wrote it",
+            "research as of the date it was written",
         ],
 
         // Section 18's two local lane rows, decomposed at 6.6 for contradiction F's
