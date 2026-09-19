@@ -16849,3 +16849,90 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             it replaces having been no claim at all. Both gates ran with this entry in place, and
             the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: every screen read at the width of the screen it is read on, the column the screen's own width up to the widest picture it draws and every table in a box of its own   2026-09-19
+Corrects:   5.8 drew the screens in a column of one fixed width, which was neither the width of a
+            wide screen nor a width a narrow one could hold: a wide screen was a column of page with
+            a third of the screen empty beside it, and a narrow screen was handed a page laid out
+            for a wide one, with tonight's reason totals and the run page's records standing off the
+            right-hand edge and the whole page sliding sideways under them.
+Found:      by the operator on 2026-09-19, reading tonight on a screen the page left a third of
+            unused, who asked for a page that fits the screen and reads on a phone.
+Measured:   over the copy of the store the screens are read on, in a browser at a screen 496 points
+            wide: tonight's page laid out 530 points wide with 22 elements standing past the
+            right-hand edge, and the run page 892 points wide with 23, the widest of them the stage
+            table at 577 points and the run log's refused documents, whose addresses have nowhere to
+            break. Of the 19 tables the screens draw, 2 stood in a box of their own. And the name
+            page drew its chart at seven tenths of its size, 732 points of the 852 the column gave
+            it, so a year of candles was read small on every screen whatever the screen could show.
+            And once the column could narrow, the chart and the profile beside it were held in boxes
+            of a fixed height, which put a price fourteen points higher in the profile than in the
+            chart at a column of 974.
+Repaired:   the column is the width of the screen up to a ceiling which is the widest picture a
+            screen draws with the card's own padding and the page's gutter around it, read from the
+            stylesheet's own tokens rather than from a width written into a rule. The chart and the
+            volume profile beside it are drawn at their own size, which is what that ceiling holds.
+            The 17 tables that stood bare are each in a box that scrolls sideways, so a table wider
+            than the card is read inside the card rather than by moving the page. A long run of
+            characters with nowhere to break breaks. The chart and the profile are one picture at
+            every width: each keeps its own ratio and the row anchors them at the top, so the pair
+            is scaled down together below the ceiling and a price is at one height in both. And the
+            narrow screen's own rules reach the night header's cells, which stood two abreast at
+            every width, and the fired count, which they had named by a class the page does not
+            carry.
+Missed:     the narrow screen's rule for the fired count named a class no page draws, so the number
+            stayed at its full size on a narrow screen and nothing said so. A rule that matches
+            nothing looks exactly like a rule that works, which is the half of a stylesheet no test
+            written against markup reaches.
+Guarded:    over the four screens and the exported report: the column's ceiling is the widest figure
+            the name page draws, summed from the widths on the pictures themselves, with the card's
+            padding and the gutter the stylesheet states, and the column is the screen's own width
+            below it; both pictures of that figure drawn at their own size and the rule that scales
+            the pair together read, the suite having no browser to lay one out; and every table the
+            five surfaces draw, 26 of them, is opened by the box that scrolls it, with any that is
+            not named rather than counted, over a population stated in advance and the box's own
+            rule read.
+Expected:   derived: the ceiling is read off the page's own pictures and the stylesheet's own
+            numbers, so the assertion moves with the drawing rather than holding a width frozen from
+            a run. No expectation file changes.
+Tests:      1122, from 1120. Two added to `read-surface`, and no stated count moves, the rule being
+            stated in section 15.2's words rather than as a row of a screen's table.
+Mutated:    the rule, stated before the sweep: break each of the four properties this repair rests
+            on, the ceiling being the widest picture, the column being the screen's own width below
+            it, every table sitting in a box, and the pair of pictures scaling together. Not
+            mutated: the long run of characters that breaks, and the narrow screen's own rules,
+            neither of which is read by a test over markup.
+            Predicted:
+            M1 the column's ceiling set back to the width it was fixed at: the column test red, the
+            ceiling read off the stylesheet against the one the page's own pictures give; nothing
+            else.
+            M2 a table drawn in a plain division rather than in the box: the table test red naming
+            that table; nothing else.
+            M3 the column no longer the screen's own width below its ceiling: the column test red on
+            the rule it reads; nothing else.
+            M4 the pictures held at a fixed height as the column narrows: the column test red on the
+            rule that keeps each picture's own ratio; nothing else.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Five runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1121 of 1122 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the column test on the ceiling read off the stylesheet against the one
+            the page's own pictures give.
+            M2 turned 1 red, the table test naming the table drawn outside a box of its own.
+            M3 turned 1 red, the column test on the rule that makes the column the screen's own
+            width.
+            M4 turned 1 red, the column test on the rule that keeps each picture's own ratio as the
+            column narrows.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1122 of 1122 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 372 claims,
+            372 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 379 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added
+            and none moved, the rule standing in section 15.2's words, which govern every screen,
+            rather than as a row of one screen's table. Both gates ran with this entry in place, and
+            the operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair.

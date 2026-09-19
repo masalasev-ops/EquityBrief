@@ -760,6 +760,7 @@ public sealed class MarkRenderer : IComponent
 
         var html = new StringBuilder();
 
+        html.Append("<div class=\"tbl-wrap\">");
         html.Append(Invariant, $"<table class=\"tranche-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{tranches.Length}\">");
         html.Append("<tr><th>Zone</th><th>Condition and stop</th></tr>");
 
@@ -769,8 +770,9 @@ public sealed class MarkRenderer : IComponent
             html.Append(Invariant, $"<td>{Escaped(row.Detail)}</td></tr>");
         }
 
-        html.Append("</table>");
+        html.Append("</table></div>");
 
+        html.Append("<div class=\"tbl-wrap\">");
         html.Append(Invariant, $"<table class=\"exit-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{exits.Length}\">");
         html.Append("<tr><th>Zone</th><th>Action</th></tr>");
 
@@ -780,7 +782,7 @@ public sealed class MarkRenderer : IComponent
             html.Append(Invariant, $"<td class=\"num\">{Zone(row)}</td><td>{Escaped(row.Detail)}</td></tr>");
         }
 
-        html.Append("</table>");
+        html.Append("</table></div>");
 
         return html.ToString();
     }
@@ -1091,6 +1093,7 @@ public sealed class MarkRenderer : IComponent
 
         var table = new StringBuilder();
 
+        table.Append("<div class=\"tbl-wrap\">");
         table.Append(Invariant, $"<table class=\"level-summary\" data-ticker=\"{Escaped(ticker)}\" data-bands=\"{bands.Count}\">");
         table.Append("<caption>Level summary, each band with its members and their dates</caption>");
         table.Append("<thead><tr><th>Band</th><th>Role</th><th>Strength</th><th>Members</th></tr></thead><tbody>");
@@ -1148,7 +1151,7 @@ public sealed class MarkRenderer : IComponent
             table.Append("</tfoot>");
         }
 
-        table.Append("</table>");
+        table.Append("</table></div>");
 
         return table.ToString();
     }
@@ -2142,6 +2145,7 @@ public sealed class MarkRenderer : IComponent
 
         table.Append(Invariant, $"<p class=\"nights\" data-nights=\"{nights}\">the record below stands on {nights} night(s) of listings{FewerNights(records, nights)}</p>");
 
+        table.Append("<div class=\"tbl-wrap\">");
         table.Append("<table class=\"records-table\">");
         table.Append("<tr><th>Reason</th><th>Track</th><th>Fired</th><th>Resolved</th><th>Never entered</th><th>Record</th></tr>");
 
@@ -2211,7 +2215,7 @@ public sealed class MarkRenderer : IComponent
             table.Append("</tr>");
         }
 
-        table.Append("</table>");
+        table.Append("</table></div>");
         table.Append("<p data-verdicts=\"withheld\">no rate and no verdict is shown for a reason below either floor, because a rate over a handful of resolved setups is consistent with almost any truth, and a count of rows alone can be filled by a handful of nights of one market move</p>");
         table.Append("</section>");
 
@@ -2236,6 +2240,7 @@ public sealed class MarkRenderer : IComponent
             return header.ToString();
         }
 
+        header.Append("<div class=\"tbl-wrap\">");
         header.Append("<table class=\"stage-table\">");
         header.Append("<tr><th>Stage</th><th>Started (UTC)</th><th>Took</th><th>Rows</th><th>Model calls</th><th>Requests</th><th>Spend</th><th>Outcome</th><th>Detail</th></tr>");
 
@@ -2268,7 +2273,7 @@ public sealed class MarkRenderer : IComponent
             header.Append(Invariant, $"<td class=\"detail\">{Escaped(stage.Detail)}</td></tr>");
         }
 
-        header.Append("</table>");
+        header.Append("</table></div>");
 
         // The night's own total beneath the steps rather than above them, so the
         // steps are what is read first. A command run by hand that day is counted
@@ -2579,6 +2584,7 @@ public sealed class MarkRenderer : IComponent
         }
         else
         {
+            region.Append("<div class=\"tbl-wrap\">");
             region.Append("<table class=\"calendar-dates\"><tr><th>Date</th><th>Event</th><th>Timing</th></tr>");
 
             foreach (var date in dates)
@@ -2587,7 +2593,7 @@ public sealed class MarkRenderer : IComponent
                 region.Append(Invariant, $"<td>{date.Date:yyyy-MM-dd}</td><td>{Escaped(date.Kind)}</td><td>{Escaped(date.Timing)}</td></tr>");
             }
 
-            region.Append("</table>");
+            region.Append("</table></div>");
         }
 
         if (items is not null)
@@ -2853,6 +2859,7 @@ public sealed class MarkRenderer : IComponent
         // its bar. A setup listed tonight has no outcome yet, so the counts are what the
         // evening says and a reason's record over time is the run page's.
         // see: Tonight's reason totals are counts, and a reason's record is the run page's
+        region.Append("<div class=\"tbl-wrap\">");
         region.Append("<table class=\"totals-table\"><tr><th>Reason</th><th>Names</th></tr>");
 
         foreach (var track in tracks)
@@ -2871,7 +2878,7 @@ public sealed class MarkRenderer : IComponent
             region.Append("</svg></td></tr>");
         }
 
-        region.Append("</table>");
+        region.Append("</table></div>");
         region.Append("<p class=\"degraded\" data-unresolved=\"all\">every name listed tonight is a setup nothing has scored yet, so these are counts and not outcomes; each reason's record over time is on the run page</p>");
         region.Append("</section>");
 
@@ -3029,6 +3036,7 @@ public sealed class MarkRenderer : IComponent
             return table.ToString();
         }
 
+        table.Append("<div class=\"tbl-wrap\">");
         if (cause is null)
         {
             table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"absent\">");
@@ -3064,7 +3072,7 @@ public sealed class MarkRenderer : IComponent
             table.Append("</tr>");
         }
 
-        table.Append("</table>");
+        table.Append("</table></div>");
 
         if (cause is null)
         {
@@ -3252,6 +3260,7 @@ public sealed class MarkRenderer : IComponent
     {
         var table = new StringBuilder();
 
+        table.Append("<div class=\"tbl-wrap\">");
         table.Append(Formatted($"<table class=\"universe-table\" data-rows=\"{rows.Count}\">"));
         table.Append("<tr><th>Name</th><th>Sector</th><th>Close</th><th>Trend</th><th>Distance</th>");
         table.Append("<th>Sessions to earnings</th><th>Last on the list</th><th>Sixty evenings</th></tr>");
@@ -3302,7 +3311,7 @@ public sealed class MarkRenderer : IComponent
             table.Append("</tr>");
         }
 
-        table.Append("</table>");
+        table.Append("</table></div>");
 
         return table.ToString();
     }

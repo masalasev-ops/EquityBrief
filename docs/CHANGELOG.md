@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - .claude/rules/checks.md - read-surface asserts that a screen fits the screen it is read on
+
+Authorised by: A screen is read at the width of the screen it is read on
+Was:
+> the read-surface row ended at "and forms no rate for the name"
+Now:
+> "; and a screen is read at the width of the screen it is read on, the column's ceiling read off the widest picture the name page draws with the card's padding and the page's gutter around it rather than off a number kept beside the check, the column the screen's own width below it, the chart and the profile beside it each drawn at its own size with the rule that scales the pair together read, and every table the five surfaces draw read in a box of its own, named where one is not"
+Why: the width a page is laid out at is a property of what the screens draw, and read-surface is the check that reads them.
+
 ### 2026-09-19 - ARCHITECTURE.html - section 15.9's listing history is a row of the page
 
 Authorised by: A name's listing history states what followed each evening it was listed and forms no rate for the name

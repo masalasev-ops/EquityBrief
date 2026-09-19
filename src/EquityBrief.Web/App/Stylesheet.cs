@@ -31,6 +31,10 @@ public static class Stylesheet
  --dash-ink:#6a6d71; --shadow:0 1px 2px rgba(40,34,20,.06),0 2px 8px rgba(40,34,20,.04);
  --serif:Charter,"Iowan Old Style",Georgia,"Times New Roman",serif;
  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+ /* The column, at its widest: the widest picture a screen draws, with the card's side padding
+    and the page's gutter around it. Wider than that and a line of prose runs past what an eye
+    follows; narrower and the chart and the profile beside it are read through a scroll box. */
+ --column:1284px; --gutter:20px;
  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme='light']):not([data-eb-theme='light']){
@@ -53,13 +57,13 @@ public static class Stylesheet
 :root{ --muted:var(--soft); --rule:var(--hair); --panel:var(--plot); --support:var(--sup); --resistance:var(--res); }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--page);color:var(--ink);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+body{background:var(--page);color:var(--ink);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-wrap:break-word}
 a{color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
 a:hover{text-decoration-thickness:2px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num,td.num,.tnum{font-variant-numeric:tabular-nums}
 h1,h2,h3{font-family:var(--serif);font-weight:600;text-wrap:balance;margin:0}
-.wrap{max-width:940px;margin:0 auto;padding-inline:20px}
+.wrap{width:100%;max-width:var(--column);margin:0 auto;padding-inline:var(--gutter)}
 code{font-size:.92em}
 
 /* masthead */
@@ -121,7 +125,9 @@ main{padding-block:8px 64px}
 .dg{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;margin:8px 0 0}
 .dg dt{font-weight:600;color:var(--ink)} .dg dd{margin:0}
 .fig{overflow-x:auto}
-.fig svg{display:block}
+/* A picture keeps its own ratio as the column narrows, and the row anchors its pictures at the
+   top, which is what keeps a price at one height in the chart and in the profile beside it. */
+.fig svg{display:block;max-width:100%;height:auto}
 .row-fig{display:flex;align-items:flex-start;gap:0}
 .sub{font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin:22px 0 8px}
 .soft{color:var(--soft)}
@@ -325,12 +331,13 @@ tr.band[data-role='support'] td:first-child::before{content:"";display:inline-bl
 tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline-block;width:12px;height:10px;margin-right:6px;vertical-align:-1px;background:var(--res-fill);border-top:1.5px solid var(--res);border-bottom:1.5px solid var(--res)}
 
 @media (max-width:640px){
+ :root{--gutter:14px}
  .card{padding:16px 16px 20px}
  .card.spined{grid-template-columns:1fr} .spine{border-right:0;border-bottom:1px solid var(--hair);padding:0 0 10px;margin-bottom:12px}
- .night,.selwrap,.plan-grid,.cases{grid-template-columns:1fr}
+ .night,.selwrap,.plan-grid,.cases,.ops{grid-template-columns:1fr}
  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .verdicts{grid-template-columns:repeat(2,minmax(0,1fr))}
- .fired .big{font-size:56px}
+ .headline .big{font-size:56px}
  .mast .wrap{grid-template-columns:1fr}
  .m-right{flex-wrap:wrap;gap:4px 14px}
  .m-search{flex-basis:100%}
