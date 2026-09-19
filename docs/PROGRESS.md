@@ -16504,11 +16504,11 @@ Mutated:    the rule, stated before the sweep: break four of the properties this
             M3 turned 1 red, the researched test on the list holding two names, the key's among
             them.
             M4 turned 1 red, the researched test on the researched name's label without its day.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1111 of 1111 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 371 claims,
+            371 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 378 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim
             added, section 15.8's Researched row, which passes on `read-surface`, and the two tables
             the architecture no longer carries are no longer placed. Both gates ran with this entry
             in place, and the operator's store under `data/` was not touched by either.
