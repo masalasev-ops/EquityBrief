@@ -16690,11 +16690,11 @@ Mutated:    the rule, stated before the sweep: break the two halves of the match
             M1 turned 1 red, the matcher's test on the decisions record's path found nowhere.
             M2 turned 1 red, the matcher's test on the runbook's file name found nowhere.
             M3 turned 1 red, the architecture's test on the decisions record's path in section 21.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1117 of 1117 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added:
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 371 claims,
+            371 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 378 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added:
             section 22's restored table is placed as a record, as it was before it was removed, and
             the rows reworded keep their subjects. Both gates ran with this entry in place, and the
             operator's store under `data/` was not touched by either.
