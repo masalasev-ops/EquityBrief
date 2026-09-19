@@ -16352,3 +16352,70 @@ Carried:    the run page answers with an error on a night whose overnight queue 
             and eighth, and a key under each figure written for an earlier night is drawn with its
             date where the operator's default was to hide it. Each stands as the corpus has it until
             ruled.
+
+### 6.10 - correction: the run page reads a night's queue row written last and a failed step's message as a message, where a night run again after its queue failed stopped the run page drawing   2026-09-19
+Corrects:   6.10 drew the run page's overnight queue region from the night's queue row with the
+            latest instant and read every row's detail as the queue's own record. A step that fails
+            writes its message there instead, and a night run again for its session stamps its
+            stages from that session's evening, so its queue row is written after the failed one
+            with an earlier instant.
+Found:      on 2026-09-19 in the rehearsal of the screens correction before it, over a copy of the
+            operator's store: the night of 2026-09-18 holds a queue row that failed on the store's
+            lock at 03:10 UTC, and the run again for its session wrote the queue's own row after it
+            stamped 21:15 UTC the evening before. The page picked the failed row, read its message
+            as a record and answered with an error for that night, which is the night the run page
+            opens on.
+Measured:   off that copy, read without a lock: two queue rows for the night, the failed one written
+            first with the later instant and a message for its detail, and the queue's own row
+            written second with the earlier instant, 224 of 224 queued passes completed and none
+            left.
+Repaired:   the queue's rows are read in the order they were written and the night's row written
+            last is the one drawn, and a row whose detail is not the queue's record is drawn as a
+            queue that failed, with the step's own message and no count it does not hold.
+Stored:     nothing. The page reads the run log and writes none of it.
+Missed:     every test built the queue's rows with the instants in the order they were written, and
+            none wrote a failed step's row, so the two properties the page rested on were true of
+            every row the suite had and of none a failed night writes.
+Guarded:    the run page over the fixture night's store rewritten as a night run again after its
+            queue failed, answering and drawing the row written last; a night whose row written last
+            is a failed step's, drawn as a queue that failed with its message; and the order read as
+            the order written whatever the instants.
+Expected:   derived: the counts are the fixture row's own, two queued, and the message is the one
+            the night wrote on the store's lock. No expectation file changes.
+Tests:      1107, from 1106. One added to `read-surface`, and one changed: 6.10's own test drew the
+            newest of a night's rows by its instant, and draws the row written last now.
+Mutated:    the rule, stated before the sweep: break each property this correction adds, the row
+            written last being the night's, a message read as a message, and a failed queue said to
+            have failed.
+            Predicted:
+            M1 the night's row taken by its latest instant again: the queue row test red on the page
+            drawing the failed row, and 6.10's own queue test red on the row written last; nothing
+            else.
+            M2 a message read as the queue's record: the queue row test red on the message failing
+            to parse; nothing else.
+            M3 a failed queue drawn as one that ran: the queue row test red on the line saying it
+            failed; nothing else.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1106 of 1107 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 2 red, the queue row test on the page drawing the failed row and 6.10's own
+            queue test on the row written last. The sweep's pattern for M1 first named the later of
+            the two assertions the failed row trips, where the page says the queue failed, and so
+            stopped the sweep on a red it had predicted; it was set to the first, where the page
+            does not say the queue ran, and the sweep run again from this entry's commit.
+            M2 turned 1 red, the queue row test on the message failing to parse.
+            M3 turned 1 red, the queue row test on the line saying the queue failed.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1107 of 1107 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 370 claims,
+            370 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 377 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added:
+            section 15.10's overnight queue row already states what the region draws. Both gates ran
+            with this entry in place, and the operator's store under `data/` was not touched by
+            either.
+Carried:    nothing owed by this repair.

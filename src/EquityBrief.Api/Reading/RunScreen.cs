@@ -352,10 +352,12 @@ public static class RunScreen
     // see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar
     public static QueueNight Queue(IReadOnlyList<QueueRow> rows, DateOnly night, Func<DateOnly, bool> traded)
     {
+        // The night's row written last, which is what the night came to: the rows arrive in the
+        // order they were written, and a night run again for its session writes a later row with an
+        // earlier instant than the one it replaces.
         var tonight = rows
             .Where(row => row.Night == night)
-            .OrderByDescending(row => row.StartedAt)
-            .FirstOrDefault();
+            .LastOrDefault();
 
         var earlier = rows.Where(row => row.Night < night).Select(row => (DateOnly?)row.Night).Max();
 
@@ -387,6 +389,13 @@ public static class RunScreen
             return new QueueNight(night, null, 0, 0, 0, 0, null, null, notRun, NeverRan: false);
         }
 
+        // A step that failed writes its message rather than the queue's record, and the page says the
+        // queue failed with that message rather than failing to draw.
+        if (!IsRecord(tonight.Detail))
+        {
+            return new QueueNight(night, tonight.Outcome, 0, 0, 0, 0, tonight.Detail, null, notRun, NeverRan: false);
+        }
+
         using var detail = JsonDocument.Parse(tonight.Detail);
         var root = detail.RootElement;
 
@@ -407,6 +416,21 @@ public static class RunScreen
             Text("awake"),
             notRun,
             NeverRan: false);
+    }
+
+    // Whether a queue row's detail is the queue's own record rather than a message.
+    static bool IsRecord(string detail)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(detail);
+
+            return document.RootElement.ValueKind == JsonValueKind.Object;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     // The documents a night's passes refused, grouped by the category that

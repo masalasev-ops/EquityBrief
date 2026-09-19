@@ -782,14 +782,17 @@ public sealed class ReadApi : IComponent
     // is depends on the offset that evening. The clock is the one thing allowed
     // to answer that question, and it answers it here rather than in SQL.
     // see: Nothing is written against one operating system
-    // Every row the overnight queue wrote, in the order they started. The whole log's
+    // Every row the overnight queue wrote, in the order they were written. The whole log's
     // worth rather than a window, because a night the queue did not run is read against
-    // the newest night before it on which it did, however long ago that was.
+    // the newest night before it on which it did, however long ago that was. Written order
+    // rather than the instant each started, because a night run again for its session stamps
+    // its stages from that session's evening, so the row written last can carry the earliest
+    // instant, and the row written last is the one that says what the night came to.
     const string QueueRows = @"
         SELECT started_at, outcome, IFNULL(detail, '')
         FROM run_log
         WHERE stage = $stage
-        ORDER BY started_at;
+        ORDER BY rowid;
     ";
 
     const string RunLogInWindow = @"
