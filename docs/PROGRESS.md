@@ -16621,11 +16621,11 @@ Mutated:    the rule, stated before the sweep: break four of the properties this
             2026-08-01 beside the figures of 2026-09-08.
             M4 turned 1 red, the readings worked by hand on a growth of twelve and a half times
             handed as 1250.0 per cent.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1115 of 1115 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim added:
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 371 claims,
+            371 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 378 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim added:
             the rows this changes are reworded where they stand, and section 15.9's new sentence is
             a paragraph rather than a row. Both gates ran with this entry in place, and the
             operator's store under `data/` was not touched by either.
