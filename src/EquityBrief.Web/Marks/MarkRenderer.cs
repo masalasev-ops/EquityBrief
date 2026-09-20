@@ -683,7 +683,12 @@ public sealed record PriceAxis(double Low, double High)
 // own, so a chart and the profile beside it drawn at one scale line up price for price,
 // and no scale draws it the width of whatever holds it. `Markers` are the sessions a
 // table beside the chart numbers.
-public sealed record ChartFrame(double? Scale = null, IReadOnlyList<DateOnly>? Markers = null);
+// One session a table beside the chart numbers: the session, what its own row says, and
+// where that row is. A circle drawn with a number and nothing else is a number a reader has
+// to go looking for the meaning of, so it carries both.
+public sealed record ChartMarker(DateOnly Session, string Says, string Href);
+
+public sealed record ChartFrame(double? Scale = null, IReadOnlyList<ChartMarker>? Markers = null);
 
 // One entry of a page's contents: where it sits as a reader counts down the page, what the
 // card calls itself, and the card's own id, which is what the entry links to.
@@ -1735,7 +1740,7 @@ public sealed class MarkRenderer : IComponent
 
                 for (var index = 0; index < bars.Count; index++)
                 {
-                    if (bars[index].SessionDate == markers[mark])
+                    if (bars[index].SessionDate == markers[mark].Session)
                     {
                         at = index;
                     }
@@ -1748,8 +1753,12 @@ public sealed class MarkRenderer : IComponent
 
                 var y = Math.Max(10, At(axis, PlotValue(bars[at].High)) - 14);
 
-                svg.Append(Invariant, $"<g class=\"move-mark\" data-session=\"{markers[mark]:yyyy-MM-dd}\"><circle class=\"m-mark\" cx=\"{Number(Centre(at))}\" cy=\"{Number(y)}\" r=\"9\"/>");
-                svg.Append(Invariant, $"<text class=\"m-mark-t\" x=\"{Number(Centre(at))}\" y=\"{Number(y + 4)}\" text-anchor=\"middle\">{mark + 1}</text></g>");
+                // Wrapped in a link to its own row and carrying what that row says, so a
+                // circle answers what it is where it is drawn and reaches the rest.
+                svg.Append(Invariant, $"<a href=\"{Escaped(markers[mark].Href)}\"><g class=\"move-mark\" data-session=\"{markers[mark].Session:yyyy-MM-dd}\">");
+                svg.Append(Invariant, $"<title>{Escaped(markers[mark].Says)}</title>");
+                svg.Append(Invariant, $"<circle class=\"m-mark\" cx=\"{Number(Centre(at))}\" cy=\"{Number(y)}\" r=\"9\"/>");
+                svg.Append(Invariant, $"<text class=\"m-mark-t\" x=\"{Number(Centre(at))}\" y=\"{Number(y + 4)}\" text-anchor=\"middle\">{mark + 1}</text></g></a>");
             }
         }
 
@@ -4194,7 +4203,7 @@ public sealed class MarkRenderer : IComponent
         // months, where most of the numbered moves are.
         table.Append(Invariant, $"<figure class=\"twelve-months\" data-sessions=\"{year.Count}\">");
         table.Append("<div class=\"fig\">");
-        table.Append(LevelChart(ticker, year, [], [], new ChartFrame(Markers: [.. moves.Select(move => move.SessionDate)])));
+        table.Append(LevelChart(ticker, year, [], [], new ChartFrame(Markers: [.. moves.Select(move => new ChartMarker(move.SessionDate, Says(move), "#" + RowId(ticker, move)))])));
         table.Append("</div>");
         table.Append(Invariant, $"<figcaption>the twelve months to {(year.Count > 0 ? year[^1].SessionDate.ToString("yyyy-MM-dd", Invariant) : "no stored session")}</figcaption>");
         table.Append("</figure>");
@@ -4221,7 +4230,7 @@ public sealed class MarkRenderer : IComponent
 
         foreach (var move in moves)
         {
-            table.Append(Invariant, $"<tr data-session-date=\"{move.SessionDate:yyyy-MM-dd}\" data-sessions=\"{move.Sessions}\" ");
+            table.Append(Invariant, $"<tr id=\"{RowId(ticker, move)}\" data-session-date=\"{move.SessionDate:yyyy-MM-dd}\" data-sessions=\"{move.Sessions}\" ");
             table.Append(Invariant, $"data-change-pct=\"{Number(move.ChangePct)}\" data-rank=\"{move.Rank}\">");
             table.Append(Invariant, $"<td>{move.SessionDate:yyyy-MM-dd}</td>");
             table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
@@ -4254,6 +4263,18 @@ public sealed class MarkRenderer : IComponent
 
         return table.ToString();
     }
+
+    // Where a move's row sits, which its circle on the picture links to. The ticker is in it
+    // because an exported report holds one name and the app draws one at a time, and a
+    // bare rank would collide the day a page carries two of these tables.
+    static string RowId(string ticker, MoveCell move) =>
+        Formatted($"move-{Escaped(ticker)}-{move.Rank}");
+
+    // What a move's circle says when a reader asks it, in the words its own row uses.
+    static string Says(MoveCell move) =>
+        Formatted($"{move.Rank}: {(move.ChangePct < 0 ? "down" : "up")} {Number(Math.Abs(move.ChangePct))}% over ") +
+        (move.Sessions == 1 ? "one session" : Formatted($"{move.Sessions} sessions")) +
+        ", ending " + move.SessionDate.ToString("yyyy-MM-dd", Invariant);
 
     // A move's group beside it: the median move of the name's group over the same sessions,
     // named as an industry or a sector with how many members it was taken over, and a group

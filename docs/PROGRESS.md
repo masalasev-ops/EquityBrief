@@ -26562,3 +26562,39 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    the operator's store needs migration 43 before the real app draws the watch list page:
             `tools/migrate.ps1`, or the next night's own first step, which applies it.
+
+### 4.2 - correction: the year's biggest moves are distinct episodes, where the eight largest windows were one rally described several ways   2026-09-26
+Corrects:   4.2, whose move annotator ranked every one-session and five-session window of the stored
+            year by size and took the largest eight. A five-session window slid by one day is four
+            fifths the same days, so a rally ranked near the top once for every day it could end on.
+            Measured on 2026-09-20 over the 508 names the store then held: 507 had fewer than eight
+            distinct episodes behind their eight rows, the mean was 3.8, the fewest was one episode
+            filling all eight, and 78 names named moves in one direction only where the year held both.
+            NVDA listed eight rises and no fall; its largest fall of the year, -10.72% on 2026-02-05,
+            was in no row. The circles on the twelve-month picture stacked on consecutive sessions for
+            the same reason.
+Found:      by the operator on 2026-09-20, reading the circles stacked on NVDA's picture. Committed that
+            day on `phase-4-2-moves-are-distinct` at d02646f and held unmerged, because the facts file
+            carries the moves and every recorded model answer in the fixture is keyed on it. The
+            operator ruled on 2026-09-26 that it lands with the 3.4 correction closing this batch, over
+            one recording of the fixture's answers.
+Repaired:   `MoveSeries.For` takes a window only where it shares no session with one already taken,
+            each window read as the sessions from the close its change is measured from to the close it
+            ends on. The twelve-month picture's circles each carry what their own row says as a title
+            and link to that row, whose id names the ticker and the rank.
+Guarded:    `fixture-expectations`, one test added. `TheBiggestMovesShareNoSessionSoOneRallyTakesOneRow`,
+            worked by hand over a constructed year, flat but for one sharp rally and a later fall: the
+            rally takes one row, no two rows share a session read off the window each spans, and the
+            fall is found.
+            `read-surface`, one test changed. `TheLevelChartNamesItsBandsItsAveragesAndItsLastCloseAndSaysWhatItHasOverTooFewBars`
+            reads each circle's link and title off the drawn picture, and a marker on a session the
+            chart does not hold is drawn nowhere.
+Written:    Figure 5's move annotator box in `ARCHITECTURE.html`, its prior text in `CHANGELOG.md`; the
+            decision (see: The biggest moves of a year are distinct episodes rather than overlapping
+            windows of one).
+Expected:   `moves.json` recomputed by the rule over the fixture's committed bars, frozen from that run;
+            the distinctness test above is the one derived independently.
+Mutated:    stated with the batch's mutations in the 3.4 correction that closes it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 3.4 correction closing this batch records.
+Carried:    nothing new.

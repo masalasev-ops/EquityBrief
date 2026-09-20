@@ -47,6 +47,7 @@ public static class MoveSeries
         // single day inside it are one event and the run is the bigger claim
         // about it.
         var best = new Dictionary<DateOnly, Move>();
+        var spanned = new Dictionary<DateOnly, (int From, int To)>();
 
         foreach (var span in Spans.OrderBy(span => span))
         {
@@ -65,6 +66,7 @@ public static class MoveSeries
                 if (!best.TryGetValue(ending, out var held) || span > held.Sessions)
                 {
                     best[ending] = new Move(ending, span, change, 0);
+                    spanned[ending] = (at - span, at);
                 }
             }
         }
@@ -73,13 +75,38 @@ public static class MoveSeries
         // and the table is about what happened rather than about which way. Ties
         // break on the later session first, so a rank is a total order rather
         // than whatever order the dictionary yields.
-        return
-        [
-            .. best.Values
-                .OrderByDescending(move => Math.Abs(move.ChangePct))
-                .ThenByDescending(move => move.SessionDate)
-                .Take(MostMoves)
-                .Select((move, at) => move with { Rank = at + 1 }),
-        ];
+        //
+        // A window is taken only where it shares no session with one already
+        // taken. A five-session window slid by one day is four fifths the same
+        // days, so a rally that would rank first ranks near the top once per day
+        // it can end on and fills three of the eight rows on its own. The table
+        // then promises the year's biggest moves and answers with three of them,
+        // and the chart stacks three circles on consecutive sessions where no
+        // reader can tell them apart.
+        // see: The biggest moves of a year are distinct episodes rather than overlapping windows of one
+        var taken = new List<(int From, int To)>();
+        var kept = new List<Move>();
+
+        foreach (var move in best.Values
+            .OrderByDescending(move => Math.Abs(move.ChangePct))
+            .ThenByDescending(move => move.SessionDate))
+        {
+            var window = spanned[move.SessionDate];
+
+            if (taken.Any(one => window.From <= one.To && one.From <= window.To))
+            {
+                continue;
+            }
+
+            taken.Add(window);
+            kept.Add(move with { Rank = kept.Count + 1 });
+
+            if (kept.Count == MostMoves)
+            {
+                break;
+            }
+        }
+
+        return kept;
     }
 }

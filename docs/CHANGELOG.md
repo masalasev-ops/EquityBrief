@@ -7766,3 +7766,11 @@ Now:
 >                   DECISIONS.md  PROGRESS.md  CHANGELOG.md  RUNBOOK.md
 >                   HOW_IT_WORKS.html   the reader's guide, not a corpus document
 Why: a file in the tree the layout block does not name is one a sweep of the tree against the block returns.
+
+### 2026-09-26 - ARCHITECTURE.html - the move annotator's biggest moves share no session
+Authorised by: The biggest moves of a year are distinct episodes rather than overlapping windows of one
+Was:
+> <div class="box compute"><b>Move annotator</b>picks the biggest moves of the last year for the how-it-got-here table</div>
+Now:
+> <div class="box compute"><b>Move annotator</b>picks the biggest moves of the last year for the how-it-got-here table, no two of them sharing a session (see: The biggest moves of a year are distinct episodes rather than overlapping windows of one)</div>
+Why: a five-session window slid by one day is four fifths the same days, so the biggest windows of a year are one rally described several ways unless each is taken only where it shares no session with one already taken.

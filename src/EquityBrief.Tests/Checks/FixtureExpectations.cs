@@ -5884,6 +5884,61 @@ public partial class FixtureExpectations
         Assert.Empty(MoveSeries.For(zeroed));
     }
 
+    // The year's biggest moves are episodes rather than windows. A five-session window slid
+    // by one day is four fifths the same days, so one rally ranks near the top once for every
+    // day it can end on and fills the table with itself.
+    // see: The biggest moves of a year are distinct episodes rather than overlapping windows of one
+    [Fact]
+    public void TheBiggestMovesShareNoSessionSoOneRallyTakesOneRow()
+    {
+        // One sharp rally inside a year that is otherwise flat, then a later fall. A day per
+        // session, so a session's distance from another is the difference of their dates.
+        var closes = new List<decimal>();
+
+        for (var day = 0; day < 80; day++)
+        {
+            closes.Add(day switch
+            {
+                < 40 => 100m,
+                < 45 => 100m + ((day - 39) * 5m),
+                < 60 => 125m,
+                < 65 => 125m - ((day - 59) * 3m),
+                _ => 110m,
+            });
+        }
+
+        var series = (IReadOnlyList<MoveBar>)[.. closes.Select((close, day) => new MoveBar(new DateOnly(2026, 1, 1).AddDays(day), close))];
+        var moves = MoveSeries.For(series);
+        var first = series[0].SessionDate;
+
+        // Eight rows, and the rally that would otherwise rank first five times over takes one
+        // of them. Its window is the five sessions ending on the day the rise stops.
+        Assert.Equal(MoveSeries.MostMoves, moves.Count);
+
+        var rally = moves.Where(move => move.SessionDate.DayNumber - first.DayNumber is >= 40 and <= 48).ToArray();
+
+        Assert.Single(rally);
+        Assert.Equal(44, Assert.Single(rally).SessionDate.DayNumber - first.DayNumber);
+
+        // And no two rows share a session, read off the window each one spans rather than off
+        // the session it ends on, which is the property the ending sessions alone cannot show.
+        var ordered = moves.OrderBy(move => move.SessionDate).ToArray();
+
+        for (var at = 1; at < ordered.Length; at++)
+        {
+            var apart = ordered[at].SessionDate.DayNumber - ordered[at - 1].SessionDate.DayNumber;
+
+            Assert.True(
+                apart > ordered[at].Sessions,
+                $"The move ending {ordered[at].SessionDate} spans {ordered[at].Sessions} session(s) and starts " +
+                $"on or before the move ending {ordered[at - 1].SessionDate}, {apart} session(s) earlier.");
+        }
+
+        // The fall is found, which is what the overlapping selection cost: a table filled by
+        // one rally states the year's biggest moves and names them all in one direction.
+        Assert.Contains(moves, move => move.ChangePct < 0);
+    }
+
     [Fact]
     public async Task TheMoveAnnotatorDropsWhatFallsOutOfTheWindowAndLeavesWhatIsInside()
     {
