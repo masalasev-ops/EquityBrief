@@ -17596,3 +17596,71 @@ Carried:    the risks section was asked for in the same breath and is not here. 
             parts with a severity. That changes a research prompt, and the fixture's recordings are
             keyed on the whole request, so it waits on the same re-recording the moves correction
             waits on.
+
+### 5.8 - correction: the risks are drawn one part to a risk with what would confirm it beneath it, rather than as one run of prose   2026-09-20
+Corrects:   the section holding the risks was drawn as the writer's prose is stored, which for the
+            newest pass on the operator's machine is ten risks and ten confirmations in a single
+            paragraph of 3,586 characters. A reader wanting the fourth risk had to read the first
+            three to find where it started.
+Found:      by the operator on 2026-09-20, from the page itself, asking for the section as a list.
+Measured:   over every sample of this section the repository can reach: the one stored on the
+            operator's machine and the three recorded answers the fixture replays. They are written
+            in three shapes rather than one. The paid model gave ten risks in one paragraph for one
+            name, each opening on an ordinal and the word risk and each followed by what would
+            confirm it, and five paragraphs for another, a risk to a paragraph. The local model gave
+            the second name four risks in one paragraph opening on no ordinal at all, twice. So a
+            rule fitted to any one of them recognises neither of the others, which is why what is
+            drawn is read off the prose in each case rather than assumed from the section's name.
+Repaired:   where the prose says where its parts end each risk is drawn as its own part, with what
+            would confirm it set beneath the risk it confirms, and where it says nowhere the section
+            is drawn as it was written. Two shapes are read: a paragraph to a risk, and a sentence
+            opening on an ordinal and the word risk. The parts are the prose cut and never edited,
+            and whatever stands before the first cut opens that part rather than being dropped. The
+            two hues a level owns are not used, because the stylesheet holds each of those to one
+            meaning.
+Missed:     the section was built when the question was whether a model could write the risks at
+            all, and the answer was stored and drawn as the prose it is. Nothing here was wrong and
+            no assertion could have found it: what a reader needs is to find the fourth risk without
+            reading the first three, and no check asked whether a section a reader has to search is
+            drawn as one they can scan. The same gap was found at the two cases the day before,
+            which is the second instance and the reason the rule is now written down once for both
+            rather than twice.
+Guarded:    the parts are read back off the markup against the stored prose by a query of the test's
+            own, so a part drawn in another shape is read as no part at all, and both shapes are
+            asserted: the fixture's own section, which is several paragraphs, and prose run together
+            as one, which is constructed because no recording holds that shape for this name. The
+            property that makes a bad cut a failure rather than a different-looking page is that the
+            parts joined back up are the prose as it was stored, and that is asserted for every
+            section of the pass rather than only for the two shapes the page recognises: the
+            surface's existing per-section reader was widened to read a paragraph wherever it was
+            drawn, so it now covers the parts as well. A section saying nowhere that a part ends,
+            and a section of another name written in the same shape, are each asserted to draw no
+            part.
+Expected:   derived: the parts are read against the prose the replayed store holds. No expectation
+            file changes.
+Tests:      1137, from 1136. One added to `read-surface`, carrying four shapes: the two the page
+            reads and the two it does not.
+Mutated:    the rule, stated before the sweep: break each of the four properties this rests on,
+            which words end up in which part, each of the two shapes being recognised, and the shape
+            being recognised only where it is. Not mutated: the order the parts are drawn in, which
+            is the order they were written in and which the same assertion reads against the store,
+            and the hues the parts are not drawn in, which the stylesheet's own rule holds.
+            Predicted:
+            M1 the cut dropping whatever stands before the first risk: the risks test red where it
+            reads the parts joined back up against the prose they were cut from; nothing else.
+            M2 what would confirm a risk never set apart from it: the risks test red where it reads
+            what the page set beneath the first risk; nothing else.
+            M3 a section of another name broken into parts too: the risks test red where it reads
+            the parts of a section of another name; nothing else.
+            M4 prose the writer already broke into paragraphs not recognised as the parts it states:
+            the risks test red where it counts the parts against the stored paragraphs; nothing
+            else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    the risks are drawn in the order they were written in and not by how severe each one is,
+            which is the half of what the operator asked for that is not here. A severity is a
+            judgement the writer states or nothing does, and a page that sorted them would be
+            ranking on a figure no model wrote and no code computed, so it is the writer that has to
+            be asked for it. That changes a research prompt, and the fixture's recordings are keyed
+            on the whole request, so it waits on the same re-recording the moves correction waits
+            on.

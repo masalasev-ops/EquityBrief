@@ -1318,6 +1318,10 @@ internal static class Scope
             Verdict.Pass,
             "each band's row states the gap from the stored close to that band's nearer edge over the name's own newest typical move, read back off the markup against a computation of the test's own from queries of its own, with a close inside a band stating no distance rather than the gap to one of its sides",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The risks as parts")] = new Scoped(
+            Verdict.Pass,
+            "the section is drawn one part to a risk over a store the recorded model wrote, each part one of the section's own paragraphs read back against the stored prose by a query of the test's own, and over prose run together as one paragraph the parts are cut where it says a risk starts with what would confirm each set beneath it and the run before the first cut opening the first part, the parts joined back up asserted to be the prose as it was written; a section saying nowhere that a part ends and a section of another name written in the same shape each draw no part at all",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "Contents")] = new Scoped(
             Verdict.Pass,
             "the contents is read against the regions the page drew in both directions, so neither a region nobody can reach nor an entry pointing at nothing passes, with the numbering contiguous from where a reader starts and the contents standing above the first region it names",
@@ -1960,6 +1964,7 @@ internal static class Scope
         // 5.8 correction that stopped them carrying the draft a checker refused.
         [CheckReach.Key("15.9 Name", "The case for and the case against")] = "5.8",
         [CheckReach.Key("15.9 Name", "How far each band is")] = "5.8",
+        [CheckReach.Key("15.9 Name", "The risks as parts")] = "5.8",
         [CheckReach.Key("15.9 Name", "Contents")] = "5.8",
         [CheckReach.Key("15.9 Name", "Sections left out")] = "6.5",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the

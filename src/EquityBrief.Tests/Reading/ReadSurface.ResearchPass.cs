@@ -111,7 +111,9 @@ public partial class ReadSurface
             Assert.Equal(row[1], drawn.Groups[1].Value);
             Assert.Equal(row[2], WebUtility.HtmlDecode(drawn.Groups[2].Value));
 
-            var paragraphs = Regex.Matches(drawn.Groups[3].Value, "<p class=\"prose\">([^<]*)</p>").Select(match => WebUtility.HtmlDecode(match.Groups[1].Value));
+            // Every paragraph the section drew, whatever it was drawn inside: a section broken
+            // into parts is the prose cut, so the parts joined back up are what was stored.
+            var paragraphs = Regex.Matches(drawn.Groups[3].Value, "<p class=\"prose[^\"]*\">([^<]*)</p>").Select(match => WebUtility.HtmlDecode(match.Groups[1].Value));
 
             Assert.Equal(Regex.Replace(row[3], @"\s+", " ").Trim(), Regex.Replace(string.Join(" ", paragraphs), @"\s+", " ").Trim());
             Assert.Contains($"<p class=\"written-by\">{(key ? "written for the close of" : "written on")} {row[1]}</p>", drawn.Groups[3].Value, StringComparison.Ordinal);
@@ -260,6 +262,85 @@ public partial class ReadSurface
         Assert.DoesNotContain("class=\"case\"", third, StringComparison.Ordinal);
         Assert.Equal(3, Regex.Matches(third, "<p class=\"prose\">").Count);
         Assert.Contains("<p class=\"prose\">And a third paragraph the writer added.</p>", third, StringComparison.Ordinal);
+    }
+
+    // The risks the page drew, each as the risk and what would confirm it, read off the markup
+    // rather than off the renderer, so a part drawn in another shape is read as no part at all.
+    static IReadOnlyList<(string Risk, string? Confirmation)> RisksDrawn(string section) =>
+        [.. Regex.Matches(section, "<li class=\"risk\"><p class=\"prose\">([^<]*)</p>(?:<p class=\"prose confirms\">([^<]*)</p>)?</li>")
+            .Select(one => (
+                WebUtility.HtmlDecode(one.Groups[1].Value),
+                one.Groups[2].Success ? WebUtility.HtmlDecode(one.Groups[2].Value) : null))];
+
+    // A part's words, the risk and what would confirm it back in one run.
+    static string RiskWhole((string Risk, string? Confirmation) part) =>
+        part.Confirmation is null ? part.Risk : part.Risk + " " + part.Confirmation;
+
+    static WrittenCell RisksCell(string prose) =>
+        new(MarkRenderer.TheRisks, prose, new DateOnly(2026, 9, 8), "a/model", []);
+
+    [Fact]
+    public async Task EachRiskIsDrawnAsItsOwnPartWithWhatWouldConfirmItAndAsWrittenWhereThePartsAreNotStated()
+    {
+        using var store = await FixtureReplay.ResearchedAsync();
+
+        var page = await ResearchedPage(store, "KEYS", AWeekLater);
+        var written = WrittenOnThePage(page, MarkRenderer.TheRisks);
+
+        Assert.True(written.Success, "KEYS draws no risks, and this is what reads them.");
+
+        var stored = Rows(
+            store,
+            $"SELECT prose FROM research_section r WHERE ticker = 'KEYS' AND section = '{MarkRenderer.TheRisks}' AND status = 'accepted' " +
+            "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
+            .Single()[0];
+
+        // The fixture's risks are written a paragraph to a risk, so each paragraph is a part,
+        // unchanged and in the order it was written.
+        var paragraphs = stored.Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var drawn = RisksDrawn(written.Value);
+
+        Assert.True(paragraphs.Length > 1, "the fixture's risks are one paragraph, and this reads the shape that is several");
+        Assert.Equal(paragraphs.Length, drawn.Count);
+        Assert.Equal([.. paragraphs], [.. drawn.Select(RiskWhole)]);
+
+        // A section run together as one paragraph is cut where its own prose says a risk starts,
+        // and what would confirm each is set apart from it. Nothing is dropped or reworded by
+        // either: the parts joined back up are the prose as it was written, the run before the
+        // first cut opening the first part rather than being lost.
+        var marks = new MarkRenderer();
+        const string RunTogether =
+            "These are the risks. The first risk is that supply is short [D1]. That risk would be confirmed by a fall in units [D1]. " +
+            "The second risk is that the price is high [D2]. That risk would be confirmed by a lower multiple [D2]. " +
+            "The third risk is concentration [D1].";
+
+        var together = RisksDrawn(marks.WrittenSection("KEYS", RisksCell(RunTogether), []));
+
+        Assert.Equal(3, together.Count);
+        Assert.Equal(RunTogether, string.Join(" ", together.Select(RiskWhole)));
+        Assert.Equal("These are the risks. The first risk is that supply is short [D1].", together[0].Risk);
+        Assert.Equal("That risk would be confirmed by a fall in units [D1].", together[0].Confirmation);
+        Assert.Null(together[2].Confirmation);
+
+        // A section that says nowhere a risk starts is drawn as it was written, because a part
+        // boundary this page guessed at would put one risk's words under another's.
+        const string OneRun = "The company faces the risk that supply is short, which would be confirmed by a fall in units [D1].";
+
+        var run = marks.WrittenSection("KEYS", RisksCell(OneRun), []);
+
+        Assert.Empty(RisksDrawn(run));
+        Assert.DoesNotContain("class=\"risks\"", run, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"prose\">{OneRun}</p>", run, StringComparison.Ordinal);
+
+        // And a section of another name written in the same shape is drawn as prose: the parts
+        // are this section's and not every section's.
+        var other = marks.WrittenSection(
+            "KEYS",
+            new WrittenCell("The short version", RunTogether, new DateOnly(2026, 9, 8), "a/model", []),
+            []);
+
+        Assert.Empty(RisksDrawn(other));
+        Assert.DoesNotContain("class=\"risks\"", other, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Spending;
 using System.Text;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
@@ -2638,6 +2639,26 @@ public sealed class MarkRenderer : IComponent
                 drawn.Append("<p class=\"prose\">").Append(Escaped(prose)).Append("</p></div>");
             }
         }
+        else if (RiskParts(section.Section, paragraphs) is { } risks)
+        {
+            drawn.Append(Invariant, $"<ul class=\"risks\" data-parts=\"{risks.Count}\">");
+
+            foreach (var part in risks)
+            {
+                var (risk, confirmation) = RiskAndWhatWouldConfirmIt(part);
+
+                drawn.Append("<li class=\"risk\"><p class=\"prose\">").Append(Escaped(risk)).Append("</p>");
+
+                if (confirmation is not null)
+                {
+                    drawn.Append("<p class=\"prose confirms\">").Append(Escaped(confirmation)).Append("</p>");
+                }
+
+                drawn.Append("</li>");
+            }
+
+            drawn.Append("</ul>");
+        }
         else
         {
             foreach (var paragraph in paragraphs)
@@ -2685,6 +2706,7 @@ public sealed class MarkRenderer : IComponent
     // Read off the prose rather than assumed, and the section is drawn as it was written
     // wherever it is not recognised: what a model wrote and the checker accepted is the
     // section, and a shape this file hoped for is no reason to draw any of it differently.
+    // see: A written section is broken into parts only where its own prose says where each part ends
     static IReadOnlyList<(string Label, string Prose)>? TwoCases(string section, IReadOnlyList<string> paragraphs) =>
         string.Equals(section, TheTwoCases, StringComparison.Ordinal)
             && paragraphs.Count == 2
@@ -2692,6 +2714,72 @@ public sealed class MarkRenderer : IComponent
             && paragraphs[1].StartsWith(CaseAgainst, StringComparison.Ordinal)
                 ? [("The case for", paragraphs[0]), ("The case against", paragraphs[1])]
                 : null;
+
+    // The section holding the risks, which the writer is asked for as a risk and then what
+    // would confirm that risk, one risk after another.
+    public const string TheRisks = "The risks, each with what would confirm it";
+
+    // Where one risk ends and the next begins, as the prose states it: a sentence opening on
+    // an ordinal and the word risk.
+    static readonly Regex RiskOpens = new(
+        @"(?:^|(?<=\.\s))(?:The|A)\s(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)\srisk\b",
+        RegexOptions.CultureInvariant);
+
+    // How a part opens what would confirm the risk it states, in the words the writer is asked
+    // for.
+    const string ConfirmationOpens = "That risk would be confirmed";
+
+    // The risks as one part each, where the prose says where the parts are, and nothing where
+    // it does not. Two shapes are read: a paragraph per risk, which is what a writer that broke
+    // them up gives, and a sentence opening on an ordinal risk, which is what one that ran them
+    // together gives. Where neither is there the section is drawn as it was written, because a
+    // boundary this file guessed at would put one risk's words under another's.
+    //
+    // The parts are the prose cut and never edited, so joined back up they are the section as it
+    // was written, which is the property the surface reads them against. Anything before the
+    // first cut opens the first part rather than being dropped, so a section that introduces its
+    // risks before stating them keeps the introduction.
+    //
+    // The order is the order they were written in. Ordering them by how severe each one is would
+    // rank them on a judgement no model stated and no code computed.
+    // see: A written section is broken into parts only where its own prose says where each part ends
+    // see: Code owns every number
+    static IReadOnlyList<string>? RiskParts(string section, IReadOnlyList<string> paragraphs)
+    {
+        if (!string.Equals(section, TheRisks, StringComparison.Ordinal) || paragraphs.Count == 0)
+        {
+            return null;
+        }
+
+        if (paragraphs.Count > 1)
+        {
+            return paragraphs;
+        }
+
+        var whole = paragraphs[0];
+        var opens = RiskOpens.Matches(whole).Select(one => one.Index).ToList();
+
+        if (opens.Count < 2)
+        {
+            return null;
+        }
+
+        var edges = new List<int> { 0 };
+
+        edges.AddRange(opens.Skip(1));
+        edges.Add(whole.Length);
+
+        return [.. Enumerable.Range(0, edges.Count - 1).Select(at => whole[edges[at]..edges[at + 1]].Trim())];
+    }
+
+    // A part as the risk and what would confirm it, where the part opens its confirmation in the
+    // words the writer was asked for, and as one run where it does not.
+    static (string Risk, string? Confirmation) RiskAndWhatWouldConfirmIt(string part)
+    {
+        var at = part.IndexOf(". " + ConfirmationOpens, StringComparison.Ordinal);
+
+        return at < 0 ? (part, null) : (part[..(at + 1)], part[(at + 2)..]);
+    }
 
     // The one section dated by the close it explains rather than by the day it was written.
     public const string KeySection = "The key under each figure";
