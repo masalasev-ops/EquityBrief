@@ -937,6 +937,15 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.15 Queue", "Take it out"),
     ];
 
+    // The ones a checkpoint has since drawn, which carry a verdict and no longer read as
+    // out of scope. A row moves here in the commit that builds it, so the out-of-scope
+    // figure below is stated rather than followed: a row that stopped being drawn would
+    // read as unexamined and fail rather than quietly rejoining the count above.
+    static readonly string[] PhaseNineDrawn =
+    [
+        CheckReach.Key("15.7 Tonight", "Research, per row"),
+    ];
+
     // Rows the document gained after the prediction, each one claim.
     static readonly string[] AddedAfterThePrediction =
     [
@@ -982,7 +991,9 @@ public partial class ArchitectureConformance
         // Out of scope was zero while phase 8 was the last phase. Phase 9's rows are
         // placed at checkpoints the record does not carry, so each reads as out of scope
         // and none of them passes, which is what the pass figure is short by.
-        var outOfScope = PredictedOutOfScope + PhaseNineRows.Length;
+        var outOfScope = PredictedOutOfScope + PhaseNineRows.Length - PhaseNineDrawn.Length;
+
+        Assert.All(PhaseNineDrawn, key => Assert.Contains(PhaseNineRows, row => row == key));
 
         Assert.Equal(
             (expected, outOfScope, 0, expected - outOfScope),

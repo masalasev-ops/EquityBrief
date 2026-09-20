@@ -60,6 +60,10 @@ public partial class ReadSurface
             // which is a claim about what that region states.
             CheckReach.Key("15.10 Run", "Overnight queue"),
 
+            // 9.1, what a row on tonight's list says about the name's research, which is
+            // read back off the row against the store rather than off the page.
+            CheckReach.Key("15.7 Tonight", "Research, per row"),
+
             // 8.4, the shadow candidates region: how many stand registered, the
             // divisor that number sets, the line saying each record is withheld
             // until promotion, and the half asserted by its absence, which is
@@ -3051,6 +3055,72 @@ public partial class ReadSurface
             records);
 
         Assert.Contains("no values stored for this reason", bare, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EveryRowOnTonightsListSaysWhetherTheNameHoldsResearch()
+    {
+        // The link on a row called itself a report whatever the store held, and the store
+        // holds nothing but the key under each figure for almost every name. Read back off
+        // each row against the store in both directions: a row claiming research the store
+        // lacks and a row hiding research it holds both fail.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+        var universe = await api.UniverseAsync("GSPC");
+        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var row in universe)
+        {
+            var bands = await api.LevelsAsync(row.Ticker);
+
+            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+        }
+
+        var researched = await api.ResearchedAsync();
+
+        var rows = TonightScreen.Rows(
+            night,
+            listings,
+            strengths,
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            await api.ClosesToTheNightAsync(night),
+            null,
+            researched);
+
+        var list = new MarkRenderer().TonightList(rows, SinglePageApp.TonightDrawn, []);
+        var drawn = Regex.Matches(list, "<a class=\"open( unwritten)?\"[^>]*data-researched=\"(true|false)\"[^>]*>([^<]*)</a>");
+
+        Assert.NotEmpty(drawn);
+
+        var holds = researched.ToDictionary(row => row.Ticker, row => row.Written, StringComparer.Ordinal);
+        var shown = rows.Take(SinglePageApp.TonightDrawn).ToArray();
+
+        Assert.Equal(shown.Length, drawn.Count);
+
+        foreach (var (row, at) in shown.Select((row, at) => (row, at)))
+        {
+            var says = drawn[at].Groups[2].Value == "true";
+
+            Assert.Equal(holds.ContainsKey(row.Ticker), says);
+            Assert.Equal(says ? "report" : "not written", drawn[at].Groups[3].Value);
+        }
+
+        // The other direction, over a row the store holds research for, so the false
+        // case is not passing because every row happens to be false.
+        var written = new DateOnly(2026, 9, 18);
+        var pair = new MarkRenderer().TonightList(
+            [
+                new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone]),
+                new ListingCell("YYYY", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone]) { ResearchedOn = written },
+            ],
+            SinglePageApp.TonightDrawn,
+            []);
+
+        Assert.Contains("data-researched=\"false\" title=\"open the name, whose researched sections are not written\">not written</a>", pair, StringComparison.Ordinal);
+        Assert.Contains($"data-researched=\"true\" data-researched-on=\"2026-09-18\"", pair, StringComparison.Ordinal);
     }
 
     [Fact]

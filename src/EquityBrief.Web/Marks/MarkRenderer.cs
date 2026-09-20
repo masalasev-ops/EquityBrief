@@ -193,7 +193,12 @@ public sealed record ListingCell(
     UniverseCell? Distance = null,
     // Where the name's stored series is suspect, which the row says beside the name
     // from the 7.0 ruling, and null for a name whose series is trusted.
-    SuspectPrices? Suspect = null);
+    SuspectPrices? Suspect = null,
+    // The day the name's newest researched section was written, and null for a name
+    // holding none. The key under each figure is not one of them, so most of the index
+    // is null here even though the overnight queue writes that key for every name.
+    // see: A researched name is one holding an accepted section besides the key under each figure
+    DateOnly? ResearchedOn = null);
 
 // A name whose stored series may not reflect a dividend or split, as a page states it:
 // when its refetch was last asked for and the reason it failed, both as the store holds
@@ -1916,7 +1921,24 @@ public sealed class MarkRenderer : IComponent
             // selected view of an earlier night is a link like every other view.
             list.Append(Invariant, $"<td class=\"c-nm\"><a class=\"select\" data-selects=\"{Escaped(row.Ticker)}\" ");
             list.Append(Invariant, $"href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
-            list.Append(Invariant, $" <a class=\"open\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\" title=\"open the full report\">report</a>");
+            // What the link opens is a report where one was written and the name's
+            // page where none was, so it is drawn with the words of whichever it is:
+            // a link calling itself a report for a name holding none is the page
+            // promising something it does not have.
+            // see: A researched name is one holding an accepted section besides the key under each figure
+            var researched = row.ResearchedOn is not null;
+
+            list.Append(Invariant, $" <a class=\"open{(researched ? string.Empty : " unwritten")}\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\" ");
+            list.Append(Invariant, $"data-researched=\"{(researched ? "true" : "false")}\"");
+
+            if (row.ResearchedOn is { } on)
+            {
+                list.Append(Invariant, $" data-researched-on=\"{on:yyyy-MM-dd}\" title=\"open the report, written {on:yyyy-MM-dd}\">report</a>");
+            }
+            else
+            {
+                list.Append(" title=\"open the name, whose researched sections are not written\">not written</a>");
+            }
 
             if (row.Distance?.Name is { Length: > 0 } company)
             {
