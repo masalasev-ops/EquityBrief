@@ -17756,3 +17756,73 @@ Carried:    the table draws only the reasons that fired. The store holds the val
             decision. Nothing here narrows what fires: the operator's list carries two thirds of the
             index on a quiet night and 86% on the night the index rebalanced, which is measured in
             the reply that found it and is the next piece of work.
+
+### 5.8 - correction: a reason's values are drawn under the pointer and go as it leaves, rather than needing a click to open and another to put away   2026-09-20
+Corrects:   the correction earlier this day drew a reason's values in a panel a click opened, which
+            made reading a row a press per reason and a second press to put each one away. Twenty
+            rows of six reasons is what this surface is for, and a panel that has to be opened and
+            closed is a worse instrument for scanning them than one that follows the pointer.
+Found:      by the operator on 2026-09-20, within the hour, on the page the earlier correction
+            shipped: they asked for the values on hover and for them to go as the pointer moves
+            away.
+Measured:   nothing new. What the earlier correction measured stands and is not re-measured here:
+            the six reasons each record values on the rows they fired on and the rows they did not,
+            over all 503 listing rows of 2026-09-18. This changes when the drawn panel is shown and
+            not what it holds.
+Repaired:   the panel is shown while the reason is under the pointer and goes as the pointer leaves.
+            A keyboard reaches it too, on focus, and that is `focus-visible` rather than `focus` so
+            that a press does not pin it open and leave the reader to put it away. The element is a
+            plain container rather than a disclosure, which is what the two hues rule would call a
+            second meaning for one thing: an element that opens says a reader chose to open it, and
+            nobody chose anything by moving a pointer across a row.
+Missed:     the earlier correction read the operator's words, that clicking the boxes should show
+            something, as a request for a click rather than as a report that the boxes were dead.
+            They were dead because the values were in a native tooltip, which a click never opens
+            and a touch screen cannot reach at all, so both readings are repaired by drawing the
+            values; only one of them is what the surface is for. No assertion could have found this:
+            what is drawn was right and when it is shown was the question, and the suite has no
+            browser to move a pointer in.
+Guarded:    the values keep every assertion the earlier correction added, read back off each
+            reason's own panel against the store and keyed to the reason they sit inside. One is
+            added: the values sit in no attribute of that reason, so a second copy in a title beside
+            the drawn one fails rather than sitting there to drift from it. It is scoped to the
+            reason's own cell, because the column heads carry a title that spells out the word a
+            column is headed by, which is not a value the night measured. When the panel is shown is
+            a stylesheet rule the suite cannot exercise, and the entry says so rather than implying
+            the assertions reach it.
+Expected:   derived: the values are read against the listing rows the replayed store holds. No
+            expectation file changes.
+Tests:      1138, unchanged. Three of `read-surface`'s assertions move to the drawn markup and one
+            is added.
+Mutated:    the rule, stated before the sweep: break each of the three properties this rests on, the
+            values belonging to the reason they are drawn inside, the values being drawn and nowhere
+            else, and a reason with none saying so. Not mutated: the record's two states and where
+            it is drawn, which the repaired assertion reads, and when the panel is shown, which is a
+            stylesheet rule no assertion here reaches and which is named above as such rather than
+            left to be assumed covered.
+            Predicted:
+            M1 the figure and the name it is of exchanged: the reasons test red where it reads each
+            reason's values against the store, and the per-row test red where it reads the drawn
+            pair; nothing else.
+            M2 a second copy of what the reason is put back in an attribute beside the drawn one:
+            the reasons test red where it reads the reason's own cell for an attribute; nothing
+            else, the per-row test having never read attributes.
+            M3 a reason with no values drawing an empty list: both tests red where each reads the
+            line that says so; nothing else.
+            Stopped once, on M2, and the stop is the finding. The attribute was put on the element
+            carrying the reason's short word, which an assertion earlier in the same test already
+            reads by its exact markup, so that one fired first and the assertion M2 was aimed at was
+            never reached. It also turned a third test red for the same reason, the verdicts surface
+            pinning the same element. So the new assertion was shadowed by an older one over this
+            mutation: not a false alarm, but no evidence either, because a sweep that stops at an
+            assertion it was not aimed at has shown nothing about the one it was. The attribute is
+            now put on the panel itself, which no other assertion reads, and M2 was shown red by
+            hand on the intended assertion before the sweep was run again.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    when the panel is shown rests on a stylesheet rule and on nothing the suite runs,
+            because the suite has no browser. The same is true of every hover and focus rule the
+            page carries, and this correction adds one more to that set rather than being the first
+            of them. Also unchanged from the earlier correction: the table draws only the reasons
+            that fired, and why a reason did not fire is the question the store can already answer
+            and the page does not ask.

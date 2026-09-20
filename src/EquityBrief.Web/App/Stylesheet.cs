@@ -180,14 +180,15 @@ span[data-last-asked-at]::before{content:none}
 .list-table td.c-nm .co{display:block;font-size:12.5px;line-height:1.25;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list-table a.open{font-size:11px;color:var(--soft);margin-left:4px}
 .list-table td.trend-state{font-size:12.5px;color:var(--ink-2)}
-/* a reason on tonight's list: the word, and a disclosure saying what the night measured it
-   over. A click opens it, which a tooltip never was: the values were in a title attribute and
-   a reader on a touch screen could not reach them at all. */
+/* a reason on tonight's list: the word, and a panel saying what the night measured it over.
+   It is shown while the reason is under the pointer and goes as the pointer leaves, and it is
+   shown to a keyboard on focus, which is `focus-visible` rather than `focus` so that a click
+   does not pin it open. The values are drawn in the panel rather than put in a title
+   attribute, which is a native tooltip a touch screen cannot reach at all. */
 .list-table .reason{position:relative}
-.list-table .reason>summary{display:flex;align-items:center;justify-content:center;height:28px;padding:0 3px;background:var(--s4);color:var(--surface);font:600 10.5px/1 var(--sans);cursor:pointer;list-style:none}
-.list-table .reason>summary::-webkit-details-marker{display:none}
-.list-table .reason[open]>summary{outline:2px solid var(--accent);outline-offset:1px}
-.list-table .reason .why{position:absolute;z-index:10;top:32px;left:-4px;width:280px;background:var(--ink);color:var(--surface);padding:9px 11px;border-radius:6px;font:400 12px/1.45 var(--sans);text-align:left;white-space:normal}
+.list-table .reason>.r-head{display:flex;align-items:center;justify-content:center;height:28px;padding:0 3px;background:var(--s4);color:var(--surface);font:600 10.5px/1 var(--sans);cursor:help}
+.list-table .reason .why{display:none;position:absolute;z-index:10;top:32px;left:-4px;width:280px;background:var(--ink);color:var(--surface);padding:9px 11px;border-radius:6px;font:400 12px/1.45 var(--sans);text-align:left;white-space:normal}
+.list-table .reason:hover .why,.list-table .reason:focus-visible .why{display:block}
 .list-table td.rz:nth-last-child(-n+3) .reason .why{left:auto;right:-4px}
 .list-table .why-fired{margin:0 0 6px;font-weight:600}
 .list-table .why-fired::first-letter{text-transform:uppercase}

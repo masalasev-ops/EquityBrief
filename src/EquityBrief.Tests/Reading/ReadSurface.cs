@@ -3025,9 +3025,12 @@ public partial class ReadSurface
         var onRows = Regex.Matches(list, "<span class=\"record[ \"]").Count;
         var inFoot = Regex.Matches(list, "<span class=\"record-foot[ \"]").Count;
 
+        // The cell is the unit, because a cell holds one reason and the panel that carries the
+        // record is nested inside it: bounding on the next cell says the record is inside the
+        // reason it belongs to, where bounding on a closing tag would stop at the inner one.
         var nestedOnRows = Regex.Matches(
             list,
-            "<details class=\"reason\"[^>]*>(?:(?!</details>).)*?<span class=\"record[ \"]",
+            "<div class=\"reason\"[^>]*>(?:(?!<td).)*?<span class=\"record[ \"]",
             RegexOptions.Singleline).Count;
 
         var nestedInFoot = Regex.Matches(
@@ -3054,10 +3057,10 @@ public partial class ReadSurface
     public async Task EachReasonOnTonightsListOpensOnWhatTheNightMeasuredItOver()
     {
         // The values a reason was measured over were held in a title attribute, which is a
-        // hover a reader on a touch screen cannot reach and a click never opens. They are
-        // drawn now, and this reads them back off each reason's own disclosure rather than
-        // off the page as a whole: a value drawn under the wrong reason answers about the
-        // wrong name, and a page-wide search cannot tell the two apart.
+        // native tooltip a reader on a touch screen cannot reach. They are drawn now, and this
+        // reads them back off each reason's own panel rather than off the page as a whole: a
+        // value drawn under the wrong reason answers about the wrong name, and a page-wide
+        // search cannot tell the two apart.
         using var store = await FixtureExpectations.WithReturns();
 
         var api = Api(store);
@@ -3082,9 +3085,10 @@ public partial class ReadSurface
 
         var list = new MarkRenderer().TonightList(rows, SinglePageApp.TonightDrawn, []);
 
-        // One disclosure per reason that fired, across every drawn row.
+        // One panel per reason that fired, across every drawn row, read to the end of the cell
+        // that holds it rather than to a closing tag, which the panel nests inside.
         var fired = rows.Sum(row => row.Fired!.Count);
-        var drawn = Regex.Matches(list, "<details class=\"reason\" data-reason=\"([^\"]+)\">(.*?)</details>", RegexOptions.Singleline);
+        var drawn = Regex.Matches(list, "<div class=\"reason\" data-reason=\"([^\"]+)\" tabindex=\"0\">(.*?)</td>", RegexOptions.Singleline);
 
         Assert.True(fired >= 1, $"the drawn rows fired {fired} reasons, expected at least 1.");
         Assert.Equal(fired, drawn.Count);
@@ -3099,11 +3103,11 @@ public partial class ReadSurface
             var reason = reasons[at];
             var body = drawn[at].Groups[2].Value;
 
-            // The summary carries the short head the columns are keyed by, which
-            // `TheRecordIsDrawnInsideItsOwnReason` pins; what the disclosure adds is the
-            // reason's whole name, so an opened cell says which of the six it is.
+            // The head carries the short word the columns are keyed by, which the verdicts
+            // surface pins; what the panel adds is the reason's whole name, so a cell under
+            // the pointer says which of the six it is.
             Assert.Equal(reason.Name, drawn[at].Groups[1].Value);
-            Assert.Matches("<summary>[a-z]+</summary>", body);
+            Assert.Matches("<span class=\"r-head\">[a-z]+</span>", body);
             Assert.Contains($"<p class=\"why-fired\">{reason.Name}</p>", body, StringComparison.Ordinal);
 
             var values = Regex.Matches(body, "<dt>([^<]*)</dt><dd>([^<]*)</dd>")
@@ -3111,10 +3115,13 @@ public partial class ReadSurface
 
             Assert.Equal(reason.Values.Count, values.Count);
             Assert.All(reason.Values, value => Assert.Equal(value.Value, values[value.Key]));
-        }
 
-        // Nothing is left in an attribute a reader has to hover to reach.
-        Assert.DoesNotContain("<details class=\"reason\" data-reason=\"at entry zone\" title=", list, StringComparison.Ordinal);
+            // And none of it is left in a title attribute, which is the native tooltip this
+            // replaced and the one surface the values cannot be read off. Scoped to the cell:
+            // the column heads carry one, which spells out the word a column is headed by and
+            // is not a value the night measured.
+            Assert.DoesNotContain("title=", body, StringComparison.Ordinal);
+        }
 
         // A reason the store holds no values for says so rather than opening on nothing.
         var bare = new MarkRenderer().TonightList(

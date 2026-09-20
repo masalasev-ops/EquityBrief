@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - ARCHITECTURE.html - a reason's values are shown under the pointer rather than on a click
+
+Corrects: the row was rewritten earlier the same day to say the values are drawn where the reason is opened, which made reading a row a click per reason and a second click to put it away. The operator asked for the values under the pointer, going as the pointer leaves.
+Was:
+> <tr><td>Reasons, per row</td><td>each reason named, with its measured record beside it under 15.11, and the values that made it true drawn where the reason is opened</td></tr>
+Now:
+> <tr><td>Reasons, per row</td><td>each reason named, with its measured record beside it under 15.11, and the values that made it true drawn beside it while it is under the pointer or holds focus</td></tr>
+Why: scanning twenty rows of six reasons is the thing this surface is for, and a disclosure that has to be opened and closed is a worse instrument for it than a panel that follows the pointer. What the earlier change was actually for stands: the values are drawn markup rather than a title attribute, so they are on a surface that can be read back and one a touch screen can reach. Focus is `focus-visible` rather than `focus`, so a keyboard reaches the panel and a click does not pin it open.
+
+### 2026-09-20 - .claude/rules/checks.md - `read-surface` reads a reason's values off its panel and out of its attributes
+
+Corrects: the clause was written the same day against a disclosure that opened on a click, and named that element. It also asserted only that the values are drawn, not that they are drawn nowhere else, so the attribute they used to live in could have come back beside them.
+Was:
+> ... and each reason on tonight's list opens on the values the night measured it over, read back off that reason's own disclosure against the store rather than off the page as a whole, a reason the store holds no values for saying so, with a row's record read inside its reason and the column's inside the footer's, counted apart because one is the other's prefix |
+Now:
+> ... and each reason on tonight's list draws the values the night measured it over, read back off that reason's own panel against the store rather than off the page as a whole and asserted to sit in no attribute of it, a reason the store holds no values for saying so, with a row's record read inside its reason and the column's inside the footer's, counted apart because one is the other's prefix |
+Why: a second copy in an attribute is a copy that drifts from the drawn one, and nothing would have said which a reader saw. The assertion is scoped to the reason's own cell, because the column heads carry a title that spells out the word a column is headed by, which is not a value the night measured.
+
 ### 2026-09-20 - ARCHITECTURE.html - a reason on tonight's list opens on what it was measured over
 
 Corrects: the row said the values that made a reason true were shown on hover. They were in a title attribute, which is a native tooltip: delayed, unreachable on a touch screen, and never opened by a click. The operator clicked a reason and got nothing.
