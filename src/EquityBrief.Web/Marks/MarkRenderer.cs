@@ -2039,13 +2039,14 @@ public sealed class MarkRenderer : IComponent
                 continue;
             }
 
-            cells.Append(Invariant, $"<td class=\"rz\"><details class=\"reason\" data-reason=\"{Escaped(reason.Name)}\">");
-            cells.Append(Invariant, $"<summary>{Escaped(Head(reason.Name))}</summary><div class=\"why\">");
+            cells.Append(Invariant, $"<td class=\"rz\"><div class=\"reason\" data-reason=\"{Escaped(reason.Name)}\" tabindex=\"0\">");
+            cells.Append(Invariant, $"<span class=\"r-head\">{Escaped(Head(reason.Name))}</span><div class=\"why\">");
             cells.Append(Invariant, $"<p class=\"why-fired\">{Escaped(reason.Name)}</p>");
 
-            // What the night measured this reason over, drawn rather than held in an attribute
-            // a reader has to hover to reach. The values are the strings the reason wrote, so
-            // they are drawn as stored and no figure on the row is rounded twice.
+            // What the night measured this reason over, drawn as the page's own markup rather
+            // than held in an attribute, which put it in a native tooltip a touch screen cannot
+            // reach. The values are the strings the reason wrote, so they are drawn as stored
+            // and no figure on the row is rounded twice.
             // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
             if (reason.Values.Count == 0)
             {
@@ -2072,7 +2073,7 @@ public sealed class MarkRenderer : IComponent
                     : Formatted($"<span class=\"record not-measured\" data-outline=\"dashed\" data-verdict=\"none\" data-short=\"{record.Withheld}\" data-scored=\"{record.Scored}\" data-minimum=\"{record.Minimum}\">{CountAgainstTheFloors(record)}</span>"));
             }
 
-            cells.Append("</div></details></td>");
+            cells.Append("</div></div></td>");
         }
 
         return cells.ToString();
