@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - CLAUDE.md - the operator may rule a phase's plan open before the previous phase's sign-off
+
+Authorised by: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it
+Was:
+> Sign-off is a separate activity with its own record, owed on the phase as a whole before the next phase's plan, and it does not gate the merge. A phase held open waiting on something that is not code keeps a branch open, and the nightly job runs from that checkout for the whole of it.
+Now:
+> Sign-off is a separate activity with its own record, owed on the phase as a whole before the next phase's plan, and it does not gate the merge. The operator may rule that order reversed for one phase, and the ruling says what it defers and why: the sign-off stays owed, its entry names it as outstanding, and no checkpoint of the later phase discharges it (see: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it). The order is the only thing such a ruling moves, and a session that has committed code still may not sign that code off. A phase held open waiting on something that is not code keeps a branch open, and the nightly job runs from that checkout for the whole of it.
+Why: the clause was written against a build where each phase closed before the next opened, and it read as refusing an ordering the operator wanted rather than as protecting what the sign-off is for. What it protects is that a session does not review its own code, and that is untouched and restated here: the sign-off stays owed, nothing phase 9 does discharges it, and the fresh-session rule stands. The exception is written into the rule rather than left as a ruling standing against text that still reads as forbidding it.
+
 ### 2026-09-20 - ARCHITECTURE.html - a reason's values are shown under the pointer rather than on a click
 
 Corrects: the row was rewritten earlier the same day to say the values are drawn where the reason is opened, which made reading a row a click per reason and a second click to put it away. The operator asked for the values under the pointer, going as the pointer leaves.
