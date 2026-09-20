@@ -263,6 +263,11 @@ nav.contents a{text-decoration:none;color:var(--soft);display:flex;gap:10px;alig
 nav.contents a:hover{color:var(--ink)}
 nav.contents .c-n{color:var(--soft);font-variant-numeric:tabular-nums;min-width:1.4em;text-align:right;flex:0 0 auto}
 @media (max-width:700px){nav.contents ol{columns:1}}
+/* the two cases, each half under its own label. Neutral ink: the two hues are a level's and
+   nothing else may use them. */
+.case{border-left:3px solid var(--hair);padding:2px 0 2px 14px;margin:14px 0}
+.case h4{margin:0 0 6px;font:600 14px var(--sans);letter-spacing:.02em;color:var(--soft);text-transform:uppercase}
+.case .prose{margin:0}
 nav.walk{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--ink)}
 nav.walk a{text-decoration:none;display:flex;flex-direction:column;min-height:44px;justify-content:center;font:600 16px var(--serif)}
 nav.walk a::before{font:12px var(--sans);color:var(--soft);letter-spacing:.08em;text-transform:uppercase}

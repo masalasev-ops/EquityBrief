@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - ARCHITECTURE.html - section 15.9 draws the two cases as two labelled halves
+
+Corrects: the section holding the case for a name and the case against it was drawn as one run of prose, so a reader looking for the case against had to find where the case for stopped. The operator asked for the two to be laid out and labelled separately.
+Was:
+> (no row: the sections row covered them as prose carrying its own date)
+Now:
+> <tr><td>The case for and the case against</td><td>each case under its own label where the two cases were answered in the shape the writer was asked for and as the prose was written where they were not</td></tr>
+Why: the writer is asked for two paragraphs and every answer recorded over the fixture and every section stored on the operator's machine is that shape, so the labels rest on a property three independent samples carry. The fallback is the point of the second clause: a section is the words the checker accepted, and a shape the page hoped for is no reason to draw any of it differently.
+
+### 2026-09-20 - .claude/rules/checks.md - `read-surface` reads the two cases as two halves
+
+Corrects: the row reached what a written section states and the date it carries, and nothing about the shape it is drawn in. A page labelling the wrong half, or dropping one, would have read as correct to every assertion here.
+Was:
+> ... a close inside a band stating no distance rather than the gap to one of its sides |
+Now:
+> ... a close inside a band stating no distance rather than the gap to one of its sides; and the two cases are drawn as two labelled halves where the writer answered in the shape it was asked for, each half one of the section's own paragraphs unchanged and in the order it was written, and as the prose was written where it was not |
+Why: the halves are read back against the stored prose by a query of the test's own, so a label put over the prose rather than beside it fails, and the unrecognised shape is asserted to draw no half at all.
+
 ### 2026-09-20 - ARCHITECTURE.html - section 15.9 states how far each band sits from the close
 
 Corrects: the level summary named each band, its role, a strength and its members, and never said how far away any of it was. Tonight's list has stated distances in typical days' moves since 5.4 and a name's own page, which is where a band is acted on, did not.
