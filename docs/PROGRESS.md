@@ -17741,8 +17741,15 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             green while answering about a population it could not tell apart. The two are now
             counted apart, each read inside the element that holds it. This is the prefix shape the
             writing rules name, arriving a fifth time.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. Section 15.7's
+            reasons row is reworded rather than added to, so the claims stand at 375 as they were.
+            Both gates ran with this entry in place, and the operator's store under `data/` was not
+            touched by either.
 Carried:    the table draws only the reasons that fired. The store holds the values for the ones
             that did not, and why a reason did not fire is often the more useful question, so a row
             that could be opened on all six is a wider change to what the table draws and is its own
