@@ -17582,11 +17582,11 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             M1 turned 1 red, the cases test on the labels it reads in order.
             M2 turned 1 red, the cases test where it reads the halves the page drew.
             M3 turned 1 red, the cases test on the shape it does not recognise.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1136 of 1136 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. Section 15.9
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 374 claims,
+            374 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 381 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. Section 15.9
             gains one row, the case for and the case against drawn under their own labels, which
             nothing claimed before, so the claims stand at 374 from 373. Both gates ran with this
             entry in place, and the operator's store under `data/` was not touched by either.
