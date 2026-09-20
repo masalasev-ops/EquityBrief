@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - ARCHITECTURE.html - section 15.9 draws the risks one part to a risk
+
+Corrects: the section holding the risks was drawn as one run of prose, which for the newest pass on the operator's machine is ten risks and ten confirmations in a single paragraph, so finding the fourth risk meant reading the first three. The operator asked for the section as a list.
+Was:
+> (no row: the sections row covered them as prose carrying its own date)
+Now:
+> <tr><td>The risks as parts</td><td>one part per risk where the prose says where each part ends, with what would confirm a risk set beneath the risk it confirms (see: A written section is broken into parts only where its own prose says where each part ends)</td></tr>
+Why: every sample the repository can reach was measured and they are written in three shapes rather than one, so the row claims what the prose itself states rather than a shape the page hoped for. The parts are the prose cut and never edited, which is what the surface asserts over every section of a pass.
+
+### 2026-09-20 - .claude/rules/checks.md - `read-surface` reads the risks as the parts the prose states
+
+Authorised by: A written section is broken into parts only where its own prose says where each part ends
+Was:
+> ... and as the prose was written where it was not |
+Now:
+> ... and as the prose was written where it was not; and the risks are drawn one part to a risk where the prose says where each part ends, what would confirm a risk set beneath the risk it confirms and whatever stands before the first part opening that part, and as the prose was written where it says nowhere, with every section of a pass read back off the page for its own paragraphs joining into the prose the store holds |
+Why: a cut in the wrong place would read as correct to every assertion the row held, so the property that makes it a failure is that the parts joined back up are the prose as it was stored, and the row's existing per-section reader was widened to carry it.
+
 ### 2026-09-20 - ARCHITECTURE.html - section 15.9 draws the two cases as two labelled halves
 
 Corrects: the section holding the case for a name and the case against it was drawn as one run of prose, so a reader looking for the case against had to find where the case for stopped. The operator asked for the two to be laid out and labelled separately.

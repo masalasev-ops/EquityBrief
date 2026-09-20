@@ -758,7 +758,7 @@ public sealed class SinglePageApp : IComponent
     // What the key's card states its date as, which is the night whose figures it explains
     // rather than the day it was written.
     public const string KeyDated = "For the close of";
-    public static readonly string[] AfterThePlan = ["The risks, each with what would confirm it"];
+    public static readonly string[] AfterThePlan = [MarkRenderer.TheRisks];
     public const string InTheDates = "The dated calendar items";
     public const string InTheMovesTable = "The cause of each large move";
 

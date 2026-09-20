@@ -268,6 +268,12 @@ nav.contents .c-n{color:var(--soft);font-variant-numeric:tabular-nums;min-width:
 .case{border-left:3px solid var(--hair);padding:2px 0 2px 14px;margin:14px 0}
 .case h4{margin:0 0 6px;font:600 14px var(--sans);letter-spacing:.02em;color:var(--soft);text-transform:uppercase}
 .case .prose{margin:0}
+/* the risks, one to a part, with what would confirm each set in beneath it. Neutral ink for
+   the same reason the cases carry none. */
+ul.risks{margin:0 0 10px;padding-left:20px}
+ul.risks>li{margin:0 0 16px;padding-left:4px}
+ul.risks .prose{margin:0}
+ul.risks .confirms{margin:6px 0 0;padding-left:12px;border-left:2px solid var(--hair);color:var(--soft);font-size:14px}
 nav.walk{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--ink)}
 nav.walk a{text-decoration:none;display:flex;flex-direction:column;min-height:44px;justify-content:center;font:600 16px var(--serif)}
 nav.walk a::before{font:12px var(--sans);color:var(--soft);letter-spacing:.08em;text-transform:uppercase}
