@@ -17901,3 +17901,44 @@ Carried:    the control this makes reachable starts a pass by running the worker
             starts nothing leaves no row. Also unchanged: tonight's list calls its link to a name a
             report whether or not one was written, and the night header counts names carrying prose,
             which the key is.
+
+### 8.7 ruling - the report generation the operator asked for is built as phase 9, and phase 8's sign-off stays owed   2026-09-20
+Not a checkpoint entry. It lands nothing, builds no checkpoint of phase 8 or of phase 9, and signs
+            nothing off.
+Asked:      the operator asked on 2026-09-20 for three things a name's page cannot do: ask for a
+            report from the row on tonight's list rather than from the name's own page, a request
+            that outlasts the press rather than a process started beside the read surface, and a
+            statement at the head of the page of which lane would write one, with the local lane
+            drawn and refused until the comparison is measured. Told that none of the three is a
+            defect, that no checkpoint owes any of them, and that the merge section owed phase 8's
+            sign-off before the next phase's plan, they ruled the same day that the phase opens
+            first.
+Ruled:      the three are a phase rather than a correction, on the shape the operator set when phase
+            6's carried items became phase 7 and the improvement loop became phase 8. Phase 9 is
+            added to the plan with a planning checkpoint and three others. The merge section is
+            amended to state the exception rather than leaving this ruling standing against text
+            that reads as refusing it, and the amendment restates what the ordering protects, which
+            is that a session does not review its own code.
+Owed:       phase 8's sign-off, outstanding, on phase 8 as a whole. No checkpoint of phase 9
+            discharges it and none of them may be read as having. It needs a session that has
+            committed no code, which is the fresh-session rule and is unchanged. The cost of the
+            order is stated in the decision rather than left to be found: phase 8's defects stay
+            unfound for as long as it waits, and one phase 9 builds on top of is dug out of more
+            code than it would have been.
+Changed:    `CLAUDE.md`'s merge section, one clause, with its prior text in `CHANGELOG.md` and the
+            decision that authorises it cited there by name. `DECISIONS.md` gains the decision under
+            Process. `BUILD_PLAN.md` gains phase 9 and its four checkpoints. No shipped source is
+            touched, no test changes, and the suite stands where the 6.5 correction left it.
+Not ruled:  what the request row holds, what the queue does with a request whose name leaves the
+            index, and whether the lane statement is per name or for the page. Those are 9.0's to
+            settle, and a ruling that settled them here would be the planning pass wearing a
+            ruling's heading.
+Tests:      1140, unchanged. A ruling adds none.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1140 of 1140 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims, 375
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 382 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim moves and
+            none is added: a ruling lands nothing, and phase 9 states checkpoints rather than
+            claims. Both gates ran with this entry in place, and the operator's store under `data/`
+            was not touched by either.

@@ -806,6 +806,36 @@ The model's own proposal was the loop's eighth checkpoint until 8.0 dropped it (
 
 ---
 
+## Phase 9: asking for a report from the list
+
+**Visible output at 9.1.** Each row of tonight's list says whether the name holds research, on a page that already exists.
+
+**Opened before phase 8's sign-off, on the operator's ruling of 2026-09-20** (see: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it). That sign-off stays owed on phase 8 as a whole and nothing in this phase discharges it. The ruling moves the order of the two and nothing else.
+
+**What this phase is for.** A name's own page can already ask for a pass and watch it. Three things it cannot do are what the operator asked for: ask from the row rather than from the name's page, make a request that outlasts the press, and say which lane would write the report. The correction at 6.5 is what makes the first of them worth drawing, because until it landed no name was ever missing its research and the control was never offered.
+
+### 9.0 Planning
+Writes this phase's section of the architecture, its checkpoints and their done conditions, and the decisions the phase rests on, the queue superseding the process started beside the read surface among them. Builds none of it.
+
+**Done when** section 15.7's regions name what a row says about research and what it can ask for, the request store is declared in `SCHEMA.md` with its one writer per operation, and every decision the three checkpoints below cite resolves.
+
+### 9.1 The report state on tonight's list
+Each row says whether the name holds research, and the list stops calling a link to a name a report where none was written.
+
+**Done when** every drawn row states whether the name holds an accepted section besides the key under each figure, read back off the page against the store in both directions, so neither a row claiming research the store lacks nor a row hiding research it holds passes; the night header's count of reports carrying prose is counted over researched sections rather than over every stored section, with the two counts shown to differ over a store where they do; and the words the link is drawn with are asserted against what the store holds for that name rather than against the route it points at.
+
+### 9.2 The request queue
+A store table the page writes a request to and the worker drains, replacing the process started beside the read surface.
+
+**Done when** a press writes one request row and starts no process, asserted over the shipped source and over the hosted route; the worker drains the queue oldest first and writes one run per request under that request's own identifier; a second request for a name whose request is outstanding is refused and the row says so; a request for a name whose pass already wrote something that day is refused, counted over passes that wrote rather than over passes that ran; the table is declared in `SCHEMA.md` and passes `writer-ownership` in both directions; and a request whose worker never ran still reads as outstanding rather than as lost, asserted over a store where the drain did not run.
+
+### 9.3 The report generation lane, stated and half refused
+The head of the page states which lane would write a report, as the operator's two words rather than a model's name. The local choice is drawn and refused until the comparison is measured.
+
+**Done when** the lane is drawn in the operator's own words and carries no model name (see: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it); the local choice is drawn, is not selectable, and states what it waits on, asserted on the surface a person reads rather than in the code that draws it; the paid choice starts a request as 9.2 leaves it; and which lane a press would use is read off configuration rather than stored per request.
+
+---
+
 ## Carried obligations
 
 Recorded when created, not remembered. Every row is named, and the name is what a document or a comment cites, in the form `owes:` followed by the exact name and nothing else.
