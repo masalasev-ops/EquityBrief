@@ -17164,8 +17164,30 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             the edge named after a rise; nothing else.
             M4 the level query ordered by a price again, which nothing a reader sees depends on: the
             check red on the query it reads; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the tests named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Five runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1130 of 1131 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 2 red, the fact strip test on the high it states and the fact strip's own row
+            test on the high it recomputes, which is the test whose data could not reach this case
+            and can now that a window is chosen for it.
+            M2 turned 1 red, the bands test on the order they are listed in.
+            M3 turned 1 red, the crossed-edge test on the edge named nearest after a rise.
+            M4 turned 1 red, the check itself, on the query it reads rather than on anything a
+            reader sees.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim is
+            added: the architecture already states that the fact strip carries the high and the low
+            of the move, and this repair is what makes that row true, so the claims stand at 373.
+            Both gates ran with this entry in place, and the operator's store under `data/` was not
+            touched by either.
 Carried:    nothing owed by this repair, and one thing owed by the operator. Three of the files
             repaired are sources the ladder rules' code version pins, so the pin moves from
             31de414eaa47 to 4b0f9a8b1e7d and the four windows open at the old one must be closed and
