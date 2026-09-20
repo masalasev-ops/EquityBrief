@@ -17886,8 +17886,15 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             M2 the key dropped from the judgement rather than from the record test alone: the
             beside-research test red where it reads the stale sections, and nothing else, the
             key-alone test still missing because the filter leaves it nothing either way.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim is
+            added or reworded: section 15.8 already states the rule this brings the judge to, so the
+            claims stand at 375 as they were. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
 Carried:    the control this makes reachable starts a pass by running the worker's verb as a process
             of its own, which works where the read surface sits inside a checkout and states that it
             does not where it sits anywhere else. Nothing records the request, so a press that
