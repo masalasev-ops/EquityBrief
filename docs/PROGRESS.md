@@ -17833,3 +17833,71 @@ Carried:    when the panel is shown rests on a stylesheet rule and on nothing th
             of them. Also unchanged from the earlier correction: the table draws only the reasons
             that fired, and why a reason did not fire is the question the store can already answer
             and the page does not ask.
+
+### 6.5 - correction: a name holding nothing but the key under each figure is missing its research rather than standing as written   2026-09-20
+Corrects:   6.5's own done condition reads that a name with no record at all is answered as missing
+            rather than as stale, and the shipped judge answered no such name. It counted every
+            accepted section as a record, and the overnight queue writes the key under each figure
+            for every name in the index each night whatever was researched, so every name carried
+            one and the missing state was unreachable. Two things followed from the one line. Every
+            such page said the research stood as written over sections that were not there, and the
+            control that writes them, which the name page offers only where the state is missing,
+            was never drawn.
+Found:      by the operator on 2026-09-20, from tonight's list: the rows carry a link to a report,
+            the pages opened on empty sections, and nothing on the page said a report had not been
+            generated.
+Measured:   over the operator's store as of the night of 2026-09-18, on a copy and never on `data/`:
+            502 names hold an accepted section, 501 of them hold nothing besides the key, and one
+            name holds research. That is the population the decision this brings the judge to
+            recorded on 2026-09-19, counted again here rather than quoted.
+Repaired:   the record test asks whether any accepted section is research, which `ClaimRules`
+            already answered for the researched list and the universe table. The key is dropped from
+            that test alone and not from the judgement: where a name holds research the key is still
+            one of the sections the four triggers are asked about, and still counts toward the
+            oldest section's date. Narrower than filtering it at the source, which would have been
+            the same repair for the state and a second, unasked change to what goes stale.
+Missed:     the judge's test covered a name with no sections at all and a name whose sections had
+            only ever fallen back, and never the third kind, which is the one the store is almost
+            entirely made of. The population was written from the two ways a name can have nothing
+            rather than from what the store holds, and the queue that fills every name with a key
+            landed at 6.10, five checkpoints after the judge. The same rule was written correctly in
+            the read API and cited there by name, so the corpus held both readings at once and
+            nothing compared them.
+Guarded:    two tests, one for each direction, so neither can be satisfied by the other. A name
+            holding nothing but the key is missing with the not-yet-written line and no trigger
+            fired, and a name holding the key beside research has both named among its stale
+            sections. Split apart rather than added to the existing test because a mutation caught
+            by an assertion it was not aimed at shows nothing about the one it was, which is what
+            the previous correction's sweep stopped on.
+Expected:   derived: the judge is read over constructed sections rather than over a replayed store,
+            and the figures above are counted from a copy of the operator's store. No expectation
+            file changes.
+Tests:      1140, from 1138. The one test that covered the missing state split into three, so each
+            of the three ways a name can hold no research fails on its own.
+Mutated:    the rule, stated before the sweep: break each of the two properties this rests on, that
+            the key under each figure makes no record, and that it is dropped from the record test
+            alone rather than from the judgement. Not mutated: the two cases the test already
+            carried, a name with no sections and a name whose sections all fell back, which this
+            correction does not change and which the sweep would have found already green.
+            Predicted:
+            M1 the record test counting every accepted section again: the key-alone test red where
+            it reads the state, and nothing else, the two older cases holding no accepted section at
+            all.
+            M2 the key dropped from the judgement rather than from the record test alone: the
+            beside-research test red where it reads the stale sections, and nothing else, the
+            key-alone test still missing because the filter leaves it nothing either way.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1140 of 1140 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
+            375 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 382 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim is
+            added or reworded: section 15.8 already states the rule this brings the judge to, so the
+            claims stand at 375 as they were. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the control this makes reachable starts a pass by running the worker's verb as a process
+            of its own, which works where the read surface sits inside a checkout and states that it
+            does not where it sits anywhere else. Nothing records the request, so a press that
+            starts nothing leaves no row. Also unchanged: tonight's list calls its link to a name a
+            report whether or not one was written, and the night header counts names carrying prose,
+            which the key is.
