@@ -17084,11 +17084,11 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             M1 turned 1 red, the watching test where an earlier pass's rows are read as this one's.
             M2 turned 1 red, the watching test on the state while the pass runs.
             M3 turned 1 red, the steps test on the line of the script that reads the count.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1126 of 1126 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. One claim
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 373 claims,
+            373 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 380 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim
             added, section 15.9's row for a pass as it runs, which passes on `read-surface`, and
             section 15.12's second step is corrected in the same pass without adding one, the steps
             being a list rather than a table. Both gates ran with this entry in place, and the
