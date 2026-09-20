@@ -572,7 +572,7 @@ public sealed class SinglePageApp : IComponent
         chart.Append("</div>");
         chart.Append(Cards.Key(
             "How to read it.",
-            "A hollow candle closed above where it opened and a filled one closed below. Shaded bands are prices the stock has repeatedly turned at: green below the price is support, orange above it is resistance, and the column on the right names the last close and each band's edges. Beside the chart, on the same prices, is how many shares traded at each price, with a rule where a bar would reach if every price had traded the same and another at twice that.",
+            "A hollow candle closed above where it opened and a filled one closed below. Shaded bands are prices the stock has repeatedly turned at: green below the price is support, orange above it is resistance, and the column on the right names the last close and each band's edges, drawing the edges of the nearest band on either side in that band's own colour. The row above the chart names the averages and those two colours. Beside the chart, on the same prices, is how many shares traded at each price, with a rule where a bar would reach if every price had traded the same and another at twice that.",
             "The plan buys at the bands below the price and sells at the ones above. Where many shares changed hands, many holders paid about that price, which is why the price tends to stall there."));
         chart.Append("<div class=\"sub\">Momentum</div>");
         chart.Append("<div class=\"fig\">").Append(marks.MomentumPanel(ticker, readings)).Append("</div>");

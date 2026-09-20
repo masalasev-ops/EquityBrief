@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - .claude/rules/checks.md - `read-surface` reads what a picture is drawn at and what is written over it
+
+Corrects: the row stated that a screen is read at the width of the screen it is read on and that the column's ceiling is the widest picture the name page draws, and said nothing about the size a picture is drawn at. Two were drawn at the width of whatever held them, so each was scaled up to fill its card and the type inside it grew with it, and the chart wrote every band's name and every average's name inside its own plot, over the prices they were about.
+Was:
+> ... with the page's own watching read off the shell's script, the suite having no browser to run it in |
+Now:
+> ... with the page's own watching read off the shell's script, the suite having no browser to run it in; and no picture the five surfaces draw is stretched to the width of what holds it, each named where one is, with nothing written inside the chart's plot, the averages and the two hues named in a row above it and the nearest band's edges drawn in its hue in the column, the panel beneath as wide as the chart's own plot and the profile beside it carrying that row's height, so a session is at one distance across the two and a price at one height |
+Why: the operator read the chart and could make nothing out on it. The words were written where the price is, and the check that reads this surface had no assertion about where a word may be drawn or how large a picture may be drawn.
+
 ### 2026-09-19 - .claude/rules/checks.md - `price-storage-form` gains a third half, over what a query does with a price
 
 Authorised by: A stored price is chosen and ordered by its value and never by the text it is stored as

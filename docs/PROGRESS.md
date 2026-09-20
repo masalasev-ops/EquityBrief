@@ -17194,3 +17194,69 @@ Carried:    nothing owed by this repair, and one thing owed by the operator. Thr
             opened again around the merge, which the runbook states as the cost of editing a pinned
             source. No score is lost: no night has run under them. The two evaluator versions moved
             with them and nothing stands registered against either.
+
+### 5.8 - correction: a screen fills the screen it is read on, no picture is scaled up to fill what holds it, and nothing is written over the price   2026-09-19
+Corrects:   three faults in one picture, all of them making the chart hard to read. The column's
+            ceiling is the widest picture the name page draws, and the pictures were drawn at a size
+            chosen when the page was a narrow one, so a screen 1,800 points wide drew a column of
+            1,284 and about 500 points of empty margin either side. Two pictures were drawn to the
+            width of whatever held them rather than at a size of their own, so each was scaled up to
+            fill its card and everything inside it grew with it: the twelve-month chart's labels
+            stood 14 per cent larger than the same chart's in the card below it and the momentum
+            panel's 25 per cent larger. And the chart wrote its words inside its own plot: five band
+            names at the left, over the oldest sessions and crossed by their own edge lines, three
+            average names at the right, over the newest sessions, which are the ones a reader is
+            looking at, and the volume caption across the volume bars.
+Found:      by the operator on 2026-09-19, first that the screen seemed too narrow, with a picture
+            of tonight's page filling about two thirds of it, and then that nothing could be made
+            out on the daily chart, with a picture of it.
+Measured:   over the pictures the name page draws and the stylesheet's own numbers. The chart with
+            its price axis and the profile beside it came to 1,196, which with the card's padding
+            and the page's gutter is the 1,284 the column stopped at, 71 per cent of a screen 1,798
+            points wide. Drawn at the sizes below they come to 1,612 and the column to 1,700, 95 per
+            cent of it, and on a narrower screen the column is that screen's own width as before.
+            Eight words were drawn inside the plot of one name's chart and none is now.
+Repaired:   the plot is drawn 1,376 points wide rather than 960, which is the width the column
+            allows once the price axis and the profile are beside it, so a year of sessions is drawn
+            with half again the room and the candle bodies stand at 3.3 points rather than 2.3. The
+            twelve-month chart and the momentum panel carry their own width, the panel at the width
+            of the chart's plot. Nothing is written inside the plot: a row above the picture names
+            each average with a swatch drawn in that average's own stroke and names the two hues,
+            the column on the right draws the edges of the nearest band on either side in that
+            band's hue, the table beneath still names every band with its role and its members, and
+            the volume caption sits in the gap above its bars. The profile beside the chart carries
+            the same row's height, because the two are anchored at the top and without it every
+            price in one would sit a row above the same price in the other.
+Missed:     the column's rule was written when the widest picture was the only thing setting it, and
+            it held. What nothing asserted is the two things this repairs: that a picture is drawn
+            at the size it is read at, and that a word is not drawn over what it is about. Both read
+            as correct to every test here, because a picture scaled up is still the right shape and
+            a label written over a candle is still the right label, which is what makes this the
+            kind of defect a person sees and a test does not.
+Guarded:    every picture the five surfaces draw is read and one given the width of what holds it
+            fails, named by its own class rather than counted, over a population the test states;
+            the chart is read for anything written inside its plot and for the row above it; the
+            panel's plot is read against the chart's and the profile's offset against the chart's,
+            which is what holds the pair level; and the column's ceiling is still derived from the
+            pictures themselves rather than from a number kept beside the check, so the two cannot
+            drift apart. The chart's own design test reads the legend rather than the words that
+            were in the plot, and the tag on the price column is read against the plot the chart
+            draws rather than against a number written here.
+Expected:   derived: the ceiling is computed in the test from the widths the page draws. No
+            expectation file changes.
+Tests:      1132, from 1131. One added to `read-surface`.
+Mutated:    the rule, stated before the sweep: break each of the three properties this rests on, the
+            column being the pair of pictures with the padding and the gutter around it, a picture
+            being drawn at its own size, and the panel sharing the chart's plot. Not mutated: the
+            width the plot is drawn at, which the column test reads through the ceiling it derives,
+            and the profile's offset, which the same test reads beside the panel's.
+            Predicted:
+            M1 the column left at the width the old pictures set: the column test red where it
+            derives the ceiling from the pictures; nothing else.
+            M2 the momentum panel drawn to fill what holds it again: the picture test red naming the
+            panel; nothing else.
+            M3 the panel's plot drawn narrower than the chart's: the picture test red where the two
+            are read against each other; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair.
