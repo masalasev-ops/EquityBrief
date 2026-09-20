@@ -50,11 +50,13 @@ public static class Cards
         string? title = null,
         string? section = null,
         bool filed = false,
-        string? note = null)
+        string? note = null,
+        string? id = null)
     {
         var card = new StringBuilder();
 
         card.Append($"<section class=\"card spined{(filed ? " fund" : string.Empty)}\"");
+        card.Append(id is null ? string.Empty : $" id=\"{Escaped(id)}\"");
         card.Append(section is null ? string.Empty : $" data-section=\"{Escaped(section)}\"");
         card.Append("><div class=\"spine\">");
         card.Append($"<div class=\"lbl\">{Escaped(label)}</div>");

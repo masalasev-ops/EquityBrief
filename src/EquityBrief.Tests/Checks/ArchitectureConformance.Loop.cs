@@ -933,6 +933,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Listing history"),
         CheckReach.Key("15.9 Name", "A pass as it runs"),
         CheckReach.Key("15.9 Name", "Sections left out"),
+        CheckReach.Key("15.9 Name", "Contents"),
     ];
 
     // Rows the document lost after the prediction. The provenance footer went at the 5.8

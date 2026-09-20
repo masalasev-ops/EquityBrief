@@ -17362,3 +17362,69 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             from 373. Both gates ran with this entry in place, and the operator's store under
             `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: a name's page opens with a contents naming every region it drew, each a link to itself   2026-09-20
+Corrects:   a name's page drew sixteen regions on a name holding every written section and offered
+            no way to reach one of them but scrolling. The only navigation on it was the walk to the
+            previous and next name, at the foot. What the page is for, its three refusals and the
+            ten words it uses were drawn as a preamble above the first card rather than as a region
+            of the page, so they were neither reachable nor listed.
+Found:      by the operator on 2026-09-19, reading two reports of their own and asking for the same
+            here: a contents at the head that each section can be reached from.
+Measured:   over the page as it was drawn for a name holding every section: sixteen regions, one
+            element of navigation, and that one at the foot and about other names rather than about
+            this page. Nine of the sixteen are drawn for every name in the index and the rest only
+            where a section has been written, so what a contents may name is not the same set twice.
+Repaired:   the page collects each region as it draws it and writes the contents from what it
+            collected, which is why the regions are built apart from the page and joined under it.
+            Every entry is numbered from where a reader starts, in the order the page draws, and
+            links to the region itself; every region carries an id to be reached by, the written
+            sections deriving theirs from the section's own name so a name holding fewer of them
+            does not move another's link. What the page is for is now the first region rather than a
+            preamble, under its own heading and in the contents like any other.
+Missed:     the page grew a region at a time, and no checkpoint added enough of them at once for the
+            want of a way in to be the thing that checkpoint was about. Every region was reachable
+            by scrolling, which is not the same as reachable and reads the same to every assertion
+            here: a page is correct region by region and unreadable as a whole, and nothing was
+            looking at the whole.
+Guarded:    the contents is read against the regions the page drew, in both directions and off the
+            markup rather than from a list kept beside the check, so a region drawn without an entry
+            and an entry naming a region the page does not draw each fail. The numbering is read as
+            contiguous from where a reader starts rather than as a count, and the contents is read
+            to stand above the first region it names, which is the one thing a correct list of links
+            can still get wrong.
+Expected:   derived: the regions are read off the page the test fetched rather than stated. No
+            expectation file changes.
+Tests:      1134, from 1133. One added to `read-surface`.
+Mutated:    the rule, stated before the sweep: break each of the three properties this rests on,
+            every region being recorded as it is drawn, the numbering starting where a reader does,
+            and the contents standing above what it names. Not mutated: the id a written section
+            derives from its own name, which the same assertion reads through the links it resolves,
+            and the words each entry carries, which the same test reads for emptiness.
+            Predicted:
+            M1 a region drawn without recording itself: the contents test red where it reads the
+            regions against the entries; nothing else.
+            M2 the contents numbered from one rather than from where a reader starts: the contents
+            test red on the numbering; nothing else.
+            M3 the contents drawn after the regions it names: the contents test red where it reads
+            what the contents stands above; nothing else.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1133 of 1134 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the contents test where it reads the regions against the entries.
+            M2 turned 1 red, the contents test on the numbering it reads off the entries.
+            M3 turned 1 red, the contents test where it reads what the contents stands above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1134 of 1134 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 372 claims,
+            372 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 379 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. Section 15.9
+            gains one row, the contents at the head of a name's page, which nothing claimed before,
+            so the claims stand at 372 from 371. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair.

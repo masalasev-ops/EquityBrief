@@ -255,6 +255,14 @@ p[data-most],.cost{font-size:13px;color:var(--soft);margin-top:8px}
 .how-it-got-here figure{margin:0}
 .how-it-got-here figcaption{font-size:12px;color:var(--soft);margin-top:4px}
 .moves-table td[data-cause='none'],td.cause[data-cause='none']{color:var(--soft);font-style:italic}
+/* the contents, at the head of a name's page: two columns of links, one on a narrow screen */
+nav.contents{margin:0 0 24px;padding:16px 20px;border:1px solid var(--hair);border-radius:8px;background:var(--surface)}
+nav.contents ol{list-style:none;margin:0;padding:0;columns:2;column-gap:28px;font-size:14px}
+nav.contents li{margin:0 0 7px;break-inside:avoid}
+nav.contents a{text-decoration:none;color:var(--soft);display:flex;gap:10px;align-items:baseline;min-height:22px}
+nav.contents a:hover{color:var(--ink)}
+nav.contents .c-n{color:var(--soft);font-variant-numeric:tabular-nums;min-width:1.4em;text-align:right;flex:0 0 auto}
+@media (max-width:700px){nav.contents ol{columns:1}}
 nav.walk{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--ink)}
 nav.walk a{text-decoration:none;display:flex;flex-direction:column;min-height:44px;justify-content:center;font:600 16px var(--serif)}
 nav.walk a::before{font:12px var(--sans);color:var(--soft);letter-spacing:.08em;text-transform:uppercase}
