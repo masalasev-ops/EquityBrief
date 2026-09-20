@@ -18050,8 +18050,15 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             first still following the store.
             M2 the header's prose counted over every accepted section again: the header test red
             where it reads its own counts, and nothing else, the rows test reading no header.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 5 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. Section 15.7's
+            research row comes into scope and passes, so 381 claims stand with 376 passing and 5 out
+            of scope, being the ask and the queue screen's four. Both gates ran with this entry in
+            place, and the operator's store under `data/` was not touched by either.
 Carried:    the ask itself. A row now says a report was not written and offers no way to ask for
             one, which 9.2 adds with the request store behind it. Until then the only way to start a
             pass is the control on a name's own page, which starts a process rather than writing a
