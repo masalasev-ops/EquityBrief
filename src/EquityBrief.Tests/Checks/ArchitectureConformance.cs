@@ -1315,8 +1315,10 @@ public partial class ArchitectureConformance
         // 42 from 41 at the 7.0 ruling, which added the name screen's line for a name whose
         // stored series is suspect. 43 at the 5.8 correction that listed the names holding
         // research on the universe screen. 44 at the one that drew a name's listing history,
-        // and 45 at the one that watched a pass the page started.
-        Assert.Equal(45, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // and 45 at the one that watched a pass the page started. 45 still at the correction
+        // that removed the provenance footer and named the sections left out, one row for one,
+        // and 46 at the one that put a contents at the head of a name's page.
+        Assert.Equal(46, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1348,7 +1350,9 @@ public partial class ArchitectureConformance
         // drawing a refused draft: the provenance footer's row leaves with its three parts,
         // its promise held by the stamp on each card it described, and the lines naming what
         // was left out arrive as the one row that claims them.
-        Assert.Equal(128, inDocument.Length);
+        // 129 at the correction that put a contents at the head of a name's page, one row and
+        // one claim: a reader reaching a section is a claim about a surface.
+        Assert.Equal(129, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

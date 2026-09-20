@@ -1310,6 +1310,10 @@ internal static class Scope
             Verdict.Pass,
             "a name whose cause section the shipped checker accepted over the recorded model draws that section's sentence in the row of the one move it names and states no cause in every other row, with the date and model read back off the markup against the store, and a name with none draws the column as absent",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Contents")] = new Scoped(
+            Verdict.Pass,
+            "the contents is read against the regions the page drew in both directions, so neither a region nobody can reach nor an entry pointing at nothing passes, with the numbering contiguous from where a reader starts and the contents standing above the first region it names",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "Sections left out")] = new Scoped(
             Verdict.Pass,
             "a section the checker left out and one the newest pass did not write each draw one line naming every rule that refused them, with what the checker extracted beside each rule and the draft's own sentence never drawn, repeats collected under their rule, read over the reasons the shipped checker composes for prose written to break each rule in turn, and a reason carrying no second refusal drawn as it was stored",
@@ -1946,6 +1950,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
         // The lines were drawn from 6.5 and nothing in section 15 claimed them until the
         // 5.8 correction that stopped them carrying the draft a checker refused.
+        [CheckReach.Key("15.9 Name", "Contents")] = "5.8",
         [CheckReach.Key("15.9 Name", "Sections left out")] = "6.5",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
         // parts the research runner draws. The line saying research is missing or

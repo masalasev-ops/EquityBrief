@@ -419,6 +419,24 @@ public sealed class SinglePageApp : IComponent
         var session = bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null;
         var company = mast?.Company is { Length: > 0 } named ? named : ticker;
 
+        // The cards, held apart from the region so the contents can be written from what was
+        // drawn and still stand above it. A card records itself as it is added, which is what
+        // makes the contents a reading of the page rather than a second list of its sections.
+        var body = new StringBuilder();
+        var onThePage = new List<ContentsEntry>();
+
+        void Card(string id, string title, string markup)
+        {
+            onThePage.Add(new ContentsEntry(onThePage.Count, title, id));
+            body.Append(markup);
+        }
+
+        // A written section's own id, which its entry in the contents links to. Derived from
+        // the section's name rather than from its position, so a name holding fewer sections
+        // does not move another section's link.
+        static string SectionId(string section) =>
+            "s-" + new string([.. section.ToLowerInvariant().Select(letter => char.IsLetterOrDigit(letter) ? letter : '-')]);
+
         // The written sections drawn in one place, each where section 4 puts it, in a
         // card whose left column states the day it was written.
         // see: A research record is written and dated per section, not as a whole
@@ -437,24 +455,32 @@ public sealed class SinglePageApp : IComponent
                 // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
                 if (UnderTheFigures.Contains(name, StringComparer.Ordinal))
                 {
-                    region.Append(Cards.Dated(
+                    Card(
+                        SectionId(name),
                         name,
-                        KeyDated,
-                        section.AsOf,
-                        section.AsOf == session
-                            ? marks.WrittenSection(ticker, section, documents, dated: "written for the close of")
-                            : marks.KeyForAnotherNight(ticker, name, section.AsOf, session),
-                        section: name));
+                        Cards.Dated(
+                            name,
+                            KeyDated,
+                            section.AsOf,
+                            section.AsOf == session
+                                ? marks.WrittenSection(ticker, section, documents, dated: "written for the close of")
+                                : marks.KeyForAnotherNight(ticker, name, section.AsOf, session),
+                            section: name,
+                            id: SectionId(name)));
 
                     continue;
                 }
 
-                region.Append(Cards.Dated(
+                Card(
+                    SectionId(name),
                     name,
-                    "Written",
-                    section.AsOf,
-                    marks.WrittenSection(ticker, section, documents),
-                    section: name));
+                    Cards.Dated(
+                        name,
+                        "Written",
+                        section.AsOf,
+                        marks.WrittenSection(ticker, section, documents),
+                        section: name,
+                        id: SectionId(name)));
             }
         }
 
@@ -497,23 +523,33 @@ public sealed class SinglePageApp : IComponent
 
         region.Append(Cards.Masthead(ticker, identity.ToString(), asOf));
 
-        // What the page is for and what it refuses to do, before any figure, and the
-        // words it uses one disclosure down.
-        region.Append(Intro(ticker, company));
+        // What the page is for and what it refuses to do, before any figure, and the words it
+        // uses beneath that. First, so a reader meets the refusals before the first number.
+        Card("how-to-read", "How to read this page", Cards.Computed(
+            "How to read this page",
+            Intro(ticker, company),
+            id: "how-to-read",
+            region: "how-to-read"));
 
         // Why it is here, which section 15.9 puts above the chart and which is
         // present only when the name is on tonight's list, beneath the line
         // section 18 draws where the listing was written before the correction.
         var why = WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection) + marks.WhyItIsHere(ticker, firedReasons);
 
-        region.Append(firedReasons.Count > 0
-            ? Cards.Computed(
+        if (firedReasons.Count > 0)
+        {
+            Card("why", "Why it is here", Cards.Computed(
                 "Why it is here",
                 why,
                 title: night is { } listed ? Invariant($"On the list on {listed:yyyy-MM-dd} for these reasons") : "On tonight's list for these reasons",
                 stamp: Cards.Night(session),
-                region: "why")
-            : why);
+                id: "why",
+                region: "why"));
+        }
+        else
+        {
+            body.Append(why);
+        }
 
         // The trend state, in a word. Read off the ladder row rather than worked
         // out here, and a name with no row says so rather than showing nothing:
@@ -527,13 +563,14 @@ public sealed class SinglePageApp : IComponent
         // seven things rather than one. It arrives already written, for the reason
         // the event book does: two of its seven parts are fundamentals and no mark
         // renders them.
-        region.Append(Cards.Computed(
+        Card("facts", "Tonight's figures", Cards.Computed(
             "Fact strip",
             trend + factStrip + Cards.Key(
                 "Two sources.",
                 "The close, the averages, momentum and the typical daily move are computed from the stored daily bars. The market value, the two price multiples and the report date come from the latest filing and the calendar.",
                 "Relative strength and trend momentum are here for context. Nothing on this page is decided by them."),
             stamp: Cards.Night(session),
+            id: "facts",
             region: "facts"));
 
         // The short version, section 4's first section, with its date beside it.
@@ -541,7 +578,7 @@ public sealed class SinglePageApp : IComponent
 
         // How it got here, the twelve-month picture above the table of the biggest moves,
         // each move numbered on the picture as it is in the table.
-        region.Append(Cards.Computed(
+        Card("how-it-got-here", "How it got here", Cards.Computed(
             "How it got here",
             marks.MovesTable(ticker, moves, twelveMonths, causes) + Cards.Key(
                 "How to read it.",
@@ -549,6 +586,7 @@ public sealed class SinglePageApp : IComponent
                 "This is the path that produced tonight's bands."),
             title: "The last twelve months",
             stamp: Cards.Night(session),
+            id: "how-it-got-here",
             region: "how-it-got-here"));
 
         // The chart region: the level chart and, on its price scale, the volume profile
@@ -582,7 +620,7 @@ public sealed class SinglePageApp : IComponent
         chart.Append("<div class=\"sub\">Levels</div>");
         chart.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent)).Append("</div>");
 
-        region.Append(Cards.Computed("The chart", chart.ToString(), title: "The daily chart and its levels", stamp: Cards.Night(session), region: "chart"));
+        Card("chart", "The daily chart and its levels", Cards.Computed("The chart", chart.ToString(), title: "The daily chart and its levels", stamp: Cards.Night(session), id: "chart", region: "chart"));
 
         // The key under each figure, beneath the figures it explains.
         Draw(UnderTheFigures);
@@ -600,13 +638,13 @@ public sealed class SinglePageApp : IComponent
             "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop.",
             "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
 
-        region.Append(Cards.Computed("The plan", planned.ToString(), title: "Where it is bought, sold, and wrong", stamp: Cards.Night(session), region: "plan"));
+        Card("plan", "Where it is bought, sold, and wrong", Cards.Computed("The plan", planned.ToString(), title: "Where it is bought, sold, and wrong", stamp: Cards.Night(session), id: "plan", region: "plan"));
 
         // The listing history, after the plan: the evenings the name was on the list and what
         // followed each, section 15.9's row.
         if (history is not null)
         {
-            region.Append(Cards.Computed(
+            Card("listing-history", "The evenings it was on the list", Cards.Computed(
                 "Listing history",
                 marks.ListingHistory(ticker, history) + Cards.Key(
                     "How to read it.",
@@ -614,6 +652,7 @@ public sealed class SinglePageApp : IComponent
                     "One evening is one observation. A record is measured per reason across every name it fired on, so none is formed here for this name."),
                 title: "The evenings it was on the list",
                 stamp: Cards.Night(session),
+                id: "listing-history",
                 region: "listing-history"));
         }
 
@@ -623,7 +662,7 @@ public sealed class SinglePageApp : IComponent
         // The numbers, which section 4 puts sixth. It arrives already written, for the
         // reason the event book does: what it holds is stored figures and the sentences
         // that state an absence, rather than a mark.
-        region.Append(Cards.Dated(
+        Card("numbers", "The numbers", Cards.Dated(
             "The numbers",
             "Filed",
             filedOn,
@@ -632,7 +671,8 @@ public sealed class SinglePageApp : IComponent
                 "Each figure is from the company's own filing, dated as the filing is. The estimate is the analysts' average before the report.",
                 "These are the company's reported results. Nothing in the plan is computed from them."),
             filed: true,
-            note: "from the filing"));
+            note: "from the filing",
+            id: "numbers"));
 
         // The industry cycle and the two cases, section 4's seventh and eighth.
         Draw(AfterTheNumbers);
@@ -642,7 +682,7 @@ public sealed class SinglePageApp : IComponent
 
         // Dates and sources, section 4's last two: the calendar, the dated items a pass
         // read out of the documents, and every document the written sections cite.
-        region.Append(Cards.Computed(
+        Card("sources", "What the research read", Cards.Computed(
             "Dates and sources",
             marks.DatesAndSources(
                 ticker,
@@ -659,9 +699,17 @@ public sealed class SinglePageApp : IComponent
         // has cost stated beside them before any is pressed.
         var research = marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused, pass, controls, cost);
 
-        region.Append(researchState?.State == "missing"
-            ? Invariant($"<section class=\"absent\" id=\"unwritten\"><div class=\"lbl\">Research not yet written</div><h2>The researched sections for {Escaped(ticker)} have not been written</h2>{research}</section>")
-            : Cards.Computed("Research", research, title: "Where the research stands", region: "research"));
+        Card(
+            researchState?.State == "missing" ? "unwritten" : "research",
+            "Where the research stands",
+            researchState?.State == "missing"
+                ? Invariant($"<section class=\"absent\" id=\"unwritten\"><div class=\"lbl\">Research not yet written</div><h2>The researched sections for {Escaped(ticker)} have not been written</h2>{research}</section>")
+                : Cards.Computed("Research", research, title: "Where the research stands", id: "research", region: "research"));
+
+        // The contents, written from the cards that were drawn and standing above them, which
+        // is why the cards were held apart until now.
+        region.Append(marks.Contents(ticker, onThePage));
+        region.Append(body);
 
         // The walk, which section 15.9 puts last: previous and next on tonight's
         // list, so an evening's reading is one pass through with no return to

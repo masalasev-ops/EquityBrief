@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - ARCHITECTURE.html - section 15.9 gains a contents at the head of a name's page
+
+Corrects: the page draws sixteen regions on a name holding every section and offered no way to reach one but scrolling. The operator read a report of their own with a contents at its head, asked for the same here, and there was nothing in section 15 the page could be held to.
+Was:
+> (no row: the table opened on the suspect-prices region)
+Now:
+> <tr><td>Contents</td><td>at the head of the page: a numbered link to each region the page drew and to no other, in the order the page drew them</td></tr>
+Why: a reader who cannot reach a section is a reader who does not read it, and a page this long needs a way in. The row is written as what the page drew rather than as a list of sections so the two cannot come apart: the check reads it in both directions.
+
+### 2026-09-20 - .claude/rules/checks.md - `read-surface` reads the contents against the regions the page drew
+
+Corrects: the row reached what a page draws, at what size, and what each region says, and nothing held the page to being navigable. A contents naming a region the page does not draw, or a region no entry reaches, would have read as correct to every assertion here.
+Was:
+> ... and every part of the page states the date it is as of on the card that holds it, with no region of its own restating them |
+Now:
+> ... and every part of the page states the date it is as of on the card that holds it, with no region of its own restating them; and a name's page opens with a contents read against the regions it drew in both directions, so neither a region nobody can reach nor an entry pointing at nothing passes, numbered contiguously from where a reader starts and standing above the first region it names |
+Why: the contents is built from what was drawn rather than from a roster kept beside the page, and the assertion is what keeps that true as regions are added and removed.
+
 ### 2026-09-20 - .claude/rules/checks.md - `read-surface` reads what a refusal says and where a date is stated
 
 Authorised by: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page

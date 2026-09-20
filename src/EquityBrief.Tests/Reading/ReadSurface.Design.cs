@@ -275,6 +275,53 @@ public partial class ReadSurface
         Assert.DoesNotContain("m-dist-", none, StringComparison.Ordinal);
     }
 
+    // The contents at the head of a name's page, which is how a reader reaches a section
+    // without scrolling for it. Read in both directions against the cards the page drew, so
+    // neither a card nobody can reach nor an entry pointing at nothing can be written.
+    [Fact]
+    public async Task TheContentsNamesEveryCardTheNamePageDrewAndNothingElse()
+    {
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var night = NightIn(store);
+        var name = FiredNamesOn(store, night)[0];
+        var page = await client.GetStringAsync($"/screens/name/{name}");
+
+        var contents = Regex.Match(page, "<nav class=\"contents\"[^>]*>.*?</nav>", RegexOptions.Singleline);
+
+        Assert.True(contents.Success, "The name page draws no contents.");
+
+        var entries = Regex.Matches(contents.Value, "<li><a href=\"#([^\"]+)\"><span class=\"c-n\">(\\d+)</span>([^<]*)</a></li>")
+            .Select(match => (Id: match.Groups[1].Value, At: int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture), Title: match.Groups[3].Value))
+            .ToArray();
+
+        // A page drawing the computed sections alone still reaches the count below, so the
+        // floor is what a name with no research carries rather than what this one does.
+        Assert.True(entries.Length >= 9, $"The contents names {entries.Length} card(s), expected at least 9.");
+        Assert.Contains($"data-entries=\"{entries.Length}\"", contents.Value, StringComparison.Ordinal);
+
+        // Numbered from where a reader starts, contiguously, in the order the page draws.
+        Assert.Equal([.. Enumerable.Range(0, entries.Length)], [.. entries.Select(entry => entry.At)]);
+        Assert.All(entries, entry => Assert.NotEqual(string.Empty, entry.Title));
+
+        // Every card the page drew is named once, and every entry reaches a card. The cards
+        // are read off the markup rather than from a list kept here, so a card added without
+        // an entry fails this without anything else being edited.
+        // Both shapes a region is drawn in: an ordinary card, and the dashed outline a name
+        // with no research is drawn in, which is a region a reader reaches like any other.
+        var cards = Regex.Matches(page, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).ToArray();
+
+        Assert.Equal(cards.Length, cards.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal([.. cards], [.. entries.Select(entry => entry.Id)]);
+
+        // And the contents stands above the first card it names rather than among them.
+        Assert.True(
+            page.IndexOf("<nav class=\"contents\"", StringComparison.Ordinal) < page.IndexOf("<section class=\"card\" id=\"how-to-read\"", StringComparison.Ordinal),
+            "The contents is drawn below the first card it names.");
+    }
+
     [Fact]
     public async Task EveryScreenIsLaidOutInCardsAndEveryKeyClosesOnWhatToTakeFromTheFigure()
     {

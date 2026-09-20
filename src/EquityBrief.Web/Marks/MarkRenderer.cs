@@ -416,6 +416,10 @@ public sealed record PriceAxis(double Low, double High)
 // table beside the chart numbers.
 public sealed record ChartFrame(double? Scale = null, IReadOnlyList<DateOnly>? Markers = null);
 
+// One entry of a page's contents: where it sits as a reader counts down the page, what the
+// card calls itself, and the card's own id, which is what the entry links to.
+public sealed record ContentsEntry(int At, string Title, string Id);
+
 // The marks, as SVG strings written server side.
 //
 // This is the level chart mark with one of its four elements absent. Section
@@ -1674,6 +1678,34 @@ public sealed class MarkRenderer : IComponent
             "A sentence a reader acts on that was produced by a value nobody wrote is what a catch-all arm " +
             "makes invisible, so the page fails rather than rendering a default."),
     };
+
+    // The contents, section 15.9's head: every card the page drew, in the order it drew them
+    // and numbered from where a reader starts, each a link to the card itself.
+    //
+    // Built from what was drawn rather than from a roster kept beside the page, so a card
+    // added without an entry cannot happen and an entry naming a card the page does not carry
+    // cannot be written. A name holding no research draws a shorter contents for that reason
+    // rather than links to sections that are not there.
+    public string Contents(string ticker, IReadOnlyList<ContentsEntry> entries)
+    {
+        if (entries.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var nav = new StringBuilder();
+
+        nav.Append(Invariant, $"<nav class=\"contents\" aria-label=\"What is on this page\" data-ticker=\"{Escaped(ticker)}\" data-entries=\"{entries.Count}\"><ol>");
+
+        foreach (var entry in entries)
+        {
+            nav.Append(Invariant, $"<li><a href=\"#{Escaped(entry.Id)}\"><span class=\"c-n\">{entry.At}</span>{Escaped(entry.Title)}</a></li>");
+        }
+
+        nav.Append("</ol></nav>");
+
+        return nav.ToString();
+    }
 
     // The walk, section 15.9's last region: previous and next on tonight's list,
     // so an evening's reading is one pass through with no return to the list.
