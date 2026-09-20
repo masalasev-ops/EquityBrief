@@ -17340,6 +17340,25 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             reads the line the page draws; nothing else.
             M3 the numbers card drawn without the filing it is as of: the dates test red where it
             reads that card's spine; nothing else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1132 of 1133 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the refusal test on the composed reason it reads back.
+            M2 turned 1 red, the refusal test on the line the page draws.
+            M3 turned 1 red, the dates test on the filing the numbers card is as of.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. The provenance
+            footer's row leaves with the three parts it was read as, its promise held by the date
+            stamped on each card it described, and one row arrives for the lines naming what a
+            checker left out, which nothing in section 15 claimed before, so the claims stand at 371
+            from 373. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing owed by this repair.
