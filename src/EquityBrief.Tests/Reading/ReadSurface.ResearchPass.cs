@@ -929,7 +929,14 @@ public partial class ReadSurface
             "('FFFF', 'The two cases', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL), " +
             "('FFFF', 'The short version', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL), " +
             "('GGGG', 'The two cases', 1, '2026-09-01', 'm', 'accepted', 'p', '[]', NULL), " +
-            "('GGGG', 'The two cases', 2, '2026-09-10', 'm', 'accepted', 'p', '[]', NULL);");
+            "('GGGG', 'The two cases', 2, '2026-09-10', 'm', 'accepted', 'p', '[]', NULL), " +
+            // The key under each figure, which the overnight queue writes for every name
+            // each night whatever was researched. HHHH holds it and nothing else and is a
+            // name with no report; AAAA holds it beside research and is still one name.
+            // Counting it would make this figure a count of the index: on the operator's
+            // store it stood at 502 where one name held research.
+            "('HHHH', 'The key under each figure', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL), " +
+            "('AAAA', 'The key under each figure', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL);");
 
         var prose = TonightScreen.Prose(night, await Api(store).WrittenOnOrBeforeAsync(night));
         var header = new MarkRenderer().NightHeader(night, 503, 4, "00:03:10", null, null, prose);
@@ -939,8 +946,18 @@ public partial class ReadSurface
 
         // Counted by a query of the test's own: a name is fresh where an accepted section is
         // dated the night, and reused where it has accepted sections and none is.
-        var fresh = Rows(store, "SELECT COUNT(DISTINCT ticker) FROM research_section WHERE status = 'accepted' AND as_of = '2026-09-08';").Single()[0];
-        var names = Rows(store, "SELECT COUNT(DISTINCT ticker) FROM research_section WHERE status = 'accepted' AND as_of <= '2026-09-08';").Single()[0];
+        const string NotTheKey = "AND section <> 'The key under each figure' ";
+
+        var fresh = Rows(store, "SELECT COUNT(DISTINCT ticker) FROM research_section WHERE status = 'accepted' " + NotTheKey + "AND as_of = '2026-09-08';").Single()[0];
+        var names = Rows(store, "SELECT COUNT(DISTINCT ticker) FROM research_section WHERE status = 'accepted' " + NotTheKey + "AND as_of <= '2026-09-08';").Single()[0];
+
+        // The same counts without the filter, which is what this figure used to be. They
+        // differ over this store, so the filter is shown to do something rather than being
+        // asserted over data where it could not.
+        var everySection = Rows(store, "SELECT COUNT(DISTINCT ticker) FROM research_section WHERE status = 'accepted' AND as_of <= '2026-09-08';").Single()[0];
+
+        Assert.Equal("7", everySection);
+        Assert.NotEqual(everySection, names);
 
         Assert.Equal(fresh, line.Groups[1].Value);
         Assert.Equal(names, line.Groups[3].Value);

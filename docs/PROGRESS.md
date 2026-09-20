@@ -18005,3 +18005,54 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    phase 8's sign-off, still owed on phase 8 as a whole and discharged by nothing here
             (see: The report generation the operator asked for is built as phase 9, and phase 8's
             sign-off is owed after it rather than before it).
+
+### 9.1 - each row on tonight's list says whether the name holds research, and the link is drawn with the words of whatever it opens   2026-09-20
+Built:      each drawn row on tonight's list states whether the name holds an accepted section
+            besides the key under each figure, and the link that opens the name is drawn with the
+            words of whichever it opens: a report where one was written, with the day it was written
+            on, and not written where none was. The night header's count of reports carrying prose
+            is counted over researched sections rather than over every stored section.
+Found:      by the operator on 2026-09-20, from this screen: every row carried a link calling itself
+            a report, the pages opened on empty sections, and the header said hundreds of reports
+            carried prose. The correction at 6.5 earlier the same day fixed what a name's own page
+            says; this is the list that sends a reader to it.
+Measured:   over the operator's store as of the night of 2026-09-18, on a copy and never on `data/`:
+            502 names hold an accepted section and 501 of them hold nothing besides the key, so the
+            header's figure of 424 reports carrying prose was a count of the index. Drawn against
+            that store the header now reads one, which is the one name holding research.
+Drawn:      the link keeps its place and changes its words rather than gaining a second element
+            beside it, because a row that says report and not written in two places is a row with
+            two answers to one question. A name holding research carries the day it was written on,
+            on the element rather than in the words, so the figure is on the surface a reader can
+            read back.
+Guarded:    the rows are read back off the page against the store in both directions, so neither a
+            row claiming research the store lacks nor a row hiding research it holds passes, and the
+            words are asserted against what the store holds rather than against the route the link
+            points at, which does not change. The header's own test gains the section that made the
+            old figure wrong: a name holding the key alone, which is not counted, and the key beside
+            research on a name that is, counted once. Its two counts are asserted to differ over
+            that store, so the filter is shown to do something rather than asserted over data where
+            it could not.
+Expected:   derived: the rows are read against the replayed fixture and the header against
+            constructed sections. No expectation file changes.
+Tests:      1141, from 1140. One added for the rows; the header's own is widened rather than
+            replaced.
+Claims:     381, unchanged in number. Section 15.7's research row comes into scope and passes, so
+            376 pass where 375 did and 5 stand out of scope: the ask, which writes a request and
+            waits on the store 9.2 builds, and the queue screen's four.
+Mutated:    the rule, stated before the sweep: break each of the two properties this rests on, that
+            the link's words follow what the store holds, and that the header counts researched
+            sections. Not mutated: where the link points, which does not change and which the
+            assertions deliberately do not read.
+            Predicted:
+            M1 the link drawn with one set of words whatever the store holds: the rows test red
+            where it reads the words against the store, and nothing else, the attribute it reads
+            first still following the store.
+            M2 the header's prose counted over every accepted section again: the header test red
+            where it reads its own counts, and nothing else, the rows test reading no header.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    the ask itself. A row now says a report was not written and offers no way to ask for
+            one, which 9.2 adds with the request store behind it. Until then the only way to start a
+            pass is the control on a name's own page, which starts a process rather than writing a
+            request.

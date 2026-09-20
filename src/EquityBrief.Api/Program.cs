@@ -494,7 +494,8 @@ app.MapGet("/screens/tonight/{night?}", async (
         strengths,
         cells,
         await read.ClosesToTheNightAsync(dated),
-        await read.SuspectSeriesAsync());
+        await read.SuspectSeriesAsync(),
+        await read.ResearchedAsync());
 
     // Whichever row the reader selected, from the hash, and the first row when
     // they have selected none. Section 15.7's region is for whichever row is

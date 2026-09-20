@@ -1,3 +1,4 @@
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Spending;
 using System.Text.Json;
 using EquityBrief.Core.Prices;
@@ -40,11 +41,18 @@ public static class TonightScreen
         IReadOnlyDictionary<string, int> strengthByTicker,
         IReadOnlyDictionary<string, UniverseCell> cellByTicker,
         IReadOnlyList<CloseRow> closesToTheNight,
-        IReadOnlyList<SuspectSeriesRow>? suspects = null)
+        IReadOnlyList<SuspectSeriesRow>? suspects = null,
+        IReadOnlyList<ResearchedRow>? researched = null)
     {
         // The names whose stored series is suspect, which a row says beside the name.
         var suspectByTicker = (suspects ?? [])
             .ToDictionary(row => row.Ticker, StringComparer.Ordinal);
+
+        // The day each name's newest researched section was written, for the names
+        // holding one. A name absent from this holds no research, which is what the
+        // row says and what decides whether it offers to ask for one.
+        var researchedByTicker = (researched ?? [])
+            .ToDictionary(row => row.Ticker, row => row.Written, StringComparer.Ordinal);
 
         // The two newest sessions each name holds at or before the night, newest
         // first, which is what both the close cell and the day change are read
@@ -66,6 +74,7 @@ public static class TonightScreen
                 .Select(listing => Cell(listing, night, strengthByTicker, cellByTicker, sessions) with
                 {
                     Suspect = NameScreen.Suspect(suspectByTicker.GetValueOrDefault(listing.Ticker)),
+                    ResearchedOn = researchedByTicker.TryGetValue(listing.Ticker, out var written) ? written : null,
                 })
                 .OrderByDescending(cell => cell.FiredCount)
                 .ThenByDescending(cell => cell.Strength)
@@ -248,15 +257,21 @@ public static class TonightScreen
             caps.Month);
     }
 
-    // Reports carrying fresh prose against reused, on a night: of the names with an
-    // accepted section as of the night, those with one written on the night, and those
-    // whose every accepted section was written before it. The rows are bounded here as
+    // Reports carrying fresh prose against reused, on a night: of the names with a
+    // researched section as of the night, those with one written on the night, and those
+    // whose every researched section was written before it. The rows are bounded here as
     // well as by the read, so a row after the night counts for neither, and a name is
     // counted once however many sections it carries.
+    //
+    // The key under each figure is not one of them. It is written for every name each
+    // night whatever was researched, so counting it made this figure a count of the index
+    // rather than of the reports: on the operator's store it stood at 502 where one name
+    // held research.
+    // see: A researched name is one holding an accepted section besides the key under each figure
     public static NightProse Prose(DateOnly night, IReadOnlyList<WrittenOnRow> rows)
     {
         var byName = rows
-            .Where(row => row.AsOf <= night)
+            .Where(row => row.AsOf <= night && ClaimRules.IsResearched(row.Section))
             .GroupBy(row => row.Ticker, StringComparer.Ordinal)
             .ToArray();
 

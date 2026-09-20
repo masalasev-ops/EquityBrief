@@ -707,6 +707,10 @@ internal static class Scope
             Verdict.Pass,
             "the region sits above the list rather than inside it and states that no watch list is on file, because no store holds one and none is invented",
             ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Research, per row")] = new Scoped(
+            Verdict.Pass,
+            "each drawn row says whether the name holds a researched section besides the key under each figure, read back off the row against the store in both directions, and the link is drawn with the words of whichever it opens",
+            ByReadSurface),
                                         [CheckReach.Key("15.9 Name", "Why it is here")] = new Scoped(
             Verdict.Pass,
             "each reason that fired is a full sentence with the values beside it, a reason the mapping has no sentence for fails rather than rendering a default, and a name that fired nothing says it is not on tonight's list, and breakout on volume's sentence states section 11's condition as that row's cell states it",
@@ -1960,7 +1964,9 @@ internal static class Scope
         // store they rest on is declared at 9.2 with the components that write
         // it, rather than here ahead of them.
         [CheckReach.Key("15.7 Tonight", "Research, per row")] = "9.1",
-        [CheckReach.Key("15.7 Tonight", "Ask for a report")] = "9.1",
+        // The ask writes a request, and the store it writes to is 9.2's, so the row
+        // comes into scope with the thing behind it rather than with the screen.
+        [CheckReach.Key("15.7 Tonight", "Ask for a report")] = "9.2",
         [CheckReach.Key("15.15 Queue", "Outstanding")] = "9.3",
         [CheckReach.Key("15.15 Queue", "Being written")] = "9.3",
         [CheckReach.Key("15.15 Queue", "Settled")] = "9.3",
