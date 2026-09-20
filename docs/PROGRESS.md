@@ -17655,8 +17655,15 @@ Mutated:    the rule, stated before the sweep: break each of the four properties
             M4 prose the writer already broke into paragraphs not recognised as the parts it states:
             the risks test red where it counts the parts against the stored paragraphs; nothing
             else.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. Section 15.9
+            gains one row, the risks as parts, which nothing claimed before, so the claims stand at
+            375 from 374. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by either.
 Carried:    the risks are drawn in the order they were written in and not by how severe each one is,
             which is the half of what the operator asked for that is not here. A severity is a
             judgement the writer states or nothing does, and a page that sorted them would be
