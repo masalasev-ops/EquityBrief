@@ -17268,11 +17268,11 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             M1 turned 1 red, the column test on the ceiling it derives from the pictures.
             M2 turned 1 red, the picture test on the panel drawn to fill what holds it.
             M3 turned 1 red, the picture test on the plot the panel shares with the chart.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1132 of 1132 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. No claim is
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 373 claims,
+            373 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 380 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim is
             added: section 15.2 already states that a screen is read at the width of the screen it
             is read on and section 15.9 that the chart is drawn with the profile beside it on the
             same price axis, so the claims stand at 373. Both gates ran with this entry in place,
