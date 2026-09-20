@@ -17492,8 +17492,27 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             the mutation is inside the reader this repair moved both screens onto, so a measure
             broken once breaks both surfaces, which is the property the move was made for. The
             prediction now names both and the sweep was run again against it.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: the prediction held as corrected, each mutation turning exactly the tests named
+            for it red and nothing else, on the assertion named for it, read off the failure
+            message. Four runs of the whole suite, never a filter, at this entry's commit, each in
+            its own detached worktree under the session scratchpad, with the tree read before the
+            run to hold only the mutated file and the worktree removed after. The baseline is 1134
+            of 1135 with one red, and that red is this entry: `two-platform` reads every entry
+            written since the 7.2 report for its Windows record, and this one carried a placeholder
+            until the run below filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the distance test on the edge it measures to.
+            M2 turned 1 red, the distance test on the close that sits inside its band.
+            M3 turned 2 red, the name page's distance test and the universe screen's ordering, which
+            is the measure being one thing rather than two: the mutation is inside the shared reader
+            and both surfaces read it.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. Section 15.9
+            gains one row, how far each band sits from the close, which nothing claimed before, so
+            the claims stand at 373 from 372. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair. The operator asked for the ladder drawn as a picture and it
             is not drawn here: the page already draws the bands twice, shaded on the twelve-month
             chart against the price history that made them and again as the plan column, which is
