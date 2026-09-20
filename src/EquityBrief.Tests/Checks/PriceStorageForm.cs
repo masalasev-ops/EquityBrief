@@ -181,8 +181,16 @@ public class PriceStorageForm
         // out, and `Statistic.FromRatio` one call in. It is the crossing 8.2's own
         // text predicted, which is why this set is stated rather than counted.
         // see: A condition is judged against the break-even its own plan demands
+        // `Distances.InTypicalDays` joined the set at the 5.8 correction that stated how far
+        // each of a name's bands sits from the close. It takes a price and a band edge and
+        // returns a count of typical moves, so it crosses in the open, and the crossing is
+        // `Statistic.FromPrice` one call in. It was `UniverseScreen.Distance` before that and
+        // crossed in the same way; moving it to one place both screens read is what made it a
+        // signature this reader can see, which is the point of stating the set.
+        // see: Distances are stated as typical days' moves
         Assert.Equal(
             [
+                "Distances.cs: InTypicalDays",
                 "ForwardReturnSeries.cs: BreakEven",
                 "ForwardReturnSeries.cs: ChangeFromEntry",
                 "MarkRenderer.cs: PlotValue",

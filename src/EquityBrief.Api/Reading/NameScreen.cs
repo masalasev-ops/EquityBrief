@@ -863,6 +863,13 @@ public static class NameScreen
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
+
+        // The move this name usually makes in a session, off the newest reading the indicator
+        // rows hold, which is what every distance on these pages is counted in.
+        var typicalMove = indicators
+            .Where(row => string.Equals(row.Name, IndicatorSeries.Atr14, StringComparison.Ordinal))
+            .OrderBy(row => row.SessionDate)
+            .LastOrDefault()?.Value;
         var (cells, causes) = Causes(moves, accepted);
         var newest = Pass(pass);
         var notWritten = NotWritten(pass, accepted, leftOut);
@@ -930,7 +937,8 @@ public static class NameScreen
                 level.Immediate,
                 level.Strength,
                 level.HasNonAverageAnchor,
-                Members(level.Members)))],
+                Members(level.Members),
+                AwayFromTheClose(bars, level, typicalMove)))],
             absent,
             ladder?.TrendState,
             ladder?.AsOf,
@@ -1374,6 +1382,30 @@ public static class NameScreen
         return reason[..(at + mark.Length)] + string.Join(
             "; ",
             order.Select(rule => texts[rule].Count == 0 ? rule : rule + ": " + string.Join(", ", texts[rule])));
+    }
+
+    // How far a band sits from tonight's close, counted in the moves the name usually makes
+    // in a session. The nearer edge is what is measured, because a band is a range and the
+    // distance to it is the distance to the edge the price would reach first, and a close
+    // inside the band is no distance at all rather than the gap to one of its sides.
+    // see: Distances are stated as typical days' moves
+    static double? AwayFromTheClose(IReadOnlyList<BarRow> bars, LevelRow level, double? typicalMove)
+    {
+        if (bars.Count == 0)
+        {
+            return null;
+        }
+
+        var close = bars[^1].Close;
+
+        if (close >= level.LowEdge && close <= level.HighEdge)
+        {
+            return 0;
+        }
+
+        var nearer = close < level.LowEdge ? level.LowEdge : level.HighEdge;
+
+        return Distances.InTypicalDays(close, nearer, typicalMove);
     }
 
     // The verdict as the page draws it, in the words the judge writes. Nothing is

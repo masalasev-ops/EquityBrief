@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - ARCHITECTURE.html - section 15.9 states how far each band sits from the close
+
+Corrects: the level summary named each band, its role, a strength and its members, and never said how far away any of it was. Tonight's list has stated distances in typical days' moves since 5.4 and a name's own page, which is where a band is acted on, did not.
+Was:
+> (no row: the chart row ended at the level summary table)
+Now:
+> <tr><td>How far each band is</td><td>on every row of the level summary: the gap from tonight's close to the nearer edge of that band, counted in the moves the name usually makes in a session (see: Distances are stated as typical days' moves)</td></tr>
+Why: a band twelve points away means one thing on a name that moves two points a session and another on a name that moves six, and the page gave the reader the subtraction to do. The measure already existed for the list; this is the same one, moved to one place both screens read.
+
+### 2026-09-20 - .claude/rules/checks.md - `read-surface` reads how far each band is from the close
+
+Authorised by: Distances are stated as typical days' moves
+Was:
+> ... numbered contiguously from where a reader starts and standing above the first region it names |
+Now:
+> ... numbered contiguously from where a reader starts and standing above the first region it names; and each of a name's bands states how far it sits from the stored close, counted over that name's own newest typical move and read back off the markup against a computation of the test's own, a close inside a band stating no distance rather than the gap to one of its sides |
+Why: the distance is arithmetic over two stored values, so it is read back against a computation of the test's own rather than against the page's, and the case a reader meets most, a close sitting inside its immediate band, is the one a gap-to-an-edge rule gets wrong.
+
 ### 2026-09-20 - ARCHITECTURE.html - section 15.9 gains a contents at the head of a name's page
 
 Corrects: the page draws sixteen regions on a name holding every section and offered no way to reach one but scrolling. The operator read a report of their own with a contents at its head, asked for the same here, and there was nothing in section 15 the page could be held to.

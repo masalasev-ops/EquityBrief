@@ -934,6 +934,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "A pass as it runs"),
         CheckReach.Key("15.9 Name", "Sections left out"),
         CheckReach.Key("15.9 Name", "Contents"),
+        CheckReach.Key("15.9 Name", "How far each band is"),
     ];
 
     // Rows the document lost after the prediction. The provenance footer went at the 5.8

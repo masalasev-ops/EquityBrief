@@ -85,6 +85,83 @@ public partial class ReadSurface
         Assert.True(move.Highest > move.Lowest, $"{Ticker}'s window ends {move.Ends} and holds no range.");
     }
 
+    // How far each band sits from tonight's close, counted in the moves the name usually
+    // makes in a session, which is the measure tonight's list already states and which a
+    // name's own page did not. Read back off the markup against a computation of the test's
+    // own, so the page and the reader cannot agree by sharing a mistake.
+    // see: Distances are stated as typical days' moves
+    [Fact]
+    public async Task EachBandStatesHowFarItIsFromTheCloseInTypicalDaysMoves()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = NightIn(store);
+        var name = FiredNamesOn(store, night)[0];
+
+        // The close and the typical move as the store holds them, by queries of the test's own.
+        var close = decimal.Parse(
+            Rows(store, $"SELECT close FROM bar WHERE ticker = '{name}' ORDER BY session_date DESC LIMIT 1;").Single()[0],
+            CultureInfo.InvariantCulture);
+
+        // Three bands placed around that close, because the committed bands cannot tell a near
+        // edge from a far one: one wholly below it, one wholly above it, and one holding it.
+        // Without them a distance measured to the wrong edge of a band reads the same as one
+        // measured to the right edge, which is a case the fixture cannot reach on its own.
+        string Edge(decimal price) => price.ToString("0.00", CultureInfo.InvariantCulture);
+
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"VALUES ('{name}', '{night}', '{Edge(close - 20m)}', '{Edge(close - 10m)}', 'support', 0, 1, 1, '[]'), " +
+            $"('{name}', '{night}', '{Edge(close + 10m)}', '{Edge(close + 20m)}', 'resistance', 0, 1, 1, '[]'), " +
+            $"('{name}', '{night}', '{Edge(close - 1m)}', '{Edge(close + 1m)}', 'support', 1, 1, 1, '[]');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = await client.GetStringAsync($"/screens/name/{name}");
+        var table = Regex.Match(page, "<table class=\"level-summary\".*?</table>", RegexOptions.Singleline);
+
+        Assert.True(table.Success, $"The {name} page draws no level summary, and this is what reads it.");
+
+        var typical = double.Parse(
+            Rows(store, $"SELECT value FROM indicator WHERE ticker = '{name}' AND name = 'atr14' ORDER BY session_date DESC LIMIT 1;").Single()[0],
+            CultureInfo.InvariantCulture);
+
+        Assert.True(typical > 0, $"{name} has a typical move of {typical}, which no distance can be counted in.");
+
+        var rows = Regex.Matches(table.Value, "<tr class=\"band\" data-low-edge=\"([0-9.]+)\" data-high-edge=\"([0-9.]+)\".*?data-away=\"([^\"]+)\"", RegexOptions.Singleline)
+            .Select(match => (
+                Low: decimal.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture),
+                High: decimal.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture),
+                Away: match.Groups[3].Value))
+            .ToArray();
+
+        Assert.True(rows.Length >= 2, $"The table lists {rows.Length} band(s), too few to read a distance from.");
+
+        foreach (var row in rows)
+        {
+            // The nearer edge is what is measured, and a close inside the band is no distance
+            // at all rather than the gap to one of its sides.
+            var expected = close >= row.Low && close <= row.High
+                ? 0d
+                : (double)Math.Abs(close - (close < row.Low ? row.Low : row.High)) / typical;
+
+            Assert.Equal(expected, double.Parse(row.Away, CultureInfo.InvariantCulture), 6);
+        }
+
+        // At least one band is drawn as a distance a reader can act on rather than as the
+        // absence, so the assertion above is not passing over a table of blanks.
+        Assert.Contains(rows, row => row.Away != "none");
+        Assert.Contains("typical days</td>", table.Value, StringComparison.Ordinal);
+
+        // And all three cases the rule has are on the page, so a distance measured to the far
+        // edge of a band, or a close inside one measured to an edge at all, cannot pass here.
+        Assert.Contains(rows, row => row.High < close);
+        Assert.Contains(rows, row => row.Low > close);
+        Assert.Contains(rows, row => row.Low < close && close < row.High);
+        Assert.Contains(rows, row => row.Low != row.High);
+    }
+
     [Fact]
     public async Task ANamesBandsAreListedInPriceOrderHoweverTheyAreSpelled()
     {
