@@ -2039,13 +2039,29 @@ public sealed class MarkRenderer : IComponent
                 continue;
             }
 
-            var values = string.Join(
-                ", ",
-                reason.Values.OrderBy(value => value.Key, StringComparer.Ordinal).Select(value => $"{value.Key} {value.Value}"));
+            cells.Append(Invariant, $"<td class=\"rz\"><details class=\"reason\" data-reason=\"{Escaped(reason.Name)}\">");
+            cells.Append(Invariant, $"<summary>{Escaped(Head(reason.Name))}</summary><div class=\"why\">");
+            cells.Append(Invariant, $"<p class=\"why-fired\">{Escaped(reason.Name)}</p>");
 
-            cells.Append(Invariant, $"<td class=\"rz\"><span class=\"reason\" data-reason=\"{Escaped(reason.Name)}\" tabindex=\"0\" ");
-            cells.Append(Invariant, $"title=\"{Escaped(values.Length == 0 ? "no values stored for this reason" : values)}\">");
-            cells.Append(Invariant, $"{Escaped(Head(reason.Name))}");
+            // What the night measured this reason over, drawn rather than held in an attribute
+            // a reader has to hover to reach. The values are the strings the reason wrote, so
+            // they are drawn as stored and no figure on the row is rounded twice.
+            // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
+            if (reason.Values.Count == 0)
+            {
+                cells.Append("<p class=\"no-values\">no values stored for this reason</p>");
+            }
+            else
+            {
+                cells.Append(Invariant, $"<dl class=\"reason-values\" data-values=\"{reason.Values.Count}\">");
+
+                foreach (var value in reason.Values.OrderBy(one => one.Key, StringComparer.Ordinal))
+                {
+                    cells.Append(Invariant, $"<dt>{Escaped(value.Key)}</dt><dd>{Escaped(value.Value)}</dd>");
+                }
+
+                cells.Append("</dl>");
+            }
 
             if (byReason is not null && byReason.TryGetValue(reason.Name, out var record))
             {
@@ -2056,7 +2072,7 @@ public sealed class MarkRenderer : IComponent
                     : Formatted($"<span class=\"record not-measured\" data-outline=\"dashed\" data-verdict=\"none\" data-short=\"{record.Withheld}\" data-scored=\"{record.Scored}\" data-minimum=\"{record.Minimum}\">{CountAgainstTheFloors(record)}</span>"));
             }
 
-            cells.Append("</span></td>");
+            cells.Append("</div></details></td>");
         }
 
         return cells.ToString();

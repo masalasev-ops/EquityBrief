@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - ARCHITECTURE.html - a reason on tonight's list opens on what it was measured over
+
+Corrects: the row said the values that made a reason true were shown on hover. They were in a title attribute, which is a native tooltip: delayed, unreachable on a touch screen, and never opened by a click. The operator clicked a reason and got nothing.
+Was:
+> <tr><td>Reasons, per row</td><td>each reason named, with its measured record beside it under 15.11, and the values that made it true on hover</td></tr>
+Now:
+> <tr><td>Reasons, per row</td><td>each reason named, with its measured record beside it under 15.11, and the values that made it true drawn where the reason is opened</td></tr>
+Why: a claim that something is shown is a claim about a surface, and a tooltip was the weakest surface available for values that answer why this name is on the list. The values are drawn now, so the page states them and the surface can read them back.
+
+### 2026-09-20 - .claude/rules/checks.md - `read-surface` reads a reason's values off its own disclosure
+
+Corrects: the row reached the record beside a reason and never the values the reason was measured over, so the values could sit in an attribute nobody could open and every assertion stayed green. The one assertion that read them searched the whole page, which a value drawn under the wrong reason would have satisfied.
+Was:
+> ... with every section of a pass read back off the page for its own paragraphs joining into the prose the store holds |
+Now:
+> ... with every section of a pass read back off the page for its own paragraphs joining into the prose the store holds; and each reason on tonight's list opens on the values the night measured it over, read back off that reason's own disclosure against the store rather than off the page as a whole, a reason the store holds no values for saying so, with a row's record read inside its reason and the column's inside the footer's, counted apart because one is the other's prefix |
+Why: reading each reason's values off its own element is what tells a value drawn under the wrong reason from one drawn under the right one. The record halves are counted apart because `record` is a prefix of `record-foot`, and the single matcher that counted both stayed green while only half of them were nested.
+
 ### 2026-09-20 - ARCHITECTURE.html - section 15.9 draws the risks one part to a risk
 
 Corrects: the section holding the risks was drawn as one run of prose, which for the newest pass on the operator's machine is ten risks and ten confirmations in a single paragraph, so finding the fourth risk meant reading the first three. The operator asked for the section as a list.
