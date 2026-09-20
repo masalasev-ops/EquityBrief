@@ -182,7 +182,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void ANameWithNoAcceptedSectionIsMissingRatherThanStale()
+    public void ANameWithNoResearchedSectionIsMissingRatherThanStale()
     {
         // No sections, and sections that were only ever left out, are both a name
         // with nothing written to go stale, even with every trigger firing.
@@ -195,6 +195,44 @@ public partial class FixtureExpectations
         var leftOut = Staleness.Judge(StaleNight, [new SectionStanding("The two cases", new DateOnly(2026, 8, 1), "fallback")], new DateOnly(2026, 9, 2), [], [], true);
 
         Assert.Equal(ResearchState.Missing, leftOut.State);
+    }
+
+    [Fact]
+    public void ANameHoldingNothingButTheKeyUnderEachFigureIsMissingItsResearch()
+    {
+        // The overnight queue writes the key for every name each night whatever was
+        // researched, so counting it as a record leaves no name missing: on the
+        // operator's store it stood for 502 names where one held research.
+        // see: A researched name is one holding an accepted section besides the key under each figure
+        var keyAlone = Staleness.Judge(
+            StaleNight,
+            [Accepted(ClaimRules.ComputedSection, "2026-09-08")],
+            new DateOnly(2026, 9, 2),
+            [new EarningsEvent(new DateOnly(2026, 8, 18), "after")],
+            [],
+            refresh: true);
+
+        Assert.Equal(ResearchState.Missing, keyAlone.State);
+        Assert.Empty(keyAlone.Fired);
+        Assert.Equal(Staleness.NotYetWritten, keyAlone.Line);
+    }
+
+    [Fact]
+    public void TheKeyUnderEachFigureIsJudgedBesideTheResearchItSitsWith()
+    {
+        // The other direction, so the key cannot be read as dropped from the
+        // judgement rather than from the record alone: where a name has research,
+        // the key is one of the sections the triggers are asked about.
+        var verdict = Staleness.Judge(
+            StaleNight,
+            [Accepted(ClaimRules.ComputedSection, "2026-09-08"), Accepted("The two cases", "2026-09-08")],
+            null,
+            [],
+            [],
+            refresh: true);
+
+        Assert.Equal(ResearchState.Stale, verdict.State);
+        Assert.Equal([ClaimRules.ComputedSection, "The two cases"], verdict.StaleSections);
     }
 
     // ---- the judge over the fixture ----

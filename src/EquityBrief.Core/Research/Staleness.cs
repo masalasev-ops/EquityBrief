@@ -127,11 +127,14 @@ public static class Staleness
             .Where(section => string.Equals(section.Status, Accepted, StringComparison.Ordinal))
             .ToArray();
 
-        // A record is at least one accepted section. A name whose sections all fell
-        // back has rows and no research, which the page already draws as sections
-        // left out, and for staleness it is missing: there is nothing written to
-        // go stale.
-        if (accepted.Length == 0)
+        // A record is at least one accepted section that is research. A name whose
+        // sections all fell back has rows and no research, which the page already
+        // draws as sections left out, and for staleness it is missing: there is
+        // nothing written to go stale. The key under each figure is not a record
+        // either, because it is written for every name each night whatever was
+        // researched, so counting it would leave no name missing.
+        // see: A researched name is one holding an accepted section besides the key under each figure
+        if (!accepted.Any(section => ClaimRules.IsResearched(section.Section)))
         {
             return new StalenessVerdict(night, ResearchState.Missing, [], [], null, reading) { Sections = newestVersions };
         }
