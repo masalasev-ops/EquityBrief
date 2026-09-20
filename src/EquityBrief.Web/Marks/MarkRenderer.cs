@@ -1938,6 +1938,16 @@ public sealed class MarkRenderer : IComponent
             else
             {
                 list.Append(" title=\"open the name, whose researched sections are not written\">not written</a>");
+
+                // Asked for from the row, which is where the operator is when they see the
+                // name holds none. It writes a request and starts nothing, so a row whose
+                // name is already waiting is refused by the store rather than by the page
+                // reading the queue first and racing itself.
+                // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+                list.Append(Invariant, $"<form class=\"research-control ask\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(row.Ticker)}\" ");
+                list.Append(Invariant, $"data-kind=\"ask\" data-asks=\"{Escaped(row.Ticker)}\" data-from=\"list\">");
+                list.Append("<input type=\"hidden\" name=\"from\" value=\"list\">");
+                list.Append("<button type=\"submit\" title=\"put this name in the queue, which the worker drains\">ask for a report</button></form>");
             }
 
             if (row.Distance?.Name is { Length: > 0 } company)
@@ -2613,7 +2623,7 @@ public sealed class MarkRenderer : IComponent
         // the form so a test reads what a press would send rather than the label beside it.
         // The cost is stated once, before any of them, because it is the same statement
         // for each: the local lane costs nothing and every other call goes through the cap.
-        // see: The name page's control starts the worker's research verb, and the read API writes nothing it starts
+        // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
         if (offered.Count > 0 && cost is not null)
         {
             // Before the controls, so it is read before any of them is pressed.

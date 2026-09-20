@@ -66,6 +66,10 @@ public sealed class SinglePageApp : IComponent
     // not by any page that can reach the machine.
     // see: A pass is started only by a request carrying the name page's own header
     public const string PassRoute = "/passes/";
+
+    // Where a request is taken back out of the queue. A press names the request rather than
+    // the name, because a name may have been asked for before and settled since.
+    public const string WithdrawRoute = "/passes/withdraw/";
     public const string PassHeader = "X-EquityBrief-Pass";
     public const string PassHeaderValue = "name-page";
 
@@ -225,8 +229,8 @@ public sealed class SinglePageApp : IComponent
         }
         // A research control is a form, sent here with the page's own header so the
         // surface knows the press came from this page, and what the surface said back is
-        // put beside the control. The pass runs as a process of its own and lands on the
-        // run log, so the page is read again when the operator returns to it.
+        // put beside the control. It writes a request and starts nothing: the worker
+        // drains the queue and the page is read again when the operator returns to it.
         document.addEventListener('submit', async (event) => {
           const form = event.target;
           if (!(form instanceof HTMLFormElement) || !form.classList.contains('research-control')) { return; }
@@ -239,9 +243,9 @@ public sealed class SinglePageApp : IComponent
             const box = document.createElement('div');
             box.className = 'confirm key';
             const line = document.createElement('p');
-            line.textContent = 'Start this research pass? ' + (cost ? cost.textContent : '');
+            line.textContent = 'Put this report in the queue? It is written when the worker next drains it. ' + (cost ? cost.textContent : '');
             const go = document.createElement('button');
-            go.type = 'button'; go.className = 'btn'; go.textContent = 'Start it';
+            go.type = 'button'; go.className = 'btn'; go.textContent = 'Queue it';
             const stop = document.createElement('button');
             stop.type = 'button'; stop.className = 'btn-2'; stop.textContent = 'Cancel';
             go.addEventListener('click', () => { form.dataset.confirmed = 'yes'; box.remove(); form.requestSubmit(); });

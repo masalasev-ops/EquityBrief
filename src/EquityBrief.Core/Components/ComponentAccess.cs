@@ -44,6 +44,7 @@ public enum Store
     RuleVersion,
     VersionScore,
     SeriesState,
+    ResearchRequest,
     RunLog,
 }
 

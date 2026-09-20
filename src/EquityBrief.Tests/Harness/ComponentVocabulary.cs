@@ -44,6 +44,7 @@ internal static class ComponentVocabulary
         ("Rule versions", [DataStore.RuleVersion]),
         ("Version scores", [DataStore.VersionScore]),
         ("Series state", [DataStore.SeriesState]),
+        ("Research requests", [DataStore.ResearchRequest]),
         ("Run log", [DataStore.RunLog]),
     ];
 
@@ -146,6 +147,7 @@ internal static class ComponentVocabulary
         ["candidate register"] = DataStore.CandidateRegister,
         ["rule versions"] = DataStore.RuleVersion,
         ["version scores"] = DataStore.VersionScore,
+        ["research requests"] = DataStore.ResearchRequest,
     };
 
     internal sealed record CellReading(DataStore[] Stores, Feed[] Feeds, string[] Unresolved);

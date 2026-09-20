@@ -944,6 +944,7 @@ public partial class ArchitectureConformance
     static readonly string[] PhaseNineDrawn =
     [
         CheckReach.Key("15.7 Tonight", "Research, per row"),
+        CheckReach.Key("15.7 Tonight", "Ask for a report"),
     ];
 
     // Rows the document gained after the prediction, each one claim.
@@ -960,6 +961,12 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "How far each band is"),
         CheckReach.Key("15.9 Name", "The case for and the case against"),
         CheckReach.Key("15.9 Name", "The risks as parts"),
+
+        // 9.2, the worker's half of the request store, which is a component of its own
+        // rather than the runner's: the pass writes the research and this moves the
+        // request beside it.
+        CheckReach.Key(Scope.CatalogueTable, "Request drain"),
+        CheckReach.Key(Scope.MatrixTable, "Request drain"),
         .. PhaseNineRows,
     ];
 

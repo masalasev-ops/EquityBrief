@@ -40,7 +40,7 @@ public partial class ReadSurface
             File.Copy(file, target);
         }
 
-        File.WriteAllText(Path.Combine(checkout.Path, WorkerPassStarter.SolutionFile), "<Solution />");
+        File.WriteAllText(Path.Combine(checkout.Path, Checkout.SolutionFile), "<Solution />");
 
         var database = Path.Combine(checkout.Path, "data", StoreLocation.DatabaseFileName);
 

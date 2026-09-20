@@ -775,31 +775,15 @@ public partial class ReadSurface
 
     // ---- the control's route ----
 
-    // A starter that records what it was asked and starts nothing.
-    sealed class RecordingStarter : IPassStarter
+    sealed class PassHost(string root) : WebApplicationFactory<ReadApi>
     {
-        public List<PassRequest> Asked { get; } = [];
-
-        public PassStart Start(PassRequest request)
-        {
-            Asked.Add(request);
-
-            return new PassStart(true, $"a research pass for {request.Ticker} has started");
-        }
-    }
-
-    sealed class PassHost(string root, IPassStarter starter) : WebApplicationFactory<ReadApi>
-    {
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
-        {
+        protected override void ConfigureWebHost(IWebHostBuilder builder) =>
             builder.UseSetting(StoreLocation.DataRootKey, root);
-            builder.ConfigureTestServices(services => services.AddSingleton(starter));
-        }
     }
 
-    static HttpRequestMessage Press(string ticker, string? header, params (string Name, string Value)[] form)
+    static HttpRequestMessage Press(string route, string ticker, string? header, params (string Name, string Value)[] form)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, SinglePageApp.PassRoute + ticker)
+        var request = new HttpRequestMessage(HttpMethod.Post, route + ticker)
         {
             Content = new FormUrlEncodedContent(form.Select(field => new KeyValuePair<string, string>(field.Name, field.Value))),
         };
@@ -813,13 +797,11 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheControlsRouteStartsThePassTheFormAsksForAndWritesNothingItself()
+    public async Task TheControlsRouteWritesOneRequestAndStartsNoProcess()
     {
         using var store = await FixtureReplay.ReplayedAsync();
 
-        var starter = new RecordingStarter();
-
-        using var host = new PassHost(store.Root, starter);
+        using var host = new PassHost(store.Root);
         using var client = host.CreateClient();
 
         // The host is up before anything is counted, since starting it writes its own row.
@@ -828,71 +810,97 @@ public partial class ReadSurface
         string Held() => string.Join(
             ";",
             Rows(store, "SELECT COUNT(*) FROM research_section;").Single()[0],
-            Rows(store, "SELECT COUNT(*) FROM source_document;").Single()[0],
-            Rows(store, "SELECT COUNT(*) FROM run_log;").Single()[0]);
+            Rows(store, "SELECT COUNT(*) FROM source_document;").Single()[0]);
 
         var before = Held();
 
-        // A press from the page: started with what the form asked, at once.
-        var pressed = await client.SendAsync(Press("KEYS", SinglePageApp.PassHeaderValue, ("refresh", "false"), ("paidForLocal", "true")));
+        var pressed = await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
 
         Assert.Equal(HttpStatusCode.Accepted, pressed.StatusCode);
-        Assert.Equal([new PassRequest("KEYS", false, true)], starter.Asked);
         Assert.Contains("data-started=\"true\"", await pressed.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.Equal([["KEYS", "list", "paid", "outstanding"]], Rows(store, "SELECT ticker, asked_from, lane, state FROM research_request;"));
 
-        // A request not carrying the page's header, and one carrying another value, start
-        // nothing.
-        Assert.Equal(HttpStatusCode.Forbidden, (await client.SendAsync(Press("KEYS", null, ("refresh", "true")))).StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, (await client.SendAsync(Press("KEYS", "another-page"))).StatusCode);
+        // A second press for a name already in the queue adds nothing and says so, which is
+        // the index refusing rather than the surface reading first and racing itself.
+        var again = await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "name")));
 
-        // A name the index does not hold starts nothing either, refused before a starter is asked.
-        var outside = await client.SendAsync(Press("ZZZZ", SinglePageApp.PassHeaderValue));
+        Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+        Assert.Contains("already in the queue", await again.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.Single(Rows(store, "SELECT ticker FROM research_request;"));
+
+        // A request not carrying the page's header, and one carrying another value, queue nothing.
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.SendAsync(Press(SinglePageApp.PassRoute, "AAPL", null))).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.SendAsync(Press(SinglePageApp.PassRoute, "AAPL", "another-page"))).StatusCode);
+
+        // A name the index does not hold queues nothing either, refused before the store is reached.
+        var outside = await client.SendAsync(Press(SinglePageApp.PassRoute, "ZZZZ", SinglePageApp.PassHeaderValue));
 
         Assert.Equal(HttpStatusCode.NotFound, outside.StatusCode);
         Assert.Contains("data-refused=\"membership\"", await outside.Content.ReadAsStringAsync(), StringComparison.Ordinal);
-        Assert.Single(starter.Asked);
+        Assert.Single(Rows(store, "SELECT ticker FROM research_request;"));
 
-        // And the surface wrote nothing across the four: the pass is the worker's to write.
+        // The surface wrote no research across all of it: a request is an ask, and what it
+        // leads to is the worker's.
         Assert.Equal(before, Held());
     }
 
     [Fact]
-    public void TheStarterRunsTheCommandTheRunbookGivesWithItsArgumentsAsAListAndTheStoreThisSurfaceReads()
+    public async Task ARequestNobodyHasStartedIsWithdrawnAndOneTheWorkerHoldsIsNot()
     {
-        var root = Path.Combine(Path.GetTempPath(), "a data root");
-        var starter = new WorkerPassStarter(Repository.Root, root);
+        using var store = await FixtureReplay.ReplayedAsync();
 
-        var start = starter.StartInfo(new PassRequest("KEYS", Refresh: true, PaidForLocal: true));
+        using var host = new PassHost(store.Root);
+        using var client = host.CreateClient();
 
-        Assert.Equal(WorkerPassStarter.Executable, start.FileName);
-        Assert.False(start.UseShellExecute);
-        Assert.Equal(string.Empty, start.Arguments);
-        Assert.Equal(["run", "--project", Path.Combine("src", "EquityBrief.Worker"), "--", "research", "--ticker", "KEYS", "--refresh", "--paid-for-local"], start.ArgumentList);
-        Assert.Equal(Repository.Root, start.WorkingDirectory);
-        Assert.Equal(root, start.Environment["EquityBrief__DataRoot"]);
+        Assert.Contains("KEYS", await client.GetStringAsync("/screens/name/KEYS"), StringComparison.Ordinal);
 
-        // The checkout is found from the surface's own build output.
-        Assert.Equal(Path.GetFullPath(Repository.Root).TrimEnd(Path.DirectorySeparatorChar), WorkerPassStarter.Checkout(AppContext.BaseDirectory)!.TrimEnd(Path.DirectorySeparatorChar));
+        await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
 
-        // The plain press is the command RUNBOOK.md gives for writing one name's research
-        // by hand, read off the document rather than restated here.
-        var runbook = File.ReadAllText(Path.Combine(Repository.Root, "docs", "RUNBOOK.md"));
-        var command = Regex.Match(runbook, "### Writing one name's research.*?```\\s*\\n(dotnet [^\\n]+)\\n```", RegexOptions.Singleline).Groups[1].Value.Trim();
+        var askedAt = Rows(store, "SELECT asked_at FROM research_request WHERE ticker = 'KEYS';").Single()[0];
+
+        // Refused without the header, as the ask is, and refused naming no request.
+        Assert.Equal(
+            HttpStatusCode.Forbidden,
+            (await client.SendAsync(Press(SinglePageApp.WithdrawRoute, "KEYS", null, ("askedAt", askedAt)))).StatusCode);
 
         Assert.Equal(
-            command,
-            WorkerPassStarter.Executable + " " + string.Join(" ", WorkerPassStarter.Arguments(new PassRequest("KEYS", false, false))).Replace('\\', '/'));
+            HttpStatusCode.BadRequest,
+            (await client.SendAsync(Press(SinglePageApp.WithdrawRoute, "KEYS", SinglePageApp.PassHeaderValue))).StatusCode);
 
-        // A name carrying shell syntax is one argument, not a second command.
-        Assert.Contains("KEYS; echo started", starter.StartInfo(new PassRequest("KEYS; echo started", false, false)).ArgumentList);
+        var taken = await client.SendAsync(Press(SinglePageApp.WithdrawRoute, "KEYS", SinglePageApp.PassHeaderValue, ("askedAt", askedAt)));
 
-        // Outside a checkout nothing is started and the line says why.
-        var outside = new WorkerPassStarter(null, root).Start(new PassRequest("KEYS", false, false));
+        Assert.Equal(HttpStatusCode.OK, taken.StatusCode);
+        Assert.Contains("data-withdrawn=\"true\"", await taken.Content.ReadAsStringAsync(), StringComparison.Ordinal);
 
-        Assert.False(outside.Started);
-        Assert.Contains("not running inside a checkout", outside.Line, StringComparison.Ordinal);
+        // Nothing is deleted: what was asked for and what came of it are both still read.
+        Assert.Equal([["KEYS", "withdrawn"]], Rows(store, "SELECT ticker, state FROM research_request;"));
 
-        // And the page's own script sends the header the route requires.
+        // A request the worker holds is not one that has not been generated, so the same
+        // press is refused and says which state refused it.
+        Rows(store, "UPDATE research_request SET state = 'writing', settled_at = NULL WHERE ticker = 'KEYS';");
+
+        var held = await client.SendAsync(Press(SinglePageApp.WithdrawRoute, "KEYS", SinglePageApp.PassHeaderValue, ("askedAt", askedAt)));
+
+        Assert.Equal(HttpStatusCode.Conflict, held.StatusCode);
+        Assert.Contains("is writing", await held.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.Equal([["KEYS", "writing"]], Rows(store, "SELECT ticker, state FROM research_request;"));
+    }
+
+    [Fact]
+    public void NothingInTheShippedSourceStartsAProcessForAPass()
+    {
+        // The surface started the worker's verb as a process of its own until 9.2. A press
+        // writes a request now, so no shipped file starts a process at all, and this reads
+        // the source rather than the behaviour because what it asserts is an absence.
+        var started = Directory
+            .EnumerateFiles(Path.Combine(Repository.Root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(file => !file.Contains(Path.Combine("src", "EquityBrief.Tests"), StringComparison.Ordinal))
+            .Where(file => Regex.IsMatch(File.ReadAllText(file), @"Process\.Start|ProcessStartInfo"))
+            .ToArray();
+
+        Assert.Empty(started);
+
+        // And the page's own script sends the header both routes require.
         var shell = new SinglePageApp().Shell("EquityBrief");
 
         Assert.Contains($"'{SinglePageApp.PassHeader}': '{SinglePageApp.PassHeaderValue}'", shell, StringComparison.Ordinal);

@@ -18063,3 +18063,51 @@ Carried:    the ask itself. A row now says a report was not written and offers n
             one, which 9.2 adds with the request store behind it. Until then the only way to start a
             pass is the control on a name's own page, which starts a process rather than writing a
             request.
+
+### 9.2 - the request store, both surfaces writing an ask, and the worker draining it oldest first   2026-09-20
+Built:      a store table both surfaces write a request to and the worker drains. A press on a row of
+            tonight's list and a press on a name's own page write the same row and start no process,
+            and the drain verb takes the oldest request nobody has started, runs the pass for that
+            name, and settles the request under what that pass's own run came to.
+Replaced:   the read surface started the worker's research verb as a process of its own until now. No
+            file the repository ships starts a process for a pass at all, which the suite reads off
+            the source rather than off behaviour, because what it asserts is an absence.
+Refused:    one name holds one outstanding request at a time, enforced by a unique index over the
+            state rather than by the page reading the queue first and racing itself. A second press
+            for a name already waiting adds nothing and the page says so.
+Found:      by running the drain rather than by reading it. It settled requests on the verb's exit
+            code, so two passes that reported unavailable were recorded as written. A verb that exits
+            without failing has run, and a pass that ran is not a pass that wrote. The rule now reads
+            the pass's own run and is a function of the outcome alone, so it can be asserted.
+Moved:      the request statements live in the read API's own source. They sat behind a writer of
+            their own first, and component-access refused it: the owner of a table is the component
+            whose source carries the statements, and SCHEMA naming one thing while the code did
+            another is the split the check exists to find.
+Declared:   research_request in SCHEMA with a writer per operation, ReadApi inserting and withdrawing
+            and RequestDrain claiming and settling, which passes writer-ownership in both directions.
+            The drain gains a catalogue row and a matrix row of its own, and the matrix a column.
+Decided:    the decision the queue supersedes is superseded here and not at 9.0, with its reasoning
+            kept and all six citations repointed in the same commit.
+Tests:      1143, from 1141. Migration 30.
+Claims:     383, from 381. The drain's two rows are new, and section 15.7's ask comes into scope and
+            passes, so 379 pass where 376 did and 4 stand out of scope: the queue screen's four.
+Mutated:    the rule, stated before the sweep: break each of the two properties the queue rests on,
+            that a press writes one request and starts nothing, and that a request is settled by what
+            the pass came to. Not mutated: the order the drain takes requests in, which the store's
+            own ordering carries rather than the code.
+            Predicted:
+            M1 the conflict branch dropped, so a press on a name already waiting answers as though it
+            wrote one: the route test red where it reads the second press, and nothing else.
+            M2 the settle rule reading any outcome as written: the settle test red on every outcome
+            but the one the runner writes for a pass that ran to its end, and nothing else, the route
+            tests reaching no drain.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1143 of 1143 tests
+            ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 379 PASS, 0
+            FAIL, 4 out of scope, 0 unexamined, 386 placements and verdicts reconciled against a
+            floor of 34, 37 of 37 roster checks carried and all 37 run. The four out of scope are the
+            queue screen's, which 9.3 draws. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the queue screen, which 9.3 draws, and the lane, which 9.4 states. Until the screen is
+            drawn a request is read out of the store rather than off a page.

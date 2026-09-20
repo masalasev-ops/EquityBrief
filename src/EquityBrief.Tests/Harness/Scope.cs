@@ -269,6 +269,13 @@ internal static class Scope
             Verdict.Pass,
             "the evening a name was last listed is drawn, and a name never listed says never",
             ByReadSurface),
+        // 9.2 to 9.4, the queue the operator asked for: the ask on a row, the screen that
+        // reads what is waiting, the control that takes one out, and which lane would
+        // write one.
+        [CheckReach.Key("15.7 Tonight", "Ask for a report")] = new Scoped(
+            Verdict.Pass,
+            "a row whose name holds no research carries a control that writes one request and starts no process, read off the row's own markup, and a row holding research carries none",
+            ByReadSurface),
         [CheckReach.Key("15.8 Universe", "Researched")] = new Scoped(
             Verdict.Pass,
             "every name holding an accepted section besides the key under each figure is listed on its own route with the day its newest one was written and how many it holds, a name holding the key alone is not, and the masthead's search and the universe table carry the same day",
@@ -582,11 +589,11 @@ internal static class Scope
             ByHarness),
         [CheckReach.Key(CatalogueTable, "Read API")] = new Scoped(
             Verdict.Pass,
-            "the class declares the stores it reads and the run log it appends to, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source; and the verb the row says its control starts is one the worker dispatches, names in its help and the runbook shows",
+            "the class declares the stores it reads, the run log it appends to and, from 9.2, the request store it inserts into and updates, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source; and the verbs the row names are ones the worker dispatches, names in its help and the runbook shows",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Read API")] = new Scoped(
             Verdict.Pass,
-            "every cell of the row is asserted against the declaration, each read cell by cell and the run log read and written",
+            "every cell of the row is asserted against the declaration, each read cell by cell, the run log read and written, and the request store the one other column carrying a write",
             ByAccess),
         [CheckReach.Key(CatalogueTable, "Mark renderer")] = new Scoped(
             Verdict.Pass,
@@ -1195,6 +1202,16 @@ internal static class Scope
         [CheckReach.Key(MatrixTable, "Research runner")] = new Scoped(
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included, which is where the runner writing no fundamentals and no facts is a claim: it reads the quarter a fetch stored and never writes one",
+            ByAccess),
+        // 9.2, the request drain. The worker's half of the request store: what it
+        // takes, and what it settles under.
+        [CheckReach.Key(CatalogueTable, "Request drain")] = new Scoped(
+            Verdict.Pass,
+            "SCHEMA gives it the update on the request store, its own source carries the claim and the settle, and the verbs the row names are ones the worker dispatches, names in its help and the runbook shows",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Request drain")] = new Scoped(
+            Verdict.Pass,
+            "the row reads and writes the request store and appends to the run log through the pass it runs, and every other cell is blank: the drain writes no research, which is the claim the blanks carry",
             ByAccess),
         [CheckReach.Key(FixtureTable, "research record")] = new Scoped(
             Verdict.Pass,
