@@ -17505,11 +17505,11 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             M3 turned 2 red, the name page's distance test and the universe screen's ordering, which
             is the measure being one thing rather than two: the mutation is inside the shared reader
             and both surfaces read it.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1135 of 1135 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
-            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
-            against a floor of 34, <K> of <K> roster checks carried and all <K> run. Section 15.9
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 373 claims,
+            373 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 380 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. Section 15.9
             gains one row, how far each band sits from the close, which nothing claimed before, so
             the claims stand at 373 from 372. Both gates ran with this entry in place, and the
             operator's store under `data/` was not touched by either.
