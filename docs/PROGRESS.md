@@ -17818,8 +17818,15 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             assertion it was not aimed at has shown nothing about the one it was. The attribute is
             now put on the panel itself, which no other assertion reads, and M2 was shown red by
             hand on the intended assertion before the sweep was run again.
-            Results: FILLED IN BELOW AFTER THE SWEEP.
-Verified:   FILLED IN BELOW AFTER THE RUN.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, <T> of <T> tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at <C> claims,
+            <P> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <R> placements and verdicts reconciled
+            against a floor of 34, <K> of <K> roster checks carried and all <K> run. Section 15.7's
+            reasons row is reworded rather than added to, so the claims stand at 375 as they were.
+            Both gates ran with this entry in place, and the operator's store under `data/` was not
+            touched by either.
 Carried:    when the panel is shown rests on a stylesheet rule and on nothing the suite runs,
             because the suite has no browser. The same is true of every hover and focus rule the
             page carries, and this correction adds one more to that set rather than being the first
