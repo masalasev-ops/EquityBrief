@@ -17428,3 +17428,75 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             so the claims stand at 372 from 371. Both gates ran with this entry in place, and the
             operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: each of a name's bands states how far it sits from the close in typical days' moves   2026-09-20
+Corrects:   the level summary named each band, its role, a strength and its members, and never said
+            how far away any of it was. A band twelve points above the price means one thing on a
+            name that moves two points in a session and another on a name that moves six, and the
+            page left the reader to do the subtraction and then to find the typical move to divide
+            it by. Tonight's list has stated distances in typical days' moves since 5.4; a name's
+            own page, which is where a band is acted on, did not.
+Found:      by the operator on 2026-09-19, showing a report of their own whose level ladder states
+            how far each band is in typical days and asking for the same here.
+Measured:   over the page as it draws a name holding five bands: five rows, each naming two edges, a
+            role, an integer strength and a count of members, and no figure anywhere on the row
+            about distance. The measure the list uses was written once, in the universe screen, and
+            was private to it.
+Repaired:   every row states the gap from tonight's close to the nearer edge of its band, counted in
+            the name's own newest typical move. The nearer edge because a band is a range and what a
+            price reaches first is its near side; and a close inside a band states no distance at
+            all rather than the gap to one of its sides, which is the case a reader meets most and
+            the one a gap-to-an-edge rule gets wrong. The projection computes it and the mark draws
+            what it is handed. The measure itself moved out of the universe screen into one place
+            both screens read, so the list and the page cannot come to state one measure two ways.
+Missed:     the distance was decided at 5.4 and built where it was first needed, and nothing carried
+            it to the second surface that wanted it. A row naming two edges is correct, and correct
+            is what every assertion here could see: what it is not is enough, and no check asks
+            whether a figure a reader needs is absent. The operator reading a report built elsewhere
+            is what found it.
+Guarded:    the distance is read back off the markup against a computation of the test's own, from
+            queries of its own for the close and the typical move, so the page and the reader cannot
+            agree by sharing a mistake. The close inside its band is asserted as no distance rather
+            than as a gap, and the row is read for the words a person sees as well as for the value
+            on the element, which carries it whole. The measure being in one place is held by the
+            crossing set `price-storage-form` states, which now names it: it takes a price and a
+            band edge and returns a count of moves.
+Expected:   derived: the distance is computed in the test from the stored close, the stored edges
+            and the stored typical move. No expectation file changes.
+Tests:      1135, from 1134. One added to `read-surface`.
+Mutated:    the rule, stated before the sweep: break each of the three properties this rests on, the
+            edge the gap is measured to, the close that sits inside its band, and the move the gap
+            is counted in. Not mutated: the value carried whole on the element, which the same
+            assertion reads through the comparison it makes, and the words the cell states, which
+            the same test reads.
+            Predicted:
+            M1 the gap measured to the band's far edge: the distance test red where it compares the
+            drawn value with its own; nothing else.
+            M2 a close inside its band measured to an edge rather than stated as no distance: the
+            distance test red on the same comparison; nothing else.
+            M3 the gap divided by nothing rather than by the name's own typical move: the distance
+            test red on the same comparison, and the universe screen's ordering red with it, because
+            the mutation is inside the reader both screens now share; nothing else.
+            Stopped once, and the stop is the finding. M1 measured to the band's far edge and turned
+            nothing red: every band the committed fixture gives the name this reads has edges the
+            distinction cannot be seen through, so the near edge and the far edge are one price and
+            a rule measuring to the wrong one is invisible. An unreachable boundary, which is a
+            defect in the test rather than in the mutation, so the test now places three bands of
+            its own around the stored close, one wholly below it, one wholly above it and one
+            holding it, and asserts all three shapes are on the page it read. Each of the three
+            mutations was then shown red by hand against the strengthened test before the sweep was
+            run again. M2's first form was `if (false)`, which does not compile here because
+            unreachable code is an error, so it is stated as a condition that cannot hold instead.
+            Stopped a second time on M3, which turned the universe screen's ordering red as well as
+            the name page's distance. That is not a defect and the prediction was what was wrong:
+            the mutation is inside the reader this repair moved both screens onto, so a measure
+            broken once breaks both surfaces, which is the property the move was made for. The
+            prediction now names both and the sweep was run again against it.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair. The operator asked for the ladder drawn as a picture and it
+            is not drawn here: the page already draws the bands twice, shaded on the twelve-month
+            chart against the price history that made them and again as the plan column, which is
+            the same geometry a ladder is. What the picture they showed said that this page did not
+            is the distance, which is what this adds. A third drawing of five bands is theirs to ask
+            for having seen this.

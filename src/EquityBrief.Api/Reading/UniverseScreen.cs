@@ -161,19 +161,10 @@ public static class UniverseScreen
             row.Researched);
     }
 
-    // The gap to a band edge, in typical days' moves, as a distance rather than
-    // a direction: what the screen says is how far a name is from an edge, and
-    // a name three days below its resistance and one above its support is near
-    // the support.
-    //
-    // A typical move of zero or less gives no distance rather than an infinite
-    // one. That is a name whose chart has not moved over the window the average
-    // is taken across, and dividing by it would put it at the top of the screen
-    // for having been still.
+    // Stated in one place, which a name's own level table reads too.
+    // see: Distances are stated as typical days' moves
     static double? Distance(decimal? close, decimal? edge, double? typicalMove) =>
-        close is { } price && edge is { } band && typicalMove is > 0
-            ? Statistic.FromPrice(Math.Abs(price - band)) / typicalMove.Value
-            : null;
+        Distances.InTypicalDays(close, edge, typicalMove);
 
     static double? Nearest(double? toSupport, double? toResistance) =>
         (toSupport, toResistance) switch

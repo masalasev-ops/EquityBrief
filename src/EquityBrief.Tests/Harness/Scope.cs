@@ -1310,6 +1310,10 @@ internal static class Scope
             Verdict.Pass,
             "a name whose cause section the shipped checker accepted over the recorded model draws that section's sentence in the row of the one move it names and states no cause in every other row, with the date and model read back off the markup against the store, and a name with none draws the column as absent",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How far each band is")] = new Scoped(
+            Verdict.Pass,
+            "each band's row states the gap from the stored close to that band's nearer edge over the name's own newest typical move, read back off the markup against a computation of the test's own from queries of its own, with a close inside a band stating no distance rather than the gap to one of its sides",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "Contents")] = new Scoped(
             Verdict.Pass,
             "the contents is read against the regions the page drew in both directions, so neither a region nobody can reach nor an entry pointing at nothing passes, with the numbering contiguous from where a reader starts and the contents standing above the first region it names",
@@ -1950,6 +1954,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
         // The lines were drawn from 6.5 and nothing in section 15 claimed them until the
         // 5.8 correction that stopped them carrying the draft a checker refused.
+        [CheckReach.Key("15.9 Name", "How far each band is")] = "5.8",
         [CheckReach.Key("15.9 Name", "Contents")] = "5.8",
         [CheckReach.Key("15.9 Name", "Sections left out")] = "6.5",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the

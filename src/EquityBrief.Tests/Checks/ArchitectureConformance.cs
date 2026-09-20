@@ -1318,7 +1318,8 @@ public partial class ArchitectureConformance
         // and 45 at the one that watched a pass the page started. 45 still at the correction
         // that removed the provenance footer and named the sections left out, one row for one,
         // and 46 at the one that put a contents at the head of a name's page.
-        Assert.Equal(46, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 47 at the one that stated how far each band sits from the close.
+        Assert.Equal(47, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1352,7 +1353,8 @@ public partial class ArchitectureConformance
         // was left out arrive as the one row that claims them.
         // 129 at the correction that put a contents at the head of a name's page, one row and
         // one claim: a reader reaching a section is a claim about a surface.
-        Assert.Equal(129, inDocument.Length);
+        // 130 at the one that stated how far each band sits from the close.
+        Assert.Equal(130, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

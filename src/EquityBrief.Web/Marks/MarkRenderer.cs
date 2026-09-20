@@ -71,7 +71,8 @@ public sealed record SummaryBand(
     bool Immediate,
     int Strength,
     bool HasNonAverageAnchor,
-    IReadOnlyList<SummaryMember> Members);
+    IReadOnlyList<SummaryMember> Members,
+    double? AwayInTypicalDays = null);
 
 // One row of the plan column: a price, what happens there, and how it reads.
 //
@@ -1112,7 +1113,7 @@ public sealed class MarkRenderer : IComponent
         table.Append("<div class=\"tbl-wrap\">");
         table.Append(Invariant, $"<table class=\"level-summary\" data-ticker=\"{Escaped(ticker)}\" data-bands=\"{bands.Count}\">");
         table.Append("<caption>Level summary, each band with its members and their dates</caption>");
-        table.Append("<thead><tr><th>Band</th><th>Role</th><th>Strength</th><th>Members</th></tr></thead><tbody>");
+        table.Append("<thead><tr><th>Band</th><th>Role</th><th>Away</th><th>Strength</th><th>Members</th></tr></thead><tbody>");
 
         foreach (var band in bands)
         {
@@ -1127,7 +1128,18 @@ public sealed class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr class=\"band\" data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" data-high-edge=\"{band.HighEdge.ToString(Invariant)}\" ");
             table.Append(Invariant, $"data-role=\"{Escaped(band.Role)}\" data-immediate=\"{(band.Immediate ? 1 : 0)}\" ");
             table.Append(Invariant, $"data-members=\"{band.Members.Count}\" data-anchored=\"{(band.HasNonAverageAnchor ? 1 : 0)}\">");
-            table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td><td>{band.Strength}</td><td>");
+            // How far the nearer edge of the band sits from tonight's close, counted in the
+            // moves this name usually makes in a session, which is how every distance on
+            // these pages is stated. A name whose chart has not moved has none rather than
+            // a distance divided by nothing.
+            // see: Distances are stated as typical days' moves
+            var away = band.AwayInTypicalDays is { } days
+                ? Formatted($"{days:0.0} typical days")
+                : "not measured";
+
+            table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td>");
+            table.Append(Invariant, $"<td class=\"away\" data-away=\"{(band.AwayInTypicalDays is { } value ? value.ToString(Invariant) : "none")}\">{Escaped(away)}</td>");
+            table.Append(Invariant, $"<td>{band.Strength}</td><td>");
 
             // The members one disclosure down, under a line saying how many and over which
             // sessions, since a band can rest on dozens of them.
