@@ -416,9 +416,8 @@ public sealed record PriceAxis(double Low, double High)
 // How a chart is drawn on a page. `Scale` gives the picture a width and a height of its
 // own, so a chart and the profile beside it drawn at one scale line up price for price,
 // and no scale draws it the width of whatever holds it. `Markers` are the sessions a
-// table beside the chart numbers, and `BandLabels` false leaves the bands unnamed where
-// the table beneath names them.
-public sealed record ChartFrame(double? Scale = null, IReadOnlyList<DateOnly>? Markers = null, bool BandLabels = true);
+// table beside the chart numbers.
+public sealed record ChartFrame(double? Scale = null, IReadOnlyList<DateOnly>? Markers = null);
 
 // The marks, as SVG strings written server side.
 //
@@ -451,7 +450,10 @@ public sealed class MarkRenderer : IComponent
     // quiet one.
     public const int FewestBars = 2;
 
-    const int Width = 960;
+    // The plot's own width, which sets the column: a picture is drawn at the size it is
+    // read at, so the pair of the chart and the profile beside it fills the card at the
+    // column's widest and no picture is ever drawn larger than it was made.
+    const int Width = 1376;
     const int ProfileWidth = 150;
     const int PriceHeight = 340;
     const int VolumeHeight = 90;
@@ -830,7 +832,10 @@ public sealed class MarkRenderer : IComponent
         // Its own width and height rather than the width of what holds it, so the
         // picture is the size of the chart's price pane beside it and never stretched
         // across the page.
-        const int Drawn = PriceHeight + ProfileCaption;
+        // The legend row is carried too, empty, because the chart beside this one has one
+        // and the two are anchored at the top: without it every price here would sit a
+        // legend's height above the same price in the chart.
+        const int Drawn = LegendRow + PriceHeight + ProfileCaption;
 
         var size = scale is { } at
             ? Formatted($"width=\"{Number(ProfileWidth * at)}\" height=\"{Number(Drawn * at)}\"")
@@ -844,6 +849,7 @@ public sealed class MarkRenderer : IComponent
         svg.Append(Invariant, $"<title>{Escaped(ticker)}, shares traded in {bands.Count} price bands</title>");
         svg.Append("<desc>Shares traded in each price band, drawn against the price axis of the chart beside it.</desc>");
 
+        svg.Append(Invariant, $"<g class=\"m-body\" transform=\"translate(0,{LegendRow})\">");
         svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"0\" y=\"0\" width=\"{ProfileWidth}\" height=\"{PriceHeight}\"/>");
 
         // The chart's level bands carried across, so a shelf and the band it sits in
@@ -897,6 +903,7 @@ public sealed class MarkRenderer : IComponent
         svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"0\" y1=\"{PriceHeight}\" x2=\"{ProfileWidth}\" y2=\"{PriceHeight}\"/>");
         svg.Append(Invariant, $"<text class=\"m-tick\" x=\"0\" y=\"{PriceHeight + 14}\">Shares traded by price</text>");
 
+        svg.Append("</g>");
         svg.Append("</svg>");
 
         return svg.ToString();
@@ -938,7 +945,10 @@ public sealed class MarkRenderer : IComponent
         var svg = new StringBuilder();
 
         svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {Width} {height}\" ");
-        svg.Append(Invariant, $"width=\"100%\" role=\"img\" class=\"momentum-panel\" data-ticker=\"{Escaped(ticker)}\" ");
+        // At the width of the chart's plot above it rather than of whatever holds it,
+        // so a session is at one distance across the two and nothing here is drawn
+        // larger than it was made.
+        svg.Append(Invariant, $"width=\"{Width}\" height=\"{height}\" role=\"img\" class=\"momentum-panel\" data-ticker=\"{Escaped(ticker)}\" ");
         svg.Append(Invariant, $"data-readings=\"{readings.Count}\">");
         svg.Append(Invariant, $"<title>{Escaped(ticker)}, {readings.Count} momentum reading(s)</title>");
         svg.Append(Invariant, $"<desc>Each reading on its own small axis with its neutral rule drawn across it.</desc>");
@@ -1216,7 +1226,7 @@ public sealed class MarkRenderer : IComponent
 
         var size = frame?.Scale is { } scale
             ? Formatted($"width=\"{Number(ChartWidth * scale)}\" height=\"{Number(ChartHeight * scale)}\"")
-            : "width=\"100%\"";
+            : Formatted($"width=\"{ChartWidth}\" height=\"{ChartHeight}\"");
 
         var svg = new StringBuilder();
 
@@ -1237,11 +1247,52 @@ public sealed class MarkRenderer : IComponent
 
         svg.Append(Invariant, $"<desc>Daily candles {drawn}over a volume pane on a shared time axis, with {shaded}support below the price and resistance above it.</desc>");
 
+        // What the lines and the two hues are, above the picture rather than written
+        // across it. Each average's swatch is drawn with that average's own stroke, so
+        // the match is made by eye rather than by remembering an order.
+        svg.Append("<g class=\"m-legend\">");
+
+        double legendAt = Margin;
+
+        for (var line = 0; line < lines.Count; line++)
+        {
+            var name = AverageName(lines[line].Name);
+
+            svg.Append(Invariant, $"<line class=\"m-legend-swatch\" x1=\"{Number(legendAt)}\" y1=\"12\" x2=\"{Number(legendAt + 20)}\" y2=\"12\" ");
+            svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"{Number(0.34 + (0.22 * Math.Min(line, 3)))}\" stroke-width=\"1.4\"/>");
+            svg.Append(Invariant, $"<text class=\"m-legend-t\" x=\"{Number(legendAt + 26)}\" y=\"16\">{Escaped(name)}</text>");
+
+            legendAt += 26 + (name.Length * LegendCharacter) + 22;
+        }
+
+        // The two hues, named where the words that used to name them inside the plot
+        // can be read. Each entry is set out by the length of the one before it, as the
+        // averages are, because a fixed step sets them at whatever the font measures.
+        foreach (var (side, words) in new[] { ("sup", "nearest support"), ("res", "nearest resistance") })
+        {
+            if (!shading.Any(band => band.Immediate))
+            {
+                break;
+            }
+
+            svg.Append(Invariant, $"<text class=\"m-legend-t m-legend-{side}\" x=\"{Number(legendAt)}\" y=\"16\">{words}</text>");
+
+            legendAt += (words.Length * LegendCharacter) + 22;
+        }
+
+        svg.Append("</g>");
+
+        // Everything else sits below the legend, at the coordinates it is computed at,
+        // so a price is placed against the axis and never against the row above it.
+        svg.Append(Invariant, $"<g class=\"m-body\" transform=\"translate(0,{LegendRow})\">");
+
         svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"{Margin}\" y=\"0\" width=\"{Width - (2 * Margin)}\" height=\"{PriceHeight}\"/>");
 
         // The prices the right-hand column names: the close, and every band edge. Each
-        // is a stored price, so the column states nothing the store does not hold.
-        var named = new List<(double Y, string Text)>();
+        // is a stored price, so the column states nothing the store does not hold, and
+        // an edge of the nearest band on either side carries that side so the column
+        // draws it in the band's own hue.
+        var named = new List<(double Y, string Text, string? Nearest)>();
 
         // The bands first, so everything else reads on top of them. A band drawn
         // over the candles hides the price it is a statement about, which is the
@@ -1279,27 +1330,18 @@ public sealed class MarkRenderer : IComponent
                 svg.Append(Invariant, $"<line class=\"m-edge-{side}\" x1=\"{Margin}\" y1=\"{Number(top)}\" x2=\"{Width - Margin}\" y2=\"{Number(top)}\"/>");
                 svg.Append(Invariant, $"<line class=\"m-edge-{side}\" x1=\"{Margin}\" y1=\"{Number(bottom)}\" x2=\"{Width - Margin}\" y2=\"{Number(bottom)}\"/>");
 
-                // The band in words, because hue is never the only channel. A label
-                // that would sit on another is left to the column on the right,
-                // which names every edge.
-                var labelY = support ? bottom - 4 : top + 13;
-
-                if ((frame?.BandLabels ?? true) && labelled.All(other => Math.Abs(other - labelY) >= 18))
-                {
-                    labelled.Add(labelY);
-
-                    var words = band.LowEdge == band.HighEdge
-                        ? Formatted($"{band.Role} at {Price(band.LowEdge)}")
-                        : Formatted($"{band.Role} {Price(band.LowEdge)} to {Price(band.HighEdge)}");
-
-                    svg.Append(Invariant, $"<text class=\"m-bandlab m-bandlab-{side}\" x=\"{Margin + 8}\" y=\"{Number(labelY)}\">{Escaped(words)}{(band.Immediate ? ", nearest" : string.Empty)}</text>");
-                }
-
-                named.Add((top, Price(band.HighEdge)));
+                // The band in words is not written here. It was, at the plot's left
+                // edge, where it sat over the oldest sessions and was crossed by its
+                // own edge line; and hue is never the only channel, so the words are
+                // where they can be read: the column on the right names every edge and
+                // draws the nearest band's in that band's hue, the legend says which
+                // hue is which, and the table beneath names every band with its role,
+                // its strength and the sessions that reached it.
+                named.Add((top, Price(band.HighEdge), band.Immediate ? side : null));
 
                 if (band.LowEdge != band.HighEdge)
                 {
-                    named.Add((bottom, Price(band.LowEdge)));
+                    named.Add((bottom, Price(band.LowEdge), band.Immediate ? side : null));
                 }
             }
 
@@ -1318,8 +1360,6 @@ public sealed class MarkRenderer : IComponent
         // architecture states it once with its reasoning and a decision would be
         // a second place holding one fact.
         // see: Support and resistance own two hues and nothing else uses them
-        var averageLabels = new List<double>();
-
         for (var line = 0; line < lines.Count; line++)
         {
             var average = lines[line];
@@ -1357,24 +1397,10 @@ public sealed class MarkRenderer : IComponent
                 }
             }
 
-            // The line named where it ends, so a reader does not have to match a
-            // shade to a legend.
-            var ends = average.Values.Select((value, index) => (value, index)).Where(pair => pair.value is not null).ToArray();
-
-            if (ends.Length > 0)
-            {
-                var (last, at) = ends[^1];
-                var y = At(axis, last!.Value) - 5;
-
-                while (averageLabels.Any(other => Math.Abs(other - y) < 12))
-                {
-                    y -= 12;
-                }
-
-                averageLabels.Add(y);
-                svg.Append(Invariant, $"<text class=\"m-malab\" x=\"{Number(Centre(at) - 4)}\" y=\"{Number(Math.Max(10, y))}\" text-anchor=\"end\">{Escaped(AverageName(average.Name))}</text>");
-            }
-
+            // The line is named in the legend above the picture rather than where it
+            // ends. An average ends at the newest session, so a name written there sat
+            // over the sessions a reader came to look at, and three of them ending
+            // close together sat over each other as well.
             svg.Append("</g>");
         }
 
@@ -1460,7 +1486,7 @@ public sealed class MarkRenderer : IComponent
         svg.Append(Invariant, $"<rect class=\"m-nowtag\" x=\"{Width + 4}\" y=\"{Number(now - 11)}\" width=\"{AxisWidth - 6}\" height=\"22\" rx=\"2\"/>");
         svg.Append(Invariant, $"<text class=\"m-nowtag-t\" x=\"{Width + 9}\" y=\"{Number(now + 5)}\">{Price(bars[^1].Close)}</text>");
 
-        foreach (var (y, text) in named.OrderBy(price => Math.Abs(price.Y - now)))
+        foreach (var (y, text, nearest) in named.OrderBy(price => Math.Abs(price.Y - now)))
         {
             if (y < 8 || y > PriceHeight - 4 || placed.Any(other => Math.Abs(other - y) < 18))
             {
@@ -1468,8 +1494,13 @@ public sealed class MarkRenderer : IComponent
             }
 
             placed.Add(y);
+
+            // An edge of the nearest band on either side is drawn in that band's hue,
+            // which is what the words inside the plot used to say.
+            var hue = nearest is null ? string.Empty : $" m-tick-{nearest}";
+
             svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"{Width + 1}\" y1=\"{Number(y)}\" x2=\"{Width + 5}\" y2=\"{Number(y)}\"/>");
-            svg.Append(Invariant, $"<text class=\"m-tick\" x=\"{Width + 9}\" y=\"{Number(y + 5)}\">{Escaped(text)}</text>");
+            svg.Append(Invariant, $"<text class=\"m-tick{hue}\" x=\"{Width + 9}\" y=\"{Number(y + 5)}\">{Escaped(text)}</text>");
         }
 
         svg.Append("</g>");
@@ -1490,7 +1521,9 @@ public sealed class MarkRenderer : IComponent
             svg.Append(Invariant, $"width=\"{Number(body)}\" height=\"{Number(height)}\" fill=\"var(--muted, #6a6a6a)\"/>");
         }
 
-        svg.Append(Invariant, $"<text class=\"m-cap\" x=\"{Margin + 6}\" y=\"{volumeTop + 12}\">Volume, the tallest bar {loudest.ToString("N0", Invariant)} shares</text>");
+        // In the gap above the bars rather than inside the pane, where it was drawn
+        // across whichever sessions traded most.
+        svg.Append(Invariant, $"<text class=\"m-cap\" x=\"{Margin}\" y=\"{volumeTop - 6}\">Volume, the tallest bar {loudest.ToString("N0", Invariant)} shares</text>");
         svg.Append("</g>");
 
         // The shared time axis, which is what makes the two panes one picture: the
@@ -1510,6 +1543,7 @@ public sealed class MarkRenderer : IComponent
 
         svg.Append("</g>");
 
+        svg.Append("</g>");
         svg.Append("</svg>");
 
         return svg.ToString();
@@ -1519,8 +1553,20 @@ public sealed class MarkRenderer : IComponent
     // dates, and the column on the right where the prices it is read against are named.
     const int AxisWidth = 86;
     const int DateRow = 16;
+
+    // The row above the panes that names what the lines and the two hues are. It is
+    // outside the plot because a name written inside one is written over the price it
+    // is about, and the newest sessions, which is where an average ends, are the ones
+    // a reader is looking at.
+    const int LegendRow = 26;
+
+    // What a character of the legend measures at the size the stylesheet sets it, taken
+    // off the drawn row rather than assumed, so each entry is set out past the one before
+    // it and two never sit on each other.
+    const double LegendCharacter = 7.2;
+
     const int ChartWidth = Width + AxisWidth;
-    const int ChartHeight = PriceHeight + Gap + VolumeHeight + DateRow;
+    const int ChartHeight = LegendRow + PriceHeight + Gap + VolumeHeight + DateRow;
 
     // An average's name as a reader says it.
     static string AverageName(string name) => name switch

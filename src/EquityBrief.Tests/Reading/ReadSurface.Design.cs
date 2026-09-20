@@ -41,24 +41,43 @@ public partial class ReadSurface
 
         // Drawn at a size of its own, so the profile drawn beside it at the same scale lines up
         // price for price, and never the width of whatever holds it.
-        Assert.Contains("width=\"523\" height=\"232\"", chart, StringComparison.Ordinal);
+        Assert.Contains("width=\"731\" height=\"245\"", chart, StringComparison.Ordinal);
         Assert.DoesNotContain("width=\"100%\"", chart, StringComparison.Ordinal);
 
-        // Each band's two edges drawn as lines, and the band named in words with its stored prices.
+        // Each band's two edges drawn as lines, and nothing naming a band inside the plot, where
+        // a name is written over the price it is about.
         Assert.Equal(2, Regex.Matches(chart, "class=\"m-edge-sup\"").Count);
         Assert.Equal(2, Regex.Matches(chart, "class=\"m-edge-res\"").Count);
-        Assert.Contains(">support 104.00 to 105.50, nearest</text>", chart, StringComparison.Ordinal);
-        Assert.Contains(">resistance 111.00 to 112.00</text>", chart, StringComparison.Ordinal);
+        Assert.DoesNotContain(">support 104.00 to 105.50", chart, StringComparison.Ordinal);
+        Assert.DoesNotContain(">resistance 111.00 to 112.00", chart, StringComparison.Ordinal);
 
-        // The average named where it ends, so no shade has to be matched to a legend.
-        Assert.Contains(">20-day average</text>", chart, StringComparison.Ordinal);
+        // The legend above the picture instead: the average with a swatch drawn in its own
+        // stroke, and the two hues named, which is what the words inside the plot said.
+        var legend = Regex.Match(chart, "<g class=\"m-legend\">.*?</g>", RegexOptions.Singleline).Value;
+
+        Assert.Contains(">20-day average</text>", legend, StringComparison.Ordinal);
+        Assert.Contains("class=\"m-legend-swatch\"", legend, StringComparison.Ordinal);
+        Assert.Contains("m-legend-sup\" x=", legend, StringComparison.Ordinal);
+        Assert.Contains(">nearest support</text>", legend, StringComparison.Ordinal);
+        Assert.Contains(">nearest resistance</text>", legend, StringComparison.Ordinal);
+
+        // And the nearest band's edges are drawn in that band's hue in the column, which is the
+        // other half of what the words carried. The band at 111 to 112 is not the nearest.
+        Assert.Contains("class=\"m-tick m-tick-sup\"", chart, StringComparison.Ordinal);
+        Assert.DoesNotContain("m-tick-res", chart, StringComparison.Ordinal);
 
         // The last close as a rule across the pane and a tag carrying the stored close.
         var close = bars[^1].Close.ToString("#,##0.00", CultureInfo.InvariantCulture);
 
         Assert.Contains("class=\"m-now\"", chart, StringComparison.Ordinal);
-        Assert.Contains($"<text class=\"m-nowtag-t\" x=\"969\" y=\"", chart, StringComparison.Ordinal);
         Assert.Contains($">{close}</text>", chart, StringComparison.Ordinal);
+
+        // The tag sits beyond the plot rather than at a number kept here, read off the plot the
+        // chart draws, so the column stays outside the picture at whatever width it is drawn.
+        var plot = At(Regex.Match(chart, "<rect class=\"m-plot\"[^>]*width=\"([0-9.]+)\""));
+        var tag = At(Regex.Match(chart, "<text class=\"m-nowtag-t\" x=\"([0-9.]+)\""));
+
+        Assert.True(tag > plot, $"The close's tag sits at {tag}, inside a plot {plot} wide.");
 
         // Every price the right-hand column names is a stored one, the close or a band edge, to the
         // two places a picture prints a price at, and it names more than the close alone.
@@ -103,8 +122,8 @@ public partial class ReadSurface
 
         // A size of its own at every scale, which is what stops it being stretched across the
         // page, and the same scale the chart beside it is given.
-        Assert.Contains("width=\"75\" height=\"180\"", profile, StringComparison.Ordinal);
-        Assert.Contains("width=\"150\" height=\"360\"", renderer.VolumeProfile("TEST", Bands(), axis), StringComparison.Ordinal);
+        Assert.Contains("width=\"75\" height=\"193\"", profile, StringComparison.Ordinal);
+        Assert.Contains("width=\"150\" height=\"386\"", renderer.VolumeProfile("TEST", Bands(), axis), StringComparison.Ordinal);
         Assert.DoesNotContain("100%", profile, StringComparison.Ordinal);
 
         // The chart's band carried across, behind the rows.

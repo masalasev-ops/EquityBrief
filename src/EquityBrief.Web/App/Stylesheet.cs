@@ -34,7 +34,7 @@ public static class Stylesheet
  /* The column, at its widest: the widest picture a screen draws, with the card's side padding
     and the page's gutter around it. Wider than that and a line of prose runs past what an eye
     follows; narrower and the chart and the profile beside it are read through a scroll box. */
- --column:1284px; --gutter:20px;
+ --column:1700px; --gutter:20px;
  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme='light']):not([data-eb-theme='light']){
@@ -287,14 +287,14 @@ svg text{font-family:var(--sans)}
 .m-plot{fill:var(--plot)}
 .m-band-sup{fill:var(--sup-fill)} .m-band-res{fill:var(--res-fill)}
 .m-edge-sup{stroke:var(--sup);stroke-width:1} .m-edge-res{stroke:var(--res);stroke-width:1}
-.m-bandlab{font-size:10.5px;font-weight:600}
-.m-bandlab-sup{fill:var(--sup-ink)} .m-bandlab-res{fill:var(--res-ink)}
 .m-wick{stroke:var(--ink);stroke-width:1}
 .m-c-up{fill:var(--plot);stroke:var(--ink);stroke-width:1} .m-c-dn{fill:var(--ink);stroke:var(--ink);stroke-width:1}
 .m-v-up{fill:var(--plot);stroke:var(--s3);stroke-width:.8} .m-v-dn{fill:var(--s3)}
 .m-ma{fill:none;stroke-linejoin:round}
 .m-ma-0{stroke:var(--s3);stroke-width:1} .m-ma-1{stroke:var(--ink-2);stroke-width:1.2} .m-ma-2{stroke:var(--s2);stroke-width:2.4}
-.m-malab{font-size:10.5px;fill:var(--ink-2);font-style:italic}
+.m-legend-t{font-size:10.5px;fill:var(--ink-2)}
+.m-legend-sup{fill:var(--sup-ink)} .m-legend-res{fill:var(--res-ink)}
+.m-tick-sup{fill:var(--sup-ink)} .m-tick-res{fill:var(--res-ink)}
 .m-now{stroke:var(--ink);stroke-width:.8;opacity:.55}
 .m-tick{font-size:10.5px;fill:var(--soft);font-variant-numeric:tabular-nums}
 .m-cap{font-size:11px;fill:var(--ink-2)}
@@ -321,7 +321,7 @@ svg text{font-family:var(--sans)}
 .m-absent{fill:none;stroke:var(--dash-ink);stroke-width:1.3;stroke-dasharray:5 4}
 .m-absent-t{font-size:13px;font-weight:600;fill:var(--ink)} .m-absent-s{font-size:11px;fill:var(--ink-2)}
 .m-mark{fill:var(--ink)} .m-mark-t{font-size:9.5px;font-weight:700;fill:var(--surface)}
-.level-chart .m-bandlab,.level-chart .m-tick,.level-chart .m-nowtag-t,.level-chart .m-malab,.level-chart .m-cap,.volume-profile .m-tick{font-size:15px}
+.level-chart .m-legend-t,.level-chart .m-tick,.level-chart .m-nowtag-t,.level-chart .m-cap,.volume-profile .m-tick{font-size:15px}
 .level-chart .m-mark-t{font-size:12px}
 .m-barlab-in{font-size:11px;font-weight:600;fill:var(--surface);font-variant-numeric:tabular-nums} .m-barlab-out{font-size:11px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums}
 .sw{display:inline-block;width:12px;height:10px;margin-right:6px;vertical-align:-1px}

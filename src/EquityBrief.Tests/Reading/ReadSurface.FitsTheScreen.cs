@@ -95,6 +95,81 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task NoPictureAScreenDrawsIsStretchedToFillWhatHoldsItAndNoneIsWrittenOver()
+    {
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var name = FiredNamesOn(store, NightIn(store))[0];
+
+        var screens = new[]
+        {
+            ("tonight", await client.GetStringAsync("/screens/tonight")),
+            ("universe", await client.GetStringAsync("/screens/universe")),
+            ("run", await client.GetStringAsync("/screens/run")),
+            ("name", await client.GetStringAsync($"/screens/name/{name}")),
+            ("the exported report", await client.GetStringAsync(EquityBrief.Web.App.ReportExporter.Route + name)),
+        };
+
+        var pictures = 0;
+
+        foreach (var (screen, markup) in screens)
+        {
+            var drawn = Regex.Matches(markup, "<svg[^>]*>");
+
+            Assert.True(drawn.Count > 0, $"The {screen} screen draws no picture, and this is what reads them.");
+
+            pictures += drawn.Count;
+
+            // A picture given the width of what holds it is scaled up to fill it, and everything
+            // inside it, the type it is labelled with among them, is scaled with it. Named where
+            // one is rather than counted, because a count says one is stretched and not which.
+            var stretched = drawn
+                .Where(picture => picture.Value.Contains("width=\"100%\"", StringComparison.Ordinal))
+                .Select(picture => Regex.Match(picture.Value, "class=\"([a-z- ]+)\"").Groups[1].Value)
+                .ToArray();
+
+            Assert.True(stretched.Length == 0, $"On {screen}, {string.Join(", ", stretched)} is drawn at the width of what holds it.");
+        }
+
+        // The population the loop above ran over: 37 pictures over the five surfaces.
+        Assert.Equal(37, pictures);
+
+        var page = screens[3].Item2;
+
+        // Nothing is written inside the chart's plot. Every name a band or an average carries is
+        // outside it, because a word written across the price is written over the one thing the
+        // picture exists to show.
+        var chart = Regex.Match(page, "<svg[^>]*class=\"level-chart\".*?</svg>", RegexOptions.Singleline).Value;
+
+        Assert.DoesNotContain("m-bandlab", chart, StringComparison.Ordinal);
+        Assert.DoesNotContain("m-malab", chart, StringComparison.Ordinal);
+        Assert.Contains("<g class=\"m-legend\">", chart, StringComparison.Ordinal);
+
+        // The panel beneath the chart is as wide as the chart's own plot, which is what puts a
+        // session at one distance across the two, and the profile beside it carries the legend's
+        // height so a price is at one height across those.
+        var panel = Regex.Match(page, "<svg[^>]*class=\"momentum-panel\".*?</svg>", RegexOptions.Singleline).Value;
+        var profile = Regex.Match(page, "<svg[^>]*class=\"volume-profile\".*?</svg>", RegexOptions.Singleline).Value;
+
+        Assert.Equal(Plot(chart), Plot(panel));
+        Assert.Equal(Top(chart), Top(profile));
+    }
+
+    // The width of a picture's plot, read off the rectangle it draws itself on.
+    static double Plot(string picture) =>
+        double.Parse(
+            Regex.Match(picture, "<rect class=\"m-plot\"[^>]*width=\"([0-9.]+)\"").Groups[1].Value,
+            CultureInfo.InvariantCulture);
+
+    // Where a picture's own drawing starts, which is below the row that names what is in it.
+    static double Top(string picture) =>
+        double.Parse(
+            Regex.Match(picture, "<g class=\"m-body\" transform=\"translate\\(0,([0-9.]+)\\)\"").Groups[1].Value,
+            CultureInfo.InvariantCulture);
+
+    [Fact]
     public async Task EveryTableAScreenDrawsIsReadInABoxOfItsOwnRatherThanPushingThePageSideways()
     {
         using var store = await FixtureExpectations.WithListings();

@@ -4,6 +4,7 @@
 
 # local scratch archive of build prompts
 /prompts/
+/sampleReports/
 
 # harness output, regenerated every run and never a reference
 /artifacts/
