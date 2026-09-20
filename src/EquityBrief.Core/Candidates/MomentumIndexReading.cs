@@ -24,7 +24,7 @@ public sealed class MomentumIndexReading : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "2624ba637c94";
+    public override string Version => "79ae94cd071d";
 
     public override IReadOnlyList<string> Reads => [Reading];
 

@@ -4560,6 +4560,36 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TheEdgeCrossedNamedNearestIsTheOneNearestTheCloseItCrossedTo()
+    {
+        // The case the committed fixture cannot reach on the night it holds: an
+        // edge is named nearest, and a name that crossed several of them in one
+        // session is where the name can be wrong. Forty-one of the index's names
+        // crossed more than one on the night this was found, eight of them on a
+        // rise, where the first of the edges is the furthest of them.
+        ReasonInputs With(decimal yesterday, decimal today) =>
+            new(today, yesterday, 1000, 500, [new EdgeAt(101m, "resistance"), new EdgeAt(109m, "resistance")], [], [], "range", "range", null, null);
+
+        IReadOnlyDictionary<string, string> Crossed(decimal yesterday, decimal today) =>
+            ShortlistSeries.For(With(yesterday, today)).Single(outcome => outcome.Name == ShortlistSeries.CrossedALevel).Values;
+
+        // A rise through both: the higher edge is the one the close ended nearest.
+        var rose = Crossed(100m, 110m);
+
+        Assert.Equal("2", rose["edges crossed"]);
+        Assert.Equal("109", rose["nearest edge"]);
+
+        // A fall through both, from above: the lower one.
+        var fell = Crossed(110m, 100m);
+
+        Assert.Equal("2", fell["edges crossed"]);
+        Assert.Equal("101", fell["nearest edge"]);
+
+        // And one edge crossed is that edge, whichever way the close moved.
+        Assert.Equal("101", Crossed(100m, 105m)["nearest edge"]);
+    }
+
+    [Fact]
     public void EarningsSoonFiresInsideTheHorizonAndSaysWhenNoDateIsOnFile()
     {
         // Section 18's row: a name with no earnings date on file cannot fire the

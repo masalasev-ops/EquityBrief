@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EquityBrief.Data.Migrations;
 
 namespace EquityBrief.Tests.Checks;
@@ -377,5 +378,119 @@ public class PriceStorageForm
         Assert.Empty(CastsIn("var a = (int)price;", "Probe.cs"));
         Assert.Empty(CastsIn("var b = doubled + decimals;", "Probe.cs"));
         Assert.Empty(CastsIn("var c = ToDoubleCheck(price);", "Probe.cs"));
+    }
+
+    // ---- the third half: what a query does with a price ----
+
+    // Every query the shipped source carries, read from the verbatim strings the
+    // SQL is written as. Comments go first, so a sentence about an ordering is
+    // not read as one, and a string is a query when it selects from something.
+    internal static IReadOnlyList<string> QueriesIn(string source) =>
+        Regex.Matches(SourceStatements.WithoutComments(source), "@\"(.*?)\"(?!\")", RegexOptions.Singleline)
+            .Select(match => Regex.Replace(match.Groups[1].Value, @"\s+", " ").Trim())
+            .Where(text => Regex.IsMatch(text, @"\bselect\b", RegexOptions.IgnoreCase)
+                && Regex.IsMatch(text, @"\bfrom\b", RegexOptions.IgnoreCase))
+            .ToArray();
+
+    // What a query does with a price that the store has to compare or add to
+    // answer: ordering on one, taking the least or the greatest or the total of
+    // one, or comparing one against anything.
+    //
+    // A price is stored as text, and the store compares text character by
+    // character, so each of these answers by how a number is spelled: a band at
+    // 87 sorts above one at 117 and the higher of 95.10 and 106.47 is 95.10. An
+    // aggregate that adds them is the other direction, the store reading text as
+    // a floating point number, which is the storage form this check's first half
+    // refuses. Both are the same rule: money is decimal, and the place it is a
+    // decimal is the code.
+    internal static IReadOnlyList<string> PriceChoicesIn(string query, IReadOnlyList<string> money)
+    {
+        var qualified = @"(?:[A-Za-z_][A-Za-z0-9_]*\.)?";
+
+        return money
+            .SelectMany(column => new (string Pattern, string Reads)[]
+            {
+                (@"\border\s+by\s+" + qualified + column + @"\b", "orders by"),
+                (@"\b(?:min|max|sum|avg|total)\s*\(\s*" + qualified + column + @"\s*\)", "aggregates"),
+                (qualified + column + @"\s*(?:<=|>=|<>|<|>)", "compares"),
+            }
+                .Where(form => Regex.IsMatch(query, form.Pattern, RegexOptions.IgnoreCase))
+                .Select(form => $"{form.Reads} `{column}`"))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    [Fact]
+    public void NoQueryChoosesAmongStoredPricesByTheTextTheyAreStoredAs()
+    {
+        var money = MoneyColumns();
+
+        Assert.True(money.Count >= 8, $"SCHEMA declares {money.Count} money columns, expected at least 8.");
+
+        var shipped = Repository.SourceFiles()
+            .Where(file => !file.Contains(
+                Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar,
+                StringComparison.Ordinal))
+            .ToArray();
+
+        var queries = shipped
+            .SelectMany(file => QueriesIn(File.ReadAllText(file))
+                .Select(query => (File: Path.GetFileName(file), Query: query)))
+            .ToArray();
+
+        // The population, stated, because a reader that found no query at all
+        // would assert nothing and pass. Ninety-four when this floor was set.
+        Assert.True(queries.Length >= 80, $"Read {queries.Length} queries in the shipped source, expected at least 80.");
+
+        var choices = queries
+            .SelectMany(entry => PriceChoicesIn(entry.Query, money)
+                .Select(choice => $"{entry.File}: {choice} in `{entry.Query}`"))
+            .OrderBy(choice => choice, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(choices.Length == 0, string.Join("\n", choices));
+    }
+
+    [Fact]
+    public void TheQueryReaderFindsEachFormAndLeavesWhatIsNotAPriceAlone()
+    {
+        // The permanent proof that the assertion above can fail, in each of the
+        // three forms, and the three the corpus carried when it was written:
+        // the level table ordered by an edge, the move's extremes taken as the
+        // greatest and the least, and a universe row's nearest band the same.
+        string[] money = ["low_edge", "high", "close"];
+
+        Assert.Equal(
+            ["orders by `low_edge`"],
+            PriceChoicesIn("SELECT low_edge FROM level ORDER BY low_edge;", money));
+
+        Assert.Equal(
+            ["aggregates `high`"],
+            PriceChoicesIn("SELECT MAX(high) FROM bar WHERE ticker = $ticker;", money));
+
+        Assert.Equal(
+            ["compares `close`"],
+            PriceChoicesIn("SELECT ticker FROM bar WHERE close > $level;", money));
+
+        // Qualified by its table, which is the shape the universe query used.
+        Assert.Equal(
+            ["aggregates `low_edge`"],
+            PriceChoicesIn("SELECT MIN(v.low_edge) FROM level v;", money));
+
+        // And the other direction. A date and a count are not prices however they
+        // are chosen, a column that merely ends in the name of one is not it, and
+        // an equality reads one stored value rather than comparing two.
+        Assert.Empty(PriceChoicesIn("SELECT x FROM t ORDER BY as_of DESC;", money));
+        Assert.Empty(PriceChoicesIn("SELECT MAX(as_of) FROM level;", money));
+        Assert.Empty(PriceChoicesIn("SELECT SUM(fired_count) FROM listing;", money));
+        Assert.Empty(PriceChoicesIn("SELECT x FROM bar ORDER BY raw_close;", money));
+        Assert.Empty(PriceChoicesIn("SELECT x FROM bar WHERE close = $close;", money));
+
+        // The reader that finds them reads queries and not prose: a comment
+        // naming an ordering is not one, and a string that selects nothing is
+        // not a query.
+        Assert.Empty(QueriesIn("// SELECT low_edge FROM level ORDER BY low_edge"));
+        Assert.Empty(QueriesIn("const string Note = @\"ordered by low_edge\";"));
+        Assert.Single(QueriesIn("const string Q = @\"SELECT low_edge FROM level;\";"));
     }
 }

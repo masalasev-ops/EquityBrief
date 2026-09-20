@@ -72,7 +72,7 @@ public sealed class RuleVersionScorer : IComponent
     // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "31de414eaa47";
+    public const string CodeVersion = "4b0f9a8b1e7d";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -155,11 +155,13 @@ public sealed class RuleVersionScorer : IComponent
     // The bands and the trend the night being scored computed, and no other
     // night's: a session no night computed has none, so a name there is left out
     // rather than replayed against an earlier night's set.
+    // Unordered, and put in price order once the edges are decimals, for the
+    // reason the ladder builder's band query gives.
+    // see: A stored price is chosen and ordered by its value and never by the text it is stored as
     const string BandsFor = @"
         SELECT low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members
         FROM level
-        WHERE ticker = $ticker AND as_of = $session
-        ORDER BY low_edge;
+        WHERE ticker = $ticker AND as_of = $session;
     ";
 
     const string TrendFor = @"
@@ -877,6 +879,8 @@ public sealed class RuleVersionScorer : IComponent
                     reader.GetInt32(5) != 0,
                     members ?? []));
             }
+
+            bands.Sort((left, right) => left.LowEdge.CompareTo(right.LowEdge));
         }
 
         if (bands.Count == 0)

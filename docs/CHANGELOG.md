@@ -25,6 +25,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - .claude/rules/checks.md - `price-storage-form` gains a third half, over what a query does with a price
+
+Authorised by: A stored price is chosen and ordered by its value and never by the text it is stored as
+Was:
+> The two halves fail apart: the storage half can hold while an expression casts money to a statistic inline, which is what a helper sitting in a project half the tree cannot reference produces |
+Now:
+> The two halves fail apart: the storage half can hold while an expression casts money to a statistic inline, which is what a helper sitting in a project half the tree cannot reference produces. A third half reads every query in the shipped source, taken from the strings the SQL is written as with the comments stripped first, and fails one that orders by, takes the least or the greatest or the total of, or compares a column SCHEMA marks as money, because the store compares a stored price character by character and adds one by reading it as a floating point number; the reader is shown to find each of the three forms, qualified by its table included, and to leave a date, a count and a column that merely ends in a price's name alone |
+Why: the two halves governed the form a price is stored in and the crossings between the decimal world and the double one, and neither reached the third way the two worlds meet, which is the store being asked to compare or add a price it holds as text. Eight queries did, and four of them answer a reader.
+
 ### 2026-09-19 - ARCHITECTURE.html - section 15.12's second step says what opening a name does and does not do
 
 Corrects: the step said the stored fundamentals are fetched when a page is opened and the numbers section fills in, which no screen does: section 15.2 says a screen fetches nothing, and the fetch is the research pass's first act.

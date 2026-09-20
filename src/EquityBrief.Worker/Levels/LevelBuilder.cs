@@ -69,11 +69,15 @@ public sealed class LevelBuilder : IComponent
               AND value IS NOT NULL;
     ";
 
+    // Unordered, the candidates being put in price order once they are decimals,
+    // because a band edge is stored as text and the store orders text by its
+    // characters. The threshold is a share of a period and is stored as the
+    // statistic it is, so it is compared where it is held.
+    // see: A stored price is chosen and ordered by its value and never by the text it is stored as
     const string ShelvesFor = @"
         SELECT band_low, band_high, share_of_period
         FROM volume_profile
-        WHERE ticker = $ticker AND as_of = $as_of AND share_of_period >= $threshold
-        ORDER BY band_low;
+        WHERE ticker = $ticker AND as_of = $as_of AND share_of_period >= $threshold;
     ";
 
     // The retention drop, one year back from the as-of date this run wrote.
@@ -476,7 +480,7 @@ public sealed class LevelBuilder : IComponent
                 asOf));
         }
 
-        return shelves;
+        return [.. shelves.OrderBy(shelf => shelf.Price)];
     }
 
     // A typical day's move, which is the ATR at the as-of session. Half of it is

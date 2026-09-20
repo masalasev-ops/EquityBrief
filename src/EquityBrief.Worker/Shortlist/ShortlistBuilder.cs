@@ -122,12 +122,14 @@ public sealed class ShortlistBuilder : IComponent
     // The suffix a previous session's value is offered to an evaluator under.
     public const string PreviousSuffix = "_previous";
 
+    // Unordered, and put in price order once the edges are decimals, for the
+    // reason the ladder builder's band query gives.
+    // see: A stored price is chosen and ordered by its value and never by the text it is stored as
     const string EdgesFor = @"
         SELECT low_edge, high_edge, role
         FROM level
         WHERE ticker = $ticker
-              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker)
-        ORDER BY low_edge;
+              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker);
     ";
 
     // The last two ladder rows, which is what the trend-changed reason compares.
@@ -698,6 +700,9 @@ public sealed class ShortlistBuilder : IComponent
                 edges.Add(new EdgeAt(high, role));
                 bands.Add(new Band(low, high));
             }
+
+            edges.Sort((left, right) => left.Price.CompareTo(right.Price));
+            bands.Sort((left, right) => left.LowEdge.CompareTo(right.LowEdge));
         }
 
         string? trendState = null;
