@@ -1,4 +1,5 @@
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Levels;
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Spending;
@@ -526,27 +527,27 @@ public sealed class ReadApi : IComponent
         ORDER BY filing_date DESC;
     ";
 
-    // The high and the low of the sessions the largest move spans.
+    // The bars of the sessions the largest move spans, whose highest high and
+    // lowest low the fact strip states.
     //
-    // An aggregate over stored bars rather than a derivation: the move row names
-    // the session it ended on and how many sessions it spans, and these are the
-    // extremes of exactly those bars. The span is counted in stored sessions
+    // The move row names the session it ended on and how many sessions it spans,
+    // and these are exactly those bars. The span is counted in stored sessions
     // rather than in calendar days, because a move over a week that holds a
     // holiday spans four sessions and five days, and the days would reach a bar
     // the move does not cover.
     //
-    // `MAX` and `MIN` over a bounded set of rows are selection in the sense the
-    // read surface permits, as the `MAX(as_of)` the level query already uses is:
-    // they choose which stored value to hand back and change none of them.
+    // The bars are handed back and the two extremes are chosen from them as
+    // prices. Choosing which stored value to hand back is selection the read
+    // surface permits, as the `MAX(as_of)` the level query uses is, but a price
+    // is stored as text and the store compares text by its characters, so the
+    // choice is made where the values are decimals.
+    // see: A stored price is chosen and ordered by its value and never by the text it is stored as
     const string MoveExtremesForName = @"
-        SELECT MAX(high), MIN(low)
-        FROM (
-            SELECT high, low
-            FROM bar
-            WHERE ticker = $ticker AND session_date <= $ended
-            ORDER BY session_date DESC
-            LIMIT $sessions
-        );
+        SELECT high, low
+        FROM bar
+        WHERE ticker = $ticker AND session_date <= $ended
+        ORDER BY session_date DESC
+        LIMIT $sessions;
     ";
 
     const string LargestMoveForName = @"
@@ -574,24 +575,29 @@ public sealed class ReadApi : IComponent
     // Every band for one name at its latest as-of date. The latest rather than
     // all of them, because the level table on the name page is tonight's map and
     // a page holding two nights of bands would be a page holding two maps.
+    //
+    // Unordered here and put in price order by the reader, because an edge is
+    // stored as text and the store would order it by its characters, which reads
+    // a band at 87 as sitting above one at 117.
+    // see: A stored price is chosen and ordered by its value and never by the text it is stored as
     const string LevelsForName = @"
         SELECT ticker, as_of, low_edge, high_edge, role, immediate, strength,
                has_non_average_anchor, members
         FROM level
         WHERE ticker = $ticker
-              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker AND as_of <= $on)
-        ORDER BY low_edge;
+              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker AND as_of <= $on);
     ";
 
     // The latest night alone, for the same reason the level query binds as_of to
     // the maximum: a page holding two nights of profile bands is a page holding
-    // two histograms of different periods.
+    // two histograms of different periods, and unordered for the reason that
+    // query is, the histogram being drawn from the bottom band up.
+    // see: A stored price is chosen and ordered by its value and never by the text it is stored as
     const string ProfileForName = @"
         SELECT ticker, as_of, band_low, band_high, share_count, share_of_period
         FROM volume_profile
         WHERE ticker = $ticker
-              AND as_of = (SELECT MAX(as_of) FROM volume_profile WHERE ticker = $ticker AND as_of <= $on)
-        ORDER BY band_low;
+              AND as_of = (SELECT MAX(as_of) FROM volume_profile WHERE ticker = $ticker AND as_of <= $on);
     ";
 
     // The next event on or after a date, which is what the fact strip states and
@@ -748,11 +754,9 @@ public sealed class ReadApi : IComponent
     // the night computed nothing for is a row saying so, and a name quietly
     // absent would make a count wrong in the direction nobody looks.
     //
-    // Left joins throughout, and the bands are the immediate ones the level
-    // builder already marked, so the nearest on each side is read rather than
-    // searched for. `as_of` binds to the maximum for the same reason the level
-    // query binds it: a screen holding two nights of bands is a screen holding
-    // two charts.
+    // Left joins throughout. The bands each row carries are read by the query
+    // below rather than here, because they are prices and the store would choose
+    // between two of them by their characters.
     //
     // One row a ticker. A provider that re-dates a member's span leaves two open
     // spans for one ticker, and the screen draws the one it listed most recently.
@@ -763,12 +767,6 @@ public sealed class ReadApi : IComponent
                 ORDER BY b.session_date DESC LIMIT 1),
                (SELECT l.trend_state FROM ladder l WHERE l.ticker = m.ticker
                 ORDER BY l.as_of DESC LIMIT 1),
-               (SELECT MAX(v.high_edge) FROM level v WHERE v.ticker = m.ticker
-                AND v.immediate = 1 AND v.role = 'support'
-                AND v.as_of = (SELECT MAX(a.as_of) FROM level a WHERE a.ticker = m.ticker)),
-               (SELECT MIN(v.low_edge) FROM level v WHERE v.ticker = m.ticker
-                AND v.immediate = 1 AND v.role = 'resistance'
-                AND v.as_of = (SELECT MAX(a.as_of) FROM level a WHERE a.ticker = m.ticker)),
                (SELECT i.value FROM indicator i WHERE i.ticker = m.ticker AND i.name = $typical
                 ORDER BY i.session_date DESC LIMIT 1),
                m.name,
@@ -777,6 +775,23 @@ public sealed class ReadApi : IComponent
         FROM membership m
         WHERE " + CurrentMember + @"
         ORDER BY m.ticker;
+    ";
+
+    // The bands the universe screen states, which are the immediate ones the
+    // level builder already marked, at each name's latest as-of date for the
+    // reason the level query binds it: a screen holding two nights of bands is a
+    // screen holding two charts.
+    //
+    // Every marked band of every name in one read, with the nearest on each side
+    // chosen from them as prices. The builder marks one band a side, so the
+    // choice stands on a set of one until a night writes two, which is when a
+    // choice made on the text would begin answering with the wrong band.
+    // see: A stored price is chosen and ordered by its value and never by the text it is stored as
+    const string ImmediateBands = @"
+        SELECT v.ticker, v.role, v.low_edge, v.high_edge
+        FROM level v
+        WHERE v.immediate = 1
+              AND v.as_of = (SELECT MAX(a.as_of) FROM level a WHERE a.ticker = v.ticker);
     ";
 
     // The current members of the index on a session, one row a ticker, for the reason the
@@ -1059,7 +1074,7 @@ public sealed class ReadApi : IComponent
                 reader.GetString(8)));
         }
 
-        return rows;
+        return [.. rows.OrderBy(row => row.LowEdge)];
     }
 
     public async Task<IReadOnlyList<ProfileRow>> ProfileAsync(string ticker, DateOnly? asOf = null)
@@ -1086,7 +1101,7 @@ public sealed class ReadApi : IComponent
                 reader.GetDouble(5)));
         }
 
-        return rows;
+        return [.. rows.OrderBy(row => row.BandLow)];
     }
 
     // Every stage of the runs that belong to one night, in the order they ran.
@@ -1471,6 +1486,44 @@ public sealed class ReadApi : IComponent
     public async Task<IReadOnlyList<UniverseRow>> UniverseAsync(string indexCode, DateOnly? night = null)
     {
         await using var connection = Open();
+
+        var support = new Dictionary<string, decimal>(StringComparer.Ordinal);
+        var resistance = new Dictionary<string, decimal>(StringComparer.Ordinal);
+
+        await using (var bands = connection.CreateCommand())
+        {
+            bands.CommandText = ImmediateBands;
+
+            await using var marked = await bands.ExecuteReaderAsync();
+
+            while (await marked.ReadAsync())
+            {
+                var name = marked.GetString(0);
+
+                // The nearest support is the highest of them and the nearest
+                // resistance the lowest, which is the rule the builder marked
+                // them by, applied here to the prices rather than to their text.
+                if (string.Equals(marked.GetString(1), LevelSeries.Support, StringComparison.Ordinal))
+                {
+                    var edge = Money.FromStorage(marked.GetString(3));
+
+                    if (!support.TryGetValue(name, out var held) || edge > held)
+                    {
+                        support[name] = edge;
+                    }
+                }
+                else
+                {
+                    var edge = Money.FromStorage(marked.GetString(2));
+
+                    if (!resistance.TryGetValue(name, out var held) || edge < held)
+                    {
+                        resistance[name] = edge;
+                    }
+                }
+            }
+        }
+
         await using var command = connection.CreateCommand();
 
         command.CommandText = Universe;
@@ -1485,17 +1538,19 @@ public sealed class ReadApi : IComponent
 
         while (await reader.ReadAsync())
         {
+            var ticker = reader.GetString(0);
+
             rows.Add(new UniverseRow(
-                reader.GetString(0),
+                ticker,
                 reader.IsDBNull(1) ? null : reader.GetString(1),
                 reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2)),
                 reader.IsDBNull(3) ? null : reader.GetString(3),
-                reader.IsDBNull(4) ? null : Money.FromStorage(reader.GetString(4)),
-                reader.IsDBNull(5) ? null : Money.FromStorage(reader.GetString(5)),
-                reader.IsDBNull(6) ? null : reader.GetDouble(6),
-                reader.IsDBNull(7) ? null : reader.GetString(7),
-                reader.IsDBNull(8) ? null : reader.GetString(8),
-                reader.IsDBNull(9) ? null : Day(reader.GetString(9))));
+                support.TryGetValue(ticker, out var below) ? below : null,
+                resistance.TryGetValue(ticker, out var above) ? above : null,
+                reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6),
+                reader.IsDBNull(7) ? null : Day(reader.GetString(7))));
         }
 
         return rows;
@@ -2182,17 +2237,21 @@ public sealed class ReadApi : IComponent
 
         await using var bars = await command.ExecuteReaderAsync();
 
-        if (!await bars.ReadAsync() || bars.IsDBNull(0))
+        var highs = new List<decimal>();
+        var lows = new List<decimal>();
+
+        while (await bars.ReadAsync())
+        {
+            highs.Add(Money.FromStorage(bars.GetString(0)));
+            lows.Add(Money.FromStorage(bars.GetString(1)));
+        }
+
+        if (highs.Count == 0)
         {
             return null;
         }
 
-        return new MoveExtremes(
-            ticker,
-            ended,
-            sessions,
-            Money.FromStorage(bars.GetString(0)),
-            Money.FromStorage(bars.GetString(1)));
+        return new MoveExtremes(ticker, ended, sessions, highs.Max(), lows.Min());
     }
 
     // The operational record of the read surface coming up, which section

@@ -17094,3 +17094,81 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             being a list rather than a table. Both gates ran with this entry in place, and the
             operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+### 3.5 - correction: every price a screen or a rule chooses between chosen by its value and never by the text it is stored as   2026-09-19
+Corrects:   a price is a decimal in code and text in storage, so a store asked for the greatest of
+            two compares them character by character: 95.10 stands above 106.47 because 9 is above
+            1. Eight queries asked, four of them for a reader. A name's page stated the high and the
+            low of its largest move as the greatest and the least of its text, and listed its bands
+            in the order that text sorts in; the universe screen chose a name's nearest band the
+            same way; and the reason that fires when a close crosses a band edge named the first
+            edge in the list nearest, which is the furthest one on a rise through more than one.
+Found:      by this session on 2026-09-19, reading a name's page for the operator while widening the
+            column: the fact strip stated a move whose high was 95.10 and whose low was 100.02,
+            which is a high below its own low and no window of sessions can hold.
+Measured:   over the operator's copy of the 2026-09-18 store, against the same figures taken as
+            decimals. Of 508 names carrying a move, 35 were stated a wrong high or low and 24 of
+            those a high below the low: INCY's page said 95.10 and 100.02 where its five sessions
+            hold 106.47 and 91.16. Of 505 names carrying bands, 48 were listed out of price order,
+            ABT's three lowest bands drawn beneath its highest. And of the 122 names that crossed a
+            level that night, 41 crossed more than one edge and 8 of those rose, where the edge
+            named nearest is the furthest crossed: HOOD rose from 109.81 to 119.82 and was told
+            115.86.
+Repaired:   a query hands back the rows and the choice is made where the values are decimals. The
+            move's extremes are taken over the bars of the sessions it spans, a name's bands and its
+            profile are put in price order by the reader, and the universe screen reads every marked
+            band in one query and takes the nearest on each side as prices. The four queries in the
+            worker that ordered by a price do not, and each sorts where the edges are decimals; the
+            crossed edge named nearest is the one nearest the close it crossed to.
+            `price-storage-form` gains a third half that reads every query in the shipped source and
+            fails one that orders by, aggregates or compares a column SCHEMA marks as money, so the
+            rule is enforced where a query is written.
+Missed:     the two halves of that check governed the form a price is stored in and the crossings
+            between the decimal world and the double one, and a query is neither: the SQL never
+            names a type, so a comparison in it reads as ordinary selection. The fact strip's own
+            row test did assert this property and did recompute it correctly, over the bars of the
+            move's sessions as decimals, and it passed because the name it runs over holds a window
+            that reads the same either way. That is an unreachable boundary rather than a missing
+            assertion, and the remedy is the test below, which finds a window whose two readings
+            differ and refuses where the store holds none. The plan and the reasons that fire were
+            untouched throughout, because the ladder and the level builder sort what they read by
+            price before computing, which is why this surfaced where a reader saw it.
+Guarded:    over the fixture's store: the fact strip's two figures against the extremes of the
+            move's own sessions, taken by a test that finds a window whose two readings differ
+            rather than picking one, and refuses if the store holds none; a name's bands listed in
+            price order with the order the store would have given asserted not to be it; and the
+            crossed edge named nearest, over a rise and a fall through the same two edges, which is
+            the case the committed fixture's own night does not reach. The check's own reader is
+            shown to find each of the three forms, one qualified by its table, and to leave a date,
+            a count and a column that merely ends in a price's name alone.
+Expected:   derived: each figure is recomputed in the test from the rows the store holds. No
+            expectation file changes, the fixture's four names carrying no move window and no band
+            set whose two readings differ.
+Tests:      1131, from 1126. Two added to `read-surface`, one to `fixture-expectations` and two to
+            `price-storage-form`.
+Mutated:    the rule, stated before the sweep: break each of the three properties a reader depends
+            on, the extremes being the greatest and the least of the sessions, the bands being in
+            price order and the named edge being the nearest, and then the guard that refuses the
+            defect's return. Not mutated: the four worker queries, whose order no test over their
+            output can see because both consumers sort what they read, and which the guard covers
+            instead.
+            Predicted:
+            M1 the move's extremes taken as the least high and the greatest low: the fact strip test
+            red on the high it states, and the fact strip's own row test red on the high it
+            recomputes; nothing else. The first sweep was run on a prediction naming the first of
+            those alone and stopped at M1 on the second, which is the sweep refusing a prediction
+            rather than the mutation surviving, and this is the prediction the run below was made
+            against.
+            M2 a name's bands ordered by the text of an edge: the bands test red on the order they
+            are listed in; nothing else.
+            M3 the crossed edge named nearest taken as the furthest: the crossed-edge test red on
+            the edge named after a rise; nothing else.
+            M4 the level query ordered by a price again, which nothing a reader sees depends on: the
+            check red on the query it reads; nothing else.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    nothing owed by this repair, and one thing owed by the operator. Three of the files
+            repaired are sources the ladder rules' code version pins, so the pin moves from
+            31de414eaa47 to 4b0f9a8b1e7d and the four windows open at the old one must be closed and
+            opened again around the merge, which the runbook states as the cost of editing a pinned
+            source. No score is lost: no night has run under them. The two evaluator versions moved
+            with them and nothing stands registered against either.

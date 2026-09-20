@@ -101,12 +101,14 @@ public sealed class LadderBuilder : IComponent
         DELETE FROM ladder WHERE as_of < $oldest;
     ";
 
+    // Unordered, and put in price order once the edges are decimals, because an
+    // edge is stored as text and the store orders text by its characters.
+    // see: A stored price is chosen and ordered by its value and never by the text it is stored as
     const string BandsFor = @"
         SELECT low_edge, high_edge, role, immediate, strength, has_non_average_anchor
         FROM level
         WHERE ticker = $ticker
-              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker)
-        ORDER BY low_edge;
+              AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker);
     ";
 
     const string TypicalMoveFor = @"
@@ -530,7 +532,7 @@ public sealed class LadderBuilder : IComponent
                 []));
         }
 
-        return bands;
+        return [.. bands.OrderBy(band => band.LowEdge)];
     }
 
     // The crossing a statistic makes to become a price, named for it as the

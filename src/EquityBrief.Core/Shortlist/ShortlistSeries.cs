@@ -131,6 +131,14 @@ public static class ShortlistSeries
                 || (yesterday > edge.Price && today <= edge.Price)).ToArray()
             : [];
 
+        // The one nearest the close it crossed to, which on a fall is the lowest
+        // of them and on a rise the highest. Taking the first edge instead names
+        // the furthest one on every rise that crossed more than one, and the
+        // order the edges arrive in is no order at all.
+        decimal? nearest = inputs.Close is { } crossedTo && crossed.Length > 0
+            ? crossed.OrderBy(edge => Math.Abs(edge.Price - crossedTo)).First().Price
+            : null;
+
         outcomes.Add(new ReasonOutcome(
             CrossedALevel,
             crossed.Length > 0,
@@ -139,7 +147,7 @@ public static class ShortlistSeries
                     ("close", Price(inputs.Close)),
                     ("previous close", Price(inputs.PreviousClose)),
                     ("edges crossed", crossed.Length.ToString(CultureInfo.InvariantCulture)),
-                    ("nearest edge", Price(crossed[0].Price)))
+                    ("nearest edge", Price(nearest)))
                 : Values(("close", Price(inputs.Close)), ("previous close", Price(inputs.PreviousClose)))));
 
         // Breakout on volume: the close is above a band that sat at or above last
