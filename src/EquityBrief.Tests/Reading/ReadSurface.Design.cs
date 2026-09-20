@@ -302,7 +302,7 @@ public partial class ReadSurface
             (tonight, new[] { "night", "watch", "list", "selected", "totals" }),
             (universe, new[] { "sectors", "index" }),
             (run, new[] { "operational", "records", "shadow", "stale", "queue", "harness" }),
-            (page, new[] { "facts", "how-it-got-here", "chart", "plan", "sources", "provenance" }),
+            (page, new[] { "facts", "how-it-got-here", "chart", "plan", "sources" }),
         };
 
         var keys = 0;

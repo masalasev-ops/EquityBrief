@@ -398,7 +398,6 @@ public sealed class SinglePageApp : IComponent
         ResearchStateLine? researchState = null,
         CauseSource? causes = null,
         IReadOnlyList<LeftOutSection>? notWritten = null,
-        string? provenance = null,
         ResearchPausedLine? paused = null,
         IReadOnlyList<WrittenCell>? written = null,
         IReadOnlyList<SourceCell>? sources = null,
@@ -663,10 +662,6 @@ public sealed class SinglePageApp : IComponent
         region.Append(researchState?.State == "missing"
             ? Invariant($"<section class=\"absent\" id=\"unwritten\"><div class=\"lbl\">Research not yet written</div><h2>The researched sections for {Escaped(ticker)} have not been written</h2>{research}</section>")
             : Cards.Computed("Research", research, title: "Where the research stands", region: "research"));
-
-        // The provenance footer, arriving written for the reason the event book does:
-        // what it holds is dates read off the stores rather than a mark over values.
-        region.Append(Cards.Computed("Provenance", provenance ?? string.Empty, title: "Where each part of this page came from", region: "provenance"));
 
         // The walk, which section 15.9 puts last: previous and next on tonight's
         // list, so an evening's reading is one pass through with no return to

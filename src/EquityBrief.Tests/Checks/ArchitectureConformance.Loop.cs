@@ -932,6 +932,17 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.8 Universe", "Researched"),
         CheckReach.Key("15.9 Name", "Listing history"),
         CheckReach.Key("15.9 Name", "A pass as it runs"),
+        CheckReach.Key("15.9 Name", "Sections left out"),
+    ];
+
+    // Rows the document lost after the prediction. The provenance footer went at the 5.8
+    // correction that stopped the page drawing a refused draft: every line of it restated
+    // a date already stamped on the card it described, and that promise is now held there.
+    static readonly string[] RemovedAfterThePrediction =
+    [
+        CheckReach.Key("15.9 Name", "Provenance footer, computed tonight"),
+        CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date"),
+        CheckReach.Key("15.9 Name", "Provenance footer, research as of the date it was written"),
     ];
 
     [Fact]
@@ -942,9 +953,11 @@ public partial class ArchitectureConformance
 
         var expected = PredictedClaims
             + ReadAsItsParts.Sum(key => Scope.ElementsOf(key).Count - 1)
-            + AddedAfterThePrediction.Length;
+            + AddedAfterThePrediction.Length
+            - RemovedAfterThePrediction.Length;
 
         Assert.All(AddedAfterThePrediction, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(RemovedAfterThePrediction, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         Assert.Equal(
             (expected, PredictedOutOfScope, 0, expected),

@@ -1310,17 +1310,9 @@ internal static class Scope
             Verdict.Pass,
             "a name whose cause section the shipped checker accepted over the recorded model draws that section's sentence in the row of the one move it names and states no cause in every other row, with the date and model read back off the markup against the store, and a name with none draws the column as absent",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Provenance footer, computed tonight")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Sections left out")] = new Scoped(
             Verdict.Pass,
-            "the footer states the newest session the store holds for the name, which is what every computed part is read from, against a query of the test's own, and says so where no session is stored",
-            ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date")] = new Scoped(
-            Verdict.Pass,
-            "the footer states the newest filing date the fundamentals store holds for the name, against a query of the test's own, and says so where no filing is stored",
-            ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Provenance footer, research as of the date it was written")] = new Scoped(
-            Verdict.Pass,
-            "the footer names each written section with the date it was written, the key under each figure with the close it explains, and names no model in its words, carrying each on the element, being the newest version the checker accepted of each, against a query of the test's own over a store the recorded model wrote, and says so where nothing has been written",
+            "a section the checker left out and one the newest pass did not write each draw one line naming every rule that refused them, with what the checker extracted beside each rule and the draft's own sentence never drawn, repeats collected under their rule, read over the reasons the shipped checker composes for prose written to break each rule in turn, and a reason carrying no second refusal drawn as it was stored",
             ByReadSurface),
         [CheckReach.Key(FailureTable, "A section is assigned to the local lane that the machine cannot hold, the pass is refused before it starts")] = new Scoped(
             Verdict.Pass,
@@ -1952,12 +1944,9 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "The short version")] = "6.8",
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.8",
         [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
-        // Decomposed at 6.6, where all three parts are first drawn together. The row
-        // enumerates three kinds of part and a verdict over the row would have passed
-        // a footer stating one of them.
-        [CheckReach.Key("15.9 Name", "Provenance footer, computed tonight")] = "6.6",
-        [CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date")] = "6.6",
-        [CheckReach.Key("15.9 Name", "Provenance footer, research as of the date it was written")] = "6.6",
+        // The lines were drawn from 6.5 and nothing in section 15 claimed them until the
+        // 5.8 correction that stopped them carrying the draft a checker refused.
+        [CheckReach.Key("15.9 Name", "Sections left out")] = "6.5",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
         // parts the research runner draws. The line saying research is missing or
         // naming the trigger that fired is a reading of the stores this checkpoint
@@ -2225,17 +2214,6 @@ internal static class Scope
         // a surface, and a claim that something is visible is a claim about a surface.
         [CheckReach.Key(FailureTable, "Spend cap reached")] =
             ["research pauses for the period", "the name says research is paused and when it resumes"],
-
-        // The name page's provenance footer, decomposed at 6.6, which is the first
-        // checkpoint to draw it. Its row enumerates the three kinds of part a page
-        // carries, and the part reader refuses a row that passes whole over parts it
-        // enumerates.
-        [CheckReach.Key("15.9 Name", "Provenance footer")] =
-        [
-            "computed tonight",
-            "fundamentals as of a filing date",
-            "research as of the date it was written",
-        ],
 
         // Section 18's two local lane rows, decomposed at 6.6 for contradiction F's
         // argument. Each names what the writer does and what the page draws, which

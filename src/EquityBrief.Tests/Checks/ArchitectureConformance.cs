@@ -1344,8 +1344,11 @@ public partial class ArchitectureConformance
         // leaves and four arrive.
         // 128 at the 5.8 correction that listed the names holding research, one row and one
         // claim, 129 at the one that drew a name's listing history, the same, and 130 at the
-        // one that watched a pass the page started.
-        Assert.Equal(130, inDocument.Length);
+        // one that watched a pass the page started. 128 at the one that stopped the page
+        // drawing a refused draft: the provenance footer's row leaves with its three parts,
+        // its promise held by the stamp on each card it described, and the lines naming what
+        // was left out arrive as the one row that claims them.
+        Assert.Equal(128, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1388,7 +1391,7 @@ public partial class ArchitectureConformance
 
         // An exact count rather than a floor, so a decomposition added without being argued
         // for fails here; the argument for each is its checkpoint's entry.
-        Assert.Equal(138, checkedElements);
+        Assert.Equal(135, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
