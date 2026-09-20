@@ -2989,7 +2989,7 @@ public partial class ReadSurface
 
                 foreach (var value in reason.Values)
                 {
-                    Assert.Contains($"{value.Key} {value.Value}", list, StringComparison.Ordinal);
+                    Assert.Contains($"<dt>{value.Key}</dt><dd>{value.Value}</dd>", list, StringComparison.Ordinal);
                 }
             }
         }
@@ -3017,15 +3017,28 @@ public partial class ReadSurface
         // nesting, asserted both ways: every record sits inside a reason, and
         // none sits outside one.
         // see: A reason's record is displayed, beside the reason and never beside the name
-        var nested = Regex.Matches(
+        // A row's record sits inside that row's own reason disclosure, and the footer's sits
+        // inside the footer's own reason span. The two are counted apart rather than by one
+        // matcher, because `record` is a prefix of `record-foot`: a matcher keyed on the
+        // prefix counts both and is satisfied by either, which is how it stayed green while
+        // only half of them were nested.
+        var onRows = Regex.Matches(list, "<span class=\"record[ \"]").Count;
+        var inFoot = Regex.Matches(list, "<span class=\"record-foot[ \"]").Count;
+
+        var nestedOnRows = Regex.Matches(
             list,
-            "<span class=\"reason\"[^>]*>(?:(?!</span>).)*?<span class=\"record[^\"]*\"",
+            "<details class=\"reason\"[^>]*>(?:(?!</details>).)*?<span class=\"record[ \"]",
             RegexOptions.Singleline).Count;
 
-        var all = Regex.Matches(list, "<span class=\"record[^\"]*\"").Count;
+        var nestedInFoot = Regex.Matches(
+            list,
+            "<span class=\"reason\"[^>]*>(?:(?!</span>).)*?<span class=\"record-foot[ \"]",
+            RegexOptions.Singleline).Count;
 
-        Assert.True(all >= 1, $"the list drew {all} records, expected at least 1.");
-        Assert.Equal(all, nested);
+        Assert.True(onRows >= 1, $"the rows drew {onRows} records, expected at least 1.");
+        Assert.True(inFoot >= 1, $"the footer drew {inFoot} records, expected at least 1.");
+        Assert.Equal(onRows, nestedOnRows);
+        Assert.Equal(inFoot, nestedInFoot);
 
         // A row with no values stored for a reason says so rather than drawing
         // an empty hover, which reads as a reason with nothing behind it.
@@ -3035,6 +3048,82 @@ public partial class ReadSurface
             records);
 
         Assert.Contains("no values stored for this reason", bare, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EachReasonOnTonightsListOpensOnWhatTheNightMeasuredItOver()
+    {
+        // The values a reason was measured over were held in a title attribute, which is a
+        // hover a reader on a touch screen cannot reach and a click never opens. They are
+        // drawn now, and this reads them back off each reason's own disclosure rather than
+        // off the page as a whole: a value drawn under the wrong reason answers about the
+        // wrong name, and a page-wide search cannot tell the two apart.
+        using var store = await FixtureExpectations.WithReturns();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var listings = await api.ListingsAsync(night);
+        var universe = await api.UniverseAsync("GSPC");
+        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        foreach (var row in universe)
+        {
+            var bands = await api.LevelsAsync(row.Ticker);
+
+            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+        }
+
+        var rows = TonightScreen.Rows(
+            night,
+            listings,
+            strengths,
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            await api.ClosesToTheNightAsync(night));
+
+        var list = new MarkRenderer().TonightList(rows, SinglePageApp.TonightDrawn, []);
+
+        // One disclosure per reason that fired, across every drawn row.
+        var fired = rows.Sum(row => row.Fired!.Count);
+        var drawn = Regex.Matches(list, "<details class=\"reason\" data-reason=\"([^\"]+)\">(.*?)</details>", RegexOptions.Singleline);
+
+        Assert.True(fired >= 1, $"the drawn rows fired {fired} reasons, expected at least 1.");
+        Assert.Equal(fired, drawn.Count);
+
+        // And each one carries its own reason's values, keyed to the reason it is inside.
+        var reasons = rows.SelectMany(row => row.Fired!).ToArray();
+
+        Assert.Equal(fired, reasons.Length);
+
+        for (var at = 0; at < reasons.Length; at++)
+        {
+            var reason = reasons[at];
+            var body = drawn[at].Groups[2].Value;
+
+            // The summary carries the short head the columns are keyed by, which
+            // `TheRecordIsDrawnInsideItsOwnReason` pins; what the disclosure adds is the
+            // reason's whole name, so an opened cell says which of the six it is.
+            Assert.Equal(reason.Name, drawn[at].Groups[1].Value);
+            Assert.Matches("<summary>[a-z]+</summary>", body);
+            Assert.Contains($"<p class=\"why-fired\">{reason.Name}</p>", body, StringComparison.Ordinal);
+
+            var values = Regex.Matches(body, "<dt>([^<]*)</dt><dd>([^<]*)</dd>")
+                .ToDictionary(one => one.Groups[1].Value, one => one.Groups[2].Value, StringComparer.Ordinal);
+
+            Assert.Equal(reason.Values.Count, values.Count);
+            Assert.All(reason.Values, value => Assert.Equal(value.Value, values[value.Key]));
+        }
+
+        // Nothing is left in an attribute a reader has to hover to reach.
+        Assert.DoesNotContain("<details class=\"reason\" data-reason=\"at entry zone\" title=", list, StringComparison.Ordinal);
+
+        // A reason the store holds no values for says so rather than opening on nothing.
+        var bare = new MarkRenderer().TonightList(
+            [new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone])],
+            SinglePageApp.TonightDrawn,
+            []);
+
+        Assert.Contains("<p class=\"no-values\">no values stored for this reason</p>", bare, StringComparison.Ordinal);
+        Assert.DoesNotContain("<dl class=\"reason-values\"", bare, StringComparison.Ordinal);
     }
 
     [Fact]

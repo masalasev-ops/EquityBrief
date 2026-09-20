@@ -17671,3 +17671,88 @@ Carried:    the risks are drawn in the order they were written in and not by how
             be asked for it. That changes a research prompt, and the fixture's recordings are keyed
             on the whole request, so it waits on the same re-recording the moves correction waits
             on.
+
+### 5.8 - correction: a reason on tonight's list opens on the values the night measured it over, rather than holding them in an attribute a click never reaches   2026-09-20
+Corrects:   each reason on tonight's list carried the values the night measured it over in a title
+            attribute. That is a native tooltip: it waits, it cannot be reached on a touch screen,
+            and no click opens it. The record beside the reason was a second disclosure with its own
+            trigger and appeared only where that reason had earned a verdict, so a reason that had
+            not earned one answered a click with nothing at all.
+Found:      by the operator on 2026-09-20, from the page itself: they pressed the reasons on
+            tonight's list and said that clicking them should show something.
+Measured:   over the six reasons on the operator's store, read immutable at the newest night it
+            holds, 2026-09-18, across all 503 listing rows: every one of the six records values on a
+            row it fired on and on a row it did not, and no reason records none. The values are what
+            a reader needs to answer why this name: the close and both edges of the zone, the close
+            and the edge crossed, the volume against the fifty-day average and the multiple, the
+            dated event and the sessions to it. All of it was already on the row and none of it was
+            drawn.
+Repaired:   a reason is one disclosure carrying both halves. Its summary is the column's word, and
+            opening it states the reason's whole name, the values the night measured it over as a
+            list of the figure and what it is, and the reason's record beneath them. A reason the
+            store holds no values for says so rather than opening on an empty list. The title
+            attribute is removed rather than left beside the drawn values, because a tooltip
+            restating what is drawn is a second copy that can drift. It is a disclosure element
+            rather than script, which is what the stylesheet already uses for a table cell that
+            opens.
+Missed:     the row was written when the question was whether the values could be carried to the
+            page at all, and an attribute carried them. A claim that something is shown is a claim
+            about a surface, and the surface a tooltip offers was never read: the assertion that the
+            values reach the page searched the whole page for the figure and its name as one string,
+            which a value drawn under the wrong reason satisfies, and which an attribute nobody can
+            open satisfies too.
+Guarded:    each reason's values are read back off that reason's own disclosure against the store,
+            keyed to the reason they sit inside, so a value drawn under the reason beside it fails
+            where a page-wide search passed. One disclosure per reason that fired is counted against
+            the rows' own fired count, a reason with no values is asserted to say so and to draw no
+            list, and the existing per-row assertion now reads the drawn markup rather than the
+            attribute.
+Expected:   derived: the values are read against the listing rows the replayed store holds. No
+            expectation file changes.
+Tests:      1138, from 1137. One added to `read-surface`, and two of its existing assertions
+            repaired, one of which is the finding below.
+Mutated:    the rule, stated before the sweep: break each of the three properties this rests on, the
+            values belonging to the reason they are drawn inside, a reason with values drawing them
+            at all, and a reason with none saying so. Not mutated: the record's two states and where
+            it is drawn, which `A reason's record is displayed, beside the reason and never beside
+            the name` already holds and which the repaired assertion below reads, and the order the
+            values are drawn in, which is the store's.
+            Predicted:
+            M1 the figure and the name it is of exchanged: the reasons test red where it reads each
+            reason's values against the store, and the per-row test red where it reads the drawn
+            pair; nothing else.
+            M2 a reason with values drawing none: the same two red, on the same two assertions;
+            nothing else.
+            M3 a reason with no values opening on an empty list: both tests red where each reads the
+            line that says so, the per-row test carrying that assertion already; nothing else.
+            Two of the three predictions were corrected after the first sweep stopped on M1 and
+            before any was recorded as a result. Neither correction is about what the mutations
+            break. M1 named the right test and the right assertion and the wrong words for the
+            failure it reports, an item-wise one rather than an equality. M3 named one test where
+            the assertion it breaks is carried by two, the per-row test having read that line since
+            before this work. Both are the prediction being written more precisely, and the sweep
+            below is the one that ran against them.
+            Found while running the suite, and it is the reason two assertions are repaired rather
+            than one. The assertion that every record sits inside its own reason counted them with a
+            matcher keyed on `record`, which is a prefix of `record-foot`, the class the footer's
+            own records carry. So it counted the rows' records and the footer's together and was
+            satisfied by either. Moving the rows' records inside a disclosure left the footer's
+            outside it and the count fell to half, which is what surfaced it: the matcher had been
+            green while answering about a population it could not tell apart. The two are now
+            counted apart, each read inside the element that holds it. This is the prefix shape the
+            writing rules name, arriving a fifth time.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1138 of 1138 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
+            375 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 382 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. Section 15.7's
+            reasons row is reworded rather than added to, so the claims stand at 375 as they were.
+            Both gates ran with this entry in place, and the operator's store under `data/` was not
+            touched by either.
+Carried:    the table draws only the reasons that fired. The store holds the values for the ones
+            that did not, and why a reason did not fire is often the more useful question, so a row
+            that could be opened on all six is a wider change to what the table draws and is its own
+            decision. Nothing here narrows what fires: the operator's list carries two thirds of the
+            index on a quiet night and 86% on the night the index rebalanced, which is measured in
+            the reply that found it and is the next piece of work.

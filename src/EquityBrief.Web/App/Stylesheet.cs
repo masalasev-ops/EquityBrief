@@ -180,10 +180,22 @@ span[data-last-asked-at]::before{content:none}
 .list-table td.c-nm .co{display:block;font-size:12.5px;line-height:1.25;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list-table a.open{font-size:11px;color:var(--soft);margin-left:4px}
 .list-table td.trend-state{font-size:12.5px;color:var(--ink-2)}
-.list-table .reason{position:relative;display:flex;align-items:center;justify-content:center;height:28px;padding:0 3px;background:var(--s4);color:var(--surface);font:600 10.5px/1 var(--sans);cursor:help}
-.list-table .reason .record{display:none;position:absolute;z-index:10;top:32px;left:-4px;width:280px;background:var(--ink);color:var(--surface);padding:9px 11px;border-radius:6px;font:400 12px/1.45 var(--sans);text-align:left;white-space:normal}
-.list-table td.rz:nth-last-child(-n+3) .reason .record{left:auto;right:-4px}
-.list-table .reason:hover .record,.list-table .reason:focus .record{display:block}
+/* a reason on tonight's list: the word, and a disclosure saying what the night measured it
+   over. A click opens it, which a tooltip never was: the values were in a title attribute and
+   a reader on a touch screen could not reach them at all. */
+.list-table .reason{position:relative}
+.list-table .reason>summary{display:flex;align-items:center;justify-content:center;height:28px;padding:0 3px;background:var(--s4);color:var(--surface);font:600 10.5px/1 var(--sans);cursor:pointer;list-style:none}
+.list-table .reason>summary::-webkit-details-marker{display:none}
+.list-table .reason[open]>summary{outline:2px solid var(--accent);outline-offset:1px}
+.list-table .reason .why{position:absolute;z-index:10;top:32px;left:-4px;width:280px;background:var(--ink);color:var(--surface);padding:9px 11px;border-radius:6px;font:400 12px/1.45 var(--sans);text-align:left;white-space:normal}
+.list-table td.rz:nth-last-child(-n+3) .reason .why{left:auto;right:-4px}
+.list-table .why-fired{margin:0 0 6px;font-weight:600}
+.list-table .why-fired::first-letter{text-transform:uppercase}
+.list-table .reason-values{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;margin:0}
+.list-table .reason-values dt{color:var(--s2)}
+.list-table .reason-values dd{margin:0;font-variant-numeric:tabular-nums;text-align:right}
+.list-table .no-values{margin:0;color:var(--s2)}
+.list-table .reason .record{display:block;margin-top:8px;padding-top:8px;border-top:1px solid var(--s3)}
 .list-table tfoot td{border-bottom:0;border-top:1px solid var(--ink);vertical-align:top;padding-top:6px;height:auto}
 .list-table tfoot .reason{background:none;color:var(--ink-2);height:auto;display:block;cursor:default}
 .record-foot{display:flex;flex-direction:column;font:10.5px/1.3 var(--sans);color:var(--ink-2);text-align:left}
