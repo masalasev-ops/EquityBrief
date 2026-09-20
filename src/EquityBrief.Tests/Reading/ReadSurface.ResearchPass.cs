@@ -202,6 +202,66 @@ public partial class ReadSurface
         Assert.Contains("data-state=\"missing\"", none, StringComparison.Ordinal);
     }
 
+    // The case for a name and the case against it are drawn as two labelled halves where the
+    // writer answered in the shape it was asked for, and as the prose was written where it did
+    // not, because a section is what the checker accepted and never a shape this page hoped for.
+    [Fact]
+    public async Task TheTwoCasesAreDrawnAsTwoLabelledHalvesAndAsWrittenWhereTheyAreNot()
+    {
+        using var store = await FixtureReplay.ResearchedAsync();
+
+        var page = await ResearchedPage(store, "KEYS", AWeekLater);
+        var written = WrittenOnThePage(page, MarkRenderer.TheTwoCases);
+
+        Assert.True(written.Success, "KEYS draws no two cases, and this is what reads them.");
+
+        var halves = Regex.Matches(written.Value, "<div class=\"case\" data-case=\"([^\"]+)\"><h4>[^<]+</h4><p class=\"prose\">([^<]*)</p></div>")
+            .Select(match => (Label: match.Groups[1].Value, Prose: WebUtility.HtmlDecode(match.Groups[2].Value)))
+            .ToArray();
+
+        Assert.Equal(["The case for", "The case against"], [.. halves.Select(half => half.Label)]);
+
+        // Each half is one of the section's own paragraphs, unchanged and in the order it was
+        // written, so the labels are put beside the prose rather than over it.
+        var stored = Rows(store, "SELECT prose FROM research_section r WHERE ticker = 'KEYS' AND section = 'The two cases' AND status = 'accepted' " +
+            "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
+            .Single()[0];
+
+        var paragraphs = stored.Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        Assert.Equal(2, paragraphs.Length);
+        Assert.Equal([.. paragraphs], [.. halves.Select(half => half.Prose)]);
+
+        // A section of the same name written in another shape is drawn as it was written, with
+        // no half and no label, which is the case every name that has never had a pass is in.
+        var marks = new MarkRenderer();
+        var other = marks.WrittenSection(
+            "KEYS",
+            new WrittenCell(MarkRenderer.TheTwoCases, "One paragraph holding both cases at once.", new DateOnly(2026, 9, 8), "a/model", []),
+            []);
+
+        Assert.DoesNotContain("class=\"case\"", other, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"prose\">One paragraph holding both cases at once.</p>", other, StringComparison.Ordinal);
+
+        // And a section whose first two paragraphs open the right way and which carries a third
+        // is drawn whole rather than as two halves, because two halves have nowhere to put the
+        // rest of it: a shape recognised on its opening alone loses every paragraph after the
+        // second without saying so.
+        var third = marks.WrittenSection(
+            "KEYS",
+            new WrittenCell(
+                MarkRenderer.TheTwoCases,
+                "The bull case is the first paragraph.\n\nThe bear case is the second.\n\nAnd a third paragraph the writer added.",
+                new DateOnly(2026, 9, 8),
+                "a/model",
+                []),
+            []);
+
+        Assert.DoesNotContain("class=\"case\"", third, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(third, "<p class=\"prose\">").Count);
+        Assert.Contains("<p class=\"prose\">And a third paragraph the writer added.</p>", third, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TheResearchedSectionsAreDrawnInSectionFoursOrderEachWithItsOwnDate()
     {

@@ -752,7 +752,7 @@ public sealed class SinglePageApp : IComponent
     // figure 12.2 names is placed exactly once across these and that table.
     public static readonly string[] AtTheTop = ["The short version"];
     public static readonly string[] BeforeTheNumbers = ["What the company sells", "The segment commentary"];
-    public static readonly string[] AfterTheNumbers = ["The industry cycle", "The two cases"];
+    public static readonly string[] AfterTheNumbers = ["The industry cycle", MarkRenderer.TheTwoCases];
     public static readonly string[] UnderTheFigures = [MarkRenderer.KeySection];
 
     // What the key's card states its date as, which is the night whose figures it explains

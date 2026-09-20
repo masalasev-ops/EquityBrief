@@ -2628,9 +2628,22 @@ public sealed class MarkRenderer : IComponent
         drawn.Append(Invariant, $"data-as-of=\"{section.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(section.Model)}\">");
         drawn.Append(Invariant, $"<h3>{Escaped(section.Section)}</h3>");
 
-        foreach (var paragraph in section.Prose.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        var paragraphs = section.Prose.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (TwoCases(section.Section, paragraphs) is { } cases)
         {
-            drawn.Append("<p class=\"prose\">").Append(Escaped(paragraph)).Append("</p>");
+            foreach (var (label, prose) in cases)
+            {
+                drawn.Append(Invariant, $"<div class=\"case\" data-case=\"{Escaped(label)}\"><h4>{Escaped(label)}</h4>");
+                drawn.Append("<p class=\"prose\">").Append(Escaped(prose)).Append("</p></div>");
+            }
+        }
+        else
+        {
+            foreach (var paragraph in paragraphs)
+            {
+                drawn.Append("<p class=\"prose\">").Append(Escaped(paragraph)).Append("</p>");
+            }
         }
 
         drawn.Append(Invariant, $"<p class=\"written-by\">{Escaped(dated)} {section.AsOf:yyyy-MM-dd}</p>");
@@ -2656,6 +2669,29 @@ public sealed class MarkRenderer : IComponent
 
         return drawn.ToString();
     }
+
+    // The section holding the case for a name and the case against it, which the writer is
+    // asked for as two paragraphs and which every recorded answer over the fixture and every
+    // stored section on the operator's machine has been written as.
+    public const string TheTwoCases = "The two cases";
+
+    const string CaseFor = "The bull case";
+    const string CaseAgainst = "The bear case";
+
+    // The two cases as two labelled halves, where the prose is the shape the writer was asked
+    // for, and nothing where it is not. A reader looking for the case against a name should not
+    // have to find where one paragraph stops being the case for it.
+    //
+    // Read off the prose rather than assumed, and the section is drawn as it was written
+    // wherever it is not recognised: what a model wrote and the checker accepted is the
+    // section, and a shape this file hoped for is no reason to draw any of it differently.
+    static IReadOnlyList<(string Label, string Prose)>? TwoCases(string section, IReadOnlyList<string> paragraphs) =>
+        string.Equals(section, TheTwoCases, StringComparison.Ordinal)
+            && paragraphs.Count == 2
+            && paragraphs[0].StartsWith(CaseFor, StringComparison.Ordinal)
+            && paragraphs[1].StartsWith(CaseAgainst, StringComparison.Ordinal)
+                ? [("The case for", paragraphs[0]), ("The case against", paragraphs[1])]
+                : null;
 
     // The one section dated by the close it explains rather than by the day it was written.
     public const string KeySection = "The key under each figure";

@@ -17519,3 +17519,63 @@ Carried:    nothing owed by this repair. The operator asked for the ladder drawn
             the same geometry a ladder is. What the picture they showed said that this page did not
             is the distance, which is what this adds. A third drawing of five bands is theirs to ask
             for having seen this.
+
+### 5.8 - correction: the case for a name and the case against it are drawn under their own labels rather than as one run of prose   2026-09-20
+Corrects:   the section holding the case for a name and the case against it was drawn as one run of
+            prose under one heading. A reader wanting the case against had to read until the case
+            for stopped being made, and nothing on the page said where that was.
+Found:      by the operator on 2026-09-19, showing two research reports of their own and asking for
+            the two cases to be laid out and labelled separately.
+Measured:   over every sample of this section the repository can reach: the one stored on the
+            operator's machine and the two recorded answers the fixture replays. All three are
+            exactly two paragraphs, the first opening on the case for the name and the second on the
+            case against, which is the shape the writer is asked for. Three samples from two names
+            and two models, so the shape is a property of what is asked rather than of one answer.
+Repaired:   where the prose is that shape each case is drawn under its own label, and where it is
+            not the section is drawn as it was written, with no label and no half. The labels are
+            put beside the prose rather than over it: each half is one of the section's own
+            paragraphs, unchanged and in the order it was written. The two hues a level owns are not
+            used for them, because the stylesheet holds each of those to one meaning.
+Missed:     the section was built when the question was whether a model could write a case at all,
+            and the answer was stored and drawn as the prose it is. Prose is what it is, so nothing
+            here was wrong and no assertion could have found this: what a reader needs is to be able
+            to find one half of it without reading the other, and no check asks whether a section a
+            reader has to search is drawn as one they can scan.
+Guarded:    the halves are read back off the markup against the stored prose by a query of the
+            test's own, so a label put over the prose rather than beside it fails, and the order the
+            labels are drawn in is read rather than counted. A section of the same name written in
+            another shape is asserted to draw no half and no label at all, which is the half of this
+            a page that recognised too eagerly would break.
+Expected:   derived: the halves are read against the prose the replayed store holds. No expectation
+            file changes.
+Tests:      1136, from 1135. One added to `read-surface`, carrying three shapes: the one the writer
+            is asked for and two it is not.
+Mutated:    the rule, stated before the sweep: break each of the three properties this rests on,
+            which half carries which label, the shape being recognised at all, and the shape being
+            recognised only where it is there. Not mutated: the prose each half carries, which the
+            same assertion reads against the store, and the hues the labels are not drawn in, which
+            the stylesheet's own rule holds.
+            Predicted:
+            M1 the two halves labelled the wrong way round: the cases test red where it reads the
+            labels in order; nothing else.
+            M2 the section drawn as one run of prose whatever shape it was written in: the cases
+            test red where it reads the halves the page drew; nothing else.
+            M3 a section written in another shape drawn as halves anyway: the cases test red where
+            it reads the shape it does not recognise; nothing else.
+            Stopped once, and the stop is the finding. M3 loosened the count of paragraphs the shape
+            is recognised over and turned nothing red, because the only unrecognised section the
+            test carried was one paragraph long and is refused by the opening words rather than by
+            the count. What the count actually guards is a section of three paragraphs whose first
+            two open the right way: recognised on its opening alone it would be drawn as two halves
+            with the third paragraph dropped and nothing saying so. An unreachable boundary, which
+            is a defect in the test, so the test now carries that section and asserts all three of
+            its paragraphs are drawn and no half is. M3 was then shown red by hand before the sweep
+            was run again.
+            Results: FILLED IN BELOW AFTER THE SWEEP.
+Verified:   FILLED IN BELOW AFTER THE RUN.
+Carried:    the risks section was asked for in the same breath and is not here. Its two samples are
+            written in two different shapes, so a rule fitted to either would not recognise the
+            other, and the answer the operator chose is that the writer be asked for the risks as
+            parts with a severity. That changes a research prompt, and the fixture's recordings are
+            keyed on the whole request, so it waits on the same re-recording the moves correction
+            waits on.
