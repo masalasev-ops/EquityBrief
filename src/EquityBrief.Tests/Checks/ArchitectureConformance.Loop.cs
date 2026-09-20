@@ -923,6 +923,20 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Frozen measurement windows"),
     ];
 
+    // Phase 9's own rows, added when the phase opened and out of scope until its
+    // checkpoints land. Held apart from the rows above because those are claims the
+    // prediction missed and these are claims it could not have made: 8.0 predicted
+    // the corpus at the end of phase 8, and a phase opened after it is not a miss.
+    static readonly string[] PhaseNineRows =
+    [
+        CheckReach.Key("15.7 Tonight", "Research, per row"),
+        CheckReach.Key("15.7 Tonight", "Ask for a report"),
+        CheckReach.Key("15.15 Queue", "Outstanding"),
+        CheckReach.Key("15.15 Queue", "Being written"),
+        CheckReach.Key("15.15 Queue", "Settled"),
+        CheckReach.Key("15.15 Queue", "Take it out"),
+    ];
+
     // Rows the document gained after the prediction, each one claim.
     static readonly string[] AddedAfterThePrediction =
     [
@@ -937,7 +951,9 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "How far each band is"),
         CheckReach.Key("15.9 Name", "The case for and the case against"),
         CheckReach.Key("15.9 Name", "The risks as parts"),
+        .. PhaseNineRows,
     ];
+
 
     // Rows the document lost after the prediction. The provenance footer went at the 5.8
     // correction that stopped the page drawing a refused draft: every line of it restated
@@ -963,8 +979,13 @@ public partial class ArchitectureConformance
         Assert.All(AddedAfterThePrediction, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
         Assert.All(RemovedAfterThePrediction, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
+        // Out of scope was zero while phase 8 was the last phase. Phase 9's rows are
+        // placed at checkpoints the record does not carry, so each reads as out of scope
+        // and none of them passes, which is what the pass figure is short by.
+        var outOfScope = PredictedOutOfScope + PhaseNineRows.Length;
+
         Assert.Equal(
-            (expected, PredictedOutOfScope, 0, expected),
+            (expected, outOfScope, 0, expected - outOfScope),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
     }
 }

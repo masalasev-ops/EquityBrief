@@ -17942,3 +17942,66 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             none is added: a ruling lands nothing, and phase 9 states checkpoints rather than
             claims. Both gates ran with this entry in place, and the operator's store under `data/`
             was not touched by either.
+
+### 9.0 planning - asking for a report from the list, and reading the queue   2026-09-20
+Not a checkpoint entry. It plans phase 9 and builds none of it: no request is written, no queue is
+            drained, no screen is drawn, and the control on a name's page still starts a pass as a
+            process of its own.
+Asked:      the operator asked on 2026-09-20 for a report to be queued from tonight's list, for a
+            screen showing what is queued, and for a report that has not been generated to be taken
+            out of the queue. Two questions the ruling left open were put to them and settled the
+            same day. The control 6.5 made reachable on every name page stays and writes the same
+            request as the list does, so queueing from the list is read as the queue being the only
+            path rather than the list being the only button, and no surface keeps a second way to
+            start a pass. The queue is read on a screen of its own in the masthead rather than as a
+            region of the run page or a strip above the list.
+Planned:    five checkpoints where the ruling sketched four. 9.1 puts the report state and the ask
+            on tonight's rows. 9.2 is the request store and the drain, and both surfaces write the
+            same row. 9.3 is the queue screen and taking a report out of it. 9.4 states the lane and
+            refuses the local half. Every done condition is met over constructed or fixture data and
+            none waits on the calendar.
+Written:    section 15.1 names the five screens and where each sits, 15.7 gains what a row says
+            about research and what it can ask for, and 15.15 is the queue screen, its four regions
+            and what a withdrawal moves. The queue is numbered 15.15 and not 15.11 because a heading
+            number here is navigation and the record already cites 15.11 to 15.14, so inserting one
+            would repoint every entry that named them with nothing going red. That is why 15.1 names
+            the screens at all: they stop being contiguous.
+Refused:    two things a planning pass could have written and this one does not. The request store
+            and its two components are 9.2's, because `writer-ownership` reconciles against the code
+            and refuses a writer declared before its component exists; this file records that being
+            refused at 4.0 and again at 5.0, and `move` waited three checkpoints for it. And the
+            decision the queue supersedes is 9.2's, because the control starts a process until 9.2
+            replaces it, so retiring the decision now would describe a mechanism nothing had built
+            and would fail `no-superseded-citation` on six live citations. Both refusals are written
+            into the plan with their reasons rather than left for a later session to rediscover.
+Not settled:what the request row holds beyond the columns 9.2 will declare, what the queue does with
+            a request whose name leaves the index between the press and the drain, and whether a
+            withdrawal is one press or two. The first is 9.2's and the other two are questions this
+            pass could answer only by guessing at a surface nobody has drawn.
+Measured:   nothing new. The population this phase is for was counted at the 6.5 correction earlier
+            today, on a copy of the operator's store and never on `data/`: 502 names hold an
+            accepted section, 501 of them hold nothing besides the key under each figure, and one
+            holds research.
+Claims:     381 from 375, six added and all six out of scope, which is the first time this corpus
+            has carried an out-of-scope claim since phase 8 closed its last one. Each is placed at
+            the checkpoint that draws it, 9.1 for the two on tonight's list and 9.3 for the queue
+            screen's four, and reads as out of scope rather than unexamined because that checkpoint
+            is in the plan and not in this record. The pair 8.0 predicted is held apart from them:
+            those six are not claims the prediction missed but claims it could not have made, since
+            8.0 predicted the corpus at the end of phase 8.
+Tests:      1140, unchanged. A planning pass adds none. Four pinned figures move with the document:
+            screen rows 49 to 55, screen due points 132 to 138, and the claim and out-of-scope pair.
+Mutated:    nothing. This pass writes no shipped source and no assertion, so there is none of its
+            own to break. The figures it moves are pinned counts the suite already fails on when the
+            document and the map disagree, which is what they did four times while this pass was
+            written and what each move was made to answer.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1140 of 1140 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 381 claims, 375
+            PASS, 0 FAIL, 6 out of scope, 0 unexamined, 382 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. Both gates ran
+            with this entry in place, and the operator's store under `data/` was not touched by
+            either.
+Carried:    phase 8's sign-off, still owed on phase 8 as a whole and discharged by nothing here
+            (see: The report generation the operator asked for is built as phase 9, and phase 8's
+            sign-off is owed after it rather than before it).

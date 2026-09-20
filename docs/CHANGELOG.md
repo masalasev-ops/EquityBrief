@@ -25,6 +25,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - ARCHITECTURE.html - 15.1 names the five screens and where each sits
+
+Authorised by: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it
+Was:
+> <p>A full report for one name is a long document. It is read in the evening by one person deciding which of a handful of names is worth the next half hour, and the sections that answer that question sit among sections that answer different ones. Every screen below replaces reading with looking. None of them replaces the prose: the researched sections are kept in full, one disclosure down, because the screen answers <b>which name</b> and the prose answers <b>why</b>.</p>
+Now:
+> <p>A full report for one name is a long document. It is read in the evening by one person deciding which of a handful of names is worth the next half hour, and the sections that answer that question sit among sections that answer different ones. Every screen below replaces reading with looking. None of them replaces the prose: the researched sections are kept in full, one disclosure down, because the screen answers <b>which name</b> and the prose answers <b>why</b>. There are five: tonight at 15.7, the universe at 15.8, a name at 15.9, the run at 15.10 and the queue at 15.15. The queue is numbered after the sections that follow the other four rather than among them, because the numbers here are navigation and the record already cites 15.11 to 15.14.</p>
+Why: a fifth screen is added at 15.15 rather than at 15.11, because the numbers in this document are
+navigation and the record already cites 15.11 to 15.14, so inserting one would repoint every entry
+that named them with nothing going red. The screens are then not contiguous, so the section that says
+what the screens are for names them and where each sits, and a reader finds the fifth from a list
+rather than from the numbering. Section 15.7 also gains what a row says about research and what it can
+ask for, and 15.15 is written whole; both are additions and neither replaces text.
+
+### 2026-09-20 - BUILD_PLAN.md - phase 9's checkpoints planned at 9.0, from four to five
+
+Authorised by: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it
+Was:
+> **Done when** section 15.7's regions name what a row says about research and what it can ask for, the request store is declared in `SCHEMA.md` with its one writer per operation, and every decision the three checkpoints below cite resolves.
+
+> ### 9.2 The request queue
+A store table the page writes a request to and the worker drains, replacing the process started beside the read surface.
+
+**Done when** a press writes one request row and starts no process, asserted over the shipped source and over the hosted route; the worker drains the queue oldest first and writes one run per request under that request's own identifier; a second request for a name whose request is outstanding is refused and the row says so; a request for a name whose pass already wrote something that day is refused, counted over passes that wrote rather than over passes that ran; the table is declared in `SCHEMA.md` and passes `writer-ownership` in both directions; and a request whose worker never ran still reads as outstanding rather than as lost, asserted over a store where the drain did not run.
+Now:
+> 9.0's done condition names sections 15.1, 15.7 and 15.15 and the placement of the claims they add,
+> and says that the request store and the decision the queue supersedes are 9.2's to write and not
+> its own. 9.2 states that both surfaces write the same request. 9.3 is the queue screen and taking a
+> report out of it. The lane checkpoint moves to 9.4.
+Why: the ruling opened the phase with a first sketch of its checkpoints and 9.0 is the pass that plans
+it. The operator settled two questions the ruling left open on the same day: queueing happens from
+tonight's list, and the control 6.5 made reachable on every name page stays and writes the same
+request, so nothing starts a process any more and the queue is the only mechanism; and the queue is
+read on a screen of its own in the masthead, from which a report that has not been written yet is
+withdrawn. That is a fifth checkpoint. The store declaration moved to 9.2 because `writer-ownership`
+reconciles against the code and refuses a writer declared before its component exists, which this
+corpus has been bitten by at 4.0 and at 5.0, and the decision the queue supersedes moved with it
+because a decision retired while the code it describes is still running would fail
+`no-superseded-citation` on six live citations.
+
 ### 2026-09-20 - CLAUDE.md - the operator may rule a phase's plan open before the previous phase's sign-off
 
 Authorised by: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it

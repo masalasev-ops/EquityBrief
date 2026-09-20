@@ -831,7 +831,7 @@ section carrying its own date and the model that wrote it.</p>
 <p>This section is the specification for what the operator looks at. It is here rather than in a document of its own because a mockup file and a built page are two answers to one question, and the day they disagree nothing says which is the specification.</p>
 
 <h3>15.1 What these screens are for</h3>
-<p>A full report for one name is a long document. It is read in the evening by one person deciding which of a handful of names is worth the next half hour, and the sections that answer that question sit among sections that answer different ones. Every screen below replaces reading with looking. None of them replaces the prose: the researched sections are kept in full, one disclosure down, because the screen answers <b>which name</b> and the prose answers <b>why</b>.</p>
+<p>A full report for one name is a long document. It is read in the evening by one person deciding which of a handful of names is worth the next half hour, and the sections that answer that question sit among sections that answer different ones. Every screen below replaces reading with looking. None of them replaces the prose: the researched sections are kept in full, one disclosure down, because the screen answers <b>which name</b> and the prose answers <b>why</b>. There are five: tonight at 15.7, the universe at 15.8, a name at 15.9, the run at 15.10 and the queue at 15.15. The queue is numbered after the sections that follow the other four rather than among them, because the numbers here are navigation and the record already cites 15.11 to 15.14.</p>
 
 <h3>15.2 The rule that governs every screen</h3>
 <p><b>Reads and renders, nothing else.</b> No screen computes a level, calls a model, or makes a network request. Every number on every screen is already in the facts file, the ladder, the listings, the research store or the run log. A screen that wants a number the store does not carry is not a screen change; it is a change to a compute component, and it goes through a checkpoint like anything else.</p>
@@ -889,7 +889,9 @@ section carrying its own date and the model that wrote it.</p>
   <tr><td>Watch list</td><td>the two or three names shown every evening whether or not a reason fired, above the list rather than inside it</td></tr>
   <tr><td>The list</td><td>one row per name that fired, ordered by how many fired then by band strength, at most twenty drawn. Each row: name, close, day change, trend state in a word, the distance row mark, the reasons, and beside the name a line saying so where its prices may not reflect a dividend or split</td></tr>
   <tr><td>Reasons, per row</td><td>each reason named, with its measured record beside it under 15.11, and the values that made it true drawn beside it while it is under the pointer or holds focus</td></tr>
-  <tr><td>Selected name</td><td>the plan column and the level summary for whichever row is selected, so the common case of checking a plan needs no navigation</td></tr>
+  <tr><td>Research, per row</td><td>whether the name holds a researched section besides the key under each figure</td></tr>
+<tr><td>Ask for a report</td><td>a control on a row whose name holds none, which writes a request rather than starting a pass</td></tr>
+<tr><td>Selected name</td><td>the plan column and the level summary for whichever row is selected, so the common case of checking a plan needs no navigation</td></tr>
   <tr><td>Reason totals</td><td>each reason's count of tonight's fired names drawn as a bar out of the fired count with the count on it, which says whether the evening is one thing happening to many names or many things happening to a few</td></tr>
 </table>
 
@@ -996,6 +998,21 @@ section carrying its own date and the model that wrote it.</p>
   <li>No screen shows a number beside a ticker that could be read as that name's probability of rising.</li>
   <li>No screen orders names by a judgement about the company. The universe orders by distance to a level and tonight's list by how many reasons fired and then band strength, each a fact about the chart. (see: Improving what surfaces a name is in scope; ranking names against each other is not) (see: Tonight's list orders by the reasons that fired and then band strength, which are facts about the chart)</li>
 </ul>
+
+<h3>15.15 Queue</h3>
+<p><b>Answers:</b> which reports have been asked for, which one is being written now, and what came of the rest.</p>
+<p><b>Route:</b> <code>#/queue</code>, the fifth entry in the masthead. It is numbered after the sections that follow the other four screens rather than among them, because a heading number here is navigation and the record already cites 15.11 to 15.14.</p>
+<p><b>Reads:</b> the request store, and the run log for the pass a claimed request is being written under.</p>
+<table>
+  <tr><th style="width:22%">Region</th><th>What is in it</th></tr>
+  <tr><td>Outstanding</td><td>every request nobody has started, oldest first, which is the order the worker takes them in</td></tr>
+  <tr><td>Being written</td><td>the request the worker has claimed, with the pass it is running under</td></tr>
+  <tr><td>Settled</td><td>what each request came to, with the reason where there is one</td></tr>
+  <tr><td>Take it out</td><td>a control on an outstanding request, refused once the worker has claimed it</td></tr>
+</table>
+<p>A request is asked for from a row on tonight's list or from a name's own page, and both write the same row, so this screen is where either is read. Nothing on it starts a pass: the worker drains what is here, and a machine that never runs leaves a request outstanding rather than losing it.</p>
+<p>Taking a report out is what the operator asked for and it is bounded by what they asked for. A report that has not been generated is one nobody has started, so a withdrawal moves a request that is still outstanding and is refused on one the worker holds, with the refusal naming the state that refused it. Nothing is deleted: a withdrawn request stays a row, because what is asked of this screen is what was asked for and what came of it, and removing the row would answer the second question by erasing the first.</p>
+
 
 <h2>16. Data stores and the read and write matrix</h2>
 <table>

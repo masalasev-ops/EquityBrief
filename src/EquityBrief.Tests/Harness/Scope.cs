@@ -1954,6 +1954,17 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Watch list")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = "5.6",
         [CheckReach.Key("15.7 Tonight", "Reason totals")] = "5.6",
+
+        // Phase 9's rows, placed at the checkpoints that draw them so each reads
+        // as out of scope rather than unexamined until it lands. The request
+        // store they rest on is declared at 9.2 with the components that write
+        // it, rather than here ahead of them.
+        [CheckReach.Key("15.7 Tonight", "Research, per row")] = "9.1",
+        [CheckReach.Key("15.7 Tonight", "Ask for a report")] = "9.1",
+        [CheckReach.Key("15.15 Queue", "Outstanding")] = "9.3",
+        [CheckReach.Key("15.15 Queue", "Being written")] = "9.3",
+        [CheckReach.Key("15.15 Queue", "Settled")] = "9.3",
+        [CheckReach.Key("15.15 Queue", "Take it out")] = "9.3",
         [CheckReach.Key("15.8 Universe", "Filters")] = "5.1",
 
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",
@@ -2281,6 +2292,7 @@ internal static class Scope
         "15.8 Universe",
         "15.9 Name",
         "15.10 Run",
+        "15.15 Queue",
         "15.11 How a reason's record is displayed",
     ];
 
