@@ -149,9 +149,6 @@ public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangeP
 // was written on and the model that wrote it.
 public sealed record CauseSource(DateOnly AsOf, string Model);
 
-// One written part of a name's research, as the provenance footer states it.
-public sealed record WrittenPart(string Section, DateOnly AsOf, string Model);
-
 // What research spent on a night's UTC day and in its month to the end of that day,
 // beside the two caps it is held to.
 public sealed record NightSpend(decimal OnTheDay, decimal MonthToDate, decimal DayCap, decimal MonthCap);
@@ -2698,57 +2695,6 @@ public sealed class MarkRenderer : IComponent
 
     static string Published(SourceCell document) =>
         document.PublishedOn is { } on ? on.ToString("yyyy-MM-dd", Invariant) : "none";
-
-    // The provenance footer, section 15.9's last region: for every part of the page,
-    // where it came from.
-    //
-    // Three kinds of part and each states its own. The computed sections, as of the
-    // newest session the store holds for the name. The numbers, as of the filing
-    // they were read from. And each written section of the research, as of the day
-    // it was written, and the key under each figure as of the close it explains, with
-    // the model that wrote each on the element and not in the words (see: A research
-    // record is written and dated per section, not as a whole).
-    // A part with nothing behind it says so rather than being left out, for the
-    // reason every absence on these pages is stated.
-    public string ProvenanceFooter(string ticker, DateOnly? computedThrough, DateOnly? filedOn, IReadOnlyList<WrittenPart> written)
-    {
-        var footer = new StringBuilder();
-
-        footer.Append(Invariant, $"<footer class=\"provenance\" data-ticker=\"{Escaped(ticker)}\" data-written=\"{written.Count}\">");
-
-        if (computedThrough is { } through)
-        {
-            footer.Append(Invariant, $"<p data-part=\"computed\" data-as-of=\"{through:yyyy-MM-dd}\">the chart, the levels, the plan and the moves are computed from the stored sessions through {through:yyyy-MM-dd}</p>");
-        }
-        else
-        {
-            footer.Append("<p data-part=\"computed\" data-as-of=\"none\">no session is stored for this name, so nothing on the page is computed</p>");
-        }
-
-        if (filedOn is { } filed)
-        {
-            footer.Append(Invariant, $"<p data-part=\"fundamentals\" data-filed-on=\"{filed:yyyy-MM-dd}\">the numbers are as of the filing dated {filed:yyyy-MM-dd}</p>");
-        }
-        else
-        {
-            footer.Append("<p data-part=\"fundamentals\" data-filed-on=\"none\">no filing is stored for this name, so the numbers are as of nothing</p>");
-        }
-
-        if (written.Count == 0)
-        {
-            footer.Append("<p data-part=\"research\" data-section=\"none\">no section of this name's research has been written</p>");
-        }
-
-        foreach (var part in written)
-        {
-            footer.Append(Invariant, $"<p data-part=\"research\" data-section=\"{Escaped(part.Section)}\" data-as-of=\"{part.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(part.Model)}\">");
-            footer.Append(Invariant, $"{Escaped(part.Section)} was {(part.Section == KeySection ? "written for the close of" : "written on")} {part.AsOf:yyyy-MM-dd}</p>");
-        }
-
-        footer.Append("</footer>");
-
-        return footer.ToString();
-    }
 
     // The documents admissibility refused, with the category that refused each.
     //

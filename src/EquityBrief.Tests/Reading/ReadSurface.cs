@@ -239,9 +239,7 @@ public partial class ReadSurface
             // 6.6, the two regions of the name page a written section first reaches,
             // and the page's half of section 18's two local lane rows.
             CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written"),
-            CheckReach.Key("15.9 Name", "Provenance footer, computed tonight"),
-            CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date"),
-            CheckReach.Key("15.9 Name", "Provenance footer, research as of the date it was written"),
+            CheckReach.Key("15.9 Name", "Sections left out"),
             CheckReach.Key(Scope.FailureTable, "A section is assigned to the local lane that the machine cannot hold, the section is absent as usual"),
             CheckReach.Key(Scope.FailureTable, "The local model is unavailable, the local-lane sections absent with their reason"),
 

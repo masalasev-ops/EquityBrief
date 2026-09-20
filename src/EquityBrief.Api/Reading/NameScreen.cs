@@ -955,11 +955,6 @@ public static class NameScreen
             staleness is null ? null : ResearchState(staleness),
             causes,
             notWritten,
-            marks.ProvenanceFooter(
-                ticker,
-                bars.Count > 0 ? bars[^1].SessionDate : null,
-                filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
-                [.. accepted.Select(section => new WrittenPart(section.Section, section.AsOf, section.Model))]),
             spend is null ? null : Paused(spend),
             Written(accepted),
             [.. (cited ?? []).Select(document => new SourceCell(document.Id, document.Title, document.Url, document.PublishedOn))],
@@ -1321,8 +1316,64 @@ public static class NameScreen
             .. lines.EnumerateArray()
                 .Select(line => (Section: line.GetProperty("section").GetString()!, Reason: line.GetProperty("reason").GetString()!))
                 .Where(line => !shown.Contains(line.Section))
-                .Select(line => new LeftOutSection(string.Empty, line.Section, line.Reason)),
+                .Select(line => new LeftOutSection(string.Empty, line.Section, Refused(line.Reason))),
         ];
+    }
+
+    // The word a fallback after a second refusal carries before the refusal itself. The
+    // worker's own constant cannot be referenced from here, so the word is stated and
+    // `read-surface` asserts the two agree.
+    public const string RejectedTwice = "rejected twice";
+
+    // The two rules whose finding records the draft's own sentence as the offending text.
+    // Every other rule records something the checker extracted, a figure, a date, a window
+    // or a citation marker, which is the most useful thing on the line.
+    static readonly HashSet<string> TheDraftsOwnSentence =
+        new(StringComparer.Ordinal) { ClaimRules.Uncited, ClaimRules.CauseNamingNoMove };
+
+    // What refused a section, as the name page states it: every rule the checker named,
+    // and the offending text beside each except where that text is the draft's own
+    // sentence. A reason carries one part per refused sentence, a rule and the text after
+    // it, so a rule that refused six sentences arrives six times; the repeats are
+    // collected under the rule rather than drawn again. A reason with no second refusal in
+    // it is drawn whole, which leaves every shorter reason as it was written.
+    //
+    // The row keeps the whole reason and the run page draws it whole, so nothing is lost:
+    // this is what the page a name is read on shows, and not what is kept.
+    // see: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page
+    public static string Refused(string reason)
+    {
+        var mark = RejectedTwice + ": ";
+        var at = reason.LastIndexOf(mark, StringComparison.Ordinal);
+
+        if (at < 0)
+        {
+            return reason;
+        }
+
+        var order = new List<string>();
+        var texts = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+
+        foreach (var part in reason[(at + mark.Length)..].Split("; "))
+        {
+            var cut = part.IndexOf(": ", StringComparison.Ordinal);
+            var rule = cut < 0 ? part : part[..cut];
+
+            if (!texts.TryGetValue(rule, out var collected))
+            {
+                order.Add(rule);
+                texts[rule] = collected = [];
+            }
+
+            if (cut >= 0 && !TheDraftsOwnSentence.Contains(rule) && !collected.Contains(part[(cut + 2)..], StringComparer.Ordinal))
+            {
+                collected.Add(part[(cut + 2)..]);
+            }
+        }
+
+        return reason[..(at + mark.Length)] + string.Join(
+            "; ",
+            order.Select(rule => texts[rule].Count == 0 ? rule : rule + ": " + string.Join(", ", texts[rule])));
     }
 
     // The verdict as the page draws it, in the words the judge writes. Nothing is
@@ -1336,14 +1387,14 @@ public static class NameScreen
     // the two agree.
     public const string Fallback = "fallback";
 
-    // The sections whose newest version the checker left out, each with the reason
-    // it stored. Nothing is computed: the reason is the row's, drawn as written.
+    // The sections whose newest version the checker left out, each with the reason it
+    // stored, stated as the page states one.
     public static IReadOnlyList<LeftOutSection> LeftOut(IReadOnlyList<SectionStateRow> sections) =>
     [
         .. sections
             .Where(section => string.Equals(section.Status, Fallback, StringComparison.Ordinal))
             .OrderBy(section => section.Section, StringComparer.Ordinal)
-            .Select(section => new LeftOutSection(string.Empty, section.Section, section.Reason ?? string.Empty)),
+            .Select(section => new LeftOutSection(string.Empty, section.Section, Refused(section.Reason ?? string.Empty))),
     ];
 
     // The plan region alone, which is what tonight's list shows for the selected

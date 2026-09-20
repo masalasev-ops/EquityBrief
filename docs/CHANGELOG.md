@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - .claude/rules/checks.md - `read-surface` reads what a refusal says and where a date is stated
+
+Authorised by: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page
+Was:
+> ... the panel beneath as wide as the chart's own plot and the profile beside it carrying that row's height, so a session is at one distance across the two and a price at one height |
+Now:
+> ... the panel beneath as wide as the chart's own plot and the profile beside it carrying that row's height, so a session is at one distance across the two and a price at one height; and a section a checker refused twice is named on the page by every rule that refused it, with what the checker extracted beside each rule and never the draft's own sentence, repeats collected under their rule and a reason carrying no second refusal drawn as it was stored, which rules carry a sentence being read off the shipped checker's own findings rather than listed beside the check, and the line read back off the page as well as off the reader, so the two fail apart; and every part of the page states the date it is as of on the card that holds it, with no region of its own restating them |
+Why: the row reached what a page draws and at what size, and said nothing about what the words of a refusal are for. A line that named the rule and then quoted the paragraph the checker threw away read as correct to every assertion here, because it was the whole reason drawn. The second clause is what the provenance footer's row used to carry, moved to the cards that hold the dates.
+
+### 2026-09-20 - ARCHITECTURE.html - section 15.9 loses the provenance footer and gains the sections left out
+
+Authorised by: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page
+Was:
+> <tr><td>Provenance footer</td><td>for every part of the page: computed tonight, fundamentals as of a filing date, research as of the date it was written</td></tr>
+Now:
+> <tr><td>Sections left out</td><td>one line per section the checker left out or the newest pass did not write, each naming what refused it and never the words of the draft that was refused (see: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page)</td></tr>
+Why: every line of the footer restated a date the card it named already carried: the night on each computed card's stamp, the filing on the numbers card's spine, and the day each written section states beneath its own prose. The promise it served is held there, so the region was a second copy. In its place the table claims what it had never claimed, being the lines that say which sections were left out and why, which is where a refused draft's own sentences were being drawn.
+
 ### 2026-09-19 - .claude/rules/checks.md - `read-surface` reads what a picture is drawn at and what is written over it
 
 Corrects: the row stated that a screen is read at the width of the screen it is read on and that the column's ceiling is the widest picture the name page draws, and said nothing about the size a picture is drawn at. Two were drawn at the width of whatever held them, so each was scaled up to fill its card and the type inside it grew with it, and the chart wrote every band's name and every average's name inside its own plot, over the prices they were about.

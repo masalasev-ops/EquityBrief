@@ -17278,3 +17278,87 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             same price axis, so the claims stand at 373. Both gates ran with this entry in place,
             and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: the page names what refused a section and never the words of the refused draft, and the footer restating every card's own stamp is removed   2026-09-20
+Corrects:   two regions of a name's page that carried nothing a reader could act on. Where a section
+            was refused twice by the claim checker, the card saying where the research stands drew
+            the whole reason as stored, which is one part per refused sentence, each the rule that
+            refused it and the offending text after it. For two of the rules that offending text is
+            the draft's own sentence, so one name's card carried the same sentence a model wrote and
+            the checker threw away, printed twice, in a line of 407 characters. And the footer
+            saying where each part of the page came from restated, line by line, a date the card it
+            named already carried.
+Found:      by the operator on 2026-09-19, on a picture of the two regions, saying that neither
+            looked to be doing anything useful.
+Measured:   over the store the operator's machine holds, read without writing to it. 44 sections
+            stand as fallbacks and 9 are the newest version of their own section, which is what
+            reaches a page, over 9 names; the nine lines come to 965 characters. Eight of the nine
+            carry an offending text the checker extracted, a figure, a window or a date, which is
+            the most useful thing on the line, and none of the eight changes. The ninth falls to 147
+            characters. Of the footer's eleven lines on that name, every one restates a date the
+            card it names already carries: the night on each computed card's stamp, the filing on
+            the numbers card's spine, and the day each written section states beneath its own prose.
+Repaired:   the page names every rule that refused a section, with what the checker extracted beside
+            each, and drops that text for the two rules whose offending text is the draft's own
+            sentence. Repeats are collected under their rule, since one rule refusing six sentences
+            is one thing wrong six times rather than six things. A reason carrying no second refusal
+            is drawn as it was stored, which leaves every shorter reason the local lane records
+            alone. The row keeps the whole reason and the run page still draws it whole, that being
+            the page the evidence is read on, so nothing is lost and it is one screen away. The
+            footer is removed with its record, its plumbing and its stylesheet rule, and the promise
+            it served is held by the stamp on each card it described.
+Missed:     the two regions were built to state an absence rather than hide it, and that is the
+            right instinct; what neither was held to is that a reason has a reader. Nothing asserted
+            what the words of a refusal are for, so a line that named the rule and then quoted the
+            refused paragraph read as correct to every test here, because it is correct: it is the
+            whole reason, drawn. And the footer was written before the cards carried stamps of their
+            own, so it was right when written and became a second copy when they arrived, which
+            nothing was watching for.
+Guarded:    which rules carry the draft's own sentence is read off the shipped checker rather than
+            listed beside the test: prose written to break five rules in turn is run through it and
+            the finding that records the whole sentence is found by comparing each finding's
+            offending text with its own sentence, so a rule that starts recording one is found here
+            rather than by a reader. The reason the page states is then read back off the page, over
+            a row carrying the checker's own composed words, so the function and the wiring fail
+            apart. And every part of the page is read for the date it is as of on the card that
+            holds it, with the absence of any region restating them asserted, so the footer cannot
+            return as a second copy.
+Expected:   derived: which rules record a sentence is computed in the test from the shipped
+            checker's own findings. No expectation file changes.
+Tests:      1133, from 1132. One removed from `read-surface` and two added to it.
+Mutated:    the rule, stated before the sweep: break each of the three properties this rests on, the
+            draft's own sentence being dropped, the page being handed the reason as the page states
+            it rather than as stored, and each part of the page stating the date it is as of on its
+            own card. Not mutated: the collecting of repeats, which the same assertion reads, and
+            the drawing of a reason carrying no second refusal, which is the unchanged half and is
+            read in the same test.
+            Predicted:
+            M1 the two rules whose offending text is the draft's own sentence emptied out of the set
+            that drops it: the refusal test red where it reads the composed reason back; nothing
+            else.
+            M2 the projection handing the page the reason as stored: the refusal test red where it
+            reads the line the page draws; nothing else.
+            M3 the numbers card drawn without the filing it is as of: the dates test red where it
+            reads that card's spine; nothing else.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1132 of 1133 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the refusal test on the composed reason it reads back.
+            M2 turned 1 red, the refusal test on the line the page draws.
+            M3 turned 1 red, the dates test on the filing the numbers card is as of.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1133 of 1133 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 371 claims,
+            371 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 378 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The provenance
+            footer's row leaves with the three parts it was read as, its promise held by the date
+            stamped on each card it described, and one row arrives for the lines naming what a
+            checker left out, which nothing in section 15 claimed before, so the claims stand at 371
+            from 373. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by either.
+Carried:    nothing owed by this repair.

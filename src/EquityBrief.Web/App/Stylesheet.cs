@@ -262,7 +262,6 @@ nav.walk a[rel='prev']::before{content:"Previous on the list"}
 nav.walk a[rel='next']{text-align:right;align-items:flex-end}
 nav.walk a[rel='next']::before{content:"Next on the list"}
 nav.walk .mid{font-size:12.5px;color:var(--soft);text-align:center}
-.provenance p{margin:0;padding:7px 0;border-bottom:1px solid var(--hair);font-size:13.5px}
 
 /* run */
 .stage-table td.detail{font-size:12px;color:var(--ink-2);max-width:340px;overflow-wrap:anywhere}
