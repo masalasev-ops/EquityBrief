@@ -1065,6 +1065,57 @@ public static class NameScreen
                 : []);
     }
 
+    // The stages a pass writes, in the words a reader reads them in. The worker's own
+    // constants cannot be referenced from here, so they are stated and `read-surface`
+    // asserts the two agree, as the prose and research stages already are.
+    public static readonly IReadOnlyDictionary<string, string> PassSteps =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["fundamentals"] = "reading the company's filings",
+            ["facts"] = "assembling the night's facts file",
+            ["changes"] = "reading what changed",
+            ["staleness"] = "deciding which sections need writing",
+            ["theme research"] = "writing the industry's cycle",
+            [ReadApi.ProseStage] = "writing the sections the local model drafts",
+            [ReadApi.PaidCallStage] = "asking the research model",
+            ["claims"] = "checking every figure against the facts file",
+        };
+
+    // Where a pass the page started stands, read off its own rows.
+    //
+    // A pass writes a row per component as it works and its own row last, so a run with no
+    // rows yet is one that has started and a run carrying its own row is one that has ended.
+    // The step is the newest row that has not ended, or the newest row there is, in the
+    // words above rather than in the stage's own name, and a stage this does not name is
+    // stated as itself rather than dropped.
+    // see: A pass the page starts is watched until it ends and the page redraws as each section lands
+    public static PassProgress Progress(IReadOnlyList<PassStageRow> rows, IReadOnlyList<SectionStateRow> sections)
+    {
+        var written = sections.Count(section => string.Equals(section.Status, Staleness.Accepted, StringComparison.Ordinal));
+
+        if (rows.Count == 0)
+        {
+            return new PassProgress("starting", "the pass has started and has written nothing yet", written);
+        }
+
+        if (rows.Any(row => string.Equals(row.Stage, ReadApi.ResearchStage, StringComparison.Ordinal)))
+        {
+            return new PassProgress("ended", "the pass has ended", written);
+        }
+
+        var on = rows.LastOrDefault(row => !row.Ended) ?? rows[^1];
+        var named = PassSteps.FirstOrDefault(step => on.Stage.StartsWith(step.Key, StringComparison.Ordinal));
+
+        // A paid call names the section it asked for after its own stage, which the page
+        // states rather than dropping: `research call: The two cases` reads as asking the
+        // research model for the two cases.
+        var asked = named.Key is not null && on.Stage.Length > named.Key.Length
+            ? named.Value + " for " + on.Stage[(named.Key.Length + 2)..]
+            : named.Value;
+
+        return new PassProgress("running", asked ?? on.Stage, written);
+    }
+
     // What the newest research pass came to, in one line, where it says something the
     // research state does not. A pass that wrote what it could says when it ran; one the
     // research model did not answer says the pass did not start and the stored research is

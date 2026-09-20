@@ -928,6 +928,7 @@ section carrying its own date and the model that wrote it.</p>
   <tr><td>Research not yet written</td><td>where no record exists for the name: the researched sections absent with one line saying they have not been written and a control that writes them with its cost stated before it is pressed, beside the computed sections rendered whole</td></tr>
   <tr><td>Research stale</td><td>where a record exists and a trigger has fired: the stored sections rendered with their own dates and one line naming which of the four triggers fired, with the option to have them rewritten</td></tr>
   <tr><td>Research paused</td><td>where the spend cap has stopped research for the period: one line saying that research is paused and when it resumes, with the stored sections still rendered under their own dates</td></tr>
+  <tr><td>A pass as it runs</td><td>present only while a pass this page started is running: one line saying what the pass is doing and how many sections are written, redrawn in place as each section lands (see: A pass the page starts is watched until it ends and the page redraws as each section lands)</td></tr>
   <tr><td>Provenance footer</td><td>for every part of the page: computed tonight, fundamentals as of a filing date, research as of the date it was written</td></tr>
   <tr><td>Walk</td><td>previous and next on tonight's list, so an evening's reading is one pass through with no return to the list</td></tr>
 </table>
@@ -967,7 +968,7 @@ section carrying its own date and the model that wrote it.</p>
 <h3>15.12 Opening a name, in order</h3>
 <ol>
   <li>The computed sections render immediately from the nightly store.</li>
-  <li>If the stored fundamentals predate the name's latest filing, they are fetched and the numbers section fills in.</li>
+  <li>The numbers section renders from the filings the store holds. Opening a name fetches nothing: where a name holds none, the research pass fetches them before it writes and assembles that night's facts file again where it stored a filing the night had not seen.</li>
   <li>The staleness judge answers its four questions from stored data.</li>
   <li>Whatever sections are stored render with the date each was written. The page offers to have the paid model write again what the local model drafted. Nothing is spent for any of this.</li>
   <li>Sections the local lane does not own are absent until asked for, which on the current machine means the two cases, the risks and the short version. Asking runs a paid pass for those sections only, with progress shown, and the sections stream in as they are checked and stored.</li>

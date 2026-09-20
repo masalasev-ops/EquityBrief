@@ -384,6 +384,11 @@ public sealed record ResearchPassLine(string Outcome, DateOnly AsOf, string Line
 // A control that starts a research pass for the name, and what it asks for.
 public sealed record ResearchControl(string Kind, string Label, bool Refresh, bool PaidForLocal);
 
+// Where a pass the page started stands: starting before its first row lands, running while it
+// works with the step it is on in the reader's words, and ended when its own row lands, with
+// the count of sections the name holds so the page knows when one more has arrived.
+public sealed record PassProgress(string State, string Step, int Sections);
+
 // What research has cost, stated beside a control before it is pressed: the passes the
 // run log has priced, what they came to, the most one came to, and the line saying where
 // research stands against the caps now.
@@ -2412,6 +2417,13 @@ public sealed class MarkRenderer : IComponent
     //
     // From 6.8 it carries what the newest pass came to and the controls that start
     // one, with what research has cost stated beside them before they are pressed.
+    // Where a pass the page started stands, drawn beside the control that started it. The
+    // page reads this while the pass runs and redraws the name's sections each time one more
+    // has landed, which is what section 15.12's last step asks for.
+    // see: A pass the page starts is watched until it ends and the page redraws as each section lands
+    public string PassProgressLine(string ticker, PassProgress progress) =>
+        Formatted($"<p class=\"pass-progress\" role=\"status\" data-ticker=\"{Escaped(ticker)}\" data-state=\"{Escaped(progress.State)}\" data-sections=\"{progress.Sections}\">{Escaped(progress.Step)}, and the name holds {progress.Sections} written section(s)</p>");
+
     public string LeftOut(
         string ticker,
         IReadOnlyList<LeftOutSection> leftOut,

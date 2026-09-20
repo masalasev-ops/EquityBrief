@@ -931,6 +931,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Waiting on another writer"),
         CheckReach.Key("15.8 Universe", "Researched"),
         CheckReach.Key("15.9 Name", "Listing history"),
+        CheckReach.Key("15.9 Name", "A pass as it runs"),
     ];
 
     [Fact]

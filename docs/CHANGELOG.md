@@ -25,6 +25,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-19 - ARCHITECTURE.html - section 15.12's second step says what opening a name does and does not do
+
+Corrects: the step said the stored fundamentals are fetched when a page is opened and the numbers section fills in, which no screen does: section 15.2 says a screen fetches nothing, and the fetch is the research pass's first act.
+
+Was:
+> If the stored fundamentals predate the name's latest filing, they are fetched and the numbers section fills in.
+Now:
+> The numbers section renders from the filings the store holds. Opening a name fetches nothing: where a name holds none, the research pass fetches them before it writes and assembles that night's facts file again where it stored a filing the night had not seen.
+Why: the step described a fetch on opening that the rule governing every screen forbids, and the page has never made one.
+
+### 2026-09-19 - ARCHITECTURE.html - section 15.9 states what the page shows while a pass runs
+
+Authorised by: A pass the page starts is watched until it ends and the page redraws as each section lands
+Was:
+> the table ran from Research paused to the provenance footer
+Now:
+> a row, A pass as it runs, for the line the page draws while a pass it started is running and the redraw as each section lands
+Why: section 15.12's last step says progress is shown and sections stream in, and what a screen shows is stated as a row of its own table, which is what the harness reads as a claim.
+
+### 2026-09-19 - .claude/rules/checks.md - read-surface asserts a pass watched as it runs
+
+Authorised by: A pass the page starts is watched until it ends and the page redraws as each section lands
+Was:
+> the read-surface row ended at "a date it cannot read with tonight"
+Now:
+> "; and a pass the page started is watched by its own rows, the step named in the reader's words against the stages the worker writes, a pass with no row yet said to be starting and one carrying its own row said to have ended, read for the run the page was handed and never for an earlier pass, with the page's own watching read off the shell's script, the suite having no browser to run it in"
+Why: the watching is drawn on the name page, and read-surface is the check that reads it.
+
 ### 2026-09-19 - ARCHITECTURE.html - section 15.3's routes name the one that carries a date
 
 Authorised by: A name's page for an earlier night is what the store held that night

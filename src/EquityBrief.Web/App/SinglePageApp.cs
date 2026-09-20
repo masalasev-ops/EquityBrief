@@ -69,6 +69,14 @@ public sealed class SinglePageApp : IComponent
     public const string PassHeader = "X-EquityBrief-Pass";
     public const string PassHeaderValue = "name-page";
 
+    // How long the page watches a pass it started, as a count of asks and the wait between
+    // them: ten minutes, which is above the longest pass the run log has recorded, and three
+    // seconds apart, which is short enough that a section looks as though it arrived when it
+    // did. A page left open past the bound stops asking rather than asking for ever.
+    // see: A pass the page starts is watched until it ends and the page redraws as each section lands
+    public const int PassTicks = 200;
+    public const int PassTickMillis = 3000;
+
     // The hash route, so one document serves every screen and the browser never
     // asks the server for a page it already has.
     //
@@ -252,7 +260,59 @@ public sealed class SinglePageApp : IComponent
             body: new URLSearchParams(new FormData(form)),
           });
           form.insertAdjacentHTML('afterend', await response.text());
+          const said = form.nextElementSibling;
+          if (said && said.getAttribute('data-started') === 'true') {
+            watch(said.getAttribute('data-watch-from'));
+          }
         });
+        // A pass the page started, watched until it ends: what it is doing is asked for every
+        // few seconds and drawn beside the control, and the page is drawn again each time one
+        // more section has landed, so the sections arrive as they are written rather than on
+        // the next visit. Nothing here writes, and the reader's place on the page is kept.
+        async function watch(from) {
+          const hash = location.hash;
+          const ticker = tickerIn(hash);
+          let written = null;
+          for (let tick = 0; tick < {{{PassTicks}}}; tick++) {
+            await new Promise((wait) => setTimeout(wait, {{{PassTickMillis}}}));
+            if (location.hash !== hash) { return; }
+            let line;
+            try {
+              const asked = await fetch('{{{PassRoute}}}' + encodeURIComponent(ticker) + '?since=' + encodeURIComponent(from));
+              if (!asked.ok) { return; }
+              const box = document.createElement('div');
+              box.innerHTML = await asked.text();
+              line = box.querySelector('.pass-progress');
+            } catch (error) { return; }
+            if (!line) { return; }
+            place(line);
+            const sections = line.getAttribute('data-sections');
+            const ended = line.getAttribute('data-state') === 'ended';
+            if ((written !== null && sections !== written) || ended) {
+              const kept = scrollY;
+              await show();
+              scrollTo(0, kept);
+              place(line);
+              if (ended) { return; }
+            }
+            written = sections;
+          }
+        }
+        // Where the line goes: over the one already shown, beside the reply to the press, or
+        // at the head of the research region, which is what survives the page being drawn again.
+        function place(line) {
+          const shown = screen.querySelector('.pass-progress');
+          if (shown) { shown.replaceWith(line); return; }
+          const said = screen.querySelector('.pass-started');
+          if (said) { said.after(line); return; }
+          const research = screen.querySelector('section.research');
+          if (research) { research.prepend(line); }
+        }
+        function tickerIn(hash) {
+          const asked = hash.slice('{{{NameRoute}}}'.length);
+          const cut = asked.indexOf('/');
+          return cut < 0 ? asked : asked.slice(0, cut);
+        }
         // The masthead's search, over every current member by its ticker or its company's name.
         // Its list is read after the first screen, so the first screen never waits on it, and a
         // name picked from the list goes straight to its page.

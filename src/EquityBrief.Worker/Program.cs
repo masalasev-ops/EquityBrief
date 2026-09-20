@@ -260,7 +260,7 @@ static async Task<int> ResearchPass(string[] args)
     }
 
     var clock = SystemClock.ForUnitedStatesSessions();
-    var runId = FormattableString.Invariant($"research-{clock.UtcNow:yyyyMMddTHHmmssZ}-{ticker}");
+    var runId = PassRun.IdFor(clock.UtcNow, ticker);
     var database = store.DatabaseFile;
 
     // The name's fundamentals first, where the store holds none, because the archive is

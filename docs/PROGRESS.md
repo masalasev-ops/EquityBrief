@@ -17017,3 +17017,80 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             screen's own line rather than as rows of its table. Both gates ran with this entry in
             place, and the operator's store under `data/` was not touched by either.
 Carried:    nothing owed by this repair.
+
+### 5.8 - correction: a pass the page starts watched until it ends, the page redrawn as each section lands, and what opening a name fetches stated as nothing   2026-09-19
+Corrects:   section 15.12's last step says a pass asked for from the page shows progress and its
+            sections stream in as they are checked and stored, and 5.8 left the page saying only
+            that a pass had started: what it was doing and what it had written could be read nowhere
+            until the reader opened the page again. The same section's second step says the stored
+            fundamentals are fetched when a page is opened, which no screen does and this one never
+            did.
+Found:      by this session reading section 15 against the built screens for the operator on
+            2026-09-19, who asked for the next stages of section 15 to be built.
+Measured:   over the copy of the store the screens are read on, with a pass's rows written into it
+            one at a time: the page states the pass has started before its first row lands, then
+            reading the company's filings, then writing the sections the local model drafts, then
+            asking the research model for The two cases, and then that the pass has ended when the
+            pass's own row lands, each beside the count of sections the name holds.
+Repaired:   a pass writes a row per component as it works, its own row last, and the prose writer
+            stores each section as it writes it, so what a pass has done is already in the store
+            while it runs. The reply to the press carries the instant the surface took before
+            starting the pass; the page hands that back every three seconds to a read address that
+            answers with where the pass stands, draws the answer beside the control, and asks for
+            the page again and redraws it in place each time one more section has landed, keeping
+            the reader where they were. It stops when the pass's own row lands, when the reader
+            leaves the page, when the address answers with anything else, and after ten minutes. The
+            shape of a pass's run name is stated once where the worker that writes it and the
+            surface that reads it can both reach it, since the only row naming the name it was for
+            is written last. And section 15.12's second step now says the numbers section renders
+            from the filings the store holds and that opening a name fetches nothing.
+Missed:     the step that was wrong described a fetch the rule governing every screen forbids, and
+            the check that reads section 15 reads the rows of its tables, where the steps are a
+            list. The page had never made the fetch, so nothing failed and nothing said the step was
+            untrue.
+Guarded:    over the fixture's store with a pass's rows written into it: the four states in order,
+            the step named in the reader's words, the paid call naming the section it asked for, the
+            count of sections read off the store by the test's own query, an earlier pass's rows
+            never read as this pass's, and a request naming no instant watching nothing. The words
+            the page names each stage by are read against the worker's own constants, as the prose
+            and research stages already are, and the page's watching is read off the shell's script,
+            the suite having no browser to run it in.
+Expected:   derived: the rows are written by the test and the count of sections is read off the
+            store. No expectation file changes.
+Tests:      1126, from 1124. Two added to `read-surface`, and the screens' stated counts move for
+            the row added, the rows to 45, the subjects to 130 and the claims to 373.
+Mutated:    the rule, stated before the sweep: break each of the three properties the watching rests
+            on, the run read being the one the page was handed, the state being read off the pass's
+            own rows, and the page redrawing when one more section has landed. Not mutated: the
+            words each stage is named by, which the same test reads against the worker's constants,
+            and the bound on how long the page watches, which is a number the script carries and no
+            behaviour a test over markup reaches.
+            Predicted:
+            M1 the instant the page was handed ignored, so the newest pass of the name is read
+            whatever it was: the watching test red where an earlier pass's rows are read as this
+            one's; nothing else.
+            M2 a pass read as ended at the first section it writes rather than at its own row: the
+            watching test red on the state while it runs; nothing else.
+            M3 the page not asking again when the count of sections has moved: the steps test red on
+            the line of the script that reads the count; nothing else.
+            Results: the prediction held, each mutation turning exactly the test named for it red
+            and nothing else, on the assertion named for it, read off the failure message. Four runs
+            of the whole suite, never a filter, at this entry's commit, each in its own detached
+            worktree under the session scratchpad, with the tree read before the run to hold only
+            the mutated file and the worktree removed after. The baseline is 1125 of 1126 with one
+            red, and that red is this entry: `two-platform` reads every entry written since the 7.2
+            report for its Windows record, and this one carried a placeholder until the run below
+            filled it, so the counts that follow are on top of it.
+            M1 turned 1 red, the watching test where an earlier pass's rows are read as this one's.
+            M2 turned 1 red, the watching test on the state while the pass runs.
+            M3 turned 1 red, the steps test on the line of the script that reads the count.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1126 of 1126 tests
+            ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 373 claims,
+            373 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 380 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. One claim
+            added, section 15.9's row for a pass as it runs, which passes on `read-surface`, and
+            section 15.12's second step is corrected in the same pass without adding one, the steps
+            being a list rather than a table. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
+Carried:    nothing owed by this repair.

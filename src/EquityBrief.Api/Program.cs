@@ -304,6 +304,32 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
 
+// Where the pass a page started stands, which the page asks for while it watches one.
+//
+// It reads the run log and the name's own sections and writes nothing, as every screen does.
+// The instant comes from the reply to the press, so the rows read are that pass's and not an
+// earlier one's, and a request carrying no instant or one that cannot be read answers for
+// nothing rather than for whatever ran last.
+// see: A pass the page starts is watched until it ends and the page redraws as each section lands
+app.MapGet(SinglePageApp.PassRoute + "{ticker}", async (string ticker, string? since, ReadApi read, MarkRenderer marks) =>
+{
+    if (!DateTimeOffset.TryParseExact(since ?? string.Empty, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var started))
+    {
+        return Results.Content(
+            "<p class=\"pass-progress\" role=\"status\" data-state=\"unasked\" data-sections=\"0\">no pass was named, so nothing is watched</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    return Results.Content(
+        marks.PassProgressLine(
+            ticker,
+            NameScreen.Progress(
+                await read.PassRowsAsync(ticker, started),
+                await read.SectionStatesAsync(ticker, DateOnly.MaxValue))),
+        "text/html; charset=utf-8");
+});
+
 // A press of the name page's control: start the worker's research verb for the name, and
 // return at once with the line the page puts beside the control.
 //
@@ -312,7 +338,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
 // writes a store: the pass is the worker's, and its rows are what the page reads next.
 // see: The name page's control starts the worker's research verb, and the read API writes nothing it starts
 // see: A pass is started only by a request carrying the name page's own header
-app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IPassStarter starter) =>
+app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IPassStarter starter, IClock clock) =>
 {
     if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
     {
@@ -334,13 +360,18 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
 
     var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
 
+    // The instant before the pass is started, which the reply carries and the page hands back
+    // while it watches: the pass's own run is the first one of this name to start at or after
+    // it, so an earlier pass's rows are never read as this one's.
+    var watchFrom = clock.UtcNow;
+
     var started = starter.Start(new PassRequest(
         ticker,
         string.Equals(form?["refresh"].FirstOrDefault(), "true", StringComparison.Ordinal),
         string.Equals(form?["paidForLocal"].FirstOrDefault(), "true", StringComparison.Ordinal)));
 
     return Results.Content(
-        $"<p class=\"pass-started\" data-started=\"{(started.Started ? "true" : "false")}\">{System.Net.WebUtility.HtmlEncode(started.Line)}</p>",
+        $"<p class=\"pass-started\" data-started=\"{(started.Started ? "true" : "false")}\" data-watch-from=\"{watchFrom.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(started.Line)}</p>",
         "text/html; charset=utf-8",
         statusCode: started.Started ? StatusCodes.Status202Accepted : StatusCodes.Status500InternalServerError);
 });

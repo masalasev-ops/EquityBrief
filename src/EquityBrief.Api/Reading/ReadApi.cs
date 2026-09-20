@@ -159,6 +159,10 @@ public sealed record RunStageRow(
 // from.
 public sealed record QueueRow(DateOnly Night, DateTimeOffset StartedAt, string Outcome, string Detail);
 
+// One row of a pass as it runs: the component that wrote it, what it came to, and whether it
+// has ended. A row with no end is the step the pass is on.
+public sealed record PassStageRow(string Stage, string Outcome, DateTimeOffset StartedAt, bool Ended);
+
 // One document a pass fetched and did not store, as the store holds it.
 //
 // The row exists because the refusal would otherwise be invisible: nothing else
@@ -848,6 +852,26 @@ public sealed class ReadApi : IComponent
         ORDER BY rowid;
     ";
 
+    // Where a pass a page started stands, which is every row of its run in the order they
+    // were written.
+    //
+    // A pass writes a row per component as it goes and its own row last, so these rows are
+    // what a page watching a pass reads. The run is the newest of this name's that started
+    // at or after the instant the page was handed when it pressed: an earlier pass is a
+    // different pass, and before the first row lands there is no run and the page says the
+    // pass is starting.
+    // see: A pass the page starts is watched until it ends and the page redraws as each section lands
+    const string PassRowsForName = @"
+        SELECT stage, outcome, started_at, IFNULL(ended_at, '')
+        FROM run_log
+        WHERE run_id = (
+            SELECT run_id FROM run_log
+            WHERE run_id LIKE $like AND started_at >= $since
+            ORDER BY started_at DESC, rowid DESC
+            LIMIT 1)
+        ORDER BY rowid;
+    ";
+
     const string RunLogInWindow = @"
         SELECT run_id, stage, started_at, ended_at, outcome,
                rows_written, model_calls, network_requests, spend, detail
@@ -1072,6 +1096,32 @@ public sealed class ReadApi : IComponent
     // carries tomorrow's UTC date and belongs to tonight. The window handed to
     // SQL is a day either side, so the filter has something to filter and the
     // whole log is not read to draw one evening.
+    // Every row of the pass a page started, in the order the pass wrote them.
+    public async Task<IReadOnlyList<PassStageRow>> PassRowsAsync(string ticker, DateTimeOffset since)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PassRowsForName;
+        command.Parameters.AddWithValue("$like", PassRun.Like(ticker));
+        command.Parameters.AddWithValue("$since", since.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+
+        var rows = new List<PassStageRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new PassStageRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateTimeOffset.Parse(reader.GetString(2), CultureInfo.InvariantCulture),
+                reader.GetString(3).Length > 0));
+        }
+
+        return rows;
+    }
+
     public async Task<IReadOnlyList<RunStageRow>> RunLogAsync(DateOnly night)
     {
         await using var connection = Open();
