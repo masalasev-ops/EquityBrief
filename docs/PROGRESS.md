@@ -18761,3 +18761,46 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             night reads neither of: green in 4m14s for the session of 2026-09-18, migrating the copy
             from 29 to 30 at its first step, 503 names computed, 432 listed and 71 of 71 queue passes
             completed. The surface was then served over that copy and every screen answered 200.
+
+### 9.4 ruling - tonight's list is a selection of stocks worth buying or paying attention to   2026-09-21
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator stated in conversation on 2026-09-21: "The purpose was to show selection of
+            stocks as of that day which are worth buying or paying attention towards. There is no
+            point in having an improvement loop otherwise." The corpus held two positions at once:
+            section 1 and the scope decision said the tool is not a screen and decides nothing about
+            which stock is better than another, while section 13 scores every listing as a trade
+            with an entry, a stop and a target.
+Ruled:      the list is a selection of the stocks worth buying or paying attention to that evening,
+            and the improvement loop exists to make that selection better (see: Tonight's list
+            selects the stocks worth buying or paying attention to that evening, and the improvement
+            loop exists to make that selection better). It supersedes **Improving what surfaces a
+            name is in scope; ranking names against each other is not**, which moves to Previously
+            decided with its reasoning. Filed at 9.4, the latest landed checkpoint, on the precedent
+            of the 8.7 ruling, and under the label the operator gave it.
+Owed:       phase 9's sign-off and phase 8's, both outstanding, in that order. This ruling does not
+            move either and no later work discharges them. The phase that plans the selection waits
+            for both. Before it, the tonight route's ranking of an earlier night lands as a 5.4
+            correction, because that route orders an earlier night by the newest bands, which is a
+            live wrong result.
+Changed:    `DECISIONS.md` gains the decision under How the picks improve and moves the superseded
+            one to Previously decided. `ARCHITECTURE.html` section 1 states the purpose as the
+            selection and drops "It is not a screen", section 13.5 restates its boundary as what a
+            change may use and where its result is shown, and section 15.14's ordering bullet cites
+            the new decision. Each edit's prior text is in `CHANGELOG.md`. One line of shipped
+            source changes, the citation above the name page's intro in `SinglePageApp.cs`, which
+            named the superseded decision and now names the fundamentals decision the intro's words
+            rest on; `no-superseded-citation` refuses a code citation of a superseded name. No
+            behaviour changes.
+Not ruled:  what "worth buying" is measured against, whether the list ranks by a score, the cap on
+            how many names are drawn, the trend guard, what at entry zone means, whether a trend
+            label must hold before it gates a plan, how a day of market-wide volume is treated, and
+            how a changed condition goes live. Those are the next phase's planning pass to rule, and
+            tonight's list keeps the order it is built with until that pass rules on it.
+Tests:      1161, unchanged. A ruling adds none.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim moves and none is added, because a ruling lands nothing. Both gates ran
+            with this entry in place, and the operator's store under `data/` was not touched by
+            either.
