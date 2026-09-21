@@ -269,4 +269,117 @@ public partial class ReadSurface
         // reads, rather than a second spelling of it kept beside the check.
         Assert.Equal("ok", RequestDrain.Ok);
     }
+
+    // A store holding one name's earlier pass that ran to its end, and one request for
+    // that name nobody has started. The earlier pass is what a read bounded by the name
+    // alone would return for the request below it.
+    static TemporaryStore WithAnEarlierPass(string ticker)
+    {
+        var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome) VALUES "
+            + $"('research-20260901T100000Z-{ticker}', 'research', '2026-09-01T10:00:00Z', '2026-09-01T10:05:00Z', 'ok');"
+            + "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES "
+            + $"('{ticker}', '2026-09-20T12:00:00Z', 'list', 'paid', 'outstanding');");
+
+        return store;
+    }
+
+    static (string State, string RunId, string Reason) SettledRow(TemporaryStore store, string ticker) =>
+        Assert.Single(Rows(store, $"SELECT state, run_id, reason FROM research_request WHERE ticker = '{ticker}';")
+            .Select(row => (row[0], row[1], row[2])));
+
+    [Fact]
+    public async Task ARequestWhosePassWroteNoRunIsRefusedAndNeverSettledUnderAnEarlierOne()
+    {
+        // A pass refused before the runner starts writes no run at all, and the request is
+        // settled on that rather than on whatever the name last did. Read for the name
+        // alone, the newest run here is a pass that ran to its end three weeks earlier, so
+        // a request that wrote nothing would be recorded as written and carry that run.
+        using var store = WithAnEarlierPass("KEYS");
+        await using var connection = store.Open();
+
+        var claimed = DateTimeOffset.Parse("2026-09-20T12:00:05Z", CultureInfo.InvariantCulture);
+        var request = await RequestDrain.ClaimAsync(connection, claimed);
+
+        Assert.NotNull(request);
+
+        // No run started at or after the claim, because the pass wrote none.
+        var (runId, outcome) = await RequestDrain.PassAsync(connection, request);
+
+        Assert.Null(runId);
+        Assert.Null(outcome);
+
+        var (state, reason) = RequestDrain.SettlementFor(outcome);
+
+        await RequestDrain.SettleAsync(connection, request, state, reason, runId, claimed);
+
+        var settled = SettledRow(store, "KEYS");
+
+        Assert.Equal(ResearchRequests.Refused, settled.State);
+        Assert.Equal("null", settled.RunId);
+        Assert.Contains("no run at all", settled.Reason, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ARequestIsSettledUnderItsOwnRunAndNotTheNewestTheNameHolds()
+    {
+        // The other direction: a pass that did write a run settles under that run, and the
+        // earlier one standing beside it is not the one recorded.
+        using var store = WithAnEarlierPass("KEYS");
+        await using var connection = store.Open();
+
+        var claimed = DateTimeOffset.Parse("2026-09-20T12:00:05Z", CultureInfo.InvariantCulture);
+        var request = await RequestDrain.ClaimAsync(connection, claimed);
+
+        Assert.NotNull(request);
+
+        // The run this request's own pass wrote, which starts after the claim.
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome) VALUES "
+            + "('research-20260920T120010Z-KEYS', 'research', '2026-09-20T12:00:10Z', '2026-09-20T12:04:00Z', 'ok');");
+
+        var (runId, outcome) = await RequestDrain.PassAsync(connection, request);
+
+        Assert.Equal("research-20260920T120010Z-KEYS", runId);
+        Assert.Equal(RequestDrain.Ok, outcome);
+
+        var (state, reason) = RequestDrain.SettlementFor(outcome);
+
+        await RequestDrain.SettleAsync(connection, request, state, reason, runId, claimed);
+
+        var settled = SettledRow(store, "KEYS");
+
+        Assert.Equal(ResearchRequests.Written, settled.State);
+        Assert.Equal("research-20260920T120010Z-KEYS", settled.RunId);
+    }
+
+    [Fact]
+    public async Task ARunOfAnotherNameOrAnotherStageIsNotReadAsThisRequestsPass()
+    {
+        // The run is matched by the pattern a pass names its runs by, so a row ending in
+        // this name that no pass named is not read as this request's. All three sit after
+        // the claim, which is what leaves the pattern alone deciding: another name's pass,
+        // another stage's row for this name, and a research row under a name no pass
+        // writes, which is the one a pattern keyed on the ending alone would take.
+        using var store = WithAnEarlierPass("KEYS");
+        await using var connection = store.Open();
+
+        var claimed = DateTimeOffset.Parse("2026-09-20T12:00:05Z", CultureInfo.InvariantCulture);
+        var request = await RequestDrain.ClaimAsync(connection, claimed);
+
+        Assert.NotNull(request);
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome) VALUES "
+            + "('research-20260920T120010Z-INCY', 'research', '2026-09-20T12:00:10Z', '2026-09-20T12:04:00Z', 'ok'),"
+            + "('night-20260920T120010Z-queue-KEYS', 'overnight queue', '2026-09-20T12:00:10Z', '2026-09-20T12:04:00Z', 'ok'),"
+            + "('night-20260920T120010Z-KEYS', 'research', '2026-09-20T12:00:10Z', '2026-09-20T12:04:00Z', 'ok');");
+
+        var (runId, outcome) = await RequestDrain.PassAsync(connection, request);
+
+        Assert.Null(runId);
+        Assert.Null(outcome);
+    }
 }

@@ -18248,3 +18248,66 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             against a floor of 34, 37 of 37 roster checks carried and all 37 run. The sweep ran from
             a point carrying all three checkpoints, and the operator's store under `data/` was not
             touched by any of it.
+
+### 9.2 - correction: a request settles under its own pass's run, where it had settled under whatever that name last did   2026-09-20
+Corrects:   the 9.2 entry records the drain settling a request under what that request's pass came
+            to. It read the newest research run for the name instead, with no bound tying that run
+            to this request. A pass that refuses before the runner starts writes no run at all, so
+            for a name already holding research the drain read the previous pass's row, and where
+            that row said `ok` the request was recorded as written, under a run id belonging to
+            another pass, with no reason beside it. The queue screen then states a report as written
+            and points at one nobody wrote for it. Section 16's Request drain row already said the
+            settle reads "the pass's own run", so the document stated the rule and the code did not
+            keep it; no spec changes here and nothing goes to CHANGELOG.
+Found:      on 2026-09-20, in the phase 9 sign-off review, by running the drain rather than by
+            reading it, which is how 9.2 found the defect before this one. The reachable trigger is
+            any refusal ahead of the runner: a fixture folder that does not exist, a source that is
+            neither live nor fixture, a blank key refused by name, or a missing source list.
+Measured:   over a constructed store holding one research run for ZZZ started 2026-09-01T10:00:00Z
+            with outcome `ok`, and one outstanding request for ZZZ asked at 2026-09-20T12:00:00Z.
+            The drain was run against a fixture path that does not exist, so the pass refused and
+            wrote no run. Before: `drain: 1 request(s) taken, 1 written and 0 refused`, and the row
+            read state `written`, run id `2026-09-01T10:00:00Z-ZZZ`, reason null. After: `drain: 1
+            request(s) taken, 0 written and 1 refused`, and the row read state `refused`, run id
+            null, with the reason naming that the pass left no run. No network request was made by
+            either run and nothing was drained under the paid lane.
+Repaired:   the request carries the instant it was claimed at, and the settle reads a run of this
+            name's passes that started at or after it, so a run an earlier pass left behind is not
+            this request's. The run is matched by the pattern a pass names its runs by rather than
+            by a second spelling of it, which had been keyed on the ending alone. The run is read
+            once and handed to the settle rather than read again inside it, so the row a request
+            settles under is the one its state was decided from. A refusal with no run says the pass
+            stopped before it could write one, which is what happened, rather than pointing at a run
+            that does not exist.
+Stored:     nothing to rewrite. The operator's store holds no settled request at all, the queue
+            having been drained on copies and never on it.
+Missed:     the settle rule was asserted as a function of the outcome string and passed, and nothing
+            asserted which run that outcome was read from. The reader that picks the run had no test
+            of its own. Lifting the rule out of the loop made the rule reachable and left its input
+            unasserted, which is the missing-property class in `.claude/rules/writing-tests.md`.
+Guarded:    three tests over a constructed store holding an earlier pass that ran to its end. A
+            request whose pass wrote no run is refused, carries no run id and says so, where the
+            earlier pass is what a read bounded by the name alone would have returned. A request
+            whose pass did write one settles under that run and not the earlier one. And a research
+            row for this name under a run id no pass names is not read as this request's, which is
+            the row a pattern keyed on the ending alone would take.
+Expected:   derived: the rule is section 16's own words for the Request drain, asserted over
+            constructed runs and requests. No expectation file changes, because the committed
+            fixture holds no request row and the drain does not run in the replay.
+Tests:      TO BE FILLED IN FROM THE RUN, from 1148. Three added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each of the two halves that decide whether a
+            run is this request's own, being the instant it must start at or after, and the pattern
+            that makes it one of this name's passes. Not mutated: the settle rule itself, which 9.2
+            mutated and whose test stands unchanged here.
+            Predicted:
+            M1 the instant bound dropped from the run read, which is the defect itself: the request
+            with no run of its own red where it reads that no run was found, and the row under a run
+            id no pass names red for the same reason, the earlier pass matching in both. The request
+            that did write a run green, its own run still being the newest.
+            M2 the pattern loosened to the ending alone, which is what it was: the row under a run id
+            no pass names red where it reads that nothing matched, and nothing else, the other two
+            holding no such row.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   FILLED IN FROM THE RUN.

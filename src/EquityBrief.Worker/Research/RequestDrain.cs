@@ -1,10 +1,13 @@
 using System.Globalization;
+using EquityBrief.Core.Research;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Research;
 
-// One request the drain took, as the worker reads it.
-public sealed record TakenRequest(string Ticker, string AskedAt, string Lane);
+// One request the drain took, as the worker reads it. The instant it was claimed at is
+// carried with it, because the run that settles it is one that started at or after that
+// instant and an earlier pass's run is not this request's.
+public sealed record TakenRequest(string Ticker, string AskedAt, string Lane, DateTimeOffset ClaimedAt);
 
 // The worker's half of the request store: taking the oldest request nobody has started,
 // and saying what came of it.
@@ -39,13 +42,19 @@ public static class RequestDrain
         WHERE ticker = $ticker AND asked_at = $asked_at;
     ";
 
-    // The newest research run for a name and what it came to, which is the pass this
-    // request just ran. What it came to decides the request's state: a verb that exits
-    // zero has run, and a pass that ran is not a pass that wrote, which is the shape the
-    // first drain recorded two unavailable passes as written under.
+    // This request's own run and what it came to, being one of this name's passes that
+    // started at or after the request was claimed. What it came to decides the request's
+    // state: a verb that exits zero has run, and a pass that ran is not a pass that wrote.
+    //
+    // The instant is what makes the run this request's rather than this name's. A pass
+    // that refuses before the runner starts writes no run at all, and without the bound
+    // the newest run for the name is whatever that name last did, so a request for a name
+    // already holding research settles under a run that said it wrote.
+    //
+    // The pattern is the one a pass names its runs by rather than a second spelling of it.
     const string NewestRun = @"
         SELECT run_id, outcome FROM run_log
-        WHERE stage = 'research' AND run_id LIKE '%-' || $ticker
+        WHERE stage = 'research' AND run_id LIKE $like AND started_at >= $since
         ORDER BY started_at DESC, rowid DESC LIMIT 1;
     ";
 
@@ -62,13 +71,15 @@ public static class RequestDrain
     public static (string State, string? Reason) SettlementFor(string? outcome) =>
         string.Equals(outcome, Ok, StringComparison.Ordinal)
             ? ("written", null)
-            : ("refused", $"the pass came to {outcome ?? "no run at all"}, and its own run says why");
+            : ("refused", outcome is null
+                ? "the pass left no run at all, so it stopped before it could write one"
+                : $"the pass came to {outcome}, and its own run says why");
 
     const string Outstanding = @"
         SELECT COUNT(*) FROM research_request WHERE state = 'outstanding';
     ";
 
-    public static async Task<TakenRequest?> ClaimAsync(SqliteConnection connection, CancellationToken cancellation = default)
+    public static async Task<TakenRequest?> ClaimAsync(SqliteConnection connection, DateTimeOffset at, CancellationToken cancellation = default)
     {
         await using var command = connection.CreateCommand();
 
@@ -77,25 +88,26 @@ public static class RequestDrain
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         return await reader.ReadAsync(cancellation)
-            ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2))
+            ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2), at)
             : null;
     }
 
+    // The run is handed in rather than read again here, so the row this settles under is
+    // the one the state was decided from and the two cannot come to disagree.
     public static async Task SettleAsync(
         SqliteConnection connection,
         TakenRequest request,
         string state,
         string? reason,
+        string? runId,
         DateTimeOffset at,
         CancellationToken cancellation = default)
     {
-        var (runId, _) = await PassAsync(connection, request.Ticker, cancellation);
-
         await using var command = connection.CreateCommand();
 
         command.CommandText = Settle;
         command.Parameters.AddWithValue("$state", state);
-        command.Parameters.AddWithValue("$settled_at", at.ToString(Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$settled_at", Stamped(at));
         command.Parameters.AddWithValue("$reason", (object?)reason ?? DBNull.Value);
         command.Parameters.AddWithValue("$ticker", request.Ticker);
         command.Parameters.AddWithValue("$asked_at", request.AskedAt);
@@ -104,17 +116,19 @@ public static class RequestDrain
         await command.ExecuteNonQueryAsync(cancellation);
     }
 
-    // The run the pass wrote and what it came to, for the settle and for the drain's own
-    // decision about which state the request lands in.
+    // The run this request's pass wrote and what it came to, for the settle and for the
+    // drain's own decision about which state the request lands in. A request whose pass
+    // wrote no run of its own reads as no run at all rather than as an older one.
     public static async Task<(string? RunId, string? Outcome)> PassAsync(
         SqliteConnection connection,
-        string ticker,
+        TakenRequest request,
         CancellationToken cancellation = default)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = NewestRun;
-        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$like", PassRun.Like(request.Ticker));
+        command.Parameters.AddWithValue("$since", Stamped(request.ClaimedAt));
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -122,6 +136,11 @@ public static class RequestDrain
             ? (reader.GetString(0), reader.GetString(1))
             : (null, null);
     }
+
+    // The form a run's own instant is stored in, so the bound compares against the column
+    // character by character rather than against a second rendering of the same clock.
+    static string Stamped(DateTimeOffset at) =>
+        at.UtcDateTime.ToString(Instant, CultureInfo.InvariantCulture);
 
     public static async Task<int> OutstandingAsync(SqliteConnection connection, CancellationToken cancellation = default)
     {
