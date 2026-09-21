@@ -18412,7 +18412,7 @@ Guarded:    a request dated well before the press is put in the store, then the 
             asked for first.
 Expected:   derived: the rule is 9.2's own done condition, asserted over a constructed request. No
             expectation file changes, because the committed fixture holds no request row.
-Tests:      TO BE FILLED IN FROM THE RUN, from 1153. One added to `read-surface`. No migration.
+Tests:      1154, from 1153. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: break the index the rule rests on, which is the
@@ -18422,8 +18422,20 @@ Mutated:    the rule, stated before the sweep: break the index the rule rests on
             Predicted:
             M1 the one-outstanding-per-name index dropped: the new test red where it reads the
             refusal, and the existing same-second test green, the key still refusing it.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   FILLED IN FROM THE RUN.
+            Results: each mutation over the whole suite in a worktree of its own, never a filter,
+            and reverted. One test stood red on that tree whatever was mutated, being the Windows
+            run these entries had not yet recorded, so each result is what the mutation added.
+            M1: red, one test and the predicted one. The same-second test stayed green, which is
+            the finding stated as a result: the key refuses that one and the index refuses this.
+Held:       the prediction, exactly, and the pair separates the two refusals that had read as one.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1156 of 1156 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all three entries, and the operator's
+            store under `data/` was not touched by any of it.
 
 ### 9.3 - correction: the settled region's order asserted, which the region states on itself   2026-09-21
 Corrects:   the settled region draws newest first and says so on the page, in its own lede: "Newest
@@ -18443,7 +18455,7 @@ Guarded:    four settled requests, one in each of the three states the region co
 Expected:   derived: the order is stated in 15.15's own row and on the page itself, asserted over
             constructed requests. No expectation file changes, because the committed fixture holds
             no request row.
-Tests:      TO BE FILLED IN FROM THE RUN, from 1154. One added to `read-surface`. No migration.
+Tests:      1155, from 1154. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: break the order the region states on itself, which is
@@ -18454,8 +18466,17 @@ Mutated:    the rule, stated before the sweep: break the order the region states
             M2 the reversal removed: the new test red where it reads the drawn order, and the
             region-membership test green, that test reading which region each landed in and never
             the order within one.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   FILLED IN FROM THE RUN.
+            Results: M2: red, one test and the predicted one. The region-membership test stayed
+            green, so what the page says above the table and what it draws inside it now fail apart.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1156 of 1156 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all three entries, and the operator's
+            store under `data/` was not touched by any of it.
 
 ### 9.4 - correction: a configured local lane read and not honoured, asserted on the row a press writes   2026-09-21
 Corrects:   9.4's done condition says the local choice is drawn, is not selectable, and that the
@@ -18479,7 +18500,7 @@ Guarded:    the surface is hosted with the lane setting naming the local lane, a
 Expected:   derived: the rule is 9.4's own done condition, asserted over a hosted press under a
             configuration that names the lane. No expectation file changes, because the committed
             fixture holds no request row.
-Tests:      TO BE FILLED IN FROM THE RUN, from 1155. One added to `read-surface`. No migration.
+Tests:      1156, from 1155. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: make the offered list hold the local lane, which is
@@ -18490,5 +18511,15 @@ Mutated:    the rule, stated before the sweep: make the offered list hold the lo
             M3 the local lane added to the offered list: the new test red where it reads the lane
             the stored row carries, and the head-of-page lane test green, the page drawing the local
             choice as refused whatever a request carries.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   FILLED IN FROM THE RUN.
+            Results: M3: red, one test and the predicted one. The head-of-page lane test stayed
+            green, which is the gap stated as a result: the page can draw the local choice as
+            refused while a request carries it, and only the stored row shows that.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1156 of 1156 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all three entries, and the operator's
+            store under `data/` was not touched by any of it.
