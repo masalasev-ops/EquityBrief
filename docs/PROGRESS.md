@@ -18424,3 +18424,35 @@ Mutated:    the rule, stated before the sweep: break the index the rule rests on
             refusal, and the existing same-second test green, the key still refusing it.
             Results: FILLED IN AFTER THE SWEEP.
 Verified:   FILLED IN FROM THE RUN.
+
+### 9.3 - correction: the settled region's order asserted, which the region states on itself   2026-09-21
+Corrects:   the settled region draws newest first and says so on the page, in its own lede: "Newest
+            first. Nothing is removed." The read hands the rows oldest first and the region reverses
+            them, so the order is the page's own work and not the store's. Nothing asserted it.
+            Removing the reversal leaves 1153 of 1153 green and the page still saying newest first
+            above rows drawn oldest first, which is a page contradicting itself.
+Found:      on 2026-09-21, in the phase 9 sign-off review, by running the mutation the handoff
+            named. It is the same shape as the correction to 9.2's two orderings above: an order a
+            surface states and no assertion reads.
+Repaired:   nothing in the shipped code. The region is right; what was missing is an assertion that
+            the words above the table and the rows inside it agree.
+Guarded:    four settled requests, one in each of the three states the region collects and a second
+            written one, handed to the region oldest first and read back off the markup in the order
+            the markup carries. The expected order is the reverse of what was handed in, so a region
+            that stopped reversing fails rather than passing on a set that happens to look sorted.
+Expected:   derived: the order is stated in 15.15's own row and on the page itself, asserted over
+            constructed requests. No expectation file changes, because the committed fixture holds
+            no request row.
+Tests:      TO BE FILLED IN FROM THE RUN, from 1154. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break the order the region states on itself, which is
+            the mutation that found the gap and is re-run here against the assertion that now covers
+            it. Not mutated: which requests reach the region, which the region's own test reads in
+            both directions.
+            Predicted:
+            M2 the reversal removed: the new test red where it reads the drawn order, and the
+            region-membership test green, that test reading which region each landed in and never
+            the order within one.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   FILLED IN FROM THE RUN.

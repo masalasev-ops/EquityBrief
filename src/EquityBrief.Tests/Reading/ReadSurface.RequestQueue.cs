@@ -357,6 +357,27 @@ public partial class ReadSurface
             Rows(store, "SELECT ticker, asked_at, state FROM research_request;"));
     }
 
+    [Fact]
+    public void TheSettledRegionDrawsTheNewestRequestFirst()
+    {
+        // The region says "Newest first" on itself, because it is read to find out what
+        // came of the one just asked for. The read hands it oldest first, so the order is
+        // the page's own and is asserted off the page's own markup.
+        QueuedCell[] held =
+        [
+            Queued("AAPL", "2026-09-20T10:00:00Z", ResearchRequests.Written),
+            Queued("MSFT", "2026-09-20T11:00:00Z", ResearchRequests.Refused, "the pass came to unavailable"),
+            Queued("KEYS", "2026-09-20T12:00:00Z", ResearchRequests.Withdrawn, "taken out of the queue before it was written"),
+            Queued("INCY", "2026-09-20T13:00:00Z", ResearchRequests.Written),
+        ];
+
+        var drawn = DrawnRequests(new SinglePageApp().QueueRegion(held))
+            .Where(row => row.Region == "settled")
+            .Select(row => row.Ticker);
+
+        Assert.Equal(["INCY", "KEYS", "MSFT", "AAPL"], drawn);
+    }
+
     // A store holding one name's earlier pass that ran to its end, and one request for
     // that name nobody has started. The earlier pass is what a read bounded by the name
     // alone would return for the request below it.
