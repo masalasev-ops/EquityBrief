@@ -18177,3 +18177,74 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             out of scope any longer. Both gates ran over the tree carrying 9.2 to 9.4 with these
             three entries in place, and the operator's store under `data/` was not touched by
             either.
+
+### 9.2 - the request store, both surfaces writing an ask, and the worker draining it oldest first - correction: the sweep's results   2026-09-20
+Not a checkpoint entry. It records the mutations the 9.2 entry predicted and left to be filled in,
+which the record does not fill in place.
+Ran:        each mutation over the whole suite in a worktree of its own, never a filter, and reverted.
+            Two tests stood red on that tree whatever was mutated, being the Windows run the entries
+            had not yet recorded and the prior text the commits carry, so each result below is what
+            the mutation added to those two. Stated because a result naming three red tests where one
+            was predicted otherwise reads as the mutation having reached further than it did.
+Results:    M1, the conflict branch dropped so a press on a name already waiting answers as though it
+            wrote one: red, one test and the predicted one, the route test at the second press, which
+            read 202 where it reads 409. Nothing else moved.
+            M2, the settle rule reading any outcome as written: red, one test and the predicted one,
+            the settle test, on every outcome but the one the runner writes for a pass that ran to
+            its end and on the pass that left no run at all. Nothing else moved, the route tests
+            reaching no drain.
+Held:       both predictions, exactly. The second is the one worth reading, because it is the defect
+            the checkpoint found by running the drain rather than by reading it, and the rule was
+            moved out of the loop that applies it so that an assertion could reach it at all.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The sweep ran from
+            a point carrying all three checkpoints, and the operator's store under `data/` was not
+            touched by any of it.
+
+### 9.3 - the queue screen, and taking a report out of it - correction: the sweep's results   2026-09-20
+Not a checkpoint entry. It records the mutation the 9.3 entry predicted and left to be filled in.
+Ran:        each mutation over the whole suite in a worktree of its own, never a filter, and reverted.
+            Two tests stood red on that tree whatever was mutated, being the Windows run the entries
+            had not yet recorded and the prior text the commits carry, so each result below is what
+            the mutation added to those two. Stated because a result naming three red tests where one
+            was predicted otherwise reads as the mutation having reached further than it did.
+Results:    M3, every request drawn as outstanding whatever its state: red, three tests where two
+            were predicted. The two predicted are the region test, which read every request as
+            outstanding, and the control test, which found the control drawn on a request the worker
+            holds. The third is the withdrawal test, which reads the regions back off the screen
+            after a press.
+Read:       the prediction was short by one and not wrong. The third test asserts the same property
+            on a live surface rather than over constructed rows, so what it shows is the property
+            being reached twice, which is what the two were written to do: one over what the page
+            draws, one over what a press leaves.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The sweep ran from
+            a point carrying all three checkpoints, and the operator's store under `data/` was not
+            touched by any of it.
+
+### 9.4 - the report generation lane, stated and half refused - correction: the sweep's results   2026-09-20
+Not a checkpoint entry. It records the mutation the 9.4 entry predicted and left to be filled in.
+Ran:        each mutation over the whole suite in a worktree of its own, never a filter, and reverted.
+            Two tests stood red on that tree whatever was mutated, being the Windows run the entries
+            had not yet recorded and the prior text the commits carry, so each result below is what
+            the mutation added to those two. Stated because a result naming three red tests where one
+            was predicted otherwise reads as the mutation having reached further than it did.
+Results:    M4, the local choice drawn as a button: red, one test and the predicted one, the lane
+            test, which found a control in the head of the page where it asserts there is none.
+            Nothing else moved, the screen's own test reading the waits line and not the element.
+Held:       the prediction, exactly. The assertion is written as an absence over the head's own
+            markup, no button, no input and no link, rather than over the class the choice carries,
+            which is what makes a choice drawn as refused and wired up anyway fail.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The sweep ran from
+            a point carrying all three checkpoints, and the operator's store under `data/` was not
+            touched by any of it.
