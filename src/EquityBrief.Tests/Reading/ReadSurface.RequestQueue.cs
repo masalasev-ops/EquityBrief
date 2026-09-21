@@ -270,6 +270,63 @@ public partial class ReadSurface
         Assert.Equal("ok", RequestDrain.Ok);
     }
 
+    // Four requests whose instants and whose names sort against each other, so an order
+    // keyed on the name is a different order rather than the same one by coincidence.
+    // Two rows cannot tell the two apart often enough to be evidence: any two agree half
+    // the time, and the queue is drained until it is empty rather than two at a time.
+    const string FourAskedInAnOrderTheirNamesDoNotShare = @"
+        INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES
+            ('ZS',   '2026-09-20T10:00:00Z', 'list', 'paid', 'outstanding'),
+            ('MMM',  '2026-09-20T11:00:00Z', 'list', 'paid', 'outstanding'),
+            ('AAPL', '2026-09-20T12:00:00Z', 'name', 'paid', 'outstanding'),
+            ('NVDA', '2026-09-20T13:00:00Z', 'list', 'paid', 'outstanding');
+    ";
+
+    [Fact]
+    public async Task TheDrainTakesTheOldestRequestFirstAndNotTheOneWhoseNameSortsFirst()
+    {
+        // What the queue is for: a report asked for before another is written before it.
+        // Read by draining to the end rather than by claiming twice, because the property
+        // is the order of the whole and not of its first pair.
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(FourAskedInAnOrderTheirNamesDoNotShare);
+
+        await using var connection = store.Open();
+
+        var claimed = DateTimeOffset.Parse("2026-09-20T14:00:00Z", CultureInfo.InvariantCulture);
+        var taken = new List<string>();
+
+        while (await RequestDrain.ClaimAsync(connection, claimed) is { } request)
+        {
+            taken.Add(request.Ticker);
+        }
+
+        // The instants, not the names, which sort AAPL, MMM, NVDA, ZS and share no
+        // position with this.
+        Assert.Equal(["ZS", "MMM", "AAPL", "NVDA"], taken);
+    }
+
+    [Fact]
+    public async Task TheOutstandingRegionDrawsTheOldestRequestFirst()
+    {
+        // The region states what is waiting and in what order it will be written, so the
+        // order is part of what it says. Read off the page's own markup in the order the
+        // markup carries it, rather than off the read that fed it.
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(FourAskedInAnOrderTheirNamesDoNotShare);
+
+        using var host = new PassHost(store.Root);
+        using var client = host.CreateClient();
+
+        var drawn = DrawnRequests(await client.GetStringAsync("/screens/queue"))
+            .Where(row => row.Region == "outstanding")
+            .Select(row => row.Ticker);
+
+        Assert.Equal(["ZS", "MMM", "AAPL", "NVDA"], drawn);
+    }
+
     // A store holding one name's earlier pass that ran to its end, and one request for
     // that name nobody has started. The earlier pass is what a read bounded by the name
     // alone would return for the request below it.

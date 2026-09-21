@@ -18330,3 +18330,46 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this corrects what a claim already placed asserts rather than
             adding one. Both gates ran with this entry in place, and the operator's store under
             `data/` was not touched by any of it.
+
+### 9.2 - correction: the order the queue is taken and drawn in, asserted where it was stated and read by nothing   2026-09-20
+Corrects:   9.2's done condition says the worker drains the queue oldest first, and 15.15's
+            Outstanding row says its region is read oldest first. Both hold in the code and neither
+            was asserted. The 9.2 entry says the order was not mutated because "the store's own
+            ordering carries rather than the code", and that is the error: nothing in the store
+            orders these rows. The order is an `ORDER BY` in two statements this checkpoint wrote,
+            the drain's claim and the read the queue screen is handed, and a statement is code.
+Found:      on 2026-09-20, in the phase 9 sign-off review, by running the mutation the handoff
+            named rather than by reading. With the drain's claim changed from `asked_at, ticker` to
+            `ticker`, 1151 of 1151 tests passed, so a queue drained in alphabetical order would have
+            left both gates green and the done condition reads as met.
+Measured:   the three tests that reach `ClaimAsync` all claimed a single row, so no test could tell
+            one order from another. The queue screen's own test reads every request back off the
+            markup and asserts which region each landed in, by lookup, never in sequence.
+Repaired:   nothing in the shipped code. Both statements were already right, and what was missing is
+            the assertion that they are. Stated here because a correction that changes no behaviour
+            is easy to read as a correction that was not needed: what it changes is whether the
+            behaviour can be removed without anything going red.
+Guarded:    two tests over four requests whose instants and whose names sort against each other, so
+            an order keyed on the name shares no position with the one asked for. The drain is read
+            by draining to the end rather than by claiming twice, because the property is the order
+            of the whole and any two rows agree half the time by chance. The region is read off the
+            page's own markup in the order the markup carries it, which is the surface the claim is
+            about, rather than off the read that fed it.
+Expected:   derived: the order is stated in 9.2's done condition and in 15.15's own row, and is
+            asserted over constructed requests. No expectation file changes, because the committed
+            fixture holds no request row.
+Tests:      TO BE FILLED IN FROM THE RUN, from 1151. Two added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break the order each of the two statements gives,
+            taking each separately, because one claim is about what the worker does next and the
+            other about what a reader is shown and a repair covering one would not cover the other.
+            Not mutated: which requests each reads, which the region test already reads in both
+            directions and the settle tests carry for the drain.
+            Predicted:
+            M1 the drain's claim ordered by name: the drain test red where it reads the order it
+            took, and the region test green, the screen reading a statement of its own.
+            M2 the queue read ordered by name: the region test red where it reads the order the
+            markup carries, and the drain test green, for the same reason the other way round.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   FILLED IN FROM THE RUN.
