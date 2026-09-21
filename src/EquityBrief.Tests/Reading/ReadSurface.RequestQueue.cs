@@ -585,4 +585,56 @@ public partial class ReadSurface
 
         Assert.Equal(0, await RequestDrain.OutstandingAsync(connection));
     }
+
+    [Fact]
+    public async Task APressInTheSameSecondAsASettledRequestSaysSoRatherThanThatTheNameIsWaiting()
+    {
+        // Two constraints refuse an ask. The index over the outstanding state is the queue
+        // refusing a name already waiting, which its own test reaches with a request dated
+        // well before the press. This is the other: the key of ticker and instant, reached by
+        // a request for the name at the press's own instant that has already been taken out.
+        // Nothing for the name is waiting, so saying it is in the queue would be false.
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        var at = DateTimeOffset.Parse("2026-09-20T12:00:00Z", CultureInfo.InvariantCulture);
+
+        using var host = new PassHost(store.Root) { Clock = FixedClock.At(at, SessionZones.UnitedStates) };
+        using var client = host.CreateClient();
+
+        Assert.Contains("KEYS", await client.GetStringAsync("/screens/name/KEYS"), StringComparison.Ordinal);
+
+        Rows(store, "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state, settled_at, reason) "
+            + "VALUES ('KEYS', '2026-09-20T12:00:00Z', 'list', 'paid', 'withdrawn', '2026-09-20T12:00:00Z', 'taken out of the queue before it was written');");
+
+        var pressed = await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
+        var said = await pressed.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.Conflict, pressed.StatusCode);
+        Assert.Contains("earlier in this same second", said, StringComparison.Ordinal);
+        Assert.Contains(ResearchRequests.Withdrawn, said, StringComparison.Ordinal);
+        Assert.Contains("press again", said, StringComparison.Ordinal);
+        Assert.DoesNotContain("already in the queue", said, StringComparison.Ordinal);
+
+        // What it says is true: a press in the next second writes the request.
+        using var later = new PassHost(store.Root) { Clock = FixedClock.At(at.AddSeconds(1), SessionZones.UnitedStates) };
+        using var next = later.CreateClient();
+
+        var again = await next.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
+
+        Assert.Equal(HttpStatusCode.Accepted, again.StatusCode);
+
+        // And where the same-second request is one the name has waiting, the refusal is the
+        // queue's, whichever of the two constraints the store named.
+        var waiting = await next.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "name")));
+
+        Assert.Equal(HttpStatusCode.Conflict, waiting.StatusCode);
+        Assert.Contains("already in the queue", await waiting.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+
+        Assert.Equal(
+            [
+                ["2026-09-20T12:00:00Z", ResearchRequests.Withdrawn],
+                ["2026-09-20T12:00:01Z", ResearchRequests.Outstanding],
+            ],
+            Rows(store, "SELECT asked_at, state FROM research_request ORDER BY asked_at;"));
+    }
 }

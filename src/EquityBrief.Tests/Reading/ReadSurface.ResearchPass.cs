@@ -776,9 +776,12 @@ public partial class ReadSurface
     // ---- the control's route ----
 
     // The settings are how a test reaches configuration the surface reads at a press,
-    // which is where the lane is decided.
+    // which is where the lane is decided. The clock is how it reaches the instant a press
+    // is written at, which is half of a request's key.
     sealed class PassHost(string root, params (string Key, string Value)[] settings) : WebApplicationFactory<ReadApi>
     {
+        public IClock? Clock { get; init; }
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseSetting(StoreLocation.DataRootKey, root);
@@ -786,6 +789,11 @@ public partial class ReadSurface
             foreach (var (key, value) in settings)
             {
                 builder.UseSetting(key, value);
+            }
+
+            if (Clock is { } clock)
+            {
+                builder.ConfigureTestServices(services => services.AddSingleton(clock));
             }
         }
     }

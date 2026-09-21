@@ -18593,3 +18593,39 @@ Mutated:    the rule, stated before the sweep: claim at the earliest instant in 
             passing its own instant.
             Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+
+### 9.2 - correction: a press refused by the key says it came in the same second as an earlier request, and only the index says the name is waiting   2026-09-21
+Corrects:   an ask is refused by either of two constraints, and the surface answered both with "is
+            already in the queue". The index over the outstanding state refuses a name already
+            waiting, and that answer is true of it. The key of ticker and instant refuses a press
+            inside the same second as an earlier request for the name, which may already have been
+            settled or taken out, and then the answer is false: withdrawing a request and pressing
+            again in the same second answered 409 "NVDA is already in the queue" while NVDA's only
+            row was withdrawn. The check constraints cannot be reached, because the route
+            normalises the screen and the lane before the insert.
+Found:      on 2026-09-21, in the phase 9 second sign-off review, reproduced on a copy of the store.
+Repaired:   the refusal is told apart by SQLite's extended code. The index's refusal answers as
+            before. The key's refusal reads whether the name has a request waiting: where it has,
+            the answer is the queue's, because where both constraints are broken SQLite may name
+            either; where it has not, the answer says the name was asked for earlier in the same
+            second, names what that request now is, and says a press again writes a new one.
+Guarded:    through the route, with the host's clock fixed so the press's instant is known: a
+            request for the name at that instant, already withdrawn, is refused with the same-second
+            answer naming it withdrawn and not with "already in the queue"; a press one second later
+            is accepted, which is what the answer said; and a press in that later second, where the
+            name now has a request waiting at the same instant, is refused as already in the queue.
+            The test host takes a clock for this, as it takes settings for the lane.
+Expected:   derived: 9.2's done condition, asserted over a hosted press against constructed rows.
+            No expectation file changes, because the committed fixture holds no request row.
+Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: collapse the two answers back into one, which is the
+            defect. Not mutated: the index's own answer, which the older-request test reads and this
+            mutation leaves as it was.
+            Predicted:
+            MC every constraint failure answered "already in the queue": the new test red where it
+            reads the same-second answer, and the older-request test and the route's own test
+            green, both reading the answer this mutation keeps.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
