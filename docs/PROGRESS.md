@@ -18523,3 +18523,35 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because these correct what claims already placed assert rather than
             adding any. Both gates ran over the tree carrying all three entries, and the operator's
             store under `data/` was not touched by any of it.
+
+### 9.2 - correction: a pass that starts inside its claim's own second is that request's pass, asserted where both instants are cut to the second   2026-09-21
+Corrects:   the drain reads a request's own run as one of the name's passes started at or after the
+            instant the request was claimed. Both instants are stored to the second, and a pass
+            starts moments after its claim, so on the live drain the two fall in the same second:
+            the drain began at about 05:41:02.9 and its pass's run is stamped 05:41:03Z. Every
+            settle test claimed at 12:00:05 and put the pass at 12:00:10, so nothing reached the
+            equal case. Changing the bound from at or after to after leaves 1156 of 1156 green, and
+            a pass that wrote would then settle as "refused, the pass left no run at all".
+Found:      on 2026-09-21, in the phase 9 second sign-off review, by the mutation the handoff
+            named, and re-run by this session over the whole suite before any test was written:
+            1156 of 1156 green with the bound made strict.
+Repaired:   nothing in the shipped code. The bound is right; what was missing is the case it exists
+            for.
+Guarded:    a request claimed at 12:00:05 whose pass's run is stamped 12:00:05, beside an earlier
+            pass of the same name that ran to its end. The run read back is the same-second one, and
+            the request settles written under it.
+Expected:   derived: the bound is stated in the drain's own statement and in SCHEMA's note that the
+            run is written at the settle, asserted over a constructed store. No expectation file
+            changes, because the committed fixture holds no request row.
+Tests:      TO BE FILLED IN FROM THE RUN, from 1156. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: make the bound strict, which is the mutation that
+            found the gap and is re-run here against the assertion that now covers it. Not mutated:
+            the pattern the run is matched by, which its own test reaches over three rows after the
+            claim.
+            Predicted:
+            MA ">=" made ">" in the bound: the new test red where it reads the run, and every other
+            settle test green, each of them putting the pass seconds after the claim.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.

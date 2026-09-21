@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Passes;
+using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
@@ -509,5 +510,39 @@ public partial class ReadSurface
 
         Assert.Null(runId);
         Assert.Null(outcome);
+    }
+
+    [Fact]
+    public async Task ARunStartedInTheSameSecondAsTheClaimIsThatRequestsOwnPass()
+    {
+        // The bound is inclusive because both sides are cut to the second: a pass starts
+        // moments after its request is claimed, and inside the claim's own second both
+        // instants read the same. A bound excluding that second would settle a pass that
+        // wrote as one that left no run at all.
+        using var store = WithAnEarlierPass("KEYS");
+        await using var connection = store.Open();
+
+        var claimed = DateTimeOffset.Parse("2026-09-20T12:00:05Z", CultureInfo.InvariantCulture);
+        var request = await RequestDrain.ClaimAsync(connection, claimed);
+
+        Assert.NotNull(request);
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome) VALUES "
+            + "('research-20260920T120005Z-KEYS', 'research', '2026-09-20T12:00:05Z', '2026-09-20T12:04:00Z', 'ok');");
+
+        var (runId, outcome) = await RequestDrain.PassAsync(connection, request);
+
+        Assert.Equal("research-20260920T120005Z-KEYS", runId);
+        Assert.Equal(RequestDrain.Ok, outcome);
+
+        var (state, reason) = RequestDrain.SettlementFor(outcome);
+
+        await RequestDrain.SettleAsync(connection, request, state, reason, runId, claimed);
+
+        var settled = SettledRow(store, "KEYS");
+
+        Assert.Equal(ResearchRequests.Written, settled.State);
+        Assert.Equal("research-20260920T120005Z-KEYS", settled.RunId);
     }
 }
