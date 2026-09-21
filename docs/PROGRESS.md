@@ -18358,7 +18358,7 @@ Guarded:    two tests over four requests whose instants and whose names sort aga
 Expected:   derived: the order is stated in 9.2's done condition and in 15.15's own row, and is
             asserted over constructed requests. No expectation file changes, because the committed
             fixture holds no request row.
-Tests:      TO BE FILLED IN FROM THE RUN, from 1151. Two added to `read-surface`. No migration.
+Tests:      1153, from 1151. Two added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: break the order each of the two statements gives,
@@ -18371,5 +18371,21 @@ Mutated:    the rule, stated before the sweep: break the order each of the two s
             took, and the region test green, the screen reading a statement of its own.
             M2 the queue read ordered by name: the region test red where it reads the order the
             markup carries, and the drain test green, for the same reason the other way round.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   FILLED IN FROM THE RUN.
+            Results: each mutation over the whole suite in a worktree of its own, never a filter,
+            and reverted. One test stood red on that tree whatever was mutated, being the Windows
+            run this entry had not yet recorded, so each result below is what the mutation added.
+            M1, the drain's claim ordered by name: red, one test and the predicted one, the drain
+            test, which read AAPL taken first where the oldest request is ZS. The region test stayed
+            green.
+            M2, the queue read ordered by name: red, one test and the predicted one, the region
+            test, which read the markup drawing AAPL first. The drain test stayed green.
+Held:       both predictions, exactly, and the pair failed apart in both directions, which is what
+            the two tests are for. A single assertion over either statement would have passed the
+            other mutation, and that is the shape this correction was filed against.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1153 of 1153 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, for the reason the correction above it states. Both gates ran with this
+            entry in place, and the operator's store under `data/` was not touched by any of it.
