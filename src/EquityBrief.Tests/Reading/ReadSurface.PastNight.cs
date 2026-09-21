@@ -113,6 +113,52 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task ANamePagesWalkReadsTheIndexOfTheNightItWalksWhenANameHasLeftSince()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var listed = (await api.NewestNightAsync())!.Value;
+        var on = Stamp(listed);
+        var (first, _) = BandedNames(store, listed);
+
+        // Every name listed that night fires alike, so band strength alone orders the list, and
+        // the strongest leaves the index the session after: a member on the night walked and not
+        // on the session the page is opened on, which the host's own clock places later still.
+        var fired = Strings(store, $"SELECT CAST(MAX(fired_count) AS TEXT) FROM listing WHERE session_date = '{on}';").Single();
+
+        store.Execute(
+            "UPDATE listing SET " +
+            $"reasons = (SELECT reasons FROM listing WHERE session_date = '{on}' ORDER BY fired_count DESC, ticker LIMIT 1), " +
+            $"fired_count = {fired} WHERE session_date = '{on}';");
+        store.Execute($"UPDATE level SET strength = 5 WHERE as_of = '{on}';");
+        SetStrength(store, listed, first, 9);
+        store.Execute($"UPDATE membership SET \"left\" = '{Stamp(listed.AddDays(1))}' WHERE ticker = '{first}';");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var order = Regex.Matches(await client.GetStringAsync("/screens/tonight"), "<tr data-ticker=\"([^\"]+)\"")
+            .Select(match => match.Groups[1].Value)
+            .ToArray();
+
+        Assert.True(order.Length >= 3, $"the list draws {order.Length} name(s), expected at least 3.");
+        Assert.Equal(first, order[0]);
+
+        // Each listed name's page, opened with no night, walks to the neighbours the list draws.
+        for (var position = 0; position < order.Length; position++)
+        {
+            var previous = position == 0 ? "none" : order[position - 1];
+            var next = position == order.Length - 1 ? "none" : order[position + 1];
+
+            Assert.Contains(
+                $"data-previous=\"{previous}\" data-next=\"{next}\"",
+                await client.GetStringAsync($"/screens/name/{order[position]}"),
+                StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public async Task AnEarlierNightDrawsThePlanTheTrendAndTheDistanceThatNightHeld()
     {
         using var store = await FixtureExpectations.WithListings();

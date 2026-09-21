@@ -19255,3 +19255,48 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this corrects what a claim already placed asserts rather than
             adding any. Both gates ran over the tree carrying this entry, and the operator's store
             under `data/` was not touched by either.
+
+### 5.7 - correction: a name page's walk is asserted to read the index of the night it walks, where reading the index of the session the page is opened on left every test green   2026-09-21
+Corrects:   the name page walks to the name before and after it on the list of the night it
+            walks, and reads that night's members to order it, so a name that has left the index
+            since still stands where the list drew it. The route states this, and no test could
+            tell it from reading the members of the session the page is opened on: that read left
+            1166 of 1166 green. The code is right; the assertion was missing. The read was made the
+            night's at 5.7, by the correction that had the pages read today's index.
+Found:      on 2026-09-21, carried from the phase 9 sign-off review and shown by the phase 8
+            sign-off review over 6b9e797 to change a walk: over a copy of the store of 2026-09-18
+            with the second name on that night's list given an announced leave on the current
+            session, the walk the list draws on main moved under the mutant, with the leaver's
+            strength read as none.
+Repaired:   no shipped source changes. One test added to `read-surface`,
+            `ANamePagesWalkReadsTheIndexOfTheNightItWalksWhenANameHasLeftSince`: over the fixture's
+            store with listings, every name listed on its night firing alike, the strongest by its
+            bands is given a leave the session after that night, so it is a member on the night
+            walked and not on the session the page is opened on. The list for the night draws it
+            first, and each listed name's page opened with no night carries the previous and the
+            next the list draws.
+Expected:   not met at this correction: the committed fixture is one night and holds no leave after
+            it. This correction amends its own done condition 7, as the earlier-night corrections
+            at 5.4 and 5.8 did, and the operator authorised it on 2026-09-21. The constructed store
+            stands in for the fixture, and nothing is carried, because a fixture of one night can
+            never hold a leave after it.
+Tests:      1167, from 1166. One added to `read-surface`. No migration. No file this correction
+            edits is a source either evaluator version or the ladder rules' code version pins, so
+            no pin moves.
+Mutated:    the rule, stated before the sweep: reintroduce the read the review showed moves a walk,
+            the walk's members read at the session the page is opened on.
+            Predicted:
+            MW `UniverseAsync(index, on)` in the walk: the new test red, at the first name's page,
+            and every other test green.
+            Results: MW over the whole suite in a scratch worktree at 0dfee94, never a filter, and
+            reverted: red, the new test, at the first name's page, which walked to no name after
+            it where the list draws one, 1166 of 1167 green.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1167 of 1167 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this asserts what a claim already placed states rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
