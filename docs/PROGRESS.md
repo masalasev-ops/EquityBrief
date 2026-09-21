@@ -19111,3 +19111,83 @@ Judged:     the three judgement calls the handoff offers are kept. The undated n
             answers 200 with the region in it, and a real browser is the operator's check.
 Signed:     phase 9, 9.0 through 9.4, with PRs 169, 171 and 172. Phase 8's sign-off is owed next,
             under the 8.7 ruling, and 10.0 planning waits for it.
+
+### 5.1 - correction: each row's distance is asserted against the nearest marked band on each side, chosen by price, where no test read a row's nearest resistance or the farthest support kept   2026-09-21
+Corrects:   the universe query chooses each name's nearest resistance, the lowest low edge among
+            its marked resistance bands, and its nearest support, the highest high edge among its
+            marked support bands, and each universe row's distance mark is drawn to them. No test
+            read a row's nearest resistance or the value of `data-to-resistance` on any night, and
+            none could tell the nearest support from the farthest: over the committed fixture and
+            every constructed store the builder marks one band a side, so the choice stands on a
+            set of one and any rule answers it. The resistance read from the band's high edge, the
+            farthest resistance kept, and the lowest support kept each left 1164 of 1164 green. The
+            code is right; the assertion was missing. The choice and the row's distance attribute
+            were built at 5.1, as SQL taking the least and the greatest of the edges, and the 3.5
+            correction moved the choice into code so it is made on prices rather than on their
+            text.
+Found:      on 2026-09-21. The resistance side by the phase 9 sign-off review over d94b6a1, as N4
+            and N5, carried there to a 5.8 correction. The support side by this correction's first
+            step, its twins run over ff46777 before anything was written: the support read from
+            the low edge red, 2 of 1164, and the lowest support kept green at 1164 of 1164.
+Label:      filed under 5.1 rather than the 5.8 the sign-off entry named, because 5.8 did not build
+            the choice: its corrections changed the query's night bound alone. The operator ruled
+            5.1 on 2026-09-21.
+Repaired:   no shipped source changes. Two tests added.
+            `read-surface`, `EachRowsDistanceIsToTheNearestMarkedBandOnEachSideByPrice`: over the
+            fixture's store with listings, one listed name's marked bands replaced by two a side,
+            the nearer and the farther of each, spaced a whole typical move apart and placed about
+            the powers of ten either side of the close so the nearer resistance's low edge has
+            fewer digits than the farther one's and the nearer support's high edge more, which the
+            test asserts, so a choice on the text answers with the farther band on both sides. The
+            universe read's nearest resistance and nearest support equal the lowest low edge and
+            the highest high edge worked from the stored rows, and the name's row on
+            `/screens/universe`, found on whichever page of its sector draws it, carries
+            `data-to-resistance` and `data-to-support` equal to the distances worked from the
+            stored close, typical move and those edges, and neither the distance to the farther
+            band nor to the far edge of the nearer one.
+            `fixture-expectations`, `TheUniverseReadStatesTheNearEdgeOfEachNamesMarkedBands`: reads
+            the new `nearest` section of the levels expectation, holds it to the expectation's own
+            rows, one marked band a side per name with the support's high edge and the resistance's
+            low edge, counts in advance the marked bands with width, 4 supports and 2 resistances,
+            and asserts the universe read over the replayed fixture states each name's pair.
+Expected:   met in part. `fixtures/membership-2026-09-05/expectations/levels.json` gains `nearest`,
+            each fixture name's nearest support and nearest resistance on the universe read, taken
+            from the expectation's derived rows rather than frozen from a run, so `tools/verify-phase`
+            reads the edge each side's choice takes on real data, MSFT's and NFLX's resistance and
+            all four supports having width. The choice between two marked bands a side cannot be
+            derived from the fixture, because the builder marks one band a side and no fixture it
+            writes holds two. This correction amends its own done condition 7 for that two-band
+            choice only, and the operator authorised it on 2026-09-21. The constructed store
+            stands in for it, and nothing is carried.
+Tests:      1166, from 1164. One added to `read-surface` and one to `fixture-expectations`. No
+            migration. No file this correction edits is a source either evaluator version or the
+            ladder rules' code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: reintroduce each way the choice can be wrong, on each
+            side: the band's far edge read, the farthest band kept, and the choice made on the text
+            rather than the price.
+            Predicted:
+            N4 the resistance read from the high edge: the two new tests red, every other test
+            green.
+            N5 the farthest resistance kept: the new read-surface test red, every other green.
+            RT the resistance chosen by comparing the edges' text: the new read-surface test red,
+            every other green.
+            S1 the support read from the low edge: the two new tests red and the two red on main,
+            `TheUniverseIsOrderedByDistanceToTheNearestLevelWithAbsentDistancesLast` and
+            `AnEarlierNightDrawsThePlanTheTrendAndTheDistanceThatNightHeld`, every other green.
+            S2 the lowest support kept: the new read-surface test red, every other green.
+            ST the support chosen by comparing the edges' text: the new read-surface test red,
+            every other green.
+            Results: each mutation over the whole suite in a scratch worktree at ff46777 carrying
+            the two tests and the expectation, never a filter, and reverted between runs. N4: red,
+            2 of 1166, the two new tests. N5: red, 1 of 1166, the new read-surface test. RT: red, 1
+            of 1166, the new read-surface test. S1: red, 4 of 1166, the four predicted. S2: red, 1
+            of 1166, the new read-surface test. ST: red, 1 of 1166, the new read-surface test.
+Held:       the prediction, exactly, for all six.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1166 of 1166 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this asserts what claims already placed state rather than adding
+            any. Both gates ran over the tree carrying this entry, and the operator's store under
+            `data/` was not touched by either.

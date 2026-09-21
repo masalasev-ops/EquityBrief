@@ -162,6 +162,124 @@ public partial class ReadSurface
         Assert.Contains(rows, row => row.Low != row.High);
     }
 
+    // The nearest support and the nearest resistance the universe screen draws each row's
+    // distance to, chosen among a name's marked bands. The builder marks one band a side, so
+    // over the committed fixture the choice stands on a set of one and any rule answers it.
+    // Two a side, spelled so the text order is not the price order, is the case that tells
+    // the nearest from the farthest, the near edge from the far one and a price from its text.
+    [Fact]
+    public async Task EachRowsDistanceIsToTheNearestMarkedBandOnEachSideByPrice()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = NightIn(store);
+
+        // The close and the typical move as the store holds them at the night, by queries of
+        // the test's own.
+        decimal CloseOf(string ticker) => Stored(Rows(
+            store,
+            $"SELECT close FROM bar WHERE ticker = '{ticker}' AND session_date <= '{night}' ORDER BY session_date DESC LIMIT 1;").Single()[0]);
+
+        double TypicalOf(string ticker) => double.Parse(
+            Rows(store, $"SELECT value FROM indicator WHERE ticker = '{ticker}' AND name = 'atr14' AND session_date <= '{night}' ORDER BY session_date DESC LIMIT 1;").Single()[0],
+            CultureInfo.InvariantCulture);
+
+        // The power of ten at or below the close and the one above it, and a step of at least
+        // one typical move, so each band's two edges and each side's two bands sit whole
+        // typical days apart and no rounding of the distance can make two of them read alike.
+        static decimal Below(decimal close) => (decimal)Math.Pow(10, Math.Floor(Math.Log10((double)close)));
+        static decimal Step(double typical) => Math.Max(1m, Math.Ceiling((decimal)typical));
+
+        // A name whose close leaves room for two bands on each side of each power of ten.
+        var name = FiredNamesOn(store, night).First(ticker =>
+        {
+            var close = CloseOf(ticker);
+            var step = Step(TypicalOf(ticker));
+            return Below(close) - (3 * step) > 0 && close > Below(close) + (3 * step) && close < (Below(close) * 10) - (3 * step);
+        });
+
+        var close = CloseOf(name);
+        var typical = TypicalOf(name);
+        var low = Below(close);
+        var high = low * 10;
+        var step = Step(typical);
+
+        Assert.True(typical > 0, $"{name} has a typical move of {typical}, which no distance can be counted in.");
+
+        var asOf = Rows(store, $"SELECT MAX(as_of) FROM level WHERE ticker = '{name}' AND as_of <= '{night}';").Single()[0];
+
+        // Two marked bands a side in place of the one the builder marked. The nearer
+        // resistance's low edge is spelled with fewer digits than the farther one's, and the
+        // nearer support's high edge with more, so a choice made on the text answers with the
+        // farther band on both sides.
+        string Edge(decimal price) => price.ToString("0.00", CultureInfo.InvariantCulture);
+
+        var (nearResistance, farResistance) = ((Low: high - (2 * step), High: high - step), (Low: high + step, High: high + (2 * step)));
+        var (nearSupport, farSupport) = ((Low: low + step, High: low + (2 * step)), (Low: low - (2 * step), High: low - step));
+
+        store.Execute($"UPDATE level SET immediate = 0 WHERE ticker = '{name}' AND as_of = '{asOf}';");
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"VALUES ('{name}', '{asOf}', '{Edge(nearResistance.Low)}', '{Edge(nearResistance.High)}', 'resistance', 1, 1, 1, '[]'), " +
+            $"('{name}', '{asOf}', '{Edge(farResistance.Low)}', '{Edge(farResistance.High)}', 'resistance', 1, 1, 1, '[]'), " +
+            $"('{name}', '{asOf}', '{Edge(nearSupport.Low)}', '{Edge(nearSupport.High)}', 'support', 1, 1, 1, '[]'), " +
+            $"('{name}', '{asOf}', '{Edge(farSupport.Low)}', '{Edge(farSupport.High)}', 'support', 1, 1, 1, '[]');");
+
+        // The nearest on each side worked from the stored rows: the lowest low edge of the
+        // marked resistance and the highest high edge of the marked support, as prices.
+        var marked = Rows(store, $"SELECT role, low_edge, high_edge FROM level WHERE ticker = '{name}' AND as_of = '{asOf}' AND immediate = 1;");
+        var resistances = marked.Where(row => row[0] == "resistance").ToArray();
+        var supports = marked.Where(row => row[0] == "support").ToArray();
+
+        Assert.Equal(2, resistances.Length);
+        Assert.Equal(2, supports.Length);
+
+        var resistance = resistances.Min(row => Stored(row[1]));
+        var support = supports.Max(row => Stored(row[2]));
+
+        Assert.True(support < close && close < resistance, $"{name}'s close {close} does not sit between {support} and {resistance}.");
+
+        // And the text order disagrees with the price order on both sides, so the assertions
+        // below are not ones a choice made on the text would also pass.
+        Assert.NotEqual(resistance, Stored(resistances.MinBy(row => row[1], StringComparer.Ordinal)![1]));
+        Assert.NotEqual(support, Stored(supports.MaxBy(row => row[2], StringComparer.Ordinal)![2]));
+
+        var row = Assert.Single(await Api(store).UniverseAsync(Index, DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture)), member => member.Ticker == name);
+
+        Assert.Equal(resistance, row.NearestResistance);
+        Assert.Equal(support, row.NearestSupport);
+
+        // The distances the row's mark carries, worked here and written as the mark writes them.
+        string Days(decimal edge) => (Math.Abs((double)(close - edge)) / typical).ToString("0.##", CultureInfo.InvariantCulture);
+
+        var sector = Rows(store, $"SELECT sector FROM membership WHERE ticker = '{name}' AND \"left\" IS NULL;").Single()[0];
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        // The screen is paged and ordered by distance, so the name's row is found on whichever
+        // page of its sector draws it.
+        string? drawn = null;
+
+        for (var page = 1; drawn is null && page <= 20; page++)
+        {
+            var screen = await client.GetStringAsync($"/screens/universe?sector={Uri.EscapeDataString(sector)}&page={page}");
+            drawn = Blocks(screen, $"<tr data-ticker=\"{Regex.Escape(name)}\".*?</tr>").SingleOrDefault();
+        }
+
+        Assert.True(drawn is not null, $"The universe screen draws no row for {name} on any page of {sector}.");
+
+        Assert.Contains($"data-to-resistance=\"{Days(resistance)}\"", drawn, StringComparison.Ordinal);
+        Assert.Contains($"data-to-support=\"{Days(support)}\"", drawn, StringComparison.Ordinal);
+
+        // Each differs from the distance to the band the wrong choice would take, so neither
+        // assertion above is one the farther band or the far edge would also pass.
+        Assert.DoesNotContain($"data-to-resistance=\"{Days(farResistance.Low)}\"", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain($"data-to-resistance=\"{Days(nearResistance.High)}\"", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain($"data-to-support=\"{Days(farSupport.High)}\"", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain($"data-to-support=\"{Days(nearSupport.Low)}\"", drawn, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task ANamesBandsAreListedInPriceOrderHoweverTheyAreSpelled()
     {
