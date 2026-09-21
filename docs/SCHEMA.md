@@ -532,7 +532,7 @@ Grain: one row per request.
 | `asked_from` | TEXT | `list` or `name`, the screen the press came from; ReadApi, on the insert |
 | `lane` | TEXT | `local` or `paid`, carried from the press so a queue drained later writes under the lane it meant; ReadApi, on the insert |
 | `state` | TEXT | `outstanding`, `writing`, `written`, `refused` or `withdrawn` |
-| `settled_at` | TEXT | UTC instant the state last moved off `outstanding`, null while it has not |
+| `settled_at` | TEXT | UTC instant the request settled or was withdrawn, written by RequestDrain when it moves the request to `written` or `refused` and by ReadApi when it moves it to `withdrawn`; null while it is `outstanding` or `writing`, because a claim writes `state` alone |
 | `run_id` | TEXT | the pass's run, written by RequestDrain when it settles the request, null before; last but one because SQLite appends |
 | `reason` | TEXT | why, in words, for `refused` and `withdrawn` and null otherwise; last because SQLite appends |
 

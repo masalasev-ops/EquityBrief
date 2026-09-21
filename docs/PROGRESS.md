@@ -18523,3 +18523,241 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because these correct what claims already placed assert rather than
             adding any. Both gates ran over the tree carrying all three entries, and the operator's
             store under `data/` was not touched by any of it.
+
+### 9.2 - correction: a pass that starts inside its claim's own second is that request's pass, asserted where both instants are cut to the second   2026-09-21
+Corrects:   the drain reads a request's own run as one of the name's passes started at or after the
+            instant the request was claimed. Both instants are stored to the second, and a pass
+            starts moments after its claim, so on the live drain the two fall in the same second:
+            the drain began at about 05:41:02.9 and its pass's run is stamped 05:41:03Z. Every
+            settle test claimed at 12:00:05 and put the pass at 12:00:10, so nothing reached the
+            equal case. Changing the bound from at or after to after leaves 1156 of 1156 green, and
+            a pass that wrote would then settle as "refused, the pass left no run at all".
+Found:      on 2026-09-21, in the phase 9 second sign-off review, by the mutation the handoff
+            named, and re-run by this session over the whole suite before any test was written:
+            1156 of 1156 green with the bound made strict.
+Repaired:   nothing in the shipped code. The bound is right; what was missing is the case it exists
+            for.
+Guarded:    a request claimed at 12:00:05 whose pass's run is stamped 12:00:05, beside an earlier
+            pass of the same name that ran to its end. The run read back is the same-second one, and
+            the request settles written under it.
+Expected:   derived: the bound is stated in the drain's own statement and in SCHEMA's note that the
+            run is written at the settle, asserted over a constructed store. No expectation file
+            changes, because the committed fixture holds no request row.
+Tests:      1157, from 1156. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: make the bound strict, which is the mutation that
+            found the gap and is re-run here against the assertion that now covers it. Not mutated:
+            the pattern the run is matched by, which its own test reaches over three rows after the
+            claim.
+            Predicted:
+            MA ">=" made ">" in the bound: the new test red where it reads the run, and every other
+            settle test green, each of them putting the pass seconds after the claim.
+            Results: each mutation over the whole suite in a scratch worktree at the branch head,
+            never a filter, and reverted. MA: red, one test and the predicted one, 1160 of 1161
+            green. The same mutation over 7d17213, before the test was written, left 1156 of 1156
+            green.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
+
+### 9.2 - correction: the drain loop driven by a test, so the instant it claims at is asserted and not only the parts it calls   2026-09-21
+Corrects:   the worker's drain verb claims each request at the clock's own instant, which is the
+            lower bound on the run its pass may settle under. That choice lived in the loop inside
+            the worker's entry point, which no test can call, so passing the earliest instant there
+            instead of the clock leaves 1156 of 1156 green. That is the defect the correction of
+            2026-09-20 repaired, a request for a name holding research settling under whatever that
+            name last did, and it could return on the live path with the suite green.
+Found:      on 2026-09-21, in the phase 9 second sign-off review, by the mutation the handoff named,
+            and re-run by this session over the whole suite before any test was written: 1156 of
+            1156 green with the loop claiming at the earliest instant.
+Repaired:   the loop moved, unchanged, out of the worker's entry point into `RequestDrain.DrainAsync`,
+            which takes the store's file, the clock and the pass to run for each request. The
+            worker's `drain` verb calls it with the system clock and the research verb it called
+            before, and prints the same line from the two counts it returns. The behaviour is
+            identical: the same connection per request, the same claim, the same verb and flags
+            for each lane, the same read of the pass's own run, the same settlement and the same
+            settle instant.
+Guarded:    the loop is driven over a store holding one request and an earlier pass of the same name
+            that ran to its end, with a fixed clock and a pass that writes no run, as one refused
+            before the runner starts. The request settles refused with no run and says the pass
+            left none, the one pass run is the research verb over the request's name with its
+            lane's flag, the counts are one taken and none written, and nothing is left outstanding.
+Expected:   derived: the rule is the 2026-09-20 correction's own, asserted over the loop the worker
+            runs. No expectation file changes, because the committed fixture holds no request row.
+Tests:      1158, from 1157. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: claim at the earliest instant in the loop, which is
+            the mutation that found the gap, moved with the loop and re-run against the assertion
+            that now covers it. Not mutated: the lane's flag, which the new test reads and no
+            mutation here moves.
+            Predicted:
+            MB `DateTimeOffset.MinValue` as the loop's claim instant: the new test red where it
+            reads the settled row, and the tests calling the claim directly green, each of them
+            passing its own instant.
+            Results: MB: red, one test and the predicted one, 1160 of 1161 green. The same mutation
+            in the worker's entry point over 7d17213, before the loop moved, left 1156 of 1156 green.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
+
+### 9.2 - correction: a press refused by the key says it came in the same second as an earlier request, and only the index says the name is waiting   2026-09-21
+Corrects:   an ask is refused by either of two constraints, and the surface answered both with "is
+            already in the queue". The index over the outstanding state refuses a name already
+            waiting, and that answer is true of it. The key of ticker and instant refuses a press
+            inside the same second as an earlier request for the name, which may already have been
+            settled or taken out, and then the answer is false: withdrawing a request and pressing
+            again in the same second answered 409 "NVDA is already in the queue" while NVDA's only
+            row was withdrawn. The check constraints cannot be reached, because the route
+            normalises the screen and the lane before the insert.
+Found:      on 2026-09-21, in the phase 9 second sign-off review, reproduced on a copy of the store.
+Repaired:   the refusal is told apart by SQLite's extended code. The index's refusal answers as
+            before. The key's refusal reads whether the name has a request waiting: where it has,
+            the answer is the queue's, because where both constraints are broken SQLite may name
+            either; where it has not, the answer says the name was asked for earlier in the same
+            second, names what that request now is, and says a press again writes a new one.
+Guarded:    through the route, with the host's clock fixed so the press's instant is known: a
+            request for the name at that instant, already withdrawn, is refused with the same-second
+            answer naming it withdrawn and not with "already in the queue"; a press one second later
+            is accepted, which is what the answer said; and a press in that later second, where the
+            name now has a request waiting at the same instant, is refused as already in the queue.
+            The test host takes a clock for this, as it takes settings for the lane.
+Expected:   derived: 9.2's done condition, asserted over a hosted press against constructed rows.
+            No expectation file changes, because the committed fixture holds no request row.
+Tests:      1159, from 1158. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: collapse the two answers back into one, which is the
+            defect. Not mutated: the index's own answer, which the older-request test reads and this
+            mutation leaves as it was.
+            Predicted:
+            MC every constraint failure answered "already in the queue": the new test red where it
+            reads the same-second answer, and the older-request test and the route's own test
+            green, both reading the answer this mutation keeps.
+            Results: MC: red, one test and the predicted one, 1160 of 1161 green. On the rehearsed
+            copy, served by the corrected build: a press for NVDA, its withdrawal and a press again
+            inside one second answered 409 naming the earlier request withdrawn and saying a press
+            again writes a new one; the press in the next second answered 202; and a press after that
+            answered 409 already in the queue.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
+
+### 9.2 - correction: settled_at's note says it is null while a request is outstanding or being written, read against the store   2026-09-21
+Corrects:   SCHEMA's note on `research_request.settled_at` said it is the instant the state last
+            moved off `outstanding`, null while it has not. The declared column sets two lines below
+            it, and the claim's own statement, say a claim writes `state` alone, so a request being
+            written carries a null `settled_at` the note said it could not. The code is right and
+            the note was not.
+Found:      on 2026-09-21, in the phase 9 second sign-off review, by reading the note against the
+            statement that claims a request.
+Repaired:   the note, cleanly, with its prior text in CHANGELOG: the instant the request settled or
+            was withdrawn, written by the drain at the settle and by the read surface at a
+            withdrawal, null while it is `outstanding` or `writing`.
+Guarded:    a check that refuses the recurrence, as a corpus defect lands with one. Three requests
+            are moved through every state the table admits by the statements that move them: an ask
+            through the read surface, a claim and a settle written and refused through the drain,
+            and a withdrawal through the read surface. Each state is read for whether it carried a
+            `settled_at`. The note is read off SCHEMA, the states it names after "null while" are
+            asserted to be the states the store left it null in, and the states it names before
+            that are asserted to be the ones the store set it in, so the note and the store are read
+            against each other rather than either against a list kept beside the check. The column
+            reader SCHEMA's other checks use gains a read of one column's note for it.
+Expected:   derived: the rule is SCHEMA's own note and declared column sets, asserted over a
+            constructed store. No expectation file changes, because the committed fixture holds no
+            request row.
+Tests:      1160, from 1159. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: have the claim write `settled_at` as well, which is
+            the store coming to disagree with the note. Not mutated: the note itself, which this
+            correction edits and the same assertion reads from the other side.
+            Predicted:
+            ME the claim also writing `settled_at`: the new test red where it compares the states
+            the note names as null with the states the store left null, and every drain test green,
+            none of them reading `settled_at` after a claim.
+            Results: ME: red, one test and the predicted one, 1160 of 1161 green.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
+
+### 9.1 - correction: the control asking for a report stands off the label saying none is written, where it had sat on its last letter   2026-09-21
+Corrects:   on tonight's list every row whose name holds no research draws a "not written" label and
+            an "ask for a report" control beside it, and the control covered the label's last letter.
+            The rule written for the control, `form.ask`, set its left margin, and the page's
+            generic rule for every posting form, stated later with the same specificity, set that
+            margin to zero and won. Measured in headless Edge at 1400 wide and scale 1 over a copy
+            of the store after a rehearsed night: all 20 drawn rows had the label's right edge and
+            the control's left edge at the same pixel, and the label's last glyph ran under the
+            control's edge.
+Found:      on 2026-09-21, in the phase 9 second sign-off review, on a screenshot of the list.
+Repaired:   the control's rule is stated with the attribute the generic rule selects on as well, so
+            it outranks it and the margin it states is the one the page applies. Only the gap
+            changes: the control's size and colours are the ones the list has been drawn with, so
+            the page reads as before with the label clear of the control. Measured the same way
+            after: all 20 rows with an 8 pixel gap and none touching. The rule for the control's
+            button is beaten the same way and is left as it is, because what it would change is
+            how the approved list looks rather than whether a label can be read.
+Guarded:    a reader of the cascade, since the suite has no browser. The list is drawn by the
+            renderer with one row holding no research, the label and the control are found inside
+            that row's name cell with nothing between them, and every rule the stylesheet states
+            outside an at-rule is matched against the control and the elements holding it as drawn.
+            The left margin the winning rule gives the control, the most specific and the later of
+            two equal, is asserted to be at least 4 pixels. The reader is shown to rank a rule
+            carrying an attribute above one without it, to rank two equal rules equally, and to
+            match neither a rule whose holder the page does not draw nor one needing a pseudo-class.
+Expected:   derived: the rule is the stylesheet's own, read against the markup the renderer draws.
+            No expectation file changes, because no stage's output moves.
+Tests:      1161, from 1160. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: restore the control's rule as it stood, which re-creates
+            the overlap, read off the cascade by the suite and off the rendered page by the probe.
+            Not mutated: the generic rule, which every other posting form on the page is drawn by.
+            Predicted:
+            MD `form.ask{display:inline;margin-left:8px}` restored: the new test red where it reads
+            the margin, and the page measured again in headless Edge showing the label and the
+            control touching on every row.
+            Results: MD: red, one test and the predicted one, 1160 of 1161 green. The list, served by
+            the mutated build over the same copy and measured the same way, showed all 20 rows with
+            the label's right edge and the control's left edge at the same pixel again, so the
+            suite's reading of the cascade and the rendered page agree.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
+            The night was rehearsed on a copy of the operator's store in the scratchpad, from the
+            checkout with the drain's move in place and before the stylesheet changed, which the
+            night reads neither of: green in 4m14s for the session of 2026-09-18, migrating the copy
+            from 29 to 30 at its first step, 503 names computed, 432 listed and 71 of 71 queue passes
+            completed. The surface was then served over that copy and every screen answered 200.

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Passes;
+using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
@@ -509,5 +510,203 @@ public partial class ReadSurface
 
         Assert.Null(runId);
         Assert.Null(outcome);
+    }
+
+    [Fact]
+    public async Task ARunStartedInTheSameSecondAsTheClaimIsThatRequestsOwnPass()
+    {
+        // The bound is inclusive because both sides are cut to the second: a pass starts
+        // moments after its request is claimed, and inside the claim's own second both
+        // instants read the same. A bound excluding that second would settle a pass that
+        // wrote as one that left no run at all.
+        using var store = WithAnEarlierPass("KEYS");
+        await using var connection = store.Open();
+
+        var claimed = DateTimeOffset.Parse("2026-09-20T12:00:05Z", CultureInfo.InvariantCulture);
+        var request = await RequestDrain.ClaimAsync(connection, claimed);
+
+        Assert.NotNull(request);
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome) VALUES "
+            + "('research-20260920T120005Z-KEYS', 'research', '2026-09-20T12:00:05Z', '2026-09-20T12:04:00Z', 'ok');");
+
+        var (runId, outcome) = await RequestDrain.PassAsync(connection, request);
+
+        Assert.Equal("research-20260920T120005Z-KEYS", runId);
+        Assert.Equal(RequestDrain.Ok, outcome);
+
+        var (state, reason) = RequestDrain.SettlementFor(outcome);
+
+        await RequestDrain.SettleAsync(connection, request, state, reason, runId, claimed);
+
+        var settled = SettledRow(store, "KEYS");
+
+        Assert.Equal(ResearchRequests.Written, settled.State);
+        Assert.Equal("research-20260920T120005Z-KEYS", settled.RunId);
+    }
+
+    [Fact]
+    public async Task TheDrainClaimsAtItsOwnClockSoAPassWritingNoRunSettlesRefusedWithNoRun()
+    {
+        // Driven through the loop the worker runs rather than through its parts, because
+        // the instant a request is claimed at is chosen by the loop: a claim dated earlier
+        // than the clock reads the name's older pass as this request's, and only the loop
+        // can get that wrong. The name holds a pass that ran to its end three weeks before,
+        // and the pass handed in writes no run, as one refused before the runner starts.
+        using var store = WithAnEarlierPass("KEYS");
+
+        var clock = FixedClock.At(DateTimeOffset.Parse("2026-09-20T12:00:05Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates);
+        var passes = new List<string[]>();
+
+        var (taken, written) = await RequestDrain.DrainAsync(
+            store.DatabaseFile,
+            clock,
+            verb =>
+            {
+                passes.Add(verb);
+
+                return Task.CompletedTask;
+            });
+
+        Assert.Equal((1, 0), (taken, written));
+
+        // The pass it ran is the research verb over the request's name and lane.
+        Assert.Equal(["research", "--ticker", "KEYS", "--paid-for-local"], Assert.Single(passes));
+
+        var settled = SettledRow(store, "KEYS");
+
+        Assert.Equal(ResearchRequests.Refused, settled.State);
+        Assert.Equal("null", settled.RunId);
+        Assert.Contains("no run at all", settled.Reason, StringComparison.Ordinal);
+
+        // And the queue is empty once it has been worked through.
+        await using var connection = store.Open();
+
+        Assert.Equal(0, await RequestDrain.OutstandingAsync(connection));
+    }
+
+    [Fact]
+    public async Task APressInTheSameSecondAsASettledRequestSaysSoRatherThanThatTheNameIsWaiting()
+    {
+        // Two constraints refuse an ask. The index over the outstanding state is the queue
+        // refusing a name already waiting, which its own test reaches with a request dated
+        // well before the press. This is the other: the key of ticker and instant, reached by
+        // a request for the name at the press's own instant that has already been taken out.
+        // Nothing for the name is waiting, so saying it is in the queue would be false.
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        var at = DateTimeOffset.Parse("2026-09-20T12:00:00Z", CultureInfo.InvariantCulture);
+
+        using var host = new PassHost(store.Root) { Clock = FixedClock.At(at, SessionZones.UnitedStates) };
+        using var client = host.CreateClient();
+
+        Assert.Contains("KEYS", await client.GetStringAsync("/screens/name/KEYS"), StringComparison.Ordinal);
+
+        Rows(store, "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state, settled_at, reason) "
+            + "VALUES ('KEYS', '2026-09-20T12:00:00Z', 'list', 'paid', 'withdrawn', '2026-09-20T12:00:00Z', 'taken out of the queue before it was written');");
+
+        var pressed = await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
+        var said = await pressed.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.Conflict, pressed.StatusCode);
+        Assert.Contains("earlier in this same second", said, StringComparison.Ordinal);
+        Assert.Contains(ResearchRequests.Withdrawn, said, StringComparison.Ordinal);
+        Assert.Contains("press again", said, StringComparison.Ordinal);
+        Assert.DoesNotContain("already in the queue", said, StringComparison.Ordinal);
+
+        // What it says is true: a press in the next second writes the request.
+        using var later = new PassHost(store.Root) { Clock = FixedClock.At(at.AddSeconds(1), SessionZones.UnitedStates) };
+        using var next = later.CreateClient();
+
+        var again = await next.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
+
+        Assert.Equal(HttpStatusCode.Accepted, again.StatusCode);
+
+        // And where the same-second request is one the name has waiting, the refusal is the
+        // queue's, whichever of the two constraints the store named.
+        var waiting = await next.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "name")));
+
+        Assert.Equal(HttpStatusCode.Conflict, waiting.StatusCode);
+        Assert.Contains("already in the queue", await waiting.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+
+        Assert.Equal(
+            [
+                ["2026-09-20T12:00:00Z", ResearchRequests.Withdrawn],
+                ["2026-09-20T12:00:01Z", ResearchRequests.Outstanding],
+            ],
+            Rows(store, "SELECT asked_at, state FROM research_request ORDER BY asked_at;"));
+    }
+
+    [Fact]
+    public async Task SettledAtIsNullWhereTheSchemaSaysAndSetWhereItSays()
+    {
+        // The column note names the states in which settled_at is null, and the store is
+        // moved through every state a request takes, by the statements that move it, and
+        // read for which of them carry one. The two are read against each other rather than
+        // either against a list kept here, so a note and a store that disagree fail.
+        using var store = new TemporaryStore().Migrated();
+        await using var connection = store.Open();
+
+        var api = Api(store);
+        var observed = new Dictionary<string, bool>(StringComparer.Ordinal);
+
+        void Observe(string ticker)
+        {
+            var row = Assert.Single(Rows(store, $"SELECT state, settled_at FROM research_request WHERE ticker = '{ticker}';"));
+
+            observed[row[0]] = row[1] != "null";
+        }
+
+        Assert.True((await api.AskAsync("KEYS", ResearchRequests.FromList, ResearchRequests.Paid)).Written);
+        Observe("KEYS");
+
+        var request = await RequestDrain.ClaimAsync(connection, Instant);
+
+        Assert.NotNull(request);
+        Observe("KEYS");
+
+        await RequestDrain.SettleAsync(connection, request, ResearchRequests.Written, null, "research-20260920T120005Z-KEYS", Instant);
+        Observe("KEYS");
+
+        Assert.True((await api.AskAsync("INCY", ResearchRequests.FromList, ResearchRequests.Paid)).Written);
+
+        var incy = await RequestDrain.ClaimAsync(connection, Instant);
+
+        Assert.NotNull(incy);
+
+        var (_, refusedFor) = RequestDrain.SettlementFor(null);
+
+        await RequestDrain.SettleAsync(connection, incy, ResearchRequests.Refused, refusedFor, null, Instant);
+        Observe("INCY");
+
+        Assert.True((await api.AskAsync("AAPL", ResearchRequests.FromList, ResearchRequests.Paid)).Written);
+
+        var asked = Assert.Single(Rows(store, "SELECT asked_at FROM research_request WHERE ticker = 'AAPL';"))[0];
+
+        Assert.True((await api.WithdrawAsync("AAPL", DateTimeOffset.Parse(asked, CultureInfo.InvariantCulture))).Written);
+        Observe("AAPL");
+
+        // Every state the table admits was reached, so neither side is read over a part.
+        Assert.Equal(
+            new[] { ResearchRequests.Outstanding, ResearchRequests.Writing, ResearchRequests.Written, ResearchRequests.Refused, ResearchRequests.Withdrawn }.Order(StringComparer.Ordinal),
+            observed.Keys.Order(StringComparer.Ordinal));
+
+        var note = StoreSchema.Notes(Corpus.Read("docs/SCHEMA.md"), "research_request", "settled_at");
+        var split = note.IndexOf("null while", StringComparison.Ordinal);
+
+        Assert.True(split > 0, $"the settled_at note does not say when it is null: {note}");
+
+        static IEnumerable<string> Named(string text) =>
+            Regex.Matches(text, "`([a-z]+)`").Select(found => found.Groups[1].Value);
+
+        // The states the note says it is null in are the states the store left it null in,
+        // and the states it names before that clause are the ones the store set it in.
+        Assert.Equal(
+            observed.Where(entry => !entry.Value).Select(entry => entry.Key).Order(StringComparer.Ordinal),
+            Named(note[split..]).Where(named => observed.ContainsKey(named)).Distinct().Order(StringComparer.Ordinal));
+        Assert.Equal(
+            observed.Where(entry => entry.Value).Select(entry => entry.Key).Order(StringComparer.Ordinal),
+            Named(note[..split]).Where(named => observed.ContainsKey(named)).Distinct().Order(StringComparer.Ordinal));
     }
 }

@@ -2328,12 +2328,48 @@ public sealed class ReadApi : IComponent
         }
         catch (SqliteException failure) when (failure.SqliteErrorCode == 19)
         {
+            // Two constraints refuse an ask and they mean different things. The index over the
+            // outstanding state refuses a name already waiting. The key of ticker and instant
+            // refuses a press inside the same second as an earlier request for the name, which
+            // may be one that has since settled or been withdrawn, and then pressing again
+            // writes a new one. Where both are broken at once SQLite names either, so a key
+            // collision is read as the queue refusing whenever the name has one waiting.
+            var waiting = failure.SqliteExtendedErrorCode != PrimaryKeyRefused
+                || await StateAsync(connection, ticker, OutstandingFor, ("$state", ResearchRequests.Outstanding)) is not null;
+
+            if (waiting)
+            {
+                return new RequestWritten(
+                    false,
+                    $"{ticker} is already in the queue, so nothing was added: one report is asked for at a time.");
+            }
+
+            var earlier = await StateAsync(connection, ticker, StateOf, ("$asked_at", command.Parameters["$asked_at"].Value!));
+
             return new RequestWritten(
                 false,
-                $"{ticker} is already in the queue, so nothing was added: one report is asked for at a time.");
+                $"{ticker} was asked for earlier in this same second and that request is {earlier}, so nothing was added: press again and a new request is written.");
         }
 
         return new RequestWritten(true, $"{ticker} is in the queue, and the worker writes it when it next drains.");
+    }
+
+    // SQLite's extended code for a primary key refusing a row, as against a unique index.
+    const int PrimaryKeyRefused = 1555;
+
+    const string OutstandingFor = @"
+        SELECT state FROM research_request WHERE ticker = $ticker AND state = $state LIMIT 1;
+    ";
+
+    static async Task<string?> StateAsync(SqliteConnection connection, string ticker, string sql, (string Name, object Value) bound)
+    {
+        await using var reading = connection.CreateCommand();
+
+        reading.CommandText = sql;
+        reading.Parameters.AddWithValue("$ticker", ticker);
+        reading.Parameters.AddWithValue(bound.Name, bound.Value);
+
+        return await reading.ExecuteScalarAsync() as string;
     }
 
     public async Task<RequestWritten> WithdrawAsync(string ticker, DateTimeOffset askedAt)

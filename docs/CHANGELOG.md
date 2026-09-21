@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-21 - SCHEMA.md - research_request's settled_at says when it is null, which is while a request is outstanding or being written
+Corrects: the column note said the instant the state last moved off `outstanding`, null while it has not, and the declared column sets below it and the drain's own claim say a claim writes `state` alone, so a request being written carries a null `settled_at` the note said it could not. Found in the phase 9 second sign-off review by reading the note against the statement that claims a request.
+Was:
+> | `settled_at` | TEXT | UTC instant the state last moved off `outstanding`, null while it has not |
+Now:
+> | `settled_at` | TEXT | UTC instant the request settled or was withdrawn, written by RequestDrain when it moves the request to `written` or `refused` and by ReadApi when it moves it to `withdrawn`; null while it is `outstanding` or `writing`, because a claim writes `state` alone |
+Why: the code is right and the note was not. The note now names the states in which the column is null, and `read-surface` reads those states off the note and asserts them against a request moved through the store, so the two cannot come apart again unnoticed.
+
 ### 2026-09-20 - ARCHITECTURE.html - the queue screen says which lane would write a report, and its outstanding region is one clause
 
 Authorised by: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it
