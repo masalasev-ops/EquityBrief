@@ -18389,3 +18389,137 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
             does not move, for the reason the correction above it states. Both gates ran with this
             entry in place, and the operator's store under `data/` was not touched by any of it.
+
+### 9.2 - correction: a second ask refused while an older request waits, where the key had been doing the refusing   2026-09-21
+Corrects:   9.2's done condition says a second request for a name whose request is outstanding is
+            refused and the row says so, and the 9.2 entry credits the partial unique index over the
+            outstanding state with it. The test that covers it presses twice in the same second, so
+            both presses carry the same `asked_at` and the primary key of ticker and instant refuses
+            the second. The index was never the thing under test, and its own test's comment says it
+            was. Dropping the index entirely leaves 1153 of 1153 green.
+Found:      on 2026-09-21, in the phase 9 sign-off review, by running the mutation the handoff named
+            rather than by reading. The builder knew the shape and wrote it down one test along, in
+            the withdraw test: a second ask in the same second is the same request by its key. What
+            was not seen is that the test above it rests on exactly that.
+Repaired:   nothing in the shipped code. The index is right and so is the route; what was missing is
+            an assertion that reaches them. The case the rule exists for is a queue nobody has
+            drained, where a press today meets a request asked for yesterday, and that case had no
+            test at all.
+Guarded:    a request dated well before the press is put in the store, then the press is made
+            through the route. The instants differ, so the key cannot refuse it and only the index
+            over the outstanding state can. The refusal is read off the reply the surface returns,
+            and the store is read back to show nothing was added and that what stands is the request
+            asked for first.
+Expected:   derived: the rule is 9.2's own done condition, asserted over a constructed request. No
+            expectation file changes, because the committed fixture holds no request row.
+Tests:      1154, from 1153. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break the index the rule rests on, which is the
+            mutation that found the gap and is re-run here against the assertion that now covers it.
+            Not mutated: the primary key, which refuses a same-second repeat and is what the existing
+            test reaches; both refusals are real and this separates them.
+            Predicted:
+            M1 the one-outstanding-per-name index dropped: the new test red where it reads the
+            refusal, and the existing same-second test green, the key still refusing it.
+            Results: each mutation over the whole suite in a worktree of its own, never a filter,
+            and reverted. One test stood red on that tree whatever was mutated, being the Windows
+            run these entries had not yet recorded, so each result is what the mutation added.
+            M1: red, one test and the predicted one. The same-second test stayed green, which is
+            the finding stated as a result: the key refuses that one and the index refuses this.
+Held:       the prediction, exactly, and the pair separates the two refusals that had read as one.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1156 of 1156 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all three entries, and the operator's
+            store under `data/` was not touched by any of it.
+
+### 9.3 - correction: the settled region's order asserted, which the region states on itself   2026-09-21
+Corrects:   the settled region draws newest first and says so on the page, in its own lede: "Newest
+            first. Nothing is removed." The read hands the rows oldest first and the region reverses
+            them, so the order is the page's own work and not the store's. Nothing asserted it.
+            Removing the reversal leaves 1153 of 1153 green and the page still saying newest first
+            above rows drawn oldest first, which is a page contradicting itself.
+Found:      on 2026-09-21, in the phase 9 sign-off review, by running the mutation the handoff
+            named. It is the same shape as the correction to 9.2's two orderings above: an order a
+            surface states and no assertion reads.
+Repaired:   nothing in the shipped code. The region is right; what was missing is an assertion that
+            the words above the table and the rows inside it agree.
+Guarded:    four settled requests, one in each of the three states the region collects and a second
+            written one, handed to the region oldest first and read back off the markup in the order
+            the markup carries. The expected order is the reverse of what was handed in, so a region
+            that stopped reversing fails rather than passing on a set that happens to look sorted.
+Expected:   derived: the order is stated in 15.15's own row and on the page itself, asserted over
+            constructed requests. No expectation file changes, because the committed fixture holds
+            no request row.
+Tests:      1155, from 1154. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break the order the region states on itself, which is
+            the mutation that found the gap and is re-run here against the assertion that now covers
+            it. Not mutated: which requests reach the region, which the region's own test reads in
+            both directions.
+            Predicted:
+            M2 the reversal removed: the new test red where it reads the drawn order, and the
+            region-membership test green, that test reading which region each landed in and never
+            the order within one.
+            Results: M2: red, one test and the predicted one. The region-membership test stayed
+            green, so what the page says above the table and what it draws inside it now fail apart.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1156 of 1156 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all three entries, and the operator's
+            store under `data/` was not touched by any of it.
+
+### 9.4 - correction: a configured local lane read and not honoured, asserted on the row a press writes   2026-09-21
+Corrects:   9.4's done condition says the local choice is drawn, is not selectable, and that the
+            lane a request carries is read off configuration at the press. `Lane` reads the setting
+            against a list of offered lanes holding the paid one alone, so a setting naming the
+            local lane is read and not taken, and its own comment says exactly that. Nothing
+            asserted it. Adding the local lane to the offered list leaves 1153 of 1153 green, and a
+            press under that setting would write a request carrying a lane the phase refuses to
+            offer until the two have been compared.
+Found:      on 2026-09-21, in the phase 9 sign-off review, by running the mutation the handoff
+            named. The lane's existing test reads the head of the page, which is the other half of
+            the done condition and stays green under this: the page would still draw the local
+            choice as refused while a request carried it.
+Repaired:   nothing in the shipped code. The guard is right; what was missing is an assertion that
+            reaches it, and the surface it has to be read on is the stored row rather than the page,
+            because what the rule protects is what the worker would run.
+Guarded:    the surface is hosted with the lane setting naming the local lane, a press is made
+            through the route, and the row it writes is read back out of the store and asserted to
+            carry the paid lane. The test host takes settings for this, which is how a test reaches
+            the configuration the surface reads at a press.
+Expected:   derived: the rule is 9.4's own done condition, asserted over a hosted press under a
+            configuration that names the lane. No expectation file changes, because the committed
+            fixture holds no request row.
+Tests:      1156, from 1155. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: make the offered list hold the local lane, which is
+            the mutation that found the gap and is re-run here against the assertion that now covers
+            it. Not mutated: the words the head of the page draws, which the lane's own test reads
+            literally and which this mutation does not move, and that is the point of it.
+            Predicted:
+            M3 the local lane added to the offered list: the new test red where it reads the lane
+            the stored row carries, and the head-of-page lane test green, the page drawing the local
+            choice as refused whatever a request carries.
+            Results: M3: red, one test and the predicted one. The head-of-page lane test stayed
+            green, which is the gap stated as a result: the page can draw the local choice as
+            refused while a request carries it, and only the stored row shows that.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1156 of 1156 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all three entries, and the operator's
+            store under `data/` was not touched by any of it.

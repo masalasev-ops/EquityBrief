@@ -327,6 +327,77 @@ public partial class ReadSurface
         Assert.Equal(["ZS", "MMM", "AAPL", "NVDA"], drawn);
     }
 
+    [Fact]
+    public async Task ASecondAskIsRefusedWhileAnOlderRequestForTheNameIsStillOutstanding()
+    {
+        // The rule is one outstanding request per name, and the case that matters is a
+        // press while a request asked for earlier is still waiting, which is what a queue
+        // nobody has drained holds. The request already in the store is dated well before
+        // this press, so the key of ticker and instant cannot refuse it and only the index
+        // over the outstanding state can. Pressing twice in one second tests the key
+        // instead, because both presses carry the same instant.
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        using var host = new PassHost(store.Root);
+        using var client = host.CreateClient();
+
+        Assert.Contains("KEYS", await client.GetStringAsync("/screens/name/KEYS"), StringComparison.Ordinal);
+
+        Rows(store, "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) "
+            + "VALUES ('KEYS', '2026-09-01T09:00:00Z', 'list', 'paid', 'outstanding');");
+
+        var again = await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "name")));
+
+        Assert.Equal(HttpStatusCode.Conflict, again.StatusCode);
+        Assert.Contains("already in the queue", await again.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+
+        // Nothing was added, and what stands is the request asked for first.
+        Assert.Equal(
+            [["KEYS", "2026-09-01T09:00:00Z", ResearchRequests.Outstanding]],
+            Rows(store, "SELECT ticker, asked_at, state FROM research_request;"));
+    }
+
+    [Fact]
+    public void TheSettledRegionDrawsTheNewestRequestFirst()
+    {
+        // The region says "Newest first" on itself, because it is read to find out what
+        // came of the one just asked for. The read hands it oldest first, so the order is
+        // the page's own and is asserted off the page's own markup.
+        QueuedCell[] held =
+        [
+            Queued("AAPL", "2026-09-20T10:00:00Z", ResearchRequests.Written),
+            Queued("MSFT", "2026-09-20T11:00:00Z", ResearchRequests.Refused, "the pass came to unavailable"),
+            Queued("KEYS", "2026-09-20T12:00:00Z", ResearchRequests.Withdrawn, "taken out of the queue before it was written"),
+            Queued("INCY", "2026-09-20T13:00:00Z", ResearchRequests.Written),
+        ];
+
+        var drawn = DrawnRequests(new SinglePageApp().QueueRegion(held))
+            .Where(row => row.Region == "settled")
+            .Select(row => row.Ticker);
+
+        Assert.Equal(["INCY", "KEYS", "MSFT", "AAPL"], drawn);
+    }
+
+    [Fact]
+    public async Task AConfiguredLocalLaneIsReadAndNotHonouredSoNoRequestCarriesIt()
+    {
+        // The local lane is drawn and refused until the two lanes have been compared, so a
+        // setting naming it is read and not taken. Asserted on the row a press writes,
+        // because what the rule protects is what the worker would run, and the head of the
+        // page stating the paid lane is a separate claim tested separately.
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        using var host = new PassHost(store.Root, ("EquityBrief:Research:Lane", ResearchRequests.Local));
+        using var client = host.CreateClient();
+
+        Assert.Contains("KEYS", await client.GetStringAsync("/screens/name/KEYS"), StringComparison.Ordinal);
+
+        var pressed = await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
+
+        Assert.Equal(HttpStatusCode.Accepted, pressed.StatusCode);
+        Assert.Equal([["KEYS", ResearchRequests.Paid]], Rows(store, "SELECT ticker, lane FROM research_request;"));
+    }
+
     // A store holding one name's earlier pass that ran to its end, and one request for
     // that name nobody has started. The earlier pass is what a read bounded by the name
     // alone would return for the request below it.

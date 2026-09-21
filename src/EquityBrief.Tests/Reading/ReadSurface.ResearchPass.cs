@@ -775,10 +775,19 @@ public partial class ReadSurface
 
     // ---- the control's route ----
 
-    sealed class PassHost(string root) : WebApplicationFactory<ReadApi>
+    // The settings are how a test reaches configuration the surface reads at a press,
+    // which is where the lane is decided.
+    sealed class PassHost(string root, params (string Key, string Value)[] settings) : WebApplicationFactory<ReadApi>
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
             builder.UseSetting(StoreLocation.DataRootKey, root);
+
+            foreach (var (key, value) in settings)
+            {
+                builder.UseSetting(key, value);
+            }
+        }
     }
 
     static HttpRequestMessage Press(string route, string ticker, string? header, params (string Name, string Value)[] form)
