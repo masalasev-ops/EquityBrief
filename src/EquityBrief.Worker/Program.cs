@@ -326,7 +326,7 @@ static async Task<int> Drain()
 
         await connection.OpenAsync();
 
-        var request = await RequestDrain.ClaimAsync(connection);
+        var request = await RequestDrain.ClaimAsync(connection, clock.UtcNow);
 
         if (request is null)
         {
@@ -343,10 +343,11 @@ static async Task<int> Drain()
 
         await ResearchPass(pass);
 
-        // What the pass came to, and not whether the verb exited zero. A verb that exits
-        // zero has run, and a pass that ran is not a pass that wrote: a pass the model
-        // could not be reached for exits zero and writes nothing.
-        var (_, outcome) = await RequestDrain.PassAsync(connection, request.Ticker);
+        // What this request's own pass came to, and not whether the verb exited zero. A
+        // verb that exits zero has run, and a pass that ran is not a pass that wrote: a
+        // pass the model could not be reached for exits zero and writes nothing, and one
+        // refused before the runner starts writes no run for this request at all.
+        var (runId, outcome) = await RequestDrain.PassAsync(connection, request);
         var (state, reason) = RequestDrain.SettlementFor(outcome);
 
         if (reason is null)
@@ -354,7 +355,7 @@ static async Task<int> Drain()
             written++;
         }
 
-        await RequestDrain.SettleAsync(connection, request, state, reason, clock.UtcNow);
+        await RequestDrain.SettleAsync(connection, request, state, reason, runId, clock.UtcNow);
     }
 
     Console.WriteLine(FormattableString.Invariant(

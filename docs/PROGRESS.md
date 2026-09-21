@@ -18248,3 +18248,144 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             against a floor of 34, 37 of 37 roster checks carried and all 37 run. The sweep ran from
             a point carrying all three checkpoints, and the operator's store under `data/` was not
             touched by any of it.
+
+### 9.2 - correction: a request settles under its own pass's run, where it had settled under whatever that name last did   2026-09-20
+Corrects:   the 9.2 entry records the drain settling a request under what that request's pass came
+            to. It read the newest research run for the name instead, with no bound tying that run
+            to this request. A pass that refuses before the runner starts writes no run at all, so
+            for a name already holding research the drain read the previous pass's row, and where
+            that row said `ok` the request was recorded as written, under a run id belonging to
+            another pass, with no reason beside it. The queue screen then states a report as written
+            and points at one nobody wrote for it. Section 16's Request drain row already said the
+            settle reads "the pass's own run", so the document stated the rule and the code did not
+            keep it; no spec changes here and nothing goes to CHANGELOG.
+Found:      on 2026-09-20, in the phase 9 sign-off review, by running the drain rather than by
+            reading it, which is how 9.2 found the defect before this one. The reachable trigger is
+            any refusal ahead of the runner: a fixture folder that does not exist, a source that is
+            neither live nor fixture, a blank key refused by name, or a missing source list.
+Measured:   over a constructed store holding one research run for ZZZ started 2026-09-01T10:00:00Z
+            with outcome `ok`, and one outstanding request for ZZZ asked at 2026-09-20T12:00:00Z.
+            The drain was run against a fixture path that does not exist, so the pass refused and
+            wrote no run. Before: `drain: 1 request(s) taken, 1 written and 0 refused`, and the row
+            read state `written`, run id `2026-09-01T10:00:00Z-ZZZ`, reason null. After: `drain: 1
+            request(s) taken, 0 written and 1 refused`, and the row read state `refused`, run id
+            null, with the reason naming that the pass left no run. No network request was made by
+            either run and nothing was drained under the paid lane.
+Repaired:   the request carries the instant it was claimed at, and the settle reads a run of this
+            name's passes that started at or after it, so a run an earlier pass left behind is not
+            this request's. The run is matched by the pattern a pass names its runs by rather than
+            by a second spelling of it, which had been keyed on the ending alone. The run is read
+            once and handed to the settle rather than read again inside it, so the row a request
+            settles under is the one its state was decided from. A refusal with no run says the pass
+            stopped before it could write one, which is what happened, rather than pointing at a run
+            that does not exist.
+Stored:     nothing to rewrite. The operator's store holds no settled request at all, the queue
+            having been drained on copies and never on it.
+Missed:     the settle rule was asserted as a function of the outcome string and passed, and nothing
+            asserted which run that outcome was read from. The reader that picks the run had no test
+            of its own. Lifting the rule out of the loop made the rule reachable and left its input
+            unasserted, which is the missing-property class in `.claude/rules/writing-tests.md`.
+Guarded:    three tests over a constructed store holding an earlier pass that ran to its end. A
+            request whose pass wrote no run is refused, carries no run id and says so, where the
+            earlier pass is what a read bounded by the name alone would have returned. A request
+            whose pass did write one settles under that run and not the earlier one. And a research
+            row for this name under a run id no pass names is not read as this request's, which is
+            the row a pattern keyed on the ending alone would take.
+Expected:   derived: the rule is section 16's own words for the Request drain, asserted over
+            constructed runs and requests. No expectation file changes, because the committed
+            fixture holds no request row and the drain does not run in the replay.
+Tests:      1151, from 1148. Three added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break each of the two halves that decide whether a
+            run is this request's own, being the instant it must start at or after, and the pattern
+            that makes it one of this name's passes. Not mutated: the settle rule itself, which 9.2
+            mutated and whose test stands unchanged here.
+            Predicted:
+            M1 the instant bound dropped from the run read, which is the defect itself: the request
+            with no run of its own red where it reads that no run was found, and the row under a run
+            id no pass names red for the same reason, the earlier pass matching in both. The request
+            that did write a run green, its own run still being the newest.
+            M2 the pattern loosened to the ending alone, which is what it was: the row under a run id
+            no pass names red where it reads that nothing matched, and nothing else, the other two
+            holding no such row.
+            Results: each mutation over the whole suite in the worktree, never a filter, and
+            reverted. One test stood red on that tree whatever was mutated, being the Windows run
+            this entry had not yet recorded, so each result below is what the mutation added to it.
+            M1, the instant bound dropped: red, two tests and the predicted two, the request with no
+            run of its own and the row under a run id no pass names, each finding the earlier pass
+            where it asserts nothing matched. The request that did write a run stayed green, its own
+            run still being the newest, which is the prediction and is also why the bound and not
+            the ordering is what carries this.
+            M2, the pattern loosened to the ending alone: red, one test and the predicted one, the
+            row under a run id no pass names. Nothing else moved, the other two holding no such row.
+Held:       both predictions, exactly. The two halves fail apart, which is what the third test is
+            for: a repair that bound the instant and left the pattern keyed on the ending would pass
+            the first two and is the shape M2 stands against.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1151 of 1151 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding one. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by any of it.
+
+### 9.2 - correction: the order the queue is taken and drawn in, asserted where it was stated and read by nothing   2026-09-20
+Corrects:   9.2's done condition says the worker drains the queue oldest first, and 15.15's
+            Outstanding row says its region is read oldest first. Both hold in the code and neither
+            was asserted. The 9.2 entry says the order was not mutated because "the store's own
+            ordering carries rather than the code", and that is the error: nothing in the store
+            orders these rows. The order is an `ORDER BY` in two statements this checkpoint wrote,
+            the drain's claim and the read the queue screen is handed, and a statement is code.
+Found:      on 2026-09-20, in the phase 9 sign-off review, by running the mutation the handoff
+            named rather than by reading. With the drain's claim changed from `asked_at, ticker` to
+            `ticker`, 1151 of 1151 tests passed, so a queue drained in alphabetical order would have
+            left both gates green and the done condition reads as met.
+Measured:   the three tests that reach `ClaimAsync` all claimed a single row, so no test could tell
+            one order from another. The queue screen's own test reads every request back off the
+            markup and asserts which region each landed in, by lookup, never in sequence.
+Repaired:   nothing in the shipped code. Both statements were already right, and what was missing is
+            the assertion that they are. Stated here because a correction that changes no behaviour
+            is easy to read as a correction that was not needed: what it changes is whether the
+            behaviour can be removed without anything going red.
+Guarded:    two tests over four requests whose instants and whose names sort against each other, so
+            an order keyed on the name shares no position with the one asked for. The drain is read
+            by draining to the end rather than by claiming twice, because the property is the order
+            of the whole and any two rows agree half the time by chance. The region is read off the
+            page's own markup in the order the markup carries it, which is the surface the claim is
+            about, rather than off the read that fed it.
+Expected:   derived: the order is stated in 9.2's done condition and in 15.15's own row, and is
+            asserted over constructed requests. No expectation file changes, because the committed
+            fixture holds no request row.
+Tests:      1153, from 1151. Two added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break the order each of the two statements gives,
+            taking each separately, because one claim is about what the worker does next and the
+            other about what a reader is shown and a repair covering one would not cover the other.
+            Not mutated: which requests each reads, which the region test already reads in both
+            directions and the settle tests carry for the drain.
+            Predicted:
+            M1 the drain's claim ordered by name: the drain test red where it reads the order it
+            took, and the region test green, the screen reading a statement of its own.
+            M2 the queue read ordered by name: the region test red where it reads the order the
+            markup carries, and the drain test green, for the same reason the other way round.
+            Results: each mutation over the whole suite in a worktree of its own, never a filter,
+            and reverted. One test stood red on that tree whatever was mutated, being the Windows
+            run this entry had not yet recorded, so each result below is what the mutation added.
+            M1, the drain's claim ordered by name: red, one test and the predicted one, the drain
+            test, which read AAPL taken first where the oldest request is ZS. The region test stayed
+            green.
+            M2, the queue read ordered by name: red, one test and the predicted one, the region
+            test, which read the markup drawing AAPL first. The drain test stayed green.
+Held:       both predictions, exactly, and the pair failed apart in both directions, which is what
+            the two tests are for. A single assertion over either statement would have passed the
+            other mutation, and that is the shape this correction was filed against.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1153 of 1153 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, for the reason the correction above it states. Both gates ran with this
+            entry in place, and the operator's store under `data/` was not touched by any of it.
