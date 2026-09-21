@@ -52,6 +52,67 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task ANamePagesWalkFollowsTheListOfTheNightItWalksWhenNewerBandsAreStored()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var listed = (await api.NewestNightAsync())!.Value;
+        var after = listed.AddDays(1);
+        var (first, last) = BandedNames(store, listed);
+
+        // Every name listed that night fires alike, so band strength alone orders the list. The
+        // night listed puts the first name by ticker at the top and the last at the bottom, and a
+        // band set stored after it, by a night that stopped before it listed, says the reverse.
+        var on = Stamp(listed);
+        var fired = Strings(store, $"SELECT CAST(MAX(fired_count) AS TEXT) FROM listing WHERE session_date = '{on}';").Single();
+
+        store.Execute(
+            "UPDATE listing SET " +
+            $"reasons = (SELECT reasons FROM listing WHERE session_date = '{on}' ORDER BY fired_count DESC, ticker LIMIT 1), " +
+            $"fired_count = {fired} WHERE session_date = '{on}';");
+
+        Insert(
+            store,
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"SELECT ticker, '{Stamp(after)}', low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members " +
+            $"FROM level WHERE as_of = '{on}';");
+
+        store.Execute($"UPDATE level SET strength = 5 WHERE as_of IN ('{on}', '{Stamp(after)}');");
+        SetStrength(store, listed, first, 9);
+        SetStrength(store, listed, last, 1);
+        SetStrength(store, after, first, 1);
+        SetStrength(store, after, last, 9);
+
+        Assert.Equal(listed, (await api.NewestNightAsync())!.Value);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var order = Regex.Matches(await client.GetStringAsync("/screens/tonight"), "<tr data-ticker=\"([^\"]+)\"")
+            .Select(match => match.Groups[1].Value)
+            .ToArray();
+
+        Assert.True(order.Length >= 3, $"the list draws {order.Length} name(s), expected at least 3.");
+        Assert.Equal(first, order[0]);
+        Assert.Equal(last, order[^1]);
+
+        // Each listed name's page, opened with no night and with the night listed, walks to the
+        // neighbours the list draws.
+        for (var position = 0; position < order.Length; position++)
+        {
+            var previous = position == 0 ? "none" : order[position - 1];
+            var next = position == order.Length - 1 ? "none" : order[position + 1];
+            var walk = $"data-previous=\"{previous}\" data-next=\"{next}\"";
+
+            foreach (var route in new[] { $"/screens/name/{order[position]}", $"/screens/name/{order[position]}/{on}" })
+            {
+                Assert.Contains(walk, await client.GetStringAsync(route), StringComparison.Ordinal);
+            }
+        }
+    }
+
+    [Fact]
     public async Task AnEarlierNightDrawsThePlanTheTrendAndTheDistanceThatNightHeld()
     {
         using var store = await FixtureExpectations.WithListings();
@@ -92,6 +153,19 @@ public partial class ReadSurface
 
         store.Execute($"UPDATE ladder SET trend_state = '{thenTrend}' WHERE ticker = '{trended}' AND as_of = '{on}';");
 
+        // That name's nearest support on the earlier night sits lower than the newest night's,
+        // so a distance drawn from the newest night's bands against that night's close differs
+        // from one drawn from that night's own.
+        var support = Assert.Single(
+            await api.LevelsAsync(trended, earlier),
+            band => band.Role == "support" && band.Immediate);
+        var lowered = (Low: support.LowEdge * 0.97m, High: support.HighEdge * 0.97m);
+
+        store.Execute(
+            $"UPDATE level SET low_edge = '{Math.Round(lowered.Low, 4).ToString(CultureInfo.InvariantCulture)}', " +
+            $"high_edge = '{Math.Round(lowered.High, 4).ToString(CultureInfo.InvariantCulture)}' " +
+            $"WHERE ticker = '{trended}' AND as_of = '{on}' AND role = 'support' AND immediate = 1;");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
@@ -131,17 +205,20 @@ public partial class ReadSurface
 
         var then = await ToSupport(api, trended, earlier);
         var now = await ToSupport(api, trended, newest);
+        var newestBands = await ToSupport(api, trended, earlier, newest);
 
         Assert.NotEqual(now, then);
+        Assert.NotEqual(newestBands, then);
         Assert.Contains($"data-to-support=\"{then}\"", row, StringComparison.Ordinal);
     }
 
-    // The distance from a night's close to the nearest support that night held, in typical days'
-    // moves as the night measured them, written as the distance mark writes it.
-    static async Task<string> ToSupport(ReadApi api, string ticker, DateOnly night)
+    // The distance from a night's close to the nearest support the bands of `bandsOf` held, that
+    // night's own unless named, in typical days' moves as the night measured them, written as
+    // the distance mark writes it.
+    static async Task<string> ToSupport(ReadApi api, string ticker, DateOnly night, DateOnly? bandsOf = null)
     {
         var close = (await api.BarsAsync(ticker, DateOnly.MinValue, night))[^1].Close;
-        var support = (await api.LevelsAsync(ticker, night))
+        var support = (await api.LevelsAsync(ticker, bandsOf ?? night))
             .Where(band => band.Role == "support" && band.Immediate)
             .Max(band => band.HighEdge);
         var typical = (await api.IndicatorsAsync(ticker, DateOnly.MinValue, night))

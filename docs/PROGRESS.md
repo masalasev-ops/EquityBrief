@@ -18943,3 +18943,93 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because these correct what claims already placed assert rather than
             adding any. Both gates ran over the tree carrying both entries, and the operator's store
             under `data/` was not touched by either; the measurements above read a copy of it.
+
+### 5.8 - correction: a row's distance on an earlier night is asserted against a nearest support that night held apart from the newest one   2026-09-21
+Corrects:   the universe query reads each member's immediate bands as the newest at or before the
+            night shown, which the previous 5.8 correction stated and the route relies on for each
+            row's distance mark on an earlier night. No test could tell that bound from its absence:
+            the two-night store copies the newest night's bands onto the earlier night unchanged, so
+            the nearest support a row's distance is drawn from is the same band on both nights.
+            Removing the bound left 1163 of 1163 green. The code is right; the assertion was missing.
+Found:      on 2026-09-21, by the third phase 9 sign-off review over 3591fec, as a mutation that
+            survived.
+Repaired:   no shipped source changes. The test that reads the earlier night's page lowers the
+            asserted row's immediate support on the earlier night by three per cent at both edges,
+            so that night's nearest support is a band of its own, and asserts the distance drawn
+            from the newest night's bands against that night's close and typical move differs from
+            the one the row must carry, which is worked from the stored rows as before.
+Expected:   not met at this correction, as for the earlier 5.4 and 5.8 corrections: the committed
+            fixture holds one night. This correction amends its own done condition 7, and the
+            operator authorised it on 2026-09-21. The two-night store stands in for the fixture, and
+            the item stays carried to the next phase's planning pass.
+Tests:      1163, unchanged. None added; one strengthened in `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: reintroduce the defect the assertion guards, the
+            universe query's immediate bands read without the night.
+            Predicted:
+            MD `AND a.as_of <= $on` removed from the immediate bands query: the earlier-night page
+            test red where it reads the row's distance, and every other test green.
+            Results: MD over the whole suite in a scratch worktree at 3591fec carrying the
+            strengthened test, never a filter, and removed: red, one test and the predicted one,
+            1162 of 1163 green, at the row's `data-to-support`.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1164 of 1164 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying both entries, and the operator's store
+            under `data/` was not touched by either; the measurement above read a copy of it.
+
+### 5.4 - correction: a name page's walk is ordered by the bands of the night it walks, where a page opened with no night read the newest bands the store holds   2026-09-21
+Corrects:   the name page walks to the name before and after it on the list of the night it shows,
+            and says in the route that the walk takes the list's own ordering with the same inputs.
+            It read each member's band strength with the night the page was opened on, which is
+            no night on the name page's plain route, so it read the newest bands the store holds.
+            The tonight route reads the bands of the newest night the listings hold. A night stores
+            its bands before it writes its listings, so after a night that stops between the two
+            the page and the list order the same names differently. Both reads were undated until
+            the earlier 5.4 correction dated the list's, which is when they parted.
+Found:      on 2026-09-21, by the third phase 9 sign-off review over 3591fec. On a copy of the
+            operator's store with the newest night's listings deleted, 16 of the first 20 rows had a
+            previous or next that disagreed with the list; on the untouched copy, 0 of 18.
+Repaired:   the walk reads each member's bands at the night it walks, the night shown or, with no
+            night, the newest the listings hold. Every other read the walk orders by was already of
+            that night: the listings, the membership and its figures, and the closes. The page's own
+            chart, bands, plan and moves still read the night it was opened on, the newest stored
+            when none is named.
+Guarded:    over the fixture store with every name listed on its night firing alike, the night's
+            bands order the first name by ticker first and the last one last, and a band set stored
+            the day after, with no listing, orders them the reverse. Each listed name's page, opened
+            with no night and with the night listed, carries the previous and the next that the
+            list served by the tonight route draws.
+Expected:   not met at this correction, as for the corrections before it: the committed fixture
+            holds one night of bands. This correction amends its own done condition 7, and the
+            operator authorised it on 2026-09-21. The constructed store stands in for the fixture,
+            and the item stays carried to the next phase's planning pass.
+Tests:      1164, from 1163. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: reintroduce the defect, the walk's band read at the
+            night the page was opened on.
+            Predicted:
+            ME `LevelsAsync(member.Ticker, on)` in the walk: the new test red where it reads the walk
+            on a page opened with no night, and every other test green.
+            Results: ME over the whole suite in a scratch worktree at 0871e54 carrying the new test,
+            never a filter, and removed: red, one test and the predicted one, 1163 of 1164 green, at
+            the first name's page opened with no night.
+Held:       the prediction, exactly.
+Measured:   the corrected build served over a copy of the operator's store with the newest night's
+            503 listings deleted, so its newest listing night is 2026-09-17 and its newest bands
+            2026-09-18: each of the twenty names the list draws was opened with no night, and the
+            previous each page walks to disagreed with the list on 0 of 20.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1164 of 1164 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying both entries, and the operator's store
+            under `data/` was not touched by either; the measurement above read a copy of it.
