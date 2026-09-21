@@ -17,6 +17,19 @@ public sealed record Findable(string Ticker, string? Name, DateOnly? Researched)
 // A name holding researched sections, as the researched list draws it.
 public sealed record ResearchedCell(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections);
 
+// One request, as the queue screen draws it. The instant is carried as the store
+// spells it, because a press to take one out names the request rather than the
+// name: a name may have been asked for before and settled since.
+public sealed record QueuedCell(
+    string Ticker,
+    string AskedAt,
+    string AskedFrom,
+    string Lane,
+    string State,
+    string? SettledAt,
+    string? RunId,
+    string? Reason);
+
 // The shell the browser loads once, and the routes it answers.
 //
 // Section 15.4 puts the shell and the marks on the server and the routing in
@@ -58,6 +71,15 @@ public sealed class SinglePageApp : IComponent
 
     // The researched names, reached from the masthead on every screen.
     public const string ResearchedRoute = "#/researched";
+
+    // The queue, section 15.15, the fifth entry in the masthead.
+    public const string QueueRoute = "#/queue";
+
+    // The three states a request is settled in, spelled here because the page draws a
+    // region per state and the surface's own constants sit in a project the page does
+    // not reference. `read-surface` asserts the two agree.
+    public const string Outstanding = "outstanding";
+    public const string Writing = "writing";
 
     // Where the name page's control sends a press, and the header the page's own script
     // puts on it. A form another site's page submits to this address carries no such
@@ -115,7 +137,7 @@ public sealed class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a></nav><button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a></nav><button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
@@ -160,6 +182,10 @@ public sealed class SinglePageApp : IComponent
             view = 'researched';
             const researched = await fetch('/screens/researched');
             screen.innerHTML = await researched.text();
+          } else if (path === '{{{QueueRoute}}}') {
+            view = 'queue';
+            const queued = await fetch('/screens/queue');
+            screen.innerHTML = await queued.text();
           } else {
             // An unknown route resolves to tonight with a line saying what was asked for,
             // rather than to a blank page.
@@ -268,6 +294,47 @@ public sealed class SinglePageApp : IComponent
           if (said && said.getAttribute('data-started') === 'true') {
             watch(said.getAttribute('data-watch-from'));
           }
+        });
+        // Taking a report out of the queue. Asked once, since a press cannot be undone by
+        // another press: what it removes is a request, and asking again writes a new one.
+        // The screen is drawn again afterwards so the request leaves the region it was in.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('withdraw-control')) { return; }
+          event.preventDefault();
+          if (form.dataset.confirmed !== 'yes') {
+            for (const open of screen.querySelectorAll('.confirm')) { open.remove(); }
+            const box = document.createElement('div');
+            box.className = 'confirm key';
+            const line = document.createElement('p');
+            line.textContent = 'Take ' + form.dataset.takes + ' out of the queue? Nothing has been written for it yet.';
+            const go = document.createElement('button');
+            go.type = 'button'; go.className = 'btn'; go.textContent = 'Take it out';
+            const stop = document.createElement('button');
+            stop.type = 'button'; stop.className = 'btn-2'; stop.textContent = 'Keep it';
+            go.addEventListener('click', () => { form.dataset.confirmed = 'yes'; box.remove(); form.requestSubmit(); });
+            stop.addEventListener('click', () => { box.remove(); });
+            const actions = document.createElement('div');
+            actions.className = 'sel-links';
+            actions.append(go, stop);
+            box.append(line, actions);
+            form.after(box);
+            return;
+          }
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+            body: new URLSearchParams(new FormData(form)),
+          });
+          const said = await response.text();
+          const kept = scrollY;
+          await show();
+          scrollTo(0, kept);
+          const notice = document.createElement('div');
+          notice.innerHTML = said;
+          const drawn = notice.firstElementChild;
+          if (drawn) { screen.querySelector('.queue-part[data-region="outstanding"]').prepend(drawn); }
         });
         // A pass the page started, watched until it ends: what it is doing is asked for every
         // few seconds and drawn beside the control, and the page is drawn again each time one
@@ -901,6 +968,130 @@ public sealed class SinglePageApp : IComponent
                 region: "researched")
             + "</section>";
     }
+
+    // The queue, section 15.15: which reports have been asked for, which one is being
+    // written now, and what came of the rest.
+    //
+    // Three regions over one ordered read, split by state rather than by three reads, so
+    // a request that moved between them cannot be drawn twice or missed by both. Nothing
+    // here starts a pass: the worker drains what is listed, and a machine that never runs
+    // leaves a request outstanding rather than losing it.
+    // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+    public string QueueRegion(IReadOnlyList<QueuedCell> rows)
+    {
+        var outstanding = rows.Where(row => row.State == Outstanding).ToArray();
+        var writing = rows.Where(row => row.State == Writing).ToArray();
+
+        // Newest first, because a settled request is read to find out what came of the
+        // one just asked for, and oldest first is the order the worker takes them in.
+        var settled = rows
+            .Where(row => row.State != Outstanding && row.State != Writing)
+            .Reverse()
+            .ToArray();
+
+        var body = new StringBuilder();
+
+        body.Append(Invariant($"<div class=\"queue-part\" data-region=\"outstanding\" data-rows=\"{outstanding.Length}\">"));
+        body.Append("<h3>Outstanding</h3>");
+
+        if (outstanding.Length == 0)
+        {
+            body.Append("<p class=\"degraded\" data-outstanding=\"none\">No report is waiting. A row on tonight's list and a name's own page both offer to ask for one.</p>");
+        }
+        else
+        {
+            body.Append("<p class=\"lede\">Oldest first, which is the order the worker takes them in.</p>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>Take it out</th></tr></thead><tbody>");
+
+            foreach (var row in outstanding)
+            {
+                body.Append(Row(row));
+                // The control the operator asked for: a report that has not been generated
+                // is one nobody has started, so it is drawn on an outstanding request and
+                // on no other. The press names the request by its instant.
+                body.Append(Invariant($"<td><form class=\"withdraw-control\" method=\"post\" action=\"{WithdrawRoute}{Uri.EscapeDataString(row.Ticker)}\" data-takes=\"{Escaped(row.Ticker)}\" data-asked-at=\"{Escaped(row.AskedAt)}\">"));
+                body.Append(Invariant($"<input type=\"hidden\" name=\"askedAt\" value=\"{Escaped(row.AskedAt)}\">"));
+                body.Append("<button type=\"submit\" title=\"take this report out of the queue\">take it out</button></form></td></tr>");
+            }
+
+            body.Append("</tbody></table></div>");
+        }
+
+        body.Append("</div>");
+
+        body.Append(Invariant($"<div class=\"queue-part\" data-region=\"writing\" data-rows=\"{writing.Length}\">"));
+        body.Append("<h3>Being written</h3>");
+
+        if (writing.Length == 0)
+        {
+            body.Append("<p class=\"degraded\" data-writing=\"none\">Nothing is being written. The worker writes what is outstanding when it next drains the queue.</p>");
+        }
+        else
+        {
+            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>Under</th></tr></thead><tbody>");
+
+            foreach (var row in writing)
+            {
+                body.Append(Row(row));
+                body.Append(Invariant($"<td>{Escaped(row.RunId ?? "the pass it is running under is not on the run log yet")}</td></tr>"));
+            }
+
+            body.Append("</tbody></table></div>");
+        }
+
+        body.Append("</div>");
+
+        body.Append(Invariant($"<div class=\"queue-part\" data-region=\"settled\" data-rows=\"{settled.Length}\">"));
+        body.Append("<h3>Settled</h3>");
+
+        if (settled.Length == 0)
+        {
+            body.Append("<p class=\"degraded\" data-settled=\"none\">No request has been settled yet.</p>");
+        }
+        else
+        {
+            body.Append("<p class=\"lede\">Newest first. Nothing is removed: what was asked for and what came of it are both kept.</p>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>Came to</th><th>Why</th></tr></thead><tbody>");
+
+            foreach (var row in settled)
+            {
+                body.Append(Row(row));
+                body.Append(Invariant($"<td class=\"q-state\">{Escaped(row.State)}</td>"));
+                body.Append(Invariant($"<td>{Escaped(row.Reason ?? string.Empty)}</td></tr>"));
+            }
+
+            body.Append("</tbody></table></div>");
+        }
+
+        body.Append("</div>");
+
+        body.Append(Cards.Key(
+            "What is listed.",
+            "Every report that has been asked for, from a row on tonight's list or from a name's own page, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
+            "A request nobody has started can be taken out. One the worker has claimed cannot, because what a withdrawal removes is a report that has not been generated, and the refusal says which state refused it."));
+
+        return Invariant($"<section class=\"queue\" data-requests=\"{rows.Count}\" data-outstanding=\"{outstanding.Length}\" data-writing=\"{writing.Length}\" data-settled=\"{settled.Length}\">")
+            + Cards.Masthead(
+                "Queue",
+                "<span class=\"m-screen\">Report queue</span>",
+                rows.Count == 0
+                    ? "No report has been asked for yet"
+                    : Invariant($"{outstanding.Length} outstanding, {writing.Length} being written, {settled.Length} settled"))
+            + Cards.Computed(
+                "Queue",
+                body.ToString(),
+                title: "Reports asked for",
+                lede: "A press asks for a report and the worker writes it when it next drains the queue. Nothing on this screen starts a pass.",
+                region: "queue")
+            + "</section>";
+    }
+
+    // The four cells every region shares, so a request reads the same way whichever
+    // region it is in.
+    static string Row(QueuedCell row) =>
+        Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-asked-at=\"{Escaped(row.AskedAt)}\" data-state=\"{Escaped(row.State)}\">")
+        + Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>")
+        + Invariant($"<td>{Escaped(row.AskedAt)}</td><td>{Escaped(row.AskedFrom)}</td><td>{Escaped(row.Lane)}</td>");
 
     // Tonight's list, section 15.7's four regions that the listings store feeds.
     //

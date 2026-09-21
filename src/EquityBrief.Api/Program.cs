@@ -657,6 +657,24 @@ app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>
         page.ResearchedRegion([.. (await read.ResearchedAsync()).Select(row => new ResearchedCell(row.Ticker, row.Name, row.Sector, row.Written, row.Sections))]),
         "text/html; charset=utf-8"));
 
+// The queue, section 15.15, read here and composed by the app. It reads the request
+// store and writes nothing: the presses that write it are the two routes above.
+app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page) =>
+    Results.Content(
+        page.QueueRegion(
+        [
+            .. (await read.QueueAsync()).Select(row => new QueuedCell(
+                row.Ticker,
+                row.AskedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                row.AskedFrom,
+                row.Lane,
+                row.State,
+                row.SettledAt?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                row.RunId,
+                row.Reason)),
+        ]),
+        "text/html; charset=utf-8"));
+
 // The run page, section 15.10, read here and composed by the app.
 //
 // `/screens/run` resolves to the newest night the run log holds and

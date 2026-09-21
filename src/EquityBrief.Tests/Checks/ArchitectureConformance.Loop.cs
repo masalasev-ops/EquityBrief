@@ -945,6 +945,10 @@ public partial class ArchitectureConformance
     [
         CheckReach.Key("15.7 Tonight", "Research, per row"),
         CheckReach.Key("15.7 Tonight", "Ask for a report"),
+        CheckReach.Key("15.15 Queue", "Outstanding"),
+        CheckReach.Key("15.15 Queue", "Being written"),
+        CheckReach.Key("15.15 Queue", "Settled"),
+        CheckReach.Key("15.15 Queue", "Take it out"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

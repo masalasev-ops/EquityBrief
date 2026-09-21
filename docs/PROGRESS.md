@@ -18111,3 +18111,38 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    the queue screen, which 9.3 draws, and the lane, which 9.4 states. Until the screen is
             drawn a request is read out of the store rather than off a page.
+
+### 9.3 - the queue screen, and taking a report out of it   2026-09-20
+Built:      a fifth screen in the masthead at #/queue, reading every request the store holds in three
+            regions: what nobody has started, what the worker is writing now, and what each request
+            came to. One ordered read split by state rather than three reads, so a request that moved
+            between them cannot be drawn twice or missed by both.
+Withdrew:   a request nobody has started is taken out by a press on the screen, which names the
+            request by the instant it was asked at rather than by the name, because a name may have
+            been asked for before and settled since.
+Refused:    a withdrawal is refused once the worker has claimed the request, and the refusal names
+            the state that refused it. What the operator asked to remove is a report that has not
+            been generated, and one being written is not that.
+Kept:       nothing is deleted. A withdrawn request stays a row and is drawn as settled, because what
+            is asked of this screen is what was asked for and what came of it, and removing the row
+            would answer the second question by erasing the first.
+Read:       the screen is read back off its own markup against the store in both directions, so
+            neither a request the store lacks nor one it holds and the page omits passes, and the
+            control is asserted to be on an outstanding request and on no other.
+Tests:      1146, from 1143.
+Claims:     383, unchanged in number. Section 15.15's four rows come into scope and pass, so 383 pass
+            where 379 did and nothing phase 9 placed stands out of scope.
+Mutated:    the rule, stated before the sweep: break the property the screen rests on, that a request
+            is drawn in the region its state puts it in. Not mutated: the order within a region,
+            which the store's own ordering carries.
+            Predicted:
+            M3 every request drawn as outstanding whatever its state: the region test red where it
+            reads each request against the region it landed in, and the control test red where it
+            reads the control onto a claimed request.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1146 of 1146 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 383
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 390 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. Both gates ran with
+            this entry in place, and the operator's store under `data/` was not touched by either.

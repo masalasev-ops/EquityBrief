@@ -276,6 +276,22 @@ internal static class Scope
             Verdict.Pass,
             "a row whose name holds no research carries a control that writes one request and starts no process, read off the row's own markup, and a row holding research carries none",
             ByReadSurface),
+        [CheckReach.Key("15.15 Queue", "Outstanding")] = new Scoped(
+            Verdict.Pass,
+            "every request nobody has started is drawn in this region and no other, read back off the page against the store in both directions, oldest first",
+            ByReadSurface),
+        [CheckReach.Key("15.15 Queue", "Being written")] = new Scoped(
+            Verdict.Pass,
+            "a request the worker has claimed is drawn here with the pass it is running under, and carries no control to take it out",
+            ByReadSurface),
+        [CheckReach.Key("15.15 Queue", "Settled")] = new Scoped(
+            Verdict.Pass,
+            "what each request came to is drawn with the reason where there is one, a withdrawn request among them, because nothing is deleted and what was asked for is still read",
+            ByReadSurface),
+        [CheckReach.Key("15.15 Queue", "Take it out")] = new Scoped(
+            Verdict.Pass,
+            "the control is drawn on an outstanding request and on no other, names the request by the instant it was asked at, and the press is refused once the worker holds it with the refusal naming the state that refused it",
+            ByReadSurface),
         [CheckReach.Key("15.8 Universe", "Researched")] = new Scoped(
             Verdict.Pass,
             "every name holding an accepted section besides the key under each figure is listed on its own route with the day its newest one was written and how many it holds, a name holding the key alone is not, and the masthead's search and the universe table carry the same day",

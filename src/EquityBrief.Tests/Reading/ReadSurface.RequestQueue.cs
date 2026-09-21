@@ -18,6 +18,168 @@ namespace EquityBrief.Tests.Reading;
 // because what the done condition is about is what the operator sees.
 public partial class ReadSurface
 {
+    // Every request the page draws, by the state its region puts it in, read off the
+    // markup rather than off what the page was handed.
+    static IReadOnlyList<(string Ticker, string AskedAt, string Region)> DrawnRequests(string markup)
+    {
+        // Split on the region opening rather than matched with one pattern over the whole
+        // page: an empty region carries no table, so a pattern closing on one runs past it
+        // into the next and reports that region's rows under this one's name.
+        const string Opens = "<div class=\"queue-part\" data-region=\"";
+
+        return
+        [
+            .. markup
+                .Split(Opens, StringSplitOptions.RemoveEmptyEntries)
+                .Skip(1)
+                .Select(part => (Region: part[..part.IndexOf('"', StringComparison.Ordinal)], Markup: part))
+                .SelectMany(part => Regex
+                    .Matches(part.Markup, "<tr data-ticker=\"(?<ticker>[^\"]+)\" data-asked-at=\"(?<asked>[^\"]+)\"")
+                    .Select(row => (row.Groups["ticker"].Value, row.Groups["asked"].Value, part.Region))),
+        ];
+    }
+
+    static QueuedCell Queued(string ticker, string askedAt, string state, string? reason = null) =>
+        new(ticker, askedAt, ResearchRequests.FromList, ResearchRequests.Paid, state, null, null, reason);
+
+    [Fact]
+    public void TheQueueScreenPutsEveryRequestInTheRegionItsStatePutsItIn()
+    {
+        // One request in each state the store admits, so every region is drawn over a
+        // population rather than three of the five falling in one.
+        QueuedCell[] held =
+        [
+            Queued("AAPL", "2026-09-20T10:00:00Z", ResearchRequests.Outstanding),
+            Queued("MSFT", "2026-09-20T11:00:00Z", ResearchRequests.Outstanding),
+            Queued("KEYS", "2026-09-20T12:00:00Z", ResearchRequests.Writing),
+            Queued("INCY", "2026-09-20T13:00:00Z", ResearchRequests.Written),
+            Queued("NVDA", "2026-09-20T14:00:00Z", ResearchRequests.Refused, "the pass came to unavailable"),
+            Queued("TSLA", "2026-09-20T15:00:00Z", ResearchRequests.Withdrawn, "taken out of the queue before it was written"),
+        ];
+
+        var markup = new SinglePageApp().QueueRegion(held);
+        var drawn = DrawnRequests(markup);
+
+        // Forwards: every request the store holds is on the page, in the region its state
+        // puts it in. A request drawn nowhere is the omission this reads for.
+        Assert.Equal(held.Length, drawn.Count);
+
+        foreach (var row in held)
+        {
+            var found = Assert.Single(drawn, entry => entry.Ticker == row.Ticker && entry.AskedAt == row.AskedAt);
+
+            var expected = row.State switch
+            {
+                ResearchRequests.Outstanding => "outstanding",
+                ResearchRequests.Writing => "writing",
+                _ => "settled",
+            };
+
+            Assert.Equal(expected, found.Region);
+        }
+
+        // Backwards: nothing is drawn that the store does not hold.
+        Assert.All(drawn, entry => Assert.Contains(held, row => row.Ticker == entry.Ticker && row.AskedAt == entry.AskedAt));
+
+        // The counts the head states are the counts the regions drew, so a header that
+        // said one thing over regions holding another would fail rather than read well.
+        Assert.Contains("data-outstanding=\"2\"", markup, StringComparison.Ordinal);
+        Assert.Contains("data-writing=\"1\"", markup, StringComparison.Ordinal);
+        Assert.Contains("data-settled=\"3\"", markup, StringComparison.Ordinal);
+
+        // A settled request keeps what came of it and why, because what is asked of this
+        // screen is what was asked for and what came of it.
+        Assert.Contains("the pass came to unavailable", markup, StringComparison.Ordinal);
+        Assert.Contains("taken out of the queue before it was written", markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheControlToTakeOneOutIsDrawnOnAnOutstandingRequestAndOnNoOther()
+    {
+        // What the operator asked for, bounded by what they asked for: a report that has
+        // not been generated is one nobody has started, so the control is on those rows
+        // and on no others. Read off the markup, because a control the code would draw
+        // and the page does not is the fault this is about.
+        QueuedCell[] held =
+        [
+            Queued("AAPL", "2026-09-20T10:00:00Z", ResearchRequests.Outstanding),
+            Queued("KEYS", "2026-09-20T12:00:00Z", ResearchRequests.Writing),
+            Queued("INCY", "2026-09-20T13:00:00Z", ResearchRequests.Written),
+        ];
+
+        var markup = new SinglePageApp().QueueRegion(held);
+
+        var controls = Regex
+            .Matches(markup, "<form class=\"withdraw-control\"[^>]*data-takes=\"(?<ticker>[^\"]+)\"[^>]*data-asked-at=\"(?<asked>[^\"]+)\"")
+            .Select(control => (Ticker: control.Groups["ticker"].Value, Asked: control.Groups["asked"].Value))
+            .ToArray();
+
+        var only = Assert.Single(controls);
+
+        Assert.Equal("AAPL", only.Ticker);
+
+        // It names the request by its instant and not by the name, because a name may
+        // have been asked for before and settled since.
+        Assert.Equal("2026-09-20T10:00:00Z", only.Asked);
+        Assert.Contains("name=\"askedAt\" value=\"2026-09-20T10:00:00Z\"", markup, StringComparison.Ordinal);
+
+        // And it posts to the withdraw route rather than to the route that asks for one.
+        Assert.Contains($"action=\"{SinglePageApp.WithdrawRoute}AAPL\"", markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ARequestIsTakenOutFromTheScreenAndOneTheWorkerHoldsIsRefusedThere()
+    {
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        using var host = new PassHost(store.Root);
+        using var client = host.CreateClient();
+
+        Assert.Contains("KEYS", await client.GetStringAsync("/screens/name/KEYS"), StringComparison.Ordinal);
+
+        await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
+
+        // The screen, before anything is taken out, holding the request as outstanding
+        // with its control.
+        var before = await client.GetStringAsync("/screens/queue");
+        var askedAt = Assert.Single(Regex.Matches(before, "data-takes=\"KEYS\" data-asked-at=\"(?<asked>[^\"]+)\"")
+            .Select(found => found.Groups["asked"].Value));
+
+        var taken = await client.SendAsync(Press(SinglePageApp.WithdrawRoute, "KEYS", SinglePageApp.PassHeaderValue, ("askedAt", askedAt)));
+
+        Assert.Equal(HttpStatusCode.OK, taken.StatusCode);
+
+        // Read back off the screen rather than out of the store: the request has left the
+        // outstanding region, is drawn as settled, and carries no control.
+        var after = await client.GetStringAsync("/screens/queue");
+
+        Assert.Contains("data-outstanding=\"0\"", after, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-takes=\"KEYS\"", after, StringComparison.Ordinal);
+
+        // Nothing is deleted, so it still reads as having been asked for.
+        Assert.Contains(DrawnRequests(after), row => row is { Ticker: "KEYS", Region: "settled" });
+        Assert.Contains(ResearchRequests.Withdrawn, after, StringComparison.Ordinal);
+
+        // A request the worker holds is not one that has not been generated, so the same
+        // press is refused on the surface and the refusal names the state that refused it.
+        // The claim is made in the store rather than by asking again, because a second ask
+        // in the same second is the same request by its key and would be testing that.
+        Rows(store, "UPDATE research_request SET state = 'writing', settled_at = NULL, reason = NULL WHERE ticker = 'KEYS';");
+
+        var held = await client.SendAsync(Press(SinglePageApp.WithdrawRoute, "KEYS", SinglePageApp.PassHeaderValue, ("askedAt", askedAt)));
+
+        Assert.Equal(HttpStatusCode.Conflict, held.StatusCode);
+        Assert.Contains(ResearchRequests.Writing, await held.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+
+        // And the screen draws it as being written, with no control on it: a report
+        // somebody is writing is not one that has not been generated.
+        var writing = await client.GetStringAsync("/screens/queue");
+
+        Assert.Contains(DrawnRequests(writing), row => row is { Ticker: "KEYS", Region: "writing" });
+        Assert.DoesNotContain("data-takes=\"KEYS\"", writing, StringComparison.Ordinal);
+        Assert.Contains("data-writing=\"1\"", writing, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void ARequestIsSettledByWhatThePassCameToAndNeverByWhetherTheVerbRan()
     {
