@@ -814,7 +814,7 @@ public sealed class SinglePageApp : IComponent
     }
 
     // What the name page is for, what it does not do, and its words, which open the page.
-    // see: Improving what surfaces a name is in scope; ranking names against each other is not
+    // see: No reading of the fundamentals fires a reason, gates a tranche or draws a panel
     // see: The plan places a position and never sizes one
     static string Intro(string ticker, string company) =>
         $"<section class=\"intro\" aria-label=\"About this page\"><p class=\"intro-p\">This page finds the prices {Escaped(company)} has repeatedly stopped falling or rising at, and sets out what to do if it reaches one of them again. " +
