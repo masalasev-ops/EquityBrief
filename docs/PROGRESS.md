@@ -18850,7 +18850,7 @@ Expected:   not met at this correction. This correction amends its own done cond
             because a row due at a checkpoint the plan does not yet hold fails
             `obligation-reconciles`, and a phase heading added to make it pass would begin a phase
             without planning it.
-Tests:      TO BE FILLED IN FROM THE RUN, from 1161. One added to `read-surface`. No migration.
+Tests:      1162, from 1161. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated in the plan before the run: undo the change this correction makes, the
@@ -18866,7 +18866,14 @@ Mutated:    the rule, stated in the plan before the run: undo the change this co
             drew AAPL before NFLX, where that night's bands put NFLX first", so each half fails
             apart.
 Held:       the prediction, exactly.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1163 of 1163 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying both entries, and the operator's store
+            under `data/` was not touched by either; the measurements above read a copy of it.
 
 ### 5.8 - correction: an earlier night's list draws the plan, the trend and the distance that night held, where it drew the newest   2026-09-21
 Corrects:   `/screens/tonight/<date>` for a night before the newest drew three things from the newest
@@ -18902,7 +18909,7 @@ Expected:   not met at this correction, as for the 5.4 correction above: the com
             its own done condition 7, and the operator authorised it on 2026-09-21. The new test's
             two-night store stands in for it, and the item is carried to the next phase's planning
             pass with the 5.4 one.
-Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+Tests:      1163, from 1162. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: undo each change this correction makes, one at a
@@ -18914,5 +18921,25 @@ Mutated:    the rule, stated before the sweep: undo each change this correction 
             reads the region, and every other test green.
             MC the universe query's four figures read without the night: the new test red where it
             reads the close, the trend or the distance, and every other test green.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+            Results: each mutation over the whole suite in a scratch worktree at ae59822, never a
+            filter, and removed. MB: red, one test and the predicted one, 1162 of 1163 green, where
+            it reads the region's plan rows, 6 drawn where that night's plan holds 5. MC: red, one
+            test and the predicted one, 1162 of 1163 green, where it reads the region's close. With
+            that read removed in the worktree alone it failed where it reads the row's trend, and
+            with the trend's read removed as well, where it reads the distance, so each of the
+            three fails apart.
+Held:       the prediction, exactly.
+Measured:   the corrected build served over the same copy of the operator's store as the 5.4
+            correction, every night from 2026-09-09 to 2026-09-18: each drew twenty rows, each row's
+            trend state the one that night's ladder stored, 0 wrong on every night. Rows whose
+            newest trend differs from the night's, which the route drew before this correction, by
+            night: 4, 5, 9, 3, 5, 3 and 0 on 2026-09-09 to 09-17, and 0 on 09-18. The run, tonight
+            and universe screens each answered 200.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1163 of 1163 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying both entries, and the operator's store
+            under `data/` was not touched by either; the measurements above read a copy of it.
