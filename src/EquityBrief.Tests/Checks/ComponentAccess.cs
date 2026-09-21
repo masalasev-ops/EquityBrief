@@ -26,6 +26,10 @@ public class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 9.2, the request drain, the worker's half of the request store.
+            CheckReach.Key(Scope.CatalogueTable, "Request drain"),
+            CheckReach.Key(Scope.MatrixTable, "Request drain"),
+
             // 8.6, the rule version scorer.
             CheckReach.Key(Scope.CatalogueTable, "Rule version scorer"),
             CheckReach.Key(Scope.MatrixTable, "Rule version scorer"),

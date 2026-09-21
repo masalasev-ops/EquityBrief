@@ -650,12 +650,38 @@ public static class SchemaMigrations
         new Migration(27, "candidate_register refuses a replace", RefuseARegisterReplace),
         new Migration(28, "add rule_version.evidence", AddRuleVersionEvidence),
         new Migration(29, "add membership.name", AddMembershipName),
+        new Migration(30, "create research_request", CreateResearchRequest),
     ];
 
     // The evidence a window was closed on, written by the close that ends or replaces it.
     // see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write
     const string AddRuleVersionEvidence = @"
         ALTER TABLE rule_version ADD COLUMN evidence TEXT;
+    ";
+
+    // A report somebody asked for, which the worker drains. The read surface writes the ask
+    // and the worker writes what came of it, which is one table with two writers and never
+    // two writers for one operation.
+    //
+    // At most one outstanding request per name, which is what a second press is refused
+    // against. SQLite states that as a partial index rather than a table constraint, because
+    // the uniqueness holds for one value of `state` and not across the column.
+    // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+    const string CreateResearchRequest = @"
+        CREATE TABLE research_request (
+            ticker       TEXT NOT NULL,
+            asked_at     TEXT NOT NULL,
+            asked_from   TEXT NOT NULL CHECK (asked_from IN ('list', 'name')),
+            lane         TEXT NOT NULL CHECK (lane IN ('local', 'paid')),
+            state        TEXT NOT NULL CHECK (state IN ('outstanding', 'writing', 'written', 'refused', 'withdrawn')),
+            settled_at   TEXT,
+            run_id       TEXT,
+            reason       TEXT,
+            PRIMARY KEY (ticker, asked_at)
+        ) STRICT;
+
+        CREATE UNIQUE INDEX research_request_one_outstanding_per_name
+        ON research_request (ticker) WHERE state = 'outstanding';
     ";
 
     // The company's name, on the membership row, from the span the index feed lists. Nullable

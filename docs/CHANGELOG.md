@@ -25,6 +25,79 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-20 - ARCHITECTURE.html - the queue screen says which lane would write a report, and its outstanding region is one clause
+
+Authorised by: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it
+Was:
+> <tr><td>Outstanding</td><td>every request nobody has started, oldest first, which is the order the
+> worker takes them in</td></tr>
+Now:
+> <tr><td>Outstanding</td><td>every request nobody has started, drawn in the order the worker takes
+> them in</td></tr>, and a row is added after Take it out: <tr><td>Which lane would write one</td><td>the
+> two words at the head of every page, the choice that is not offered drawn beside the one that is and
+> what it waits on stated here</td></tr>
+Why: 9.4 states the lane on the surface, so 15.15 gains a row for it and the claim is placed there.
+The outstanding row was reworded because a cell that enumerates three parts owes a verdict for each,
+and what it was enumerating was one thing said twice: oldest first is the order the worker takes them
+in.
+
+### 2026-09-20 - ARCHITECTURE.html - the read and write matrix gains a research requests column
+
+Authorised by: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+Was:
+> the header ended `<th>Series<br>state</th><th>Run log</th>`, and each of the thirty-four rows carried
+> a cell for every column up to the run log and none between series state and it
+Now:
+> the header reads `<th>Series<br>state</th><th>Research<br>requests</th><th>Run log</th>`, and every row
+> carries a cell in the new column: the read API reads and writes it, the request drain reads and writes
+> it, and the other thirty-two are blank
+Why: a store with no column is one the matrix asserts nothing about, in either direction, and the check
+reads a blank cell as a claim as much as a filled one. The column sits before the run log rather than
+after it because the run log is the last column by convention and every row's last cell is read as its
+run log cell.
+
+### 2026-09-20 - ARCHITECTURE.html - the read API starts no process, and the request drain is a component of its own
+
+Authorised by: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+Was:
+> <td>every store</td><td>run log</td><td>read-only access for the app; performs no computation and no
+> fetching. The name page's control is the one thing it starts, the worker's <code>research</code> verb for
+> that name as a process of its own, and it writes nothing that pass writes (see: The name page's control
+> starts the worker's research verb, and the read API writes nothing it starts)</td>
+Now:
+> <td>every store</td><td>run log, research requests</td><td>read-only access for the app; performs no
+> computation and no fetching, and starts no process at all. A press asking for a report writes a request
+> and a press on the queue screen takes back one nobody has started, which are the two writes it makes and
+> the only table it writes; the research the request leads to is the worker's (see: A request the page
+> writes and the worker drains is what starts a pass, and the read surface writes the ask and never the
+> research)</td>
+Why: the surface started the worker's verb as a process of its own until 9.2, which made the read layer a
+thing that runs programs and left a press with nowhere to wait. It writes a request instead, and a
+catalogue row for the request drain is added above the read API's, being the worker's half of the same
+table: it takes the oldest request nobody has started and settles it under what the pass's own run says
+it came to rather than under whether the verb ran.
+
+### 2026-09-20 - RUNBOOK.md - the queue is what starts a pass, and the drain verb is shown
+
+Authorised by: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+Was:
+> A pass writes one name's research: the sections not yet written, the ones gone stale, and the ones left
+> out on an earlier day. The name page's control starts it, and so does this, from the repository root,
+> which is all the control does:
+>
+> **What the control does.** It sends the press with a header of the page's own, and the read surface
+> refuses a request without one, so another site's page open in a browser on this machine cannot start a
+> pass (see: A pass is started only by a request carrying the name page's own header). The surface refuses
+> a name the index does not hold, then starts the command above from the checkout it runs in, telling the
+> worker the data root it reads so the pass writes the store the page shows, and returns at once. It
+> writes nothing itself: the page shows what the pass wrote when it is opened again.
+Now:
+> the first passage names the queue's drain as what runs a pass, and the second says the surface writes a
+> request and starts no process of its own. A section, *Draining the queue*, is added after it, showing
+> `dotnet run --project src/EquityBrief.Worker -- drain` and what the drain settles a request under.
+Why: a runbook that tells the operator the control starts the verb describes a mechanism that is no
+longer there, and the one verb that now writes a queued report had no command line anywhere in it.
+
 ### 2026-09-20 - ARCHITECTURE.html - 15.1 names the five screens and where each sits
 
 Authorised by: The report generation the operator asked for is built as phase 9, and phase 8's sign-off is owed after it rather than before it

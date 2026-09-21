@@ -1322,7 +1322,7 @@ public partial class ArchitectureConformance
         // 48 at the one that drew the two cases as two labelled halves, and 49 at the one that
         // drew the risks one part to a risk. 55 at 9.0, which added what a row on tonight's list
         // says about research and what it can ask for, and the queue screen's four regions.
-        Assert.Equal(55, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        Assert.Equal(56, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1359,8 +1359,8 @@ public partial class ArchitectureConformance
         // 130 at the one that stated how far each band sits from the close.
         // 131 at the one that drew the two cases as two labelled halves, and 132 at the one that
         // drew the risks one part to a risk. 138 at 9.0, which added two rows to tonight's list
-        // and the queue screen's four.
-        Assert.Equal(138, inDocument.Length);
+        // and the queue screen's four, and 139 at 9.4, which states which lane would write one.
+        Assert.Equal(139, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using System.Globalization;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Configuration;
@@ -5,6 +6,7 @@ using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Candidates;
@@ -26,6 +28,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "nightly" => await NightlyRun(args),
     "fundamentals" => await FundamentalsFetch(args),
     "research" => await ResearchPass(args),
+    "drain" => await Drain(),
     "register" => await Register(args),
     "version" => await VersionWindows(args),
     _ => NoVerb(),
@@ -34,12 +37,13 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Six are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Seven are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
         "stale, with '--refresh' to write every section again and '--paid-for-local' to have the paid model write the " +
-        "local lane's sections as well, and " +
+        "local lane's sections as well, " +
+        "'drain' works through the reports a screen asked for, oldest first, running the research verb for each, and " +
         "'register --candidate <name> --rule <rule> --test <test> --evaluator <evaluator> --parameters <name=value,...>' " +
         "registers a candidate condition before anything scores it, with '--retire <name> --evidence <figures>' " +
         "writing the new row that withdraws one, and " +
@@ -198,7 +202,7 @@ static async Task<int> FundamentalsFetch(string[] args)
 // page's control starts this verb for the name it is on, and the operator can run it by
 // hand for the same result.
 // see: Everything expensive happens when a name is opened
-// see: The name page's control starts the worker's research verb, and the read API writes nothing it starts
+// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
 static async Task<int> ResearchPass(string[] args)
 {
     var configuration = Configuration();
@@ -301,6 +305,62 @@ static async Task<int> ResearchPass(string[] args)
         + (outcome.Reason is { } reason ? ": " + reason : string.Empty));
 
     return outcome.Outcome == ResearchRunner.AlreadyRunning ? 1 : 0;
+}
+
+// The queue, worked through oldest first. Each request is the research verb over that
+// name, so one code path writes a pass whether a person asked for it at a shell or a
+// press on a screen put it here.
+// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+static async Task<int> Drain()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+
+    var taken = 0;
+    var written = 0;
+
+    while (true)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(store.DatabaseFile));
+
+        await connection.OpenAsync();
+
+        var request = await RequestDrain.ClaimAsync(connection);
+
+        if (request is null)
+        {
+            break;
+        }
+
+        taken++;
+
+        // The request carries the lane the press meant, so a queue drained a day later
+        // writes under it rather than under whatever configuration now says.
+        string[] pass = request.Lane == "paid"
+            ? ["research", "--ticker", request.Ticker, "--paid-for-local"]
+            : ["research", "--ticker", request.Ticker];
+
+        await ResearchPass(pass);
+
+        // What the pass came to, and not whether the verb exited zero. A verb that exits
+        // zero has run, and a pass that ran is not a pass that wrote: a pass the model
+        // could not be reached for exits zero and writes nothing.
+        var (_, outcome) = await RequestDrain.PassAsync(connection, request.Ticker);
+        var (state, reason) = RequestDrain.SettlementFor(outcome);
+
+        if (reason is null)
+        {
+            written++;
+        }
+
+        await RequestDrain.SettleAsync(connection, request, state, reason, clock.UtcNow);
+    }
+
+    Console.WriteLine(FormattableString.Invariant(
+        $"drain: {taken} request(s) taken, {written} written and {taken - written} refused"));
+
+    return 0;
 }
 
 // The night, invoked by tools/nightly and by nothing else in this repository:

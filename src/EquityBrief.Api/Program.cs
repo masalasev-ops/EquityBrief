@@ -33,7 +33,7 @@ builder.Configuration.Sources.Insert(0, new JsonConfigurationSource
 
 // The checkout this build sits in, which a relative data root and the phase report are read
 // against, so the store and the report are the checkout's wherever the surface was started.
-var checkout = WorkerPassStarter.Checkout(AppContext.BaseDirectory);
+var checkout = Checkout.Of(AppContext.BaseDirectory);
 
 builder.Services.AddSingleton<IClock>(SystemClock.ForUnitedStatesSessions());
 builder.Services.AddSingleton(_ =>
@@ -50,12 +50,6 @@ builder.Services.AddSingleton(_ => SpendCaps.From(
     builder.Configuration[SpendCaps.MonthKey]));
 builder.Services.AddSingleton<SinglePageApp>();
 builder.Services.AddSingleton<ReportExporter>();
-
-// What the name page's control starts: the worker's research verb, from the checkout this
-// surface's build sits in, told to write the store this surface reads.
-builder.Services.AddSingleton<IPassStarter>(services => new WorkerPassStarter(
-    checkout,
-    services.GetRequiredService<StoreLocation>().DataRoot));
 
 var app = builder.Build();
 
@@ -95,7 +89,7 @@ app.Use(async (context, next) =>
 });
 
 app.MapGet("/", (SinglePageApp page) =>
-    Results.Content(page.Shell("EquityBrief"), "text/html; charset=utf-8"));
+    Results.Content(page.Shell("EquityBrief", Lane(builder.Configuration)), "text/html; charset=utf-8"));
 
 // The mark, drawn on the server and handed over as SVG. The date range defaults
 // to the whole stored series, which is a year by the retention limit.
@@ -336,9 +330,9 @@ app.MapGet(SinglePageApp.PassRoute + "{ticker}", async (string ticker, string? s
 // Refused without the page's own header, so another site's page cannot start a pass, and
 // refused for a name the index does not hold, before anything is started. Nothing here
 // writes a store: the pass is the worker's, and its rows are what the page reads next.
-// see: The name page's control starts the worker's research verb, and the read API writes nothing it starts
+// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
 // see: A pass is started only by a request carrying the name page's own header
-app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IPassStarter starter, IClock clock) =>
+app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock) =>
 {
     if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
     {
@@ -365,16 +359,73 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
     // it, so an earlier pass's rows are never read as this one's.
     var watchFrom = clock.UtcNow;
 
-    var started = starter.Start(new PassRequest(
-        ticker,
-        string.Equals(form?["refresh"].FirstOrDefault(), "true", StringComparison.Ordinal),
-        string.Equals(form?["paidForLocal"].FirstOrDefault(), "true", StringComparison.Ordinal)));
+    var from = string.Equals(form?["from"].FirstOrDefault(), ResearchRequests.FromList, StringComparison.Ordinal)
+        ? ResearchRequests.FromList
+        : ResearchRequests.FromName;
+
+    var started = await read.AskAsync(ticker, from, Lane(builder.Configuration));
 
     return Results.Content(
-        $"<p class=\"pass-started\" data-started=\"{(started.Started ? "true" : "false")}\" data-watch-from=\"{watchFrom.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(started.Line)}</p>",
+        $"<p class=\"pass-started\" data-started=\"{(started.Written ? "true" : "false")}\" data-watch-from=\"{watchFrom.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(started.Line)}</p>",
         "text/html; charset=utf-8",
-        statusCode: started.Started ? StatusCodes.Status202Accepted : StatusCodes.Status500InternalServerError);
+        statusCode: started.Written ? StatusCodes.Status202Accepted : StatusCodes.Status409Conflict);
 });
+
+// A press on the queue screen taking a report out before anybody started writing it.
+//
+// Refused without the page's own header, as the press that asks for one is, and refused
+// once the worker has claimed the request, because what the operator asked to remove is a
+// report that has not been generated.
+// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+// see: A pass is started only by a request carrying the name page's own header
+app.MapPost(SinglePageApp.WithdrawRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read) =>
+{
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Results.Content(
+            "<p class=\"pass-refused\" data-refused=\"header\">nothing was taken out: the request did not come from the queue screen</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+
+    if (!DateTimeOffset.TryParseExact(form?["askedAt"].FirstOrDefault() ?? string.Empty, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var askedAt))
+    {
+        return Results.Content(
+            "<p class=\"pass-refused\" data-refused=\"instant\">nothing was taken out: no request was named</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    var taken = await read.WithdrawAsync(ticker, askedAt);
+
+    return Results.Content(
+        $"<p class=\"pass-withdrawn\" data-withdrawn=\"{(taken.Written ? "true" : "false")}\">{System.Net.WebUtility.HtmlEncode(taken.Line)}</p>",
+        "text/html; charset=utf-8",
+        statusCode: taken.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
+});
+
+// Which lane would write a report, read off configuration at the press rather than
+// chosen per request, so a queue drained a day later writes under the lane the press
+// meant. The local lane is drawn and refused until the two lanes' reports have been
+// compared, so a setting naming it is not honoured and the paid lane is what a request
+// carries.
+// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+static string Lane(IConfiguration configuration)
+{
+    var asked = configuration["EquityBrief:Research:Lane"];
+
+    // The lanes a press may be written under. The local lane is drawn beside this one and
+    // is not among them, so a setting naming it is read and not honoured rather than
+    // silently taken: a request carries the lane that would write it, and nothing writes
+    // the local lane's sections on their own until the two have been compared.
+    string[] offered = [SinglePageApp.PaidLane];
+
+    return Array.Exists(offered, lane => string.Equals(lane, asked, StringComparison.Ordinal))
+        ? asked!
+        : SinglePageApp.PaidLane;
+}
 
 // Where research stands against the caps now, which is what a name page states a
 // pause from. The month's rows to this instant, judged by the rule the spend cap
@@ -625,6 +676,24 @@ app.MapGet("/screens/find", async (ReadApi read, SinglePageApp page) =>
 app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>
     Results.Content(
         page.ResearchedRegion([.. (await read.ResearchedAsync()).Select(row => new ResearchedCell(row.Ticker, row.Name, row.Sector, row.Written, row.Sections))]),
+        "text/html; charset=utf-8"));
+
+// The queue, section 15.15, read here and composed by the app. It reads the request
+// store and writes nothing: the presses that write it are the two routes above.
+app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page) =>
+    Results.Content(
+        page.QueueRegion(
+        [
+            .. (await read.QueueAsync()).Select(row => new QueuedCell(
+                row.Ticker,
+                row.AskedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                row.AskedFrom,
+                row.Lane,
+                row.State,
+                row.SettledAt?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                row.RunId,
+                row.Reason)),
+        ]),
         "text/html; charset=utf-8"));
 
 // The run page, section 15.10, read here and composed by the app.

@@ -18063,3 +18063,188 @@ Carried:    the ask itself. A row now says a report was not written and offers n
             one, which 9.2 adds with the request store behind it. Until then the only way to start a
             pass is the control on a name's own page, which starts a process rather than writing a
             request.
+
+### 9.2 - the request store, both surfaces writing an ask, and the worker draining it oldest first   2026-09-20
+Built:      a store table both surfaces write a request to and the worker drains. A press on a row of
+            tonight's list and a press on a name's own page write the same row and start no process,
+            and the drain verb takes the oldest request nobody has started, runs the pass for that
+            name, and settles the request under what that pass's own run came to.
+Replaced:   the read surface started the worker's research verb as a process of its own until now. No
+            file the repository ships starts a process for a pass at all, which the suite reads off
+            the source rather than off behaviour, because what it asserts is an absence.
+Refused:    one name holds one outstanding request at a time, enforced by a unique index over the
+            state rather than by the page reading the queue first and racing itself. A second press
+            for a name already waiting adds nothing and the page says so.
+Found:      by running the drain rather than by reading it. It settled requests on the verb's exit
+            code, so two passes that reported unavailable were recorded as written. A verb that exits
+            without failing has run, and a pass that ran is not a pass that wrote. The rule now reads
+            the pass's own run and is a function of the outcome alone, so it can be asserted.
+Moved:      the request statements live in the read API's own source. They sat behind a writer of
+            their own first, and component-access refused it: the owner of a table is the component
+            whose source carries the statements, and SCHEMA naming one thing while the code did
+            another is the split the check exists to find.
+Declared:   research_request in SCHEMA with a writer per operation, ReadApi inserting and withdrawing
+            and RequestDrain claiming and settling, which passes writer-ownership in both directions.
+            The drain gains a catalogue row and a matrix row of its own, and the matrix a column.
+Decided:    the decision the queue supersedes is superseded here and not at 9.0, with its reasoning
+            kept and all six citations repointed in the same commit.
+Tests:      1143, from 1141. Migration 30.
+Claims:     383, from 381. The drain's two rows are new, and section 15.7's ask comes into scope and
+            passes, so 379 pass where 376 did and 4 stand out of scope: the queue screen's four.
+Mutated:    the rule, stated before the sweep: break each of the two properties the queue rests on,
+            that a press writes one request and starts nothing, and that a request is settled by what
+            the pass came to. Not mutated: the order the drain takes requests in, which the store's
+            own ordering carries rather than the code.
+            Predicted:
+            M1 the conflict branch dropped, so a press on a name already waiting answers as though it
+            wrote one: the route test red where it reads the second press, and nothing else.
+            M2 the settle rule reading any outcome as written: the settle test red on every outcome
+            but the one the runner writes for a pass that ran to its end, and nothing else, the route
+            tests reaching no drain.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1143 of 1143 tests
+            ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 379 PASS, 0
+            FAIL, 4 out of scope, 0 unexamined, 386 placements and verdicts reconciled against a
+            floor of 34, 37 of 37 roster checks carried and all 37 run. The four out of scope are the
+            queue screen's, which 9.3 draws. Both gates ran with this entry in place, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the queue screen, which 9.3 draws, and the lane, which 9.4 states. Until the screen is
+            drawn a request is read out of the store rather than off a page.
+
+### 9.3 - the queue screen, and taking a report out of it   2026-09-20
+Built:      a fifth screen in the masthead at #/queue, reading every request the store holds in three
+            regions: what nobody has started, what the worker is writing now, and what each request
+            came to. One ordered read split by state rather than three reads, so a request that moved
+            between them cannot be drawn twice or missed by both.
+Withdrew:   a request nobody has started is taken out by a press on the screen, which names the
+            request by the instant it was asked at rather than by the name, because a name may have
+            been asked for before and settled since.
+Refused:    a withdrawal is refused once the worker has claimed the request, and the refusal names
+            the state that refused it. What the operator asked to remove is a report that has not
+            been generated, and one being written is not that.
+Kept:       nothing is deleted. A withdrawn request stays a row and is drawn as settled, because what
+            is asked of this screen is what was asked for and what came of it, and removing the row
+            would answer the second question by erasing the first.
+Read:       the screen is read back off its own markup against the store in both directions, so
+            neither a request the store lacks nor one it holds and the page omits passes, and the
+            control is asserted to be on an outstanding request and on no other.
+Tests:      1146, from 1143.
+Claims:     383, unchanged in number. Section 15.15's four rows come into scope and pass, so 383 pass
+            where 379 did and nothing phase 9 placed stands out of scope.
+Mutated:    the rule, stated before the sweep: break the property the screen rests on, that a request
+            is drawn in the region its state puts it in. Not mutated: the order within a region,
+            which the store's own ordering carries.
+            Predicted:
+            M3 every request drawn as outstanding whatever its state: the region test red where it
+            reads each request against the region it landed in, and the control test red where it
+            reads the control onto a claimed request.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1146 of 1146 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 383
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 390 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. Both gates ran with
+            this entry in place, and the operator's store under `data/` was not touched by either.
+
+### 9.4 - the report generation lane, stated and half refused   2026-09-20
+Built:      the head of every page states which lane would write a report, in the operator's two
+            words and never a model's name: Report generation, with Local and Paid beside it.
+Refused:    the local choice is drawn and is not offered. It carries no control at all, no button, no
+            input and no link, and what it waits on is stated on the queue screen where a reader is
+            deciding whether to ask for a report rather than on the element alone.
+Read:       the lane a press writes is read off configuration at the press rather than chosen per
+            request, so a queue drained a day later writes under the lane the press meant. The lanes
+            a press may be written under are a list of one, and a setting naming the local lane is
+            read and not honoured rather than silently taken.
+Waits on:   the comparison of what the two lanes write. The one measured so far found the local model
+            stating figures the paid model does not, which is why the choice is drawn rather than
+            offered, and the operator is gathering more models to measure.
+Tests:      1148, from 1146.
+Claims:     384, from 383. Section 15.15 gains a row for the lane and it passes.
+Mutated:    the rule, stated before the sweep: break the property the lane rests on, that the choice
+            drawn as refused carries no control. Not mutated: the words themselves, which the
+            assertion reads literally and which no mutation of the drawing code would move.
+            Predicted:
+            M4 the local choice drawn as a button: the lane test red where it reads that the head
+            carries no control, and nothing else, the screen's own test reading the waits line only.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
+            ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384 PASS, 0
+            FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled against a
+            floor of 34, 37 of 37 roster checks carried and all 37 run. Nothing phase 9 placed stands
+            out of scope any longer. Both gates ran over the tree carrying 9.2 to 9.4 with these
+            three entries in place, and the operator's store under `data/` was not touched by
+            either.
+
+### 9.2 - the request store, both surfaces writing an ask, and the worker draining it oldest first - correction: the sweep's results   2026-09-20
+Not a checkpoint entry. It records the mutations the 9.2 entry predicted and left to be filled in,
+which the record does not fill in place.
+Ran:        each mutation over the whole suite in a worktree of its own, never a filter, and reverted.
+            Two tests stood red on that tree whatever was mutated, being the Windows run the entries
+            had not yet recorded and the prior text the commits carry, so each result below is what
+            the mutation added to those two. Stated because a result naming three red tests where one
+            was predicted otherwise reads as the mutation having reached further than it did.
+Results:    M1, the conflict branch dropped so a press on a name already waiting answers as though it
+            wrote one: red, one test and the predicted one, the route test at the second press, which
+            read 202 where it reads 409. Nothing else moved.
+            M2, the settle rule reading any outcome as written: red, one test and the predicted one,
+            the settle test, on every outcome but the one the runner writes for a pass that ran to
+            its end and on the pass that left no run at all. Nothing else moved, the route tests
+            reaching no drain.
+Held:       both predictions, exactly. The second is the one worth reading, because it is the defect
+            the checkpoint found by running the drain rather than by reading it, and the rule was
+            moved out of the loop that applies it so that an assertion could reach it at all.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The sweep ran from
+            a point carrying all three checkpoints, and the operator's store under `data/` was not
+            touched by any of it.
+
+### 9.3 - the queue screen, and taking a report out of it - correction: the sweep's results   2026-09-20
+Not a checkpoint entry. It records the mutation the 9.3 entry predicted and left to be filled in.
+Ran:        each mutation over the whole suite in a worktree of its own, never a filter, and reverted.
+            Two tests stood red on that tree whatever was mutated, being the Windows run the entries
+            had not yet recorded and the prior text the commits carry, so each result below is what
+            the mutation added to those two. Stated because a result naming three red tests where one
+            was predicted otherwise reads as the mutation having reached further than it did.
+Results:    M3, every request drawn as outstanding whatever its state: red, three tests where two
+            were predicted. The two predicted are the region test, which read every request as
+            outstanding, and the control test, which found the control drawn on a request the worker
+            holds. The third is the withdrawal test, which reads the regions back off the screen
+            after a press.
+Read:       the prediction was short by one and not wrong. The third test asserts the same property
+            on a live surface rather than over constructed rows, so what it shows is the property
+            being reached twice, which is what the two were written to do: one over what the page
+            draws, one over what a press leaves.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The sweep ran from
+            a point carrying all three checkpoints, and the operator's store under `data/` was not
+            touched by any of it.
+
+### 9.4 - the report generation lane, stated and half refused - correction: the sweep's results   2026-09-20
+Not a checkpoint entry. It records the mutation the 9.4 entry predicted and left to be filled in.
+Ran:        each mutation over the whole suite in a worktree of its own, never a filter, and reverted.
+            Two tests stood red on that tree whatever was mutated, being the Windows run the entries
+            had not yet recorded and the prior text the commits carry, so each result below is what
+            the mutation added to those two. Stated because a result naming three red tests where one
+            was predicted otherwise reads as the mutation having reached further than it did.
+Results:    M4, the local choice drawn as a button: red, one test and the predicted one, the lane
+            test, which found a control in the head of the page where it asserts there is none.
+            Nothing else moved, the screen's own test reading the waits line and not the element.
+Held:       the prediction, exactly. The assertion is written as an absence over the head's own
+            markup, no button, no input and no link, rather than over the class the choice carries,
+            which is what makes a choice drawn as refused and wired up anyway fail.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The sweep ran from
+            a point carrying all three checkpoints, and the operator's store under `data/` was not
+            touched by any of it.

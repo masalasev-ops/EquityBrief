@@ -1,3 +1,4 @@
+using EquityBrief.Api.Passes;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Levels;
 using System.Globalization;
@@ -319,6 +320,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.SourceDocument, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.SeriesState, Touch.Read),
+            new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
@@ -2270,4 +2272,138 @@ public sealed class ReadApi : IComponent
 
         await command.ExecuteNonQueryAsync();
     }
+
+    // ---- the request store ----
+    //
+    // The one table this surface writes, and it writes no research: a request is
+    // an ask, and what it leads to is the worker's. The statements sit here
+    // rather than behind a writer of their own because the owner of a table is
+    // the component whose source carries the statements, and splitting the two
+    // leaves SCHEMA naming one thing and the code doing another.
+    // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+
+    // A request is written only where the name holds none outstanding. The index
+    // refuses the second, and the refusal is read back as the line the page
+    // states rather than thrown, because a reader pressing twice has asked a
+    // reasonable question.
+    const string Ask = @"
+        INSERT INTO research_request (ticker, asked_at, asked_from, lane, state)
+        VALUES ($ticker, $asked_at, $asked_from, $lane, 'outstanding');
+    ";
+
+    // Only a request nobody has started. The state is named in the statement
+    // rather than read first, so a drain that claims the row between the screen
+    // and the press moves nothing here and the reader is told which state
+    // refused them.
+    const string Withdraw = @"
+        UPDATE research_request
+        SET state = 'withdrawn', settled_at = $settled_at, reason = $reason
+        WHERE ticker = $ticker AND asked_at = $asked_at AND state = 'outstanding';
+    ";
+
+    const string StateOf = @"
+        SELECT state FROM research_request WHERE ticker = $ticker AND asked_at = $asked_at;
+    ";
+
+    const string Queue = @"
+        SELECT ticker, asked_at, asked_from, lane, state, settled_at, run_id, reason
+        FROM research_request
+        ORDER BY asked_at, ticker;
+    ";
+
+    public async Task<RequestWritten> AskAsync(string ticker, string from, string lane)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Ask;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$asked_at", clock.UtcNow.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$asked_from", from);
+        command.Parameters.AddWithValue("$lane", lane);
+
+        try
+        {
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (SqliteException failure) when (failure.SqliteErrorCode == 19)
+        {
+            return new RequestWritten(
+                false,
+                $"{ticker} is already in the queue, so nothing was added: one report is asked for at a time.");
+        }
+
+        return new RequestWritten(true, $"{ticker} is in the queue, and the worker writes it when it next drains.");
+    }
+
+    public async Task<RequestWritten> WithdrawAsync(string ticker, DateTimeOffset askedAt)
+    {
+        await using var connection = Open();
+
+        var asked = askedAt.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture);
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Withdraw;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$asked_at", asked);
+        command.Parameters.AddWithValue("$settled_at", clock.UtcNow.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$reason", "taken out of the queue before it was written");
+
+        if (await command.ExecuteNonQueryAsync() == 1)
+        {
+            return new RequestWritten(true, $"{ticker} was taken out of the queue.");
+        }
+
+        // Nothing moved, so the row is in some other state or is not there at
+        // all. Which it is, is the answer: a report already being written is not
+        // one that has not been generated.
+        await using var reading = connection.CreateCommand();
+
+        reading.CommandText = StateOf;
+        reading.Parameters.AddWithValue("$ticker", ticker);
+        reading.Parameters.AddWithValue("$asked_at", asked);
+
+        var state = await reading.ExecuteScalarAsync() as string;
+
+        return new RequestWritten(
+            false,
+            state is null
+                ? $"nothing was taken out: no request for {ticker} was asked for at that instant."
+                : $"nothing was taken out: {ticker}'s request is {state}, and only one nobody has started can be withdrawn.");
+    }
+
+    public async Task<IReadOnlyList<RequestRow>> QueueAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Queue;
+
+        var rows = new List<RequestRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new RequestRow(
+                reader.GetString(0),
+                RequestedAt(reader.GetString(1)),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.IsDBNull(5) ? null : RequestedAt(reader.GetString(5)),
+                reader.IsDBNull(6) ? null : reader.GetString(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7)));
+        }
+
+        return rows;
+    }
+
+    public static DateTimeOffset RequestedAt(string stored) =>
+        DateTimeOffset.ParseExact(
+            stored,
+            ResearchRequests.Instant,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
 }

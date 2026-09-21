@@ -53,6 +53,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `rule_version` | RuleVersionScorer | RuleVersionScorer | none |
 | `version_score` | RuleVersionScorer | RuleVersionScorer | RuleVersionScorer |
 | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
+| `research_request` | ReadApi | ReadApi, RequestDrain | none |
 | `run_log` | every component that writes appends | RunLog | none |
 
 **`bar` has three inserters and two deleters, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars and drops the sessions that fall out of the retention window on the night they fall out of it. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices.
@@ -72,6 +73,8 @@ Each writer drops the rows that fall out of the window on the night they fall ou
 The `DELETE` lives in each component's own file rather than in a shared helper, because a write is attributed to the file it appears in: a helper holding the statement would be a file that deletes and is declared nowhere.
 
 **`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below. The delete is the assembler's, and it removes one row only: tonight's file for a name, where it differs from the one the store now computes, so the insert writes the new one in its place (see: A re-run replaces a night's facts file where the store now computes a different one).
+
+**`research_request` is the one table the read surface writes, and the split is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`. No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research).
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
 
@@ -518,6 +521,32 @@ One row per ticker rather than one per check, because the question asked of it i
 No deleter. A name that becomes trustworthy again is set back to `ok` by the check that established it, which is an update on the row that already exists.
 
 **`retries` is a count and not a history, added at the 6.0 ruling.** The check reads it to decide whether tonight asks for a suspect name again, which is a question about now, and each attempt's night is still the run log's. A night an action lands on the name sets it back to 0 however the refetch goes, because the action is a new reason to ask, and a name at the limit is asked for again on the first night whose session is 7 or more days after the session of its `checked_at`, with the count going on past the limit, until a refetch succeeds (see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds). The read API reads the row as stored from the 7.0 ruling, for the line the name page opens with and the one tonight's list draws beside the name. It is not null with a default of 0, where `bar.raw_close` is nullable, because here the default holds: nothing counted a row that exists when the column is added, and the rule counts from the night it lands.
+
+### research_request
+Grain: one row per request.
+
+| Column | Type | Written by |
+|---|---|---|
+| `ticker` | TEXT | ReadApi, on the insert |
+| `asked_at` | TEXT | UTC instant of the press, and the order the drain works in; ReadApi, on the insert |
+| `asked_from` | TEXT | `list` or `name`, the screen the press came from; ReadApi, on the insert |
+| `lane` | TEXT | `local` or `paid`, carried from the press so a queue drained later writes under the lane it meant; ReadApi, on the insert |
+| `state` | TEXT | `outstanding`, `writing`, `written`, `refused` or `withdrawn` |
+| `settled_at` | TEXT | UTC instant the state last moved off `outstanding`, null while it has not |
+| `run_id` | TEXT | the pass's run, written by RequestDrain when it settles the request, null before; last but one because SQLite appends |
+| `reason` | TEXT | why, in words, for `refused` and `withdrawn` and null otherwise; last because SQLite appends |
+
+Primary key: `ticker`, `asked_at`.
+
+At most one row per ticker in state `outstanding`, which is what a second press is refused against. SQLite cannot state a partial uniqueness in a table constraint, so it is a unique index over `ticker` filtered to that state.
+
+Declared column sets, stated per operation because that is the grain the rule is written at: ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane` and `state`, and updates `state`, `settled_at` and `reason` when it withdraws one. RequestDrain updates `state` when it claims a request, and `state`, `settled_at`, `reason` and `run_id` when it finishes with one. Both write `state` and never in one operation: a claim moves it off `outstanding`, and a withdrawal names `outstanding` in its own statement and moves nothing once a claim has.
+
+**A withdrawal races a claim, and the store settles it rather than the reader.** The queue screen is read before a press and the drain may claim the request between the two, so the withdrawal states the state it expects and moves nothing where the row has left it. The reader is told which state refused them, which is the answer to what was asked: a report already being written is not one that has not been generated.
+
+**The run is written at the settle and not at the claim.** A pass names its own run from the instant it starts, which the claim cannot know before it runs, so the request carries the run of the pass that answered it rather than one invented beside it.
+
+**There is no deleter.** A withdrawn request stays a row, because what is asked of this table is what was asked for and what came of it, and removing the row would answer the second question by erasing the first. Nothing falls out of a window either: the table grows by presses rather than by names or nights.
 
 ### run_log
 Grain: one row per run per stage.
