@@ -19033,3 +19033,81 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because these correct what claims already placed assert rather than
             adding any. Both gates ran over the tree carrying both entries, and the operator's store
             under `data/` was not touched by either; the measurement above read a copy of it.
+
+### Phase 9 sign-off                                                         2026-09-21
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. This is the fourth
+            review of phase 9. The second, over 7d17213, found A to E, corrected by PR 169. The
+            third, by this session over 3591fec, did not sign and committed nothing: it found the
+            name page's walk ranked by the newest bands after a night that stops before it lists,
+            and the immediate bands' night bound asserted by nothing, both corrected by PR 172.
+Verified:   by re-running both gates on `main` at d94b6a1. `tools/ci.ps1` green end to end, 0
+            warnings, 0 errors, 1164 of 1164 tests passing inside it, migrations 0 to 30 applied
+            against `data-ci/` and then none pending at schema version 30, exit 0.
+            `tools/verify-phase.ps1` green at 29 tables, 384 claims, 384 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 391 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT with 1 captured over 6 constituents and 4 names, 37 checks on the
+            roster and 37 carried, 37 ran and passed and none failed or did not run, the suite
+            1164 of 1164 with none failed and none unrun. Windows PowerShell on the operator's
+            Windows machine: `tools/ci.ps1` green.
+Matrix:     read from the runs that pushed each merge, jobs enumerated rather than run conclusions
+            read. The 9 merge commits from the 9.0 planning pass to this entry, e8b4e30, f89be7c,
+            bb56eda, 931b6f5, 7d17213, ca4887f, 26d3bc4, 3591fec and d94b6a1, are PRs 164 to 172 and
+            carry 9 push runs of 2 jobs each, `macos` and `case-sensitivity`. All 18 concluded
+            success. `.github/workflows/ci.yml` carries zero `if:` and zero `continue-on-error:`
+            keys.
+Plan:       all five checkpoints, 9.0 through 9.4, are in `BUILD_PLAN.md` and all five are recorded
+            above, 9.0 by its planning entry and the 9.4 ruling opening "Not a checkpoint entry",
+            over 232 entry headings before this one. No open pull request. The carried obligations
+            table holds 81 rows: 72 discharged, 9 operating and 0 open. All 34 expectation files
+            state `derivation: derived`. The 5.4 and 5.8 entries of PRs 171 and 172 each amend
+            their own done condition 7, operator-authorised on 2026-09-21, and the earlier-night
+            fixture expectation stays carried to 10.0 planning.
+Store:      the operator store under `data/` was not touched by either gate or by this review.
+            `data/equitybrief.db` read last written 2026-09-20 03:23 UTC. Opened immutable, it is
+            at schema version 29: migration 30, `research_request`, is not applied to it.
+Rehearsed:  on two copies of the store in the session scratchpad, each migrated to 30, with the
+            API built by the gate run served over each. Over the untouched copy every screen and
+            the export answered 200, among them `/screens/tonight/2026-09-17?name=MU`,
+            `/screens/tonight/2026-09-10` and `/screens/name/MU` with and without a date, and each
+            screen was captured with headless Edge. Over a copy with the 503 listings of
+            2026-09-18 deleted, so its newest listing night is 2026-09-17 and its newest bands
+            2026-09-18: each of the 20 names the list draws, opened with no night and with the
+            night, walks to the previous and the next the list draws, 0 of 20 disagreeing on
+            either side. The third review measured 16 of 20 on the same copy before PR 172. The
+            night was not re-run; the worker's code is unchanged since ca4887f.
+Swept:      over the whole suite each time and never a filter, in a detached worktree at d94b6a1
+            under the session scratchpad, reverted between runs and removed after. The rule,
+            stated before the sweep: each mutation the handoff names, and the two sides of the
+            nearest resistance the distance mark reads. N3, the immediate bands' night bound made
+            strict, red, 1163 of 1164, at the earlier-night page test.
+Survived:   four, and none a defect in phase 9 or in what PRs 171 and 172 changed.
+            N2, the walk's closes read at the newest night rather than the evening walked, left
+            1164 green. It is equivalent: the list orders by fired count, band strength and
+            ticker, and the walk reads position alone, so no close reaches it.
+            N1, the walk's universe read at the night the page was opened on rather than the night
+            walked, left 1164 green. The order reads the universe only for which names are members,
+            and the two reads differ only when membership changes between the night listed and
+            the current session. The rule is the walk's own comment and predates PR 171; carried
+            below.
+            N4, the nearest resistance read from the band's high edge, and N5, the farthest
+            resistance taken rather than the nearest, each left 1164 green. No test reads the
+            value of `data-to-resistance` or a universe row's nearest resistance on any night. The
+            code states the rule and does what it states. It is the universe query phase 5 built
+            and signed, and PRs 171 and 172 changed only its night bound, which N3 and the third
+            review's MD show is asserted for both sides at once, since one read serves both.
+Carried:    to a 5.8 correction owed before the phase 8 sign-off: an assertion on the nearest
+            resistance the universe query chooses, the lowest low edge among a name's marked
+            resistance bands, which N4 and N5 turn red. To the phase 8 sign-off's review: whether
+            the walk's membership read at the night walked wants an assertion, which N1 turns red,
+            over a store whose membership changes after the night listed.
+Judged:     the three judgement calls the handoff offers are kept. The undated name page draws its
+            chart, bands, plan and moves from the newest stored and walks the newest listing night,
+            and its walk now agrees with the list it walks. The universe screen reads its figures
+            as of the newest listing night. The plan region's band table says "not measured" in its
+            away column, because the region reads no typical move and its comment defers that to
+            the name page. The headless capture of `/#/night/2026-09-17?name=MU` again paints the
+            upper half blank where the page scrolls to the selected region; the route itself
+            answers 200 with the region in it, and a real browser is the operator's check.
+Signed:     phase 9, 9.0 through 9.4, with PRs 169, 171 and 172. Phase 8's sign-off is owed next,
+            under the 8.7 ruling, and 10.0 planning waits for it.
