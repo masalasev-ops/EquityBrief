@@ -19233,6 +19233,25 @@ Mutated:    the rule, stated before the sweep: undo the de-duplication at each p
             the requests night by night, and every other test green.
             MB the row's count taken without removing a session counted twice: the extended test
             red, at the night run again's row, and every other test green.
-            Results: FILL
-Held:       FILL
-Verified:   FILL
+            Results: each mutation over the whole suite in a scratch worktree at 9105379, never a
+            filter, and reverted between runs. That commit's entry did not yet say its Windows run,
+            so `two-platform`'s record test was red there before any mutation, 1165 of 1166 green,
+            and each result below is that one and the mutation's own. MA: red, the extended test,
+            at the requests night by night, which asked on four of the five nights after the first
+            where the schedule gives five, 1164 of 1166 green. MB: red, the extended test, at the
+            night run again's row, which named the name as asked on 2 nights, 1164 of 1166 green.
+Held:       the prediction, exactly, for both.
+Not repaired: the refetch after a corporate action has the same shape. A name whose refetch fails
+            is written with one retry more than it held, once a run, and nothing asks whether its
+            session already spent one, so a night run again for its session would spend a nightly
+            retry. Read in `CorporateActionChecker`, not measured on a store; the operator's store
+            holds no suspect name. It was built by the 6.0 and 7.0 rulings, outside this
+            correction, and is put to the operator as its own.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1166 of 1166 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
