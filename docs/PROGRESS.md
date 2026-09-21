@@ -19277,8 +19277,9 @@ Repaired:   no shipped source changes. One test added to `read-surface`,
             next the list draws.
 Expected:   not met at this correction: the committed fixture is one night and holds no leave after
             it. This correction amends its own done condition 7, as the earlier-night corrections
-            at 5.4 and 5.8 did, and the constructed store stands in for the fixture. FILL
-            authorisation.
+            at 5.4 and 5.8 did, and the operator authorised it on 2026-09-21. The constructed store
+            stands in for the fixture, and nothing is carried, because a fixture of one night can
+            never hold a leave after it.
 Tests:      1167, from 1166. One added to `read-surface`. No migration. No file this correction
             edits is a source either evaluator version or the ladder rules' code version pins, so
             no pin moves.
@@ -19287,8 +19288,10 @@ Mutated:    the rule, stated before the sweep: reintroduce the read the review s
             Predicted:
             MW `UniverseAsync(index, on)` in the walk: the new test red, at the first name's page,
             and every other test green.
-            Results: FILL
-Held:       FILL
+            Results: MW over the whole suite in a scratch worktree at 0dfee94, never a filter, and
+            reverted: red, the new test, at the first name's page, which walked to no name after
+            it where the list draws one, 1166 of 1167 green.
+Held:       the prediction, exactly.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1167 of 1167 tests
             ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
