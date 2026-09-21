@@ -18867,3 +18867,52 @@ Mutated:    the rule, stated in the plan before the run: undo the change this co
             apart.
 Held:       the prediction, exactly.
 Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+
+### 5.8 - correction: an earlier night's list draws the plan, the trend and the distance that night held, where it drew the newest   2026-09-21
+Corrects:   `/screens/tonight/<date>` for a night before the newest drew three things from the newest
+            rows the store holds rather than from the night shown. The selected name's plan region
+            read `LadderAsync` and `LevelsAsync` with no date, so it drew the newest plan and bands
+            against that night's membership. Each row's trend state and distance mark came from
+            `UniverseAsync(index, night)`, which bounded membership by the night and read each
+            member's close, trend state, typical move and immediate bands as the newest stored, so a
+            row drew the newest trend and a distance measured from the newest close. The plan
+            region's close came from the same row. All of it was built at 5.8, with the screens'
+            stated parts.
+Found:      on 2026-09-21, reading the route while correcting its ranking under 5.4. The operator
+            ruled the same day that it lands in the same pull request as its own correction, and
+            that it covers the whole earlier-night page rather than the plan region alone.
+Repaired:   the plan region reads the ladder and the bands at the night shown. The universe query
+            takes a second bound, the night, and reads each member's close, trend state, typical
+            move and immediate bands as the newest at or before it, and read with no night it reads
+            the newest as it did. Membership is bounded as before. The universe screen passes the
+            newest night the listings hold, which its route states is the night its figures are
+            from, so it now reads them as of that night; the two differ only on a store holding a
+            bar newer than its newest listing night.
+Guarded:    the same two-night store the 5.4 correction's test builds, with the newest night's ladders
+            copied onto the earlier session. One listed name's plan on the earlier night holds a
+            single tranche and a single band, and another's trend on the earlier night is not its
+            newest one. The earlier night's page, with the first name selected, draws that night's
+            plan rows and one band against that night's close, and the second name's row carries
+            that night's trend and its distance from that night's close to that night's nearest
+            support in that night's typical moves, worked in the test from the stored rows. Each is
+            asserted with the newest night's reading shown to differ, so none can pass on a store
+            where the two nights agree.
+Expected:   not met at this correction, as for the 5.4 correction above: the committed fixture holds
+            one night, so an earlier night's page cannot be derived from it. This correction amends
+            its own done condition 7, and the operator authorised it on 2026-09-21. The new test's
+            two-night store stands in for it, and the item is carried to the next phase's planning
+            pass with the 5.4 one.
+Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: undo each change this correction makes, one at a
+            time. Not mutated: which of the four figures the universe query bounds, each taken apart,
+            because the test reads two of them off the row and one off the region, and the typical
+            move only through the distance.
+            Predicted:
+            MB the plan region's ladder and band reads without the night: the new test red where it
+            reads the region, and every other test green.
+            MC the universe query's four figures read without the night: the new test red where it
+            reads the close, the trend or the distance, and every other test green.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.

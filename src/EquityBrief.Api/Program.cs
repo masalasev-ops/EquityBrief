@@ -553,7 +553,8 @@ app.MapGet("/screens/tonight/{night?}", async (
     // Whichever row the reader selected, from the hash, and the first row when
     // they have selected none. Section 15.7's region is for whichever row is
     // selected, and a composition fixed at the first answers a question nobody
-    // asked.
+    // asked. Its plan and its bands are the ones the night shown stored, drawn
+    // against that night's close.
     var asked = request.Query["name"].FirstOrDefault();
     var selection = TonightScreen.Selected(rows, asked);
 
@@ -562,9 +563,9 @@ app.MapGet("/screens/tonight/{night?}", async (
             page,
             marks,
             chosen.Ticker,
-            await read.LadderAsync(chosen.Ticker),
+            await read.LadderAsync(chosen.Ticker, dated),
             universe.FirstOrDefault(row => row.Ticker == chosen.Ticker)?.Close ?? 0m,
-            await read.LevelsAsync(chosen.Ticker))
+            await read.LevelsAsync(chosen.Ticker, dated))
         : string.Empty;
 
     // The record beside each reason and the evening's own totals, which are

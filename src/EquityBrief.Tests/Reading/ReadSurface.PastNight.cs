@@ -1,4 +1,8 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
+using EquityBrief.Api.Reading;
 using EquityBrief.Tests.Checks;
+using EquityBrief.Core.Indicators;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Reading;
@@ -45,6 +49,108 @@ public partial class ReadSurface
         Assert.True(
             RowAt(now, first) < RowAt(now, last),
             $"{Stamp(newest)} drew {last} before {first}, where that night's bands put {first} first.");
+    }
+
+    [Fact]
+    public async Task AnEarlierNightDrawsThePlanTheTrendAndTheDistanceThatNightHeld()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var (earlier, newest) = await TwoNights(store);
+
+        Insert(
+            store,
+            "INSERT INTO ladder (ticker, as_of, trend_state, plan) " +
+            $"SELECT ticker, '{Stamp(earlier)}', trend_state, plan FROM ladder WHERE as_of = '{Stamp(newest)}';");
+
+        // Two names listed on the earlier night: one whose plan that night held a single
+        // tranche and a single band, and one whose trend that night was not the newest one.
+        var fired = Strings(
+            store,
+            "SELECT l.ticker FROM listing l JOIN ladder d ON d.ticker = l.ticker AND d.as_of = l.session_date " +
+            $"WHERE l.session_date = '{Stamp(earlier)}' AND l.fired_count > 0 " +
+            "AND json_array_length(d.plan, '$.tranches') >= 2 " +
+            $"AND (SELECT COUNT(*) FROM level v WHERE v.ticker = l.ticker AND v.as_of = '{Stamp(earlier)}') >= 2 " +
+            $"AND EXISTS (SELECT 1 FROM level v WHERE v.ticker = l.ticker AND v.as_of = '{Stamp(earlier)}' AND v.role = 'support' AND v.immediate = 1) " +
+            "ORDER BY l.ticker;");
+
+        Assert.True(fired.Count >= 2, $"{fired.Count} listed name(s) carry two tranches, two bands and an immediate support, expected at least 2.");
+
+        var (planned, trended) = (fired[0], fired[1]);
+        var on = Stamp(earlier);
+
+        store.Execute(
+            "UPDATE ladder SET plan = json_set(plan, '$.tranches', json_array(json_extract(plan, '$.tranches[0]'))) " +
+            $"WHERE ticker = '{planned}' AND as_of = '{on}';");
+        store.Execute(
+            $"DELETE FROM level WHERE ticker = '{planned}' AND as_of = '{on}' AND rowid <> " +
+            $"(SELECT MIN(rowid) FROM level WHERE ticker = '{planned}' AND as_of = '{on}');");
+
+        var newestTrend = (await api.LadderAsync(trended, newest))!.TrendState;
+        var thenTrend = newestTrend == "range" ? "downtrend" : "range";
+
+        store.Execute($"UPDATE ladder SET trend_state = '{thenTrend}' WHERE ticker = '{trended}' AND as_of = '{on}';");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = await client.GetStringAsync($"/screens/tonight/{on}?name={planned}");
+
+        // The selected name's plan and bands are that night's, drawn against that night's close.
+        var region = Regex.Match(
+            page,
+            $"<section class=\"selected-name\" data-ticker=\"{planned}\" data-plan-rows=\"(\\d+)\" data-bands=\"(\\d+)\">");
+
+        Assert.True(region.Success, $"the page draws no selected region for {planned}.");
+
+        var thenRows = NameScreen.PlanRows(await api.LadderAsync(planned, earlier)).Count;
+        var nowRows = NameScreen.PlanRows(await api.LadderAsync(planned, newest)).Count;
+
+        Assert.NotEqual(nowRows, thenRows);
+        Assert.Equal(thenRows.ToString(CultureInfo.InvariantCulture), region.Groups[1].Value);
+        Assert.True((await api.LevelsAsync(planned, newest)).Count >= 2);
+        Assert.Equal("1", region.Groups[2].Value);
+
+        var thenClose = (await api.BarsAsync(planned, DateOnly.MinValue, earlier))[^1];
+        var nowClose = (await api.BarsAsync(planned, DateOnly.MinValue, DateOnly.MaxValue))[^1];
+
+        Assert.Equal(earlier, thenClose.SessionDate);
+        Assert.NotEqual(nowClose.Close, thenClose.Close);
+        Assert.Contains(
+            $"data-ticker=\"{planned}\" data-rows=\"{thenRows}\" data-close=\"{thenClose.Close.ToString(CultureInfo.InvariantCulture)}\"",
+            page,
+            StringComparison.Ordinal);
+
+        // Another name's row states that night's trend and its distance from that night's close,
+        // over that night's bands and typical move, worked here from the stored rows.
+        var row = RowOf(page, trended);
+
+        Assert.NotEqual(newestTrend, thenTrend);
+        Assert.Contains($"data-trend-state=\"{thenTrend}\"", row, StringComparison.Ordinal);
+
+        var then = await ToSupport(api, trended, earlier);
+        var now = await ToSupport(api, trended, newest);
+
+        Assert.NotEqual(now, then);
+        Assert.Contains($"data-to-support=\"{then}\"", row, StringComparison.Ordinal);
+    }
+
+    // The distance from a night's close to the nearest support that night held, in typical days'
+    // moves as the night measured them, written as the distance mark writes it.
+    static async Task<string> ToSupport(ReadApi api, string ticker, DateOnly night)
+    {
+        var close = (await api.BarsAsync(ticker, DateOnly.MinValue, night))[^1].Close;
+        var support = (await api.LevelsAsync(ticker, night))
+            .Where(band => band.Role == "support" && band.Immediate)
+            .Max(band => band.HighEdge);
+        var typical = (await api.IndicatorsAsync(ticker, DateOnly.MinValue, night))
+            .Where(row => row.Name == IndicatorSeries.Atr14)
+            .OrderBy(row => row.SessionDate)
+            .Last()
+            .Value!.Value;
+
+        return (Math.Abs((double)(close - support)) / typical).ToString("0.##", CultureInfo.InvariantCulture);
     }
 
     // An earlier session the store holds bars for, listed with the newest night's listings and
