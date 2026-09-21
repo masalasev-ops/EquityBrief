@@ -18962,7 +18962,7 @@ Expected:   not met at this correction, as for the earlier 5.4 and 5.8 correctio
             fixture holds one night. This correction amends its own done condition 7, and the
             operator authorised it on 2026-09-21. The two-night store stands in for the fixture, and
             the item stays carried to the next phase's planning pass.
-Tests:      TO BE FILLED IN FROM THE RUN. None added; one strengthened in `read-surface`. No migration.
+Tests:      1163, unchanged. None added; one strengthened in `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: reintroduce the defect the assertion guards, the
@@ -18974,7 +18974,14 @@ Mutated:    the rule, stated before the sweep: reintroduce the defect the assert
             strengthened test, never a filter, and removed: red, one test and the predicted one,
             1162 of 1163 green, at the row's `data-to-support`.
 Held:       the prediction, exactly.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1164 of 1164 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying both entries, and the operator's store
+            under `data/` was not touched by either; the measurement above read a copy of it.
 
 ### 5.4 - correction: a name page's walk is ordered by the bands of the night it walks, where a page opened with no night read the newest bands the store holds   2026-09-21
 Corrects:   the name page walks to the name before and after it on the list of the night it shows,
@@ -19002,7 +19009,7 @@ Expected:   not met at this correction, as for the corrections before it: the co
             holds one night of bands. This correction amends its own done condition 7, and the
             operator authorised it on 2026-09-21. The constructed store stands in for the fixture,
             and the item stays carried to the next phase's planning pass.
-Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+Tests:      1164, from 1163. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: reintroduce the defect, the walk's band read at the
@@ -19014,4 +19021,15 @@ Mutated:    the rule, stated before the sweep: reintroduce the defect, the walk'
             never a filter, and removed: red, one test and the predicted one, 1163 of 1164 green, at
             the first name's page opened with no night.
 Held:       the prediction, exactly.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+Measured:   the corrected build served over a copy of the operator's store with the newest night's
+            503 listings deleted, so its newest listing night is 2026-09-17 and its newest bands
+            2026-09-18: each of the twenty names the list draws was opened with no night, and the
+            previous each page walks to disagreed with the list on 0 of 20.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1164 of 1164 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying both entries, and the operator's store
+            under `data/` was not touched by either; the measurement above read a copy of it.
