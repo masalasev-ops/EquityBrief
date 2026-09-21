@@ -19191,3 +19191,48 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this asserts what claims already placed state rather than adding
             any. Both gates ran over the tree carrying this entry, and the operator's store under
             `data/` was not touched by either.
+
+### 1.2 - correction: a name the backfill stored nothing for is counted by the nights it was asked on, and a night run again for its session is that night, where each run counted as a night of its own   2026-09-21
+Corrects:   the backfill asks a member holding no bar on the five nights after the first that
+            asked, then weekly, and writes on its row the nights the name has been asked on, which
+            the name's page and the run page state (see: A name the backfill stored nothing for is asked for again on the five nights after and weekly after that, and its page and the run page say so until one stores its year).
+            The schedule read the sessions off every earlier row of the stage into a list, one
+            entry a row, and counted the list. A night run again by hand for its own session writes
+            another row, so it counted as another night: the name's stored count ran one ahead for
+            each run again, the page said so, and the nightly asks ended one night early for each.
+Found:      on 2026-09-21, by the phase 8 sign-off review over 6b9e797. The operator's store holds
+            two backfill rows for the session of 2026-09-18, the night's own and the night run
+            again by hand, `night-20260919T045233Z-for-2026-09-18`, and the second names P_old as
+            asked on 2 nights where it had been asked on one. A rehearsal of the session of
+            2026-09-21 over a copy wrote 3 for the two sessions.
+Repaired:   `Backfill` reads each name's sessions as a set, so a session counts once however many
+            runs asked on it. Whether a name is due is decided from the sessions before the night's
+            own, so a night run again for its session asks as that night did. The count, the last
+            session and the next the row writes are over the distinct sessions up to the night's
+            own. Nothing else reads the stage's rows as a count: the read surface draws the `nights`
+            the newest row stores.
+Stored:     the rows written under the defect are kept as written: the operator's two for the
+            session of 2026-09-18, and the row of any night that runs before this merges, which
+            will name P_old as asked on one night more than it was. The page reads the newest row,
+            so it states the distinct count from the first night after the merge.
+Guarded:    `nightly-run`,
+            `AMemberTheProviderServesNoYearIsAskedOnTheRefetchScheduleAndItsPageAndTheRunPageSaySo`,
+            extended in place: the first night is run again for its own session, which asks as
+            that night did and writes the name as asked on 1 night; every figure after it, the
+            requests night by night, the counts on the fifth and sixth nights, the run page's row
+            and the page's "7 night(s)", is the one the schedule gives with no night run again.
+Expected:   derived, as the 1.2 correction that built the schedule met it: the schedule is stated in
+            the decision and section 17 and asserted over a constructed member. No expectation
+            file changes, because the committed fixture is one night and holds no night run again.
+Tests:      1166, unchanged. None added; one extended in `nightly-run`. No migration. No file this
+            correction edits is a source either evaluator version or the ladder rules' code version
+            pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: undo the de-duplication at each point it is read.
+            Predicted:
+            MA the sessions gathered into a list again, one entry a row: the extended test red, at
+            the requests night by night, and every other test green.
+            MB the row's count taken without removing a session counted twice: the extended test
+            red, at the night run again's row, and every other test green.
+            Results: FILL
+Held:       FILL
+Verified:   FILL

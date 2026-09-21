@@ -122,10 +122,19 @@ public sealed class Backfill(
         var owed = members.Except(holding, StringComparer.OrdinalIgnoreCase).ToArray();
         var asked = await AskedAsync(connection, cancellationToken);
 
-        bool Due(string ticker) =>
-            !asked.TryGetValue(ticker, out var nights)
-            || nights.Count <= RetryNights
-            || to >= nights.Max().AddDays(WeeklyRetryDays);
+        // A night is a session, and a night run again for its session decides as
+        // that night did: only the sessions before it count.
+        bool Due(string ticker)
+        {
+            if (!asked.TryGetValue(ticker, out var sessions))
+            {
+                return true;
+            }
+
+            var before = sessions.Where(session => session < to).ToArray();
+
+            return before.Length <= RetryNights || to >= before.Max().AddDays(WeeklyRetryDays);
+        }
 
         var due = owed.Where(Due).ToArray();
         var before = feed.Requests;
@@ -203,8 +212,8 @@ public sealed class Backfill(
             .Order(StringComparer.Ordinal)
             .Select(ticker =>
             {
-                var earlier = asked.TryGetValue(ticker, out var sessions) ? sessions : [];
-                var nights = earlier.Concat(fetched.ContainsKey(ticker) ? new[] { to } : Array.Empty<DateOnly>()).ToArray();
+                var earlier = asked.TryGetValue(ticker, out var sessions) ? sessions.Where(session => session <= to) : [];
+                var nights = earlier.Concat(fetched.ContainsKey(ticker) ? new[] { to } : Array.Empty<DateOnly>()).Distinct().ToArray();
                 DateOnly? last = nights.Length == 0 ? null : nights.Max();
                 DateOnly? next = nights.Length <= RetryNights || last is null ? null : last.Value.AddDays(WeeklyRetryDays);
 
@@ -253,8 +262,9 @@ public sealed class Backfill(
         return new BackfillOutcome(members.Count, owed.Length, requests, written, gaps, due.Length, unserved);
     }
 
-    // The sessions each name was asked for on, read off this stage's earlier rows.
-    static async Task<IReadOnlyDictionary<string, List<DateOnly>>> AskedAsync(
+    // The sessions each name was asked for on, read off this stage's earlier rows, each
+    // session once however many runs asked on it.
+    static async Task<IReadOnlyDictionary<string, HashSet<DateOnly>>> AskedAsync(
         SqliteConnection connection,
         CancellationToken cancellationToken)
     {
@@ -262,7 +272,7 @@ public sealed class Backfill(
         command.CommandText = EarlierRows;
         command.Parameters.AddWithValue("$stage", Stage);
 
-        var asked = new Dictionary<string, List<DateOnly>>(StringComparer.OrdinalIgnoreCase);
+        var asked = new Dictionary<string, HashSet<DateOnly>>(StringComparer.OrdinalIgnoreCase);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
         while (await reader.ReadAsync(cancellationToken))
