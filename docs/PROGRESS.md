@@ -18294,7 +18294,7 @@ Guarded:    three tests over a constructed store holding an earlier pass that ra
 Expected:   derived: the rule is section 16's own words for the Request drain, asserted over
             constructed runs and requests. No expectation file changes, because the committed
             fixture holds no request row and the drain does not run in the replay.
-Tests:      TO BE FILLED IN FROM THE RUN, from 1148. Three added to `read-surface`. No migration.
+Tests:      1151, from 1148. Three added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: break each of the two halves that decide whether a
@@ -18309,5 +18309,24 @@ Mutated:    the rule, stated before the sweep: break each of the two halves that
             M2 the pattern loosened to the ending alone, which is what it was: the row under a run id
             no pass names red where it reads that nothing matched, and nothing else, the other two
             holding no such row.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   FILLED IN FROM THE RUN.
+            Results: each mutation over the whole suite in the worktree, never a filter, and
+            reverted. One test stood red on that tree whatever was mutated, being the Windows run
+            this entry had not yet recorded, so each result below is what the mutation added to it.
+            M1, the instant bound dropped: red, two tests and the predicted two, the request with no
+            run of its own and the row under a run id no pass names, each finding the earlier pass
+            where it asserts nothing matched. The request that did write a run stayed green, its own
+            run still being the newest, which is the prediction and is also why the bound and not
+            the ordering is what carries this.
+            M2, the pattern loosened to the ending alone: red, one test and the predicted one, the
+            row under a run id no pass names. Nothing else moved, the other two holding no such row.
+Held:       both predictions, exactly. The two halves fail apart, which is what the third test is
+            for: a repair that bound the instant and left the pattern keyed on the ending would pass
+            the first two and is the shape M2 stands against.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1151 of 1151 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding one. Both gates ran with this entry in place, and the operator's store under
+            `data/` was not touched by any of it.
