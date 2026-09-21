@@ -1647,6 +1647,68 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task TheUniverseReadStatesTheNearEdgeOfEachNamesMarkedBands()
+    {
+        // The nearest support and the nearest resistance each universe row's
+        // distance is drawn to, which the expectation states per name. The
+        // statement is first held to the rows it was taken from, so it cannot
+        // drift from the bands it names: the high edge of the one marked support
+        // and the low edge of the one marked resistance.
+        var expected = Expected("levels");
+        var nearest = expected.GetProperty("nearest").GetProperty("byName");
+        var rows = expected.GetProperty("rows").GetProperty("byName");
+        var asOf = expected.GetProperty("asOf");
+
+        var stated = nearest.EnumerateObject().ToDictionary(
+            entry => entry.Name,
+            entry => (Support: decimal.Parse(entry.Value.GetProperty("support").GetString()!, CultureInfo.InvariantCulture),
+                      Resistance: decimal.Parse(entry.Value.GetProperty("resistance").GetString()!, CultureInfo.InvariantCulture)));
+
+        Assert.Equal(
+            rows.EnumerateObject().Select(entry => entry.Name).OrderBy(name => name, StringComparer.Ordinal),
+            stated.Keys.OrderBy(name => name, StringComparer.Ordinal));
+
+        var wide = (Support: 0, Resistance: 0);
+
+        foreach (var entry in rows.EnumerateObject())
+        {
+            var marked = entry.Value.EnumerateArray()
+                .Select(row => row.GetString()!.Split('|'))
+                .Where(parts => parts[3] == "1")
+                .Select(parts => (
+                    Low: decimal.Parse(parts[0], CultureInfo.InvariantCulture),
+                    High: decimal.Parse(parts[1], CultureInfo.InvariantCulture),
+                    Role: parts[2]))
+                .ToArray();
+
+            var support = Assert.Single(marked, band => band.Role == "support");
+            var resistance = Assert.Single(marked, band => band.Role == "resistance");
+
+            Assert.Equal(support.High, stated[entry.Name].Support);
+            Assert.Equal(resistance.Low, stated[entry.Name].Resistance);
+
+            wide = (wide.Support + (support.Low < support.High ? 1 : 0), wide.Resistance + (resistance.Low < resistance.High ? 1 : 0));
+        }
+
+        // Counted in advance, so an edge read from the far side of a band is one
+        // the rows can tell apart on every support and on two resistances.
+        Assert.Equal((4, 2), wide);
+
+        using var store = await WithLevels();
+
+        foreach (var (ticker, band) in stated)
+        {
+            var night = DateOnly.ParseExact(asOf.GetProperty(ticker).GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var row = Assert.Single(
+                await new ReadApi(store.DatabaseFile, FixedClock.At(Instant, SessionZones.UnitedStates)).UniverseAsync(Index, night),
+                member => member.Ticker == ticker);
+
+            Assert.Equal(band.Support, row.NearestSupport);
+            Assert.Equal(band.Resistance, row.NearestResistance);
+        }
+    }
+
+    [Fact]
     public async Task EveryBandCarriesTheMembersTheRulesPutInIt()
     {
         // The members column is where the evidence lives, and it is what the

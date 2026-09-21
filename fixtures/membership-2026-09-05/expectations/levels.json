@@ -416,6 +416,27 @@
    }
   }
  },
+ "nearest": {
+  "byName": {
+   "AAPL": {
+    "support": "320.28",
+    "resistance": "334.7013"
+   },
+   "KEYS": {
+    "support": "332.78",
+    "resistance": "366.41"
+   },
+   "MSFT": {
+    "support": "501.9168",
+    "resistance": "507.9797"
+   },
+   "NFLX": {
+    "support": "75.8178",
+    "resistance": "78.3545"
+   }
+  },
+  "note": "the nearest support and the nearest resistance the universe read states for each name, which each row's distance is drawn to. Taken from the rows above rather than from a run: the high edge of the name's one marked support band and the low edge of its one marked resistance band, the edge of each that faces the close. MSFT's and NFLX's marked resistance and all four marked supports have width, so the far edge of any of them reads differently from the near one."
+ },
  "workedBand": {
   "name": "AAPL",
   "lowEdge": "299.7415",
