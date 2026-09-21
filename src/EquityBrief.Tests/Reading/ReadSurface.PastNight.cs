@@ -92,6 +92,19 @@ public partial class ReadSurface
 
         store.Execute($"UPDATE ladder SET trend_state = '{thenTrend}' WHERE ticker = '{trended}' AND as_of = '{on}';");
 
+        // That name's nearest support on the earlier night sits lower than the newest night's,
+        // so a distance drawn from the newest night's bands against that night's close differs
+        // from one drawn from that night's own.
+        var support = Assert.Single(
+            await api.LevelsAsync(trended, earlier),
+            band => band.Role == "support" && band.Immediate);
+        var lowered = (Low: support.LowEdge * 0.97m, High: support.HighEdge * 0.97m);
+
+        store.Execute(
+            $"UPDATE level SET low_edge = '{Math.Round(lowered.Low, 4).ToString(CultureInfo.InvariantCulture)}', " +
+            $"high_edge = '{Math.Round(lowered.High, 4).ToString(CultureInfo.InvariantCulture)}' " +
+            $"WHERE ticker = '{trended}' AND as_of = '{on}' AND role = 'support' AND immediate = 1;");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
@@ -131,17 +144,20 @@ public partial class ReadSurface
 
         var then = await ToSupport(api, trended, earlier);
         var now = await ToSupport(api, trended, newest);
+        var newestBands = await ToSupport(api, trended, earlier, newest);
 
         Assert.NotEqual(now, then);
+        Assert.NotEqual(newestBands, then);
         Assert.Contains($"data-to-support=\"{then}\"", row, StringComparison.Ordinal);
     }
 
-    // The distance from a night's close to the nearest support that night held, in typical days'
-    // moves as the night measured them, written as the distance mark writes it.
-    static async Task<string> ToSupport(ReadApi api, string ticker, DateOnly night)
+    // The distance from a night's close to the nearest support the bands of `bandsOf` held, that
+    // night's own unless named, in typical days' moves as the night measured them, written as
+    // the distance mark writes it.
+    static async Task<string> ToSupport(ReadApi api, string ticker, DateOnly night, DateOnly? bandsOf = null)
     {
         var close = (await api.BarsAsync(ticker, DateOnly.MinValue, night))[^1].Close;
-        var support = (await api.LevelsAsync(ticker, night))
+        var support = (await api.LevelsAsync(ticker, bandsOf ?? night))
             .Where(band => band.Role == "support" && band.Immediate)
             .Max(band => band.HighEdge);
         var typical = (await api.IndicatorsAsync(ticker, DateOnly.MinValue, night))

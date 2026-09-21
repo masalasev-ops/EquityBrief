@@ -18943,3 +18943,35 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because these correct what claims already placed assert rather than
             adding any. Both gates ran over the tree carrying both entries, and the operator's store
             under `data/` was not touched by either; the measurements above read a copy of it.
+
+### 5.8 - correction: a row's distance on an earlier night is asserted against a nearest support that night held apart from the newest one   2026-09-21
+Corrects:   the universe query reads each member's immediate bands as the newest at or before the
+            night shown, which the previous 5.8 correction stated and the route relies on for each
+            row's distance mark on an earlier night. No test could tell that bound from its absence:
+            the two-night store copies the newest night's bands onto the earlier night unchanged, so
+            the nearest support a row's distance is drawn from is the same band on both nights.
+            Removing the bound left 1163 of 1163 green. The code is right; the assertion was missing.
+Found:      on 2026-09-21, by the third phase 9 sign-off review over 3591fec, as a mutation that
+            survived.
+Repaired:   no shipped source changes. The test that reads the earlier night's page lowers the
+            asserted row's immediate support on the earlier night by three per cent at both edges,
+            so that night's nearest support is a band of its own, and asserts the distance drawn
+            from the newest night's bands against that night's close and typical move differs from
+            the one the row must carry, which is worked from the stored rows as before.
+Expected:   not met at this correction, as for the earlier 5.4 and 5.8 corrections: the committed
+            fixture holds one night. This correction amends its own done condition 7, and the
+            operator authorised it on 2026-09-21. The two-night store stands in for the fixture, and
+            the item stays carried to the next phase's planning pass.
+Tests:      TO BE FILLED IN FROM THE RUN. None added; one strengthened in `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: reintroduce the defect the assertion guards, the
+            universe query's immediate bands read without the night.
+            Predicted:
+            MD `AND a.as_of <= $on` removed from the immediate bands query: the earlier-night page
+            test red where it reads the row's distance, and every other test green.
+            Results: MD over the whole suite in a scratch worktree at 3591fec carrying the
+            strengthened test, never a filter, and removed: red, one test and the predicted one,
+            1162 of 1163 green, at the row's `data-to-support`.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
