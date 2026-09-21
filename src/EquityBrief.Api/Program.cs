@@ -211,11 +211,14 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // night's members rather than today's.
     var universe = await read.UniverseAsync(index, night);
 
+    // The strengths are the bands of the night walked, which on a page opened
+    // with no night is the newest night the listings hold and not the newest
+    // bands the store holds: a night can store bands and stop before it lists.
     var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
 
     foreach (var member in universe)
     {
-        var found = await read.LevelsAsync(member.Ticker, on);
+        var found = await read.LevelsAsync(member.Ticker, night);
 
         strengths[member.Ticker] = found.Count == 0 ? 0 : found.Max(band => band.Strength);
     }

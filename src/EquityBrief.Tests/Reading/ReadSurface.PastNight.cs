@@ -52,6 +52,67 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task ANamePagesWalkFollowsTheListOfTheNightItWalksWhenNewerBandsAreStored()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var listed = (await api.NewestNightAsync())!.Value;
+        var after = listed.AddDays(1);
+        var (first, last) = BandedNames(store, listed);
+
+        // Every name listed that night fires alike, so band strength alone orders the list. The
+        // night listed puts the first name by ticker at the top and the last at the bottom, and a
+        // band set stored after it, by a night that stopped before it listed, says the reverse.
+        var on = Stamp(listed);
+        var fired = Strings(store, $"SELECT CAST(MAX(fired_count) AS TEXT) FROM listing WHERE session_date = '{on}';").Single();
+
+        store.Execute(
+            "UPDATE listing SET " +
+            $"reasons = (SELECT reasons FROM listing WHERE session_date = '{on}' ORDER BY fired_count DESC, ticker LIMIT 1), " +
+            $"fired_count = {fired} WHERE session_date = '{on}';");
+
+        Insert(
+            store,
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
+            $"SELECT ticker, '{Stamp(after)}', low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members " +
+            $"FROM level WHERE as_of = '{on}';");
+
+        store.Execute($"UPDATE level SET strength = 5 WHERE as_of IN ('{on}', '{Stamp(after)}');");
+        SetStrength(store, listed, first, 9);
+        SetStrength(store, listed, last, 1);
+        SetStrength(store, after, first, 1);
+        SetStrength(store, after, last, 9);
+
+        Assert.Equal(listed, (await api.NewestNightAsync())!.Value);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var order = Regex.Matches(await client.GetStringAsync("/screens/tonight"), "<tr data-ticker=\"([^\"]+)\"")
+            .Select(match => match.Groups[1].Value)
+            .ToArray();
+
+        Assert.True(order.Length >= 3, $"the list draws {order.Length} name(s), expected at least 3.");
+        Assert.Equal(first, order[0]);
+        Assert.Equal(last, order[^1]);
+
+        // Each listed name's page, opened with no night and with the night listed, walks to the
+        // neighbours the list draws.
+        for (var position = 0; position < order.Length; position++)
+        {
+            var previous = position == 0 ? "none" : order[position - 1];
+            var next = position == order.Length - 1 ? "none" : order[position + 1];
+            var walk = $"data-previous=\"{previous}\" data-next=\"{next}\"";
+
+            foreach (var route in new[] { $"/screens/name/{order[position]}", $"/screens/name/{order[position]}/{on}" })
+            {
+                Assert.Contains(walk, await client.GetStringAsync(route), StringComparison.Ordinal);
+            }
+        }
+    }
+
+    [Fact]
     public async Task AnEarlierNightDrawsThePlanTheTrendAndTheDistanceThatNightHeld()
     {
         using var store = await FixtureExpectations.WithListings();

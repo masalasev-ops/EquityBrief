@@ -18975,3 +18975,43 @@ Mutated:    the rule, stated before the sweep: reintroduce the defect the assert
             1162 of 1163 green, at the row's `data-to-support`.
 Held:       the prediction, exactly.
 Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+
+### 5.4 - correction: a name page's walk is ordered by the bands of the night it walks, where a page opened with no night read the newest bands the store holds   2026-09-21
+Corrects:   the name page walks to the name before and after it on the list of the night it shows,
+            and says in the route that the walk takes the list's own ordering with the same inputs.
+            It read each member's band strength with the night the page was opened on, which is
+            no night on the name page's plain route, so it read the newest bands the store holds.
+            The tonight route reads the bands of the newest night the listings hold. A night stores
+            its bands before it writes its listings, so after a night that stops between the two
+            the page and the list order the same names differently. Both reads were undated until
+            the earlier 5.4 correction dated the list's, which is when they parted.
+Found:      on 2026-09-21, by the third phase 9 sign-off review over 3591fec. On a copy of the
+            operator's store with the newest night's listings deleted, 16 of the first 20 rows had a
+            previous or next that disagreed with the list; on the untouched copy, 0 of 18.
+Repaired:   the walk reads each member's bands at the night it walks, the night shown or, with no
+            night, the newest the listings hold. Every other read the walk orders by was already of
+            that night: the listings, the membership and its figures, and the closes. The page's own
+            chart, bands, plan and moves still read the night it was opened on, the newest stored
+            when none is named.
+Guarded:    over the fixture store with every name listed on its night firing alike, the night's
+            bands order the first name by ticker first and the last one last, and a band set stored
+            the day after, with no listing, orders them the reverse. Each listed name's page, opened
+            with no night and with the night listed, carries the previous and the next that the
+            list served by the tonight route draws.
+Expected:   not met at this correction, as for the corrections before it: the committed fixture
+            holds one night of bands. This correction amends its own done condition 7, and the
+            operator authorised it on 2026-09-21. The constructed store stands in for the fixture,
+            and the item stays carried to the next phase's planning pass.
+Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: reintroduce the defect, the walk's band read at the
+            night the page was opened on.
+            Predicted:
+            ME `LevelsAsync(member.Ticker, on)` in the walk: the new test red where it reads the walk
+            on a page opened with no night, and every other test green.
+            Results: ME over the whole suite in a scratch worktree at 0871e54 carrying the new test,
+            never a filter, and removed: red, one test and the predicted one, 1163 of 1164 green, at
+            the first name's page opened with no night.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
