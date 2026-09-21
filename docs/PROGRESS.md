@@ -18389,3 +18389,38 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
             does not move, for the reason the correction above it states. Both gates ran with this
             entry in place, and the operator's store under `data/` was not touched by any of it.
+
+### 9.2 - correction: a second ask refused while an older request waits, where the key had been doing the refusing   2026-09-21
+Corrects:   9.2's done condition says a second request for a name whose request is outstanding is
+            refused and the row says so, and the 9.2 entry credits the partial unique index over the
+            outstanding state with it. The test that covers it presses twice in the same second, so
+            both presses carry the same `asked_at` and the primary key of ticker and instant refuses
+            the second. The index was never the thing under test, and its own test's comment says it
+            was. Dropping the index entirely leaves 1153 of 1153 green.
+Found:      on 2026-09-21, in the phase 9 sign-off review, by running the mutation the handoff named
+            rather than by reading. The builder knew the shape and wrote it down one test along, in
+            the withdraw test: a second ask in the same second is the same request by its key. What
+            was not seen is that the test above it rests on exactly that.
+Repaired:   nothing in the shipped code. The index is right and so is the route; what was missing is
+            an assertion that reaches them. The case the rule exists for is a queue nobody has
+            drained, where a press today meets a request asked for yesterday, and that case had no
+            test at all.
+Guarded:    a request dated well before the press is put in the store, then the press is made
+            through the route. The instants differ, so the key cannot refuse it and only the index
+            over the outstanding state can. The refusal is read off the reply the surface returns,
+            and the store is read back to show nothing was added and that what stands is the request
+            asked for first.
+Expected:   derived: the rule is 9.2's own done condition, asserted over a constructed request. No
+            expectation file changes, because the committed fixture holds no request row.
+Tests:      TO BE FILLED IN FROM THE RUN, from 1153. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: break the index the rule rests on, which is the
+            mutation that found the gap and is re-run here against the assertion that now covers it.
+            Not mutated: the primary key, which refuses a same-second repeat and is what the existing
+            test reaches; both refusals are real and this separates them.
+            Predicted:
+            M1 the one-outstanding-per-name index dropped: the new test red where it reads the
+            refusal, and the existing same-second test green, the key still refusing it.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   FILLED IN FROM THE RUN.
