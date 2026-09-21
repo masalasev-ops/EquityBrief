@@ -1617,7 +1617,7 @@ public partial class ReadSurface
 
         foreach (var listing in listings)
         {
-            var bands = await api.LevelsAsync(listing.Ticker);
+            var bands = await api.LevelsAsync(listing.Ticker, night);
 
             strengths[listing.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }
@@ -2970,7 +2970,7 @@ public partial class ReadSurface
 
         foreach (var row in universe)
         {
-            var bands = await api.LevelsAsync(row.Ticker);
+            var bands = await api.LevelsAsync(row.Ticker, night);
 
             strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }
@@ -3080,7 +3080,7 @@ public partial class ReadSurface
 
         foreach (var row in universe)
         {
-            var bands = await api.LevelsAsync(row.Ticker);
+            var bands = await api.LevelsAsync(row.Ticker, night);
 
             strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }
@@ -3147,7 +3147,7 @@ public partial class ReadSurface
 
         foreach (var row in universe)
         {
-            var bands = await api.LevelsAsync(row.Ticker);
+            var bands = await api.LevelsAsync(row.Ticker, night);
 
             strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }
@@ -3825,7 +3825,7 @@ public partial class ReadSurface
 
         foreach (var row in universe)
         {
-            var bands = await api.LevelsAsync(row.Ticker);
+            var bands = await api.LevelsAsync(row.Ticker, night);
 
             strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }
@@ -3972,7 +3972,7 @@ public partial class ReadSurface
 
         foreach (var row in universe)
         {
-            var bands = await api.LevelsAsync(row.Ticker);
+            var bands = await api.LevelsAsync(row.Ticker, night);
 
             strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }
@@ -4384,7 +4384,7 @@ public partial class ReadSurface
 
         foreach (var row in universe)
         {
-            var bands = await api.LevelsAsync(row.Ticker);
+            var bands = await api.LevelsAsync(row.Ticker, earlier);
 
             strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }
@@ -4475,7 +4475,7 @@ public partial class ReadSurface
 
         foreach (var row in universe)
         {
-            var bands = await api.LevelsAsync(row.Ticker);
+            var bands = await api.LevelsAsync(row.Ticker, night);
 
             strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
         }

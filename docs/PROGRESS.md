@@ -18804,3 +18804,66 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             against a floor of 34, 37 of 37 roster checks carried and all 37 run. No claim moves and none is added, because a ruling lands nothing. Both gates ran
             with this entry in place, and the operator's store under `data/` was not touched by
             either.
+
+### 5.4 - correction: an earlier night's list is ranked by the bands that night stored, where it was ranked by the newest   2026-09-21
+Corrects:   the tonight route orders a night's list by how many reasons fired and then by band
+            strength, and it read each name's strength from `LevelsAsync(row.Ticker)` with no date,
+            which returns the newest band set the store holds. So `/screens/tonight/<date>` for any
+            night before the newest ordered that night's names by bands stored after it, and drew
+            a different twenty where two names' strengths had moved between the nights. The comment
+            above the read said the strength was read "from what the night stored". The route and
+            the undated read were both built at 5.4. The dated form of the read arrived with a 5.8
+            correction on 2026-09-19, which bounded the name page's reads by its night and left this
+            route as it was.
+Found:      on 2026-09-21, in the evidence gathered for the next phase's plan, by re-ranking each
+            night of a copy of the operator's store with its own bands.
+Measured:   over a copy of the operator's store last written 2026-09-19 23:23 local, migrated from 29
+            to 30 in the scratchpad, every night from 2026-09-09 to 2026-09-18 ranked by an
+            independent script from the listing rows, each night's own band set and the stated
+            order, against the same rows ranked by the newest band set. Names in the drawn twenty
+            that are not in the night's own twenty, by night: 1, 5, 3, 6, 4, 2 and 1 on 2026-09-09 to
+            09-17, and 0 on 09-18, the newest. The corrected build, served over the same copy, drew
+            twenty names on each of the eight nights, 0 of them wrong and in the independent
+            ranking's order on every night.
+Repaired:   the read takes the night the route draws, `LevelsAsync(row.Ticker, dated)`, which returns
+            the band set stored on or before that night. The comment states that an earlier night is
+            ordered by its own bands.
+Guarded:    a store holding two nights, the newest night's listings and bands copied onto an earlier
+            session the store holds bars for, with the first and the last name by ticker given the
+            same reasons on both nights and opposite strengths: on the earlier night the name that
+            sorts last is the stronger, and on the newest night the weaker. `/screens/tonight/<date>`
+            for the earlier night draws each row with that night's strength and the last name first,
+            and for the newest night the first name first. The right order on the earlier night is
+            the reverse of the ticker order, so neither the newest bands nor the ticker tiebreak can
+            produce it. Eight oracles in `read-surface` that build a night's strengths beside the
+            route now read that night's bands, one of them over an earlier night, where they had
+            read the newest and so agreed with the route's fault.
+Expected:   not met at this correction. This correction amends its own done condition 7, and the
+            operator authorised it on 2026-09-21. The fixture expectation for an earlier night's
+            order on tonight's list is not added: the committed fixture holds listings on one night,
+            every input in it is a provider capture, whether two names swap strength order between
+            two captured nights cannot be chosen, so an expectation over them may pass under the
+            undated read as well, and a second night may invalidate the model recordings keyed on
+            the facts file. The new test's two-night store stands in for it. The item is carried to
+            the next phase's planning pass, which records it as a carried-obligations row once that
+            phase has checkpoints to name as its due point. It is not a row in `BUILD_PLAN.md` now,
+            because a row due at a checkpoint the plan does not yet hold fails
+            `obligation-reconciles`, and a phase heading added to make it pass would begin a phase
+            without planning it.
+Tests:      TO BE FILLED IN FROM THE RUN, from 1161. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated in the plan before the run: undo the change this correction makes, the
+            route's band read without the night. Not mutated: the other eight oracles' dates, which
+            change what the suite computes beside the route and not what the route draws.
+            Predicted:
+            MA `LevelsAsync(row.Ticker)` restored in the route: the new test red, and every other
+            test green.
+            Results: MA over the whole suite in a scratch worktree at 26d3bc4 carrying the new tests,
+            never a filter, and removed: red, one test and the predicted one, 1161 of 1162 green. It
+            failed first where it reads the earlier night's strength off the row. With those two
+            reads removed in the worktree alone, it failed where it reads the order, "2026-09-02
+            drew AAPL before NFLX, where that night's bands put NFLX first", so each half fails
+            apart.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.

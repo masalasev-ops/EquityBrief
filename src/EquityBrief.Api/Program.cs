@@ -518,15 +518,17 @@ app.MapGet("/screens/tonight/{night?}", async (
     // that night stored even after it has left.
     var universe = await read.UniverseAsync(index, dated);
 
-    // The band strength the ordering breaks ties on, read from what the night
-    // stored rather than worked out here. The close each row shows comes from the
-    // night's own bar, beside the session before it, because a close from one
-    // session and a change computed from another is one row saying two things.
+    // The band strength the ordering breaks ties on, read from the bands the
+    // night shown stored rather than worked out here, so an earlier night is
+    // ordered by its own bands and not by the newest. The close each row shows
+    // comes from the night's own bar, beside the session before it, because a
+    // close from one session and a change computed from another is one row
+    // saying two things.
     var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
 
     foreach (var row in universe)
     {
-        var bands = await read.LevelsAsync(row.Ticker);
+        var bands = await read.LevelsAsync(row.Ticker, dated);
 
         strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
     }
