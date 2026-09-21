@@ -637,4 +637,76 @@ public partial class ReadSurface
             ],
             Rows(store, "SELECT asked_at, state FROM research_request ORDER BY asked_at;"));
     }
+
+    [Fact]
+    public async Task SettledAtIsNullWhereTheSchemaSaysAndSetWhereItSays()
+    {
+        // The column note names the states in which settled_at is null, and the store is
+        // moved through every state a request takes, by the statements that move it, and
+        // read for which of them carry one. The two are read against each other rather than
+        // either against a list kept here, so a note and a store that disagree fail.
+        using var store = new TemporaryStore().Migrated();
+        await using var connection = store.Open();
+
+        var api = Api(store);
+        var observed = new Dictionary<string, bool>(StringComparer.Ordinal);
+
+        void Observe(string ticker)
+        {
+            var row = Assert.Single(Rows(store, $"SELECT state, settled_at FROM research_request WHERE ticker = '{ticker}';"));
+
+            observed[row[0]] = row[1] != "null";
+        }
+
+        Assert.True((await api.AskAsync("KEYS", ResearchRequests.FromList, ResearchRequests.Paid)).Written);
+        Observe("KEYS");
+
+        var request = await RequestDrain.ClaimAsync(connection, Instant);
+
+        Assert.NotNull(request);
+        Observe("KEYS");
+
+        await RequestDrain.SettleAsync(connection, request, ResearchRequests.Written, null, "research-20260920T120005Z-KEYS", Instant);
+        Observe("KEYS");
+
+        Assert.True((await api.AskAsync("INCY", ResearchRequests.FromList, ResearchRequests.Paid)).Written);
+
+        var incy = await RequestDrain.ClaimAsync(connection, Instant);
+
+        Assert.NotNull(incy);
+
+        var (_, refusedFor) = RequestDrain.SettlementFor(null);
+
+        await RequestDrain.SettleAsync(connection, incy, ResearchRequests.Refused, refusedFor, null, Instant);
+        Observe("INCY");
+
+        Assert.True((await api.AskAsync("AAPL", ResearchRequests.FromList, ResearchRequests.Paid)).Written);
+
+        var asked = Assert.Single(Rows(store, "SELECT asked_at FROM research_request WHERE ticker = 'AAPL';"))[0];
+
+        Assert.True((await api.WithdrawAsync("AAPL", DateTimeOffset.Parse(asked, CultureInfo.InvariantCulture))).Written);
+        Observe("AAPL");
+
+        // Every state the table admits was reached, so neither side is read over a part.
+        Assert.Equal(
+            new[] { ResearchRequests.Outstanding, ResearchRequests.Writing, ResearchRequests.Written, ResearchRequests.Refused, ResearchRequests.Withdrawn }.Order(StringComparer.Ordinal),
+            observed.Keys.Order(StringComparer.Ordinal));
+
+        var note = StoreSchema.Notes(Corpus.Read("docs/SCHEMA.md"), "research_request", "settled_at");
+        var split = note.IndexOf("null while", StringComparison.Ordinal);
+
+        Assert.True(split > 0, $"the settled_at note does not say when it is null: {note}");
+
+        static IEnumerable<string> Named(string text) =>
+            Regex.Matches(text, "`([a-z]+)`").Select(found => found.Groups[1].Value);
+
+        // The states the note says it is null in are the states the store left it null in,
+        // and the states it names before that clause are the ones the store set it in.
+        Assert.Equal(
+            observed.Where(entry => !entry.Value).Select(entry => entry.Key).Order(StringComparer.Ordinal),
+            Named(note[split..]).Where(named => observed.ContainsKey(named)).Distinct().Order(StringComparer.Ordinal));
+        Assert.Equal(
+            observed.Where(entry => entry.Value).Select(entry => entry.Key).Order(StringComparer.Ordinal),
+            Named(note[..split]).Where(named => observed.ContainsKey(named)).Distinct().Order(StringComparer.Ordinal));
+    }
 }

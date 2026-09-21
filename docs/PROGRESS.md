@@ -18629,3 +18629,39 @@ Mutated:    the rule, stated before the sweep: collapse the two answers back int
             green, both reading the answer this mutation keeps.
             Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+
+### 9.2 - correction: settled_at's note says it is null while a request is outstanding or being written, read against the store   2026-09-21
+Corrects:   SCHEMA's note on `research_request.settled_at` said it is the instant the state last
+            moved off `outstanding`, null while it has not. The declared column sets two lines below
+            it, and the claim's own statement, say a claim writes `state` alone, so a request being
+            written carries a null `settled_at` the note said it could not. The code is right and
+            the note was not.
+Found:      on 2026-09-21, in the phase 9 second sign-off review, by reading the note against the
+            statement that claims a request.
+Repaired:   the note, cleanly, with its prior text in CHANGELOG: the instant the request settled or
+            was withdrawn, written by the drain at the settle and by the read surface at a
+            withdrawal, null while it is `outstanding` or `writing`.
+Guarded:    a check that refuses the recurrence, as a corpus defect lands with one. Three requests
+            are moved through every state the table admits by the statements that move them: an ask
+            through the read surface, a claim and a settle written and refused through the drain,
+            and a withdrawal through the read surface. Each state is read for whether it carried a
+            `settled_at`. The note is read off SCHEMA, the states it names after "null while" are
+            asserted to be the states the store left it null in, and the states it names before
+            that are asserted to be the ones the store set it in, so the note and the store are read
+            against each other rather than either against a list kept beside the check. The column
+            reader SCHEMA's other checks use gains a read of one column's note for it.
+Expected:   derived: the rule is SCHEMA's own note and declared column sets, asserted over a
+            constructed store. No expectation file changes, because the committed fixture holds no
+            request row.
+Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: have the claim write `settled_at` as well, which is
+            the store coming to disagree with the note. Not mutated: the note itself, which this
+            correction edits and the same assertion reads from the other side.
+            Predicted:
+            ME the claim also writing `settled_at`: the new test red where it compares the states
+            the note names as null with the states the store left null, and every drain test green,
+            none of them reading `settled_at` after a claim.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.

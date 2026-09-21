@@ -67,6 +67,10 @@ internal static class StoreSchema
     internal static IReadOnlyList<StoreColumn> Declared(string schemaMarkdown, string table) =>
         Columns(schemaMarkdown, table).Select(entry => entry.Column).ToArray();
 
+    // The third cell of one column's row, which is where the file says what the column holds.
+    internal static string Notes(string schemaMarkdown, string table, string column) =>
+        Assert.Single(Columns(schemaMarkdown, table), entry => entry.Column.Name == column).Notes;
+
     static IReadOnlyList<(StoreColumn Column, string Notes)> Columns(string schemaMarkdown, string table)
     {
         var heading = $"### {table}";
