@@ -1874,6 +1874,17 @@ public class NightlyRun
         Assert.True(first == 0, firstError);
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM bar WHERE ticker = 'ZZZZ';"));
 
+        // The first night run again for its own session is the same night: it asks as that
+        // night did and the name has still been asked for on one night.
+        var again = await new Backfill(history, FixedClock.At(Night, SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync("GSPC", "night-one-again");
+
+        Assert.Equal(1, again.Requests);
+        Assert.Contains(
+            "{\"ticker\":\"ZZZZ\",\"nights\":1,\"last\":\"2026-09-08\",\"next\":null}",
+            Texts(store, $"SELECT detail FROM run_log WHERE run_id = 'night-one-again' AND stage = '{Backfill.Stage}';").Single(),
+            StringComparison.Ordinal);
+
         var requests = new List<int>();
 
         for (var day = 1; day <= 14; day++)
@@ -1887,7 +1898,7 @@ public class NightlyRun
         // The five nights after the first, none until the seventh day after the session last
         // asked for, and that one.
         Assert.Equal([1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0], requests);
-        Assert.Equal(15, Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE stage = '{Backfill.Stage}' AND outcome = '{Backfill.Partial}';"));
+        Assert.Equal(16, Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE stage = '{Backfill.Stage}' AND outcome = '{Backfill.Partial}';"));
 
         Assert.Contains(
             "{\"ticker\":\"ZZZZ\",\"nights\":5,\"last\":\"2026-09-12\",\"next\":null}",
