@@ -292,6 +292,10 @@ internal static class Scope
             Verdict.Pass,
             "the control is drawn on an outstanding request and on no other, names the request by the instant it was asked at, and the press is refused once the worker holds it with the refusal naming the state that refused it",
             ByReadSurface),
+        [CheckReach.Key("15.15 Queue", "Which lane would write one")] = new Scoped(
+            Verdict.Pass,
+            "the head of the page states the lane in the operator's two words and carries no model's name, the local choice is drawn with no control on it at all, and what it waits on is stated on the screen a reader decides on rather than on the element alone",
+            ByReadSurface),
         [CheckReach.Key("15.8 Universe", "Researched")] = new Scoped(
             Verdict.Pass,
             "every name holding an accepted section besides the key under each figure is listed on its own route with the day its newest one was written and how many it holds, a name holding the key alone is not, and the masthead's search and the universe table carry the same day",
@@ -2004,6 +2008,7 @@ internal static class Scope
         [CheckReach.Key("15.15 Queue", "Being written")] = "9.3",
         [CheckReach.Key("15.15 Queue", "Settled")] = "9.3",
         [CheckReach.Key("15.15 Queue", "Take it out")] = "9.3",
+        [CheckReach.Key("15.15 Queue", "Which lane would write one")] = "9.4",
         [CheckReach.Key("15.8 Universe", "Filters")] = "5.1",
 
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",

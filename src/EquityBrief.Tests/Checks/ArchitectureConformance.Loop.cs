@@ -935,6 +935,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.15 Queue", "Being written"),
         CheckReach.Key("15.15 Queue", "Settled"),
         CheckReach.Key("15.15 Queue", "Take it out"),
+        CheckReach.Key("15.15 Queue", "Which lane would write one"),
     ];
 
     // The ones a checkpoint has since drawn, which carry a verdict and no longer read as
@@ -949,6 +950,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.15 Queue", "Being written"),
         CheckReach.Key("15.15 Queue", "Settled"),
         CheckReach.Key("15.15 Queue", "Take it out"),
+        CheckReach.Key("15.15 Queue", "Which lane would write one"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

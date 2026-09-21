@@ -18146,3 +18146,34 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             PASS, 0 FAIL, 0 out of scope, 0 unexamined, 390 placements and verdicts reconciled
             against a floor of 34, 37 of 37 roster checks carried and all 37 run. Both gates ran with
             this entry in place, and the operator's store under `data/` was not touched by either.
+
+### 9.4 - the report generation lane, stated and half refused   2026-09-20
+Built:      the head of every page states which lane would write a report, in the operator's two
+            words and never a model's name: Report generation, with Local and Paid beside it.
+Refused:    the local choice is drawn and is not offered. It carries no control at all, no button, no
+            input and no link, and what it waits on is stated on the queue screen where a reader is
+            deciding whether to ask for a report rather than on the element alone.
+Read:       the lane a press writes is read off configuration at the press rather than chosen per
+            request, so a queue drained a day later writes under the lane the press meant. The lanes
+            a press may be written under are a list of one, and a setting naming the local lane is
+            read and not honoured rather than silently taken.
+Waits on:   the comparison of what the two lanes write. The one measured so far found the local model
+            stating figures the paid model does not, which is why the choice is drawn rather than
+            offered, and the operator is gathering more models to measure.
+Tests:      1148, from 1146.
+Claims:     384, from 383. Section 15.15 gains a row for the lane and it passes.
+Mutated:    the rule, stated before the sweep: break the property the lane rests on, that the choice
+            drawn as refused carries no control. Not mutated: the words themselves, which the
+            assertion reads literally and which no mutation of the drawing code would move.
+            Predicted:
+            M4 the local choice drawn as a button: the lane test red where it reads that the head
+            carries no control, and nothing else, the screen's own test reading the waits line only.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
+            ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384 PASS, 0
+            FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled against a
+            floor of 34, 37 of 37 roster checks carried and all 37 run. Nothing phase 9 placed stands
+            out of scope any longer. Both gates ran over the tree carrying 9.2 to 9.4 with these
+            three entries in place, and the operator's store under `data/` was not touched by
+            either.

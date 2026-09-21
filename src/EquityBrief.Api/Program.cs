@@ -89,7 +89,7 @@ app.Use(async (context, next) =>
 });
 
 app.MapGet("/", (SinglePageApp page) =>
-    Results.Content(page.Shell("EquityBrief"), "text/html; charset=utf-8"));
+    Results.Content(page.Shell("EquityBrief", Lane(builder.Configuration)), "text/html; charset=utf-8"));
 
 // The mark, drawn on the server and handed over as SVG. The date range defaults
 // to the whole stored series, which is a year by the retention limit.
@@ -363,7 +363,7 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
         ? ResearchRequests.FromList
         : ResearchRequests.FromName;
 
-    var started = await read.AskAsync(ticker, from, ResearchRequests.Paid);
+    var started = await read.AskAsync(ticker, from, Lane(builder.Configuration));
 
     return Results.Content(
         $"<p class=\"pass-started\" data-started=\"{(started.Written ? "true" : "false")}\" data-watch-from=\"{watchFrom.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(started.Line)}</p>",
@@ -405,6 +405,27 @@ app.MapPost(SinglePageApp.WithdrawRoute + "{ticker}", async (string ticker, Http
         "text/html; charset=utf-8",
         statusCode: taken.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
 });
+
+// Which lane would write a report, read off configuration at the press rather than
+// chosen per request, so a queue drained a day later writes under the lane the press
+// meant. The local lane is drawn and refused until the two lanes' reports have been
+// compared, so a setting naming it is not honoured and the paid lane is what a request
+// carries.
+// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+static string Lane(IConfiguration configuration)
+{
+    var asked = configuration["EquityBrief:Research:Lane"];
+
+    // The lanes a press may be written under. The local lane is drawn beside this one and
+    // is not among them, so a setting naming it is read and not honoured rather than
+    // silently taken: a request carries the lane that would write it, and nothing writes
+    // the local lane's sections on their own until the two have been compared.
+    string[] offered = [SinglePageApp.PaidLane];
+
+    return Array.Exists(offered, lane => string.Equals(lane, asked, StringComparison.Ordinal))
+        ? asked!
+        : SinglePageApp.PaidLane;
+}
 
 // Where research stands against the caps now, which is what a name page states a
 // pause from. The month's rows to this instant, judged by the rule the spend cap

@@ -81,6 +81,11 @@ public sealed class SinglePageApp : IComponent
     public const string Outstanding = "outstanding";
     public const string Writing = "writing";
 
+    // The two lanes, in the operator's own words, which are what the page draws and what
+    // a request carries.
+    public const string LocalLane = "local";
+    public const string PaidLane = "paid";
+
     // Where the name page's control sends a press, and the header the page's own script
     // puts on it. A form another site's page submits to this address carries no such
     // header, and a request carrying one from another origin is one the browser asks
@@ -121,7 +126,23 @@ public sealed class SinglePageApp : IComponent
     // words into the masthead rather than writing any of its own. The palette is a stamp
     // on the root element, remembered between visits, with the machine's preference as
     // the default (section 15.13).
-    public string Shell(string title) =>
+    // What the head of every page states about report generation, in the operator's two
+    // words and never a model's name: which lane would write a report if one were asked
+    // for now. The local choice is drawn and refused, because what would let it be chosen
+    // is a comparison of what the two lanes write, and that has not been measured over
+    // enough models to choose on.
+    // see: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
+    public const string LaneWaitsOn = "the local lane is drawn and not offered until the reports the two lanes write have been compared";
+
+    public string LaneSwitch(string lane) =>
+        $$$"""
+        <div class="lane" id="lane" data-lane="{{{Escaped(lane)}}}"><span class="lane-lbl">Report generation</span><span class="lane-opts">
+        <span class="lane-opt" data-choice="local" data-offered="false" aria-disabled="true" title="{{{Escaped(LaneWaitsOn)}}}">Local</span>
+        <span class="lane-opt{{{(lane == PaidLane ? " on" : string.Empty)}}}" data-choice="paid" data-offered="true">Paid</span>
+        </span></div>
+        """;
+
+    public string Shell(string title, string lane = PaidLane) =>
         $$$"""
         <!doctype html>
         <html lang="en">
@@ -137,7 +158,7 @@ public sealed class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a></nav><button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
@@ -990,6 +1011,10 @@ public sealed class SinglePageApp : IComponent
             .ToArray();
 
         var body = new StringBuilder();
+
+        // Which lane would write what is queued here, stated where a reader is deciding
+        // whether to ask for one, and what the choice they cannot make waits on.
+        body.Append(Invariant($"<p class=\"lane-waits\" data-waits=\"local\">Report generation is set to the paid lane, and {LaneWaitsOn}.</p>"));
 
         body.Append(Invariant($"<div class=\"queue-part\" data-region=\"outstanding\" data-rows=\"{outstanding.Length}\">"));
         body.Append("<h3>Outstanding</h3>");

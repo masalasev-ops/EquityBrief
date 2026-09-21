@@ -181,6 +181,62 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public void TheHeadOfThePageStatesTheLaneInTheOperatorsWordsAndOffersOneOfTheTwo()
+    {
+        var shell = new SinglePageApp().Shell("EquityBrief");
+
+        // The operator's two words, and no model's name anywhere near them. The names are
+        // read for rather than the absence assumed, because what this refuses is a page
+        // that states a lane by naming what would write it.
+        // see: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
+        var lane = Assert.Single(Regex.Matches(shell, "<div class=\"lane\".*?</div>", RegexOptions.Singleline).Select(found => found.Value));
+
+        Assert.Contains("Report generation", lane, StringComparison.Ordinal);
+        Assert.Contains(">Local</span>", lane, StringComparison.Ordinal);
+        Assert.Contains(">Paid</span>", lane, StringComparison.Ordinal);
+
+        Assert.All(
+            new[] { "deepseek", "qwen", "gpt", "claude", "llama", "gemma", "mistral", "27b", "9b" },
+            model => Assert.DoesNotContain(model, lane, StringComparison.OrdinalIgnoreCase));
+
+        // The local choice is drawn and is not selectable, which is a claim about the
+        // markup a person reads: it carries no control at all, and says so on itself.
+        Assert.Contains("data-choice=\"local\" data-offered=\"false\" aria-disabled=\"true\"", lane, StringComparison.Ordinal);
+        Assert.Contains("data-choice=\"paid\" data-offered=\"true\"", lane, StringComparison.Ordinal);
+        Assert.DoesNotContain("<button", lane, StringComparison.Ordinal);
+        Assert.DoesNotContain("<input", lane, StringComparison.Ordinal);
+        Assert.DoesNotContain("<a ", lane, StringComparison.Ordinal);
+
+        // And the lane the head states is the one a request would carry.
+        Assert.Contains($"data-lane=\"{SinglePageApp.PaidLane}\"", lane, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheScreenSaysWhatTheChoiceNobodyCanMakeIsWaitingOn()
+    {
+        // Stated on the surface a person reads and not only on the element, because a
+        // choice drawn as refused with no reason beside it is a page refusing without
+        // saying why. Read off the queue screen, which is where a reader is deciding
+        // whether to ask for a report.
+        var markup = new SinglePageApp().QueueRegion([]);
+
+        var line = Assert.Single(Regex.Matches(markup, "<p class=\"lane-waits\"[^>]*>(?<said>[^<]+)</p>").Select(found => found.Groups["said"].Value));
+
+        Assert.Contains("paid", line, StringComparison.Ordinal);
+        Assert.Contains(SinglePageApp.LaneWaitsOn, line, StringComparison.Ordinal);
+
+        // It says what it waits on rather than that it is unavailable, which is the
+        // difference between a reason and a refusal.
+        Assert.Contains("compared", line, StringComparison.Ordinal);
+
+        // And it is not hidden, which is what would make it stated in the code and not on
+        // the surface. The one rule naming it sets no display, so nothing draws it away.
+        var styles = Stylesheet.Css;
+
+        Assert.DoesNotContain(".lane-waits{display:none", styles, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ARequestIsSettledByWhatThePassCameToAndNeverByWhetherTheVerbRan()
     {
         // The defect the first drain had, kept as a case: it settled on the verb's exit
