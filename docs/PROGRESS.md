@@ -18456,3 +18456,39 @@ Mutated:    the rule, stated before the sweep: break the order the region states
             the order within one.
             Results: FILLED IN AFTER THE SWEEP.
 Verified:   FILLED IN FROM THE RUN.
+
+### 9.4 - correction: a configured local lane read and not honoured, asserted on the row a press writes   2026-09-21
+Corrects:   9.4's done condition says the local choice is drawn, is not selectable, and that the
+            lane a request carries is read off configuration at the press. `Lane` reads the setting
+            against a list of offered lanes holding the paid one alone, so a setting naming the
+            local lane is read and not taken, and its own comment says exactly that. Nothing
+            asserted it. Adding the local lane to the offered list leaves 1153 of 1153 green, and a
+            press under that setting would write a request carrying a lane the phase refuses to
+            offer until the two have been compared.
+Found:      on 2026-09-21, in the phase 9 sign-off review, by running the mutation the handoff
+            named. The lane's existing test reads the head of the page, which is the other half of
+            the done condition and stays green under this: the page would still draw the local
+            choice as refused while a request carried it.
+Repaired:   nothing in the shipped code. The guard is right; what was missing is an assertion that
+            reaches it, and the surface it has to be read on is the stored row rather than the page,
+            because what the rule protects is what the worker would run.
+Guarded:    the surface is hosted with the lane setting naming the local lane, a press is made
+            through the route, and the row it writes is read back out of the store and asserted to
+            carry the paid lane. The test host takes settings for this, which is how a test reaches
+            the configuration the surface reads at a press.
+Expected:   derived: the rule is 9.4's own done condition, asserted over a hosted press under a
+            configuration that names the lane. No expectation file changes, because the committed
+            fixture holds no request row.
+Tests:      TO BE FILLED IN FROM THE RUN, from 1155. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: make the offered list hold the local lane, which is
+            the mutation that found the gap and is re-run here against the assertion that now covers
+            it. Not mutated: the words the head of the page draws, which the lane's own test reads
+            literally and which this mutation does not move, and that is the point of it.
+            Predicted:
+            M3 the local lane added to the offered list: the new test red where it reads the lane
+            the stored row carries, and the head-of-page lane test green, the page drawing the local
+            choice as refused whatever a request carries.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   FILLED IN FROM THE RUN.

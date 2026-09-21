@@ -378,6 +378,26 @@ public partial class ReadSurface
         Assert.Equal(["INCY", "KEYS", "MSFT", "AAPL"], drawn);
     }
 
+    [Fact]
+    public async Task AConfiguredLocalLaneIsReadAndNotHonouredSoNoRequestCarriesIt()
+    {
+        // The local lane is drawn and refused until the two lanes have been compared, so a
+        // setting naming it is read and not taken. Asserted on the row a press writes,
+        // because what the rule protects is what the worker would run, and the head of the
+        // page stating the paid lane is a separate claim tested separately.
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        using var host = new PassHost(store.Root, ("EquityBrief:Research:Lane", ResearchRequests.Local));
+        using var client = host.CreateClient();
+
+        Assert.Contains("KEYS", await client.GetStringAsync("/screens/name/KEYS"), StringComparison.Ordinal);
+
+        var pressed = await client.SendAsync(Press(SinglePageApp.PassRoute, "KEYS", SinglePageApp.PassHeaderValue, ("from", "list")));
+
+        Assert.Equal(HttpStatusCode.Accepted, pressed.StatusCode);
+        Assert.Equal([["KEYS", ResearchRequests.Paid]], Rows(store, "SELECT ticker, lane FROM research_request;"));
+    }
+
     // A store holding one name's earlier pass that ran to its end, and one request for
     // that name nobody has started. The earlier pass is what a read bounded by the name
     // alone would return for the request below it.
