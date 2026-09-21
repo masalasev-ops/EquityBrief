@@ -18543,7 +18543,7 @@ Guarded:    a request claimed at 12:00:05 whose pass's run is stamped 12:00:05, 
 Expected:   derived: the bound is stated in the drain's own statement and in SCHEMA's note that the
             run is written at the settle, asserted over a constructed store. No expectation file
             changes, because the committed fixture holds no request row.
-Tests:      TO BE FILLED IN FROM THE RUN, from 1156. One added to `read-surface`. No migration.
+Tests:      1157, from 1156. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: make the bound strict, which is the mutation that
@@ -18553,8 +18553,19 @@ Mutated:    the rule, stated before the sweep: make the bound strict, which is t
             Predicted:
             MA ">=" made ">" in the bound: the new test red where it reads the run, and every other
             settle test green, each of them putting the pass seconds after the claim.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+            Results: each mutation over the whole suite in a scratch worktree at the branch head,
+            never a filter, and reverted. MA: red, one test and the predicted one, 1160 of 1161
+            green. The same mutation over 7d17213, before the test was written, left 1156 of 1156
+            green.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
 
 ### 9.2 - correction: the drain loop driven by a test, so the instant it claims at is asserted and not only the parts it calls   2026-09-21
 Corrects:   the worker's drain verb claims each request at the clock's own instant, which is the
@@ -18580,7 +18591,7 @@ Guarded:    the loop is driven over a store holding one request and an earlier p
             lane's flag, the counts are one taken and none written, and nothing is left outstanding.
 Expected:   derived: the rule is the 2026-09-20 correction's own, asserted over the loop the worker
             runs. No expectation file changes, because the committed fixture holds no request row.
-Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+Tests:      1158, from 1157. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: claim at the earliest instant in the loop, which is
@@ -18591,8 +18602,17 @@ Mutated:    the rule, stated before the sweep: claim at the earliest instant in 
             MB `DateTimeOffset.MinValue` as the loop's claim instant: the new test red where it
             reads the settled row, and the tests calling the claim directly green, each of them
             passing its own instant.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+            Results: MB: red, one test and the predicted one, 1160 of 1161 green. The same mutation
+            in the worker's entry point over 7d17213, before the loop moved, left 1156 of 1156 green.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
 
 ### 9.2 - correction: a press refused by the key says it came in the same second as an earlier request, and only the index says the name is waiting   2026-09-21
 Corrects:   an ask is refused by either of two constraints, and the surface answered both with "is
@@ -18617,7 +18637,7 @@ Guarded:    through the route, with the host's clock fixed so the press's instan
             The test host takes a clock for this, as it takes settings for the lane.
 Expected:   derived: 9.2's done condition, asserted over a hosted press against constructed rows.
             No expectation file changes, because the committed fixture holds no request row.
-Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+Tests:      1159, from 1158. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: collapse the two answers back into one, which is the
@@ -18627,8 +18647,20 @@ Mutated:    the rule, stated before the sweep: collapse the two answers back int
             MC every constraint failure answered "already in the queue": the new test red where it
             reads the same-second answer, and the older-request test and the route's own test
             green, both reading the answer this mutation keeps.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+            Results: MC: red, one test and the predicted one, 1160 of 1161 green. On the rehearsed
+            copy, served by the corrected build: a press for NVDA, its withdrawal and a press again
+            inside one second answered 409 naming the earlier request withdrawn and saying a press
+            again writes a new one; the press in the next second answered 202; and a press after that
+            answered 409 already in the queue.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
 
 ### 9.2 - correction: settled_at's note says it is null while a request is outstanding or being written, read against the store   2026-09-21
 Corrects:   SCHEMA's note on `research_request.settled_at` said it is the instant the state last
@@ -18653,7 +18685,7 @@ Guarded:    a check that refuses the recurrence, as a corpus defect lands with o
 Expected:   derived: the rule is SCHEMA's own note and declared column sets, asserted over a
             constructed store. No expectation file changes, because the committed fixture holds no
             request row.
-Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+Tests:      1160, from 1159. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: have the claim write `settled_at` as well, which is
@@ -18663,8 +18695,16 @@ Mutated:    the rule, stated before the sweep: have the claim write `settled_at`
             ME the claim also writing `settled_at`: the new test red where it compares the states
             the note names as null with the states the store left null, and every drain test green,
             none of them reading `settled_at` after a claim.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+            Results: ME: red, one test and the predicted one, 1160 of 1161 green.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
 
 ### 9.1 - correction: the control asking for a report stands off the label saying none is written, where it had sat on its last letter   2026-09-21
 Corrects:   on tonight's list every row whose name holds no research draws a "not written" label and
@@ -18693,7 +18733,7 @@ Guarded:    a reader of the cascade, since the suite has no browser. The list is
             match neither a rule whose holder the page does not draw nor one needing a pseudo-class.
 Expected:   derived: the rule is the stylesheet's own, read against the markup the renderer draws.
             No expectation file changes, because no stage's output moves.
-Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+Tests:      1161, from 1160. One added to `read-surface`. No migration.
             No file this correction edits is a source either evaluator version or the ladder rules'
             code version pins, so no pin moves.
 Mutated:    the rule, stated before the sweep: restore the control's rule as it stood, which re-creates
@@ -18703,5 +18743,21 @@ Mutated:    the rule, stated before the sweep: restore the control's rule as it 
             MD `form.ask{display:inline;margin-left:8px}` restored: the new test red where it reads
             the margin, and the page measured again in headless Edge showing the label and the
             control touching on every row.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+            Results: MD: red, one test and the predicted one, 1160 of 1161 green. The list, served by
+            the mutated build over the same copy and measured the same way, showed all 20 rows with
+            the label's right edge and the control's left edge at the same pixel again, so the
+            suite's reading of the cascade and the rendered page agree.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1161 of 1161 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because these correct what claims already placed assert rather than
+            adding any. Both gates ran over the tree carrying all five entries, and the operator's
+            store under `data/` was not touched by any of it.
+            The night was rehearsed on a copy of the operator's store in the scratchpad, from the
+            checkout with the drain's move in place and before the stylesheet changed, which the
+            night reads neither of: green in 4m14s for the session of 2026-09-18, migrating the copy
+            from 29 to 30 at its first step, 503 names computed, 432 listed and 71 of 71 queue passes
+            completed. The surface was then served over that copy and every screen answered 200.
