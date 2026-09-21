@@ -751,6 +751,10 @@ public sealed class ReadApi : IComponent
 
     // Every current member of the index, with what the night computed for it.
     //
+    // Each figure is the newest at or before `$on`, so a page about an earlier
+    // night states the close, the trend, the typical move and the bands that
+    // night held rather than the newest the store holds.
+    //
     // The population is the index rather than the names with bars, which is the
     // same population the ladder builder writes over and the same reason: a name
     // the night computed nothing for is a row saying so, and a name quietly
@@ -765,11 +769,12 @@ public sealed class ReadApi : IComponent
     const string Universe = @"
         SELECT m.ticker,
                m.sector,
-               (SELECT b.close FROM bar b WHERE b.ticker = m.ticker
+               (SELECT b.close FROM bar b WHERE b.ticker = m.ticker AND b.session_date <= $on
                 ORDER BY b.session_date DESC LIMIT 1),
-               (SELECT l.trend_state FROM ladder l WHERE l.ticker = m.ticker
+               (SELECT l.trend_state FROM ladder l WHERE l.ticker = m.ticker AND l.as_of <= $on
                 ORDER BY l.as_of DESC LIMIT 1),
                (SELECT i.value FROM indicator i WHERE i.ticker = m.ticker AND i.name = $typical
+                    AND i.session_date <= $on
                 ORDER BY i.session_date DESC LIMIT 1),
                m.name,
                m.industry,
@@ -780,9 +785,9 @@ public sealed class ReadApi : IComponent
     ";
 
     // The bands the universe screen states, which are the immediate ones the
-    // level builder already marked, at each name's latest as-of date for the
-    // reason the level query binds it: a screen holding two nights of bands is a
-    // screen holding two charts.
+    // level builder already marked, at each name's latest as-of date at or
+    // before the night asked for, for the reason the level query binds it: a
+    // screen holding two nights of bands is a screen holding two charts.
     //
     // Every marked band of every name in one read, with the nearest on each side
     // chosen from them as prices. The builder marks one band a side, so the
@@ -793,7 +798,7 @@ public sealed class ReadApi : IComponent
         SELECT v.ticker, v.role, v.low_edge, v.high_edge
         FROM level v
         WHERE v.immediate = 1
-              AND v.as_of = (SELECT MAX(a.as_of) FROM level a WHERE a.ticker = v.ticker);
+              AND v.as_of = (SELECT MAX(a.as_of) FROM level a WHERE a.ticker = v.ticker AND a.as_of <= $on);
     ";
 
     // The current members of the index on a session, one row a ticker, for the reason the
@@ -1495,6 +1500,7 @@ public sealed class ReadApi : IComponent
         await using (var bands = connection.CreateCommand())
         {
             bands.CommandText = ImmediateBands;
+            bands.Parameters.AddWithValue("$on", On(night));
 
             await using var marked = await bands.ExecuteReaderAsync();
 
@@ -1531,6 +1537,7 @@ public sealed class ReadApi : IComponent
         command.CommandText = Universe;
         command.Parameters.AddWithValue("$index_code", indexCode);
         command.Parameters.AddWithValue("$session", OnNight(night));
+        command.Parameters.AddWithValue("$on", On(night));
         command.Parameters.AddWithValue("$typical", IndicatorSeries.Atr14);
         command.Parameters.AddWithValue("$computed", ClaimRules.ComputedSection);
 
