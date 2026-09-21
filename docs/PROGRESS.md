@@ -18665,3 +18665,43 @@ Mutated:    the rule, stated before the sweep: have the claim write `settled_at`
             none of them reading `settled_at` after a claim.
             Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+
+### 9.1 - correction: the control asking for a report stands off the label saying none is written, where it had sat on its last letter   2026-09-21
+Corrects:   on tonight's list every row whose name holds no research draws a "not written" label and
+            an "ask for a report" control beside it, and the control covered the label's last letter.
+            The rule written for the control, `form.ask`, set its left margin, and the page's
+            generic rule for every posting form, stated later with the same specificity, set that
+            margin to zero and won. Measured in headless Edge at 1400 wide and scale 1 over a copy
+            of the store after a rehearsed night: all 20 drawn rows had the label's right edge and
+            the control's left edge at the same pixel, and the label's last glyph ran under the
+            control's edge.
+Found:      on 2026-09-21, in the phase 9 second sign-off review, on a screenshot of the list.
+Repaired:   the control's rule is stated with the attribute the generic rule selects on as well, so
+            it outranks it and the margin it states is the one the page applies. Only the gap
+            changes: the control's size and colours are the ones the list has been drawn with, so
+            the page reads as before with the label clear of the control. Measured the same way
+            after: all 20 rows with an 8 pixel gap and none touching. The rule for the control's
+            button is beaten the same way and is left as it is, because what it would change is
+            how the approved list looks rather than whether a label can be read.
+Guarded:    a reader of the cascade, since the suite has no browser. The list is drawn by the
+            renderer with one row holding no research, the label and the control are found inside
+            that row's name cell with nothing between them, and every rule the stylesheet states
+            outside an at-rule is matched against the control and the elements holding it as drawn.
+            The left margin the winning rule gives the control, the most specific and the later of
+            two equal, is asserted to be at least 4 pixels. The reader is shown to rank a rule
+            carrying an attribute above one without it, to rank two equal rules equally, and to
+            match neither a rule whose holder the page does not draw nor one needing a pseudo-class.
+Expected:   derived: the rule is the stylesheet's own, read against the markup the renderer draws.
+            No expectation file changes, because no stage's output moves.
+Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: restore the control's rule as it stood, which re-creates
+            the overlap, read off the cascade by the suite and off the rendered page by the probe.
+            Not mutated: the generic rule, which every other posting form on the page is drawn by.
+            Predicted:
+            MD `form.ask{display:inline;margin-left:8px}` restored: the new test red where it reads
+            the margin, and the page measured again in headless Edge showing the label and the
+            control touching on every row.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
