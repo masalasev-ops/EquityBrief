@@ -317,46 +317,7 @@ static async Task<int> Drain()
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     var clock = SystemClock.ForUnitedStatesSessions();
 
-    var taken = 0;
-    var written = 0;
-
-    while (true)
-    {
-        await using var connection = new SqliteConnection(StoreConnection.For(store.DatabaseFile));
-
-        await connection.OpenAsync();
-
-        var request = await RequestDrain.ClaimAsync(connection, clock.UtcNow);
-
-        if (request is null)
-        {
-            break;
-        }
-
-        taken++;
-
-        // The request carries the lane the press meant, so a queue drained a day later
-        // writes under it rather than under whatever configuration now says.
-        string[] pass = request.Lane == "paid"
-            ? ["research", "--ticker", request.Ticker, "--paid-for-local"]
-            : ["research", "--ticker", request.Ticker];
-
-        await ResearchPass(pass);
-
-        // What this request's own pass came to, and not whether the verb exited zero. A
-        // verb that exits zero has run, and a pass that ran is not a pass that wrote: a
-        // pass the model could not be reached for exits zero and writes nothing, and one
-        // refused before the runner starts writes no run for this request at all.
-        var (runId, outcome) = await RequestDrain.PassAsync(connection, request);
-        var (state, reason) = RequestDrain.SettlementFor(outcome);
-
-        if (reason is null)
-        {
-            written++;
-        }
-
-        await RequestDrain.SettleAsync(connection, request, state, reason, runId, clock.UtcNow);
-    }
+    var (taken, written) = await RequestDrain.DrainAsync(store.DatabaseFile, clock, ResearchPass);
 
     Console.WriteLine(FormattableString.Invariant(
         $"drain: {taken} request(s) taken, {written} written and {taken - written} refused"));

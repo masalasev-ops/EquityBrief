@@ -545,4 +545,44 @@ public partial class ReadSurface
         Assert.Equal(ResearchRequests.Written, settled.State);
         Assert.Equal("research-20260920T120005Z-KEYS", settled.RunId);
     }
+
+    [Fact]
+    public async Task TheDrainClaimsAtItsOwnClockSoAPassWritingNoRunSettlesRefusedWithNoRun()
+    {
+        // Driven through the loop the worker runs rather than through its parts, because
+        // the instant a request is claimed at is chosen by the loop: a claim dated earlier
+        // than the clock reads the name's older pass as this request's, and only the loop
+        // can get that wrong. The name holds a pass that ran to its end three weeks before,
+        // and the pass handed in writes no run, as one refused before the runner starts.
+        using var store = WithAnEarlierPass("KEYS");
+
+        var clock = FixedClock.At(DateTimeOffset.Parse("2026-09-20T12:00:05Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates);
+        var passes = new List<string[]>();
+
+        var (taken, written) = await RequestDrain.DrainAsync(
+            store.DatabaseFile,
+            clock,
+            verb =>
+            {
+                passes.Add(verb);
+
+                return Task.CompletedTask;
+            });
+
+        Assert.Equal((1, 0), (taken, written));
+
+        // The pass it ran is the research verb over the request's name and lane.
+        Assert.Equal(["research", "--ticker", "KEYS", "--paid-for-local"], Assert.Single(passes));
+
+        var settled = SettledRow(store, "KEYS");
+
+        Assert.Equal(ResearchRequests.Refused, settled.State);
+        Assert.Equal("null", settled.RunId);
+        Assert.Contains("no run at all", settled.Reason, StringComparison.Ordinal);
+
+        // And the queue is empty once it has been worked through.
+        await using var connection = store.Open();
+
+        Assert.Equal(0, await RequestDrain.OutstandingAsync(connection));
+    }
 }

@@ -1,5 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Research;
+using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Research;
@@ -78,6 +80,63 @@ public static class RequestDrain
     const string Outstanding = @"
         SELECT COUNT(*) FROM research_request WHERE state = 'outstanding';
     ";
+
+    // The queue, worked through oldest first until nothing is outstanding. The pass is
+    // handed in, so the loop that decides which run a request settles under is the one the
+    // worker runs and not a copy of it beside a test.
+    //
+    // Each request is claimed at the clock's own instant, which is the lower bound on the
+    // run its pass may settle under: a claim dated earlier would read an older pass of the
+    // same name as this request's.
+    public static async Task<(int Taken, int Written)> DrainAsync(
+        string databaseFile,
+        IClock clock,
+        Func<string[], Task> pass,
+        CancellationToken cancellation = default)
+    {
+        var taken = 0;
+        var written = 0;
+
+        while (true)
+        {
+            await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+            await connection.OpenAsync(cancellation);
+
+            var request = await ClaimAsync(connection, clock.UtcNow, cancellation);
+
+            if (request is null)
+            {
+                break;
+            }
+
+            taken++;
+
+            // The request carries the lane the press meant, so a queue drained a day later
+            // writes under it rather than under whatever configuration now says.
+            string[] verb = request.Lane == "paid"
+                ? ["research", "--ticker", request.Ticker, "--paid-for-local"]
+                : ["research", "--ticker", request.Ticker];
+
+            await pass(verb);
+
+            // What this request's own pass came to, and not whether the verb exited zero. A
+            // verb that exits zero has run, and a pass that ran is not a pass that wrote: a
+            // pass the model could not be reached for exits zero and writes nothing, and one
+            // refused before the runner starts writes no run for this request at all.
+            var (runId, outcome) = await PassAsync(connection, request, cancellation);
+            var (state, reason) = SettlementFor(outcome);
+
+            if (reason is null)
+            {
+                written++;
+            }
+
+            await SettleAsync(connection, request, state, reason, runId, clock.UtcNow, cancellation);
+        }
+
+        return (taken, written);
+    }
 
     public static async Task<TakenRequest?> ClaimAsync(SqliteConnection connection, DateTimeOffset at, CancellationToken cancellation = default)
     {

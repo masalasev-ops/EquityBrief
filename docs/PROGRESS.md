@@ -18555,3 +18555,41 @@ Mutated:    the rule, stated before the sweep: make the bound strict, which is t
             settle test green, each of them putting the pass seconds after the claim.
             Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+
+### 9.2 - correction: the drain loop driven by a test, so the instant it claims at is asserted and not only the parts it calls   2026-09-21
+Corrects:   the worker's drain verb claims each request at the clock's own instant, which is the
+            lower bound on the run its pass may settle under. That choice lived in the loop inside
+            the worker's entry point, which no test can call, so passing the earliest instant there
+            instead of the clock leaves 1156 of 1156 green. That is the defect the correction of
+            2026-09-20 repaired, a request for a name holding research settling under whatever that
+            name last did, and it could return on the live path with the suite green.
+Found:      on 2026-09-21, in the phase 9 second sign-off review, by the mutation the handoff named,
+            and re-run by this session over the whole suite before any test was written: 1156 of
+            1156 green with the loop claiming at the earliest instant.
+Repaired:   the loop moved, unchanged, out of the worker's entry point into `RequestDrain.DrainAsync`,
+            which takes the store's file, the clock and the pass to run for each request. The
+            worker's `drain` verb calls it with the system clock and the research verb it called
+            before, and prints the same line from the two counts it returns. The behaviour is
+            identical: the same connection per request, the same claim, the same verb and flags
+            for each lane, the same read of the pass's own run, the same settlement and the same
+            settle instant.
+Guarded:    the loop is driven over a store holding one request and an earlier pass of the same name
+            that ran to its end, with a fixed clock and a pass that writes no run, as one refused
+            before the runner starts. The request settles refused with no run and says the pass
+            left none, the one pass run is the research verb over the request's name with its
+            lane's flag, the counts are one taken and none written, and nothing is left outstanding.
+Expected:   derived: the rule is the 2026-09-20 correction's own, asserted over the loop the worker
+            runs. No expectation file changes, because the committed fixture holds no request row.
+Tests:      TO BE FILLED IN FROM THE RUN. One added to `read-surface`. No migration.
+            No file this correction edits is a source either evaluator version or the ladder rules'
+            code version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: claim at the earliest instant in the loop, which is
+            the mutation that found the gap, moved with the loop and re-run against the assertion
+            that now covers it. Not mutated: the lane's flag, which the new test reads and no
+            mutation here moves.
+            Predicted:
+            MB `DateTimeOffset.MinValue` as the loop's claim instant: the new test red where it
+            reads the settled row, and the tests calling the claim directly green, each of them
+            passing its own instant.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
