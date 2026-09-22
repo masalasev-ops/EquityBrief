@@ -19682,3 +19682,19 @@ Mutated:    two rules, stated before the sweep. The first, as the handoff set it
             MO only `ok` read as the stage's own: the shadow case red at its first read, 00:07:33,
             and every other test green, the agreement test among them, since the stated words do
             not move.
+            Results: each mutation over the whole suite in a scratch worktree at 823ef37, never a
+            filter, and reverted between runs. That commit's entry did not yet say its Windows run,
+            so `two-platform`'s record test was red there before any mutation, and each result below
+            is that one and the mutation's own. MR: red, the review's case at 00:05:40 where the
+            rule gives 00:07:33, and the shadow case at its second read, 00:00:00 where the rule
+            gives 00:05:52, 1171 of 1174 green. MO: red, the shadow case at its first read,
+            00:07:33 where the rule gives 00:05:52, 1172 of 1174 green.
+Held:       the prediction, exactly, for both.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1174 of 1174 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
