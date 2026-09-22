@@ -105,9 +105,11 @@ public static class TrendSeries
     // is what lets the live values reproduce every stored label exactly, since
     // with the averages arm off and the hold at one night both arms stand aside.
     //
-    // The first arm can only turn a range into a downtrend. An uptrend has the
-    // close above the short average by its own rule, and a name with no long
-    // average has no reading to be below.
+    // The first arm reaches a range and a name the night could not classify, and
+    // no other label. An uptrend has the close above the short average by the live
+    // rule's own reading, and a name missing either average has no reading to be
+    // below. A name that could not be classified carries no tranche either, so the
+    // arm reaching it takes nothing away and changes what the label says about it.
     // see: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
     public static string Applied(
         string stored,
