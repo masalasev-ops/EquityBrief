@@ -20510,8 +20510,9 @@ Mutated:    the rule, stated before the sweep: break the property each new piece
             M3 the paired difference read as the version's own blocks rather than as the difference
             from the live rule's: red in the paired difference test, where the version that kept
             one won setup a block would read its own excess and not the change.
-            M4 the Reality Check flipping each version under its own sign vector: red in the
-            comparison test, where the joint figure would fall to the best version's own.
+            M4 the Reality Check reading one version's statistic rather than the largest of
+            them: red in the comparison test, where the figure would fall to what the last
+            version alone reaches and the penalty for having picked the best of two would go.
             Results: FILLED IN AFTER THE SWEEP.
 Rehearsed:  FILLED IN AFTER THE REHEARSAL.
 Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1`

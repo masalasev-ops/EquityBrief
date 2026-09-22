@@ -243,14 +243,14 @@
   }
  },
  "pairedDifference": {
-  "case": "a version that takes one losing setup away from each of eight blocks, every setup judged against a bar of 0.5",
+  "case": "a version that takes one losing setup away from each of eight blocks, every setup judged against a bar of 0.3",
   "blocks": 8,
   "liveSetupsPerBlock": 2,
   "removedPerBlock": 1,
   "removedOutcome": "loss",
-  "nullWin": 0.5,
-  "differencePerBlock": 0.5,
-  "derivedFrom": "a block's excess is its wins less the bars those setups were judged against, so a block holding one win and one loss against bars of 0.5 comes to 1 - 1.0 = 0.0 for the live rule and 1 - 0.5 = 0.5 for the version that kept only the win. The difference is 0.5 in every block. Eight equal blocks have no scatter, so the statistic is infinite in the direction of their mean and only the arrangement with no sign flipped reaches it, which is one in 2^8.",
+  "nullWin": 0.3,
+  "differencePerBlock": 0.3,
+  "derivedFrom": "a block's excess is its wins less the bars those setups were judged against, so a block holding one win and one loss against bars of 0.3 comes to 1 - 0.6 = 0.4 for the live rule and 1 - 0.3 = 0.7 for the version that kept only the win. The difference is 0.3 in every block, and it is neither side's own figure, which is what a difference from the live rule means. Eight equal blocks have no scatter, so the statistic is infinite in the direction of their mean and only the arrangement with no sign flipped reaches it, which is one in 2^8.",
   "pValue": 0.00390625,
   "verdict": "a difference from the live rule at the level its look spends"
  },
