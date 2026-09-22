@@ -193,6 +193,10 @@ internal static class PhaseReport
             "the plan, held by BUILD_PLAN.md and recorded against by PROGRESS.md"),
         ["Settled questions"] = new Placement(
             "a record of decisions taken, not a claim about code"),
+        ["Open questions"] = new Placement(
+            "questions the corpus has not settled, each linked from the rule that rests on it, not a claim about code"),
+        ["23. Sources"] = new Placement(
+            "the sources phase 10's rules cite, with where each was read and how much of it; a record of what was read, not a claim about code"),
     };
 
     // The figures, placed on the same terms as the tables.

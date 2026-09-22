@@ -62,6 +62,7 @@ public class CoverageReported
         ["two-platform"] = "TwoPlatform",
         ["register-append-only"] = "RegisterAppendOnly",
         ["rule-versions-scored"] = "RuleVersionsScored",
+        ["research-marked"] = "ResearchMarked",
     };
 
     internal static IReadOnlyList<RosterRow> Roster()

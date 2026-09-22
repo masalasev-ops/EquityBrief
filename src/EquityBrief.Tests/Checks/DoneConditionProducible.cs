@@ -162,11 +162,10 @@ public class DoneConditionProducible
         // The scope carrying the property is the done conditions themselves, so
         // the floor sits on them and not on the files opened. 55 was the count
         // at 5.7, one per checkpoint across all eight phases, and it only rises
-        // as checkpoints are added. 9 is exact because section 20 has one row
-        // per phase: eight until 7.0 gave phase 6's carried items a phase of
-        // their own and moved the improvement loop to phase 8.
+        // as checkpoints are added. 11 is exact because section 20 has one row
+        // per phase, phases 0 to 10.
         Assert.True(plan.Count >= 55, $"Read {plan.Count} done conditions in BUILD_PLAN, expected at least 55.");
-        Assert.Equal(9, phases.Count);
+        Assert.Equal(11, phases.Count);
 
         var findings = Findings();
 

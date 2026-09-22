@@ -19947,3 +19947,46 @@ Windows:    the ruling's point 4 said versions A, B and C use three of the trend
             seconds against 900, from 688.
 Verified:   `tools/ci.ps1` green over the tree carrying this entry, as the planning entry above
             records.
+
+### 10.0 planning - the research each phase 10 rule rests on, cited where the rule is stated   2026-09-22
+Not a checkpoint entry. It lands nothing beyond the 10.0 planning entry above and builds no
+            checkpoint of phase 10.
+Asked:      the operator instructed on 2026-09-22 that every rule phase 10 lands carries, where
+            the architecture states it, the evidence it rests on, marked as Evidence with a source
+            read in this project, Judgement with its reasoning, or Not settled by research with an
+            entry in section 22; that the decisions carry the same citations; that the full source
+            list lands in the repository; and that a corpus check refuses a phase 10 rule stated
+            without a mark.
+Written:    in the architecture, section 3 gains nine words: block, look, information fraction,
+            null win probability, design effect, sign-flip test, futility guideline, monitoring
+            figure and closed window. Section 10.1 states the trend versions, section 11.1 how
+            tonight's list is chosen, sections 13.6 and 13.7 how a candidate is judged and what the
+            judging can and cannot show, and section 15.10 what the run page states for a candidate,
+            each rule a paragraph carrying its marks. Section 11's flag no longer says the twenty
+            lasts until the thresholds are calibrated, since 11.1 states the twenty once. Section 20
+            gains rows for phase 9, which it never had, and phase 10. Section 22 gains nine open
+            questions, each linked from the rule resting on it, two of them the operator's questions
+            about the live family. A new section 23 lists the 44 sources the rules cite, each with
+            where it was read and whether in full, as an abstract or through another text, and every
+            citation links to its row. The prior text of the two rewritten lines is in `CHANGELOG.md`.
+            Nothing cites the gitignored prompts folder or a conversation.
+Checked:    `research-marked`, a new check on the roster: every paragraph marked as a phase 10 rule,
+            and every paragraph of the four subsections phase 10 added, carries an Evidence mark
+            linking a source row, a Judgement mark with at least six words of reasoning, or a Not
+            settled by research mark linking an open question, each mark read over the words up to
+            the next; every source is cited and every question linked, and every link resolves, both
+            ways; the reader is shown to find each fault and to pass a well-formed rule. 23 rules, 44
+            sources and 9 questions when it was written. The phase report places section 22's open
+            questions and section 23's sources as records rather than claims. Section 20's exact row
+            count in `done-condition-producible` moves from 9 to 11, and `pinned-constants`' count of
+            the family maximum's restatements in `DECISIONS.md` from 3 to 5, both for rows and
+            citations this pass adds.
+Tests:      TO BE FILLED IN FROM THE RUN, from 1164. Four added, all in `research-marked`. No
+            migration.
+Mutated:    the rule, stated before the sweep: reintroduce what the check refuses, one phase 10 rule
+            with its marks taken out.
+            Predicted:
+            MF the Judgement mark removed from section 11.1's paragraph on the plan's three facts,
+            its only mark: `EveryPhaseTenRuleSaysWhatItRestsOn` red, and every other test green.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
