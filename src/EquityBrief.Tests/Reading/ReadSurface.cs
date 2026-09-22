@@ -2620,6 +2620,51 @@ public partial class ReadSurface
         Assert.Equal("00:05:52", await api.NightDurationAsync(new DateOnly(2026, 9, 3)));
     }
 
+    // A read of the run log that takes its newest row by the instant the row carries, as SQL
+    // ordering on the start or as the rows ordered on it.
+    static readonly Regex NewestByInstant = new(
+        @"ORDER\s+BY\s+started_at\s+DESC|OrderByDescending\(\s*(\w+)\s*=>\s*\1\.StartedAt\s*\)",
+        RegexOptions.IgnoreCase);
+
+    [Fact]
+    public void ARunLogReadTakesItsNewestRowByTheOrderTheRowsWereWrittenOutsideTheTwoThatStateWhyTheyMayNot()
+    {
+        // A night run again for a named session stamps its stages from 21:10Z on that session,
+        // so the newest instant is not the newest run. The two reads left on the instant are
+        // named with their reason: the pass a page started is chosen at or after the press, and
+        // a pass is not a night; the backfill's rows for one session are the same row, and the
+        // page reads them only for a name holding no bar.
+        string[] allowed = ["PassRowsForName", "BackfillRows"];
+
+        Assert.Matches(NewestByInstant, "        ORDER BY started_at DESC;");
+        Assert.Matches(NewestByInstant, ".OrderByDescending(row => row.StartedAt)");
+        Assert.DoesNotMatch(NewestByInstant, "ORDER BY rowid DESC");
+        Assert.DoesNotMatch(NewestByInstant, ".OrderByDescending(row => row.SessionDate)");
+
+        var found = new List<string>();
+
+        foreach (var file in Directory.GetFiles(Path.Combine(Repository.Root, "src", "EquityBrief.Api"), "*.cs", SearchOption.AllDirectories)
+            .Where(file => !file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+                && !file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)))
+        {
+            var source = Regex.Replace(File.ReadAllText(file), @"//[^\r\n]*", string.Empty);
+
+            foreach (Match match in NewestByInstant.Matches(source))
+            {
+                // A query is named by the constant holding it; a read in code by its file and line.
+                var constant = match.Value.Contains("started_at", StringComparison.OrdinalIgnoreCase)
+                    ? Regex.Matches(source[..match.Index], @"const\s+string\s+(\w+)\s*=").LastOrDefault()
+                    : null;
+
+                found.Add(constant is null
+                    ? $"{Path.GetFileName(file)} line {source[..match.Index].Count(character => character == '\n') + 1}"
+                    : constant.Groups[1].Value);
+            }
+        }
+
+        Assert.Equal(allowed.Order(StringComparer.Ordinal), found.Order(StringComparer.Ordinal));
+    }
+
     [Fact]
     public async Task AReasonsRecordCountsEverySetupThatFiredItAndShowsNoRateBelowTheMinimum()
     {
