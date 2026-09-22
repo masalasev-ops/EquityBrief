@@ -19526,6 +19526,20 @@ Mutated:    the rule, stated before the sweep: count the night's own session amo
             MB the row's count over the sessions without removing one counted twice: the extended
             test red, at the first night run again's row, which names the name as asked on 2
             nights, and every other test green.
-            Results: FILL
-Held:       FILL
-Verified:   FILL
+            Results: each mutation over the whole suite in a scratch worktree at 768dd79, never a
+            filter, and reverted between runs. That commit's entry did not yet say its Windows run,
+            so `two-platform`'s record test was red there before any mutation, and each result below
+            is that one and the mutation's own. MA: red, the extended test, at the sixth night asked
+            run again, which asked for ZZZZ 0 times, 1167 of 1169 green. MB: red, the extended test,
+            at the first night run again's row, which did not name the name as asked on 1 night,
+            1167 of 1169 green. The runner cuts the row it found short, so the 2 nights predicted
+            for it was not read off the run.
+Held:       the prediction for MA exactly, and for MB at the test and the point it fails.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1169 of 1169 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this asserts what a claim already placed states rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
