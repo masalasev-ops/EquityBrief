@@ -859,6 +859,76 @@ public class CorporateActions
         Assert.Equal(asked, CountOf(store, "AAPL").Retries);
     }
 
+    // A night of the check that starts after midnight UTC and before midnight in New York,
+    // at the given minute past 02:40 UTC on the day after the session.
+    static DateTimeOffset AfterMidnightFor(DateOnly session, int minute) =>
+        new(session.AddDays(1).ToDateTime(new TimeOnly(2, 40 + minute)), TimeSpan.Zero);
+
+    [Fact]
+    public async Task ANightRunAgainForItsSessionAfterMidnightUtcIsThatNightOnTheNightlyRetriesAndTheWeeklyOne()
+    {
+        // A night whose check starts after midnight UTC carries the next day's UTC date on
+        // the row it writes while belonging to the session before it, and the same night run
+        // again carries that date too. The night run again is the same night: asked for as it
+        // asked, counted once, on each nightly retry and on a night its week comes round.
+        // Every other night run again here starts at 21:10 UTC, where the two dates agree.
+        using var store = await Stored();
+
+        await Checker(store, Refusing()).RunAsync(Index, "night-0");
+
+        var retryNights = SessionsFrom(new DateOnly(2026, 8, 11), CorporateActionChecker.RetryNights);
+
+        for (var night = 1; night <= CorporateActionChecker.RetryNights; night++)
+        {
+            var session = retryNights[night - 1];
+
+            foreach (var (minute, runId) in new[] { (4, RunIdOf(session)), (10, RunIdOf(session) + "-again") })
+            {
+                var outcome = await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(AfterMidnightFor(session, minute), SessionZones.UnitedStates), store.DatabaseFile)
+                    .RunAsync(Index, runId);
+
+                Assert.True(
+                    outcome.RefetchRequests == 1,
+                    $"{runId} asked for AAPL {outcome.RefetchRequests} time(s).");
+                Assert.Equal(["AAPL"], outcome.Retried ?? []);
+                Assert.Empty(outcome.Spent ?? []);
+                Assert.Equal(("suspect", night), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
+            }
+        }
+
+        // The last nightly retry is Monday 2026-08-17's, asked at 02:50 UTC on the Tuesday.
+        Assert.Equal("2026-08-18T02:50:00Z", CountOf(store, "AAPL").CheckedAt);
+
+        // Friday 2026-08-21 is 4 days on and asks for nothing, run again or not. Monday
+        // 2026-08-24 is 7 days on from the session and 6 from the instant's UTC date, and it
+        // asks, and its night run again asks as it did with the count unmoved.
+        (DateOnly Session, bool Asked)[] weeks =
+        [
+            (new(2026, 8, 21), false),
+            (new(2026, 8, 24), true),
+        ];
+
+        var retries = CorporateActionChecker.RetryNights;
+
+        foreach (var (session, asked) in weeks)
+        {
+            retries += asked ? 1 : 0;
+
+            foreach (var (minute, runId) in new[] { (4, RunIdOf(session)), (10, RunIdOf(session) + "-again") })
+            {
+                var outcome = await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(AfterMidnightFor(session, minute), SessionZones.UnitedStates), store.DatabaseFile)
+                    .RunAsync(Index, runId);
+
+                Assert.True(
+                    (asked ? 1 : 0) == outcome.RefetchRequests,
+                    $"{runId} asked for AAPL {outcome.RefetchRequests} time(s).");
+                Assert.Equal(asked, (outcome.Retried ?? []).Contains("AAPL"));
+                Assert.Equal(!asked, (outcome.Spent ?? []).Any(spent => spent.Ticker == "AAPL"));
+                Assert.Equal(("suspect", retries), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
+            }
+        }
+    }
+
     [Fact]
     public async Task ASuspectNameTheIndexNoLongerHoldsIsNeitherAskedForNorNamed()
     {
