@@ -1887,18 +1887,43 @@ public class NightlyRun
 
         var requests = new List<int>();
 
+        // The sixth night asked and the weekly one, with the row each writes.
+        var repeatedRows = new Dictionary<int, string>
+        {
+            [5] = "{\"ticker\":\"ZZZZ\",\"nights\":6,\"last\":\"2026-09-13\",\"next\":\"2026-09-20\"}",
+            [12] = "{\"ticker\":\"ZZZZ\",\"nights\":7,\"last\":\"2026-09-20\",\"next\":\"2026-09-27\"}",
+        };
+
         for (var day = 1; day <= 14; day++)
         {
             var clock = FixedClock.At(Night.AddDays(day), SessionZones.UnitedStates);
             var outcome = await new Backfill(history, clock, store.DatabaseFile).RunAsync("GSPC", $"night-{day:D2}");
 
             requests.Add(outcome.Requests);
+
+            // The last of the nightly asks and the weekly one, each run again for its own
+            // session: the night's own session is not one it was asked on before, so it asks
+            // as that night did, and the row it writes is that night's.
+            if (repeatedRows.TryGetValue(day, out var row))
+            {
+                var repeated = await new Backfill(history, clock, store.DatabaseFile).RunAsync("GSPC", $"night-{day:D2}-again");
+
+                Assert.True(repeated.Requests == 1, $"night-{day:D2} run again asked for ZZZZ {repeated.Requests} time(s).");
+
+                foreach (var runId in new[] { $"night-{day:D2}", $"night-{day:D2}-again" })
+                {
+                    Assert.Contains(
+                        row,
+                        Texts(store, $"SELECT detail FROM run_log WHERE run_id = '{runId}' AND stage = '{Backfill.Stage}';").Single(),
+                        StringComparison.Ordinal);
+                }
+            }
         }
 
         // The five nights after the first, none until the seventh day after the session last
         // asked for, and that one.
         Assert.Equal([1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0], requests);
-        Assert.Equal(16, Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE stage = '{Backfill.Stage}' AND outcome = '{Backfill.Partial}';"));
+        Assert.Equal(18, Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE stage = '{Backfill.Stage}' AND outcome = '{Backfill.Partial}';"));
 
         Assert.Contains(
             "{\"ticker\":\"ZZZZ\",\"nights\":5,\"last\":\"2026-09-12\",\"next\":null}",
