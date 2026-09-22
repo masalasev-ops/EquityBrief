@@ -2651,9 +2651,14 @@ public partial class ReadSurface
 
             foreach (Match match in NewestByInstant.Matches(source))
             {
-                var constant = Regex.Matches(source[..match.Index], @"const\s+string\s+(\w+)\s*=").LastOrDefault();
+                // A query is named by the constant holding it; a read in code by its file and line.
+                var constant = match.Value.Contains("started_at", StringComparison.OrdinalIgnoreCase)
+                    ? Regex.Matches(source[..match.Index], @"const\s+string\s+(\w+)\s*=").LastOrDefault()
+                    : null;
 
-                found.Add(constant is null ? $"{Path.GetFileName(file)} at {match.Index}" : constant.Groups[1].Value);
+                found.Add(constant is null
+                    ? $"{Path.GetFileName(file)} line {source[..match.Index].Count(character => character == '\n') + 1}"
+                    : constant.Groups[1].Value);
             }
         }
 
